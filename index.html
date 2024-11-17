@@ -6,17 +6,17 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APSW 3.46.1.0 documentation &mdash; APSW 3.46.1.0 documentation</title>
+  <title>APSW 3.47.0.0 documentation &mdash; APSW 3.47.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=66b59bf7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=0c22936b"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/documentation_options.js?v=8087e674"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -38,9 +38,6 @@
             APSW
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
-              <div class="version">
-                3.46.1.0
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -55,15 +52,17 @@
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
@@ -86,11 +85,11 @@
       </nav>
 
       <div class="wy-nav-content">
-        <div class="rst-content style-external-links">
+        <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">APSW 3.46.1.0 documentation</li>
+      <li class="breadcrumb-item active">APSW 3.47.0.0 documentation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -103,9 +102,9 @@
            <div itemprop="articleBody">
              
   <section id="apsw-version-documentation">
-<h1>APSW 3.46.1.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Link to this heading"></a></h1>
+<h1>APSW 3.47.0.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Link to this heading"></a></h1>
 <p class="centered">
-<strong>APSW 3.46.1.0 released 13 August 2024</strong></p><div class="toctree-wrapper compound">
+<strong>APSW 3.47.0.0 released 27 November 2024</strong></p><div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="about.html#what-apsw-does">What APSW does</a></li>
@@ -168,6 +167,8 @@
 <li class="toctree-l2"><a class="reference internal" href="example.html#shell">Shell</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#statistics">Statistics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#tracing">Tracing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example.html#system-and-sqlite-resource-usage-in-a-block">System and SQLite resource usage in a block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example.html#sql-statement-tracing-in-a-block">SQL statement tracing in a block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#formatting-query-results-table">Formatting query results table</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#cleanup">Cleanup</a></li>
 </ul>
@@ -185,6 +186,11 @@
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#icu">ICU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#rbu">RBU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#rtree">RTree</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bestpractice.html#explanation">Explanation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bestpractice.html#module-apsw.bestpractice">API</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a><ul>
@@ -211,6 +217,51 @@
 <li class="toctree-l2"><a class="reference internal" href="backup.html#backup-class">Backup class</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#is-fts5-available">Is FTS5 available?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#content-setup">Content setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#create-open-search-table">Create/open search table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#table-structure-and-statistics">Table structure and statistics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#content">Content</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#searching-with-sql">Searching with SQL.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#search-method">Search method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#query-correction-and-suggestion">Query correction and suggestion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#working-with-tokens">Working with tokens</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#key-tokens-and-more-like">Key Tokens and More Like</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#autocomplete">Autocomplete</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#auxiliary-functions">Auxiliary functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#query-parsing-and-manipulation">Query parsing and manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#tokenizers">Tokenizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#apsw-fts5-unicodewordstokenizer">apsw.fts5.UnicodeWordsTokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#apsw-fts5-simplifytokenizer">apsw.fts5.SimplifyTokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#your-own-tokenizer">Your own tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#your-own-tokenizer-part-2">Your own tokenizer, part 2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#apsw-fts5-regextokenizer">apsw.fts5.RegexTokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#apsw-fts5-regexpretokenizer">apsw.fts5.RegexPreTokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#html-tokenizer">HTML tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#json-tokenizer">JSON tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#synonym-tokenizer">Synonym tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#stopwords-tokenizer">Stopwords tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#transform-tokenizer">Transform tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-fts.html#cleanup">Cleanup</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#key-concepts">Key Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#tokenizer-order-and-parameters">Tokenizer order and parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#recommendations">Recommendations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#available-tokenizers">Available tokenizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#third-party-libraries">Third party libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#available-auxiliary-functions">Available auxiliary functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#command-line-tools">Command line tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#module-apsw.fts5">FTS5 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#module-apsw.fts5query">FTS5 Query module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#module-apsw.fts5aux">FTS5 Auxiliary functions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#fts5tokenizer-class">FTS5Tokenizer class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#fts5extensionapi-class">FTS5ExtensionApi class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="textsearch.html#module-apsw.unicode">Unicode Text Handling</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="vtable.html#indexinfo-class">IndexInfo class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="vtable.html#vtmodule-class">VTModule class</a></li>
@@ -234,11 +285,6 @@
 <li class="toctree-l2"><a class="reference internal" href="shell.html#shell-class">Shell class</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="bestpractice.html#explanation">Explanation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bestpractice.html#module-apsw.bestpractice">API</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ext.html#pretty-printing">Pretty printing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ext.html#logging-and-tracebacks">Logging and tracebacks</a></li>
@@ -256,6 +302,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="execution.html#quick-start">Quick start</a></li>
 <li class="toctree-l2"><a class="reference internal" href="execution.html#execution-model">Execution model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="execution.html#multi-threading-and-re-entrancy">Multi-threading and re-entrancy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="execution.html#bit-hosts">64 bit hosts</a></li>
@@ -304,7 +351,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Aug 13, 2024.
+      <span class="lastupdated">Last updated on Nov 17, 2024.
       </span></p>
   </div>
 

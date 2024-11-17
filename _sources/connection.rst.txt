@@ -481,10 +481,10 @@ If `entries` is present, then each list entry is a dict with the following infor
     Registers a `window function
     <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
 
-      :param name: The string name of the function.  It should be less than 255 characters
-      :param factory: Called to start a new window.  Use None to delete the function.
-      :param numargs: How many arguments the function takes, with -1 meaning any number
-      :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+    :param name: The string name of the function.  It should be less than 255 characters
+    :param factory: Called to start a new window.  Use None to delete the function.
+    :param numargs: How many arguments the function takes, with -1 meaning any number
+    :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
 
     You need to provide callbacks for the ``step``, ``final``, ``value``
     and ``inverse`` methods.  This can be done by having `factory` as a
@@ -524,6 +524,19 @@ If `entries` is present, then each list entry is a dict with the following infor
   :class:`Cursor` instance, and just needs to have the methods present
   that are actually called.  These are likely to be `execute`,
   `executemany`, `close` etc.
+
+.. index:: sqlite3_file_control
+
+.. method:: Connection.data_version(schema: Optional[str] = None) -> int
+
+  Unlike `pragma data_version
+  <https://sqlite.org/pragma.html#pragma_data_version>`__ this value
+  updates when changes are made by other connections, **AND** this one.
+
+  :param schema: `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,
+      defaulting to `main` if not supplied.
+
+  Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__
 
 .. index:: sqlite3_db_filename
 
@@ -703,6 +716,25 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__
 
+.. method:: Connection.fts5_tokenizer(name: str, args: list[str] | None = None) -> apsw.FTS5Tokenizer
+
+  Returns the named tokenizer initialized with ``args``.  Names are case insensitive.
+
+  .. seealso::
+
+      * :meth:`register_fts5_tokenizer`
+      * :doc:`textsearch`
+
+.. method:: Connection.fts5_tokenizer_available(name: str) -> bool
+
+  Checks if the named tokenizer is registered.
+
+  .. seealso::
+
+      * :meth:`fts5_tokenizer`
+      * :doc:`textsearch`
+      * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__
+
 .. index:: sqlite3_get_autocommit
 
 .. method:: Connection.get_autocommit() -> bool
@@ -874,6 +906,25 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
   An exception is raised if the database doesn't exist.
 
   Calls: `sqlite3_db_readonly <https://sqlite.org/c3ref/db_readonly.html>`__
+
+.. method:: Connection.register_fts5_function(name: str, function: FTS5Function) -> None
+
+  Registers the (case insensitive) named function used as an `auxiliary
+  function  <https://www.sqlite.org/fts5.html#custom_auxiliary_functions>`__.
+
+  The first parameter to the function will be :class:`FTS5ExtensionApi`
+  and the rest will be the function arguments at the SQL level.
+
+.. method:: Connection.register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None
+
+  Registers a tokenizer factory.  Names are case insensitive.  It is not possible to
+  unregister a tokenizer.
+
+  .. seealso::
+
+      * :meth:`fts5_tokenizer`
+      * :doc:`textsearch`
+      * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__
 
 .. index:: sqlite3_db_release_memory
 
@@ -1127,8 +1178,9 @@ libraries.
 
   Returns True if the named table exists, else False.
 
-  `dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,
-   or None to search  all databases
+  ``dbname`` is ``main``, ``temp``, the name in `ATTACH
+  <https://sqlite.org/lang_attach.html>`__, or None to search  all
+  databases
 
   Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__
 
@@ -1143,10 +1195,15 @@ libraries.
 
 .. index:: sqlite3_trace_v2, sqlite3_stmt_status
 
-.. method:: Connection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None) -> None
+.. method:: Connection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None, *, id: Optional[Any] = None) -> None
 
-  Registers a trace callback.  The callback is called with a dict of relevant values based
-  on the code.
+  Registers a trace callback.  Multiple traces can be active at once
+  (implemented by APSW).  A callback of :class:`None` unregisters a
+  trace.  Registered callbacks are distinguished by their ``id`` - an
+  equality test is done to match ids.
+
+  The callback is called with a dict of relevant values based on the
+  code.
 
   .. list-table::
     :header-rows: 1
@@ -1163,8 +1220,20 @@ libraries.
       - Connection this trace event belongs to
     * - sql
       - :class:`str`
-      - SQL text (except SQLITE_TRACE_CLOSE)
-    * - profile
+      - SQL text (except SQLITE_TRACE_ROW and SQLITE_TRACE_CLOSE).
+    * - id
+      - :class:`int`
+      - An opaque key to correlate events on the same statement.  The
+        id can be reused after SQLITE_TRACE_PROFILE.
+    * - trigger
+      - :class:`bool`
+      - If `trigger <https://www.sqlite.org/lang_createtrigger.html>`__
+        SQL is executing then this is ``True`` and the SQL is of the trigger.
+        Virtual table nested queries also come through as trigger activity.
+    * - total_changes
+      - :class:`int`
+      - Value of :meth:`total_changes`  (SQLITE_TRACE_STMT and SQLITE_TRACE_PROFILE only)
+    * - nanoseconds
       - :class:`int`
       - nanoseconds SQL took to execute (SQLITE_TRACE_PROFILE only)
     * - stmt_status
@@ -1173,11 +1242,31 @@ libraries.
         <https://www.sqlite.org/c3ref/c_stmtstatus_counter.html>`__ - eg
         *"SQLITE_STMTSTATUS_VM_STEP"* and corresponding integer values.
         The counters are reset each time a statement
-        starts execution.
+        starts execution.  This includes any changes made by triggers.
+
+  Note that SQLite ignores any errors from the trace callbacks, so
+  whatever was being traced will still proceed.  Exceptions will be
+  delivered when your Python code resumes.
+
+  If you register for all trace types, the following sequence will happen.
+
+  * SQLITE_TRACE_STMT with `trigger` `False` and an `id` and `sql` of
+    the statement.
+  * Multiple times: SQLITE_TRACE_STMT with the same `id` and `trigger`
+    `True` if a trigger is executed.  The first time the `sql` will be
+    ``TRIGGER name`` and then subsequent calls will be lines of the
+    trigger.  This also happens for virtual tables that make queries.
+  * Multiple times: SQLITE_TRACE_ROW with the same `id` for each time
+    execution stopped at a row. (Rows visited by triggers do not cause
+    thie event)
+  * SQLITE_TRACE_PROFILE with the same `id` for any virtual table
+    queries - the ``sql`` will be of those queries
+  * SQLITE_TRACE_PROFILE with the same `id` for the initial SQL.
 
   .. seealso::
 
     * :ref:`Example <example_trace_v2>`
+    * :class:`apsw.ext.Trace`
 
   Calls:
     * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__

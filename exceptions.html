@@ -6,17 +6,17 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exceptions and Errors &mdash; APSW 3.46.1.0 documentation</title>
+  <title>Exceptions and Errors &mdash; APSW 3.47.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=66b59bf7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=0c22936b"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/documentation_options.js?v=8087e674"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -39,9 +39,6 @@
             APSW
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
-              <div class="version">
-                3.46.1.0
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -56,15 +53,17 @@
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Exceptions and Errors</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#chaining">Chaining</a></li>
@@ -87,6 +86,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ExtensionLoadingError"><code class="docutils literal notranslate"><span class="pre">ExtensionLoadingError</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VFSNotImplementedError"><code class="docutils literal notranslate"><span class="pre">VFSNotImplementedError</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.VFSFileClosedError"><code class="docutils literal notranslate"><span class="pre">VFSFileClosedError</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.NoFTS5Error"><code class="docutils literal notranslate"><span class="pre">NoFTS5Error</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.InvalidContextError"><code class="docutils literal notranslate"><span class="pre">InvalidContextError</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#sqlite-exceptions">SQLite Exceptions</a><ul>
@@ -122,7 +123,7 @@
       </nav>
 
       <div class="wy-nav-content">
-        <div class="rst-content style-external-links">
+        <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
@@ -141,7 +142,7 @@
              
   <section id="exceptions-and-errors">
 <span id="exceptions"></span><h1>Exceptions and Errors<a class="headerlink" href="#exceptions-and-errors" title="Link to this heading"></a></h1>
-<p>Python uses <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">exceptions</span></code></a> to indicate an error has
+<p>Python uses <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">exceptions</span></code></a> to indicate an error has
 happened.  The SQLite library uses <a class="reference external" href="https://www.sqlite.org/rescode.html">integer error codes</a>.  APSW maps between the two
 systems as needed.  Exceptions raised in Python code called by SQLite
 will have that exception present when control returns to Python, and
@@ -297,6 +298,22 @@ does not implement the method.</p>
 <dt class="sig sig-object py" id="apsw.VFSFileClosedError">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VFSFileClosedError</span></span><a class="headerlink" href="#apsw.VFSFileClosedError" title="Link to this definition"></a></dt>
 <dd><p>The VFS file is closed so the operation cannot be performed.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="apsw.NoFTS5Error">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">NoFTS5Error</span></span><a class="headerlink" href="#apsw.NoFTS5Error" title="Link to this definition"></a></dt>
+<dd><p>The FTS5 extension is not present in SQLite.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="apsw.InvalidContextError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">InvalidContextError</span></span><a class="headerlink" href="#apsw.InvalidContextError" title="Link to this definition"></a></dt>
+<dd><p>Context is no longer valid.  Examples include using an
+<a class="reference internal" href="vtable.html#apsw.IndexInfo" title="apsw.IndexInfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">IndexInfo</span></code></a> outside of the <a class="reference internal" href="vtable.html#apsw.VTTable.BestIndexObject" title="apsw.VTTable.BestIndexObject"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.BestIndexObject()</span></code></a>
+method, a registered <a class="reference internal" href="textsearch.html#apsw.FTS5Tokenizer" title="apsw.FTS5Tokenizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">FTS5Tokenizer</span></code></a> when the underlying
+tokenizer has been deleted/replaced, or <a class="reference internal" href="connection.html#apsw.Connection.vtab_config" title="apsw.Connection.vtab_config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.vtab_config()</span></code></a>
+when not inside <a class="reference internal" href="vtable.html#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTModule.Create()</span></code></a>.</p>
 </dd></dl>
 
 </section>
@@ -648,7 +665,7 @@ almost completely useless!</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Aug 13, 2024.
+      <span class="lastupdated">Last updated on Nov 17, 2024.
       </span></p>
   </div>
 

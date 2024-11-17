@@ -156,6 +156,18 @@ The following exceptions happen when APSW detects various problems.
 
   The VFS file is closed so the operation cannot be performed.
 
+.. exception:: NoFTS5Error
+
+  The FTS5 extension is not present in SQLite.
+
+.. exception:: InvalidContextError
+
+  Context is no longer valid.  Examples include using an
+  :class:`IndexInfo` outside of the :meth:`VTTable.BestIndexObject`
+  method, a registered :class:`FTS5Tokenizer` when the underlying
+  tokenizer has been deleted/replaced, or :meth:`Connection.vtab_config`
+  when not inside :meth:`VTModule.Create`.
+
 SQLite Exceptions
 =================
 

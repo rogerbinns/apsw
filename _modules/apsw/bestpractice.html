@@ -5,17 +5,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.bestpractice &mdash; APSW 3.46.1.0 documentation</title>
+  <title>apsw.bestpractice &mdash; APSW 3.47.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=66b59bf7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0c22936b"></script>
-      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/documentation_options.js?v=8087e674"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
@@ -36,9 +36,6 @@
             APSW
               <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
-              <div class="version">
-                3.46.1.0
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -53,15 +50,17 @@
 <li class="toctree-l1"><a class="reference internal" href="../../example.html">Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation and customization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../apsw.html">APSW Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../connection.html">Connections to a database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../textsearch.html">Full text search</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../shell.html">Shell</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../execution.html">Execution and tracing</a></li>
@@ -84,7 +83,7 @@
       </nav>
 
       <div class="wy-nav-content">
-        <div class="rst-content style-external-links">
+        <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
@@ -120,7 +119,10 @@
 <span class="sd">    Reduces contention and improves write performance.  WAL is</span>
 <span class="sd">    `described here &lt;https://www.sqlite.org/wal.html&gt;`__.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;journal_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;wal&quot;</span><span class="p">)</span></div>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;journal_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;wal&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ReadOnlyError</span><span class="p">:</span>
+        <span class="k">pass</span></div>
 
 
 
@@ -168,6 +170,40 @@
     <span class="n">connection</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBCONFIG_DQS_DDL</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="connection_optimize">
+<a class="viewcode-back" href="../../bestpractice.html#apsw.bestpractice.connection_optimize">[docs]</a>
+<span class="k">def</span> <span class="nf">connection_optimize</span><span class="p">(</span><span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enables query planner optimization</span>
+
+<span class="sd">    It enables the query planner to record cases when it would benefit</span>
+<span class="sd">    from having accurate statistics about tables and indexes for the</span>
+<span class="sd">    queries you make.</span>
+
+<span class="sd">    You can later run :code:`connection.pragma(&quot;optimize&quot;)` to have</span>
+<span class="sd">    those statistics updated, such as when closing a database or</span>
+<span class="sd">    periodically when the database is open for long periods of time.</span>
+<span class="sd">    The statistics are recorded in the database and help with future</span>
+<span class="sd">    queries during this connection, and all future connections.</span>
+
+<span class="sd">    There is more detail in the `documentation</span>
+<span class="sd">    &lt;https://sqlite.org/lang_analyze.html&gt;`__.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;optimize&quot;</span><span class="p">,</span> <span class="mh">0x10002</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ReadOnlyError</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="connection_recursive_triggers">
+<a class="viewcode-back" href="../../bestpractice.html#apsw.bestpractice.connection_recursive_triggers">[docs]</a>
+<span class="k">def</span> <span class="nf">connection_recursive_triggers</span><span class="p">(</span><span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursive triggers are off for historical backwards compatibility</span>
+
+<span class="sd">    This `enables them</span>
+<span class="sd">    &lt;https://www.sqlite.org/pragma.html#pragma_recursive_triggers&gt;`__.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;recursive_triggers&quot;</span><span class="p">,</span> <span class="s2">&quot;ON&quot;</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="library_logging">
 <a class="viewcode-back" href="../../bestpractice.html#apsw.bestpractice.library_logging">[docs]</a>
@@ -185,6 +221,8 @@
     <span class="n">connection_busy_timeout</span><span class="p">,</span>
     <span class="n">connection_enable_foreign_keys</span><span class="p">,</span>
     <span class="n">connection_dqs</span><span class="p">,</span>
+    <span class="n">connection_optimize</span><span class="p">,</span>
+    <span class="n">connection_recursive_triggers</span><span class="p">,</span>
     <span class="n">library_logging</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="s2">&quot;All of them&quot;</span>
@@ -217,7 +255,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Aug 13, 2024.
+      <span class="lastupdated">Last updated on Nov 17, 2024.
       </span></p>
   </div>
 

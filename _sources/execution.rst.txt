@@ -4,6 +4,13 @@ Execution and tracing
 
 .. currentmodule:: apsw
 
+Quick start
+===========
+
+You may find :meth:`apsw.ext.Trace` as a quick convenient overview of
+what get executed and its effects.  If you need more detailed
+information than that, then keep reading.
+
 .. _executionmodel:
 
 Execution model

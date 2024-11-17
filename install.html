@@ -6,17 +6,17 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation and customization &mdash; APSW 3.46.1.0 documentation</title>
+  <title>Installation and customization &mdash; APSW 3.47.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=66b59bf7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=0c22936b"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/documentation_options.js?v=8087e674"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -39,9 +39,6 @@
             APSW
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
-              <div class="version">
-                3.46.1.0
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -80,15 +77,17 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
@@ -111,7 +110,7 @@
       </nav>
 
       <div class="wy-nav-content">
-        <div class="rst-content style-external-links">
+        <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
@@ -197,9 +196,9 @@ are currently on.</p>
 source from <a class="reference external" href="https://pypi.org/project/apsw/">PyPi</a> then ensure you
 edit the <code class="file docutils literal notranslate"><span class="pre">setup.apsw</span></code> file inside.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.46.1.0/apsw-3.46.1.0.zip">apsw-3.46.1.0.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.zip">apsw-3.47.0.0.zip</a>
 (Source, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.46.1.0/apsw-3.46.1.0.cosign-bundle">apsw-3.46.1.0.cosign-bundle</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.cosign-bundle">apsw-3.47.0.0.cosign-bundle</a>
 cosign signature</p></li>
 </ul>
 <section id="verifying-your-download">
@@ -207,19 +206,19 @@ cosign signature</p></li>
 <p>Github <a class="reference external" href="https://github.com/rogerbinns/apsw/releases">source releases</a> are
 digitally signed so you can verify they have not been tampered with,
 and were produced by the project maintainer.</p>
-<p><a class="reference external" href="https://www.sigstore.dev/">Sigstore</a> is used via the <a class="reference external" href="https://docs.sigstore.dev/signing/quickstart/">cosign tool</a>.  Download the
+<p><a class="reference external" href="https://www.sigstore.dev/">Sigstore</a> is used via the <a class="reference external" href="https://docs.sigstore.dev/cosign/signing/">cosign tool</a>.  Download the
 corresponding cosign bundle which contains the signature.</p>
 <p>Verify</p>
 <blockquote>
-<div><p><a class="reference external" href="https://docs.sigstore.dev/system_config/installation/">Install cosign</a> if you
+<div><p><a class="reference external" href="https://docs.sigstore.dev/cosign/system_config/installation/">Install cosign</a> if you
 don’t have it already.  It is <a class="reference external" href="https://github.com/sigstore/cosign/releases/">available for a wide variety of
 platforms</a>
 including Linux, MacOS, and Windows.</p>
 <p>Checking the signature needs to provide the source release, the
 cosign bundle, the maintainer id, and issuer.  The command is all
 one line shown here across multiple lines for clarity.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.46.1.0.zip<span class="w">                           </span><span class="se">\</span>
-<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.46.1.0.cosign-bundle<span class="w">                         </span><span class="se">\</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.47.0.0.zip<span class="w">                           </span><span class="se">\</span>
+<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.47.0.0.cosign-bundle<span class="w">                         </span><span class="se">\</span>
 <span class="w">    </span>--certificate-identity<span class="o">=</span>rogerb@rogerbinns.com<span class="w">                 </span><span class="se">\</span>
 <span class="w">    </span>--certificate-oidc-issuer<span class="o">=</span>https://github.com/login/oauth
 <span class="go">Verified OK</span>
@@ -350,7 +349,7 @@ This allows proceeding.</p></td>
 <table class="docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--use-system-sqlite-config</span></code></p></td>
-<td><p>Uses <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#module-ctypes" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ctypes</span></code></a> to determine the system wide SQLite library
+<td><p>Uses <a class="reference external" href="https://docs.python.org/3/library/ctypes.html#module-ctypes" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ctypes</span></code></a> to determine the system wide SQLite library
 compilation options</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--definevalues</span></code></p></td>
@@ -388,28 +387,15 @@ dedicated to testing than makes up the actual database functionality.</p>
 verify correct operation. New code is developed alongside the tests.
 Reported issues also have test cases to ensure the issue doesn’t
 happen or doesn’t happen again.:</p>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">                Python  /usr/bin/python3 sys.version_info(major=3, minor=11, micro=6, releaselevel=&#39;final&#39;, serial=0) 64bit ELF</span>
-<span class="go">Testing with APSW file  /space/apsw/apsw/__init__.cpython-311-x86_64-linux-gnu.so</span>
-<span class="go">          APSW version  3.44.0.0</span>
-<span class="go">    SQLite lib version  3.44.0</span>
-<span class="go">SQLite headers version  3044000</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">                Python  /usr/bin/python3 sys.version_info(major=3, minor=12, micro=7, releaselevel=&#39;final&#39;, serial=0) 64bit ELF</span>
+<span class="go">Testing with APSW file  /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so</span>
+<span class="go">          APSW version  3.47.0.0</span>
+<span class="go">    SQLite lib version  3.47.0</span>
+<span class="go">SQLite headers version  3047000</span>
 <span class="go">    Using amalgamation  True</span>
-<span class="go">.............................................................A message due to RecursionError is possible, and what is being tested</span>
-<span class="go">object address  : 0x7fea3c94ada0</span>
-<span class="go">object refcount : 1</span>
-<span class="go">object type     : 0x9de7a0</span>
-<span class="go">object type name: TypeError</span>
-<span class="go">object repr     :</span>
-<span class="go">lost sys.stderr</span>
-<span class="go">object address  : 0x7fea3c94ad40</span>
-<span class="go">object refcount : 1</span>
-<span class="go">object type     : 0x9de7a0</span>
-<span class="go">object type name: TypeError</span>
-<span class="go">object repr     :</span>
-<span class="go">lost sys.stderr</span>
-<span class="go">................................................................</span>
+<span class="go">.....................................................................................................................................................................</span>
 <span class="go">----------------------------------------------------------------------</span>
-<span class="go">Ran 125 tests in 26.783s</span>
+<span class="go">Ran 165 tests in 29.844s</span>
 
 <span class="go">OK</span>
 </pre></div>
@@ -443,7 +429,7 @@ supported versions running the tests.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Aug 13, 2024.
+      <span class="lastupdated">Last updated on Nov 17, 2024.
       </span></p>
   </div>
 

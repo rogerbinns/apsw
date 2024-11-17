@@ -495,7 +495,7 @@ modules etc. For example::
 
     `Authorizer Return Codes <https://sqlite.org/c3ref/c_deny.html>`__ constants
 
-    `SQLITE_DENY <https://sqlite.org/c3ref/c_deny.html>`__, `SQLITE_IGNORE <https://sqlite.org/c3ref/c_deny.html>`__, `SQLITE_OK <https://sqlite.org/rescode.html#ok>`__
+    `SQLITE_DENY <https://sqlite.org/c3ref/c_deny.html>`__, `SQLITE_IGNORE <https://sqlite.org/c3ref/c_fail.html>`__, `SQLITE_OK <https://sqlite.org/c3ref/c_deny.html>`__
 
 .. data:: mapping_bestindex_constraints
     :type: dict[str | int, int | str]
@@ -516,7 +516,7 @@ modules etc. For example::
 
     `Conflict resolution modes <https://sqlite.org/c3ref/c_fail.html>`__ constants
 
-    `SQLITE_ABORT <https://sqlite.org/rescode.html#abort>`__, `SQLITE_FAIL <https://sqlite.org/c3ref/c_fail.html>`__, `SQLITE_IGNORE <https://sqlite.org/c3ref/c_deny.html>`__, `SQLITE_REPLACE <https://sqlite.org/c3ref/c_fail.html>`__, `SQLITE_ROLLBACK <https://sqlite.org/c3ref/c_fail.html>`__
+    `SQLITE_ABORT <https://sqlite.org/c3ref/c_fail.html>`__, `SQLITE_FAIL <https://sqlite.org/c3ref/c_fail.html>`__, `SQLITE_IGNORE <https://sqlite.org/c3ref/c_fail.html>`__, `SQLITE_REPLACE <https://sqlite.org/c3ref/c_fail.html>`__, `SQLITE_ROLLBACK <https://sqlite.org/c3ref/c_fail.html>`__
 
 .. data:: mapping_db_config
     :type: dict[str | int, int | str]
@@ -553,12 +553,26 @@ modules etc. For example::
 
     `SQLITE_FCNTL_BEGIN_ATOMIC_WRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlbeginatomicwrite>`__, `SQLITE_FCNTL_BUSYHANDLER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlbusyhandler>`__, `SQLITE_FCNTL_CHUNK_SIZE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlchunksize>`__, `SQLITE_FCNTL_CKPT_DONE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlckptdone>`__, `SQLITE_FCNTL_CKPT_START <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlckptstart>`__, `SQLITE_FCNTL_CKSM_FILE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcksmfile>`__, `SQLITE_FCNTL_COMMIT_ATOMIC_WRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcommitatomicwrite>`__, `SQLITE_FCNTL_COMMIT_PHASETWO <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcommitphasetwo>`__, `SQLITE_FCNTL_DATA_VERSION <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__, `SQLITE_FCNTL_EXTERNAL_READER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlexternalreader>`__, `SQLITE_FCNTL_FILE_POINTER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlfilepointer>`__, `SQLITE_FCNTL_GET_LOCKPROXYFILE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_HAS_MOVED <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlhasmoved>`__, `SQLITE_FCNTL_JOURNAL_POINTER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntljournalpointer>`__, `SQLITE_FCNTL_LAST_ERRNO <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_LOCKSTATE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntllockstate>`__, `SQLITE_FCNTL_LOCK_TIMEOUT <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntllocktimeout>`__, `SQLITE_FCNTL_MMAP_SIZE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlmmapsize>`__, `SQLITE_FCNTL_OVERWRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntloverwrite>`__, `SQLITE_FCNTL_PDB <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_PERSIST_WAL <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpersistwal>`__, `SQLITE_FCNTL_POWERSAFE_OVERWRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpowersafeoverwrite>`__, `SQLITE_FCNTL_PRAGMA <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpragma>`__, `SQLITE_FCNTL_RBU <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlrbu>`__, `SQLITE_FCNTL_RESERVE_BYTES <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_RESET_CACHE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlresetcache>`__, `SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlrollbackatomicwrite>`__, `SQLITE_FCNTL_SET_LOCKPROXYFILE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_SIZE_HINT <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsizehint>`__, `SQLITE_FCNTL_SIZE_LIMIT <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsizelimit>`__, `SQLITE_FCNTL_SYNC <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsync>`__, `SQLITE_FCNTL_SYNC_OMITTED <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsyncomitted>`__, `SQLITE_FCNTL_TEMPFILENAME <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntltempfilename>`__, `SQLITE_FCNTL_TRACE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntltrace>`__, `SQLITE_FCNTL_VFSNAME <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__, `SQLITE_FCNTL_VFS_POINTER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfspointer>`__, `SQLITE_FCNTL_WAL_BLOCK <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwalblock>`__, `SQLITE_FCNTL_WIN32_AV_RETRY <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32avretry>`__, `SQLITE_FCNTL_WIN32_GET_HANDLE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32gethandle>`__, `SQLITE_FCNTL_WIN32_SET_HANDLE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32sethandle>`__, `SQLITE_FCNTL_ZIPVFS <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlzipvfs>`__
 
+.. data:: mapping_fts5_token_flags
+    :type: dict[str | int, int | str]
+
+    `FTS5 Token Flag <https://sqlite.org/fts5.html#synonym_support>`__ constants
+
+    `FTS5_TOKEN_COLOCATED <https://sqlite.org/fts5.html#synonym_support>`__
+
+.. data:: mapping_fts5_tokenize_reason
+    :type: dict[str | int, int | str]
+
+    `FTS5 Tokenize Reason <https://sqlite.org/fts5.html#custom_tokenizers>`__ constants
+
+    `FTS5_TOKENIZE_AUX <https://sqlite.org/fts5.html#custom_tokenizers>`__, `FTS5_TOKENIZE_DOCUMENT <https://sqlite.org/fts5.html#custom_tokenizers>`__, `FTS5_TOKENIZE_PREFIX <https://sqlite.org/fts5.html#custom_tokenizers>`__, `FTS5_TOKENIZE_QUERY <https://sqlite.org/fts5.html#custom_tokenizers>`__
+
 .. data:: mapping_function_flags
     :type: dict[str | int, int | str]
 
     `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>`__ constants
 
-    `SQLITE_DETERMINISTIC <https://sqlite.org/c3ref/c_deterministic.html#sqlitedeterministic>`__, `SQLITE_DIRECTONLY <https://sqlite.org/c3ref/c_deterministic.html#sqlitedirectonly>`__, `SQLITE_INNOCUOUS <https://sqlite.org/c3ref/c_deterministic.html#sqliteinnocuous>`__, `SQLITE_RESULT_SUBTYPE <https://sqlite.org/c3ref/c_deterministic.html#sqliteresultsubtype>`__, `SQLITE_SUBTYPE <https://sqlite.org/c3ref/c_deterministic.html#sqlitesubtype>`__
+    `SQLITE_DETERMINISTIC <https://sqlite.org/c3ref/c_deterministic.html#sqlitedeterministic>`__, `SQLITE_DIRECTONLY <https://sqlite.org/c3ref/c_deterministic.html#sqlitedirectonly>`__, `SQLITE_INNOCUOUS <https://sqlite.org/c3ref/c_deterministic.html#sqliteinnocuous>`__, `SQLITE_RESULT_SUBTYPE <https://sqlite.org/c3ref/c_deterministic.html#sqliteresultsubtype>`__, `SQLITE_SELFORDER1 <https://sqlite.org/c3ref/c_deterministic.html#sqliteselforder1>`__, `SQLITE_SUBTYPE <https://sqlite.org/c3ref/c_deterministic.html#sqlitesubtype>`__
 
 .. data:: mapping_limits
     :type: dict[str | int, int | str]
@@ -593,7 +607,7 @@ modules etc. For example::
 
     `Result Codes <https://sqlite.org/rescode.html>`__ constants
 
-    `SQLITE_ABORT <https://sqlite.org/rescode.html#abort>`__, `SQLITE_AUTH <https://sqlite.org/rescode.html#auth>`__, `SQLITE_BUSY <https://sqlite.org/rescode.html#busy>`__, `SQLITE_CANTOPEN <https://sqlite.org/rescode.html#cantopen>`__, `SQLITE_CONSTRAINT <https://sqlite.org/rescode.html#constraint>`__, `SQLITE_CORRUPT <https://sqlite.org/rescode.html#corrupt>`__, `SQLITE_DONE <https://sqlite.org/rescode.html#done>`__, `SQLITE_EMPTY <https://sqlite.org/rescode.html#empty>`__, `SQLITE_ERROR <https://sqlite.org/rescode.html#error>`__, `SQLITE_FORMAT <https://sqlite.org/rescode.html#format>`__, `SQLITE_FULL <https://sqlite.org/rescode.html#full>`__, `SQLITE_INTERNAL <https://sqlite.org/rescode.html#internal>`__, `SQLITE_INTERRUPT <https://sqlite.org/rescode.html#interrupt>`__, `SQLITE_IOERR <https://sqlite.org/rescode.html#ioerr>`__, `SQLITE_LOCKED <https://sqlite.org/rescode.html#locked>`__, `SQLITE_MISMATCH <https://sqlite.org/rescode.html#mismatch>`__, `SQLITE_MISUSE <https://sqlite.org/rescode.html#misuse>`__, `SQLITE_NOLFS <https://sqlite.org/rescode.html#nolfs>`__, `SQLITE_NOMEM <https://sqlite.org/rescode.html#nomem>`__, `SQLITE_NOTADB <https://sqlite.org/rescode.html#notadb>`__, `SQLITE_NOTFOUND <https://sqlite.org/rescode.html#notfound>`__, `SQLITE_NOTICE <https://sqlite.org/rescode.html#notice>`__, `SQLITE_OK <https://sqlite.org/rescode.html#ok>`__, `SQLITE_PERM <https://sqlite.org/rescode.html#perm>`__, `SQLITE_PROTOCOL <https://sqlite.org/rescode.html#protocol>`__, `SQLITE_RANGE <https://sqlite.org/rescode.html#range>`__, `SQLITE_READONLY <https://sqlite.org/rescode.html#readonly>`__, `SQLITE_ROW <https://sqlite.org/rescode.html#row>`__, `SQLITE_SCHEMA <https://sqlite.org/rescode.html#schema>`__, `SQLITE_TOOBIG <https://sqlite.org/rescode.html#toobig>`__, `SQLITE_WARNING <https://sqlite.org/rescode.html#warning>`__
+    `SQLITE_ABORT <https://sqlite.org/c3ref/c_fail.html>`__, `SQLITE_AUTH <https://sqlite.org/rescode.html#auth>`__, `SQLITE_BUSY <https://sqlite.org/rescode.html#busy>`__, `SQLITE_CANTOPEN <https://sqlite.org/rescode.html#cantopen>`__, `SQLITE_CONSTRAINT <https://sqlite.org/rescode.html#constraint>`__, `SQLITE_CORRUPT <https://sqlite.org/rescode.html#corrupt>`__, `SQLITE_DONE <https://sqlite.org/rescode.html#done>`__, `SQLITE_EMPTY <https://sqlite.org/rescode.html#empty>`__, `SQLITE_ERROR <https://sqlite.org/rescode.html#error>`__, `SQLITE_FORMAT <https://sqlite.org/rescode.html#format>`__, `SQLITE_FULL <https://sqlite.org/rescode.html#full>`__, `SQLITE_INTERNAL <https://sqlite.org/rescode.html#internal>`__, `SQLITE_INTERRUPT <https://sqlite.org/rescode.html#interrupt>`__, `SQLITE_IOERR <https://sqlite.org/rescode.html#ioerr>`__, `SQLITE_LOCKED <https://sqlite.org/rescode.html#locked>`__, `SQLITE_MISMATCH <https://sqlite.org/rescode.html#mismatch>`__, `SQLITE_MISUSE <https://sqlite.org/rescode.html#misuse>`__, `SQLITE_NOLFS <https://sqlite.org/rescode.html#nolfs>`__, `SQLITE_NOMEM <https://sqlite.org/rescode.html#nomem>`__, `SQLITE_NOTADB <https://sqlite.org/rescode.html#notadb>`__, `SQLITE_NOTFOUND <https://sqlite.org/rescode.html#notfound>`__, `SQLITE_NOTICE <https://sqlite.org/rescode.html#notice>`__, `SQLITE_OK <https://sqlite.org/c3ref/c_deny.html>`__, `SQLITE_PERM <https://sqlite.org/rescode.html#perm>`__, `SQLITE_PROTOCOL <https://sqlite.org/rescode.html#protocol>`__, `SQLITE_RANGE <https://sqlite.org/rescode.html#range>`__, `SQLITE_READONLY <https://sqlite.org/rescode.html#readonly>`__, `SQLITE_ROW <https://sqlite.org/rescode.html#row>`__, `SQLITE_SCHEMA <https://sqlite.org/rescode.html#schema>`__, `SQLITE_TOOBIG <https://sqlite.org/rescode.html#toobig>`__, `SQLITE_WARNING <https://sqlite.org/rescode.html#warning>`__
 
 .. data:: mapping_statement_status
     :type: dict[str | int, int | str]
@@ -640,9 +654,9 @@ modules etc. For example::
 .. data:: mapping_virtual_table_scan_flags
     :type: dict[str | int, int | str]
 
-    `Virtual Table Scan Flags <https://sqlite.org/c3ref/c_index_scan_unique.html>`__ constants
+    `Virtual Table Scan Flags <https://sqlite.org/c3ref/c_index_scan_hex.html>`__ constants
 
-    `SQLITE_INDEX_SCAN_UNIQUE <https://sqlite.org/c3ref/c_index_scan_unique.html>`__
+    `SQLITE_INDEX_SCAN_HEX <https://sqlite.org/c3ref/c_index_scan_hex.html>`__, `SQLITE_INDEX_SCAN_UNIQUE <https://sqlite.org/c3ref/c_index_scan_hex.html>`__
 
 .. data:: mapping_wal_checkpoint
     :type: dict[str | int, int | str]

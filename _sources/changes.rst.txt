@@ -10,6 +10,63 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.47.0.0
+========
+
+Support for Python 3.8 removed (:issue:`539`).
+
+The readonly database statistics virtual table (`dbstat
+<https://www.sqlite.org/dbstat.html>`__) is enabled by default for
+PyPI builds, and when ``--enable-all-extensions`` is passed to manual
+:ref:`builds <build>`.
+
+Added :func:`recursive triggers
+<apsw.bestpractice.connection_recursive_triggers>` and :func:`optimize
+<apsw.bestpractice.connection_optimize>` to :mod:`apsw.bestpractice`.
+
+Multiple callbacks can be present for :meth:`Connection.trace_v2` with
+APSW ensuring they are all called (:issue:`502`)
+
+:meth:`Connection.trace_v2` callback information now has ``trigger``,
+``id``, and ``total_changes`` fields.
+
+Added :attr:`Connection.data_version` for getting a change counter.
+`pragma data_version
+<https://sqlite.org/pragma.html#pragma_data_version>`__ doesn't update when
+changes are made on the same connection, only others.
+
+Added :func:`apsw.ext.ShowResourceUsage` for getting resource and
+SQLite usage in a context block, and also use it for the shell
+:ref:`timer <shell-cmd-timer>` command.
+
+Added :func:`apsw.ext.Trace` for tracing SQL execution, row and change
+counting, and timing per statement for use in a context block.
+
+Added :doc:`FTS5 support <textsearch>` including registering and
+calling tokenizers, and auxiliary functions.  The :mod:`apsw.fts5`
+module provides many additional classes and methods for working with
+FTS5, including tokenizers for HTML, JSON, regular expressions,
+support tokenizers for synonyms, stop words, transformers, and a
+:class:`~apsw.fts5.Table` class that wraps access to a FTS5 table
+(including :meth:`creating one <apsw.fts5.Table.create>`) with
+:meth:`~apsw.fts5.Table.search`, :meth:`~apsw.fts5.Table.more_like`,
+and :meth:`~apsw.fts5.Table.query_suggest`.  :mod:`apsw.fts5query` can
+parse, modify, and reconstruct queries.  The shell gets a :ref:`ftsq
+<shell-cmd-ftsq>` command for issuing queries.
+
+Added :mod:`apsw.unicode` which implements Unicode algorithms for
+determining codepoint groups making up a user perceived character,
+word and sentence splitting, and where line breaks can be made.  These
+are used to make provided FTS5 tokenizers and auxiliary functions
+fully Unicode aware.  There are many additional methods such as
+getting categories, stripping diacritics, case folding, width when
+output to a terminal, text wrapping, and more.
+
+:func:`apsw.ext.format_query_table` uses :mod:`apsw.unicode` to get
+widths and line breaks more accurate.  As a side effect it loses the
+`word_wrap` parameter (breaking change).
+
+
 3.46.1.0
 ========
 
@@ -57,8 +114,7 @@ Adjusted `levels
 Previous source releases were signed with `PGP
 <https://en.wikipedia.org/wiki/Pretty_Good_Privacy>`__.  Starting with
 this release `Sigstore's <https://www.sigstore.dev/>`__ `cosign tool
-<https://docs.sigstore.dev/signing/quickstart/>`__ is used
-(:ref:`instructions <verifydownload>`). (:issue:`512`)
+<https://docs.sigstore.dev/cosign/>`__ is used. (:issue:`512`)
 
 3.45.3.0
 ========
@@ -1457,7 +1513,7 @@ previous error message or a crash.  Thanks to Jose Gomes for finding
 the problem.  :issue:`103`
 
 There is now a PPA for Ubuntu users that is kept up to date with APSW
-and SQLite at https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw
+and SQLite at \https://launchpad.net/~ubuntu-rogerbinns/+archive/apsw
 which has the latest SQLite embedded statically inside (ie system
 SQLite is ignored) and has all the extensions enabled: FTS3, RTree,
 ICU, asyncvfs

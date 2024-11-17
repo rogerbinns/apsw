@@ -13,15 +13,17 @@ APSW |version| documentation
    install
    extensions
 
+   bestpractice
    apsw
    connection
    cursor
    blob
    backup
+   example-fts
+   textsearch
    vtable
    vfs
    shell
-   bestpractice
    ext
 
    exceptions

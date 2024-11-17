@@ -5,7 +5,7 @@
 Shell
 *****
 
-The shell provides a convenient way for you to interact with SQLite,
+The shell provides a convtext interface to interact with SQLite,
 perform administration, and supply SQL for execution.  It is modelled
 after the `shell that comes with SQLite
 <https://sqlite.org/cli.html>`__ which doesn't interoperate with Python.
@@ -128,6 +128,7 @@ leading ``.`` (period) - for example::
   * :ref:`exceptions <shell-cmd-exceptions>`
   * :ref:`exit <shell-cmd-exit>`
   * :ref:`find <shell-cmd-find>`
+  * :ref:`ftsq <shell-cmd-ftsq>`
   * :ref:`header <shell-cmd-header>`
   * :ref:`help <shell-cmd-help>`
   * :ref:`import <shell-cmd-import>`
@@ -413,6 +414,18 @@ contains ``%`` or ``_`` then it is also treated as a like pattern.
 
 This command can take a long time to execute needing to scan all of the relevant
 tables, rows, and columns.
+
+.. _shell-cmd-ftsq:
+.. index::
+    single: ftsq (Shell command)
+
+ftsq TABLE query
+----------------
+
+*Issues the query against the named FTS5 table*
+
+The top 20 results are shown.  Text after the table name is used exactly as the
+query - do not extra shell quote it.
 
 .. _shell-cmd-header:
 .. index::
@@ -785,7 +798,8 @@ timer ON|OFF
 
 The values displayed are in seconds when shown as floating point or an absolute
 count.  Only items that have changed since starting the query are shown.  On
-non-Windows platforms considerably more information can be shown.
+non-Windows platforms considerably more information can be shown.  SQLite
+statistics are also included.
 
 .. _shell-cmd-version:
 .. index::
@@ -857,6 +871,6 @@ can then `monkey patch <https://en.wikipedia.org/wiki/Monkey_patch>`__
 the shell as needed.
 
 .. automodule:: apsw.shell
-     :synopsis: Convenient way for you to interact with SQLite
+     :synopsis: Interact with SQLite
      :members:
      :undoc-members:

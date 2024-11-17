@@ -3,8 +3,8 @@ About
 
 **APSW** |version| **released** |today|
 
-Use with `SQLite <https://sqlite.org/>`__ 3.44 or later, `Python
-<https://www.python.org/downloads/>`__ 3.8 and later.
+Use with `SQLite <https://sqlite.org/>`__ 3.47 or later, `Python
+<https://www.python.org/downloads/>`__ 3.9 and later.
 
 
 What APSW does
@@ -111,6 +111,8 @@ one final APSW release supporting that version of Python.
 
   * - Python version
     - APSW release
+  * - 3.8
+    - `3.46.1.0 <https://github.com/rogerbinns/apsw/releases/tag/3.46.1.0>`__
   * - 3.6, 3.7
     - `3.43.0.0 <https://github.com/rogerbinns/apsw/releases/tag/3.43.0.0>`__
   * - 2.3 - 3.5

@@ -6,17 +6,17 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.46.1.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.47.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=66b59bf7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=0c22936b"></script>
-      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/documentation_options.js?v=8087e674"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
@@ -39,9 +39,6 @@
             APSW
               <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
-              <div class="version">
-                3.46.1.0
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -87,21 +84,25 @@
 <li class="toctree-l2"><a class="reference internal" href="#shell">Shell</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#statistics">Statistics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tracing">Tracing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#system-and-sqlite-resource-usage-in-a-block">System and SQLite resource usage in a block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sql-statement-tracing-in-a-block">SQL statement tracing in a block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#formatting-query-results-table">Formatting query results table</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#cleanup">Cleanup</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
@@ -124,7 +125,7 @@
       </nav>
 
       <div class="wy-nav-content">
-        <div class="rst-content style-external-links">
+        <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
@@ -166,6 +167,9 @@ and attribute documentation.</p>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="c1"># pretty formatting</span>
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
 </pre></div>
 </div>
 <section id="checking-apsw-and-sqlite-versions">
@@ -188,9 +192,9 @@ and attribute documentation.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.46.1.0</span>
-<span class="go">SQLite header version 3046001</span>
-<span class="go">   SQLite lib version 3.46.1</span>
+<span class="go">         APSW version 3.47.0.0</span>
+<span class="go">SQLite header version 3047000</span>
+<span class="go">   SQLite lib version 3.47.0</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -210,7 +214,7 @@ performance via <a class="reference internal" href="bestpractice.html"><span cla
 <p>It is a good idea to get SQLite’s logs as you will get more
 information about errors. Best practice also includes this.
 <a class="reference internal" href="ext.html#apsw.ext.log_sqlite" title="apsw.ext.log_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.log_sqlite()</span></code></a> forwards SQLite’s log messages to the
-<a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a> module.</p>
+<a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a> module.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">log_sqlite</span><span class="p">()</span>
 
 <span class="c1"># You can also write to SQLite&#39;s log</span>
@@ -225,10 +229,14 @@ information about errors. Best practice also includes this.
 <span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;dbfile&quot;</span><span class="p">)</span>
 
 <span class="c1"># Open existing read-only</span>
-<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;dbfile&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READONLY</span><span class="p">)</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span>
+    <span class="s2">&quot;dbfile&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READONLY</span>
+<span class="p">)</span>
 
 <span class="c1"># Open existing read-write (exception if it doesn&#39;t exist)</span>
-<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;dbfile&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span><span class="p">)</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span>
+    <span class="s2">&quot;dbfile&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -238,12 +246,14 @@ information about errors. Best practice also includes this.
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table point(x,y,z)&quot;</span><span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into point values(1, 2, 3)&quot;</span><span class="p">)</span>
 <span class="c1"># You can use multiple ; separated statements</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    insert into point values(4, 5, 6);</span>
-<span class="s2">    create table log(timestamp, event);</span>
-<span class="s2">    create table foo(a, b, c);</span>
-<span class="s2">    create table important(secret, data);</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    insert into point values(4, 5, 6);</span>
+<span class="sd">    create table log(timestamp, event);</span>
+<span class="sd">    create table foo(a, b, c);</span>
+<span class="sd">    create table important(secret, data);</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="p">)</span>
 
 <span class="c1"># read rows</span>
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from point&quot;</span><span class="p">):</span>
@@ -388,9 +398,16 @@ your schema.</p>
 </section>
 <section id="tracing-execution">
 <span id="example-exectrace"></span><span id="index-11"></span><h2>Tracing execution<a class="headerlink" href="#tracing-execution" title="Link to this heading"></a></h2>
-<p>You can trace execution of SQL statements.  See <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">more about
-tracing</span></a>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<p>You can trace execution of SQL statements and their bindings.  This
+involves code changes and is <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">described in more detail here</span></a>.</p>
+<p>There are simpler convenient mechanisms for <a class="reference internal" href="#example-trace"><span class="std std-ref">individual
+statement tracing</span></a>, <a class="reference internal" href="#example-showresourceusage"><span class="std std-ref">summarising a block of
+code</span></a>, and <a class="reference internal" href="#example-trace-v2"><span class="std std-ref">SQLite’s interface</span></a> which is used by them.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_tracer</span><span class="p">(</span>
+    <span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span>
+    <span class="n">statement</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">bindings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="s2">&quot;Called just before executing each statement&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SQL:&quot;</span><span class="p">,</span> <span class="n">statement</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bindings:&quot;</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)</span>
@@ -428,7 +445,9 @@ tracing</span></a>.</p>
 <span id="example-rowtrace"></span><span id="index-12"></span><h2>Tracing returned rows<a class="headerlink" href="#tracing-returned-rows" title="Link to this heading"></a></h2>
 <p>You can trace returned rows, including modifying what is returned or
 skipping it completely.  See <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">more about tracing</span></a>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">row_tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">row_tracer</span><span class="p">(</span>
+    <span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Called with each row of results before they are handed off.  You can return None to</span>
 <span class="sd">    cause the row to be skipped or a different set of values to return&quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Row:&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
@@ -464,7 +483,9 @@ are registered by calling <a class="reference internal" href="connection.html#ap
 
 <span class="n">connection</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;seven&quot;</span><span class="p">,</span> <span class="n">ilove7</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select seven(x,y) from point where x&gt;4&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+    <span class="s2">&quot;select seven(x,y) from point where x&gt;4&quot;</span>
+<span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;row&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -540,19 +561,21 @@ documentation</a></p>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">create_window_function</span><span class="p">(</span><span class="s2">&quot;sumint&quot;</span><span class="p">,</span> <span class="n">SumInt</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">        CREATE TABLE t3(x, y);</span>
-<span class="s2">        INSERT INTO t3 VALUES(&#39;a&#39;, 4),</span>
-<span class="s2">                             (&#39;b&#39;, 5),</span>
-<span class="s2">                             (&#39;c&#39;, 3),</span>
-<span class="s2">                             (&#39;d&#39;, 8),</span>
-<span class="s2">                             (&#39;e&#39;, 1);</span>
-<span class="s2">        -- Use the window function</span>
-<span class="s2">        SELECT x, sumint(y) OVER (</span>
-<span class="s2">        ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING</span>
-<span class="s2">        ) AS sum_y</span>
-<span class="s2">        FROM t3 ORDER BY x;</span>
-<span class="s2">    &quot;&quot;&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        CREATE TABLE t3(x, y);</span>
+<span class="sd">        INSERT INTO t3 VALUES(&#39;a&#39;, 4),</span>
+<span class="sd">                             (&#39;b&#39;, 5),</span>
+<span class="sd">                             (&#39;c&#39;, 3),</span>
+<span class="sd">                             (&#39;d&#39;, 8),</span>
+<span class="sd">                             (&#39;e&#39;, 1);</span>
+<span class="sd">        -- Use the window function</span>
+<span class="sd">        SELECT x, sumint(y) OVER (</span>
+<span class="sd">        ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING</span>
+<span class="sd">        ) AS sum_y</span>
+<span class="sd">        FROM t3 ORDER BY x;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ROW&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -602,12 +625,17 @@ register a collation by calling <a class="reference internal" href="connection.h
     <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">str_num_collate</span><span class="p">(</span><span class="n">s1</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">str_num_collate</span><span class="p">(</span>
+    <span class="n">s1</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">,</span> <span class="n">s2</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="c1"># return -1 if s1&lt;s2, +1 if s1&gt;s2 else 0 for equal</span>
 
     <span class="k">def</span> <span class="nf">parts</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
         <span class="s2">&quot;Converts str into list of alternating str and int parts&quot;</span>
-        <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="n">v</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)&quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+        <span class="p">]</span>
 
     <span class="n">ps1</span> <span class="o">=</span> <span class="n">parts</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s1</span><span class="p">))</span>
     <span class="n">ps2</span> <span class="o">=</span> <span class="n">parts</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s2</span><span class="p">))</span>
@@ -623,7 +651,9 @@ register a collation by calling <a class="reference internal" href="connection.h
 <span class="n">connection</span><span class="o">.</span><span class="n">create_collation</span><span class="p">(</span><span class="s2">&quot;strnum&quot;</span><span class="p">,</span> <span class="n">str_num_collate</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Using strnum&quot;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from names order by name collate strnum&quot;</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+    <span class="s2">&quot;select * from names order by name collate strnum&quot;</span>
+<span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -645,25 +675,32 @@ register a collation by calling <a class="reference internal" href="connection.h
 </section>
 <section id="accessing-results-by-column-name">
 <span id="example-colnames"></span><span id="index-17"></span><h2>Accessing results by column name<a class="headerlink" href="#accessing-results-by-column-name" title="Link to this heading"></a></h2>
-<p>You can access results by column name using <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code></a>.
+<p>You can access results by column name using <a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code></a>.
 APSW provides <a class="reference internal" href="ext.html#apsw.ext.DataClassRowFactory" title="apsw.ext.DataClassRowFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.DataClassRowFactory</span></code></a> for names.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw.ext</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    create table books(id, title, author, year);</span>
-<span class="s2">    insert into books values(7, &#39;Animal Farm&#39;, &#39;George Orwell&#39;, 1945);</span>
-<span class="s2">    insert into books values(37, &#39;The Picture of Dorian Gray&#39;, &#39;Oscar Wilde&#39;, 1890);</span>
-<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    create table books(id, title, author, year);</span>
+<span class="sd">    insert into books values(7, &#39;Animal Farm&#39;, &#39;George Orwell&#39;, 1945);</span>
+<span class="sd">    insert into books values(37, &#39;The Picture of Dorian Gray&#39;, &#39;Oscar Wilde&#39;, 1890);</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="p">)</span>
 
 <span class="c1"># Normally you use column numbers</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select title, id, year from books where author=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;Oscar Wilde&quot;</span><span class="p">,)):</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+    <span class="s2">&quot;select title, id, year from books where author=?&quot;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">&quot;Oscar Wilde&quot;</span><span class="p">,),</span>
+<span class="p">):</span>
     <span class="c1"># this is very fragile</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
 <span class="c1"># Turn on dataclasses - frozen makes them read-only</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">DataClassRowFactory</span><span class="p">(</span><span class="n">dataclass_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;frozen&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">DataClassRowFactory</span><span class="p">(</span>
+    <span class="n">dataclass_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;frozen&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+<span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Now with dataclasses</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -716,7 +753,11 @@ conversion, both for types you define and for other types.</p>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Point(</span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="w"> </span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="w"> </span><span class="si">}</span><span class="s2">)&quot;</span>
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">x</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">y</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">x</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">y</span>
+        <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">to_sqlite_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="c1"># called to convert Point into something SQLite supports</span>
@@ -781,11 +822,11 @@ conversion, both for types you define and for other types.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 8, 13, 13, 9, 12, 932310))</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 11, 16, 15, 23, 52, 148394))</span>
 <span class="go">querying data</span>
 <span class="go">column 0 = Point(5.2, 7.6)</span>
 <span class="go">column 1 = (3+4j)</span>
-<span class="go">column 2 = datetime.datetime(2024, 8, 13, 20, 9, 12, 932310, tzinfo=datetime.timezone.utc)</span>
+<span class="go">column 2 = datetime.datetime(2024, 11, 16, 23, 23, 52, 148394, tzinfo=datetime.timezone.utc)</span>
 </pre></div>
 </div>
 </section>
@@ -796,17 +837,19 @@ query (without running it)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw.ext</span>
 
 <span class="c1"># test tables</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    create table customers(</span>
-<span class="s2">        id INTEGER PRIMARY KEY,</span>
-<span class="s2">        name CHAR,</span>
-<span class="s2">        address CHAR);</span>
-<span class="s2">    create table orders(</span>
-<span class="s2">        id INTEGER PRIMARY KEY,</span>
-<span class="s2">        customer_id INTEGER,</span>
-<span class="s2">        item MY_OWN_TYPE);</span>
-<span class="s2">    create index cust_addr on customers(address);</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    create table customers(</span>
+<span class="sd">        id INTEGER PRIMARY KEY,</span>
+<span class="sd">        name CHAR,</span>
+<span class="sd">        address CHAR);</span>
+<span class="sd">    create table orders(</span>
+<span class="sd">        id INTEGER PRIMARY KEY,</span>
+<span class="sd">        customer_id INTEGER,</span>
+<span class="sd">        item MY_OWN_TYPE);</span>
+<span class="sd">    create index cust_addr on customers(address);</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="p">)</span>
 
 <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    SELECT * FROM orders</span>
@@ -823,9 +866,6 @@ query (without running it)</p>
     <span class="n">explain_query_plan</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># how SQLite solves the query</span>
 <span class="p">)</span>
 
-<span class="c1"># help with formatting</span>
-<span class="kn">import</span> <span class="nn">pprint</span>
-
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;query&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">bindings_count&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">bindings_count</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">bindings_names&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">bindings_names</span><span class="p">)</span>
@@ -834,13 +874,18 @@ query (without running it)</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">query_remaining&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">query_remaining</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">is_explain&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">is_explain</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">is_readonly&quot;</span><span class="p">,</span> <span class="n">qd</span><span class="o">.</span><span class="n">is_readonly</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">description</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">description</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">description&quot;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">qd</span><span class="p">,</span> <span class="s2">&quot;description_full&quot;</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">description_full</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">description_full</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">description_full&quot;</span><span class="p">)</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">description_full</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">query_plan</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">query_plan</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">First 5 actions</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">actions</span><span class="p">[:</span><span class="mi">5</span><span class="p">]))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">First 5 explain</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">explain</span><span class="p">[:</span><span class="mi">5</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">query_plan&quot;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">query_plan</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">First 5 actions&quot;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">actions</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">First 5 explain&quot;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">explain</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">query</span>
@@ -868,7 +913,7 @@ query (without running it)</p>
 <span class="go">is_readonly True</span>
 
 <span class="go">description</span>
-<span class="go"> ((&#39;id&#39;, &#39;INTEGER&#39;),</span>
+<span class="go">((&#39;id&#39;, &#39;INTEGER&#39;),</span>
 <span class="go"> (&#39;customer_id&#39;, &#39;INTEGER&#39;),</span>
 <span class="go"> (&#39;item&#39;, &#39;MY_OWN_TYPE&#39;),</span>
 <span class="go"> (&#39;id&#39;, &#39;INTEGER&#39;),</span>
@@ -876,22 +921,17 @@ query (without running it)</p>
 <span class="go"> (&#39;address&#39;, &#39;CHAR&#39;))</span>
 
 <span class="go">description_full</span>
-<span class="go"> ((&#39;id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;id&#39;),</span>
-<span class="go"> (&#39;customer_id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;customer_id&#39;),</span>
-<span class="go"> (&#39;item&#39;, &#39;MY_OWN_TYPE&#39;, &#39;main&#39;, &#39;orders&#39;, &#39;item&#39;),</span>
-<span class="go"> (&#39;id&#39;, &#39;INTEGER&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;id&#39;),</span>
-<span class="go"> (&#39;name&#39;, &#39;CHAR&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;name&#39;),</span>
-<span class="go"> (&#39;address&#39;, &#39;CHAR&#39;, &#39;main&#39;, &#39;customers&#39;, &#39;address&#39;))</span>
+<span class="go">None</span>
 
 <span class="go">query_plan</span>
-<span class="go"> QueryPlan(detail=&#39;QUERY PLAN&#39;,</span>
+<span class="go">QueryPlan(detail=&#39;QUERY PLAN&#39;,</span>
 <span class="go">          sub=[QueryPlan(detail=&#39;SCAN orders&#39;, sub=None),</span>
 <span class="go">               QueryPlan(detail=&#39;SEARCH customers USING INTEGER PRIMARY KEY &#39;</span>
 <span class="go">                                &#39;(rowid=?)&#39;,</span>
 <span class="go">                         sub=None)])</span>
 
 <span class="go">First 5 actions</span>
-<span class="go"> [QueryAction(action=21,</span>
+<span class="go">[QueryAction(action=21,</span>
 <span class="go">             action_name=&#39;SQLITE_SELECT&#39;,</span>
 <span class="go">             column_name=None,</span>
 <span class="go">             database_name=None,</span>
@@ -963,7 +1003,7 @@ query (without running it)</p>
 <span class="go">             view_name=None)]</span>
 
 <span class="go">First 5 explain</span>
-<span class="go"> [VDBEInstruction(addr=0,</span>
+<span class="go">[VDBEInstruction(addr=0,</span>
 <span class="go">                 opcode=&#39;Init&#39;,</span>
 <span class="go">                 comment=None,</span>
 <span class="go">                 p1=0,</span>
@@ -1017,7 +1057,9 @@ to a file, without having the entire blob in memory.  Use
 <span class="c1"># Add a blob we will fill in later</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(1, zeroblob(10000))&quot;</span><span class="p">)</span>
 <span class="c1"># Or as a binding</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into blobby values(2, ?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+    <span class="s2">&quot;insert into blobby values(2, ?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),)</span>
+<span class="p">)</span>
 <span class="c1"># Open a blob for writing.  We need to know the rowid</span>
 <span class="n">rowid</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
 <span class="n">blob</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">blob_open</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;blobby&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
@@ -1061,13 +1103,27 @@ database.</p>
 <p>You can allow, deny, or ignore what SQL does.  Use
 <a class="reference internal" href="connection.html#apsw.Connection.authorizer" title="apsw.Connection.authorizer"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.authorizer</span></code></a> to set an authorizer.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">auth</span><span class="p">(</span>
-    <span class="n">operation</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">db_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">trigger_or_view</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">operation</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">p1</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">p2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">db_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">trigger_or_view</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or</span>
 <span class="sd">    SQLITE_IGNORE&quot;&quot;&quot;</span>
     <span class="c1"># find the operation name</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="n">operation</span><span class="p">],</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">trigger_or_view</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TABLE</span> <span class="ow">and</span> <span class="n">p1</span> <span class="ow">and</span> <span class="n">p1</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;private&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="n">operation</span><span class="p">],</span>
+        <span class="n">p1</span><span class="p">,</span>
+        <span class="n">p2</span><span class="p">,</span>
+        <span class="n">db_name</span><span class="p">,</span>
+        <span class="n">trigger_or_view</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">operation</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CREATE_TABLE</span>
+        <span class="ow">and</span> <span class="n">p1</span>
+        <span class="ow">and</span> <span class="n">p1</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;private&quot;</span><span class="p">)</span>
+    <span class="p">):</span>
         <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DENY</span>  <span class="c1"># not allowed to create tables whose names start with private</span>
 
     <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OK</span>  <span class="c1"># always allow</span>
@@ -1091,7 +1147,7 @@ database.</p>
 <span class="go">SQLITE_READ names name main None</span>
 <span class="go">SQLITE_INSERT sqlite_master None main None</span>
 <span class="go">SQLITE_CREATE_TABLE private_stuff None main None</span>
-<span class="go">AuthError: not authorized</span>
+<span class="go">not authorized</span>
 </pre></div>
 </div>
 </section>
@@ -1104,7 +1160,10 @@ feedback and allows cancelling.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># create a table with random numbers</span>
 <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
     <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table numbers(x)&quot;</span><span class="p">)</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into numbers values(?)&quot;</span><span class="p">,</span> <span class="p">((</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9999999999</span><span class="p">),)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)))</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
+        <span class="s2">&quot;insert into numbers values(?)&quot;</span><span class="p">,</span>
+        <span class="p">((</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9999999999</span><span class="p">),)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)),</span>
+    <span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">progress_handler</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1131,7 +1190,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9867044341,)</span>
+<span class="go">(9999638168,)</span>
 </pre></div>
 </div>
 </section>
@@ -1159,7 +1218,12 @@ doesn’t change for commits on the same connection.</p>
 
 
 <span class="c1"># Show starting values</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fcntl&quot;</span><span class="p">,</span> <span class="n">get_data_version</span><span class="p">(</span><span class="n">connection</span><span class="p">),</span> <span class="s2">&quot;pragma&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;data_version&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;fcntl&quot;</span><span class="p">,</span>
+    <span class="n">get_data_version</span><span class="p">(</span><span class="n">connection</span><span class="p">),</span>
+    <span class="s2">&quot;pragma&quot;</span><span class="p">,</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;data_version&quot;</span><span class="p">),</span>
+<span class="p">)</span>
 
 <span class="c1"># See the fcntl value versus pragma value</span>
 <span class="k">for</span> <span class="n">sql</span> <span class="ow">in</span> <span class="p">(</span>
@@ -1172,7 +1236,12 @@ doesn’t change for commits on the same connection.</p>
 <span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
     <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;fcntl&quot;</span><span class="p">,</span> <span class="n">get_data_version</span><span class="p">(</span><span class="n">connection</span><span class="p">),</span> <span class="s2">&quot;pragma&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;data_version&quot;</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;fcntl&quot;</span><span class="p">,</span>
+        <span class="n">get_data_version</span><span class="p">(</span><span class="n">connection</span><span class="p">),</span>
+        <span class="s2">&quot;pragma&quot;</span><span class="p">,</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;data_version&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">fcntl 40 pragma 2</span>
@@ -1206,8 +1275,10 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.set_co
 <span class="n">connection</span><span class="o">.</span><span class="n">set_commit_hook</span><span class="p">(</span><span class="n">my_commit_hook</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
-        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;create table example(x,y,z);</span>
-<span class="s2">                           insert into example values (3,4,5)&quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;create table example(x,y,z);</span>
+<span class="sd">                           insert into example values (3,4,5)&quot;&quot;&quot;</span>
+        <span class="p">)</span>
 <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ConstraintError</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;commit was not allowed&quot;</span><span class="p">)</span>
 
@@ -1225,14 +1296,20 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.set_co
 removed.  For example you could use this to discard cached
 information.  Register a hook using
 <a class="reference internal" href="connection.html#apsw.Connection.set_update_hook" title="apsw.Connection.set_update_hook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_update_hook()</span></code></a>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_update_hook</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">rowid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_update_hook</span><span class="p">(</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">rowid</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">op</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="nb">type</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Updated: </span><span class="si">{</span><span class="w"> </span><span class="n">op</span><span class="w"> </span><span class="si">}</span><span class="s2"> db </span><span class="si">{</span><span class="w"> </span><span class="n">db_name</span><span class="w"> </span><span class="si">}</span><span class="s2">, table </span><span class="si">{</span><span class="w"> </span><span class="n">table_name</span><span class="w"> </span><span class="si">}</span><span class="s2">, rowid </span><span class="si">{</span><span class="w"> </span><span class="n">rowid</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Updated: </span><span class="si">{</span><span class="w"> </span><span class="n">op</span><span class="w"> </span><span class="si">}</span><span class="s2"> db </span><span class="si">{</span><span class="w"> </span><span class="n">db_name</span><span class="w"> </span><span class="si">}</span><span class="s2">, table </span><span class="si">{</span><span class="w"> </span><span class="n">table_name</span><span class="w"> </span><span class="si">}</span><span class="s2">, rowid </span><span class="si">{</span><span class="w"> </span><span class="n">rowid</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
 
 
 <span class="n">connection</span><span class="o">.</span><span class="n">set_update_hook</span><span class="p">(</span><span class="n">my_update_hook</span><span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into names values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file93&quot;</span><span class="p">,))</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;update names set name=? where name=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,</span> <span class="s2">&quot;file93&quot;</span><span class="p">))</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+    <span class="s2">&quot;update names set name=? where name=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,</span> <span class="s2">&quot;file93&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;delete from names where name=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;file94&quot;</span><span class="p">,))</span>
 
 <span class="c1"># Clear the hook</span>
@@ -1274,35 +1351,13 @@ useful instead.</p>
 <span class="c1"># arguments</span>
 <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;SELECT * FROM range(90) WHERE step=2&quot;</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌───────┐</span>
-<span class="go">│ value │</span>
-<span class="go">│ 90    │</span>
-<span class="go">│ 92    │</span>
-<span class="go">│ 94    │</span>
-<span class="go">│ 96    │</span>
-<span class="go">│ 98    │</span>
-<span class="go">│ 100   │</span>
-<span class="go">└───────┘</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># the parameters are hidden columns so &#39;*&#39; doesn&#39;t select them</span>
+
+<span class="c1"># the parameters are hidden columns so &#39;*&#39; doesn&#39;t select them</span>
 <span class="c1"># but you can ask</span>
 <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;SELECT *, start, stop, step FROM range(89) WHERE step=3&quot;</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌───────┬───────┬──────┬──────┐</span>
-<span class="go">│ value │ start │ stop │ step │</span>
-<span class="go">│ 89    │ 89    │ 100  │ 3    │</span>
-<span class="go">│ 92    │ 89    │ 100  │ 3    │</span>
-<span class="go">│ 95    │ 89    │ 100  │ 3    │</span>
-<span class="go">│ 98    │ 89    │ 100  │ 3    │</span>
-<span class="go">└───────┴───────┴──────┴──────┘</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Expose the unicode database.</span>
+
+<span class="c1"># Expose the unicode database.</span>
 <span class="kn">import</span> <span class="nn">unicodedata</span>
 
 <span class="c1"># A more complex example exporting unicodedata module</span>
@@ -1351,27 +1406,15 @@ useful instead.</p>
 <span class="s2">       ORDER BY category</span>
 <span class="s2">       LIMIT 10&quot;&quot;&quot;</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌──────────┬──────────┐</span>
-<span class="go">│ count(*) │ category │</span>
-<span class="go">│ 65       │ Cc       │</span>
-<span class="go">│ 43       │ Cf       │</span>
-<span class="go">│ 1454     │ Cn       │</span>
-<span class="go">│ 6400     │ Co       │</span>
-<span class="go">│ 2048     │ Cs       │</span>
-<span class="go">│ 1445     │ Ll       │</span>
-<span class="go">│ 236      │ Lm       │</span>
-<span class="go">│ 46126    │ Lo       │</span>
-<span class="go">│ 31       │ Lt       │</span>
-<span class="go">│ 1127     │ Lu       │</span>
-<span class="go">└──────────┴──────────┘</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># A more complex example - given a list of directories return information</span>
+
+
+<span class="c1"># A more complex example - given a list of directories return information</span>
 <span class="c1"># about the files within them recursively</span>
 <span class="k">def</span> <span class="nf">get_files_info</span><span class="p">(</span>
-    <span class="n">directories</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">ignore_symlinks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">directories</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">ignore_symlinks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
     <span class="k">for</span> <span class="n">root</span> <span class="ow">in</span> <span class="n">directories</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">):</span>
         <span class="k">with</span> <span class="n">os</span><span class="o">.</span><span class="n">scandir</span><span class="p">(</span><span class="n">root</span><span class="p">)</span> <span class="k">as</span> <span class="n">sd</span><span class="p">:</span>
@@ -1379,7 +1422,10 @@ useful instead.</p>
                 <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_symlink</span><span class="p">()</span> <span class="ow">and</span> <span class="n">ignore_symlinks</span><span class="p">:</span>
                     <span class="k">continue</span>
                 <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-                    <span class="k">yield from</span> <span class="n">get_files_info</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="n">ignore_symlinks</span><span class="o">=</span><span class="n">ignore_symlinks</span><span class="p">)</span>
+                    <span class="k">yield from</span> <span class="n">get_files_info</span><span class="p">(</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                        <span class="n">ignore_symlinks</span><span class="o">=</span><span class="n">ignore_symlinks</span><span class="p">,</span>
+                    <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
                     <span class="n">s</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span>
                     <span class="k">yield</span> <span class="p">{</span>
@@ -1391,9 +1437,14 @@ useful instead.</p>
 
 
 <span class="c1"># which stat columns do we want?</span>
-<span class="n">get_files_info</span><span class="o">.</span><span class="n">stat_columns</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span> <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;st_&quot;</span><span class="p">))</span>
+<span class="n">get_files_info</span><span class="o">.</span><span class="n">stat_columns</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+    <span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span> <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;st_&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 <span class="c1"># setup columns and access by providing an example of the first entry returned</span>
-<span class="n">get_files_info</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">get_files_info</span><span class="o">.</span><span class="n">column_access</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">get_column_names</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">get_files_info</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)))</span>
+<span class="p">(</span>
+    <span class="n">get_files_info</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>
+    <span class="n">get_files_info</span><span class="o">.</span><span class="n">column_access</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">get_column_names</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">get_files_info</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)))</span>
 
 <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">make_virtual_module</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;files_info&quot;</span><span class="p">,</span> <span class="n">get_files_info</span><span class="p">)</span>
 
@@ -1415,51 +1466,82 @@ useful instead.</p>
 <span class="s2">            ORDER BY st_size DESC</span>
 <span class="s2">            LIMIT 3&quot;&quot;&quot;</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">bindings</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌─────────┬──────────────────────────────────────────┬─────────────────────────┐</span>
-<span class="go">│ st_size │                directory                 │          name           │</span>
-<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
-<span class="go">│ 805508  │ /usr/lib/python3.12/pydoc_data           │ topics.py               │</span>
-<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
-<span class="go">│ 502306  │ /usr/lib/python3.12/pydoc_data/__pycache │ topics.cpython-312.pyc  │</span>
-<span class="go">│         │ __                                       │                         │</span>
-<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
-<span class="go">│ 245231  │ /usr/lib/python3.12/tkinter/__pycache__  │ __init__.cpython-       │</span>
-<span class="go">│         │                                          │ 312.pyc                 │</span>
-<span class="go">└─────────┴──────────────────────────────────────────┴─────────────────────────┘</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Find the 3 oldest Python files</span>
+
+<span class="c1"># Find the 3 oldest Python files</span>
 <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;SELECT DATE(st_ctime, &#39;auto&#39;) AS date, directory, name</span>
 <span class="s2">            FROM files_info(?)</span>
 <span class="s2">            WHERE extension=&#39;.py&#39;</span>
 <span class="s2">            ORDER BY st_size DESC</span>
 <span class="s2">            LIMIT 3&quot;&quot;&quot;</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">bindings</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────────────────────────┬───────────────┐</span>
-<span class="go">│    date    │           directory            │     name      │</span>
-<span class="go">│ 2024-08-01 │ /usr/lib/python3.12/pydoc_data │ topics.py     │</span>
-<span class="go">│ 2024-08-01 │ /usr/lib/python3.12            │ _pydecimal.py │</span>
-<span class="go">│ 2024-04-16 │ /usr/lib/python3.12/tkinter    │ __init__.py   │</span>
-<span class="go">└────────────┴────────────────────────────────┴───────────────┘</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># find space used by filename extension</span>
+
+<span class="c1"># find space used by filename extension</span>
 <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;SELECT extension, SUM(st_size) as total_size</span>
 <span class="s2">            FROM files_info(?)</span>
 <span class="s2">            GROUP BY extension</span>
 <span class="s2">            ORDER BY extension&quot;&quot;&quot;</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">bindings</span><span class="p">))</span>
+
+<span class="c1"># unregister a virtual table by passing None</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">create_module</span><span class="p">(</span><span class="s2">&quot;files_info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌────────────┬────────────┐</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌───────┐</span>
+<span class="go">│ value │</span>
+<span class="go">│ 90    │</span>
+<span class="go">│ 92    │</span>
+<span class="go">│ 94    │</span>
+<span class="go">│ 96    │</span>
+<span class="go">│ 98    │</span>
+<span class="go">│ 100   │</span>
+<span class="go">└───────┘</span>
+
+<span class="go">┌───────┬───────┬──────┬──────┐</span>
+<span class="go">│ value │ start │ stop │ step │</span>
+<span class="go">│ 89    │ 89    │ 100  │ 3    │</span>
+<span class="go">│ 92    │ 89    │ 100  │ 3    │</span>
+<span class="go">│ 95    │ 89    │ 100  │ 3    │</span>
+<span class="go">│ 98    │ 89    │ 100  │ 3    │</span>
+<span class="go">└───────┴───────┴──────┴──────┘</span>
+
+<span class="go">┌──────────┬──────────┐</span>
+<span class="go">│ count(*) │ category │</span>
+<span class="go">│ 65       │ Cc       │</span>
+<span class="go">│ 43       │ Cf       │</span>
+<span class="go">│ 1454     │ Cn       │</span>
+<span class="go">│ 6400     │ Co       │</span>
+<span class="go">│ 2048     │ Cs       │</span>
+<span class="go">│ 1445     │ Ll       │</span>
+<span class="go">│ 236      │ Lm       │</span>
+<span class="go">│ 46126    │ Lo       │</span>
+<span class="go">│ 31       │ Lt       │</span>
+<span class="go">│ 1127     │ Lu       │</span>
+<span class="go">└──────────┴──────────┘</span>
+
+<span class="go">┌─────────┬──────────────────────────────────────────┬─────────────────────────┐</span>
+<span class="go">│ st_size │                directory                 │          name           │</span>
+<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
+<span class="go">│ 815083  │ /usr/lib/python3.12/pydoc_data           │ topics.py               │</span>
+<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
+<span class="go">│ 509199  │ /usr/lib/python3.12/pydoc_data/          │ topics.cpython-312.pyc  │</span>
+<span class="go">│         │ __pycache__                              │                         │</span>
+<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
+<span class="go">│ 245940  │ /usr/lib/python3.12/tkinter/__pycache__  │ __init__.cpython-312.p- │</span>
+<span class="go">│         │                                          │ yc                      │</span>
+<span class="go">└─────────┴──────────────────────────────────────────┴─────────────────────────┘</span>
+
+<span class="go">┌────────────┬────────────────────────────────┬───────────────┐</span>
+<span class="go">│    date    │           directory            │     name      │</span>
+<span class="go">│ 2024-10-05 │ /usr/lib/python3.12/pydoc_data │ topics.py     │</span>
+<span class="go">│ 2024-10-05 │ /usr/lib/python3.12            │ _pydecimal.py │</span>
+<span class="go">│ 2024-10-05 │ /usr/lib/python3.12/tkinter    │ __init__.py   │</span>
+<span class="go">└────────────┴────────────────────────────────┴───────────────┘</span>
+
+<span class="go">┌────────────┬────────────┐</span>
 <span class="go">│ extension  │ total_size │</span>
-<span class="go">│            │ 432392     │</span>
-<span class="go">│ .a         │ 96838062   │</span>
-<span class="go">│ .allowlist │ 56         │</span>
+<span class="go">│            │ 436921     │</span>
+<span class="go">│ .a         │ 97341558   │</span>
+<span class="go">│ .allowlist │ 72         │</span>
 <span class="go">│ .bootstrap │ 1804       │</span>
 <span class="go">│ .c         │ 10948      │</span>
 <span class="go">│ .cfg       │ 341        │</span>
@@ -1470,21 +1552,18 @@ useful instead.</p>
 <span class="go">│ .ini       │ 997        │</span>
 <span class="go">│ .json      │ 2162       │</span>
 <span class="go">│ .local     │ 2136       │</span>
-<span class="go">│ .o         │ 9360       │</span>
+<span class="go">│ .o         │ 9328       │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11142873   │</span>
-<span class="go">│ .pyc       │ 11408387   │</span>
+<span class="go">│ .py        │ 11251549   │</span>
+<span class="go">│ .pyc       │ 11433569   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
-<span class="go">│ .sh        │ 4008       │</span>
-<span class="go">│ .so        │ 25396992   │</span>
-<span class="go">│ .stdlib    │ 12536      │</span>
+<span class="go">│ .sh        │ 4507       │</span>
+<span class="go">│ .so        │ 26582544   │</span>
+<span class="go">│ .sql       │ 1001       │</span>
+<span class="go">│ .stdlib    │ 12562      │</span>
 <span class="go">│ .supp      │ 70         │</span>
 <span class="go">│ .txt       │ 13936      │</span>
 <span class="go">└────────────┴────────────┘</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># unregister a virtual table by passing None</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">create_module</span><span class="p">(</span><span class="s2">&quot;files_info&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -1526,7 +1605,9 @@ for receiving parameters once a database is open.</p>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   fast is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_parameter</span><span class="p">(</span><span class="s2">&quot;fast&quot;</span><span class="p">))</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   level is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_int</span><span class="p">(</span><span class="s2">&quot;level&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   warp is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_boolean</span><span class="p">(</span><span class="s2">&quot;warp&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   notpresent is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_parameter</span><span class="p">(</span><span class="s2">&quot;notpresent&quot;</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;   notpresent is&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">uri_parameter</span><span class="p">(</span><span class="s2">&quot;notpresent&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
             <span class="c1"># all of them</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   all uris&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1574,7 +1655,9 @@ for receiving parameters once a database is open.</p>
 
 <span class="c1"># uri parameters are after the ? separated by &amp;</span>
 <span class="n">obfudb</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span>
-    <span class="s2">&quot;file:myobfudb?fast=speed&amp;level=7&amp;warp=on&amp;another=true&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">open_flags</span><span class="p">,</span> <span class="n">vfs</span><span class="o">=</span><span class="n">obfuvfs</span><span class="o">.</span><span class="n">vfs_name</span>
+    <span class="s2">&quot;file:myobfudb?fast=speed&amp;level=7&amp;warp=on&amp;another=true&quot;</span><span class="p">,</span>
+    <span class="n">flags</span><span class="o">=</span><span class="n">open_flags</span><span class="p">,</span>
+    <span class="n">vfs</span><span class="o">=</span><span class="n">obfuvfs</span><span class="o">.</span><span class="n">vfs_name</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="c1"># Check it works</span>
@@ -1584,10 +1667,15 @@ for receiving parameters once a database is open.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;What is on disk&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;myobfudb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()[:</span><span class="mi">20</span><span class="p">]))</span>
 
 <span class="c1"># And unobfuscating it</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unobfuscated disk&quot;</span><span class="p">,</span> <span class="nb">repr</span><span class="p">(</span><span class="n">obfuscate</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;myobfudb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()[:</span><span class="mi">20</span><span class="p">])))</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;Unobfuscated disk&quot;</span><span class="p">,</span>
+    <span class="nb">repr</span><span class="p">(</span><span class="n">obfuscate</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;myobfudb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()[:</span><span class="mi">20</span><span class="p">])),</span>
+<span class="p">)</span>
 
 <span class="c1"># Custom pragma</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;pragma returned&quot;</span><span class="p">,</span> <span class="n">obfudb</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;my_custom_pragma&quot;</span><span class="p">,</span> <span class="s2">&quot;my value&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;pragma returned&quot;</span><span class="p">,</span> <span class="n">obfudb</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;my_custom_pragma&quot;</span><span class="p">,</span> <span class="s2">&quot;my value&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 
 <span class="c1"># Tidy up</span>
 <span class="n">obfudb</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1606,8 +1694,10 @@ for receiving parameters once a database is open.</p>
 <span class="go">xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_MAIN_JOURNAL | SQLITE_OPEN_READWRITE</span>
 <span class="go">   filename /space/apsw/myobfudb-journal</span>
 <span class="go">pragma received foreign_keys = ON</span>
+<span class="go">pragma received optimize = 65538</span>
 <span class="go">xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_WAL</span>
 <span class="go">   filename /space/apsw/myobfudb-wal</span>
+<span class="go">pragma received recursive_triggers = ON</span>
 <span class="go">What is on disk b&#39;\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa7\xa7&#39;</span>
 <span class="go">Unobfuscated disk b&#39;SQLite format 3\x00\x10\x00\x02\x02&#39;</span>
 <span class="go">pragma received my_custom_pragma = my value</span>
@@ -1632,10 +1722,14 @@ for receiving parameters once a database is open.</p>
 
 <span class="c1"># Set limit for size of a string</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table testlimit(s)&quot;</span><span class="p">)</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,))</span>  <span class="c1"># 1024 char string</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+    <span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,)</span>
+<span class="p">)</span>  <span class="c1"># 1024 char string</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_LIMIT_LENGTH</span><span class="p">,</span> <span class="mi">1023</span><span class="p">)</span>  <span class="c1"># limit is now 1023</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,))</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="s2">&quot;insert into testlimit values(?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,)</span>
+    <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;string exceeding limit was inserted&quot;</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">TooBigError</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Caught toobig exception&quot;</span><span class="p">)</span>
@@ -1674,12 +1768,14 @@ Python.</p>
 <span class="n">shell</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s2">&quot;.headers on&quot;</span><span class="p">)</span>
 
 <span class="c1"># How to execute SQL</span>
-<span class="n">shell</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    create table csvtest(column1, column2 INTEGER);</span>
-<span class="s2">    create index faster on csvtest(column1);</span>
-<span class="s2">    insert into csvtest values(3, 4);</span>
-<span class="s2">    insert into csvtest values(&#39;a b&#39;, NULL);</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="n">shell</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    create table csvtest(column1, column2 INTEGER);</span>
+<span class="sd">    create index faster on csvtest(column1);</span>
+<span class="sd">    insert into csvtest values(3, 4);</span>
+<span class="sd">    insert into csvtest values(&#39;a b&#39;, NULL);</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="p">)</span>
 
 <span class="c1"># Or let the shell figure out SQL vs dot command</span>
 <span class="n">shell</span><span class="o">.</span><span class="n">process_complete_line</span><span class="p">(</span><span class="s2">&quot;select * from csvtest&quot;</span><span class="p">)</span>
@@ -1705,9 +1801,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.46.1.0)</span>
-<span class="go">-- SQLite version 3.46.1</span>
-<span class="go">-- Date: Tue Aug 13 13:09:13 2024</span>
+<span class="go">-- SQLite dump (by APSW 3.47.0.0)</span>
+<span class="go">-- SQLite version 3.47.0</span>
+<span class="go">-- Date: Sat Nov 16 15:23:52 2024</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1742,10 +1838,12 @@ for per connection statistics.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">current_usage</span><span class="p">,</span> <span class="n">max_usage</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_STATUS_MEMORY_USED</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SQLite memory usage </span><span class="si">{</span><span class="w"> </span><span class="n">current_usage</span><span class="w"> </span><span class="si">}</span><span class="s2"> max </span><span class="si">{</span><span class="w"> </span><span class="n">max_usage</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">schema_used</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBSTATUS_SCHEMA_USED</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="w"> </span><span class="n">schema_used</span><span class="w"> </span><span class="si">}</span><span class="s2"> bytes used to store schema for this connection&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="w"> </span><span class="n">schema_used</span><span class="w"> </span><span class="si">}</span><span class="s2"> bytes used to store schema for this connection&quot;</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 509320 max 2494488</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 505696 max 2494424</span>
 <span class="go">4968 bytes used to store schema for this connection</span>
 </pre></div>
 </div>
@@ -1778,12 +1876,20 @@ for per connection statistics.</p>
 <span class="k">def</span> <span class="nf">trace_hook</span><span class="p">(</span><span class="n">trace</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="c1"># check the sql and connection are as expected and remove from trace</span>
     <span class="c1"># so we don&#39;t print them</span>
-    <span class="k">assert</span> <span class="n">trace</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;sql&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">query</span> <span class="ow">and</span> <span class="n">trace</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;connection&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="n">connection</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="n">trace</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;sql&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span> <span class="o">==</span> <span class="n">query</span>
+        <span class="ow">and</span> <span class="n">trace</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;connection&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="n">connection</span>
+    <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;code is &quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_trace_codes</span><span class="p">[</span><span class="n">trace</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]])</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">trace</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
 
 
-<span class="n">connection</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_STMT</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_PROFILE</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_ROW</span><span class="p">,</span> <span class="n">trace_hook</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span>
+    <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_STMT</span>
+    <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_PROFILE</span>
+    <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_ROW</span><span class="p">,</span>
+    <span class="n">trace_hook</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># We will get one each of the trace events</span>
 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
@@ -1794,28 +1900,112 @@ for per connection statistics.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">code is  SQLITE_TRACE_STMT</span>
-<span class="go">{&#39;code&#39;: 1}</span>
-
+<span class="go">{&#39;code&#39;: 1, &#39;id&#39;: 1065513528, &#39;total_changes&#39;: 146, &#39;trigger&#39;: False}</span>
 <span class="go">code is  SQLITE_TRACE_ROW</span>
-<span class="go">{&#39;code&#39;: 4}</span>
-
+<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 1065513528}</span>
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;nanoseconds&#39;: 19000000,</span>
+<span class="go"> &#39;id&#39;: 1065513528,</span>
+<span class="go"> &#39;nanoseconds&#39;: 17000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FULLSCAN_STEP&#39;: 1365,</span>
-<span class="go">                 &#39;SQLITE_STMTSTATUS_MEMUSED&#39;: 15784,</span>
+<span class="go">                 &#39;SQLITE_STMTSTATUS_MEMUSED&#39;: 15616,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_REPREPARE&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_RUN&#39;: 1,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_SORT&#39;: 2,</span>
-<span class="go">                 &#39;SQLITE_STMTSTATUS_VM_STEP&#39;: 1015351}}</span>
+<span class="go">                 &#39;SQLITE_STMTSTATUS_VM_STEP&#39;: 1015351},</span>
+<span class="go"> &#39;total_changes&#39;: 146}</span>
+</pre></div>
+</div>
+</section>
+<section id="system-and-sqlite-resource-usage-in-a-block">
+<span id="example-showresourceusage"></span><span id="index-33"></span><h2>System and SQLite resource usage in a block<a class="headerlink" href="#system-and-sqlite-resource-usage-in-a-block" title="Link to this heading"></a></h2>
+<p>Use <a class="reference internal" href="ext.html#apsw.ext.ShowResourceUsage" title="apsw.ext.ShowResourceUsage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.ShowResourceUsage()</span></code></a> to see what resources a
+block of code does.  We use the same query from above.</p>
+<p>Only statistics that have changed are shown in the summary. There are
+20 SQLite values tracked including caching, and 20 system values.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">ShowResourceUsage</span><span class="p">(</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">connection</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;thread&quot;</span>
+<span class="p">):</span>
+    <span class="c1"># some SQLite work</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
+    <span class="c1"># and some non-SQLite work - the imports cause filesystem access</span>
+    <span class="kn">import</span> <span class="nn">statistics</span><span class="o">,</span> <span class="nn">tokenize</span><span class="o">,</span> <span class="nn">uuid</span><span class="o">,</span> <span class="nn">fractions</span><span class="o">,</span> <span class="nn">pydoc</span><span class="o">,</span> <span class="nn">decimal</span>
+
+    <span class="c1"># and take some wall clock time</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.3</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.022</span>
+<span class="go">                       Wall clock 1.322</span>
+<span class="go">        Maximum resident set size 972</span>
+<span class="go">             Page faults - no I/O 143</span>
+<span class="go">     Involuntary context switches 31</span>
+<span class="go">       Voluntary context switches 1</span>
+<span class="go">                Time in user mode 0.022</span>
+<span class="go">           SQLite full table scan 1,365</span>
+<span class="go">           SQLite sort operations 2</span>
+<span class="go">             SQLite vm operations 1,015,351</span>
+<span class="go">      SQLite statements completed 1</span>
+<span class="go">SQLite allocations lookaside full 17,272</span>
+</pre></div>
+</div>
+</section>
+<section id="sql-statement-tracing-in-a-block">
+<span id="example-trace"></span><span id="index-34"></span><h2>SQL statement tracing in a block<a class="headerlink" href="#sql-statement-tracing-in-a-block" title="Link to this heading"></a></h2>
+<p>Use <a class="reference internal" href="ext.html#apsw.ext.Trace" title="apsw.ext.Trace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.Trace()</span></code></a> to see SQL statements inside a block of
+code.  This also shows behind the scenes SQL.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use None instead of stdout and no information is printed or gathered</span>
+<span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">Trace</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">connection</span><span class="p">,</span> <span class="n">vtable</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+    <span class="c1"># APSW does a savepoint behind the scenes to wrap the block</span>
+    <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+        <span class="c1"># Some regular SQL</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table multi(x)&quot;</span><span class="p">)</span>
+        <span class="c1"># executemany runs the same statement repeatedly</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&quot;insert into multi values(?)&quot;</span><span class="p">,</span> <span class="p">((</span><span class="n">x</span><span class="p">,)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)))</span>
+        <span class="c1"># See how many rows were processed</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from multi limit 2&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="c1"># You can also see how many rows were changed</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;delete from multi where x &lt; 4&quot;</span><span class="p">)</span>
+        <span class="c1"># To implement the table, SQLIte issues the pragma behind the</span>
+        <span class="c1"># scenes.  Note how the output shows this statement starting,</span>
+        <span class="c1"># the pragma, and then this statement ending.</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select count(*) from pragma_function_list&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">&gt; SAVEPOINT &quot;_apsw-0&quot;</span>
+<span class="go">    Time: 0.000</span>
+<span class="go">&gt; create table multi(x)</span>
+<span class="go">    Time: 0.000</span>
+<span class="go">&gt; insert into multi values(?)</span>
+<span class="go">    Time: 0.000  Changes: 1</span>
+<span class="go">&gt; insert into multi values(?)</span>
+<span class="go">    Time: 0.000  Changes: 1</span>
+<span class="go">&gt; insert into multi values(?)</span>
+<span class="go">    Time: 0.000  Changes: 1</span>
+<span class="go">&gt; insert into multi values(?)</span>
+<span class="go">    Time: 0.000  Changes: 1</span>
+<span class="go">&gt; insert into multi values(?)</span>
+<span class="go">    Time: 0.000  Changes: 1</span>
+<span class="go">&gt; select * from multi limit 2</span>
+<span class="go">    Time: 0.000  Rows: 3</span>
+<span class="go">&gt; delete from multi where x &lt; 4</span>
+<span class="go">    Time: 0.000  Changes: 4</span>
+<span class="go">&gt; select count(*) from pragma_function_list</span>
+<span class="go">V PRAGMA function_list</span>
+<span class="go">    Time: 0.000  Rows: 206  VmStep: 1,446  Mem: 69.7KB</span>
+<span class="go">&lt; select count(*) from pragma_function_list</span>
+<span class="go">    Time: 0.000  Rows: 1  VmStep: 423</span>
+<span class="go">&gt; RELEASE SAVEPOINT &quot;_apsw-0&quot;</span>
+<span class="go">    Time: 0.007</span>
 </pre></div>
 </div>
 </section>
 <section id="formatting-query-results-table">
-<span id="example-format-query"></span><span id="index-33"></span><h2>Formatting query results table<a class="headerlink" href="#formatting-query-results-table" title="Link to this heading"></a></h2>
+<span id="example-format-query"></span><span id="index-35"></span><h2>Formatting query results table<a class="headerlink" href="#formatting-query-results-table" title="Link to this heading"></a></h2>
 <p><a class="reference internal" href="ext.html#apsw.ext.format_query_table" title="apsw.ext.format_query_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.format_query_table()</span></code></a> makes it easy
 to format the results of a query in an automatic
 adjusting table, colour, sanitizing strings,
@@ -1833,30 +2023,36 @@ truncation etc.</p>
 <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;SELECT * FROM dummy&quot;</span>
 <span class="c1"># default</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌───────┬─────────────────────────────────────────────────────────────┬────────┐</span>
-<span class="go">│ quant │                       spaces in name                        │  last  │</span>
-<span class="go">│  ity  │                                                             │        │</span>
-<span class="go">├───────┼─────────────────────────────────────────────────────────────┼────────┤</span>
-<span class="go">│ 3     │ some regular text to make this row interesting              │ [ 3    │</span>
-<span class="go">│       │                                                             │ bytes  │</span>
-<span class="go">│       │                                                             │ ]      │</span>
-<span class="go">├───────┼─────────────────────────────────────────────────────────────┼────────┤</span>
-<span class="go">│ 3.14  │ Ti{LATIN SMALL LETTER E WITH CIRCUMFLEX AND ACUTE}ng        │ (null) │</span>
-<span class="go">│       │ Vi{LATIN SMALL LETTER E WITH CIRCUMFLEX AND DOT BELOW}t     │        │</span>
-<span class="go">├───────┼─────────────────────────────────────────────────────────────┼────────┤</span>
-<span class="go">│       │ special                                                     │        │</span>
-<span class="go">│       │ \0 cha\\rs                                                  │        │</span>
-<span class="go">└───────┴─────────────────────────────────────────────────────────────┴────────┘</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># no unicode boxes and maximum sanitize the text</span>
+
+<span class="c1"># no unicode boxes and maximum sanitize the text</span>
 <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;use_unicode&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;string_sanitize&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+<span class="c1"># lets have unicode boxes and make things narrow</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;use_unicode&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;string_sanitize&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;text_width&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+
+<span class="c1"># have the values in SQL syntax</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;quote&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">+----------+------------------------------------------------+-------------+</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌──────────┬────────────────────────────────────────────────┬─────────────┐</span>
+<span class="go">│ quantity │                 spaces in name                 │    last     │</span>
+<span class="go">├──────────┼────────────────────────────────────────────────┼─────────────┤</span>
+<span class="go">│ 3        │ some regular text to make this row interesting │ [ 3 bytes ] │</span>
+<span class="go">├──────────┼────────────────────────────────────────────────┼─────────────┤</span>
+<span class="go">│ 3.14     │ Tiếng Việt                                     │ (null)      │</span>
+<span class="go">├──────────┼────────────────────────────────────────────────┼─────────────┤</span>
+<span class="go">│          │ special                                        │             │</span>
+<span class="go">│          │ \0 cha\\rs                                     │             │</span>
+<span class="go">└──────────┴────────────────────────────────────────────────┴─────────────┘</span>
+
+<span class="go">+----------+------------------------------------------------+-------------+</span>
 <span class="go">| quantity |                 spaces in name                 |    last     |</span>
 <span class="go">+----------+------------------------------------------------+-------------+</span>
 <span class="go">| 3        | some.regular.text.to.make.this.row.interesting | [ 3 bytes ] |</span>
@@ -1866,57 +2062,41 @@ truncation etc.</p>
 <span class="go">|          | special..                                      | .           |</span>
 <span class="go">|          | ...cha\rs                                      |             |</span>
 <span class="go">+----------+------------------------------------------------+-------------+</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># lets have unicode boxes and make things narrow with no word wrap</span>
-<span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;use_unicode&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;string_sanitize&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;text_width&quot;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span> <span class="s2">&quot;word_wrap&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌─────┬────────────────┬─────┐</span>
-<span class="go">│ qua │ spaces in name │ las │</span>
-<span class="go">│ nti │                │  t  │</span>
+
+<span class="go">┌─────┬────────────────┬─────┐</span>
+<span class="go">│ qu- │ spaces in name │ la- │</span>
+<span class="go">│ an- │                │ st  │</span>
+<span class="go">│ ti- │                │     │</span>
 <span class="go">│ ty  │                │     │</span>
 <span class="go">├─────┼────────────────┼─────┤</span>
-<span class="go">│ 3   │ some regular t │ [ 3 │</span>
-<span class="go">│     │ ext to make th │  by │</span>
-<span class="go">│     │ is row interes │ tes │</span>
-<span class="go">│     │ ting           │  ]  │</span>
+<span class="go">│ 3   │ some regular   │ [ 3 │</span>
+<span class="go">│     │ text to make   │ by- │</span>
+<span class="go">│     │ this row       │ te- │</span>
+<span class="go">│     │ interesting    │ s ] │</span>
 <span class="go">├─────┼────────────────┼─────┤</span>
-<span class="go">│ 3.1 │ Tiếng Việt     │ (nu │</span>
-<span class="go">│ 4   │                │ ll) │</span>
+<span class="go">│ 3.- │ Tiếng Việt     │ (n- │</span>
+<span class="go">│ 14  │                │ ul- │</span>
+<span class="go">│     │                │ l)  │</span>
 <span class="go">├─────┼────────────────┼─────┤</span>
 <span class="go">│     │ special        │     │</span>
 <span class="go">│     │ \0 cha\\rs     │     │</span>
 <span class="go">└─────┴────────────────┴─────┘</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># have the values in SQL syntax</span>
-<span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;quote&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">┌───────┬──────────────────────────────────────────────────────────────┬───────┐</span>
-<span class="go">│ quant │                        spaces in name                        │ last  │</span>
-<span class="go">│  ity  │                                                              │       │</span>
-<span class="go">├───────┼──────────────────────────────────────────────────────────────┼───────┤</span>
-<span class="go">│ 3     │ &#39;some regular text to make this row interesting&#39;             │ X&#39;030 │</span>
-<span class="go">│       │                                                              │ 709&#39;  │</span>
-<span class="go">├───────┼──────────────────────────────────────────────────────────────┼───────┤</span>
-<span class="go">│ 3.14  │ &#39;Ti{LATIN SMALL LETTER E WITH CIRCUMFLEX AND ACUTE}ng        │ NULL  │</span>
-<span class="go">│       │ Vi{LATIN SMALL LETTER E WITH CIRCUMFLEX AND DOT BELOW}t&#39;     │       │</span>
-<span class="go">├───────┼──────────────────────────────────────────────────────────────┼───────┤</span>
-<span class="go">│ &#39;&#39;    │ &#39;special                                                     │ &#39; &#39;   │</span>
-<span class="go">│       │ \0 cha\\rs&#39;                                                  │       │</span>
-<span class="go">└───────┴──────────────────────────────────────────────────────────────┴───────┘</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+
+<span class="go">┌──────────┬──────────────────────────────────────────────────┬───────────┐</span>
+<span class="go">│ quantity │                  spaces in name                  │   last    │</span>
+<span class="go">├──────────┼──────────────────────────────────────────────────┼───────────┤</span>
+<span class="go">│ 3        │ &#39;some regular text to make this row interesting&#39; │ X&#39;030709&#39; │</span>
+<span class="go">├──────────┼──────────────────────────────────────────────────┼───────────┤</span>
+<span class="go">│ 3.14     │ &#39;Tiếng Việt&#39;                                     │ NULL      │</span>
+<span class="go">├──────────┼──────────────────────────────────────────────────┼───────────┤</span>
+<span class="go">│ &#39;&#39;       │ &#39;special                                         │ &#39; &#39;       │</span>
+<span class="go">│          │ \0 cha\\rs&#39;                                      │           │</span>
+<span class="go">└──────────┴──────────────────────────────────────────────────┴───────────┘</span>
 </pre></div>
 </div>
 </section>
 <section id="cleanup">
-<span id="example-cleanup"></span><span id="index-34"></span><h2>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading"></a></h2>
+<span id="example-cleanup"></span><span id="index-36"></span><h2>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading"></a></h2>
 <p>As a general rule you do not need to do any cleanup.  Standard
 Python garbage collection will take of everything.  Even if the
 process crashes with a connection in the middle of a transaction,
@@ -1941,7 +2121,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Aug 13, 2024.
+      <span class="lastupdated">Last updated on Nov 17, 2024.
       </span></p>
   </div>
 

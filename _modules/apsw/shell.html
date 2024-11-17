@@ -5,17 +5,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.shell &mdash; APSW 3.46.1.0 documentation</title>
+  <title>apsw.shell &mdash; APSW 3.47.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=66b59bf7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=0c22936b"></script>
-      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/documentation_options.js?v=8087e674"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
@@ -36,9 +36,6 @@
             APSW
               <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
           </a>
-              <div class="version">
-                3.46.1.0
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -53,15 +50,17 @@
 <li class="toctree-l1"><a class="reference internal" href="../../example.html">Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation and customization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../apsw.html">APSW Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../connection.html">Connections to a database</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../textsearch.html">Full text search</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../shell.html">Shell</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../bestpractice.html">Best Practice</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../execution.html">Execution and tracing</a></li>
@@ -84,7 +83,7 @@
       </nav>
 
       <div class="wy-nav-content">
-        <div class="rst-content style-external-links">
+        <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
@@ -127,6 +126,7 @@
 
 <span class="kn">import</span> <span class="nn">apsw</span>
 <span class="kn">import</span> <span class="nn">apsw.ext</span>
+<span class="kn">import</span> <span class="nn">apsw.fts5</span>
 
 
 <div class="viewcode-block" id="Shell">
@@ -223,11 +223,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">stderr</span> <span class="ow">or</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
 
         <span class="c1"># default to box output</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_using_a_terminal</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;output_box&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_using_a_terminal</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_box</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">box_options</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;quote&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-                <span class="s2">&quot;string_sanitize&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;string_sanitize&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="s2">&quot;null&quot;</span><span class="p">:</span> <span class="s2">&quot;NULL&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;truncate&quot;</span><span class="p">:</span> <span class="mi">4096</span><span class="p">,</span>
                 <span class="s2">&quot;text_width&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_terminal_width</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
@@ -263,6 +263,17 @@
         <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdin</span><span class="p">,</span> <span class="s2">&quot;isatty&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">isatty</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;isatty&quot;</span><span class="p">,</span>
                                                                                        <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">isatty</span><span class="p">()</span>
 
+    <span class="k">def</span> <span class="nf">_apply_fts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Applies the default apsw fts tokenizers and functions</span>
+        <span class="c1"># very useful opening databases from CLI shell</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">register_tokenizers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">map_tokenizers</span><span class="p">)</span>
+                <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">register_functions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">map_functions</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">NoFTS5Error</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+
     <span class="k">def</span> <span class="nf">_ensure_db</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;The database isn&#39;t opened until first use.  This function ensures it is now open.&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">:</span>
@@ -271,6 +282,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dbfilename</span><span class="p">,</span>
                                        <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span>
                                        <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_CREATE</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_fts</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span>
 
     <span class="k">def</span> <span class="nf">_set_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newv</span><span class="p">):</span>
@@ -281,6 +293,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">db</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dbfilename</span> <span class="o">=</span> <span class="n">dbfilename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_fts</span><span class="p">()</span>
 
     <span class="n">db</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_ensure_db</span><span class="p">,</span> <span class="n">_set_db</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;The current :class:`~apsw.Connection`&quot;</span><span class="p">)</span>
 
@@ -907,6 +920,9 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">eval</span><span class="p">)</span>
 
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;(Exception)&quot;</span>
+
             <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">):</span>
                 <span class="n">text</span> <span class="o">=</span> <span class="n">text</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
 
@@ -1060,45 +1076,41 @@
             <span class="n">p</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span>
             <span class="n">use_prow</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">annotation</span> <span class="o">==</span> <span class="s2">&quot;Shell.Row&quot;</span>
 
-            <span class="n">timing_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_usage</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">ShowResourceUsage</span><span class="p">(</span><span class="n">file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;thread&quot;</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">&quot;* &quot;</span><span class="p">):</span>
+                <span class="n">column_names</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="s2">&quot;all_at_once&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
 
-            <span class="n">column_names</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="s2">&quot;all_at_once&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">exec_trace</span><span class="p">:</span>
+                    <span class="n">cur</span><span class="o">.</span><span class="n">exec_trace</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">row_trace</span><span class="p">:</span>
+                    <span class="n">cur</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">y</span>
 
-            <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">exec_trace</span><span class="p">:</span>
-                <span class="n">cur</span><span class="o">.</span><span class="n">exec_trace</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="kc">True</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">row_trace</span><span class="p">:</span>
-                <span class="n">cur</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">y</span>
-
-            <span class="k">for</span> <span class="n">prow</span> <span class="ow">in</span> <span class="n">Shell</span><span class="o">.</span><span class="n">PositionRow</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">query</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)):</span>
-                <span class="n">row</span> <span class="o">=</span> <span class="n">prow</span><span class="o">.</span><span class="n">row</span>
-                <span class="k">if</span> <span class="n">column_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">column_names</span> <span class="o">=</span> <span class="n">prow</span><span class="o">.</span><span class="n">columns</span>
+                <span class="k">for</span> <span class="n">prow</span> <span class="ow">in</span> <span class="n">Shell</span><span class="o">.</span><span class="n">PositionRow</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qd</span><span class="o">.</span><span class="n">query</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)):</span>
+                    <span class="n">row</span> <span class="o">=</span> <span class="n">prow</span><span class="o">.</span><span class="n">row</span>
+                    <span class="k">if</span> <span class="n">column_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">column_names</span> <span class="o">=</span> <span class="n">prow</span><span class="o">.</span><span class="n">columns</span>
+                        <span class="k">if</span> <span class="n">qd</span><span class="o">.</span><span class="n">explain</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                            <span class="c1"># column 2 is &quot;notused&quot;</span>
+                            <span class="n">column_names</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">column_names</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">summary</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_output_summary</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                        <span class="k">if</span> <span class="n">rows</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">column_names</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">qd</span><span class="o">.</span><span class="n">explain</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                        <span class="c1"># column 2 is &quot;notused&quot;</span>
-                        <span class="n">column_names</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">column_names</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">summary</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_output_summary</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                        <span class="n">row</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span>
+
+                    <span class="n">row</span> <span class="o">=</span> <span class="n">prow</span> <span class="k">if</span> <span class="n">use_prow</span> <span class="k">else</span> <span class="n">row</span>
                     <span class="k">if</span> <span class="n">rows</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">column_names</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">qd</span><span class="o">.</span><span class="n">explain</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                    <span class="n">row</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
-                <span class="n">row</span> <span class="o">=</span> <span class="n">prow</span> <span class="k">if</span> <span class="n">use_prow</span> <span class="k">else</span> <span class="n">row</span>
-                <span class="k">if</span> <span class="n">rows</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">column_names</span> <span class="ow">and</span> <span class="n">rows</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">column_names</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">column_names</span> <span class="ow">and</span> <span class="n">rows</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">column_names</span><span class="p">,</span> <span class="n">rows</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">column_names</span> <span class="ow">and</span> <span class="n">summary</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_output_summary</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">display_timing</span><span class="p">(</span><span class="n">timing_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_usage</span><span class="p">())</span>
+                <span class="k">if</span> <span class="n">column_names</span> <span class="ow">and</span> <span class="n">summary</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_output_summary</span><span class="p">(</span><span class="n">summary</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
             <span class="k">if</span> <span class="n">qd</span><span class="o">.</span><span class="n">explain</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span>
@@ -1135,6 +1147,12 @@
             <span class="n">rest</span> <span class="o">=</span> <span class="n">command</span><span class="p">[</span><span class="n">command</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]):]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">rest</span><span class="p">:</span>
                 <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rest</span><span class="p">]</span>
+        <span class="c1"># special handling for ftsq TABLE to preserve exact query</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ftsq&quot;</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">while</span> <span class="n">command</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span> <span class="c1"># test it isn&#39;t whitespace, eq quoting</span>
+                <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">command</span><span class="p">[</span><span class="n">pos</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span></div>
 
 
@@ -1766,6 +1784,17 @@
             <span class="n">query</span> <span class="o">=</span> <span class="n">query</span> <span class="o">+</span> <span class="s2">&quot; OR &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">colq</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">queryparams</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Table &quot;</span> <span class="o">+</span> <span class="n">table</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">))</span>
 
+    <span class="k">def</span> <span class="nf">command_ftsq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ftsq TABLE query: Issues the query against the named FTS5 table</span>
+
+<span class="sd">        The top 20 results are shown.  Text after the table name is used</span>
+<span class="sd">        exactly as the query - do not extra shell quote it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Expected a table name and a query&quot;</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">=</span><span class="sa">f</span><span class="s2">&quot;select rowid, snippet(</span><span class="si">{</span><span class="w"> </span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="si">}</span><span class="s2">, -1, &#39;&lt;&lt;&#39;, &#39;&gt;&gt;&#39;, &#39;...&#39;, 10) as &#39;snippet&#39; from </span><span class="si">{</span><span class="w"> </span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="si">}</span><span class="s2">(?) order by rank limit 20&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">))</span>
+
     <span class="k">def</span> <span class="nf">command_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;header(s) ON|OFF: Display the column names in output (default OFF)</span>
 
@@ -1864,6 +1893,7 @@
                     <span class="n">w</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_help_info</span><span class="p">[</span><span class="n">command</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
 
             <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">cmd</span><span class="p">:</span>
+                <span class="n">command</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">command</span> <span class="o">==</span> <span class="s2">&quot;headers&quot;</span><span class="p">:</span> <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;header&quot;</span>
                 <span class="k">if</span> <span class="n">command</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_help_info</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;No such command </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="p">))</span>
@@ -2304,12 +2334,11 @@
                 <span class="s2">&quot;table&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
                 <span class="s2">&quot;qbox&quot;</span><span class="p">:</span> <span class="kc">True</span>
             <span class="p">}[</span><span class="n">w</span><span class="p">],</span>
-            <span class="s2">&quot;word_wrap&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
         <span class="p">}</span>
 
         <span class="c1"># argparse unfortunately tries to do too much and really is about program arguments,</span>
         <span class="c1"># but it isn&#39;t worthwhile re-implementing this</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">allow_abbrev</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;.mode </span><span class="si">{</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">allow_abbrev</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">usage</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;.mode </span><span class="si">{</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="si">}</span><span class="s2"> [options]&quot;</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;exit_on_error&quot;</span><span class="p">):</span>
             <span class="n">p</span><span class="o">.</span><span class="n">exit_on_error</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">p</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="o">**</span><span class="n">defaults</span><span class="p">)</span>
@@ -2334,22 +2363,16 @@
                        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
                        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;use_unicode&quot;</span><span class="p">,</span>
                        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use ascii line drawing like +=-+ &quot;</span><span class="p">)</span>
-        <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--word-wrap&quot;</span><span class="p">,</span>
-                       <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
-                       <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;word_wrap&quot;</span><span class="p">,</span>
-                       <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Wrap text at word boundaries [</span><span class="si">%(default)s</span><span class="s2">]&quot;</span><span class="p">)</span>
-        <span class="n">p</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--no-word-wrap&quot;</span><span class="p">,</span>
-                       <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_false&quot;</span><span class="p">,</span>
-                       <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;word_wrap&quot;</span><span class="p">,</span>
-                       <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Wrap at column width ignoring words&quot;</span><span class="p">)</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stderr</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
                 <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">redirect_stdout</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">box_options</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="c1"># bare except because SystemExit can be raised</span>
-            <span class="k">raise</span> <span class="n">Shell</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">SystemExit</span><span class="p">,</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Use --help for options&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">Shell</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span> <span class="kn">from</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_box</span>
 
     <span class="c1"># needed so command completion and help can use it</span>
@@ -2440,6 +2463,7 @@
                                    <span class="n">vfs</span><span class="o">=</span><span class="n">vfs</span><span class="p">,</span>
                                    <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span>
                                    <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_CREATE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_fts</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">command_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;output FILENAME: Send output to FILENAME (or stdout)</span>
@@ -2822,16 +2846,10 @@
 <span class="sd">        The values displayed are in seconds when shown as floating</span>
 <span class="sd">        point or an absolute count.  Only items that have changed</span>
 <span class="sd">        since starting the query are shown.  On non-Windows platforms</span>
-<span class="sd">        considerably more information can be shown.</span>
+<span class="sd">        considerably more information can be shown.  SQLite statistics</span>
+<span class="sd">        are also included.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;timer&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">get_resource_usage</span><span class="p">()</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Timing not supported by this Python version/platform&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;timer&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">command_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
         <span class="s2">&quot;version: Displays SQLite, APSW, and Python version information&quot;</span>
@@ -3428,90 +3446,6 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">completions</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">token</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">token</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="Shell.get_resource_usage">
-<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.get_resource_usage">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_resource_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dict of various numbers (ints or floats).  The</span>
-<span class="sd">        .timer command shows the difference between before and after</span>
-<span class="sd">        results of what this returns by calling :meth:`display_timing`&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
-            <span class="kn">import</span> <span class="nn">ctypes</span>
-            <span class="kn">import</span> <span class="nn">platform</span>
-            <span class="kn">import</span> <span class="nn">time</span>
-            <span class="n">ctypes</span><span class="o">.</span><span class="n">windll</span><span class="o">.</span><span class="n">kernel32</span><span class="o">.</span><span class="n">GetProcessTimes</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="n">platform</span><span class="o">.</span><span class="n">architecture</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;64bit&#39;</span> <span class="ow">and</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int64</span> <span class="ow">or</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int32</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span>
-                <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_void_p</span>
-            <span class="p">]</span>
-
-            <span class="c1"># All 4 out params have to be present.  FILETIME is really</span>
-            <span class="c1"># just a 64 bit quantity in 100 nanosecond granularity</span>
-            <span class="n">dummy</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulonglong</span><span class="p">()</span>
-            <span class="n">utime</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulonglong</span><span class="p">()</span>
-            <span class="n">stime</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulonglong</span><span class="p">()</span>
-            <span class="n">rc</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">windll</span><span class="o">.</span><span class="n">kernel32</span><span class="o">.</span><span class="n">GetProcessTimes</span><span class="p">(</span>
-                <span class="n">ctypes</span><span class="o">.</span><span class="n">windll</span><span class="o">.</span><span class="n">kernel32</span><span class="o">.</span><span class="n">GetCurrentProcess</span><span class="p">(),</span>
-                <span class="n">ctypes</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">dummy</span><span class="p">),</span>  <span class="c1"># creation time</span>
-                <span class="n">ctypes</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">dummy</span><span class="p">),</span>  <span class="c1"># exit time</span>
-                <span class="n">ctypes</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">stime</span><span class="p">),</span>
-                <span class="n">ctypes</span><span class="o">.</span><span class="n">byref</span><span class="p">(</span><span class="n">utime</span><span class="p">))</span>
-            <span class="k">if</span> <span class="n">rc</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">{</span>
-                    <span class="s1">&#39;Wall clock&#39;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
-                    <span class="s1">&#39;User time&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">utime</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10000000</span><span class="p">,</span>
-                    <span class="s1">&#39;System time&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">stime</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10000000</span>
-                <span class="p">}</span>
-            <span class="k">return</span> <span class="p">{}</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="kn">import</span> <span class="nn">resource</span>
-            <span class="kn">import</span> <span class="nn">time</span>
-            <span class="n">r</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">getrusage</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">RUSAGE_SELF</span><span class="p">)</span>
-            <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Wall clock&#39;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()}</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">desc</span> <span class="ow">in</span> <span class="p">(</span>
-                <span class="p">(</span><span class="s2">&quot;utime&quot;</span><span class="p">,</span> <span class="s2">&quot;User time&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;stime&quot;</span><span class="p">,</span> <span class="s2">&quot;System time&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;maxrss&quot;</span><span class="p">,</span> <span class="s2">&quot;Max rss&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;idrss&quot;</span><span class="p">,</span> <span class="s2">&quot;Memory&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;isrss&quot;</span><span class="p">,</span> <span class="s2">&quot;Stack&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;ixrss&quot;</span><span class="p">,</span> <span class="s2">&quot;Shared Memory&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;minflt&quot;</span><span class="p">,</span> <span class="s2">&quot;PF (no I/O)&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;majflt&quot;</span><span class="p">,</span> <span class="s2">&quot;PF (I/O)&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;inblock&quot;</span><span class="p">,</span> <span class="s2">&quot;Blocks in&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;oublock&quot;</span><span class="p">,</span> <span class="s2">&quot;Blocks out&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;nsignals&quot;</span><span class="p">,</span> <span class="s2">&quot;Signals&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;nvcsw&quot;</span><span class="p">,</span> <span class="s2">&quot;Voluntary context switches&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;nivcsw&quot;</span><span class="p">,</span> <span class="s2">&quot;Involunary context switches&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;msgrcv&quot;</span><span class="p">,</span> <span class="s2">&quot;Messages received&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;msgsnd&quot;</span><span class="p">,</span> <span class="s2">&quot;Messages sent&quot;</span><span class="p">),</span>
-                <span class="p">(</span><span class="s2">&quot;nswap&quot;</span><span class="p">,</span> <span class="s2">&quot;Swaps&quot;</span><span class="p">),</span>
-            <span class="p">):</span>
-                <span class="n">f</span> <span class="o">=</span> <span class="s2">&quot;ru_&quot;</span> <span class="o">+</span> <span class="n">i</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-                    <span class="n">res</span><span class="p">[</span><span class="n">desc</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">res</span></div>
-
-
-<div class="viewcode-block" id="Shell.display_timing">
-<a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.display_timing">[docs]</a>
-    <span class="k">def</span> <span class="nf">display_timing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="n">after</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Writes the difference between before and after to self.stderr.</span>
-<span class="sd">        The data is dictionaries returned from</span>
-<span class="sd">        :meth:`get_resource_usage`.&quot;&quot;&quot;</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">before</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">after</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-                <span class="n">v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-        <span class="n">v</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">before</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">after</span><span class="p">:</span>
-                <span class="n">one</span> <span class="o">=</span> <span class="n">before</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-                <span class="n">two</span> <span class="o">=</span> <span class="n">after</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="n">two</span> <span class="o">-</span> <span class="n">one</span>
-                <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;+ </span><span class="si">%s</span><span class="s2">: </span><span class="si">%.4f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;+ </span><span class="si">%s</span><span class="s2">: </span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span></div>
-
 
     <span class="c1">### Output helpers</span>
 <div class="viewcode-block" id="Shell.Row">
@@ -3710,7 +3644,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Aug 13, 2024.
+      <span class="lastupdated">Last updated on Nov 17, 2024.
       </span></p>
   </div>
 

@@ -33,6 +33,9 @@ and attribute documentation.
    import re
    from pathlib import Path
    
+   # pretty formatting
+   from pprint import pprint
+   
 
 .. index:: Checking APSW and SQLite versions (example code)
 
@@ -65,9 +68,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so
-             APSW version 3.46.1.0
-    SQLite header version 3046001
-       SQLite lib version 3.46.1
+             APSW version 3.47.0.0
+    SQLite header version 3047000
+       SQLite lib version 3.47.0
        Using amalgamation True
 
 
@@ -123,10 +126,14 @@ You open the database by using :class:`Connection`
    connection = apsw.Connection("dbfile")
    
    # Open existing read-only
-   connection = apsw.Connection("dbfile", flags=apsw.SQLITE_OPEN_READONLY)
+   connection = apsw.Connection(
+       "dbfile", flags=apsw.SQLITE_OPEN_READONLY
+   )
    
    # Open existing read-write (exception if it doesn't exist)
-   connection = apsw.Connection("dbfile", flags=apsw.SQLITE_OPEN_READWRITE)
+   connection = apsw.Connection(
+       "dbfile", flags=apsw.SQLITE_OPEN_READWRITE
+   )
    
 
 .. index:: Executing SQL (example code)
@@ -143,12 +150,14 @@ Use :meth:`Connection.execute` to execute SQL
    connection.execute("create table point(x,y,z)")
    connection.execute("insert into point values(1, 2, 3)")
    # You can use multiple ; separated statements
-   connection.execute("""
+   connection.execute(
+       """
        insert into point values(4, 5, 6);
        create table log(timestamp, event);
        create table foo(a, b, c);
        create table important(secret, data);
-   """)
+   """
+   )
    
    # read rows
    for row in connection.execute("select * from point"):
@@ -349,13 +358,23 @@ your schema.
 Tracing execution
 -----------------
 
-You can trace execution of SQL statements.  See :ref:`more about
-tracing <tracing>`.
+You can trace execution of SQL statements and their bindings.  This
+involves code changes and is :ref:`described in more detail here
+<tracing>`.
+
+There are simpler convenient mechanisms for :ref:`individual
+statement tracing <example_Trace>`, :Ref:`summarising a block of
+code <example_ShowResourceUsage>`, and :ref:`SQLite's interface
+<example_trace_v2>` which is used by them.
 
 .. code-block:: python
 
    
-   def my_tracer(cursor: apsw.Cursor, statement: str, bindings: Optional[apsw.Bindings]) -> bool:
+   def my_tracer(
+       cursor: apsw.Cursor,
+       statement: str,
+       bindings: Optional[apsw.Bindings],
+   ) -> bool:
        "Called just before executing each statement"
        print("SQL:", statement.strip())
        print("Bindings:", bindings)
@@ -404,7 +423,9 @@ skipping it completely.  See :ref:`more about tracing <tracing>`.
 .. code-block:: python
 
    
-   def row_tracer(cursor: apsw.Cursor, row: apsw.SQLiteValues) -> apsw.SQLiteValues:
+   def row_tracer(
+       cursor: apsw.Cursor, row: apsw.SQLiteValues
+   ) -> apsw.SQLiteValues:
        """Called with each row of results before they are handed off.  You can return None to
        cause the row to be skipped or a different set of values to return"""
        print("Row:", row)
@@ -451,7 +472,9 @@ are registered by calling :meth:`Connection.create_scalar_function`.
    
    connection.create_scalar_function("seven", ilove7)
    
-   for row in connection.execute("select seven(x,y) from point where x>4"):
+   for row in connection.execute(
+       "select seven(x,y) from point where x>4"
+   ):
        print("row", row)
    
 
@@ -552,7 +575,8 @@ documentation
    
    connection.create_window_function("sumint", SumInt)
    
-   for row in connection.execute("""
+   for row in connection.execute(
+       """
            CREATE TABLE t3(x, y);
            INSERT INTO t3 VALUES('a', 4),
                                 ('b', 5),
@@ -564,7 +588,8 @@ documentation
            ORDER BY x ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
            ) AS sum_y
            FROM t3 ORDER BY x;
-       """):
+       """
+   ):
        print("ROW", row)
    
 
@@ -624,12 +649,17 @@ register a collation by calling :meth:`Connection.create_collation`.
        print(row)
    
    
-   def str_num_collate(s1: apsw.SQLiteValue, s2: apsw.SQLiteValue) -> int:
+   def str_num_collate(
+       s1: apsw.SQLiteValue, s2: apsw.SQLiteValue
+   ) -> int:
        # return -1 if s1<s2, +1 if s1>s2 else 0 for equal
    
        def parts(s: str) -> list:
            "Converts str into list of alternating str and int parts"
-           return [int(v) if v.isdigit() else v for v in re.split(r"(\d+)", s)]
+           return [
+               int(v) if v.isdigit() else v
+               for v in re.split(r"(\d+)", s)
+           ]
    
        ps1 = parts(str(s1))
        ps2 = parts(str(s2))
@@ -645,7 +675,9 @@ register a collation by calling :meth:`Connection.create_collation`.
    connection.create_collation("strnum", str_num_collate)
    
    print("\nUsing strnum")
-   for row in connection.execute("select * from names order by name collate strnum"):
+   for row in connection.execute(
+       "select * from names order by name collate strnum"
+   ):
        print(row)
    
 
@@ -681,21 +713,28 @@ APSW provides :class:`apsw.ext.DataClassRowFactory` for names.
 
    import apsw.ext
    
-   connection.execute("""
+   connection.execute(
+       """
        create table books(id, title, author, year);
        insert into books values(7, 'Animal Farm', 'George Orwell', 1945);
        insert into books values(37, 'The Picture of Dorian Gray', 'Oscar Wilde', 1890);
-       """)
+       """
+   )
    
    # Normally you use column numbers
-   for row in connection.execute("select title, id, year from books where author=?", ("Oscar Wilde",)):
+   for row in connection.execute(
+       "select title, id, year from books where author=?",
+       ("Oscar Wilde",),
+   ):
        # this is very fragile
        print("title", row[0])
        print("id", row[1])
        print("year", row[2])
    
    # Turn on dataclasses - frozen makes them read-only
-   connection.row_trace = apsw.ext.DataClassRowFactory(dataclass_kwargs={"frozen": True})
+   connection.row_trace = apsw.ext.DataClassRowFactory(
+       dataclass_kwargs={"frozen": True}
+   )
    
    print("\nNow with dataclasses\n")
    
@@ -758,7 +797,11 @@ conversion, both for types you define and for other types.
            return f"Point({ self.x }, { self.y })"
    
        def __eq__(self, other: object) -> bool:
-           return isinstance(other, type(self)) and self.x == other.x and self.y == other.y
+           return (
+               isinstance(other, type(self))
+               and self.x == other.x
+               and self.y == other.y
+           )
    
        def to_sqlite_value(self) -> str:
            # called to convert Point into something SQLite supports
@@ -826,11 +869,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 8, 13, 13, 9, 12, 932310))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 11, 16, 15, 23, 52, 148394))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2024, 8, 13, 20, 9, 12, 932310, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2024, 11, 16, 23, 23, 52, 148394, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Query details (example code)
@@ -848,7 +891,8 @@ query (without running it)
    import apsw.ext
    
    # test tables
-   connection.execute("""
+   connection.execute(
+       """
        create table customers(
            id INTEGER PRIMARY KEY,
            name CHAR,
@@ -858,7 +902,8 @@ query (without running it)
            customer_id INTEGER,
            item MY_OWN_TYPE);
        create index cust_addr on customers(address);
-   """)
+   """
+   )
    
    query = """
        SELECT * FROM orders
@@ -875,9 +920,6 @@ query (without running it)
        explain_query_plan=True,  # how SQLite solves the query
    )
    
-   # help with formatting
-   import pprint
-   
    print("query", qd.query)
    print("\nbindings_count", qd.bindings_count)
    print("\nbindings_names", qd.bindings_names)
@@ -886,13 +928,18 @@ query (without running it)
    print("\nquery_remaining", qd.query_remaining)
    print("\nis_explain", qd.is_explain)
    print("\nis_readonly", qd.is_readonly)
-   print("\ndescription\n", pprint.pformat(qd.description))
+   print("\ndescription")
+   pprint(qd.description)
    if hasattr(qd, "description_full"):
-       print("\ndescription_full\n", pprint.pformat(qd.description_full))
+       print("\ndescription_full")
+       pprint(qd.description_full)
    
-   print("\nquery_plan\n", pprint.pformat(qd.query_plan))
-   print("\nFirst 5 actions\n", pprint.pformat(qd.actions[:5]))
-   print("\nFirst 5 explain\n", pprint.pformat(qd.explain[:5]))
+   print("\nquery_plan")
+   pprint(qd.query_plan)
+   print("\nFirst 5 actions")
+   pprint(qd.actions[:5])
+   print("\nFirst 5 explain")
+   pprint(qd.explain[:5])
    
 
 
@@ -923,7 +970,7 @@ query (without running it)
     is_readonly True
     
     description
-     (('id', 'INTEGER'),
+    (('id', 'INTEGER'),
      ('customer_id', 'INTEGER'),
      ('item', 'MY_OWN_TYPE'),
      ('id', 'INTEGER'),
@@ -931,22 +978,17 @@ query (without running it)
      ('address', 'CHAR'))
     
     description_full
-     (('id', 'INTEGER', 'main', 'orders', 'id'),
-     ('customer_id', 'INTEGER', 'main', 'orders', 'customer_id'),
-     ('item', 'MY_OWN_TYPE', 'main', 'orders', 'item'),
-     ('id', 'INTEGER', 'main', 'customers', 'id'),
-     ('name', 'CHAR', 'main', 'customers', 'name'),
-     ('address', 'CHAR', 'main', 'customers', 'address'))
+    None
     
     query_plan
-     QueryPlan(detail='QUERY PLAN',
+    QueryPlan(detail='QUERY PLAN',
               sub=[QueryPlan(detail='SCAN orders', sub=None),
                    QueryPlan(detail='SEARCH customers USING INTEGER PRIMARY KEY '
                                     '(rowid=?)',
                              sub=None)])
     
     First 5 actions
-     [QueryAction(action=21,
+    [QueryAction(action=21,
                  action_name='SQLITE_SELECT',
                  column_name=None,
                  database_name=None,
@@ -1018,7 +1060,7 @@ query (without running it)
                  view_name=None)]
     
     First 5 explain
-     [VDBEInstruction(addr=0,
+    [VDBEInstruction(addr=0,
                      opcode='Init',
                      comment=None,
                      p1=0,
@@ -1079,7 +1121,9 @@ to a file, without having the entire blob in memory.  Use
    # Add a blob we will fill in later
    connection.execute("insert into blobby values(1, zeroblob(10000))")
    # Or as a binding
-   connection.execute("insert into blobby values(2, ?)", (apsw.zeroblob(20000),))
+   connection.execute(
+       "insert into blobby values(2, ?)", (apsw.zeroblob(20000),)
+   )
    # Open a blob for writing.  We need to know the rowid
    rowid = connection.execute("select ROWID from blobby where x=1").get
    blob = connection.blob_open("main", "blobby", "y", rowid, True)
@@ -1142,13 +1186,27 @@ You can allow, deny, or ignore what SQL does.  Use
 
    
    def auth(
-       operation: int, p1: Optional[str], p2: Optional[str], db_name: Optional[str], trigger_or_view: Optional[str]
+       operation: int,
+       p1: Optional[str],
+       p2: Optional[str],
+       db_name: Optional[str],
+       trigger_or_view: Optional[str],
    ) -> int:
        """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
        SQLITE_IGNORE"""
        # find the operation name
-       print(apsw.mapping_authorizer_function[operation], p1, p2, db_name, trigger_or_view)
-       if operation == apsw.SQLITE_CREATE_TABLE and p1 and p1.startswith("private"):
+       print(
+           apsw.mapping_authorizer_function[operation],
+           p1,
+           p2,
+           db_name,
+           trigger_or_view,
+       )
+       if (
+           operation == apsw.SQLITE_CREATE_TABLE
+           and p1
+           and p1.startswith("private")
+       ):
            return apsw.SQLITE_DENY  # not allowed to create tables whose names start with private
    
        return apsw.SQLITE_OK  # always allow
@@ -1175,7 +1233,7 @@ You can allow, deny, or ignore what SQL does.  Use
     SQLITE_READ names name main None
     SQLITE_INSERT sqlite_master None main None
     SQLITE_CREATE_TABLE private_stuff None main None
-    AuthError: not authorized
+    not authorized
 
 
 .. index:: Progress handler (example code)
@@ -1195,7 +1253,10 @@ feedback and allows cancelling.
    # create a table with random numbers
    with connection:
        connection.execute("create table numbers(x)")
-       connection.executemany("insert into numbers values(?)", ((random.randint(0, 9999999999),) for _ in range(100)))
+       connection.executemany(
+           "insert into numbers values(?)",
+           ((random.randint(0, 9999999999),) for _ in range(100)),
+       )
    
    
    def progress_handler() -> bool:
@@ -1225,7 +1286,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9867044341,)
+    (9999638168,)
 
 
 .. index:: File Control (example code)
@@ -1262,7 +1323,12 @@ doesn't change for commits on the same connection.
    
    
    # Show starting values
-   print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
+   print(
+       "fcntl",
+       get_data_version(connection),
+       "pragma",
+       connection.pragma("data_version"),
+   )
    
    # See the fcntl value versus pragma value
    for sql in (
@@ -1275,7 +1341,12 @@ doesn't change for commits on the same connection.
    ):
        print(sql)
        connection.execute(sql)
-       print("fcntl", get_data_version(connection), "pragma", connection.pragma("data_version"))
+       print(
+           "fcntl",
+           get_data_version(connection),
+           "pragma",
+           connection.pragma("data_version"),
+       )
    
 
 
@@ -1320,8 +1391,10 @@ with  :meth:`Connection.set_commit_hook`.
    connection.set_commit_hook(my_commit_hook)
    try:
        with connection:
-           connection.execute("""create table example(x,y,z);
-                              insert into example values (3,4,5)""")
+           connection.execute(
+               """create table example(x,y,z);
+                              insert into example values (3,4,5)"""
+           )
    except apsw.ConstraintError:
        print("commit was not allowed")
    
@@ -1350,14 +1423,20 @@ information.  Register a hook using
 .. code-block:: python
 
    
-   def my_update_hook(type: int, db_name: str, table_name: str, rowid: int) -> None:
+   def my_update_hook(
+       type: int, db_name: str, table_name: str, rowid: int
+   ) -> None:
        op: str = apsw.mapping_authorizer_function[type]
-       print(f"Updated: { op } db { db_name }, table { table_name }, rowid { rowid }")
+       print(
+           f"Updated: { op } db { db_name }, table { table_name }, rowid { rowid }"
+       )
    
    
    connection.set_update_hook(my_update_hook)
    connection.execute("insert into names values(?)", ("file93",))
-   connection.execute("update names set name=? where name=?", ("file94", "file93"))
+   connection.execute(
+       "update names set name=? where name=?", ("file94", "file93")
+   )
    connection.execute("delete from names where name=?", ("file94",))
    
    # Clear the hook
@@ -1413,45 +1492,11 @@ useful instead.
    # arguments
    query = "SELECT * FROM range(90) WHERE step=2"
    print(apsw.ext.format_query_table(connection, query))
-
-
-.. code-block:: output
-
-    ┌───────┐
-    │ value │
-    │ 90    │
-    │ 92    │
-    │ 94    │
-    │ 96    │
-    │ 98    │
-    │ 100   │
-    └───────┘
-    
-
-
-.. code-block:: python
-
    
    # the parameters are hidden columns so '*' doesn't select them
    # but you can ask
    query = "SELECT *, start, stop, step FROM range(89) WHERE step=3"
    print(apsw.ext.format_query_table(connection, query))
-
-
-.. code-block:: output
-
-    ┌───────┬───────┬──────┬──────┐
-    │ value │ start │ stop │ step │
-    │ 89    │ 89    │ 100  │ 3    │
-    │ 92    │ 89    │ 100  │ 3    │
-    │ 95    │ 89    │ 100  │ 3    │
-    │ 98    │ 89    │ 100  │ 3    │
-    └───────┴───────┴──────┴──────┘
-    
-
-
-.. code-block:: python
-
    
    # Expose the unicode database.
    import unicodedata
@@ -1502,34 +1547,15 @@ useful instead.
           ORDER BY category
           LIMIT 10"""
    print(apsw.ext.format_query_table(connection, query))
-
-
-.. code-block:: output
-
-    ┌──────────┬──────────┐
-    │ count(*) │ category │
-    │ 65       │ Cc       │
-    │ 43       │ Cf       │
-    │ 1454     │ Cn       │
-    │ 6400     │ Co       │
-    │ 2048     │ Cs       │
-    │ 1445     │ Ll       │
-    │ 236      │ Lm       │
-    │ 46126    │ Lo       │
-    │ 31       │ Lt       │
-    │ 1127     │ Lu       │
-    └──────────┴──────────┘
-    
-
-
-.. code-block:: python
-
    
    
    # A more complex example - given a list of directories return information
    # about the files within them recursively
    def get_files_info(
-       directories: str, sep: str = os.pathsep, *, ignore_symlinks: bool = True
+       directories: str,
+       sep: str = os.pathsep,
+       *,
+       ignore_symlinks: bool = True,
    ) -> Iterator[dict[str, Any]]:
        for root in directories.split(sep):
            with os.scandir(root) as sd:
@@ -1537,7 +1563,10 @@ useful instead.
                    if entry.is_symlink() and ignore_symlinks:
                        continue
                    if entry.is_dir():
-                       yield from get_files_info(os.path.join(root, entry.name), ignore_symlinks=ignore_symlinks)
+                       yield from get_files_info(
+                           os.path.join(root, entry.name),
+                           ignore_symlinks=ignore_symlinks,
+                       )
                    elif entry.is_file():
                        s = entry.stat()
                        yield {
@@ -1549,9 +1578,14 @@ useful instead.
    
    
    # which stat columns do we want?
-   get_files_info.stat_columns = tuple(n for n in dir(os.stat(".")) if n.startswith("st_"))
+   get_files_info.stat_columns = tuple(
+       n for n in dir(os.stat(".")) if n.startswith("st_")
+   )
    # setup columns and access by providing an example of the first entry returned
-   get_files_info.columns, get_files_info.column_access = apsw.ext.get_column_names(next(get_files_info(".")))
+   (
+       get_files_info.columns,
+       get_files_info.column_access,
+   ) = apsw.ext.get_column_names(next(get_files_info(".")))
    
    apsw.ext.make_virtual_module(connection, "files_info", get_files_info)
    
@@ -1573,26 +1607,6 @@ useful instead.
                ORDER BY st_size DESC
                LIMIT 3"""
    print(apsw.ext.format_query_table(connection, query, bindings))
-
-
-.. code-block:: output
-
-    ┌─────────┬──────────────────────────────────────────┬─────────────────────────┐
-    │ st_size │                directory                 │          name           │
-    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 805508  │ /usr/lib/python3.12/pydoc_data           │ topics.py               │
-    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 502306  │ /usr/lib/python3.12/pydoc_data/__pycache │ topics.cpython-312.pyc  │
-    │         │ __                                       │                         │
-    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 245231  │ /usr/lib/python3.12/tkinter/__pycache__  │ __init__.cpython-       │
-    │         │                                          │ 312.pyc                 │
-    └─────────┴──────────────────────────────────────────┴─────────────────────────┘
-    
-
-
-.. code-block:: python
-
    
    # Find the 3 oldest Python files
    query = """SELECT DATE(st_ctime, 'auto') AS date, directory, name
@@ -1601,21 +1615,6 @@ useful instead.
                ORDER BY st_size DESC
                LIMIT 3"""
    print(apsw.ext.format_query_table(connection, query, bindings))
-
-
-.. code-block:: output
-
-    ┌────────────┬────────────────────────────────┬───────────────┐
-    │    date    │           directory            │     name      │
-    │ 2024-08-01 │ /usr/lib/python3.12/pydoc_data │ topics.py     │
-    │ 2024-08-01 │ /usr/lib/python3.12            │ _pydecimal.py │
-    │ 2024-04-16 │ /usr/lib/python3.12/tkinter    │ __init__.py   │
-    └────────────┴────────────────────────────────┴───────────────┘
-    
-
-
-.. code-block:: python
-
    
    # find space used by filename extension
    query = """SELECT extension, SUM(st_size) as total_size
@@ -1623,15 +1622,70 @@ useful instead.
                GROUP BY extension
                ORDER BY extension"""
    print(apsw.ext.format_query_table(connection, query, bindings))
+   
+   # unregister a virtual table by passing None
+   connection.create_module("files_info", None)
+   
 
 
 .. code-block:: output
 
+    ┌───────┐
+    │ value │
+    │ 90    │
+    │ 92    │
+    │ 94    │
+    │ 96    │
+    │ 98    │
+    │ 100   │
+    └───────┘
+    
+    ┌───────┬───────┬──────┬──────┐
+    │ value │ start │ stop │ step │
+    │ 89    │ 89    │ 100  │ 3    │
+    │ 92    │ 89    │ 100  │ 3    │
+    │ 95    │ 89    │ 100  │ 3    │
+    │ 98    │ 89    │ 100  │ 3    │
+    └───────┴───────┴──────┴──────┘
+    
+    ┌──────────┬──────────┐
+    │ count(*) │ category │
+    │ 65       │ Cc       │
+    │ 43       │ Cf       │
+    │ 1454     │ Cn       │
+    │ 6400     │ Co       │
+    │ 2048     │ Cs       │
+    │ 1445     │ Ll       │
+    │ 236      │ Lm       │
+    │ 46126    │ Lo       │
+    │ 31       │ Lt       │
+    │ 1127     │ Lu       │
+    └──────────┴──────────┘
+    
+    ┌─────────┬──────────────────────────────────────────┬─────────────────────────┐
+    │ st_size │                directory                 │          name           │
+    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
+    │ 815083  │ /usr/lib/python3.12/pydoc_data           │ topics.py               │
+    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
+    │ 509199  │ /usr/lib/python3.12/pydoc_data/          │ topics.cpython-312.pyc  │
+    │         │ __pycache__                              │                         │
+    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
+    │ 245940  │ /usr/lib/python3.12/tkinter/__pycache__  │ __init__.cpython-312.p- │
+    │         │                                          │ yc                      │
+    └─────────┴──────────────────────────────────────────┴─────────────────────────┘
+    
+    ┌────────────┬────────────────────────────────┬───────────────┐
+    │    date    │           directory            │     name      │
+    │ 2024-10-05 │ /usr/lib/python3.12/pydoc_data │ topics.py     │
+    │ 2024-10-05 │ /usr/lib/python3.12            │ _pydecimal.py │
+    │ 2024-10-05 │ /usr/lib/python3.12/tkinter    │ __init__.py   │
+    └────────────┴────────────────────────────────┴───────────────┘
+    
     ┌────────────┬────────────┐
     │ extension  │ total_size │
-    │            │ 432392     │
-    │ .a         │ 96838062   │
-    │ .allowlist │ 56         │
+    │            │ 436921     │
+    │ .a         │ 97341558   │
+    │ .allowlist │ 72         │
     │ .bootstrap │ 1804       │
     │ .c         │ 10948      │
     │ .cfg       │ 341        │
@@ -1642,26 +1696,20 @@ useful instead.
     │ .ini       │ 997        │
     │ .json      │ 2162       │
     │ .local     │ 2136       │
-    │ .o         │ 9360       │
+    │ .o         │ 9328       │
     │ .ps1       │ 9033       │
-    │ .py        │ 11142873   │
-    │ .pyc       │ 11408387   │
+    │ .py        │ 11251549   │
+    │ .pyc       │ 11433569   │
     │ .rst       │ 9561       │
-    │ .sh        │ 4008       │
-    │ .so        │ 25396992   │
-    │ .stdlib    │ 12536      │
+    │ .sh        │ 4507       │
+    │ .so        │ 26582544   │
+    │ .sql       │ 1001       │
+    │ .stdlib    │ 12562      │
     │ .supp      │ 70         │
     │ .txt       │ 13936      │
     └────────────┴────────────┘
     
 
-
-.. code-block:: python
-
-   
-   # unregister a virtual table by passing None
-   connection.create_module("files_info", None)
-   
 
 .. index:: VFS - Virtual File System (example code)
 
@@ -1710,7 +1758,9 @@ for receiving parameters once a database is open.
                print("   fast is", name.uri_parameter("fast"))
                print("   level is", name.uri_int("level", 3))
                print("   warp is", name.uri_boolean("warp", False))
-               print("   notpresent is", name.uri_parameter("notpresent"))
+               print(
+                   "   notpresent is", name.uri_parameter("notpresent")
+               )
                # all of them
                print("   all uris", name.parameters)
            else:
@@ -1758,7 +1808,9 @@ for receiving parameters once a database is open.
    
    # uri parameters are after the ? separated by &
    obfudb = apsw.Connection(
-       "file:myobfudb?fast=speed&level=7&warp=on&another=true", flags=open_flags, vfs=obfuvfs.vfs_name
+       "file:myobfudb?fast=speed&level=7&warp=on&another=true",
+       flags=open_flags,
+       vfs=obfuvfs.vfs_name,
    )
    
    # Check it works
@@ -1768,10 +1820,15 @@ for receiving parameters once a database is open.
    print("What is on disk", repr(Path("myobfudb").read_bytes()[:20]))
    
    # And unobfuscating it
-   print("Unobfuscated disk", repr(obfuscate(Path("myobfudb").read_bytes()[:20])))
+   print(
+       "Unobfuscated disk",
+       repr(obfuscate(Path("myobfudb").read_bytes()[:20])),
+   )
    
    # Custom pragma
-   print("pragma returned", obfudb.pragma("my_custom_pragma", "my value"))
+   print(
+       "pragma returned", obfudb.pragma("my_custom_pragma", "my value")
+   )
    
    # Tidy up
    obfudb.close()
@@ -1793,8 +1850,10 @@ for receiving parameters once a database is open.
     xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_MAIN_JOURNAL | SQLITE_OPEN_READWRITE
        filename /space/apsw/myobfudb-journal
     pragma received foreign_keys = ON
+    pragma received optimize = 65538
     xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_WAL
        filename /space/apsw/myobfudb-wal
+    pragma received recursive_triggers = ON
     What is on disk b'\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa7\xa7'
     Unobfuscated disk b'SQLite format 3\x00\x10\x00\x02\x02'
     pragma received my_custom_pragma = my value
@@ -1826,10 +1885,14 @@ SQLite lets you see and update various limits via
    
    # Set limit for size of a string
    connection.execute("create table testlimit(s)")
-   connection.execute("insert into testlimit values(?)", ("x" * 1024,))  # 1024 char string
+   connection.execute(
+       "insert into testlimit values(?)", ("x" * 1024,)
+   )  # 1024 char string
    connection.limit(apsw.SQLITE_LIMIT_LENGTH, 1023)  # limit is now 1023
    try:
-       connection.execute("insert into testlimit values(?)", ("y" * 1024,))
+       connection.execute(
+           "insert into testlimit values(?)", ("y" * 1024,)
+       )
        print("string exceeding limit was inserted")
    except apsw.TooBigError:
        print("Caught toobig exception")
@@ -1879,12 +1942,14 @@ Python.
    shell.process_command(".headers on")
    
    # How to execute SQL
-   shell.process_sql("""
+   shell.process_sql(
+       """
        create table csvtest(column1, column2 INTEGER);
        create index faster on csvtest(column1);
        insert into csvtest values(3, 4);
        insert into csvtest values('a b', NULL);
-   """)
+   """
+   )
    
    # Or let the shell figure out SQL vs dot command
    shell.process_complete_line("select * from csvtest")
@@ -1913,9 +1978,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.46.1.0)
-    -- SQLite version 3.46.1
-    -- Date: Tue Aug 13 13:09:13 2024
+    -- SQLite dump (by APSW 3.47.0.0)
+    -- SQLite version 3.47.0
+    -- Date: Sat Nov 16 15:23:52 2024
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -1958,13 +2023,15 @@ for per connection statistics.
    current_usage, max_usage = apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
    print(f"SQLite memory usage { current_usage } max { max_usage }")
    schema_used, _ = connection.status(apsw.SQLITE_DBSTATUS_SCHEMA_USED)
-   print(f"{ schema_used } bytes used to store schema for this connection")
+   print(
+       f"{ schema_used } bytes used to store schema for this connection"
+   )
    
 
 
 .. code-block:: output
 
-    SQLite memory usage 509320 max 2494488
+    SQLite memory usage 505696 max 2494424
     4968 bytes used to store schema for this connection
 
 
@@ -2004,12 +2071,20 @@ This shows using :meth:`Connection.trace_v2`
    def trace_hook(trace: dict) -> None:
        # check the sql and connection are as expected and remove from trace
        # so we don't print them
-       assert trace.pop("sql") == query and trace.pop("connection") is connection
+       assert (
+           trace.pop("sql", query) == query
+           and trace.pop("connection") is connection
+       )
        print("code is ", apsw.mapping_trace_codes[trace["code"]])
-       print(pprint.pformat(trace), "\n")
+       pprint(trace)
    
    
-   connection.trace_v2(apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_PROFILE | apsw.SQLITE_TRACE_ROW, trace_hook)
+   connection.trace_v2(
+       apsw.SQLITE_TRACE_STMT
+       | apsw.SQLITE_TRACE_PROFILE
+       | apsw.SQLITE_TRACE_ROW,
+       trace_hook,
+   )
    
    # We will get one each of the trace events
    for _ in connection.execute(query):
@@ -2023,23 +2098,129 @@ This shows using :meth:`Connection.trace_v2`
 .. code-block:: output
 
     code is  SQLITE_TRACE_STMT
-    {'code': 1} 
-    
+    {'code': 1, 'id': 1065513528, 'total_changes': 146, 'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4} 
-    
+    {'code': 4, 'id': 1065513528}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'nanoseconds': 19000000,
+     'id': 1065513528,
+     'nanoseconds': 17000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
                      'SQLITE_STMTSTATUS_FULLSCAN_STEP': 1365,
-                     'SQLITE_STMTSTATUS_MEMUSED': 15784,
+                     'SQLITE_STMTSTATUS_MEMUSED': 15616,
                      'SQLITE_STMTSTATUS_REPREPARE': 0,
                      'SQLITE_STMTSTATUS_RUN': 1,
                      'SQLITE_STMTSTATUS_SORT': 2,
-                     'SQLITE_STMTSTATUS_VM_STEP': 1015351}} 
+                     'SQLITE_STMTSTATUS_VM_STEP': 1015351},
+     'total_changes': 146}
+
+
+.. index:: System and SQLite resource usage in a block (example code)
+
+.. _example_ShowResourceUsage:
+
+System and SQLite resource usage in a block
+-------------------------------------------
+
+Use :meth:`apsw.ext.ShowResourceUsage` to see what resources a
+block of code does.  We use the same query from above.
+
+Only statistics that have changed are shown in the summary. There are
+20 SQLite values tracked including caching, and 20 system values.
+
+.. code-block:: python
+
+   with apsw.ext.ShowResourceUsage(
+       sys.stdout, db=connection, scope="thread"
+   ):
+       # some SQLite work
+       rows = connection.execute(query).get
+       # and some non-SQLite work - the imports cause filesystem access
+       import statistics, tokenize, uuid, fractions, pydoc, decimal
+   
+       # and take some wall clock time
+       time.sleep(1.3)
+   
+
+
+.. code-block:: output
+
+                           Total CPU consumption 0.022
+                                      Wall clock 1.322
+                       Maximum resident set size 972
+                            Page faults - no I/O 143
+                    Involuntary context switches 31
+                      Voluntary context switches 1
+                               Time in user mode 0.022
+                          SQLite full table scan 1,365
+                          SQLite sort operations 2
+                            SQLite vm operations 1,015,351
+                     SQLite statements completed 1
+               SQLite allocations lookaside full 17,272
+    
+
+
+.. index:: SQL statement tracing in a block (example code)
+
+.. _example_Trace:
+
+SQL statement tracing in a block
+--------------------------------
+
+Use :meth:`apsw.ext.Trace` to see SQL statements inside a block of
+code.  This also shows behind the scenes SQL.
+
+.. code-block:: python
+
+   # Use None instead of stdout and no information is printed or gathered
+   with apsw.ext.Trace(sys.stdout, db=connection, vtable=True):
+   
+       # APSW does a savepoint behind the scenes to wrap the block
+       with connection:
+           # Some regular SQL
+           connection.execute("create table multi(x)")
+           # executemany runs the same statement repeatedly
+           connection.executemany("insert into multi values(?)", ((x,) for x in range(5)))
+           # See how many rows were processed
+           connection.execute("select * from multi limit 2").fetchall()
+           # You can also see how many rows were changed
+           connection.execute("delete from multi where x < 4")
+           # To implement the table, SQLIte issues the pragma behind the
+           # scenes.  Note how the output shows this statement starting,
+           # the pragma, and then this statement ending.
+           connection.execute("select count(*) from pragma_function_list")
+   
+
+
+.. code-block:: output
+
+     > SAVEPOINT "_apsw-0"
+         Time: 0.000
+     > create table multi(x)
+         Time: 0.000
+     > insert into multi values(?)
+         Time: 0.000  Changes: 1
+     > insert into multi values(?)
+         Time: 0.000  Changes: 1
+     > insert into multi values(?)
+         Time: 0.000  Changes: 1
+     > insert into multi values(?)
+         Time: 0.000  Changes: 1
+     > insert into multi values(?)
+         Time: 0.000  Changes: 1
+     > select * from multi limit 2
+         Time: 0.000  Rows: 3
+     > delete from multi where x < 4
+         Time: 0.000  Changes: 4
+     > select count(*) from pragma_function_list
+     V PRAGMA function_list
+         Time: 0.000  Rows: 206  VmStep: 1,446  Mem: 69.7KB
+     < select count(*) from pragma_function_list
+         Time: 0.000  Rows: 1  VmStep: 423
+     > RELEASE SAVEPOINT "_apsw-0"
+         Time: 0.007
     
 
 
@@ -2070,37 +2251,38 @@ truncation etc.
    query = "SELECT * FROM dummy"
    # default
    print(apsw.ext.format_query_table(connection, query))
-
-
-.. code-block:: output
-
-    ┌───────┬─────────────────────────────────────────────────────────────┬────────┐
-    │ quant │                       spaces in name                        │  last  │
-    │  ity  │                                                             │        │
-    ├───────┼─────────────────────────────────────────────────────────────┼────────┤
-    │ 3     │ some regular text to make this row interesting              │ [ 3    │
-    │       │                                                             │ bytes  │
-    │       │                                                             │ ]      │
-    ├───────┼─────────────────────────────────────────────────────────────┼────────┤
-    │ 3.14  │ Ti{LATIN SMALL LETTER E WITH CIRCUMFLEX AND ACUTE}ng        │ (null) │
-    │       │ Vi{LATIN SMALL LETTER E WITH CIRCUMFLEX AND DOT BELOW}t     │        │
-    ├───────┼─────────────────────────────────────────────────────────────┼────────┤
-    │       │ special                                                     │        │
-    │       │ \0 cha\\rs                                                  │        │
-    └───────┴─────────────────────────────────────────────────────────────┴────────┘
-    
-
-
-.. code-block:: python
-
    
    # no unicode boxes and maximum sanitize the text
    kwargs = {"use_unicode": False, "string_sanitize": 2}
    print(apsw.ext.format_query_table(connection, query, **kwargs))
+   
+   # lets have unicode boxes and make things narrow
+   kwargs = {
+       "use_unicode": True,
+       "string_sanitize": 0,
+       "text_width": 30,
+   }
+   print(apsw.ext.format_query_table(connection, query, **kwargs))
+   
+   # have the values in SQL syntax
+   kwargs = {"quote": True}
+   print(apsw.ext.format_query_table(connection, query, **kwargs))
+   
 
 
 .. code-block:: output
 
+    ┌──────────┬────────────────────────────────────────────────┬─────────────┐
+    │ quantity │                 spaces in name                 │    last     │
+    ├──────────┼────────────────────────────────────────────────┼─────────────┤
+    │ 3        │ some regular text to make this row interesting │ [ 3 bytes ] │
+    ├──────────┼────────────────────────────────────────────────┼─────────────┤
+    │ 3.14     │ Tiếng Việt                                     │ (null)      │
+    ├──────────┼────────────────────────────────────────────────┼─────────────┤
+    │          │ special                                        │             │
+    │          │ \0 cha\\rs                                     │             │
+    └──────────┴────────────────────────────────────────────────┴─────────────┘
+    
     +----------+------------------------------------------------+-------------+
     | quantity |                 spaces in name                 |    last     |
     +----------+------------------------------------------------+-------------+
@@ -2112,66 +2294,37 @@ truncation etc.
     |          | ...cha\rs                                      |             |
     +----------+------------------------------------------------+-------------+
     
-
-
-.. code-block:: python
-
-   
-   # lets have unicode boxes and make things narrow with no word wrap
-   kwargs = {"use_unicode": True, "string_sanitize": 0, "text_width": 30, "word_wrap": False}
-   print(apsw.ext.format_query_table(connection, query, **kwargs))
-
-
-.. code-block:: output
-
     ┌─────┬────────────────┬─────┐
-    │ qua │ spaces in name │ las │
-    │ nti │                │  t  │
+    │ qu- │ spaces in name │ la- │
+    │ an- │                │ st  │
+    │ ti- │                │     │
     │ ty  │                │     │
     ├─────┼────────────────┼─────┤
-    │ 3   │ some regular t │ [ 3 │
-    │     │ ext to make th │  by │
-    │     │ is row interes │ tes │
-    │     │ ting           │  ]  │
+    │ 3   │ some regular   │ [ 3 │
+    │     │ text to make   │ by- │
+    │     │ this row       │ te- │
+    │     │ interesting    │ s ] │
     ├─────┼────────────────┼─────┤
-    │ 3.1 │ Tiếng Việt     │ (nu │
-    │ 4   │                │ ll) │
+    │ 3.- │ Tiếng Việt     │ (n- │
+    │ 14  │                │ ul- │
+    │     │                │ l)  │
     ├─────┼────────────────┼─────┤
     │     │ special        │     │
     │     │ \0 cha\\rs     │     │
     └─────┴────────────────┴─────┘
     
-
-
-.. code-block:: python
-
-   
-   # have the values in SQL syntax
-   kwargs = {"quote": True}
-   print(apsw.ext.format_query_table(connection, query, **kwargs))
-
-
-.. code-block:: output
-
-    ┌───────┬──────────────────────────────────────────────────────────────┬───────┐
-    │ quant │                        spaces in name                        │ last  │
-    │  ity  │                                                              │       │
-    ├───────┼──────────────────────────────────────────────────────────────┼───────┤
-    │ 3     │ 'some regular text to make this row interesting'             │ X'030 │
-    │       │                                                              │ 709'  │
-    ├───────┼──────────────────────────────────────────────────────────────┼───────┤
-    │ 3.14  │ 'Ti{LATIN SMALL LETTER E WITH CIRCUMFLEX AND ACUTE}ng        │ NULL  │
-    │       │ Vi{LATIN SMALL LETTER E WITH CIRCUMFLEX AND DOT BELOW}t'     │       │
-    ├───────┼──────────────────────────────────────────────────────────────┼───────┤
-    │ ''    │ 'special                                                     │ ' '   │
-    │       │ \0 cha\\rs'                                                  │       │
-    └───────┴──────────────────────────────────────────────────────────────┴───────┘
+    ┌──────────┬──────────────────────────────────────────────────┬───────────┐
+    │ quantity │                  spaces in name                  │   last    │
+    ├──────────┼──────────────────────────────────────────────────┼───────────┤
+    │ 3        │ 'some regular text to make this row interesting' │ X'030709' │
+    ├──────────┼──────────────────────────────────────────────────┼───────────┤
+    │ 3.14     │ 'Tiếng Việt'                                     │ NULL      │
+    ├──────────┼──────────────────────────────────────────────────┼───────────┤
+    │ ''       │ 'special                                         │ ' '       │
+    │          │ \0 cha\\rs'                                      │           │
+    └──────────┴──────────────────────────────────────────────────┴───────────┘
     
 
-
-.. code-block:: python
-
-   
 
 .. index:: Cleanup (example code)
 
