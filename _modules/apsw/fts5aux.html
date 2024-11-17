@@ -1,0 +1,446 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>apsw.fts5aux &mdash; APSW 3.47.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8087e674"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            APSW
+              <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation and customization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bestpractice.html">Best Practice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../apsw.html">apsw</a></li>
+      <li class="breadcrumb-item active">apsw.fts5aux</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for apsw.fts5aux</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">:mod:`apsw.fts5aux` Implementation of FTS5 auxiliary functions in Python.</span>
+
+<span class="sd">Auxiliary functions are used for ranking results, and for processing search</span>
+<span class="sd">results.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">dataclasses</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">apsw</span>
+
+
+<span class="c1"># This section is a translation of the bm25 C code from the `SQLite</span>
+<span class="c1"># source https://sqlite.org/src/file?name=ext/fts5/fts5_aux.c serving</span>
+<span class="c1"># as an example of how to write a ranking function.  It uses the same</span>
+<span class="c1"># naming conventions and code structure.</span>
+
+
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">_Bm25Data</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Statistical information about each query overall&quot;&quot;&quot;</span>
+
+    <span class="n">nPhrase</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Number of phrases in query&quot;</span>
+    <span class="n">avgdl</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="s2">&quot;Average number of tokens in each row&quot;</span>
+    <span class="n">aIDF</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="s2">&quot;Inverse Document Frequency for each phrase&quot;</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="s2">&quot;Per column weight - how much each occurrence counts for, defaulting to 1&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_Bm25GetData</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_Bm25Data</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates :class:`_Bm25Data`&quot;&quot;&quot;</span>
+
+    <span class="c1"># weights must be at least column_count long defaulting to 1.0.</span>
+    <span class="c1"># Extra values are ignored.  This is done once here and remembered</span>
+    <span class="c1"># while the C code does it on every row.</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">api</span><span class="o">.</span><span class="n">column_count</span><span class="p">:</span>
+        <span class="n">weights</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">column_count</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)))</span>
+
+    <span class="c1"># number of phrases and rows in table</span>
+    <span class="n">nPhrase</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">phrase_count</span>
+    <span class="n">nRow</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">row_count</span>
+
+    <span class="c1"># average document length (in tokens) for the table is total</span>
+    <span class="c1"># number of tokens in all columns of all rows divided by the</span>
+    <span class="c1"># number of rows</span>
+    <span class="n">avgdl</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">column_total_size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">nRow</span>
+
+    <span class="c1"># Calculate the inverse document frequency for each phrase</span>
+    <span class="n">aIDF</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nPhrase</span><span class="p">):</span>
+        <span class="c1"># We need to know how many times the phrase occurs.</span>
+        <span class="n">nHit</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">def</span> <span class="nf">CountCb</span><span class="p">(</span><span class="n">_api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">_closure</span><span class="p">:</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="c1"># Callback for each row matched.  The parameters are</span>
+            <span class="c1"># unused.</span>
+            <span class="k">nonlocal</span> <span class="n">nHit</span>
+            <span class="n">nHit</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">api</span><span class="o">.</span><span class="n">query_phrase</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">CountCb</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># See the comment in the C code for details on IDF calculation</span>
+        <span class="n">idf</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="n">nRow</span> <span class="o">-</span> <span class="n">nHit</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">nHit</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">))</span>
+        <span class="c1"># ensure it is at least a positive small number</span>
+        <span class="n">idf</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">idf</span><span class="p">)</span>
+
+        <span class="n">aIDF</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idf</span><span class="p">)</span>
+
+    <span class="c1"># Save for next time</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">_Bm25Data</span><span class="p">(</span><span class="n">nPhrase</span><span class="p">,</span> <span class="n">avgdl</span><span class="p">,</span> <span class="n">aIDF</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">api</span><span class="o">.</span><span class="n">aux_data</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+
+<div class="viewcode-block" id="bm25">
+<a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.bm25">[docs]</a>
+<span class="k">def</span> <span class="nf">bm25</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform the BM25 calculation for a matching row</span>
+
+<span class="sd">    It accepts weights for each column (default 1) which means how much</span>
+<span class="sd">    a hit in that column counts for.</span>
+
+<span class="sd">    The builtin function is `described here</span>
+<span class="sd">    &lt;https://www.sqlite.org/fts5.html#the_bm25_function&gt;`__.</span>
+<span class="sd">    This is a translation of the SQLite C version into Python</span>
+<span class="sd">    for illustrative purposes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># aux_data is used to store the overall statistical data,</span>
+    <span class="c1"># calculated once by _Bm25getData</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">aux_data</span> <span class="ow">or</span> <span class="n">_Bm25GetData</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="n">k1</span> <span class="o">=</span> <span class="mf">1.2</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mf">0.75</span>
+
+    <span class="c1"># This counts how often each phrase occurs in the row.  For each</span>
+    <span class="c1"># hit we multiply by the weight for the column, which defaults to</span>
+    <span class="c1"># 1.0</span>
+    <span class="n">aFreq</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">nPhrase</span><span class="p">):</span>
+        <span class="n">freq</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">offsets</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_locations</span><span class="p">(</span><span class="n">i</span><span class="p">)):</span>
+            <span class="n">freq</span> <span class="o">+=</span> <span class="n">data</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">offsets</span><span class="p">)</span>
+        <span class="n">aFreq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">freq</span><span class="p">)</span>
+
+    <span class="c1"># total number of tokens in this row</span>
+    <span class="n">nTok</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">column_size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># calculate the score, starting with some constants</span>
+    <span class="n">k1</span> <span class="o">=</span> <span class="mf">1.2</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mf">0.75</span>
+
+    <span class="n">D</span> <span class="o">=</span> <span class="n">nTok</span>
+    <span class="n">score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">nPhrase</span><span class="p">):</span>
+        <span class="n">score</span> <span class="o">+=</span> <span class="n">data</span><span class="o">.</span><span class="n">aIDF</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">((</span><span class="n">aFreq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">k1</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">aFreq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">k1</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">D</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">avgdl</span><span class="p">)))</span>
+
+    <span class="c1"># The score has a bigger (positive) number meaning a better match.</span>
+    <span class="c1"># FTS5 wants you to do &#39;ORDER BY rank&#39; giving the better matches</span>
+    <span class="c1"># first.  Negating the score achieves that.</span>
+
+    <span class="k">return</span> <span class="o">-</span><span class="n">score</span></div>
+
+
+
+<div class="viewcode-block" id="inverse_document_frequency">
+<a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.inverse_document_frequency">[docs]</a>
+<span class="k">def</span> <span class="nf">inverse_document_frequency</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Measures how rare each search phrase is in the content</span>
+
+<span class="sd">    This helper method is intended for use in your own ranking</span>
+<span class="sd">    functions.  The result is the idf for each phrase in the query.</span>
+
+<span class="sd">    A phrase occurring in almost every row will have a value close to</span>
+<span class="sd">    zero, while less frequent phrases have increasingly large positive</span>
+<span class="sd">    numbers.</span>
+
+<span class="sd">    The values will always be at least 0.000001 so you don&#39;t have to</span>
+<span class="sd">    worry about negative numbers or division by zero, even for phrases</span>
+<span class="sd">    that are not found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># This is ported from the bm25 code above, but using Pythonic</span>
+    <span class="c1"># naming</span>
+    <span class="n">idfs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">row_count</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">row_count</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_count</span><span class="p">):</span>
+        <span class="c1"># We need to know how many times the phrase occurs.</span>
+        <span class="n">hits</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">def</span> <span class="nf">count_callback</span><span class="p">(</span><span class="n">_api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">_closure</span><span class="p">:</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="c1"># Callback for each row matched.  The parameters are</span>
+            <span class="c1"># unused.</span>
+            <span class="k">nonlocal</span> <span class="n">hits</span>
+            <span class="n">hits</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">api</span><span class="o">.</span><span class="n">query_phrase</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">count_callback</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># See the comment in the C code for details on IDF calculation</span>
+        <span class="n">idf</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="n">row_count</span> <span class="o">-</span> <span class="n">hits</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">hits</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">))</span>
+        <span class="c1"># ensure it is at least a positive small number</span>
+        <span class="n">idf</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">idf</span><span class="p">)</span>
+
+        <span class="n">idfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idf</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">idfs</span></div>
+
+
+
+<div class="viewcode-block" id="subsequence">
+<a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.subsequence">[docs]</a>
+<span class="k">def</span> <span class="nf">subsequence</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ranking function boosting rows where tokens are in order</span>
+
+<span class="sd">    :func:`bm25` doesn&#39;t take into account ordering.  Phrase matches</span>
+<span class="sd">    like ``&quot;big truck&quot;`` must occur exactly together in that order.</span>
+<span class="sd">    Matches for ``big truck`` scores the same providing both words</span>
+<span class="sd">    exist anywhere.  This function boosts matches where the order does</span>
+<span class="sd">    match so ``big red truck`` gets a boost while ``truck, big`` does</span>
+<span class="sd">    not for the same query.</span>
+
+<span class="sd">    If the query has phrases and operators (AND, OR, NOT) then those</span>
+<span class="sd">    operators are not visible to this function, and it looks for</span>
+<span class="sd">    ordering of each phrase.  For example ``big OR truck NOT red``</span>
+<span class="sd">    will result in this function boosting ``big ... truck ... red`` in</span>
+<span class="sd">    that order.  See :attr:`apsw.fts5.QueryInfo.phrases`.</span>
+
+<span class="sd">    It accepts parameters giving the weights for each column (default 1).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># start with the bm25 base score</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">bm25</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="c1"># degrade to bm25 if not enough phrases</span>
+    <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">phrase_count</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">score</span>
+
+    <span class="n">boost</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># work out which columns apply</span>
+    <span class="n">columns</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_columns</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_count</span><span class="p">)))</span>
+
+    <span class="k">if</span> <span class="n">columns</span><span class="p">:</span>
+        <span class="c1"># shortest span possible - number of tokens in each phrase except 1 for last</span>
+        <span class="n">shortest_possible</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">phrase</span><span class="p">)</span> <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="n">api</span><span class="o">.</span><span class="n">phrases</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">api</span><span class="o">.</span><span class="n">aux_data</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">column</span><span class="p">]:</span>
+                <span class="n">boost</span> <span class="o">+=</span> <span class="p">(</span>
+                    <span class="nb">sum</span><span class="p">(</span><span class="n">shortest_possible</span> <span class="o">/</span> <span class="n">span</span> <span class="k">for</span> <span class="n">span</span> <span class="ow">in</span> <span class="n">_column_spans</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">column</span><span class="p">))</span> <span class="o">*</span> <span class="n">api</span><span class="o">.</span><span class="n">aux_data</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+                <span class="p">)</span>
+
+    <span class="c1"># make it more negative to come earlier</span>
+    <span class="k">return</span> <span class="n">score</span> <span class="o">-</span> <span class="n">boost</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_column_spans</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">column</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="c1"># Helper for subsequence to get the spans (distance between first</span>
+    <span class="c1"># token of first phrase and first token of last phrase</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="p">[</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_column_offsets</span><span class="p">(</span><span class="n">phrase</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span> <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_count</span><span class="p">)]</span>
+
+    <span class="c1"># these start at -1 because the loop below always advances by one first</span>
+    <span class="n">pos</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">api</span><span class="o">.</span><span class="n">phrase_count</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># This finds a span starting with phrase[0] and all the</span>
+            <span class="c1"># intermediate phrases, finishing on finding the last</span>
+            <span class="c1"># phrase so we have a complete subsequence</span>
+            <span class="n">offset</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_count</span><span class="p">):</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">pos</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">offsets</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="n">pos</span><span class="p">[</span><span class="n">column</span><span class="p">]]</span> <span class="o">&gt;</span> <span class="n">offset</span><span class="p">:</span>
+                        <span class="n">offset</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="n">pos</span><span class="p">[</span><span class="n">column</span><span class="p">]]</span>
+                        <span class="k">break</span>
+
+            <span class="c1"># If looking for A B C D the above could have stopped on</span>
+            <span class="c1"># finding A B C A B C D.  We now start at the penultimate</span>
+            <span class="c1"># phrase C and advance it to just before D, going</span>
+            <span class="c1"># backwards through the phrases so we end up with the</span>
+            <span class="c1"># shortest possible A B C D.</span>
+
+            <span class="n">offset</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">pos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_count</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">test_pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">offsets</span><span class="p">[</span><span class="n">column</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">pos</span><span class="p">[</span><span class="n">column</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">offsets</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="n">test_pos</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">offset</span><span class="p">:</span>
+                        <span class="n">pos</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_pos</span>
+                        <span class="k">break</span>
+                <span class="n">offset</span> <span class="o">=</span> <span class="n">offsets</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="n">pos</span><span class="p">[</span><span class="n">column</span><span class="p">]]</span>
+
+            <span class="k">yield</span> <span class="n">offsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">pos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">-</span> <span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="c1"># we don&#39;t bother constantly checking for overrun above as any</span>
+        <span class="c1"># overrun means there are no more matches</span>
+        <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="position_rank">
+<a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.position_rank">[docs]</a>
+<span class="k">def</span> <span class="nf">position_rank</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ranking function boosting the earlier in a column phrases are located</span>
+
+<span class="sd">    :func:`bm25` doesn&#39;t take into where phrases occur.  It makes no</span>
+<span class="sd">    difference if a phrase occurs at the beginning, middle, or end.</span>
+<span class="sd">    This boost takes into account how early the phrase match is,</span>
+<span class="sd">    suitable for content with more significant text towards the</span>
+<span class="sd">    beginning.</span>
+
+<span class="sd">    If the query has phrases and operators (AND, OR, NOT) then those</span>
+<span class="sd">    operators are not visible to this function, and only the location</span>
+<span class="sd">    of each phrase is taken into consideration.  See</span>
+<span class="sd">    :attr:`apsw.fts5.QueryInfo.phrases`.</span>
+
+<span class="sd">    It accepts parameters giving the weights for each column (default 1).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># start with the bm25 base score</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">bm25</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">aux_data</span><span class="o">.</span><span class="n">weights</span>
+    <span class="n">boost</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_count</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">column_count</span><span class="p">):</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">weight</span><span class="p">:</span>
+                <span class="n">boost</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weight</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">offset</span><span class="p">)</span> <span class="k">for</span> <span class="n">offset</span> <span class="ow">in</span> <span class="n">api</span><span class="o">.</span><span class="n">phrase_column_offsets</span><span class="p">(</span><span class="n">phrase</span><span class="p">,</span> <span class="n">column</span><span class="p">))</span>
+
+    <span class="c1"># make it more negative to come earlier</span>
+    <span class="k">return</span> <span class="n">score</span> <span class="o">-</span> <span class="n">boost</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Nov 17, 2024.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-2NR9GDCQLT', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

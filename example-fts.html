@@ -1,0 +1,1607 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Full Text Search Example/Tour &mdash; APSW 3.47.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8087e674"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="Full text search" href="textsearch.html" />
+    <link rel="prev" title="Backup" href="backup.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            APSW
+              <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Full Text Search Example/Tour</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#is-fts5-available">Is FTS5 available?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#content-setup">Content setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-open-search-table">Create/open search table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#table-structure-and-statistics">Table structure and statistics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#content">Content</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#searching-with-sql">Searching with SQL.</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#search-method">Search method</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#query-correction-and-suggestion">Query correction and suggestion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#working-with-tokens">Working with tokens</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#key-tokens-and-more-like">Key Tokens and More Like</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#autocomplete">Autocomplete</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#auxiliary-functions">Auxiliary functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#query-parsing-and-manipulation">Query parsing and manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tokenizers">Tokenizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw-fts5-unicodewordstokenizer">apsw.fts5.UnicodeWordsTokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw-fts5-simplifytokenizer">apsw.fts5.SimplifyTokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#your-own-tokenizer">Your own tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#your-own-tokenizer-part-2">Your own tokenizer, part 2</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw-fts5-regextokenizer">apsw.fts5.RegexTokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw-fts5-regexpretokenizer">apsw.fts5.RegexPreTokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#html-tokenizer">HTML tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#json-tokenizer">JSON tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#synonym-tokenizer">Synonym tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stopwords-tokenizer">Stopwords tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transform-tokenizer">Transform tokenizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cleanup">Cleanup</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Full Text Search Example/Tour</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/example-fts.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="backup.html" class="btn btn-neutral float-left" title="Backup" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="textsearch.html" class="btn btn-neutral float-right" title="Full text search" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="full-text-search-example-tour">
+<h1>Full Text Search Example/Tour<a class="headerlink" href="#full-text-search-example-tour" title="Link to this heading"></a></h1>
+<p>You can do FTS5 using normal SQL <a class="reference external" href="https://www.sqlite.org/fts5.html">as documented</a>.  This example shows using APSW
+specific functionality and extras.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="c1"># This code uses Python&#39;s optional typing annotations.  You can</span>
+<span class="c1"># ignore them and do not need to use them.  If you do use them</span>
+<span class="c1"># then you must include this future annotations line first.</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+
+<span class="kn">import</span> <span class="nn">apsw</span>
+<span class="kn">import</span> <span class="nn">apsw.ext</span>
+
+<span class="c1"># The three FTS5 specific modules</span>
+<span class="kn">import</span> <span class="nn">apsw.fts5</span>
+<span class="kn">import</span> <span class="nn">apsw.fts5aux</span>
+<span class="kn">import</span> <span class="nn">apsw.fts5query</span>
+</pre></div>
+</div>
+<section id="is-fts5-available">
+<span id="example-fts5-check"></span><span id="index-0"></span><h2>Is FTS5 available?<a class="headerlink" href="#is-fts5-available" title="Link to this heading"></a></h2>
+<p>FTS5 is included as part of the SQLite library (usually).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FTS5 available:&quot;</span><span class="p">,</span> <span class="s2">&quot;ENABLE_FTS5&quot;</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">compile_options</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">FTS5 available: True</span>
+</pre></div>
+</div>
+</section>
+<section id="content-setup">
+<span id="example-fts-start"></span><span id="index-1"></span><h2>Content setup<a class="headerlink" href="#content-setup" title="Link to this heading"></a></h2>
+<p>The connection to use.  The database has a table with recipes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;recipes.db&quot;</span><span class="p">)</span>
+
+<span class="c1"># The content</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="s2">&quot;SELECT sql FROM sqlite_schema WHERE name=&#39;recipes&#39;&quot;</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">get</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT COUNT(*) FROM recipes&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">CREATE TABLE recipes(name, ingredients, description)</span>
+<span class="go">173278</span>
+</pre></div>
+</div>
+</section>
+<section id="create-open-search-table">
+<span id="example-fts-create"></span><span id="index-2"></span><h2>Create/open search table<a class="headerlink" href="#create-open-search-table" title="Link to this heading"></a></h2>
+<p>Create a table containing the search index using recipes as an
+<a class="reference external" href="https://www.sqlite.org/fts5.html#external_content_tables">external content table</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">connection</span><span class="o">.</span><span class="n">table_exists</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;search&quot;</span><span class="p">):</span>
+    <span class="c1"># create does all the hard work</span>
+    <span class="n">search_table</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="n">connection</span><span class="p">,</span>
+        <span class="c1"># The table will be named &#39;search&#39;</span>
+        <span class="s2">&quot;search&quot;</span><span class="p">,</span>
+        <span class="c1"># External content table name.  It has to be in the same</span>
+        <span class="c1"># database.</span>
+        <span class="n">content</span><span class="o">=</span><span class="s2">&quot;recipes&quot;</span><span class="p">,</span>
+        <span class="c1"># We want the same columns as recipe, so pass `None`.</span>
+        <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># Triggers ensure that changes to the content table</span>
+        <span class="c1"># are reflected in the search table</span>
+        <span class="n">generate_triggers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="c1"># Use APSW recommended tokenization</span>
+        <span class="n">tokenize</span><span class="o">=</span><span class="p">[</span>
+            <span class="c1"># simplify tokenizer</span>
+            <span class="s2">&quot;simplify&quot;</span><span class="p">,</span>
+            <span class="c1"># removes case distinction</span>
+            <span class="s2">&quot;casefold&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+            <span class="c1"># removes accents, uses compatibility codepoints</span>
+            <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+            <span class="c1"># unicode algorithm for word boundaries tokenizer</span>
+            <span class="s2">&quot;unicodewords&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="c1"># There are many more options you can set</span>
+    <span class="p">)</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Already exists so just the name is needed</span>
+    <span class="n">search_table</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;search&quot;</span><span class="p">)</span>
+
+<span class="c1"># You should use this to get the table name when formatting SQL</span>
+<span class="c1"># queries as they can&#39;t use bindings.  It will correctly quote the</span>
+<span class="c1"># schema (attached database name) and the table name no matter what</span>
+<span class="c1"># characters, spaces etc are used.</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;quoted name&quot;</span><span class="p">,</span> <span class="n">search_table</span><span class="o">.</span><span class="n">quoted_table_name</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">quoted name &quot;main&quot;.&quot;search&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="table-structure-and-statistics">
+<span id="example-fts-structure"></span><span id="index-3"></span><h2>Table structure and statistics<a class="headerlink" href="#table-structure-and-statistics" title="Link to this heading"></a></h2>
+<p>Examine the structure, options, and statistics</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pprint</span><span class="p">(</span><span class="n">search_table</span><span class="o">.</span><span class="n">structure</span><span class="p">)</span>
+
+<span class="c1"># rank is one of several options you can read or change</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">search_table</span><span class="o">.</span><span class="n">config_rank</span><span class="p">()</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># some statistics</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">search_table</span><span class="o">.</span><span class="n">row_count</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">search_table</span><span class="o">.</span><span class="n">tokens_per_column</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">FTS5TableStructure(name=&#39;search&#39;,</span>
+<span class="go">                   columns=(&#39;name&#39;, &#39;ingredients&#39;, &#39;description&#39;),</span>
+<span class="go">                   unindexed=set(),</span>
+<span class="go">                   tokenize=(&#39;simplify&#39;,</span>
+<span class="go">                             &#39;casefold&#39;,</span>
+<span class="go">                             &#39;true&#39;,</span>
+<span class="go">                             &#39;strip&#39;,</span>
+<span class="go">                             &#39;true&#39;,</span>
+<span class="go">                             &#39;unicodewords&#39;),</span>
+<span class="go">                   prefix=set(),</span>
+<span class="go">                   content=&#39;recipes&#39;,</span>
+<span class="go">                   content_rowid=&#39;_ROWID_&#39;,</span>
+<span class="go">                   contentless_delete=None,</span>
+<span class="go">                   contentless_unindexed=None,</span>
+<span class="go">                   columnsize=True,</span>
+<span class="go">                   tokendata=False,</span>
+<span class="go">                   locale=False,</span>
+<span class="go">                   detail=&#39;full&#39;)</span>
+<span class="go">search_table.config_rank()=&#39;bm25()&#39;</span>
+<span class="go">search_table.row_count=173278</span>
+<span class="go">search_table.tokens_per_column=[743406, 8064731, 3824644]</span>
+</pre></div>
+</div>
+</section>
+<section id="content">
+<span id="example-fts-update"></span><span id="index-4"></span><h2>Content<a class="headerlink" href="#content" title="Link to this heading"></a></h2>
+<p>Use <a class="reference internal" href="textsearch.html#apsw.fts5.Table.upsert" title="apsw.fts5.Table.upsert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">upsert()</span></code></a> to add or change existing
+content and <a class="reference internal" href="textsearch.html#apsw.fts5.Table.delete" title="apsw.fts5.Table.delete"><code class="xref py py-meth docutils literal notranslate"><span class="pre">delete()</span></code></a> to delete a row.  They
+understand external content tables and will do the operations there,
+then the triggers will update the search index.
+<a class="reference internal" href="textsearch.html#apsw.fts5.Table.row_by_id" title="apsw.fts5.Table.row_by_id"><code class="xref py py-meth docutils literal notranslate"><span class="pre">row_by_id()</span></code></a> gets one or more columns from a
+row, and also handles external content tables.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># upsert returns the rowid of an insert or change.</span>
+<span class="n">rowid</span> <span class="o">=</span> <span class="n">search_table</span><span class="o">.</span><span class="n">upsert</span><span class="p">(</span>
+    <span class="c1"># you can use positional parameters so this goes to the first column</span>
+    <span class="s2">&quot;This ends up in the name field&quot;</span><span class="p">,</span>
+    <span class="c1"># and keywords</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;This ends up in the description&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">search_table</span><span class="o">.</span><span class="n">row_by_id</span><span class="p">(</span><span class="n">rowid</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># modify that row</span>
+<span class="n">search_table</span><span class="o">.</span><span class="n">upsert</span><span class="p">(</span><span class="n">ingredients</span><span class="o">=</span><span class="s2">&quot;some stuff&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="o">=</span><span class="n">rowid</span><span class="p">)</span>
+
+<span class="c1"># And delete our test row</span>
+<span class="n">search_table</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">rowid</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">search_table.row_by_id(rowid, &#39;name&#39;)=&#39;This ends up in the name field&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="searching-with-sql">
+<span id="example-fts-search-sql"></span><span id="index-5"></span><h2>Searching with SQL.<a class="headerlink" href="#searching-with-sql" title="Link to this heading"></a></h2>
+<p>You need to specify what should be returned, the FTS query, and
+order by to get the best results first.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">   SELECT</span>
+<span class="s2">   -- snippet takes a lot of options!</span>
+<span class="s2">   snippet(search, -1, &#39;►&#39;, &#39;◄&#39;, &#39;...&#39;, 10) as Snippet</span>
+<span class="s2">   -- Pass the query like this</span>
+<span class="s2">   FROM search(?)</span>
+<span class="s2">   -- Best matches first</span>
+<span class="s2">   ORDER BY rank</span>
+<span class="s2">   -- Top 3</span>
+<span class="s2">   LIMIT 3&quot;&quot;&quot;</span>
+
+<span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="p">(</span>
+    <span class="s2">&quot;cream&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;orange NOT zest&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name:honey&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pomegranate OR olives&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="p">(</span><span class="n">query</span><span class="p">,)))</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">query=&#39;cream&#39;</span>
+<span class="go">┌───────────────────────────────────────────────────────────┐</span>
+<span class="go">│                          Snippet                          │</span>
+<span class="go">├───────────────────────────────────────────────────────────┤</span>
+<span class="go">│ Find the recipe for Sour ►Cream◄ Ice ►Cream◄ and other... │</span>
+<span class="go">├───────────────────────────────────────────────────────────┤</span>
+<span class="go">│ 1 (8 ounce) package ►cream◄ cheese                        │</span>
+<span class="go">│ 1 cup white sugar...                                      │</span>
+<span class="go">├───────────────────────────────────────────────────────────┤</span>
+<span class="go">│ Want a Ice ►Cream◄ and Party?                             │</span>
+<span class="go">│ Here&#39;s a Ice-►Cream◄...                                   │</span>
+<span class="go">└───────────────────────────────────────────────────────────┘</span>
+
+<span class="go">query=&#39;orange NOT zest&#39;</span>
+<span class="go">┌───────────────────────────────────────────────────┐</span>
+<span class="go">│                      Snippet                      │</span>
+<span class="go">├───────────────────────────────────────────────────┤</span>
+<span class="go">│ ice                                               │</span>
+<span class="go">│ 750ml blood ►orange◄ , or ►orange◄ juice          │</span>
+<span class="go">│ 750ml soda water...                               │</span>
+<span class="go">├───────────────────────────────────────────────────┤</span>
+<span class="go">│ 1 tablespoon olive oil                            │</span>
+<span class="go">│ 4 (4 ounce) fillets ►orange◄ roughy...            │</span>
+<span class="go">├───────────────────────────────────────────────────┤</span>
+<span class="go">│ ...►orange◄-flavored liqueur                      │</span>
+<span class="go">│ Extra ►orange◄ slices for serving, or ►orange◄... │</span>
+<span class="go">└───────────────────────────────────────────────────┘</span>
+
+<span class="go">query=&#39;name:honey&#39;</span>
+<span class="go">┌────────────────────────────────────────────────────────────────────────┐</span>
+<span class="go">│                                Snippet                                 │</span>
+<span class="go">│ Wildflower-►Honey◄ Semifreddo with ►Honey◄ Sesame Wafers               │</span>
+<span class="go">│ Roast Chicken with Saffron, Hazelnuts, and ►Honey◄                     │</span>
+<span class="go">│ Recipe Flash: Ginger-►Honey◄ Chicken WingsGinger-►Honey◄ Chicken Wings │</span>
+<span class="go">└────────────────────────────────────────────────────────────────────────┘</span>
+
+<span class="go">query=&#39;pomegranate OR olives&#39;</span>
+<span class="go">┌─────────────────────────────────────────────────────────────────────────────┐</span>
+<span class="go">│                                   Snippet                                   │</span>
+<span class="go">├─────────────────────────────────────────────────────────────────────────────┤</span>
+<span class="go">│ A new way to serve ►olives◄ - marinated in ►pomegranate◄ juice...           │</span>
+<span class="go">├─────────────────────────────────────────────────────────────────────────────┤</span>
+<span class="go">│ Purple kale, oranges, feta cheese and ►olives◄ topped with ►pomegranate◄... │</span>
+<span class="go">├─────────────────────────────────────────────────────────────────────────────┤</span>
+<span class="go">│ ...juice                                                                    │</span>
+<span class="go">│ Seeds from a ►pomegranate◄                                                  │</span>
+<span class="go">│ 25g dried apricot pieces                                                    │</span>
+<span class="go">│ Quarter...                                                                  │</span>
+<span class="go">└─────────────────────────────────────────────────────────────────────────────┘</span>
+</pre></div>
+</div>
+</section>
+<section id="search-method">
+<span id="example-fts-search"></span><span id="index-6"></span><h2>Search method<a class="headerlink" href="#search-method" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="textsearch.html#apsw.fts5.Table.search" title="apsw.fts5.Table.search"><code class="xref py py-meth docutils literal notranslate"><span class="pre">search()</span></code></a> provides a Pythonic API providing
+information about each matching row, best matches first.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">search_table</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;lemon OR guava&quot;</span><span class="p">):</span>
+    <span class="c1"># Note how you see overall query info (it is two phrases) and</span>
+    <span class="c1"># information about the matched row (how many tokens in each</span>
+    <span class="c1"># column), and which columns each phrase was found in</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+    <span class="c1"># only show the first matching row</span>
+    <span class="k">break</span>
+
+<span class="c1"># Inspect first matching row</span>
+<span class="n">name</span><span class="p">,</span> <span class="n">description</span> <span class="o">=</span> <span class="n">search_table</span><span class="o">.</span><span class="n">row_by_id</span><span class="p">(</span>
+    <span class="n">row</span><span class="o">.</span><span class="n">rowid</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">MatchInfo(query_info=QueryInfo(phrases=((&#39;lemon&#39;,), (&#39;guava&#39;,))),</span>
+<span class="go">          rowid=1642796043941632884,</span>
+<span class="go">          column_size=[3, 24, 5],</span>
+<span class="go">          phrase_columns=[[1], [0, 2]])</span>
+<span class="go">(&quot;P.L&#39;s Guava Jelly&quot;, &#39;Delicious home-made guava jam&#39;)</span>
+</pre></div>
+</div>
+</section>
+<section id="query-correction-and-suggestion">
+<span id="example-fts-query-suggest"></span><span id="index-7"></span><h2>Query correction and suggestion<a class="headerlink" href="#query-correction-and-suggestion" title="Link to this heading"></a></h2>
+<p>If the query contains words that don’t exist or are very rare
+(likely spelling difference) then you can provide alternate queries
+that probably improve results.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="p">(</span>
+    <span class="s2">&quot;jalapno&quot;</span><span class="p">,</span>
+    <span class="c1"># query structure is maintained</span>
+    <span class="s2">&quot;orange AND guice&quot;</span><span class="p">,</span>
+    <span class="c1"># column names are corrected too</span>
+    <span class="s2">&quot;nyme:(minced OR oyl NOT peenut)&quot;</span><span class="p">,</span>
+    <span class="c1"># None is returned if all terms are ok</span>
+    <span class="s2">&quot;sweet onion&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">suggest</span> <span class="o">=</span> <span class="n">search_table</span><span class="o">.</span><span class="n">query_suggest</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">suggest</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">query=&#39;jalapno&#39; suggest=&#39;jalapeño&#39;</span>
+<span class="go">query=&#39;orange AND guice&#39; suggest=&#39;orange juice&#39;</span>
+<span class="go">query=&#39;nyme:(minced OR oyl NOT peenut)&#39; suggest=&#39;name: (minced OR oil NOT peanut)&#39;</span>
+<span class="go">query=&#39;sweet onion&#39; suggest=None</span>
+</pre></div>
+</div>
+</section>
+<section id="working-with-tokens">
+<span id="example-fts-tokens"></span><span id="index-8"></span><h2>Working with tokens<a class="headerlink" href="#working-with-tokens" title="Link to this heading"></a></h2>
+<p>Document and query text is processed into tokens, with matches found
+based on those tokens.  Tokens are not visible to the user.</p>
+<p>Typically they correspond to “words” in the text, but with
+upper/lower case neutralized, punctuation removed, marks and accents
+removed.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># See what happens with sample text</span>
+<span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Don&#39;t 2.245e5 Run-Down Déjà 你好世界😂❤️🤣&quot;</span>
+<span class="c1"># tokenization happens on UTF8</span>
+<span class="n">utf8</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+
+<span class="c1"># Note offsets into the utf8.  Those could be used to highlight the</span>
+<span class="c1"># original.</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">search_table</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">))</span>
+
+<span class="c1"># For our table, the most popular tokens, and what percent of rows</span>
+<span class="c1"># they are in</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Most popular by row count&quot;</span><span class="p">)</span>
+<span class="n">row_count</span> <span class="o">=</span> <span class="n">search_table</span><span class="o">.</span><span class="n">row_count</span>
+<span class="k">for</span> <span class="n">token</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">search_table</span><span class="o">.</span><span class="n">token_doc_frequency</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">token</span><span class="si">:</span><span class="s2">20</span><span class="si">}{</span><span class="n">count</span><span class="o">/</span><span class="n">row_count</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Most popular tokens, based on total token count</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Most popular by token count&quot;</span><span class="p">)</span>
+<span class="n">token_count</span> <span class="o">=</span> <span class="n">search_table</span><span class="o">.</span><span class="n">token_count</span>
+<span class="k">for</span> <span class="n">token</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">search_table</span><span class="o">.</span><span class="n">token_frequency</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">token</span><span class="si">:</span><span class="s2">20</span><span class="si">}{</span><span class="n">count</span><span class="o">/</span><span class="n">token_count</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Find what text produced a token, by looking at 5 rows.</span>
+<span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;jalapeno&quot;</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">search_table</span><span class="o">.</span><span class="n">text_for_token</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Text for </span><span class="si">{</span><span class="n">token</span><span class="si">=}</span><span class="s2"> is </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">[(0, 5, &#39;dont&#39;),</span>
+<span class="go"> (6, 13, &#39;2245e5&#39;),</span>
+<span class="go"> (14, 17, &#39;run&#39;),</span>
+<span class="go"> (18, 22, &#39;down&#39;),</span>
+<span class="go"> (23, 29, &#39;deja&#39;),</span>
+<span class="go"> (30, 33, &#39;你&#39;),</span>
+<span class="go"> (33, 36, &#39;好&#39;),</span>
+<span class="go"> (36, 39, &#39;世&#39;),</span>
+<span class="go"> (39, 42, &#39;界&#39;),</span>
+<span class="go"> (42, 46, &#39;😂&#39;),</span>
+<span class="go"> (46, 52, &#39;❤&#39;),</span>
+<span class="go"> (52, 56, &#39;🤣&#39;)]</span>
+
+<span class="go">Most popular by row count</span>
+<span class="go">1                   92%</span>
+<span class="go">2                   80%</span>
+<span class="go">and                 72%</span>
+<span class="go">a                   59%</span>
+<span class="go">cup                 56%</span>
+<span class="go">cups                53%</span>
+<span class="go">4                   49%</span>
+<span class="go">with                47%</span>
+<span class="go">3                   47%</span>
+<span class="go">the                 43%</span>
+
+<span class="go">Most popular by token count</span>
+<span class="go">1                   8%</span>
+<span class="go">2                   4%</span>
+<span class="go">cups                2%</span>
+<span class="go">cup                 2%</span>
+<span class="go">and                 2%</span>
+<span class="go">1⁄2                 2%</span>
+<span class="go">4                   1%</span>
+<span class="go">teaspoon            1%</span>
+<span class="go">a                   1%</span>
+<span class="go">3                   1%</span>
+
+<span class="go">Text for token=&#39;jalapeno&#39; is Jalapeño</span>
+</pre></div>
+</div>
+</section>
+<section id="key-tokens-and-more-like">
+<span id="example-fts-more"></span><span id="index-9"></span><h2>Key Tokens and More Like<a class="headerlink" href="#key-tokens-and-more-like" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="textsearch.html#apsw.fts5.Table.key_tokens" title="apsw.fts5.Table.key_tokens"><code class="xref py py-meth docutils literal notranslate"><span class="pre">key_tokens()</span></code></a> finds tokens represented in a
+row, but rare in other rows.  This is purely statistical and has no
+idea of the meaning or relationship between tokens.</p>
+<p><a class="reference internal" href="textsearch.html#apsw.fts5.Table.more_like" title="apsw.fts5.Table.more_like"><code class="xref py py-meth docutils literal notranslate"><span class="pre">more_like()</span></code></a> is given some rowids, extracts
+their key tokens, and starts a search with them, excluding the
+rowids already seen.  This lets you provide “infinite scrolling”
+starting from one or more rows, providing additional similar
+content.</p>
+<p>Both methods let you specify specific columns, or all columns
+(default)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># A randomly selected row ...</span>
+<span class="n">bbq_rowid</span> <span class="o">=</span> <span class="mi">1642796066805404445</span>
+<span class="c1"># ... for bbq sauce</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">search_table</span><span class="o">.</span><span class="n">row_by_id</span><span class="p">(</span><span class="n">bbq_rowid</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">))</span>
+
+<span class="c1"># Note how each token gets a score, with bigger numbers meaning the</span>
+<span class="c1"># token is more unique</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">search_table</span><span class="o">.</span><span class="n">key_tokens</span><span class="p">(</span><span class="n">bbq_rowid</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">limit</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="c1"># More like based on the ingredients column</span>
+<span class="k">for</span> <span class="n">count</span><span class="p">,</span> <span class="n">match_info</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+    <span class="n">search_table</span><span class="o">.</span><span class="n">more_like</span><span class="p">([</span><span class="n">bbq_rowid</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="s2">&quot;ingredients&quot;</span><span class="p">)</span>
+<span class="p">):</span>
+    <span class="c1"># Show the name for each</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">search_table</span><span class="o">.</span><span class="n">row_by_id</span><span class="p">(</span><span class="n">match_info</span><span class="o">.</span><span class="n">rowid</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">))</span>
+    <span class="c1"># We could save each of these rowids and at the end do another</span>
+    <span class="c1"># more_like including them.  Stop after a few for now.</span>
+    <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">break</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Thick and Sticky Barbecue Sauce Recipe</span>
+<span class="go">[(0.0002008032128514056, &#39;sticky&#39;),</span>
+<span class="go"> (0.00015475085112968121, &#39;barbecue&#39;),</span>
+<span class="go"> (3.077870113881194e-05, &#39;thick&#39;)]</span>
+<span class="go">Indian Chicken Rub</span>
+<span class="go">Berbere</span>
+<span class="go">Sarah&#39;s Chili Seasoning Mix</span>
+<span class="go">Jenga Ribs</span>
+<span class="go">Indian Spice Baked Chicken</span>
+<span class="go">Valentine&#39;s Day Steak Rub</span>
+</pre></div>
+</div>
+</section>
+<section id="autocomplete">
+<span id="example-fts-autocomplete"></span><span id="index-10"></span><h2>Autocomplete<a class="headerlink" href="#autocomplete" title="Link to this heading"></a></h2>
+<p>You often want to show results after just a few letters have been
+typed before there is a complete word entered.  This is done by
+indexing sequences of a few letters, called <a class="reference internal" href="textsearch.html#apsw.fts5.NGramTokenizer" title="apsw.fts5.NGramTokenizer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ngrams</span></code></a>.  Ngrams are never shown to the user
+although you can see the snippets below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">connection</span><span class="o">.</span><span class="n">table_exists</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;autocomplete&quot;</span><span class="p">):</span>
+    <span class="c1"># create does all the hard work</span>
+    <span class="n">autocomplete</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+        <span class="n">connection</span><span class="p">,</span>
+        <span class="c1"># The table will be named &#39;search&#39;</span>
+        <span class="s2">&quot;autocomplete&quot;</span><span class="p">,</span>
+        <span class="c1"># External content table name.  It has to be in the same</span>
+        <span class="c1"># database.</span>
+        <span class="n">content</span><span class="o">=</span><span class="s2">&quot;recipes&quot;</span><span class="p">,</span>
+        <span class="c1"># We want the same columns as recipe, so pass `None`.</span>
+        <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="c1"># Triggers ensure that changes to the content table</span>
+        <span class="c1"># are reflected in the search table</span>
+        <span class="n">generate_triggers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="c1"># Use APSW recommended tokenization</span>
+        <span class="n">tokenize</span><span class="o">=</span><span class="p">[</span>
+            <span class="c1"># simplify tokenizer</span>
+            <span class="s2">&quot;simplify&quot;</span><span class="p">,</span>
+            <span class="c1"># removes case distinction</span>
+            <span class="s2">&quot;casefold&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+            <span class="c1"># removes accents, uses compatibility codepoints</span>
+            <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+            <span class="c1"># ngram tokenizer</span>
+            <span class="s2">&quot;ngram&quot;</span><span class="p">,</span>
+            <span class="c1"># How big is each sequence?  This is how many letters have</span>
+            <span class="c1"># to be typed before any match is possible.  Smaller values</span>
+            <span class="c1"># result in larger indexes.</span>
+            <span class="s2">&quot;ngrams&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;3&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="c1"># There are many more options you can set</span>
+    <span class="p">)</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># Already exists so just the name is needed</span>
+    <span class="n">autocomplete</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;autocomplete&quot;</span><span class="p">)</span>
+
+<span class="c1"># do some queries against autocomplete index</span>
+<span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">   SELECT</span>
+<span class="s2">   -- snippet takes a lot of options!</span>
+<span class="s2">   snippet(autocomplete, -1, &#39;►&#39;, &#39;◄&#39;, &#39;...&#39;, 10) as Snippet</span>
+<span class="s2">   -- Pass the query like this</span>
+<span class="s2">   FROM autocomplete(?)</span>
+<span class="s2">   -- Best matches first</span>
+<span class="s2">   ORDER BY rank</span>
+<span class="s2">   -- Top 3</span>
+<span class="s2">   LIMIT 3&quot;&quot;&quot;</span>
+
+<span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="p">(</span>
+    <span class="s2">&quot;eam&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ora&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name:ney&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;emo jui&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;barbecue&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">query</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="p">(</span><span class="n">query</span><span class="p">,)))</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">query=&#39;eam&#39;</span>
+<span class="go">┌───────────────────┐</span>
+<span class="go">│      Snippet      │</span>
+<span class="go">│ Sour Cr►eam◄ I... │</span>
+<span class="go">│ Cr►eam◄less Cr... │</span>
+<span class="go">│ Cr►eam◄ cheese... │</span>
+<span class="go">└───────────────────┘</span>
+
+<span class="go">query=&#39;ora&#39;</span>
+<span class="go">┌───────────────────┐</span>
+<span class="go">│      Snippet      │</span>
+<span class="go">│ Blood ►ora◄nge... │</span>
+<span class="go">│ ►Ora◄nge cake ... │</span>
+<span class="go">│ ►Ora◄nge Deser... │</span>
+<span class="go">└───────────────────┘</span>
+
+<span class="go">query=&#39;name:ney&#39;</span>
+<span class="go">┌──────────────────────┐</span>
+<span class="go">│       Snippet        │</span>
+<span class="go">│ Ho►ney◄ed-Mang...    │</span>
+<span class="go">│ ...r-Ho►ney◄ Semi... │</span>
+<span class="go">│ ...h Ho►ney◄ed-Ma... │</span>
+<span class="go">└──────────────────────┘</span>
+
+<span class="go">query=&#39;emo jui&#39;</span>
+<span class="go">┌────────────────────────┐</span>
+<span class="go">│        Snippet         │</span>
+<span class="go">│ ... L►emo◄n ►Jui◄ce... │</span>
+<span class="go">│ ... l►emo◄n ►jui◄ce... │</span>
+<span class="go">│ ... l►emo◄n ►jui◄ce... │</span>
+<span class="go">└────────────────────────┘</span>
+
+<span class="go">query=&#39;barbecue&#39;</span>
+<span class="go">┌───────────────────┐</span>
+<span class="go">│      Snippet      │</span>
+<span class="go">│ Classic ►Barb◄... │</span>
+<span class="go">│ ►Barbecue◄ Por... │</span>
+<span class="go">│ ►Barbecue◄d Ba... │</span>
+<span class="go">└───────────────────┘</span>
+</pre></div>
+</div>
+</section>
+<section id="auxiliary-functions">
+<span id="example-fts5-auxfunc"></span><span id="index-11"></span><h2>Auxiliary functions<a class="headerlink" href="#auxiliary-functions" title="Link to this heading"></a></h2>
+<p><cite>Auxiliary functions
+&lt;https://sqlite.org/fts5.html#_auxiliary_functions_&gt;__ are called
+for each matching row.  They can be used to provide `ranking
+(sorting)
+&lt;https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results&gt;`__</cite>
+for determining better matches, or returning information about the
+match and row such as <a class="reference external" href="https://www.sqlite.org/fts5.html#the_highlight_function">highlights</a>, and
+<a class="reference external" href="https://www.sqlite.org/fts5.html#the_snippet_function">snippets</a>.</p>
+<p>They are called with <a class="reference internal" href="textsearch.html#apsw.FTS5ExtensionApi" title="apsw.FTS5ExtensionApi"><code class="xref py py-class docutils literal notranslate"><span class="pre">FTS5ExtensionApi</span></code></a> as the first
+parameter, and then any function arguments, and return a value.
+This example shows all the information available during a query.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">row_match</span><span class="p">(</span>
+    <span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;row_match called with&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="c1"># Show what information is available from the api</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">rowid</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">row_count</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">column_count</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">column_count</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">col</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">column_size</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">col</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">column_total_size</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">inst_count</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">inst</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">inst_count</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">inst</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">inst_tokens</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">phrases</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrases</span><span class="p">)):</span>
+        <span class="c1"># which columns the phrase is found in</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">phrase</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_columns</span><span class="p">(</span><span class="n">phrase</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># which token numbers</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">phrase</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_locations</span><span class="p">(</span><span class="n">phrase</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># the offsets of phrase 3 in column 2</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_column_offsets</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># note the text is the utf-8 encoded bytes</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">column_text</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># we can get a tokenization of text, useful if you want to extract</span>
+    <span class="c1"># the original text, add snippets/highlights etc</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tokenized with UTF-8 offsets&quot;</span><span class="p">)</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">column_text</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">api</span><span class="o">.</span><span class="n">column_locale</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+
+    <span class="c1"># query_phrase is useful for finding out how common a phrase is.</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrases</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrases</span><span class="p">)):</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">query_phrase</span><span class="p">(</span><span class="n">phrase</span><span class="p">,</span> <span class="n">phrase_count</span><span class="p">,</span> <span class="p">(</span><span class="n">phrase</span><span class="p">,</span> <span class="n">counts</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrases</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Phrase </span><span class="si">{</span><span class="n">phrase</span><span class="si">=}</span><span class="s2"> occurs </span><span class="si">{</span><span class="w"> </span><span class="n">counts</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> times&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="mi">7</span>
+
+
+<span class="c1"># This is used as the callback from query_phrase above.  Note that the</span>
+<span class="c1"># api instance in this call is different than the above function.</span>
+<span class="k">def</span> <span class="nf">phrase_count</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">closure</span><span class="p">):</span>
+    <span class="n">phrase</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">closure</span>
+
+    <span class="c1"># increment counts for this phrase</span>
+    <span class="n">counts</span><span class="p">[</span><span class="n">phrase</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">counts</span><span class="p">[</span><span class="n">phrase</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="c1"># Show call info the first 4 times for each phrase</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;phrase_count called </span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">rowid</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">api</span><span class="o">.</span><span class="n">phrases</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># we could do more sophisticated work such as counting how many</span>
+    <span class="c1"># times it occurs (api.phrase_locations) or which columns</span>
+    <span class="c1"># (api.phrase_columns).</span>
+
+
+<span class="n">connection</span><span class="o">.</span><span class="n">register_fts5_function</span><span class="p">(</span><span class="s2">&quot;row_match&quot;</span><span class="p">,</span> <span class="n">row_match</span><span class="p">)</span>
+
+<span class="c1"># A deliberately complex query to make the api interesting</span>
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;(&quot;BoiLed eGGs&quot; OR CinnaMON) OR NEAR (drink Cup, 5) NOT Oran*&quot;&quot;&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Make all the code above be called. Note how the table name has to be</span>
+<span class="c1"># the first parameter to our function in the SQL</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+    <span class="s2">&quot;SELECT row_match(search, 5, &#39;hello&#39;) FROM search(?) order by rank&quot;</span><span class="p">,</span>
+    <span class="p">(</span><span class="n">query</span><span class="p">,),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">row_match called with (5, &#39;hello&#39;)</span>
+<span class="go">api.rowid=1642795772696450313</span>
+<span class="go">api.row_count=173278</span>
+<span class="go">api.column_count=3</span>
+<span class="go">  col=0 api.column_size(col)=3</span>
+<span class="go">  col=0 api.column_total_size(col)=743406</span>
+<span class="go">  col=1 api.column_size(col)=4</span>
+<span class="go">  col=1 api.column_total_size(col)=8064731</span>
+<span class="go">  col=2 api.column_size(col)=9</span>
+<span class="go">  col=2 api.column_total_size(col)=3824644</span>
+<span class="go">api.inst_count=2</span>
+<span class="go">  inst=0 api.inst_tokens(inst)=(&#39;boiled&#39;, &#39;eggs&#39;)</span>
+<span class="go">  inst=1 api.inst_tokens(inst)=(&#39;boiled&#39;, &#39;eggs&#39;)</span>
+<span class="go">api.phrases=((&#39;boiled&#39;, &#39;eggs&#39;), (&#39;cinnamon&#39;,), (&#39;drink&#39;,), (&#39;cup&#39;,), (&#39;oran&#39;,))</span>
+<span class="go">  phrase=0 api.phrase_columns(phrase)=(0, 2)</span>
+<span class="go">  phrase=0 api.phrase_locations(phrase)=[[1], [], [7]]</span>
+<span class="go">  phrase=1 api.phrase_columns(phrase)=()</span>
+<span class="go">  phrase=1 api.phrase_locations(phrase)=[[], [], []]</span>
+<span class="go">  phrase=2 api.phrase_columns(phrase)=()</span>
+<span class="go">  phrase=2 api.phrase_locations(phrase)=[[], [], []]</span>
+<span class="go">  phrase=3 api.phrase_columns(phrase)=()</span>
+<span class="go">  phrase=3 api.phrase_locations(phrase)=[[], [], []]</span>
+<span class="go">  phrase=4 api.phrase_columns(phrase)=()</span>
+<span class="go">  phrase=4 api.phrase_locations(phrase)=[[], [], []]</span>
+<span class="go">api.phrase_column_offsets(3, 2)=[]</span>
+<span class="go">api.column_text(0)=b&#39;Hard Boiled Eggs&#39;</span>
+<span class="go">Tokenized with UTF-8 offsets</span>
+<span class="go">[(0, 3, &#39;the&#39;),</span>
+<span class="go"> (4, 9, &#39;right&#39;),</span>
+<span class="go"> (10, 13, &#39;way&#39;),</span>
+<span class="go"> (14, 16, &#39;to&#39;),</span>
+<span class="go"> (17, 21, &#39;cook&#39;),</span>
+<span class="go"> (22, 29, &#39;perfect&#39;),</span>
+<span class="go"> (30, 34, &#39;hard&#39;),</span>
+<span class="go"> (35, 41, &#39;boiled&#39;),</span>
+<span class="go"> (42, 46, &#39;eggs&#39;)]</span>
+<span class="go">phrase_count called api.rowid=1642795733280177125 api.phrases=((&#39;boiled&#39;, &#39;eggs&#39;),)</span>
+<span class="go">phrase_count called api.rowid=1642795734218860660 api.phrases=((&#39;boiled&#39;, &#39;eggs&#39;),)</span>
+<span class="go">phrase_count called api.rowid=1642795742364372196 api.phrases=((&#39;boiled&#39;, &#39;eggs&#39;),)</span>
+<span class="go">phrase_count called api.rowid=1642795748917697308 api.phrases=((&#39;boiled&#39;, &#39;eggs&#39;),)</span>
+<span class="go">phrase_count called api.rowid=1642795722012755793 api.phrases=((&#39;cinnamon&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795722012755797 api.phrases=((&#39;cinnamon&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795722012755806 api.phrases=((&#39;cinnamon&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795722012755828 api.phrases=((&#39;cinnamon&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795722012755795 api.phrases=((&#39;drink&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795722012819365 api.phrases=((&#39;drink&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795725826572496 api.phrases=((&#39;drink&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795725826588872 api.phrases=((&#39;drink&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795721317011550 api.phrases=((&#39;cup&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795721317011555 api.phrases=((&#39;cup&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795721369682815 api.phrases=((&#39;cup&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795721369683223 api.phrases=((&#39;cup&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795722012755799 api.phrases=((&#39;oran&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795722012755999 api.phrases=((&#39;oran&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795722012757203 api.phrases=((&#39;oran&#39;,),)</span>
+<span class="go">phrase_count called api.rowid=1642795722012819341 api.phrases=((&#39;oran&#39;,),)</span>
+<span class="go">Phrase phrase=(&#39;boiled&#39;, &#39;eggs&#39;) occurs 321 times</span>
+<span class="go">Phrase phrase=(&#39;cinnamon&#39;,) occurs 12,000 times</span>
+<span class="go">Phrase phrase=(&#39;drink&#39;,) occurs 1,925 times</span>
+<span class="go">Phrase phrase=(&#39;cup&#39;,) occurs 96,655 times</span>
+<span class="go">Phrase phrase=(&#39;oran&#39;,) occurs 8,181 times</span>
+</pre></div>
+</div>
+</section>
+<section id="query-parsing-and-manipulation">
+<span id="example-fts-query"></span><span id="index-12"></span><h2>Query parsing and manipulation<a class="headerlink" href="#query-parsing-and-manipulation" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="textsearch.html#module-apsw.fts5query" title="apsw.fts5query: Helpers for working with `FTS5 queries &lt;https://www.sqlite.org/fts5.html#full_text_query_syntax&gt;`__"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apsw.fts5query</span></code></a> lets you programmatically create, update, and
+parse queries.  There are three forms of query.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># This is the query as accepted by FTS5.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;query&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+<span class="c1"># That can be parsed into the structure</span>
+<span class="n">parsed</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5query</span><span class="o">.</span><span class="n">parse_query_string</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">parsed&quot;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+
+<span class="c1"># The parsed form is a little unwieldy to work with so a dict based</span>
+<span class="c1"># form is available.</span>
+<span class="n">as_dict</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5query</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">as_dict&quot;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">as_dict</span><span class="p">)</span>
+
+<span class="c1"># Make some changes - delete the first query</span>
+<span class="k">del</span> <span class="n">as_dict</span><span class="p">[</span><span class="s2">&quot;queries&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">as_dict</span><span class="p">[</span><span class="s2">&quot;queries&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="c1"># add a columnfilter</span>
+        <span class="s2">&quot;@&quot;</span><span class="p">:</span> <span class="s2">&quot;COLUMNFILTER&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;filter&quot;</span><span class="p">:</span> <span class="s2">&quot;include&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">],</span>
+        <span class="c1"># The sub queries are just strings.   The module knows what</span>
+        <span class="c1"># you mean and will convert them into AND</span>
+        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;some thing blue&quot;</span><span class="p">,</span> <span class="s2">&quot;sunshine&quot;</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">modified as_dict&quot;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">as_dict</span><span class="p">)</span>
+
+<span class="c1"># Turn it into parsed form</span>
+<span class="n">parsed</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5query</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">as_dict</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">new parsed&quot;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+
+<span class="c1"># Turn the parsed form back into a query string</span>
+<span class="n">query</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5query</span><span class="o">.</span><span class="n">to_query_string</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">new query&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">query</span>
+<span class="go">(&quot;BoiLed eGGs&quot; OR CinnaMON) OR NEAR (drink Cup, 5) NOT Oran*</span>
+
+<span class="go">parsed</span>
+<span class="go">OR(queries=[OR(queries=[PHRASE(phrase=&#39;BoiLed eGGs&#39;,</span>
+<span class="go">                               initial=False,</span>
+<span class="go">                               prefix=False,</span>
+<span class="go">                               plus=None),</span>
+<span class="go">                        PHRASE(phrase=&#39;CinnaMON&#39;,</span>
+<span class="go">                               initial=False,</span>
+<span class="go">                               prefix=False,</span>
+<span class="go">                               plus=None)]),</span>
+<span class="go">            NOT(match=NEAR(phrases=[PHRASE(phrase=&#39;drink&#39;,</span>
+<span class="go">                                           initial=False,</span>
+<span class="go">                                           prefix=False,</span>
+<span class="go">                                           plus=None),</span>
+<span class="go">                                    PHRASE(phrase=&#39;Cup&#39;,</span>
+<span class="go">                                           initial=False,</span>
+<span class="go">                                           prefix=False,</span>
+<span class="go">                                           plus=None)],</span>
+<span class="go">                           distance=5),</span>
+<span class="go">                no_match=PHRASE(phrase=&#39;Oran&#39;,</span>
+<span class="go">                                initial=False,</span>
+<span class="go">                                prefix=True,</span>
+<span class="go">                                plus=None))])</span>
+
+<span class="go">as_dict</span>
+<span class="go">{&#39;@&#39;: &#39;OR&#39;,</span>
+<span class="go"> &#39;queries&#39;: [{&#39;@&#39;: &#39;OR&#39;,</span>
+<span class="go">              &#39;queries&#39;: [{&#39;@&#39;: &#39;PHRASE&#39;, &#39;phrase&#39;: &#39;BoiLed eGGs&#39;},</span>
+<span class="go">                          {&#39;@&#39;: &#39;PHRASE&#39;, &#39;phrase&#39;: &#39;CinnaMON&#39;}]},</span>
+<span class="go">             {&#39;@&#39;: &#39;NOT&#39;,</span>
+<span class="go">              &#39;match&#39;: {&#39;@&#39;: &#39;NEAR&#39;,</span>
+<span class="go">                        &#39;distance&#39;: 5,</span>
+<span class="go">                        &#39;phrases&#39;: [{&#39;@&#39;: &#39;PHRASE&#39;, &#39;phrase&#39;: &#39;drink&#39;},</span>
+<span class="go">                                    {&#39;@&#39;: &#39;PHRASE&#39;, &#39;phrase&#39;: &#39;Cup&#39;}]},</span>
+<span class="go">              &#39;no_match&#39;: {&#39;@&#39;: &#39;PHRASE&#39;, &#39;phrase&#39;: &#39;Oran&#39;, &#39;prefix&#39;: True}}]}</span>
+
+<span class="go">modified as_dict</span>
+<span class="go">{&#39;@&#39;: &#39;OR&#39;,</span>
+<span class="go"> &#39;queries&#39;: [{&#39;@&#39;: &#39;NOT&#39;,</span>
+<span class="go">              &#39;match&#39;: {&#39;@&#39;: &#39;NEAR&#39;,</span>
+<span class="go">                        &#39;distance&#39;: 5,</span>
+<span class="go">                        &#39;phrases&#39;: [{&#39;@&#39;: &#39;PHRASE&#39;, &#39;phrase&#39;: &#39;drink&#39;},</span>
+<span class="go">                                    {&#39;@&#39;: &#39;PHRASE&#39;, &#39;phrase&#39;: &#39;Cup&#39;}]},</span>
+<span class="go">              &#39;no_match&#39;: {&#39;@&#39;: &#39;PHRASE&#39;, &#39;phrase&#39;: &#39;Oran&#39;, &#39;prefix&#39;: True}},</span>
+<span class="go">             {&#39;@&#39;: &#39;COLUMNFILTER&#39;,</span>
+<span class="go">              &#39;columns&#39;: [&#39;name&#39;, &#39;description&#39;],</span>
+<span class="go">              &#39;filter&#39;: &#39;include&#39;,</span>
+<span class="go">              &#39;query&#39;: [&#39;some thing blue&#39;, &#39;sunshine&#39;]}]}</span>
+
+<span class="go">new parsed</span>
+<span class="go">OR(queries=[NOT(match=NEAR(phrases=[PHRASE(phrase=&#39;drink&#39;,</span>
+<span class="go">                                           initial=False,</span>
+<span class="go">                                           prefix=False,</span>
+<span class="go">                                           plus=None),</span>
+<span class="go">                                    PHRASE(phrase=&#39;Cup&#39;,</span>
+<span class="go">                                           initial=False,</span>
+<span class="go">                                           prefix=False,</span>
+<span class="go">                                           plus=None)],</span>
+<span class="go">                           distance=5),</span>
+<span class="go">                no_match=PHRASE(phrase=&#39;Oran&#39;,</span>
+<span class="go">                                initial=False,</span>
+<span class="go">                                prefix=True,</span>
+<span class="go">                                plus=None)),</span>
+<span class="go">            COLUMNFILTER(columns=[&#39;name&#39;, &#39;description&#39;],</span>
+<span class="go">                         filter=&#39;include&#39;,</span>
+<span class="go">                         query=AND(queries=[PHRASE(phrase=&#39;some thing blue&#39;,</span>
+<span class="go">                                                   initial=False,</span>
+<span class="go">                                                   prefix=False,</span>
+<span class="go">                                                   plus=None),</span>
+<span class="go">                                            PHRASE(phrase=&#39;sunshine&#39;,</span>
+<span class="go">                                                   initial=False,</span>
+<span class="go">                                                   prefix=False,</span>
+<span class="go">                                                   plus=None)]))])</span>
+
+<span class="go">new query</span>
+<span class="go">NEAR(drink Cup, 5) NOT Oran* OR {name description}: (&quot;some thing blue&quot; sunshine)</span>
+</pre></div>
+</div>
+</section>
+<section id="tokenizers">
+<span id="example-fts5-tokens"></span><span id="index-13"></span><h2>Tokenizers<a class="headerlink" href="#tokenizers" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://sqlite.org/fts5.html#tokenizers">Tokenizers</a> convert
+text into the tokens used to find matching rows.  They work on UTF8
+input providing the beginning and end offsets for each token.  They
+can also provide <a class="reference external" href="https://sqlite.org/fts5.html#synonym_support">more than one token at the same position</a> for example if you
+wanted both <code class="docutils literal notranslate"><span class="pre">first</span></code> and <code class="docutils literal notranslate"><span class="pre">1st</span></code>.</p>
+<p>Tokenizers and their arguments are specified as the ‘tokenize’
+option when creating a FTS5 table.  You can also call them directly
+from a <a class="reference internal" href="connection.html#apsw.Connection.fts5_tokenizer" title="apsw.Connection.fts5_tokenizer"><code class="xref py py-meth docutils literal notranslate"><span class="pre">connection</span></code></a>.  APSW
+provides <a class="reference internal" href="textsearch.html#all-tokenizers"><span class="std std-ref">several tokenizers</span></a> but lets look at
+<a class="reference external" href="https://sqlite.org/fts5.html#unicode61_tokenizer">unicode61</a> -
+the default SQLite tokenizer</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">fts5_tokenizer</span><span class="p">(</span><span class="s2">&quot;unicode61&quot;</span><span class="p">)</span>
+
+<span class="n">test_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;🤦🏼‍♂️ v1.2 Grey Ⅲ ColOUR! Don&#39;t jump -  🇫🇮你好世界 Straße</span>
+<span class="s2">    हैलो वर्ल्ड Déjà vu Résumé SQLITE_ERROR&quot;&quot;&quot;</span>
+
+<span class="c1"># Call the tokenizer to do a tokenization, supplying the reason</span>
+<span class="c1"># and no locale.</span>
+<span class="n">pprint</span><span class="p">(</span>
+    <span class="n">tokenizer</span><span class="p">(</span>
+        <span class="n">test_text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">),</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5_TOKENIZE_DOCUMENT</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+
+<span class="c1"># Make a function to show output</span>
+<span class="k">def</span> <span class="nf">show_tokens</span><span class="p">(</span>
+    <span class="n">text</span><span class="p">,</span>
+    <span class="n">tokenizer_name</span><span class="p">,</span>
+    <span class="n">tokenizer_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">reason</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">FTS5_TOKENIZE_DOCUMENT</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">text</span><span class="si">=:</span><span class="s2">s</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tokenizer_name</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">tokenizer_args</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">fts5_tokenizer</span><span class="p">(</span>
+        <span class="n">tokenizer_name</span><span class="p">,</span> <span class="n">tokenizer_args</span>
+    <span class="p">)</span>
+    <span class="c1"># exclude the offsets since they clutter the output</span>
+    <span class="n">pprint</span><span class="p">(</span>
+        <span class="n">tokenizer</span><span class="p">(</span>
+            <span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">),</span>
+            <span class="n">reason</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="n">include_offsets</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+
+
+<span class="n">show_tokens</span><span class="p">(</span><span class="s2">&quot;v1.2 SQLITE_ERROR&quot;</span><span class="p">,</span> <span class="s2">&quot;unicode61&quot;</span><span class="p">)</span>
+
+<span class="c1"># We want the version number and symbol kept together, so use</span>
+<span class="c1"># the tokenchars parameter.  Many tokenizers take parameters.</span>
+<span class="n">show_tokens</span><span class="p">(</span><span class="s2">&quot;v1.2 SQLITE_ERROR&quot;</span><span class="p">,</span> <span class="s2">&quot;unicode61&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;tokenchars&quot;</span><span class="p">,</span> <span class="s2">&quot;_.&quot;</span><span class="p">])</span>
+
+<span class="c1"># Tokenizers can also be chained together.  The porter tokenizer takes</span>
+<span class="c1"># existing tokens and turns them into a base.  The rightmost tokenizer</span>
+<span class="c1"># generates tokens, while ones to the left transform them.  This ensures</span>
+<span class="c1"># you can search for variations of words without having to get them</span>
+<span class="c1"># exactly right.</span>
+<span class="n">show_tokens</span><span class="p">(</span>
+    <span class="s2">&quot;Likes liked likely liking cat cats colour color&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;porter&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;unicode61&quot;</span><span class="p">,</span> <span class="s2">&quot;tokenchars&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">[(0, 8, &#39;🤦🏼&#39;),</span>
+<span class="go"> (18, 20, &#39;v1&#39;),</span>
+<span class="go"> (21, 22, &#39;2&#39;),</span>
+<span class="go"> (23, 27, &#39;grey&#39;),</span>
+<span class="go"> (28, 31, &#39;ⅲ&#39;),</span>
+<span class="go"> (32, 38, &#39;colour&#39;),</span>
+<span class="go"> (40, 43, &#39;don&#39;),</span>
+<span class="go"> (44, 45, &#39;t&#39;),</span>
+<span class="go"> (46, 50, &#39;jump&#39;),</span>
+<span class="go"> (62, 74, &#39;你好世界&#39;),</span>
+<span class="go"> (75, 82, &#39;straße&#39;),</span>
+<span class="go"> (87, 90, &#39;ह&#39;),</span>
+<span class="go"> (93, 96, &#39;ल&#39;),</span>
+<span class="go"> (100, 106, &#39;वर&#39;),</span>
+<span class="go"> (109, 112, &#39;ल&#39;),</span>
+<span class="go"> (115, 118, &#39;ड&#39;),</span>
+<span class="go"> (119, 125, &#39;deja&#39;),</span>
+<span class="go"> (126, 128, &#39;vu&#39;),</span>
+<span class="go"> (129, 137, &#39;resume&#39;),</span>
+<span class="go"> (138, 144, &#39;sqlite&#39;),</span>
+<span class="go"> (145, 150, &#39;error&#39;)]</span>
+
+<span class="go">text=v1.2 SQLITE_ERROR</span>
+<span class="go">tokenizer_name=&#39;unicode61&#39; tokenizer_args=None</span>
+<span class="go">[(&#39;v1&#39;,), (&#39;2&#39;,), (&#39;sqlite&#39;,), (&#39;error&#39;,)]</span>
+
+
+<span class="go">text=v1.2 SQLITE_ERROR</span>
+<span class="go">tokenizer_name=&#39;unicode61&#39; tokenizer_args=[&#39;tokenchars&#39;, &#39;_.&#39;]</span>
+<span class="go">[(&#39;v1.2&#39;,), (&#39;sqlite_error&#39;,)]</span>
+
+
+<span class="go">text=Likes liked likely liking cat cats colour color</span>
+<span class="go">tokenizer_name=&#39;porter&#39; tokenizer_args=[&#39;unicode61&#39;, &#39;tokenchars&#39;, &#39;_&#39;]</span>
+<span class="go">[(&#39;like&#39;,),</span>
+<span class="go"> (&#39;like&#39;,),</span>
+<span class="go"> (&#39;like&#39;,),</span>
+<span class="go"> (&#39;like&#39;,),</span>
+<span class="go"> (&#39;cat&#39;,),</span>
+<span class="go"> (&#39;cat&#39;,),</span>
+<span class="go"> (&#39;colour&#39;,),</span>
+<span class="go"> (&#39;color&#39;,)]</span>
+</pre></div>
+</div>
+</section>
+<section id="apsw-fts5-unicodewordstokenizer">
+<span id="example-fts-apsw-unicodewords"></span><span id="index-14"></span><h2>apsw.fts5.UnicodeWordsTokenizer<a class="headerlink" href="#apsw-fts5-unicodewordstokenizer" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="textsearch.html#apsw.fts5.UnicodeWordsTokenizer" title="apsw.fts5.UnicodeWordsTokenizer"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.fts5.UnicodeWordsTokenizer()</span></code></a> does word segmentation using
+the <a class="reference external" href="https://www.unicode.org/reports/tr29/#Word_Boundaries">Unicode algorithm TR29</a> which
+works well across languages. It understands when punctuation is part
+of words like in <code class="docutils literal notranslate"><span class="pre">don't</span></code>, that numbers include punctuation, as
+well as emoji and regional indicators</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">register_fts5_tokenizer</span><span class="p">(</span>
+    <span class="s2">&quot;unicodewords&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">UnicodeWordsTokenizer</span>
+<span class="p">)</span>
+
+<span class="c1"># unicode61 doesn&#39;t understand grapheme clusters or</span>
+<span class="c1"># punctuation in words, or other languages</span>
+<span class="n">show_tokens</span><span class="p">(</span><span class="n">test_text</span><span class="p">,</span> <span class="s2">&quot;unicode61&quot;</span><span class="p">)</span>
+
+<span class="c1"># unicodewords has you covered</span>
+<span class="n">show_tokens</span><span class="p">(</span><span class="n">test_text</span><span class="p">,</span> <span class="s2">&quot;unicodewords&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">text=🤦🏼‍♂️ v1.2 Grey Ⅲ ColOUR! Don&#39;t jump -  🇫🇮你好世界 Straße</span>
+<span class="go">    हैलो वर्ल्ड Déjà vu Résumé SQLITE_ERROR</span>
+<span class="go">tokenizer_name=&#39;unicode61&#39; tokenizer_args=None</span>
+<span class="go">[(&#39;🤦🏼&#39;,),</span>
+<span class="go"> (&#39;v1&#39;,),</span>
+<span class="go"> (&#39;2&#39;,),</span>
+<span class="go"> (&#39;grey&#39;,),</span>
+<span class="go"> (&#39;ⅲ&#39;,),</span>
+<span class="go"> (&#39;colour&#39;,),</span>
+<span class="go"> (&#39;don&#39;,),</span>
+<span class="go"> (&#39;t&#39;,),</span>
+<span class="go"> (&#39;jump&#39;,),</span>
+<span class="go"> (&#39;你好世界&#39;,),</span>
+<span class="go"> (&#39;straße&#39;,),</span>
+<span class="go"> (&#39;ह&#39;,),</span>
+<span class="go"> (&#39;ल&#39;,),</span>
+<span class="go"> (&#39;वर&#39;,),</span>
+<span class="go"> (&#39;ल&#39;,),</span>
+<span class="go"> (&#39;ड&#39;,),</span>
+<span class="go"> (&#39;deja&#39;,),</span>
+<span class="go"> (&#39;vu&#39;,),</span>
+<span class="go"> (&#39;resume&#39;,),</span>
+<span class="go"> (&#39;sqlite&#39;,),</span>
+<span class="go"> (&#39;error&#39;,)]</span>
+
+
+<span class="go">text=🤦🏼‍♂️ v1.2 Grey Ⅲ ColOUR! Don&#39;t jump -  🇫🇮你好世界 Straße</span>
+<span class="go">    हैलो वर्ल्ड Déjà vu Résumé SQLITE_ERROR</span>
+<span class="go">tokenizer_name=&#39;unicodewords&#39; tokenizer_args=None</span>
+<span class="go">[(&#39;🤦🏼\u200d♂️&#39;,),</span>
+<span class="go"> (&#39;v1.2&#39;,),</span>
+<span class="go"> (&#39;Grey&#39;,),</span>
+<span class="go"> (&#39;Ⅲ&#39;,),</span>
+<span class="go"> (&#39;ColOUR&#39;,),</span>
+<span class="go"> (&quot;Don&#39;t&quot;,),</span>
+<span class="go"> (&#39;jump&#39;,),</span>
+<span class="go"> (&#39;🇫🇮&#39;,),</span>
+<span class="go"> (&#39;你&#39;,),</span>
+<span class="go"> (&#39;好&#39;,),</span>
+<span class="go"> (&#39;世&#39;,),</span>
+<span class="go"> (&#39;界&#39;,),</span>
+<span class="go"> (&#39;Straße&#39;,),</span>
+<span class="go"> (&#39;हैलो&#39;,),</span>
+<span class="go"> (&#39;वर्ल्ड&#39;,),</span>
+<span class="go"> (&#39;Déjà&#39;,),</span>
+<span class="go"> (&#39;vu&#39;,),</span>
+<span class="go"> (&#39;Résumé&#39;,),</span>
+<span class="go"> (&#39;SQLITE_ERROR&#39;,)]</span>
+</pre></div>
+</div>
+</section>
+<section id="apsw-fts5-simplifytokenizer">
+<span id="example-fts-apsw-simplify"></span><span id="index-15"></span><h2>apsw.fts5.SimplifyTokenizer<a class="headerlink" href="#apsw-fts5-simplifytokenizer" title="Link to this heading"></a></h2>
+<p>You may have noticed that there are accents (diacritics) and
+mixed case in the tokens in the example above.  It is
+convenient to remove those.  The <a class="reference internal" href="textsearch.html#apsw.fts5.SimplifyTokenizer" title="apsw.fts5.SimplifyTokenizer"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.fts5.SimplifyTokenizer()</span></code></a>
+can neutralize case and remove accents and marks, so you can use it
+to filter your own or other tokenizers.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">register_fts5_tokenizer</span><span class="p">(</span>
+    <span class="s2">&quot;simplify&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">SimplifyTokenizer</span>
+<span class="p">)</span>
+
+<span class="n">show_tokens</span><span class="p">(</span>
+    <span class="n">test_text</span><span class="p">,</span>
+    <span class="s2">&quot;simplify&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="c1"># casefold is for case insensitive comparisons</span>
+        <span class="s2">&quot;casefold&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+        <span class="c1"># strip decomposes codepoints to remove accents</span>
+        <span class="c1"># and marks, and uses compatibility codepoints,</span>
+        <span class="c1"># an example is Roman numeral Ⅲ becomes III,</span>
+        <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+        <span class="c1"># Use unicodewords to get the tokens to simplify</span>
+        <span class="s2">&quot;unicodewords&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">text=🤦🏼‍♂️ v1.2 Grey Ⅲ ColOUR! Don&#39;t jump -  🇫🇮你好世界 Straße</span>
+<span class="go">    हैलो वर्ल्ड Déjà vu Résumé SQLITE_ERROR</span>
+<span class="go">tokenizer_name=&#39;simplify&#39; tokenizer_args=[&#39;casefold&#39;, &#39;1&#39;, &#39;strip&#39;, &#39;1&#39;, &#39;unicodewords&#39;]</span>
+<span class="go">[(&#39;🤦♂&#39;,),</span>
+<span class="go"> (&#39;v12&#39;,),</span>
+<span class="go"> (&#39;grey&#39;,),</span>
+<span class="go"> (&#39;iii&#39;,),</span>
+<span class="go"> (&#39;colour&#39;,),</span>
+<span class="go"> (&#39;dont&#39;,),</span>
+<span class="go"> (&#39;jump&#39;,),</span>
+<span class="go"> (&#39;🇫🇮&#39;,),</span>
+<span class="go"> (&#39;你&#39;,),</span>
+<span class="go"> (&#39;好&#39;,),</span>
+<span class="go"> (&#39;世&#39;,),</span>
+<span class="go"> (&#39;界&#39;,),</span>
+<span class="go"> (&#39;strasse&#39;,),</span>
+<span class="go"> (&#39;हल&#39;,),</span>
+<span class="go"> (&#39;वरलड&#39;,),</span>
+<span class="go"> (&#39;deja&#39;,),</span>
+<span class="go"> (&#39;vu&#39;,),</span>
+<span class="go"> (&#39;resume&#39;,),</span>
+<span class="go"> (&#39;sqliteerror&#39;,)]</span>
+</pre></div>
+</div>
+</section>
+<section id="your-own-tokenizer">
+<span id="example-fts-own"></span><span id="index-16"></span><h2>Your own tokenizer<a class="headerlink" href="#your-own-tokenizer" title="Link to this heading"></a></h2>
+<p>We will define our own tokenizer to be the same as above, but
+without all those parameters in the table definition.  A tokenizer
+takes the connection and list of string parameters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_tokenizer</span><span class="p">(</span>
+    <span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5Tokenizer</span><span class="p">:</span>
+    <span class="c1"># we take no params</span>
+    <span class="k">if</span> <span class="n">params</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected no parameters&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Same as above, but no longer in our SQL</span>
+    <span class="k">return</span> <span class="n">con</span><span class="o">.</span><span class="n">fts5_tokenizer</span><span class="p">(</span>
+        <span class="s2">&quot;simplify&quot;</span><span class="p">,</span>
+        <span class="p">[</span><span class="s2">&quot;casefold&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;strip&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;unicodewords&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+
+
+<span class="n">connection</span><span class="o">.</span><span class="n">register_fts5_tokenizer</span><span class="p">(</span><span class="s2">&quot;mine&quot;</span><span class="p">,</span> <span class="n">my_tokenizer</span><span class="p">)</span>
+
+<span class="c1"># Produces same result as above</span>
+<span class="n">show_tokens</span><span class="p">(</span><span class="n">test_text</span><span class="p">,</span> <span class="s2">&quot;mine&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">text=🤦🏼‍♂️ v1.2 Grey Ⅲ ColOUR! Don&#39;t jump -  🇫🇮你好世界 Straße</span>
+<span class="go">    हैलो वर्ल्ड Déjà vu Résumé SQLITE_ERROR</span>
+<span class="go">tokenizer_name=&#39;mine&#39; tokenizer_args=None</span>
+<span class="go">[(&#39;🤦♂&#39;,),</span>
+<span class="go"> (&#39;v12&#39;,),</span>
+<span class="go"> (&#39;grey&#39;,),</span>
+<span class="go"> (&#39;iii&#39;,),</span>
+<span class="go"> (&#39;colour&#39;,),</span>
+<span class="go"> (&#39;dont&#39;,),</span>
+<span class="go"> (&#39;jump&#39;,),</span>
+<span class="go"> (&#39;🇫🇮&#39;,),</span>
+<span class="go"> (&#39;你&#39;,),</span>
+<span class="go"> (&#39;好&#39;,),</span>
+<span class="go"> (&#39;世&#39;,),</span>
+<span class="go"> (&#39;界&#39;,),</span>
+<span class="go"> (&#39;strasse&#39;,),</span>
+<span class="go"> (&#39;हल&#39;,),</span>
+<span class="go"> (&#39;वरलड&#39;,),</span>
+<span class="go"> (&#39;deja&#39;,),</span>
+<span class="go"> (&#39;vu&#39;,),</span>
+<span class="go"> (&#39;resume&#39;,),</span>
+<span class="go"> (&#39;sqliteerror&#39;,)]</span>
+</pre></div>
+</div>
+</section>
+<section id="your-own-tokenizer-part-2">
+<span id="example-fts-own-2"></span><span id="index-17"></span><h2>Your own tokenizer, part 2<a class="headerlink" href="#your-own-tokenizer-part-2" title="Link to this heading"></a></h2>
+<p>We’ll make one entirely our own, not building on any existing
+tokenizer.  Tokenizers operate on UTF8 and byte offsets.  The
+<a class="reference internal" href="textsearch.html#apsw.fts5.StringTokenizer" title="apsw.fts5.StringTokenizer"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.fts5.StringTokenizer()</span></code></a> decorator lets you operate on
+<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> instead and handles the mapping.
+<a class="reference internal" href="textsearch.html#apsw.fts5.parse_tokenizer_args" title="apsw.fts5.parse_tokenizer_args"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.fts5.parse_tokenizer_args()</span></code></a> makes it easy to handle
+parameters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">StringTokenizer</span>
+<span class="k">def</span> <span class="nf">atokenizer</span><span class="p">(</span>
+    <span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5Tokenizer</span><span class="p">:</span>
+    <span class="c1"># What we accept</span>
+    <span class="n">ta</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">TokenizerArgument</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="c1"># two choices</span>
+        <span class="s2">&quot;big&quot;</span><span class="p">:</span> <span class="n">ta</span><span class="p">(</span><span class="n">choices</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;ship&quot;</span><span class="p">,</span> <span class="s2">&quot;plane&quot;</span><span class="p">)),</span>
+        <span class="c1"># default value only</span>
+        <span class="s2">&quot;small&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">,</span>
+        <span class="c1"># conversion</span>
+        <span class="s2">&quot;block&quot;</span><span class="p">:</span> <span class="n">ta</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">convertor</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="n">options</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">parse_tokenizer_args</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+
+    <span class="c1"># show what options we got</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">options</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># See apsw.fts5.tokenize_reasons for mapping from text to number</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reason</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># if a locale table and value was used</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">locale</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># break string in groups of &#39;block&#39; characters</span>
+        <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;block&quot;</span><span class="p">]):</span>
+            <span class="n">token</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="n">start</span> <span class="p">:</span> <span class="n">start</span> <span class="o">+</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;block&quot;</span><span class="p">]]</span>
+            <span class="k">yield</span> <span class="n">start</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">token</span><span class="p">),</span> <span class="n">token</span>
+
+    <span class="k">return</span> <span class="n">tokenize</span>
+
+
+<span class="n">connection</span><span class="o">.</span><span class="n">register_fts5_tokenizer</span><span class="p">(</span><span class="s2">&quot;atokenizer&quot;</span><span class="p">,</span> <span class="n">atokenizer</span><span class="p">)</span>
+
+<span class="c1"># show full return - note offsets are utf8 bytes</span>
+<span class="n">tok</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">fts5_tokenizer</span><span class="p">(</span>
+    <span class="s2">&quot;atokenizer&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;big&quot;</span><span class="p">,</span> <span class="s2">&quot;plane&quot;</span><span class="p">,</span> <span class="s2">&quot;block&quot;</span><span class="p">,</span> <span class="s2">&quot;5&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">tok</span><span class="p">(</span><span class="n">test_text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">),</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5_TOKENIZE_AUX</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">options={&#39;big&#39;: &#39;plane&#39;, &#39;block&#39;: 5, &#39;small&#39;: &#39;hello&#39;}</span>
+<span class="go">reason=8</span>
+<span class="go">locale=None</span>
+<span class="go">[(0, 17, &#39;🤦🏼\u200d♂️&#39;),</span>
+<span class="go"> (17, 22, &#39; v1.2&#39;),</span>
+<span class="go"> (22, 27, &#39; Grey&#39;),</span>
+<span class="go"> (27, 34, &#39; Ⅲ Co&#39;),</span>
+<span class="go"> (34, 39, &#39;lOUR!&#39;),</span>
+<span class="go"> (39, 44, &quot; Don&#39;&quot;),</span>
+<span class="go"> (44, 49, &#39;t jum&#39;),</span>
+<span class="go"> (49, 54, &#39;p -  &#39;),</span>
+<span class="go"> (54, 71, &#39;🇫🇮你好世&#39;),</span>
+<span class="go"> (71, 78, &#39;界 Str&#39;),</span>
+<span class="go"> (78, 84, &#39;aße\n &#39;),</span>
+<span class="go"> (84, 93, &#39;   है&#39;),</span>
+<span class="go"> (93, 106, &#39;लो वर&#39;),</span>
+<span class="go"> (106, 119, &#39;्ल्ड &#39;),</span>
+<span class="go"> (119, 126, &#39;Déjà &#39;),</span>
+<span class="go"> (126, 132, &#39;vu Ré&#39;),</span>
+<span class="go"> (132, 138, &#39;sumé &#39;),</span>
+<span class="go"> (138, 143, &#39;SQLIT&#39;),</span>
+<span class="go"> (143, 148, &#39;E_ERR&#39;),</span>
+<span class="go"> (148, 150, &#39;OR&#39;)]</span>
+</pre></div>
+</div>
+</section>
+<section id="apsw-fts5-regextokenizer">
+<span id="example-fts-apsw-regex"></span><span id="index-18"></span><h2>apsw.fts5.RegexTokenizer<a class="headerlink" href="#apsw-fts5-regextokenizer" title="Link to this heading"></a></h2>
+<p>We can use <a class="reference external" href="https://docs.python.org/3/library/re.html#module-re" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">regular</span> <span class="pre">expressions</span></code></a>.  Unlike the other
+tokenizers the pattern is not passed as a SQL level parameter
+because there would be a confusing amount of backslashes, square
+brackets and other quoting going on.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;\d+&quot;</span>  <span class="c1"># digits</span>
+<span class="n">flags</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">ASCII</span>  <span class="c1"># only ascii recognised</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+    <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">RegexTokenizer</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="n">pattern</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">flags</span>
+<span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">register_fts5_tokenizer</span><span class="p">(</span><span class="s2">&quot;my_regex&quot;</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">)</span>
+
+<span class="c1"># ASCII/Arabic and non-ascii digits</span>
+<span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;text2abc 3.14 tamil ௦௧௨௩௪ bengali ০১২৩৪ arabic01234&quot;</span>
+
+<span class="n">show_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s2">&quot;my_regex&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">text=text2abc 3.14 tamil ௦௧௨௩௪ bengali ০১২৩৪ arabic01234</span>
+<span class="go">tokenizer_name=&#39;my_regex&#39; tokenizer_args=None</span>
+<span class="go">[(&#39;2&#39;,), (&#39;3&#39;,), (&#39;14&#39;,), (&#39;01234&#39;,)]</span>
+</pre></div>
+</div>
+</section>
+<section id="apsw-fts5-regexpretokenizer">
+<span id="example-fts-apsw-regexpre"></span><span id="index-19"></span><h2>apsw.fts5.RegexPreTokenizer<a class="headerlink" href="#apsw-fts5-regexpretokenizer" title="Link to this heading"></a></h2>
+<p>Use regular expressions to extract tokens of interest such as
+identifiers,  and then use a different tokenizer on the text between
+the regular expression matches.  Contrast to RegexTokenizer above
+which ignores text not matching the pattern.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># For this example our identifiers are two digits slash two letters</span>
+<span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;73/RS is larger than 65/ST&quot;</span>
+
+<span class="c1"># See what unicodewords does</span>
+<span class="n">show_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s2">&quot;unicodewords&quot;</span><span class="p">)</span>
+
+<span class="c1"># Setup RegexPreTokenizer</span>
+<span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;[0-9][0-9]/[A-Z][A-Z]&quot;</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+    <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">RegexPreTokenizer</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="n">pattern</span>
+<span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">register_fts5_tokenizer</span><span class="p">(</span><span class="s2">&quot;myids&quot;</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">)</span>
+
+<span class="c1"># extract myids, leaving the other text to unicodewords</span>
+<span class="n">show_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s2">&quot;myids&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;unicodewords&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">text=73/RS is larger than 65/ST</span>
+<span class="go">tokenizer_name=&#39;unicodewords&#39; tokenizer_args=None</span>
+<span class="go">[(&#39;73&#39;,), (&#39;RS&#39;,), (&#39;is&#39;,), (&#39;larger&#39;,), (&#39;than&#39;,), (&#39;65&#39;,), (&#39;ST&#39;,)]</span>
+
+
+<span class="go">text=73/RS is larger than 65/ST</span>
+<span class="go">tokenizer_name=&#39;myids&#39; tokenizer_args=[&#39;unicodewords&#39;]</span>
+<span class="go">[(&#39;73/RS&#39;,), (&#39;is&#39;,), (&#39;larger&#39;,), (&#39;than&#39;,), (&#39;65/ST&#39;,)]</span>
+</pre></div>
+</div>
+</section>
+<section id="html-tokenizer">
+<span id="example-fts-html"></span><span id="index-20"></span><h2>HTML tokenizer<a class="headerlink" href="#html-tokenizer" title="Link to this heading"></a></h2>
+<p>The <a class="reference internal" href="textsearch.html#apsw.fts5.HTMLTokenizer" title="apsw.fts5.HTMLTokenizer"><code class="xref py py-func docutils literal notranslate"><span class="pre">HTMLTokenizer()</span></code></a> will pass on the
+extracted text to another tokenizer.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;&lt;title&gt;Big&amp;amp;Small&lt;/title&gt;&lt;p&gt;Hello &lt;b&gt;world&lt;/b&gt;.  B&amp;Agrave;&amp;#97;&quot;&quot;&quot;</span>
+
+<span class="n">show_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s2">&quot;html&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;unicodewords&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">text=&lt;title&gt;Big&amp;amp;Small&lt;/title&gt;&lt;p&gt;Hello &lt;b&gt;world&lt;/b&gt;.  B&amp;Agrave;&amp;#97;</span>
+<span class="go">tokenizer_name=&#39;html&#39; tokenizer_args=[&#39;unicodewords&#39;]</span>
+<span class="go">[(&#39;Big&#39;,), (&#39;Small&#39;,), (&#39;Hello&#39;,), (&#39;world&#39;,), (&#39;BÀa&#39;,)]</span>
+</pre></div>
+</div>
+</section>
+<section id="json-tokenizer">
+<span id="example-fts-json"></span><span id="index-21"></span><h2>JSON tokenizer<a class="headerlink" href="#json-tokenizer" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="textsearch.html#apsw.fts5.JSONTokenizer" title="apsw.fts5.JSONTokenizer"><code class="xref py py-func docutils literal notranslate"><span class="pre">JSONTokenizer()</span></code></a> extracts strings from JSON for
+processing by another tokenizer.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;A car🚗&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;one&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;three&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;four&quot;</span><span class="p">:</span> <span class="s2">&quot;five&quot;</span><span class="p">}],</span>
+<span class="p">}</span>
+
+<span class="n">text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Keys can be extracted</span>
+<span class="n">show_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;include_keys&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;unicodewords&quot;</span><span class="p">])</span>
+
+<span class="c1"># or ignored</span>
+<span class="n">show_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s2">&quot;json&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;include_keys&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="s2">&quot;unicodewords&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">text={</span>
+<span class="go"> &quot;name&quot;: &quot;A car\ud83d\ude97&quot;,</span>
+<span class="go"> &quot;items&quot;: [</span>
+<span class="go">  &quot;one&quot;,</span>
+<span class="go">  2,</span>
+<span class="go">  &quot;three&quot;,</span>
+<span class="go">  {</span>
+<span class="go">   &quot;four&quot;: &quot;five&quot;</span>
+<span class="go">  }</span>
+<span class="go"> ]</span>
+<span class="go">}</span>
+<span class="go">tokenizer_name=&#39;json&#39; tokenizer_args=[&#39;include_keys&#39;, &#39;1&#39;, &#39;unicodewords&#39;]</span>
+<span class="go">[(&#39;name&#39;,),</span>
+<span class="go"> (&#39;A&#39;,),</span>
+<span class="go"> (&#39;car&#39;,),</span>
+<span class="go"> (&#39;🚗&#39;,),</span>
+<span class="go"> (&#39;items&#39;,),</span>
+<span class="go"> (&#39;one&#39;,),</span>
+<span class="go"> (&#39;three&#39;,),</span>
+<span class="go"> (&#39;four&#39;,),</span>
+<span class="go"> (&#39;five&#39;,)]</span>
+
+
+<span class="go">text={</span>
+<span class="go"> &quot;name&quot;: &quot;A car\ud83d\ude97&quot;,</span>
+<span class="go"> &quot;items&quot;: [</span>
+<span class="go">  &quot;one&quot;,</span>
+<span class="go">  2,</span>
+<span class="go">  &quot;three&quot;,</span>
+<span class="go">  {</span>
+<span class="go">   &quot;four&quot;: &quot;five&quot;</span>
+<span class="go">  }</span>
+<span class="go"> ]</span>
+<span class="go">}</span>
+<span class="go">tokenizer_name=&#39;json&#39; tokenizer_args=[&#39;include_keys&#39;, &#39;0&#39;, &#39;unicodewords&#39;]</span>
+<span class="go">[(&#39;A&#39;,), (&#39;car&#39;,), (&#39;🚗&#39;,), (&#39;one&#39;,), (&#39;three&#39;,), (&#39;five&#39;,)]</span>
+</pre></div>
+</div>
+</section>
+<section id="synonym-tokenizer">
+<span id="example-fts-synonym"></span><span id="index-22"></span><h2>Synonym tokenizer<a class="headerlink" href="#synonym-tokenizer" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="textsearch.html#apsw.fts5.SynonymTokenizer" title="apsw.fts5.SynonymTokenizer"><code class="xref py py-func docutils literal notranslate"><span class="pre">SynonymTokenizer()</span></code></a> is useful to add colocated
+tokens.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;one Colour first big dog&quot;</span>
+
+<span class="c1"># We use a dict</span>
+<span class="n">synonyms</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;colour&quot;</span><span class="p">:</span> <span class="s2">&quot;color&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;first&quot;</span><span class="p">:</span> <span class="s2">&quot;1st&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dog&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;puppy&quot;</span><span class="p">,</span> <span class="s2">&quot;canine&quot;</span><span class="p">,</span> <span class="s2">&quot;k9&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">SynonymTokenizer</span><span class="p">(</span><span class="n">synonyms</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+
+<span class="n">connection</span><span class="o">.</span><span class="n">register_fts5_tokenizer</span><span class="p">(</span>
+    <span class="s2">&quot;synonyms&quot;</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># It is to the left of simplify so we don&#39;t have to match all the</span>
+<span class="c1"># different cases. By default the synonyms tokenizer only applies when</span>
+<span class="c1"># tokenizing queries.</span>
+<span class="n">show_tokens</span><span class="p">(</span>
+    <span class="n">text</span><span class="p">,</span>
+    <span class="s2">&quot;synonyms&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;simplify&quot;</span><span class="p">,</span> <span class="s2">&quot;casefold&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;unicodewords&quot;</span><span class="p">],</span>
+    <span class="n">reason</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">FTS5_TOKENIZE_QUERY</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">text=one Colour first big dog</span>
+<span class="go">tokenizer_name=&#39;synonyms&#39; tokenizer_args=[&#39;simplify&#39;, &#39;casefold&#39;, &#39;1&#39;, &#39;unicodewords&#39;]</span>
+<span class="go">[(&#39;one&#39;,),</span>
+<span class="go"> (&#39;colour&#39;, &#39;color&#39;),</span>
+<span class="go"> (&#39;first&#39;, &#39;1st&#39;),</span>
+<span class="go"> (&#39;big&#39;,),</span>
+<span class="go"> (&#39;dog&#39;, &#39;puppy&#39;, &#39;canine&#39;, &#39;k9&#39;)]</span>
+</pre></div>
+</div>
+</section>
+<section id="stopwords-tokenizer">
+<span id="example-fts-stopwords"></span><span id="index-23"></span><h2>Stopwords tokenizer<a class="headerlink" href="#stopwords-tokenizer" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="textsearch.html#apsw.fts5.StopWordsTokenizer" title="apsw.fts5.StopWordsTokenizer"><code class="xref py py-func docutils literal notranslate"><span class="pre">StopWordsTokenizer()</span></code></a> removes tokens from the
+stream.  Tokens that appear in almost every row aren’t useful for
+finding good matches, and increase the size of the index.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">StopWordsTokenizer</span>
+<span class="k">def</span> <span class="nf">ignore</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="c1"># Return True if the token should be ignored.  These are common</span>
+    <span class="c1"># English tokens that appear in almost all rows of English</span>
+    <span class="c1"># content.</span>
+    <span class="k">return</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">{</span>
+        <span class="s2">&quot;to&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;the&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;and&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;for&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;you&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;of&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;on&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;is&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;On the green hills and blue skies you see forever&quot;</span>
+
+<span class="n">connection</span><span class="o">.</span><span class="n">register_fts5_tokenizer</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">ignore</span><span class="p">)</span>
+
+<span class="c1"># It is to the left of simplify so we don&#39;t have to match all the</span>
+<span class="c1"># different cases.</span>
+<span class="n">show_tokens</span><span class="p">(</span>
+    <span class="n">text</span><span class="p">,</span> <span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;simplify&quot;</span><span class="p">,</span> <span class="s2">&quot;casefold&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;unicodewords&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">text=On the green hills and blue skies you see forever</span>
+<span class="go">tokenizer_name=&#39;ignore&#39; tokenizer_args=[&#39;simplify&#39;, &#39;casefold&#39;, &#39;1&#39;, &#39;unicodewords&#39;]</span>
+<span class="go">[(&#39;green&#39;,), (&#39;hills&#39;,), (&#39;blue&#39;,), (&#39;skies&#39;,), (&#39;see&#39;,), (&#39;forever&#39;,)]</span>
+</pre></div>
+</div>
+</section>
+<section id="transform-tokenizer">
+<span id="example-fts-transform"></span><span id="index-24"></span><h2>Transform tokenizer<a class="headerlink" href="#transform-tokenizer" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="textsearch.html#apsw.fts5.TransformTokenizer" title="apsw.fts5.TransformTokenizer"><code class="xref py py-func docutils literal notranslate"><span class="pre">TransformTokenizer()</span></code></a> modifies tokens.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">TransformTokenizer</span>
+<span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="c1"># we remove trailing &#39;s&#39; and &#39;ing&#39;</span>
+    <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">token</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;ing&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">token</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">token</span>
+
+
+<span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Chickens playing towards talking plays talks&quot;</span>
+
+<span class="n">connection</span><span class="o">.</span><span class="n">register_fts5_tokenizer</span><span class="p">(</span><span class="s2">&quot;transform&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span>
+
+<span class="c1"># It is to the left of simplify so we don&#39;t have to match all the</span>
+<span class="c1"># different cases.</span>
+<span class="n">show_tokens</span><span class="p">(</span>
+    <span class="n">text</span><span class="p">,</span> <span class="s2">&quot;transform&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;simplify&quot;</span><span class="p">,</span> <span class="s2">&quot;casefold&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;unicodewords&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">text=Chickens playing towards talking plays talks</span>
+<span class="go">tokenizer_name=&#39;transform&#39; tokenizer_args=[&#39;simplify&#39;, &#39;casefold&#39;, &#39;1&#39;, &#39;unicodewords&#39;]</span>
+<span class="go">[(&#39;chicken&#39;,), (&#39;play&#39;,), (&#39;toward&#39;,), (&#39;talk&#39;,), (&#39;play&#39;,), (&#39;talk&#39;,)]</span>
+</pre></div>
+</div>
+</section>
+<section id="cleanup">
+<span id="example-fts-end"></span><span id="index-25"></span><h2>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading"></a></h2>
+<p>We can now close the connection, but it is optional.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="backup.html" class="btn btn-neutral float-left" title="Backup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="textsearch.html" class="btn btn-neutral float-right" title="Full text search" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Nov 17, 2024.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-2NR9GDCQLT', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
