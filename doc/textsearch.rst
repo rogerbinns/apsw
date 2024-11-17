@@ -268,6 +268,59 @@ You can fine tune how matches are scored by applying column weights to
 existing ranking functions, or by writing your own ranking functions.
 See :mod:`apsw.fts5aux` for some examples.
 
+Facets
+------
+
+It is often desirable to group results together.  For example if
+searching media then grouping by books, music, and movies.  Searching
+a book could group by chapter.  Dated content could be grouped by
+items from the last month, the last year, and older than that.  This
+is known as `faceting
+<https://en.wikipedia.org/wiki/Faceted_search>`__.
+
+This is easy to do in SQLite, and an example of when you would use
+`unindexed columns
+<https://www.sqlite.org/fts5.html#the_unindexed_column_option>`__.
+You can use ``GROUP BY`` to group by a facet and ``LIMIT`` to limit
+how many results are available in each.  In our media example where an
+unindexed column named ``media`` containing values like ``book``,
+``music``, and ``movie`` exists you could do:
+
+.. code-block:: sql
+
+     SELECT title, release_date, media AS facet
+        FROM search(?)
+        GROUP BY facet
+        ORDER BY rank
+        LIMIT 5;
+
+If you were using date facets, then you can write an auxiliary
+function that returns the facet (eg ``0`` for last month, ``1`` for
+last year, and ``2`` for older than that).
+
+.. code-block:: sql
+
+     SELECT title, date_facet(search, release_date) AS facet
+        FROM search(?)
+        GROUP BY facet
+        ORDER BY rank
+        LIMIT 5;
+
+Multiple GROUP BY work, so you could facet by media type and date.
+
+.. code-block:: sql
+
+     SELECT title, media AS media_facet,
+                   date_facet(search, release_date) AS date_facet
+        FROM search(?)
+        GROUP BY media_facet, date_facet
+        ORDER BY rank
+        LIMIT 5;
+
+You do not need to store the facet information in the FTS5 table - it
+can be in an external content or any other table, using JOIN on the
+rowid of the FTS5 table.
+
 Performance
 -----------
 
