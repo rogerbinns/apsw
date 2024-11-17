@@ -42,10 +42,11 @@ module:
   APSW release brings the most recent SQLite to Python 3.9 all the way
   through Python 3.14.
 
-* APSW gives all functionality of SQLite including :ref:`virtual
-  tables <virtualtables>`, :ref:`VFS`, :ref:`BLOB I/O <blobio>`,
-  :ref:`backups <backup>`, :meth:`logging <apsw.ext.log_sqlite>`,
-  :meth:`file control <Connection.file_control>`, and :meth:`tracing
+* APSW gives all functionality of SQLite including :doc:`full text
+  search (FTS5) <textsearch>`, :ref:`virtual tables <virtualtables>`,
+  :ref:`VFS`, :ref:`BLOB I/O <blobio>`, :ref:`backups <backup>`,
+  :meth:`logging <apsw.ext.log_sqlite>`, :meth:`file control
+  <Connection.file_control>`, and :meth:`tracing
   <apsw.Connection.trace_v2>`.
 
 * APSW includes :mod:`apsw.bestpractice` which configures SQLite
