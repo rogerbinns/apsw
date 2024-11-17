@@ -2352,6 +2352,7 @@
 ".. seealso::\n" \
 "\n" \
 "  * :ref:`Example <example_trace_v2>`\n" \
+"  * :class:`apsw.ext.Trace`\n" \
 "\n" \
 "Calls:\n" \
 "  * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__\n" \

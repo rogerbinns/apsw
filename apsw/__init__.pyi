@@ -1877,6 +1877,7 @@ class Connection:
         .. seealso::
 
           * :ref:`Example <example_trace_v2>`
+          * :class:`apsw.ext.Trace`
 
         Calls:
           * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__

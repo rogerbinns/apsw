@@ -102,7 +102,14 @@ module:
   sqlite3's *executescript* method doesn't allow any form of
   data being returned (it silently ignores any returned data).
 
-* APSW has better :ref:`execution and row tracing <tracing>`.
+* APSW has better :ref:`execution and row tracing <tracing>`.  Both
+  APSW and sqlite3  wrap `sqlite3_trace_v2
+  <https://www.sqlite.org/c3ref/trace_v2.html>`__.  sqlite3 only lets
+  you see :meth:`the text of executed statements
+  <sqlite3.Connection.set_trace_callback>`.  APSW provides :meth:`a
+  lot more information <apsw.Connection.trace_v2>`, and allows for
+  multiple callbacks.  And provides a :class:`helpful context block
+  tracer <apsw.ext.Trace>`.
 
 * :doc:`ext` includes:
 

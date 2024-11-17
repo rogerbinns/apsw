@@ -1477,6 +1477,7 @@ Connection_set_profile(Connection *self, PyObject *const *fast_args, Py_ssize_t 
   .. seealso::
 
     * :ref:`Example <example_trace_v2>`
+    * :class:`apsw.ext.Trace`
 
   -* sqlite3_trace_v2 sqlite3_stmt_status
 */
