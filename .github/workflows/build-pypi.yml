@@ -9,6 +9,7 @@ jobs:
     strategy:
       matrix:
        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+       pyver: [cp39, cp310, cp311, cp312, cp313]
 
     steps:
       - uses: actions/checkout@v4
@@ -16,14 +17,14 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.21
         env:
-          CIBW_SKIP: pp*
+          CIBW_BUILD: ${{ matrix.pyver }}-*
           CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
           CIBW_TEST_COMMAND: python -m apsw.tests -v
           APSW_HEAVY_DURATION: 2
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ matrix.os }}
+          name: dist-${{ matrix.os }}-${{ matrix.pyver }}
           path: ./wheelhouse/*.whl
 
 
@@ -32,6 +33,8 @@ jobs:
       strategy:
         matrix:
           arch: [aarch64]
+          pyver: [cp39, cp310, cp311, cp312, cp313]
+          libc: [manylinux, musllinux]
 
       steps:
         - uses: actions/checkout@v4
@@ -44,7 +47,7 @@ jobs:
         - name: Build wheels
           uses: pypa/cibuildwheel@v2.21
           env:
-            CIBW_SKIP: pp*
+            CIBW_BUILD: ${{ matrix.pyver }}-${{ matrix.libc }}*
             CIBW_ARCHS_LINUX: ${{ matrix.arch }}
             CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
             CIBW_TEST_COMMAND: python -m apsw.tests -v
@@ -52,7 +55,7 @@ jobs:
 
         - uses: actions/upload-artifact@v4
           with:
-            name: dist-qemu-${{ matrix.arch }}
+            name: dist-qemu-${{ matrix.arch }}-${{ matrix.pyver }}-${{ matrix.libc }}
             path: ./wheelhouse/*.whl
 
 
