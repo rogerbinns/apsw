@@ -12,7 +12,7 @@ ReflowComments: false
 
 # CPython macros that have the trailing comma/semi-colon as part of
 # the macro.
-StatementMacros: ["PyObject_HEAD"]
+StatementMacros: ["PyObject_HEAD", "PyVarObject_HEAD_INIT"]
 
 # PyVarObject_HEAD_INIT should be part of above, but doesn't work
 # (needs clang-format 17) so until then clang-format off/on needs to

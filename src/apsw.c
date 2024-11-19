@@ -171,7 +171,8 @@ static PyObject *APSWException;
 
 /* no change sentinel for vtable updates */
 static PyTypeObject apsw_no_change_object = {
-  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.no_change",
+  PyVarObject_HEAD_INIT(NULL, 0)
+  .tp_name = "apsw.no_change",
   .tp_doc = Apsw_no_change_DOC,
 };
 
