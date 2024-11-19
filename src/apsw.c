@@ -113,35 +113,39 @@ API Reference
 
 /* Python headers */
 #define PY_SSIZE_T_CLEAN
+#include "structmember.h"
 #include <Python.h>
 #include <pythread.h>
-#include "structmember.h"
 
 /* This function does nothing in regular builds, but in faultinjection
 builds allows for an existing exception to be injected in callbacks */
-static int MakeExistingException(void) { return 0; }
+static int
+MakeExistingException(void)
+{
+  return 0;
+}
 #include "faultinject.h"
 
 #ifdef APSW_TESTFIXTURES
 
 /* Fault injection */
-#define APSW_FAULT_INJECT(faultName, good, bad) \
-  do                                            \
-  {                                             \
-    if (APSW_Should_Fault(#faultName))          \
-    {                                           \
-      do                                        \
-      {                                         \
-        bad;                                    \
-      } while (0);                              \
-    }                                           \
-    else                                        \
-    {                                           \
-      do                                        \
-      {                                         \
-        good;                                   \
-      } while (0);                              \
-    }                                           \
+#define APSW_FAULT_INJECT(faultName, good, bad)                                                                        \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (APSW_Should_Fault(#faultName))                                                                                 \
+    {                                                                                                                  \
+      do                                                                                                               \
+      {                                                                                                                \
+        bad;                                                                                                           \
+      } while (0);                                                                                                     \
+    }                                                                                                                  \
+    else                                                                                                               \
+    {                                                                                                                  \
+      do                                                                                                               \
+      {                                                                                                                \
+        good;                                                                                                          \
+      } while (0);                                                                                                     \
+    }                                                                                                                  \
   } while (0)
 
 static int APSW_Should_Fault(const char *);
@@ -152,10 +156,10 @@ static int APSW_Should_Fault(const char *);
 #endif
 
 #else /* APSW_TESTFIXTURES */
-#define APSW_FAULT_INJECT(faultName, good, bad) \
-  do                                            \
-  {                                             \
-    good;                                       \
+#define APSW_FAULT_INJECT(faultName, good, bad)                                                                        \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    good;                                                                                                              \
   } while (0)
 #endif
 
@@ -167,14 +171,14 @@ static PyObject *APSWException;
 
 /* no change sentinel for vtable updates */
 static PyTypeObject apsw_no_change_object = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = "apsw.no_change",
-    .tp_doc = Apsw_no_change_DOC,
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.no_change",
+  .tp_doc = Apsw_no_change_DOC,
 };
 
 typedef struct
 {
-  PyObject_HEAD long long blobsize;
+  PyObject_HEAD
+  long long blobsize;
   int init_was_called;
 } ZeroBlobBind;
 
@@ -273,7 +277,8 @@ get_apsw_version(void)
   -* sqlite3_enable_shared_cache
 */
 static PyObject *
-enable_shared_cache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+enable_shared_cache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                    PyObject *fast_kwnames)
 {
   int enable = 0, res;
   {
@@ -438,7 +443,7 @@ apsw_logger(void *arg, int errcode, const char *message)
   assert(arg);
   PY_ERR_FETCH(exc);
 
-  PyObject *vargs[] = {NULL, PyLong_FromLong(errcode), PyUnicode_FromString(message)};
+  PyObject *vargs[] = { NULL, PyLong_FromLong(errcode), PyUnicode_FromString(message) };
   if (vargs[1] && vargs[2])
     res = PyObject_Vectorcall(arg, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_XDECREF(vargs[1]);
@@ -451,11 +456,8 @@ apsw_logger(void *arg, int errcode, const char *message)
       PyErr_Clear();
     else
     {
-      AddTraceBackHere(__FILE__, __LINE__, "apsw_sqlite3_log_receiver",
-                       "{s: O, s: i, s: s}",
-                       "logger", OBJ(arg),
-                       "errcode", errcode,
-                       "message", message);
+      AddTraceBackHere(__FILE__, __LINE__, "apsw_sqlite3_log_receiver", "{s: O, s: i, s: s}", "logger", OBJ(arg),
+                       "errcode", errcode, "message", message);
 
       apsw_write_unraisable(NULL);
     }
@@ -492,8 +494,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
     res = sqlite3_config(opt);
     break;
 
-  case SQLITE_CONFIG_PCACHE_HDRSZ:
-  {
+  case SQLITE_CONFIG_PCACHE_HDRSZ: {
     int outval = -1;
     if (!PyArg_ParseTuple(args, "i", &optdup))
       return NULL;
@@ -514,8 +515,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
   case SQLITE_CONFIG_STMTJRNL_SPILL:
   case SQLITE_CONFIG_SORTERREF_SIZE:
   case SQLITE_CONFIG_LOOKASIDE:
-  case SQLITE_CONFIG_SMALL_MALLOC:
-  {
+  case SQLITE_CONFIG_SMALL_MALLOC: {
     int intval;
     if (!PyArg_ParseTuple(args, "ii", &optdup, &intval))
       return NULL;
@@ -524,8 +524,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
     break;
   }
 
-  case SQLITE_CONFIG_LOG:
-  {
+  case SQLITE_CONFIG_LOG: {
     PyObject *logger;
     if (!PyArg_ParseTuple(args, "iO", &optdup, &logger))
       return NULL;
@@ -551,8 +550,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
     break;
   }
 
-  case SQLITE_CONFIG_MMAP_SIZE:
-  {
+  case SQLITE_CONFIG_MMAP_SIZE: {
     sqlite3_int64 default_limit, max_limit;
     if (!PyArg_ParseTuple(args, "iLL", &optdup, &default_limit, &max_limit))
       return NULL;
@@ -561,8 +559,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
     break;
   }
 
-  case SQLITE_CONFIG_MEMDB_MAXSIZE:
-  {
+  case SQLITE_CONFIG_MEMDB_MAXSIZE: {
     sqlite3_int64 limit;
     if (!PyArg_ParseTuple(args, "iL", &optdup, &limit))
       return NULL;
@@ -662,7 +659,8 @@ soft_heap_limit(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
   -* sqlite3_hard_heap_limit64
 */
 static PyObject *
-apsw_hard_heap_limit(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+apsw_hard_heap_limit(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                     PyObject *fast_kwnames)
 {
   sqlite3_int64 limit, oldlimit;
   {
@@ -814,9 +812,9 @@ error:
 
 #define VFS1_BUILD "si si si ss sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO& sO&"
 
-#define VFS1_FIELDS I(iVersion), I(szOsFile), I(mxPathname), S(zName), P(pAppData),              \
-                    P(xOpen), P(xDelete), P(xAccess), P(xFullPathname), P(xDlOpen), P(xDlError), \
-                    P(xDlSym), P(xDlClose), P(xRandomness), P(xSleep), P(xGetLastError), P(xCurrentTime)
+#define VFS1_FIELDS                                                                                                    \
+  I(iVersion), I(szOsFile), I(mxPathname), S(zName), P(pAppData), P(xOpen), P(xDelete), P(xAccess), P(xFullPathname),  \
+      P(xDlOpen), P(xDlError), P(xDlSym), P(xDlClose), P(xRandomness), P(xSleep), P(xGetLastError), P(xCurrentTime)
 
 #define VFS2_BUILD "sO&"
 #define VFS2_FIELDS P(xCurrentTimeInt64)
@@ -896,7 +894,8 @@ vfs_details(PyObject *Py_UNUSED(self))
 
 */
 static PyObject *
-get_apsw_exception_for(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+get_apsw_exception_for(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                       PyObject *fast_kwnames)
 {
   int code = 0, i;
   PyObject *result = NULL, *tmp = NULL;
@@ -911,7 +910,7 @@ get_apsw_exception_for(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py
   for (i = 0; exc_descriptors[i].name; i++)
     if (exc_descriptors[i].code == (code & 0xff))
     {
-      PyObject *vargs[] = {NULL};
+      PyObject *vargs[] = { NULL };
       result = PyObject_Vectorcall(exc_descriptors[i].cls, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       if (!result)
         return result;
@@ -1012,26 +1011,11 @@ typedef struct
   sqlite3_mutex *underlying_mutex;
 } apsw_mutex;
 
-static apsw_mutex *apsw_mutexes[] =
-    {
-        NULL, /* not used - fast */
+static apsw_mutex *apsw_mutexes[]
+    = { NULL, /* not used - fast */
         NULL, /* not used - recursive */
         NULL, /* from this point on corresponds to the various static mutexes */
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL};
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 static sqlite3_mutex_methods apsw_orig_mutex_methods;
 
@@ -1057,8 +1041,7 @@ apsw_xMutexAlloc(int which)
   switch (which)
   {
   case SQLITE_MUTEX_FAST:
-  case SQLITE_MUTEX_RECURSIVE:
-  {
+  case SQLITE_MUTEX_RECURSIVE: {
     apsw_mutex *am;
     sqlite3_mutex *m = apsw_orig_mutex_methods.xMutexAlloc(which);
 
@@ -1108,9 +1091,11 @@ apsw_check_mutex(apsw_mutex *am)
   {
     PyGILState_STATE gilstate;
     gilstate = PyGILState_Ensure();
-    PyErr_Format(ExcForkingViolation, "SQLite object allocated in one process is being used in another (across a fork)");
+    PyErr_Format(ExcForkingViolation,
+                 "SQLite object allocated in one process is being used in another (across a fork)");
     apsw_write_unraisable(NULL);
-    PyErr_Format(ExcForkingViolation, "SQLite object allocated in one process is being used in another (across a fork)");
+    PyErr_Format(ExcForkingViolation,
+                 "SQLite object allocated in one process is being used in another (across a fork)");
     PyGILState_Release(gilstate);
     return SQLITE_MISUSE;
   }
@@ -1168,23 +1153,16 @@ apsw_xMutexNotheld(sqlite3_mutex *mutex)
 }
 #endif
 
-static sqlite3_mutex_methods apsw_mutex_methods =
-    {
-        apsw_xMutexInit,
-        apsw_xMutexEnd,
-        apsw_xMutexAlloc,
-        apsw_xMutexFree,
-        apsw_xMutexEnter,
-        apsw_xMutexTry,
-        apsw_xMutexLeave,
+static sqlite3_mutex_methods apsw_mutex_methods
+    = { apsw_xMutexInit,  apsw_xMutexEnd,    apsw_xMutexAlloc, apsw_xMutexFree,
+        apsw_xMutexEnter, apsw_xMutexTry,    apsw_xMutexLeave,
 #ifdef SQLITE_DEBUG
-        apsw_xMutexHeld,
-        apsw_xMutexNotheld
+        apsw_xMutexHeld,  apsw_xMutexNotheld
 #else
         0,
         0
 #endif
-};
+      };
 
 /** .. method:: fork_checker() -> None
 
@@ -1455,8 +1433,7 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
     {
       switch (ch = PyUnicode_READ(input_kind, input_data, pos))
       {
-      case 0:
-      {
+      case 0: {
         int i;
         for (i = 0; i < 11; i++)
           PyUnicode_WRITE(output_kind, output_data, outpos++, "'||X'00'||'"[i]);
@@ -1653,7 +1630,8 @@ apsw_strnicmp(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
  -* sqlite3_vfs_register sqlite3_vfs_find
 */
 static PyObject *
-apsw_set_default_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+apsw_set_default_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                     PyObject *fast_kwnames)
 {
   const char *name;
   sqlite3_vfs *vfs;
@@ -1683,7 +1661,8 @@ apsw_set_default_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py
  -* sqlite3_vfs_unregister sqlite3_vfs_find
 */
 static PyObject *
-apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                    PyObject *fast_kwnames)
 {
   const char *name;
   sqlite3_vfs *vfs;
@@ -1750,7 +1729,8 @@ apsw_sleep(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t f
   The previous value is returned.
 */
 static PyObject *
-apsw_allow_missing_dict_bindings(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+apsw_allow_missing_dict_bindings(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                 PyObject *fast_kwnames)
 {
   int curval = allow_missing_dict_bindings;
   int value;
@@ -1789,97 +1769,64 @@ apsw_getattr(PyObject *Py_UNUSED(module), PyObject *name)
 }
 
 static PyMethodDef module_methods[] = {
-    {"sqlite3_sourceid", (PyCFunction)get_sqlite3_sourceid, METH_NOARGS,
-     Apsw_sqlite3_sourceid_DOC},
-    {"sqlite_lib_version", (PyCFunction)get_sqlite_version, METH_NOARGS,
-     Apsw_sqlite_lib_version_DOC},
-    {"apsw_version", (PyCFunction)get_apsw_version, METH_NOARGS,
-     Apsw_apsw_version_DOC},
-    {"vfs_names", (PyCFunction)vfs_names, METH_NOARGS,
-     Apsw_vfs_names_DOC},
-    {"vfs_details", (PyCFunction)vfs_details, METH_NOARGS,
-     Apsw_vfs_details_DOC},
-    {"enable_shared_cache", (PyCFunction)enable_shared_cache, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_enable_shared_cache_DOC},
-    {"initialize", (PyCFunction)initialize, METH_NOARGS,
-     Apsw_initialize_DOC},
-    {"shutdown", (PyCFunction)sqliteshutdown, METH_NOARGS,
-     Apsw_shutdown_DOC},
-    {"format_sql_value", (PyCFunction)formatsqlvalue, METH_O,
-     Apsw_format_sql_value_DOC},
-    {"config", (PyCFunction)config, METH_VARARGS,
-     Apsw_config_DOC},
-    {"log", (PyCFunction)apsw_log, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_log_DOC},
-    {"memory_used", (PyCFunction)memory_used, METH_NOARGS,
-     Apsw_memory_used_DOC},
-    {"memory_high_water", (PyCFunction)memory_high_water, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_memory_high_water_DOC},
-    {"status", (PyCFunction)status, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_status_DOC},
-    {"soft_heap_limit", (PyCFunction)soft_heap_limit, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_soft_heap_limit_DOC},
-    {"hard_heap_limit", (PyCFunction)apsw_hard_heap_limit, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_hard_heap_limit_DOC},
-    {"release_memory", (PyCFunction)release_memory, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_release_memory_DOC},
-    {"randomness", (PyCFunction)randomness, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_randomness_DOC},
-    {"exception_for", (PyCFunction)get_apsw_exception_for, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_exception_for_DOC},
-    {"complete", (PyCFunction)apswcomplete, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_complete_DOC},
-    {"strlike", (PyCFunction)apsw_strlike, METH_FASTCALL | METH_KEYWORDS, Apsw_strlike_DOC},
-    {"strglob", (PyCFunction)apsw_strglob, METH_FASTCALL | METH_KEYWORDS, Apsw_strglob_DOC},
-    {"stricmp", (PyCFunction)apsw_stricmp, METH_FASTCALL | METH_KEYWORDS, Apsw_stricmp_DOC},
-    {"strnicmp", (PyCFunction)apsw_strnicmp, METH_FASTCALL | METH_KEYWORDS, Apsw_strnicmp_DOC},
-    {"set_default_vfs", (PyCFunction)apsw_set_default_vfs, METH_FASTCALL | METH_KEYWORDS, Apsw_set_default_vfs_DOC},
-    {"unregister_vfs", (PyCFunction)apsw_unregister_vfs, METH_FASTCALL | METH_KEYWORDS, Apsw_unregister_vfs_DOC},
-    {"allow_missing_dict_bindings", (PyCFunction)apsw_allow_missing_dict_bindings, METH_FASTCALL | METH_KEYWORDS, Apsw_allow_missing_dict_bindings_DOC},
+  { "sqlite3_sourceid", (PyCFunction)get_sqlite3_sourceid, METH_NOARGS, Apsw_sqlite3_sourceid_DOC },
+  { "sqlite_lib_version", (PyCFunction)get_sqlite_version, METH_NOARGS, Apsw_sqlite_lib_version_DOC },
+  { "apsw_version", (PyCFunction)get_apsw_version, METH_NOARGS, Apsw_apsw_version_DOC },
+  { "vfs_names", (PyCFunction)vfs_names, METH_NOARGS, Apsw_vfs_names_DOC },
+  { "vfs_details", (PyCFunction)vfs_details, METH_NOARGS, Apsw_vfs_details_DOC },
+  { "enable_shared_cache", (PyCFunction)enable_shared_cache, METH_FASTCALL | METH_KEYWORDS,
+    Apsw_enable_shared_cache_DOC },
+  { "initialize", (PyCFunction)initialize, METH_NOARGS, Apsw_initialize_DOC },
+  { "shutdown", (PyCFunction)sqliteshutdown, METH_NOARGS, Apsw_shutdown_DOC },
+  { "format_sql_value", (PyCFunction)formatsqlvalue, METH_O, Apsw_format_sql_value_DOC },
+  { "config", (PyCFunction)config, METH_VARARGS, Apsw_config_DOC },
+  { "log", (PyCFunction)apsw_log, METH_FASTCALL | METH_KEYWORDS, Apsw_log_DOC },
+  { "memory_used", (PyCFunction)memory_used, METH_NOARGS, Apsw_memory_used_DOC },
+  { "memory_high_water", (PyCFunction)memory_high_water, METH_FASTCALL | METH_KEYWORDS, Apsw_memory_high_water_DOC },
+  { "status", (PyCFunction)status, METH_FASTCALL | METH_KEYWORDS, Apsw_status_DOC },
+  { "soft_heap_limit", (PyCFunction)soft_heap_limit, METH_FASTCALL | METH_KEYWORDS, Apsw_soft_heap_limit_DOC },
+  { "hard_heap_limit", (PyCFunction)apsw_hard_heap_limit, METH_FASTCALL | METH_KEYWORDS, Apsw_hard_heap_limit_DOC },
+  { "release_memory", (PyCFunction)release_memory, METH_FASTCALL | METH_KEYWORDS, Apsw_release_memory_DOC },
+  { "randomness", (PyCFunction)randomness, METH_FASTCALL | METH_KEYWORDS, Apsw_randomness_DOC },
+  { "exception_for", (PyCFunction)get_apsw_exception_for, METH_FASTCALL | METH_KEYWORDS, Apsw_exception_for_DOC },
+  { "complete", (PyCFunction)apswcomplete, METH_FASTCALL | METH_KEYWORDS, Apsw_complete_DOC },
+  { "strlike", (PyCFunction)apsw_strlike, METH_FASTCALL | METH_KEYWORDS, Apsw_strlike_DOC },
+  { "strglob", (PyCFunction)apsw_strglob, METH_FASTCALL | METH_KEYWORDS, Apsw_strglob_DOC },
+  { "stricmp", (PyCFunction)apsw_stricmp, METH_FASTCALL | METH_KEYWORDS, Apsw_stricmp_DOC },
+  { "strnicmp", (PyCFunction)apsw_strnicmp, METH_FASTCALL | METH_KEYWORDS, Apsw_strnicmp_DOC },
+  { "set_default_vfs", (PyCFunction)apsw_set_default_vfs, METH_FASTCALL | METH_KEYWORDS, Apsw_set_default_vfs_DOC },
+  { "unregister_vfs", (PyCFunction)apsw_unregister_vfs, METH_FASTCALL | METH_KEYWORDS, Apsw_unregister_vfs_DOC },
+  { "allow_missing_dict_bindings", (PyCFunction)apsw_allow_missing_dict_bindings, METH_FASTCALL | METH_KEYWORDS,
+    Apsw_allow_missing_dict_bindings_DOC },
 #ifdef APSW_TESTFIXTURES
-    {"_fini", (PyCFunction)apsw_fini, METH_NOARGS,
-     "Frees all caches and recycle lists"},
+  { "_fini", (PyCFunction)apsw_fini, METH_NOARGS, "Frees all caches and recycle lists" },
 #endif
 #ifdef APSW_FORK_CHECKER
-    {"fork_checker", (PyCFunction)apsw_fork_checker, METH_NOARGS,
-     Apsw_fork_checker_DOC},
+  { "fork_checker", (PyCFunction)apsw_fork_checker, METH_NOARGS, Apsw_fork_checker_DOC },
 #endif
-    {"__getattr__", (PyCFunction)apsw_getattr, METH_O, "module getattr"},
-    {"connections", (PyCFunction)apsw_connections, METH_NOARGS, Apsw_connections_DOC},
-    {"sleep", (PyCFunction)apsw_sleep, METH_FASTCALL | METH_KEYWORDS, Apsw_sleep_DOC},
+  { "__getattr__", (PyCFunction)apsw_getattr, METH_O, "module getattr" },
+  { "connections", (PyCFunction)apsw_connections, METH_NOARGS, Apsw_connections_DOC },
+  { "sleep", (PyCFunction)apsw_sleep, METH_FASTCALL | METH_KEYWORDS, Apsw_sleep_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
-    {Apsw_sqlite_lib_version_OLDNAME, (PyCFunction)get_sqlite_version, METH_NOARGS,
-     Apsw_sqlite_lib_version_OLDDOC},
-    {Apsw_apsw_version_OLDNAME, (PyCFunction)get_apsw_version, METH_NOARGS,
-     Apsw_apsw_version_OLDDOC},
-    {Apsw_vfs_names_OLDNAME, (PyCFunction)vfs_names, METH_NOARGS,
-     Apsw_vfs_names_OLDDOC},
-    {Apsw_enable_shared_cache_OLDNAME, (PyCFunction)enable_shared_cache, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_enable_shared_cache_OLDDOC},
-    {Apsw_memory_used_OLDNAME, (PyCFunction)memory_used, METH_NOARGS,
-     Apsw_memory_used_OLDDOC},
-    {Apsw_memory_high_water_OLDNAME, (PyCFunction)memory_high_water, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_memory_high_water_OLDDOC},
-    {Apsw_soft_heap_limit_OLDNAME, (PyCFunction)soft_heap_limit, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_soft_heap_limit_OLDDOC},
-    {Apsw_release_memory_OLDNAME, (PyCFunction)release_memory, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_release_memory_OLDDOC},
-    {Apsw_exception_for_OLDNAME, (PyCFunction)get_apsw_exception_for, METH_FASTCALL | METH_KEYWORDS,
-     Apsw_exception_for_OLDDOC},
+  { Apsw_sqlite_lib_version_OLDNAME, (PyCFunction)get_sqlite_version, METH_NOARGS, Apsw_sqlite_lib_version_OLDDOC },
+  { Apsw_apsw_version_OLDNAME, (PyCFunction)get_apsw_version, METH_NOARGS, Apsw_apsw_version_OLDDOC },
+  { Apsw_vfs_names_OLDNAME, (PyCFunction)vfs_names, METH_NOARGS, Apsw_vfs_names_OLDDOC },
+  { Apsw_enable_shared_cache_OLDNAME, (PyCFunction)enable_shared_cache, METH_FASTCALL | METH_KEYWORDS,
+    Apsw_enable_shared_cache_OLDDOC },
+  { Apsw_memory_used_OLDNAME, (PyCFunction)memory_used, METH_NOARGS, Apsw_memory_used_OLDDOC },
+  { Apsw_memory_high_water_OLDNAME, (PyCFunction)memory_high_water, METH_FASTCALL | METH_KEYWORDS,
+    Apsw_memory_high_water_OLDDOC },
+  { Apsw_soft_heap_limit_OLDNAME, (PyCFunction)soft_heap_limit, METH_FASTCALL | METH_KEYWORDS,
+    Apsw_soft_heap_limit_OLDDOC },
+  { Apsw_release_memory_OLDNAME, (PyCFunction)release_memory, METH_FASTCALL | METH_KEYWORDS,
+    Apsw_release_memory_OLDDOC },
+  { Apsw_exception_for_OLDNAME, (PyCFunction)get_apsw_exception_for, METH_FASTCALL | METH_KEYWORDS,
+    Apsw_exception_for_OLDDOC },
 #endif
-    {0, 0, 0, 0} /* Sentinel */
+  { 0, 0, 0, 0 } /* Sentinel */
 };
 
-static struct PyModuleDef apswmoduledef = {
-    PyModuleDef_HEAD_INIT,
-    "apsw",
-    NULL,
-    -1,
-    module_methods,
-    0,
-    0,
-    0,
-    0};
+static struct PyModuleDef apswmoduledef = { PyModuleDef_HEAD_INIT, "apsw", NULL, -1, module_methods, 0, 0, 0, 0 };
 
 PyMODINIT_FUNC
 PyInit_apsw(void)
@@ -1897,7 +1844,12 @@ PyInit_apsw(void)
     goto fail;
   }
 
-  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0 || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0 || PyType_Ready(&apswfcntl_pragma_Type) < 0 || PyType_Ready(&APSWURIFilenameType) < 0 || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0 || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_object) < 0 || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0)
+  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0
+      || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0
+      || PyType_Ready(&apswfcntl_pragma_Type) < 0 || PyType_Ready(&APSWURIFilenameType) < 0
+      || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0
+      || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_object) < 0
+      || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0)
     goto fail;
 
   /* PyStructSequence_NewType is broken in some Pythons
@@ -1930,12 +1882,12 @@ PyInit_apsw(void)
     goto fail;
 
 /* we can't avoid leaks with failures until multi-phase initialisation is done */
-#define ADD(name, item)                                  \
-  do                                                     \
-  {                                                      \
-    if (PyModule_AddObject(m, #name, (PyObject *)&item)) \
-      goto fail;                                         \
-    Py_INCREF(&item);                                    \
+#define ADD(name, item)                                                                                                \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (PyModule_AddObject(m, #name, (PyObject *)&item))                                                               \
+      goto fail;                                                                                                       \
+    Py_INCREF(&item);                                                                                                  \
   } while (0)
 
   ADD(Connection, ConnectionType);
@@ -1983,7 +1935,7 @@ PyInit_apsw(void)
   if (PyModule_AddIntConstant(m, "SQLITE_VERSION_NUMBER", SQLITE_VERSION_NUMBER))
     goto fail;
 
-    /** .. attribute:: using_amalgamation
+  /** .. attribute:: using_amalgamation
       :type: bool
 
       If True then `SQLite amalgamation

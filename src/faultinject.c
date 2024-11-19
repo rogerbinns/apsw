@@ -2,7 +2,8 @@
 #include "faultinject.h"
 
 static long long
-APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum, const char *args)
+APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum,
+                        const char *args)
 {
   PyObject *callable, *res = NULL;
   const char *err_details = NULL;
@@ -38,7 +39,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
   PyTuple_SET_ITEM(key, 3, PyLong_FromLong(linenum));
   PyTuple_SET_ITEM(key, 4, PyUnicode_FromString(args));
 
-  PyObject *vargs[] = {NULL, key};
+  PyObject *vargs[] = { NULL, key };
   res = PyObject_Vectorcall(callable, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_DECREF(vargs[1]);
   if (!res)
@@ -58,7 +59,8 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     goto success;
   }
 
-  if (!PyTuple_Check(res) || 3 != PyTuple_GET_SIZE(res) || !PyLong_Check(PyTuple_GET_ITEM(res, 0)) || !PyUnicode_Check(PyTuple_GET_ITEM(res, 2)))
+  if (!PyTuple_Check(res) || 3 != PyTuple_GET_SIZE(res) || !PyLong_Check(PyTuple_GET_ITEM(res, 0))
+      || !PyUnicode_Check(PyTuple_GET_ITEM(res, 2)))
   {
     err_details = "Expected int or 3 item tuple (int, class, str) from sys.apsw_fault_inject_control";
     goto errorexit;
@@ -94,7 +96,8 @@ errorexit:
   Py_CLEAR(res);
   PY_ERR_FETCH(exc_errexit);
   if (!suppress)
-    fprintf(stderr, "FaultInjectControl ERROR: {\"%s\", \"%s\", \"%s\", %d, \"%s\"}\n", faultfunction, filename, funcname, linenum, args);
+    fprintf(stderr, "FaultInjectControl ERROR: {\"%s\", \"%s\", \"%s\", %d, \"%s\"}\n", faultfunction, filename,
+            funcname, linenum, args);
   if (err_details)
     fprintf(stderr, "%s\n", err_details);
   if (PY_ERR_NOT_NULL(exc_errexit))
@@ -134,8 +137,7 @@ APSW_Should_Fault(const char *name)
     goto end;
   }
 
-  PyObject *vargs[] = { NULL,
-                        PyUnicode_FromString(name),
+  PyObject *vargs[] = { NULL, PyUnicode_FromString(name),
 #if PY_VERSION_HEX < 0x030c0000
                         PyTuple_Pack(3, OBJ(exc_savetype), OBJ(exc_save), OBJ(exc_savetraceback))
 #else

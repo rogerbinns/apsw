@@ -95,33 +95,28 @@ ZeroBlobBind_len(ZeroBlobBind *self)
 static PyObject *
 ZeroBlobBind_tp_str(ZeroBlobBind *self)
 {
-  return PyUnicode_FromFormat("<apsw.zeroblob object size %lld at %p>",
-                              self->blobsize,
-                              self);
+  return PyUnicode_FromFormat("<apsw.zeroblob object size %lld at %p>", self->blobsize, self);
 }
 
-static PyMethodDef ZeroBlobBind_methods[] = {
-    {"length", (PyCFunction)ZeroBlobBind_len, METH_NOARGS,
-     Zeroblob_length_DOC},
-    {0, 0, 0, 0}};
+static PyMethodDef ZeroBlobBind_methods[]
+    = { { "length", (PyCFunction)ZeroBlobBind_len, METH_NOARGS, Zeroblob_length_DOC }, { 0, 0, 0, 0 } };
 
 static PyTypeObject ZeroBlobBindType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = "apsw.zeroblob",
-    .tp_basicsize = sizeof(ZeroBlobBind),
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    .tp_doc = Zeroblob_class_DOC,
-    .tp_methods = ZeroBlobBind_methods,
-    .tp_init = (initproc)ZeroBlobBind_init,
-    .tp_new = ZeroBlobBind_new,
-    .tp_str = (reprfunc)ZeroBlobBind_tp_str,
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.zeroblob",
+  .tp_basicsize = sizeof(ZeroBlobBind),
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+  .tp_doc = Zeroblob_class_DOC,
+  .tp_methods = ZeroBlobBind_methods,
+  .tp_init = (initproc)ZeroBlobBind_init,
+  .tp_new = ZeroBlobBind_new,
+  .tp_str = (reprfunc)ZeroBlobBind_tp_str,
 };
 
 /* BLOB TYPE */
 struct APSWBlob
 {
   PyObject_HEAD
-      Connection *connection;
+  Connection *connection;
   sqlite3_blob *pBlob;
   unsigned inuse;        /* track if we are in use preventing concurrent thread mangling */
   int curoffset;         /* SQLite only supports 32 bit signed int offsets */
@@ -218,11 +213,11 @@ APSWBlob_dealloc(APSWBlob *self)
 }
 
 /* If the blob is closed, we return the same error as normal python files */
-#define CHECK_BLOB_CLOSED                                                    \
-  do                                                                         \
-  {                                                                          \
-    if (!self->pBlob)                                                        \
-      return PyErr_Format(PyExc_ValueError, "I/O operation on closed blob"); \
+#define CHECK_BLOB_CLOSED                                                                                              \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!self->pBlob)                                                                                                  \
+      return PyErr_Format(PyExc_ValueError, "I/O operation on closed blob");                                           \
   } while (0)
 
 /** .. method:: length() -> int
@@ -273,10 +268,8 @@ APSWBlob_read(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     ARG_EPILOG(NULL, Blob_read_USAGE, );
   }
 
-  if (
-      (self->curoffset == sqlite3_blob_bytes(self->pBlob)) /* eof */
-      ||
-      (length == 0))
+  if ((self->curoffset == sqlite3_blob_bytes(self->pBlob)) /* eof */
+      || (length == 0))
     return PyBytes_FromStringAndSize(NULL, 0);
 
   if (length < 0)
@@ -356,11 +349,11 @@ APSWBlob_read_into(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_EPILOG(NULL, Blob_read_into_USAGE, );
   }
 
-#define ERREXIT(x)  \
-  do                \
-  {                 \
-    x;              \
-    goto errorexit; \
+#define ERREXIT(x)                                                                                                     \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    x;                                                                                                                 \
+    goto errorexit;                                                                                                    \
   } while (0)
 
   memset(&py3buffer, 0, sizeof(py3buffer));
@@ -445,7 +438,8 @@ APSWBlob_seek(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     self->curoffset += offset;
     break;
   case 2: /* relative to end of file */
-    if (sqlite3_blob_bytes(self->pBlob) + offset < 0 || sqlite3_blob_bytes(self->pBlob) + offset > sqlite3_blob_bytes(self->pBlob))
+    if (sqlite3_blob_bytes(self->pBlob) + offset < 0
+        || sqlite3_blob_bytes(self->pBlob) + offset > sqlite3_blob_bytes(self->pBlob))
       goto out_of_range;
     self->curoffset = sqlite3_blob_bytes(self->pBlob) + offset;
     break;
@@ -677,46 +671,33 @@ static PyObject *
 APSWBlob_tp_str(APSWBlob *self)
 {
   return PyUnicode_FromFormat("<apsw.Blob object from %S at %p>",
-                              self->connection ? (PyObject *)self->connection : apst.closed,
-                              self);
+                              self->connection ? (PyObject *)self->connection : apst.closed, self);
 }
 
 static PyMethodDef APSWBlob_methods[] = {
-    {"length", (PyCFunction)APSWBlob_length, METH_NOARGS,
-     Blob_length_DOC},
-    {"read", (PyCFunction)APSWBlob_read, METH_FASTCALL | METH_KEYWORDS,
-     Blob_read_DOC},
-    {"read_into", (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS,
-     Blob_read_into_DOC},
-    {"seek", (PyCFunction)APSWBlob_seek, METH_FASTCALL | METH_KEYWORDS,
-     Blob_seek_DOC},
-    {"tell", (PyCFunction)APSWBlob_tell, METH_NOARGS,
-     Blob_tell_DOC},
-    {"write", (PyCFunction)APSWBlob_write, METH_FASTCALL | METH_KEYWORDS,
-     Blob_write_DOC},
-    {"reopen", (PyCFunction)APSWBlob_reopen, METH_FASTCALL | METH_KEYWORDS,
-     Blob_reopen_DOC},
-    {"close", (PyCFunction)APSWBlob_close, METH_FASTCALL | METH_KEYWORDS,
-     Blob_close_DOC},
-    {"__enter__", (PyCFunction)APSWBlob_enter, METH_NOARGS,
-     Blob_enter_DOC},
-    {"__exit__", (PyCFunction)APSWBlob_exit, METH_VARARGS,
-     Blob_exit_DOC},
+  { "length", (PyCFunction)APSWBlob_length, METH_NOARGS, Blob_length_DOC },
+  { "read", (PyCFunction)APSWBlob_read, METH_FASTCALL | METH_KEYWORDS, Blob_read_DOC },
+  { "read_into", (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS, Blob_read_into_DOC },
+  { "seek", (PyCFunction)APSWBlob_seek, METH_FASTCALL | METH_KEYWORDS, Blob_seek_DOC },
+  { "tell", (PyCFunction)APSWBlob_tell, METH_NOARGS, Blob_tell_DOC },
+  { "write", (PyCFunction)APSWBlob_write, METH_FASTCALL | METH_KEYWORDS, Blob_write_DOC },
+  { "reopen", (PyCFunction)APSWBlob_reopen, METH_FASTCALL | METH_KEYWORDS, Blob_reopen_DOC },
+  { "close", (PyCFunction)APSWBlob_close, METH_FASTCALL | METH_KEYWORDS, Blob_close_DOC },
+  { "__enter__", (PyCFunction)APSWBlob_enter, METH_NOARGS, Blob_enter_DOC },
+  { "__exit__", (PyCFunction)APSWBlob_exit, METH_VARARGS, Blob_exit_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
-    {Blob_read_into_OLDNAME, (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS,
-     Blob_read_into_OLDDOC},
+  { Blob_read_into_OLDNAME, (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS, Blob_read_into_OLDDOC },
 #endif
-    {0, 0, 0, 0} /* Sentinel */
+  { 0, 0, 0, 0 } /* Sentinel */
 };
 
 static PyTypeObject APSWBlobType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = "apsw.Blob",
-    .tp_basicsize = sizeof(APSWBlob),
-    .tp_dealloc = (destructor)APSWBlob_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_doc = Blob_class_DOC,
-    .tp_weaklistoffset = offsetof(APSWBlob, weakreflist),
-    .tp_methods = APSWBlob_methods,
-    .tp_str = (reprfunc)APSWBlob_tp_str,
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Blob",
+  .tp_basicsize = sizeof(APSWBlob),
+  .tp_dealloc = (destructor)APSWBlob_dealloc,
+  .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_doc = Blob_class_DOC,
+  .tp_weaklistoffset = offsetof(APSWBlob, weakreflist),
+  .tp_methods = APSWBlob_methods,
+  .tp_str = (reprfunc)APSWBlob_tp_str,
 };

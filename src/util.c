@@ -6,8 +6,7 @@
 
 /* msvc doesn't support vla, so do it the hard way */
 #if defined(_MSC_VER) || defined(__STDC_NO_VLA__)
-#define VLA(name, size, type) \
-  type *name = alloca(sizeof(type) * (size))
+#define VLA(name, size, type) type *name = alloca(sizeof(type) * (size))
 #else
 #define VLA(name, size, type) type name[size]
 #endif
@@ -40,42 +39,39 @@
 */
 
 /* call where no error is returned */
-#define _PYSQLITE_CALL_V(x) \
-  do                        \
-  {                         \
-    Py_BEGIN_ALLOW_THREADS  \
-    {                       \
-      x;                    \
-    }                       \
-    Py_END_ALLOW_THREADS;   \
+#define _PYSQLITE_CALL_V(x)                                                                                            \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    Py_BEGIN_ALLOW_THREADS { x; }                                                                                      \
+    Py_END_ALLOW_THREADS;                                                                                              \
   } while (0)
 
 /* Calls where error could be set.  We assume that a variable 'res' is set.  Also need the db to take
    the mutex on */
-#define _PYSQLITE_CALL_E(db, x)                                        \
-  do                                                                   \
-  {                                                                    \
-    Py_BEGIN_ALLOW_THREADS                                             \
-    {                                                                  \
-      sqlite3_mutex_enter(sqlite3_db_mutex(db));                       \
-      x;                                                               \
-      if (res != SQLITE_OK && res != SQLITE_DONE && res != SQLITE_ROW) \
-        apsw_set_errmsg(sqlite3_errmsg((db)));                         \
-      sqlite3_mutex_leave(sqlite3_db_mutex(db));                       \
-    }                                                                  \
-    Py_END_ALLOW_THREADS;                                              \
+#define _PYSQLITE_CALL_E(db, x)                                                                                        \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    Py_BEGIN_ALLOW_THREADS                                                                                             \
+    {                                                                                                                  \
+      sqlite3_mutex_enter(sqlite3_db_mutex(db));                                                                       \
+      x;                                                                                                               \
+      if (res != SQLITE_OK && res != SQLITE_DONE && res != SQLITE_ROW)                                                 \
+        apsw_set_errmsg(sqlite3_errmsg((db)));                                                                         \
+      sqlite3_mutex_leave(sqlite3_db_mutex(db));                                                                       \
+    }                                                                                                                  \
+    Py_END_ALLOW_THREADS;                                                                                              \
   } while (0)
 
-#define INUSE_CALL(x)         \
-  do                          \
-  {                           \
-    assert(self->inuse == 0); \
-    self->inuse = 1;          \
-    {                         \
-      x;                      \
-    }                         \
-    assert(self->inuse == 1); \
-    self->inuse = 0;          \
+#define INUSE_CALL(x)                                                                                                  \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    assert(self->inuse == 0);                                                                                          \
+    self->inuse = 1;                                                                                                   \
+    {                                                                                                                  \
+      x;                                                                                                               \
+    }                                                                                                                  \
+    assert(self->inuse == 1);                                                                                          \
+    self->inuse = 0;                                                                                                   \
   } while (0)
 
 /* call from blob code */
@@ -115,20 +111,18 @@
 */
 
 /* used for calling sys.unraisablehook */
-static PyStructSequence_Field apsw_unraisable_info_fields[] =
-    {
-        {"exc_type", "Exception type"},
-        {"exc_value", "Execption value, can be None"},
-        {"exc_traceback", "Exception traceback, can be None"},
-        {"err_msg", "Error message, can be None"},
-        {"object", "Object causing the exception, can be None"},
-        {0}};
+static PyStructSequence_Field apsw_unraisable_info_fields[]
+    = { { "exc_type", "Exception type" },
+        { "exc_value", "Execption value, can be None" },
+        { "exc_traceback", "Exception traceback, can be None" },
+        { "err_msg", "Error message, can be None" },
+        { "object", "Object causing the exception, can be None" },
+        { 0 } };
 
-static PyStructSequence_Desc apsw_unraisable_info = {
-    .name = "apsw.unraisable_info",
-    .doc = "Glue for sys.unraisablehook",
-    .n_in_sequence = 5,
-    .fields = apsw_unraisable_info_fields};
+static PyStructSequence_Desc apsw_unraisable_info = { .name = "apsw.unraisable_info",
+                                                      .doc = "Glue for sys.unraisablehook",
+                                                      .n_in_sequence = 5,
+                                                      .fields = apsw_unraisable_info_fields };
 
 static PyTypeObject apsw_unraisable_info_type;
 
@@ -178,9 +172,9 @@ apsw_write_unraisable(PyObject *hookobject)
     if (excepthook)
     {
 #if PY_VERSION_HEX < 0x030c0000
-      PyObject *vargs[] = {NULL, OBJ(exctype), OBJ(exc), OBJ(exctraceback)};
+      PyObject *vargs[] = { NULL, OBJ(exctype), OBJ(exc), OBJ(exctraceback) };
 #else
-      PyObject *vargs[] = {NULL, (PyObject *)Py_TYPE(OBJ(exc)), OBJ(exc), Py_None};
+      PyObject *vargs[] = { NULL, (PyObject *)Py_TYPE(OBJ(exc)), OBJ(exc), Py_None };
 #endif
       result = PyObject_Vectorcall(excepthook, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       if (result)
@@ -205,7 +199,7 @@ apsw_write_unraisable(PyObject *hookobject)
       PyStructSequence_SetItem(arg, 0, Py_NewRef((PyObject *)Py_TYPE(OBJ(exc))));
       PyStructSequence_SetItem(arg, 1, Py_NewRef(exc));
 #endif
-      PyObject *vargs[] = {NULL, arg};
+      PyObject *vargs[] = { NULL, arg };
       result = PyObject_Vectorcall(excepthook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       Py_DECREF(arg);
       if (result)
@@ -220,9 +214,9 @@ apsw_write_unraisable(PyObject *hookobject)
     Py_INCREF(excepthook); /* borrowed reference from PySys_GetObject so we increment */
     PyErr_Clear();
 #if PY_VERSION_HEX < 0x030c0000
-    PyObject *vargs[] = {NULL, OBJ(exctype), OBJ(exc), OBJ(exctraceback)};
+    PyObject *vargs[] = { NULL, OBJ(exctype), OBJ(exc), OBJ(exctraceback) };
 #else
-    PyObject *vargs[] = {NULL, (PyObject *)Py_TYPE(OBJ(exc)), OBJ(exc), Py_None};
+    PyObject *vargs[] = { NULL, (PyObject *)Py_TYPE(OBJ(exc)), OBJ(exc), Py_None };
 #endif
 
     result = PyObject_Vectorcall(excepthook, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -261,8 +255,7 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
 
   switch (coltype)
   {
-  case SQLITE_INTEGER:
-  {
+  case SQLITE_INTEGER: {
     sqlite3_int64 val = sqlite3_value_int64(value);
     return PyLong_FromLongLong(val);
   }
@@ -330,21 +323,18 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
 
   switch (coltype)
   {
-  case SQLITE_INTEGER:
-  {
+  case SQLITE_INTEGER: {
     sqlite3_int64 val;
     _PYSQLITE_CALL_V(val = sqlite3_column_int64(stmt, col));
     return PyLong_FromLongLong(val);
   }
 
-  case SQLITE_FLOAT:
-  {
+  case SQLITE_FLOAT: {
     double d;
     _PYSQLITE_CALL_V(d = sqlite3_column_double(stmt, col));
     return PyFloat_FromDouble(d);
   }
-  case SQLITE_TEXT:
-  {
+  case SQLITE_TEXT: {
     const char *data;
     size_t len;
     _PYSQLITE_CALL_V((data = (const char *)sqlite3_column_text(stmt, col), len = sqlite3_column_bytes(stmt, col)));
@@ -355,8 +345,7 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
   case SQLITE_NULL:
     Py_RETURN_NONE;
 
-  case SQLITE_BLOB:
-  {
+  case SQLITE_BLOB: {
     const void *data;
     size_t len;
     _PYSQLITE_CALL_V((data = sqlite3_column_blob(stmt, col), len = sqlite3_column_bytes(stmt, col)));
@@ -368,48 +357,50 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
 /* Some macros used for frequent operations */
 
 /* used by Connection and Cursor */
-#define CHECK_USE(e)                                                                                                                                                           \
-  do                                                                                                                                                                           \
-  {                                                                                                                                                                            \
-    if (self->inuse)                                                                                                                                                           \
-    { /* raise exception if we aren't already in one */                                                                                                                        \
-      if (!PyErr_Occurred())                                                                                                                                                   \
-        PyErr_Format(ExcThreadingViolation, "You are trying to use the same object concurrently in two threads or re-entrantly within the same thread which is not allowed."); \
-      return e;                                                                                                                                                                \
-    }                                                                                                                                                                          \
+#define CHECK_USE(e)                                                                                                   \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (self->inuse)                                                                                                   \
+    { /* raise exception if we aren't already in one */                                                                \
+      if (!PyErr_Occurred())                                                                                           \
+        PyErr_Format(ExcThreadingViolation, "You are trying to use the same object concurrently in two threads or "    \
+                                            "re-entrantly within the same thread which is not allowed.");              \
+      return e;                                                                                                        \
+    }                                                                                                                  \
   } while (0)
 
 /* used by Connection */
-#define CHECK_CLOSED(connection, e)                                        \
-  do                                                                       \
-  {                                                                        \
-    if (!(connection) || !(connection)->db)                                \
-    {                                                                      \
-      PyErr_Format(ExcConnectionClosed, "The connection has been closed"); \
-      return e;                                                            \
-    }                                                                      \
+#define CHECK_CLOSED(connection, e)                                                                                    \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!(connection) || !(connection)->db)                                                                            \
+    {                                                                                                                  \
+      PyErr_Format(ExcConnectionClosed, "The connection has been closed");                                             \
+      return e;                                                                                                        \
+    }                                                                                                                  \
   } while (0)
 
 /* used by cursor */
-#define CHECK_CURSOR_CLOSED(e)                                             \
-  do                                                                       \
-  {                                                                        \
-    if (!self->connection)                                                 \
-    {                                                                      \
-      PyErr_Format(ExcCursorClosed, "The cursor has been closed");         \
-      return e;                                                            \
-    }                                                                      \
-    else if (!self->connection->db)                                        \
-    {                                                                      \
-      PyErr_Format(ExcConnectionClosed, "The connection has been closed"); \
-      return e;                                                            \
-    }                                                                      \
+#define CHECK_CURSOR_CLOSED(e)                                                                                         \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!self->connection)                                                                                             \
+    {                                                                                                                  \
+      PyErr_Format(ExcCursorClosed, "The cursor has been closed");                                                     \
+      return e;                                                                                                        \
+    }                                                                                                                  \
+    else if (!self->connection->db)                                                                                    \
+    {                                                                                                                  \
+      PyErr_Format(ExcConnectionClosed, "The connection has been closed");                                             \
+      return e;                                                                                                        \
+    }                                                                                                                  \
   } while (0)
 
 #undef apsw_strdup
 /* This adds double nulls on the end - needed if string is a filename
    used near vfs as SQLite puts extra info after the first null */
-static char *apsw_strdup(const char *source)
+static char *
+apsw_strdup(const char *source)
 {
 #include "faultinject.h"
 
@@ -446,19 +437,17 @@ assert fail or cause a valgrind error.
 
 */
 
-#define CALL_TRACK(name) \
-  int *in_call##name
+#define CALL_TRACK(name) int *in_call##name
 
 #define CALL_TRACK_INIT(name) self->in_call##name = NULL
 
-#define CALL_ENTER(name)                                                         \
-  assert(self->in_call##name == NULL || *(self->in_call##name) == MAGIC_##name); \
-  int *enter_call_save_##name = self->in_call##name;                             \
-  int enter_call_here_##name = MAGIC_##name;                                     \
+#define CALL_ENTER(name)                                                                                               \
+  assert(self->in_call##name == NULL || *(self->in_call##name) == MAGIC_##name);                                       \
+  int *enter_call_save_##name = self->in_call##name;                                                                   \
+  int enter_call_here_##name = MAGIC_##name;                                                                           \
   self->in_call##name = &enter_call_here_##name
 
-#define CALL_LEAVE(name) \
-  self->in_call##name = enter_call_save_##name
+#define CALL_LEAVE(name) self->in_call##name = enter_call_save_##name
 
 #define CALL_CHECK(name) (self->in_call##name != NULL)
 

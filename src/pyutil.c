@@ -50,20 +50,21 @@ OBJ(PyObject *v)
 
 /* we clear weakref lists when close is called on a blob/cursor as
    well as when it is deallocated */
-#define APSW_CLEAR_WEAKREFS                     \
-  do                                            \
-  {                                             \
-    if (self->weakreflist)                      \
-    {                                           \
-      PyObject_ClearWeakRefs((PyObject *)self); \
-      self->weakreflist = 0;                    \
-    }                                           \
+#define APSW_CLEAR_WEAKREFS                                                                                            \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (self->weakreflist)                                                                                             \
+    {                                                                                                                  \
+      PyObject_ClearWeakRefs((PyObject *)self);                                                                        \
+      self->weakreflist = 0;                                                                                           \
+    }                                                                                                                  \
   } while (0)
 
 /* CONVENIENCE FUNCTIONS */
 
 /* decref an array of PyObjects */
-static void Py_DECREF_ARRAY(PyObject *array[], int argc)
+static void
+Py_DECREF_ARRAY(PyObject *array[], int argc)
 {
   int i;
   for (i = 0; i < argc; i++)
@@ -73,7 +74,8 @@ static void Py_DECREF_ARRAY(PyObject *array[], int argc)
 /* ::TODO:: PyBUF_SIMPLE is C contiguous so this is not necessary */
 /* get buffer and check it is contiguous */
 #undef PyObject_GetBufferContiguous
-static int PyObject_GetBufferContiguous(PyObject *source, Py_buffer *buffer, int flags)
+static int
+PyObject_GetBufferContiguous(PyObject *source, Py_buffer *buffer, int flags)
 {
 #include "faultinject.h"
   int res = PyObject_GetBuffer(source, buffer, flags);
@@ -127,13 +129,13 @@ PyWeakref_GetRef(PyObject *ref, PyObject **pobj)
 {
 #include "faultinject.h"
   PyObject *obj = PyWeakref_GetObject(ref);
-  if(!obj)
+  if (!obj)
   {
     assert(PyErr_Occurred());
     *pobj = NULL;
     return -1;
   }
-  if(Py_IsNone(obj))
+  if (Py_IsNone(obj))
   {
     *pobj = NULL;
     return 0;
@@ -177,41 +179,38 @@ is an exception (ie the constructor has been run) etc.  These macros
 hide all this.
  */
 #if PY_VERSION_HEX < 0x030c0000
-#define PY_ERR_FETCH_IF(condition, name)                              \
-  PyObject *name##type = NULL, *name = NULL, *name##traceback = NULL; \
-  if (condition)                                                      \
+#define PY_ERR_FETCH_IF(condition, name)                                                                               \
+  PyObject *name##type = NULL, *name = NULL, *name##traceback = NULL;                                                  \
+  if (condition)                                                                                                       \
   PyErr_Fetch(&name##type, &name, &name##traceback)
 
 #define PY_ERR_FETCH(name) PY_ERR_FETCH_IF(1, name)
 
-#define PY_ERR_RESTORE(name) \
-  PyErr_Restore(name##type, name, name##traceback)
+#define PY_ERR_RESTORE(name) PyErr_Restore(name##type, name, name##traceback)
 
-#define PY_ERR_NORMALIZE(name) \
-  PyErr_NormalizeException(&name##type, &name, &name##traceback)
+#define PY_ERR_NORMALIZE(name) PyErr_NormalizeException(&name##type, &name, &name##traceback)
 
-#define PY_ERR_CLEAR(name) \
-  Py_CLEAR(name##type);    \
-  Py_CLEAR(name);          \
+#define PY_ERR_CLEAR(name)                                                                                             \
+  Py_CLEAR(name##type);                                                                                                \
+  Py_CLEAR(name);                                                                                                      \
   Py_CLEAR(name##traceback);
 
 #define PY_ERR_NOT_NULL(name) (name##type || name || name##traceback)
 
 #else
 /* Python 3.12+ */
-#define PY_ERR_FETCH_IF(condition, name) \
-  PyObject *name = NULL;                 \
-  if (condition)                         \
+#define PY_ERR_FETCH_IF(condition, name)                                                                               \
+  PyObject *name = NULL;                                                                                               \
+  if (condition)                                                                                                       \
   name = PyErr_GetRaisedException()
 
 #define PY_ERR_FETCH(name) PY_ERR_FETCH_IF(1, name)
 
-#define PY_ERR_RESTORE(name) \
-  PyErr_SetRaisedException(name)
+#define PY_ERR_RESTORE(name) PyErr_SetRaisedException(name)
 
-#define PY_ERR_NORMALIZE(name) \
-  do                           \
-  {                            \
+#define PY_ERR_NORMALIZE(name)                                                                                         \
+  do                                                                                                                   \
+  {                                                                                                                    \
   } while (0)
 
 #define PY_ERR_CLEAR(name) Py_CLEAR(name)
@@ -233,11 +232,11 @@ hide all this.
 #else
 #define _chainexcapi(name) _PyErr_ChainExceptions1(name)
 #endif
-#define CHAIN_EXC_BEGIN      \
-  do                         \
-  {                          \
-    PY_ERR_FETCH(chain_exc); \
-    do                       \
+#define CHAIN_EXC_BEGIN                                                                                                \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    PY_ERR_FETCH(chain_exc);                                                                                           \
+    do                                                                                                                 \
     {
 
 /* the seemingly spurious first do-while0 is because immediately
@@ -245,41 +244,42 @@ hide all this.
    complain that the block didn't end in a statement, so we put a
    pointless one there;
 */
-#define CHAIN_EXC_END             \
-  do                              \
-  {                               \
-  } while (0);                    \
-  }                               \
-  while (0)                       \
-    ;                             \
-  if (PY_ERR_NOT_NULL(chain_exc)) \
-  {                               \
-    if (PyErr_Occurred())         \
-      _chainexcapi(chain_exc);    \
-    else                          \
-      PY_ERR_RESTORE(chain_exc);  \
-  }                               \
-  }                               \
+#define CHAIN_EXC_END                                                                                                  \
+  do                                                                                                                   \
+  {                                                                                                                    \
+  } while (0);                                                                                                         \
+  }                                                                                                                    \
+  while (0)                                                                                                            \
+    ;                                                                                                                  \
+  if (PY_ERR_NOT_NULL(chain_exc))                                                                                      \
+  {                                                                                                                    \
+    if (PyErr_Occurred())                                                                                              \
+      _chainexcapi(chain_exc);                                                                                         \
+    else                                                                                                               \
+      PY_ERR_RESTORE(chain_exc);                                                                                       \
+  }                                                                                                                    \
+  }                                                                                                                    \
   while (0)
 
-#define CHAIN_EXC(x) \
-  CHAIN_EXC_BEGIN x; \
+#define CHAIN_EXC(x)                                                                                                   \
+  CHAIN_EXC_BEGIN x;                                                                                                   \
   CHAIN_EXC_END
 
 /* Some functions can clear the error indicator
    so this keeps it */
-#define PRESERVE_EXC(x)           \
-  do                              \
-  {                               \
-    PY_ERR_FETCH(preserve_exc);   \
-                                  \
-    x;                            \
-                                  \
-    PY_ERR_RESTORE(preserve_exc); \
+#define PRESERVE_EXC(x)                                                                                                \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    PY_ERR_FETCH(preserve_exc);                                                                                        \
+                                                                                                                       \
+    x;                                                                                                                 \
+                                                                                                                       \
+    PY_ERR_RESTORE(preserve_exc);                                                                                      \
   } while (0)
 
 /* See PEP 678 */
-static void PyErr_AddExceptionNoteV(const char *format, ...)
+static void
+PyErr_AddExceptionNoteV(const char *format, ...)
 {
   (void)format;
 #if PY_VERSION_HEX >= 0x030b0000
@@ -297,7 +297,7 @@ static void PyErr_AddExceptionNoteV(const char *format, ...)
     PY_ERR_NORMALIZE(exc);
     PY_ERR_RESTORE(exc);
 
-    PyObject *vargs[] = {NULL, exc, message};
+    PyObject *vargs[] = { NULL, exc, message };
     CHAIN_EXC(nres = PyObject_VectorcallMethod(apst.add_note, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL));
     Py_XDECREF(nres);
 

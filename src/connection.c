@@ -23,10 +23,11 @@ processes.
 /* details of a registered function passed as user data to sqlite3_create_function */
 typedef struct
 {
-  PyObject_HEAD const char *name; /* utf8 function name */
-  PyObject *scalarfunc;           /* the function to call for stepping */
-  PyObject *aggregatefactory;     /* factory for aggregate functions */
-  PyObject *windowfactory;        /* factory for window functions */
+  PyObject_HEAD
+  const char *name;           /* utf8 function name */
+  PyObject *scalarfunc;       /* the function to call for stepping */
+  PyObject *aggregatefactory; /* factory for aggregate functions */
+  PyObject *windowfactory;    /* factory for window functions */
 } FunctionCBInfo;
 
 /* a particular aggregate function instance used as sqlite3_aggregate_context */
@@ -71,8 +72,8 @@ struct tracehook
 struct Connection
 {
   PyObject_HEAD
-      sqlite3 *db; /* the actual database connection */
-  unsigned inuse;  /* track if we are in use preventing concurrent thread mangling */
+  sqlite3 *db;    /* the actual database connection */
+  unsigned inuse; /* track if we are in use preventing concurrent thread mangling */
 
   struct StatementCache *stmtcache; /* prepared statement cache */
 
@@ -249,7 +250,7 @@ Connection_close_internal(Connection *self, int force)
       continue;
     }
 
-    PyObject *vargs[] = {NULL, item, PyBool_FromLong(force)};
+    PyObject *vargs[] = { NULL, item, PyBool_FromLong(force) };
     if (vargs[2])
       closeres = PyObject_VectorcallMethod(apst.close, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     Py_XDECREF(vargs[2]);
@@ -474,8 +475,8 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
      could be registered between our find and the open starting.
      Don't do that!  We also have to manage the error message thread
      safety manually as self->db is null on entry. */
-  PYSQLITE_VOID_CALL(
-      vfsused = sqlite3_vfs_find(vfs); res = sqlite3_open_v2(filename, &self->db, flags, vfs); if (res != SQLITE_OK) apsw_set_errmsg(sqlite3_errmsg(self->db)););
+  PYSQLITE_VOID_CALL(vfsused = sqlite3_vfs_find(vfs); res = sqlite3_open_v2(filename, &self->db, flags, vfs);
+                     if (res != SQLITE_OK) apsw_set_errmsg(sqlite3_errmsg(self->db)););
   SET_EXC(res, self->db); /* nb sqlite3_open always allocates the db even on error */
 
   /* normally sqlite will have an error code but some internal vfs
@@ -518,7 +519,7 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
 
   while ((hook = PyIter_Next(iterator)))
   {
-    PyObject *vargs[] = {NULL, (PyObject *)self};
+    PyObject *vargs[] = { NULL, (PyObject *)self };
     hookresult = PyObject_Vectorcall(hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     if (!hookresult)
       goto pyexception;
@@ -666,7 +667,8 @@ Connection_backup(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
     args = PyTuple_New(2);
     if (!args)
       goto thisfinally;
-    PyObject *s = PyUnicode_FromString("The destination database has outstanding objects open on it.  They must all be closed for the backup to proceed (otherwise corruption would be possible.)");
+    PyObject *s = PyUnicode_FromString("The destination database has outstanding objects open on it.  They must all be "
+                                       "closed for the backup to proceed (otherwise corruption would be possible.)");
     if (!s)
       goto thisfinally;
     PyTuple_SET_ITEM(args, 0, s);
@@ -728,7 +730,8 @@ Connection_backup(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
   if (!apswbackup)
     goto finally;
 
-  APSWBackup_init(apswbackup, (Connection *)Py_NewRef((PyObject *)self), (Connection *)Py_NewRef((PyObject *)sourceconnection), backup);
+  APSWBackup_init(apswbackup, (Connection *)Py_NewRef((PyObject *)self),
+                  (Connection *)Py_NewRef((PyObject *)sourceconnection), backup);
   backup = NULL;
 
   /* add to dependent lists */
@@ -784,7 +787,7 @@ Connection_cursor(Connection *self)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  PyObject *vargs[] = {NULL, (PyObject *)self};
+  PyObject *vargs[] = { NULL, (PyObject *)self };
   cursor = PyObject_Vectorcall(self->cursor_factory, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!cursor)
   {
@@ -974,7 +977,8 @@ Connection_last_insert_rowid(Connection *self)
   -* sqlite3_set_last_insert_rowid
 */
 static PyObject *
-Connection_set_last_insert_rowid(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_set_last_insert_rowid(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                 PyObject *fast_kwnames)
 {
   sqlite3_int64 rowid;
 
@@ -1069,7 +1073,8 @@ updatecb(void *context, int updatetype, char const *databasename, char const *ta
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
-  PyObject *vargs[] = {NULL, PyLong_FromLong(updatetype), PyUnicode_FromString(databasename), PyUnicode_FromString(tablename), PyLong_FromLongLong(rowid)};
+  PyObject *vargs[] = { NULL, PyLong_FromLong(updatetype), PyUnicode_FromString(databasename),
+                        PyUnicode_FromString(tablename), PyLong_FromLongLong(rowid) };
   if (vargs[1] && vargs[2] && vargs[3] && vargs[4])
     retval = PyObject_Vectorcall(self->updatehook, vargs + 1, 4 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_XDECREF(vargs[1]);
@@ -1158,7 +1163,7 @@ rollbackhookcb(void *context)
     apsw_write_unraisable(NULL);
   else
   {
-    PyObject *vargs[] = {NULL};
+    PyObject *vargs[] = { NULL };
     retval = PyObject_Vectorcall(self->rollbackhook, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   }
 
@@ -1176,7 +1181,8 @@ rollbackhookcb(void *context)
   -* sqlite3_rollback_hook
 */
 static PyObject *
-Connection_set_rollback_hook(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_set_rollback_hook(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                             PyObject *fast_kwnames)
 {
   /* sqlite3_rollback_hook doesn't return an error code */
   PyObject *callable;
@@ -1308,9 +1314,10 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
   if (code == SQLITE_TRACE_PROFILE && connection->tracehooks[0].callback)
   {
     CHAIN_EXC_BEGIN
-    PyObject *vargs[] = {NULL, PyUnicode_FromString(sqlite3_sql(stmt)), PyLong_FromLongLong(*nanoseconds)};
+    PyObject *vargs[] = { NULL, PyUnicode_FromString(sqlite3_sql(stmt)), PyLong_FromLongLong(*nanoseconds) };
     if (vargs[1] && vargs[2])
-      res = PyObject_Vectorcall(connection->tracehooks[0].callback, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      res = PyObject_Vectorcall(connection->tracehooks[0].callback, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET,
+                                NULL);
     Py_XDECREF(vargs[1]);
     Py_XDECREF(vargs[2]);
     Py_CLEAR(res);
@@ -1319,13 +1326,14 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
 
   if (!PyErr_Occurred())
   {
-    PyObject *vargs[] = {NULL, param};
+    PyObject *vargs[] = { NULL, param };
     for (unsigned i = 1; i < connection->tracehooks_count; i++)
     {
       if (connection->tracehooks[i].mask & code)
       {
         CHAIN_EXC_BEGIN
-        res = PyObject_Vectorcall(connection->tracehooks[i].callback, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+        res = PyObject_Vectorcall(connection->tracehooks[i].callback, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET,
+                                  NULL);
         Py_CLEAR(res);
         CHAIN_EXC_END;
       }
@@ -1551,7 +1559,10 @@ Connection_trace_v2(Connection *self, PyObject *const *fast_args, Py_ssize_t fas
     {
       /* increase tracehooks size - we have an arbitrary limit which
          makes it easier to test exhaustion */
-      struct tracehook *new_tracehooks = (self->tracehooks_count < 1024) ? PyMem_Realloc(self->tracehooks, sizeof(struct tracehook) * (self->tracehooks_count + 1)) : NULL;
+      struct tracehook *new_tracehooks
+          = (self->tracehooks_count < 1024)
+                ? PyMem_Realloc(self->tracehooks, sizeof(struct tracehook) * (self->tracehooks_count + 1))
+                : NULL;
       if (!new_tracehooks)
       {
         /* not bothering to call update_trace - worst case there will
@@ -1591,7 +1602,7 @@ commithookcb(void *context)
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
-  PyObject *vargs[] = {NULL};
+  PyObject *vargs[] = { NULL };
   retval = PyObject_Vectorcall(self->commithook, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
@@ -1676,7 +1687,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
 
   MakeExistingException();
 
-  PyObject *vargs[] = {NULL, (PyObject *)self, PyUnicode_FromString(dbname), PyLong_FromLong(npages)};
+  PyObject *vargs[] = { NULL, (PyObject *)self, PyUnicode_FromString(dbname), PyLong_FromLong(npages) };
   if (vargs[2] && vargs[3])
     retval = PyObject_Vectorcall(self->walhook, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_XDECREF(vargs[2]);
@@ -1684,20 +1695,15 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
   if (!retval)
   {
     assert(PyErr_Occurred());
-    AddTraceBackHere(__FILE__, __LINE__, "walhookcallback", "{s: O, s: s, s: i}",
-                     "Connection", self,
-                     "dbname", dbname,
+    AddTraceBackHere(__FILE__, __LINE__, "walhookcallback", "{s: O, s: s, s: i}", "Connection", self, "dbname", dbname,
                      "npages", npages);
     goto finally;
   }
   if (!PyLong_Check(retval))
   {
     PyErr_Format(PyExc_TypeError, "wal hook must return a number");
-    AddTraceBackHere(__FILE__, __LINE__, "walhookcallback", "{s: O, s: s, s: i, s: O}",
-                     "Connection", self,
-                     "dbname", dbname,
-                     "npages", npages,
-                     "retval", OBJ(retval));
+    AddTraceBackHere(__FILE__, __LINE__, "walhookcallback", "{s: O, s: s, s: i, s: O}", "Connection", self, "dbname",
+                     dbname, "npages", npages, "retval", OBJ(retval));
     goto finally;
   }
   code = PyLong_AsInt(retval);
@@ -1775,7 +1781,7 @@ progresshandlercb(void *context)
   if (PyErr_Occurred())
     goto finally;
 
-  PyObject *vargs[] = {NULL};
+  PyObject *vargs[] = { NULL };
   retval = PyObject_Vectorcall(self->progresshandler, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
@@ -1813,7 +1819,8 @@ finally:
 */
 
 static PyObject *
-Connection_set_progress_handler(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_set_progress_handler(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                PyObject *fast_kwnames)
 {
   /* sqlite3_progress_handler doesn't return an error code */
   int nsteps = 20;
@@ -1845,7 +1852,8 @@ Connection_set_progress_handler(Connection *self, PyObject *const *fast_args, Py
 }
 
 static int
-authorizercb(void *context, int operation, const char *paramone, const char *paramtwo, const char *databasename, const char *triggerview)
+authorizercb(void *context, int operation, const char *paramone, const char *paramtwo, const char *databasename,
+             const char *triggerview)
 {
   /* should return one of SQLITE_OK, SQLITE_DENY, or
      SQLITE_IGNORE. (0, 1 or 2 respectively) */
@@ -1866,9 +1874,12 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   if (PyErr_Occurred())
     goto finally; /* abort due to earlier exception */
 
-  PyObject *vargs[] = {NULL, PyLong_FromLong(operation), convertutf8string(paramone),
-                       convertutf8string(paramtwo), convertutf8string(databasename),
-                       convertutf8string(triggerview)};
+  PyObject *vargs[] = { NULL,
+                        PyLong_FromLong(operation),
+                        convertutf8string(paramone),
+                        convertutf8string(paramtwo),
+                        convertutf8string(databasename),
+                        convertutf8string(triggerview) };
 
   if (vargs[1] && vargs[2] && vargs[3] && vargs[4] && vargs[5])
     retval = PyObject_Vectorcall(self->authorizer, vargs + 1, 5 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -1887,9 +1898,9 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
   }
 
   PyErr_Format(PyExc_TypeError, "Authorizer must return a number");
-  AddTraceBackHere(__FILE__, __LINE__, "authorizer callback", "{s: i, s: s:, s: s, s: s}",
-                   "operation", operation, "paramone", paramone, "paramtwo", paramtwo,
-                   "databasename", databasename, "triggerview", triggerview);
+  AddTraceBackHere(__FILE__, __LINE__, "authorizer callback", "{s: i, s: s:, s: s, s: s}", "operation", operation,
+                   "paramone", paramone, "paramtwo", paramtwo, "databasename", databasename, "triggerview",
+                   triggerview);
 
 haveval:
   if (PyErr_Occurred())
@@ -1963,7 +1974,8 @@ autovacuum_pages_cleanup(void *callable)
 #define AVPCB_TB "{s: O, s: s:, s: I, s: I, s: I, s: O}"
 
 static unsigned int
-autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, unsigned int nFreePages, unsigned int nBytesPerPage)
+autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, unsigned int nFreePages,
+                    unsigned int nBytesPerPage)
 {
   PyGILState_STATE gilstate;
   PyObject *retval = NULL;
@@ -1973,7 +1985,8 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
   MakeExistingException();
 
   CHAIN_EXC_BEGIN
-  PyObject *vargs[] = {NULL, PyUnicode_FromString(schema), PyLong_FromUnsignedLong(nPages), PyLong_FromUnsignedLong(nFreePages), PyLong_FromUnsignedLong(nBytesPerPage)};
+  PyObject *vargs[] = { NULL, PyUnicode_FromString(schema), PyLong_FromUnsignedLong(nPages),
+                        PyLong_FromUnsignedLong(nFreePages), PyLong_FromUnsignedLong(nBytesPerPage) };
   if (vargs[1] && vargs[2] && vargs[3] && vargs[4])
     retval = PyObject_Vectorcall((PyObject *)callable, vargs + 1, 4 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_XDECREF(vargs[1]);
@@ -1984,17 +1997,16 @@ autovacuum_pages_cb(void *callable, const char *schema, unsigned int nPages, uns
 
   if (retval && PyLong_Check(retval))
   {
-    CHAIN_EXC(
-        res = PyLong_AsInt(retval));
+    CHAIN_EXC(res = PyLong_AsInt(retval));
     if (!PyErr_Occurred())
       goto finally;
   }
 
   if (retval)
-    CHAIN_EXC(
-        PyErr_Format(PyExc_TypeError, "autovacuum_pages callback must return a number that fits in 'int' not %R", OBJ(retval)));
-  AddTraceBackHere(__FILE__, __LINE__, "autovacuum_pages_callback", AVPCB_TB,
-                   "callback", OBJ((PyObject *)callable), "schema", schema, "nPages", nPages, "nFreePages", nFreePages, "nBytesPerPage", nBytesPerPage,
+    CHAIN_EXC(PyErr_Format(PyExc_TypeError, "autovacuum_pages callback must return a number that fits in 'int' not %R",
+                           OBJ(retval)));
+  AddTraceBackHere(__FILE__, __LINE__, "autovacuum_pages_callback", AVPCB_TB, "callback", OBJ((PyObject *)callable),
+                   "schema", schema, "nPages", nPages, "nFreePages", nFreePages, "nBytesPerPage", nBytesPerPage,
                    "result", OBJ(retval));
 
 finally:
@@ -2045,7 +2057,8 @@ Connection_autovacuum_pages(Connection *self, PyObject *const *fast_args, Py_ssi
   }
   else
   {
-    PYSQLITE_CON_CALL(res = sqlite3_autovacuum_pages(self->db, autovacuum_pages_cb, callable, autovacuum_pages_cleanup));
+    PYSQLITE_CON_CALL(res
+                      = sqlite3_autovacuum_pages(self->db, autovacuum_pages_cb, callable, autovacuum_pages_cleanup));
     if (res == SQLITE_OK)
       Py_INCREF(callable);
   }
@@ -2071,13 +2084,13 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
 
   if (PyErr_Occurred())
     apsw_write_unraisable(NULL);
-  PyObject *vargs[] = {NULL, (PyObject *)self, PyUnicode_FromString(name)};
+  PyObject *vargs[] = { NULL, (PyObject *)self, PyUnicode_FromString(name) };
   if (vargs[2])
     res = PyObject_Vectorcall(self->collationneeded, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_XDECREF(vargs[2]);
   if (!res)
-    AddTraceBackHere(__FILE__, __LINE__, "collationneeded callback", "{s: O, s: i, s: s}",
-                     "Connection", self, "eTextRep", eTextRep, "name", name);
+    AddTraceBackHere(__FILE__, __LINE__, "collationneeded callback", "{s: O, s: i, s: s}", "Connection", self,
+                     "eTextRep", eTextRep, "name", name);
   Py_XDECREF(res);
 
   PyGILState_Release(gilstate);
@@ -2167,7 +2180,7 @@ busyhandlercb(void *context, int ncall)
   gilstate = PyGILState_Ensure();
 
   MakeExistingException();
-  PyObject *vargs[] = {NULL, PyLong_FromLong(ncall)};
+  PyObject *vargs[] = { NULL, PyLong_FromLong(ncall) };
   if (vargs[1])
     retval = PyObject_Vectorcall(self->busyhandler, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_XDECREF(vargs[1]);
@@ -2368,7 +2381,8 @@ Connection_deserialize(Connection *self, PyObject *const *fast_args, Py_ssize_t 
   }
 
   if (res == SQLITE_OK)
-    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, name, (unsigned char *)newcontents, len, len, SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
+    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, name, (unsigned char *)newcontents, len, len,
+                                                SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
   SET_EXC(res, self->db);
 
   /* sqlite frees the buffer on error due to freeonclose flag */
@@ -2395,7 +2409,8 @@ Connection_deserialize(Connection *self, PyObject *const *fast_args, Py_ssize_t 
 */
 
 static PyObject *
-Connection_enable_load_extension(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_enable_load_extension(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                 PyObject *fast_kwnames)
 {
   int enable, res;
 
@@ -2471,14 +2486,12 @@ Connection_load_extension(Connection *self, PyObject *const *fast_args, Py_ssize
 #endif
 
 /* USER DEFINED FUNCTION CODE.*/
-static PyTypeObject FunctionCBInfoType =
-    {
-        PyVarObject_HEAD_INIT(NULL, 0)
-            .tp_name = "apsw.FunctionCBInfo",
-        .tp_basicsize = sizeof(FunctionCBInfo),
-        .tp_dealloc = (destructor)FunctionCBInfo_dealloc,
-        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-        .tp_doc = "FunctionCBInfo object",
+static PyTypeObject FunctionCBInfoType = {
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.FunctionCBInfo",
+  .tp_basicsize = sizeof(FunctionCBInfo),
+  .tp_dealloc = (destructor)FunctionCBInfo_dealloc,
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+  .tp_doc = "FunctionCBInfo object",
 };
 
 #undef allocfunccbinfo
@@ -2575,7 +2588,10 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     return 1;
   }
 
-  PyErr_Format(PyExc_TypeError, "Value from Python is not supported by SQLite.  It should be one of None, int, float, str, or bytes.  Received %s.", Py_TypeName(obj));
+  PyErr_Format(PyExc_TypeError,
+               "Value from Python is not supported by SQLite.  It should be one of None, int, float, str, or bytes.  "
+               "Received %s.",
+               Py_TypeName(obj));
   sqlite3_result_error(context, "Bad return type from python function callback", -1);
   return 0;
 }
@@ -2641,12 +2657,11 @@ finally:
   {
     char *errmsg = NULL;
     char *funname = NULL;
-    CHAIN_EXC(
-        funname = sqlite3_mprintf("user-defined-scalar-%s", cbinfo->name);
-        if (!funname) PyErr_NoMemory(););
+    CHAIN_EXC(funname = sqlite3_mprintf("user-defined-scalar-%s", cbinfo->name); if (!funname) PyErr_NoMemory(););
     sqlite3_result_error_code(context, MakeSqliteMsgFromPyException(&errmsg));
     sqlite3_result_error(context, errmsg, -1);
-    AddTraceBackHere(__FILE__, __LINE__, funname ? funname : "sqlite3_mprintf ran out of memory", "{s: i, s: s}", "NumberOfArguments", argc, "message", errmsg);
+    AddTraceBackHere(__FILE__, __LINE__, funname ? funname : "sqlite3_mprintf ran out of memory", "{s: i, s: s}",
+                     "NumberOfArguments", argc, "message", errmsg);
     sqlite3_free(funname);
     sqlite3_free(errmsg);
   }
@@ -2679,7 +2694,7 @@ getaggregatefunctioncontext(sqlite3_context *context)
   aggfc->state = afcERROR;
 
   /* call the aggregatefactory to get our working objects */
-  PyObject *vargs[] = {NULL};
+  PyObject *vargs[] = { NULL };
   retval = PyObject_Vectorcall(cbinfo->aggregatefactory, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
@@ -2713,7 +2728,8 @@ getaggregatefunctioncontext(sqlite3_context *context)
 
     if (PyTuple_GET_SIZE(retval) != 3)
     {
-      PyErr_Format(PyExc_TypeError, "Aggregate factory should return 3 item tuple of (object, stepfunction, finalfunction)");
+      PyErr_Format(PyExc_TypeError,
+                   "Aggregate factory should return 3 item tuple of (object, stepfunction, finalfunction)");
       goto finally;
     }
     /* we don't care about the type of the zeroth item (object) ... */
@@ -2799,10 +2815,10 @@ finally:
     char *funname = 0;
     FunctionCBInfo *cbinfo = (FunctionCBInfo *)sqlite3_user_data(context);
     assert(cbinfo);
-    CHAIN_EXC(
-        funname = sqlite3_mprintf("user-defined-aggregate-step-%s", cbinfo->name);
-        if (!funname) PyErr_NoMemory(););
-    AddTraceBackHere(__FILE__, __LINE__, funname ? funname : "sqlite3_mprintf ran out of memory", "{s: i}", "NumberOfArguments", argc);
+    CHAIN_EXC(funname = sqlite3_mprintf("user-defined-aggregate-step-%s", cbinfo->name);
+              if (!funname) PyErr_NoMemory(););
+    AddTraceBackHere(__FILE__, __LINE__, funname ? funname : "sqlite3_mprintf ran out of memory", "{s: i}",
+                     "NumberOfArguments", argc);
     sqlite3_free(funname);
   }
 finalfinally:
@@ -2837,7 +2853,7 @@ cbdispatch_final(sqlite3_context *context)
   }
 
   int offset = (aggfc->aggvalue) ? 1 : 0;
-  PyObject *vargs[] = {NULL, aggfc->aggvalue};
+  PyObject *vargs[] = { NULL, aggfc->aggvalue };
   retval = PyObject_Vectorcall(aggfc->finalfunc, vargs + 1, offset | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (retval)
   {
@@ -2867,9 +2883,8 @@ finally:
     char *funname = 0;
     FunctionCBInfo *cbinfo = (FunctionCBInfo *)sqlite3_user_data(context);
     assert(cbinfo);
-    CHAIN_EXC(
-        funname = sqlite3_mprintf("user-defined-aggregate-final-%s", cbinfo->name);
-        if (!funname) PyErr_NoMemory(););
+    CHAIN_EXC(funname = sqlite3_mprintf("user-defined-aggregate-final-%s", cbinfo->name);
+              if (!funname) PyErr_NoMemory(););
     AddTraceBackHere(__FILE__, __LINE__, funname ? funname : "sqlite3_mprintf ran out of memory", NULL);
     sqlite3_free(funname);
   }
@@ -2918,7 +2933,7 @@ get_window_function_context_wrapped(sqlite3_context *context)
   assert(cbinfo->windowfactory);
 
   /* call the windowfactory to get our working object(s) */
-  PyObject *vargs[] = {NULL};
+  PyObject *vargs[] = { NULL };
   retval = PyObject_Vectorcall(cbinfo->windowfactory, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
@@ -2937,12 +2952,13 @@ get_window_function_context_wrapped(sqlite3_context *context)
     }
     winfc->aggvalue = Py_NewRef(PySequence_Fast_GET_ITEM(sequence, 0));
 
-#define METH(n, i)                                                                                                      \
-  winfc->n##func = Py_NewRef(PySequence_Fast_GET_ITEM(sequence, i));                                                    \
-  if (!PyCallable_Check(winfc->n##func))                                                                                \
-  {                                                                                                                     \
-    PyErr_Format(PyExc_TypeError, "Expected item %d (%s) to be callable - got %s", i, #n, Py_TypeName(winfc->n##func)); \
-    goto finally;                                                                                                       \
+#define METH(n, i)                                                                                                     \
+  winfc->n##func = Py_NewRef(PySequence_Fast_GET_ITEM(sequence, i));                                                   \
+  if (!PyCallable_Check(winfc->n##func))                                                                               \
+  {                                                                                                                    \
+    PyErr_Format(PyExc_TypeError, "Expected item %d (%s) to be callable - got %s", i, #n,                              \
+                 Py_TypeName(winfc->n##func));                                                                         \
+    goto finally;                                                                                                      \
   }
 
     METH(step, 1);
@@ -2954,14 +2970,14 @@ get_window_function_context_wrapped(sqlite3_context *context)
   }
   else
   {
-#define METH(n)                                                                                                      \
-  winfc->n##func = PyObject_GetAttr(retval, apst.n);                                                                 \
-  if (!winfc->n##func)                                                                                               \
-    goto finally;                                                                                                    \
-  if (!PyCallable_Check(winfc->n##func))                                                                             \
-  {                                                                                                                  \
-    PyErr_Format(PyExc_TypeError, "Expected callable window function %s - got %s", #n, Py_TypeName(winfc->n##func)); \
-    goto finally;                                                                                                    \
+#define METH(n)                                                                                                        \
+  winfc->n##func = PyObject_GetAttr(retval, apst.n);                                                                   \
+  if (!winfc->n##func)                                                                                                 \
+    goto finally;                                                                                                      \
+  if (!PyCallable_Check(winfc->n##func))                                                                               \
+  {                                                                                                                    \
+    PyErr_Format(PyExc_TypeError, "Expected callable window function %s - got %s", #n, Py_TypeName(winfc->n##func));   \
+    goto finally;                                                                                                      \
   }
 
     METH(step);
@@ -3050,8 +3066,8 @@ cbw_step(sqlite3_context *context, int argc, sqlite3_value **argv)
 error:
   assert(PyErr_Occurred());
   sqlite3_result_error(context, "Python exception on window function 'step'", -1);
-  AddTraceBackHere(__FILE__, __LINE__, "window-function-step", "{s:i, s: O, s:s}", "argc", argc,
-                   "retval", OBJ(retval), "name", funcname);
+  AddTraceBackHere(__FILE__, __LINE__, "window-function-step", "{s:i, s: O, s:s}", "argc", argc, "retval", OBJ(retval),
+                   "name", funcname);
 
 finally:
   Py_XDECREF(retval);
@@ -3077,8 +3093,9 @@ cbw_final(sqlite3_context *context)
   winfc = get_window_function_context(context);
   if (!winfc || PyErr_Occurred())
     goto error;
-  PyObject *vargs[] = {NULL, winfc->aggvalue};
-  retval = PyObject_Vectorcall(winfc->finalfunc, vargs + 1, ((winfc->aggvalue) ? 1 : 0) | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  PyObject *vargs[] = { NULL, winfc->aggvalue };
+  retval = PyObject_Vectorcall(winfc->finalfunc, vargs + 1,
+                               ((winfc->aggvalue) ? 1 : 0) | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
     goto error;
@@ -3090,8 +3107,7 @@ cbw_final(sqlite3_context *context)
 error:
   assert(PyErr_Occurred());
   sqlite3_result_error(context, "Python exception on window function 'final' or earlier", -1);
-  AddTraceBackHere(__FILE__, __LINE__, "window-function-final", "{s:O,s:s}",
-                   "retval", OBJ(retval), "name", funcname);
+  AddTraceBackHere(__FILE__, __LINE__, "window-function-final", "{s:O,s:s}", "retval", OBJ(retval), "name", funcname);
 
 finally:
   Py_XDECREF(retval);
@@ -3120,9 +3136,10 @@ cbw_value(sqlite3_context *context)
   if (!winfc)
     goto error;
 
-  PyObject *vargs[] = {NULL, winfc->aggvalue};
+  PyObject *vargs[] = { NULL, winfc->aggvalue };
 
-  retval = PyObject_Vectorcall(winfc->valuefunc, vargs + 1, (winfc->aggvalue) ? 1 : 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  retval = PyObject_Vectorcall(winfc->valuefunc, vargs + 1, (winfc->aggvalue) ? 1 : 0 | PY_VECTORCALL_ARGUMENTS_OFFSET,
+                               NULL);
   if (!retval)
     goto error;
 
@@ -3133,8 +3150,7 @@ cbw_value(sqlite3_context *context)
 error:
   assert(PyErr_Occurred());
   sqlite3_result_error(context, "Python exception on window function 'value'", -1);
-  AddTraceBackHere(__FILE__, __LINE__, "window-function-final", "{s:O,s:s}",
-                   "retval", OBJ(retval), "name", funcname);
+  AddTraceBackHere(__FILE__, __LINE__, "window-function-final", "{s:O,s:s}", "retval", OBJ(retval), "name", funcname);
 finally:
   Py_XDECREF(retval);
 
@@ -3175,8 +3191,8 @@ cbw_inverse(sqlite3_context *context, int argc, sqlite3_value **argv)
 error:
   assert(PyErr_Occurred());
   sqlite3_result_error(context, "Python exception on window function 'inverse'", -1);
-  AddTraceBackHere(__FILE__, __LINE__, "window-function-inverse", "{s:i,s:O,s:s}",
-                   "argc", argc, "retval", OBJ(retval), "name", funcname);
+  AddTraceBackHere(__FILE__, __LINE__, "window-function-inverse", "{s:i,s:O,s:s}", "argc", argc, "retval", OBJ(retval),
+                   "name", funcname);
 
 finally:
   Py_XDECREF(retval);
@@ -3216,7 +3232,8 @@ finally:
     -* sqlite3_create_window_function
 */
 static PyObject *
-Connection_create_window_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_create_window_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                  PyObject *fast_kwnames)
 {
   int numargs = -1, flags = 0, res;
   const char *name = NULL;
@@ -3246,17 +3263,10 @@ Connection_create_window_function(Connection *self, PyObject *const *fast_args, 
     cbinfo->windowfactory = Py_NewRef(factory);
   }
 
-  PYSQLITE_CON_CALL(
-      res = sqlite3_create_window_function(self->db,
-                                           name,
-                                           numargs,
-                                           SQLITE_UTF8 | flags,
-                                           cbinfo,
-                                           cbinfo ? cbw_step : NULL,
-                                           cbinfo ? cbw_final : NULL,
-                                           cbinfo ? cbw_value : NULL,
-                                           cbinfo ? cbw_inverse : NULL,
-                                           apsw_free_func));
+  PYSQLITE_CON_CALL(res = sqlite3_create_window_function(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo,
+                                                         cbinfo ? cbw_step : NULL, cbinfo ? cbw_final : NULL,
+                                                         cbinfo ? cbw_value : NULL, cbinfo ? cbw_inverse : NULL,
+                                                         apsw_free_func));
   SET_EXC(res, self->db);
 finally:
   if (PyErr_Occurred())
@@ -3301,7 +3311,8 @@ finally:
 */
 
 static PyObject *
-Connection_create_scalar_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_create_scalar_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                  PyObject *fast_kwnames)
 {
   int numargs = -1;
   PyObject *callable = NULL;
@@ -3337,16 +3348,8 @@ Connection_create_scalar_function(Connection *self, PyObject *const *fast_args, 
 
   flags |= (deterministic ? SQLITE_DETERMINISTIC : 0);
 
-  PYSQLITE_CON_CALL(
-      res = sqlite3_create_function_v2(self->db,
-                                       name,
-                                       numargs,
-                                       SQLITE_UTF8 | flags,
-                                       cbinfo,
-                                       cbinfo ? cbdispatch_func : NULL,
-                                       NULL,
-                                       NULL,
-                                       apsw_free_func));
+  PYSQLITE_CON_CALL(res = sqlite3_create_function_v2(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo,
+                                                     cbinfo ? cbdispatch_func : NULL, NULL, NULL, apsw_free_func));
   if (res)
   {
     /* Note: On error sqlite3_create_function_v2 calls the destructor (apsw_free_func)! */
@@ -3407,7 +3410,8 @@ finally:
 */
 
 static PyObject *
-Connection_create_aggregate_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_create_aggregate_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                     PyObject *fast_kwnames)
 {
   int numargs = -1;
   PyObject *factory;
@@ -3440,16 +3444,9 @@ Connection_create_aggregate_function(Connection *self, PyObject *const *fast_arg
     cbinfo->aggregatefactory = Py_NewRef(factory);
   }
 
-  PYSQLITE_CON_CALL(
-      res = sqlite3_create_function_v2(self->db,
-                                       name,
-                                       numargs,
-                                       SQLITE_UTF8 | flags,
-                                       cbinfo,
-                                       NULL,
-                                       cbinfo ? cbdispatch_step : NULL,
-                                       cbinfo ? cbdispatch_final : NULL,
-                                       apsw_free_func));
+  PYSQLITE_CON_CALL(res = sqlite3_create_function_v2(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo, NULL,
+                                                     cbinfo ? cbdispatch_step : NULL, cbinfo ? cbdispatch_final : NULL,
+                                                     apsw_free_func));
 
   if (res)
   {
@@ -3468,9 +3465,7 @@ finally:
 /* USER DEFINED COLLATION CODE.*/
 
 static int
-collation_cb(void *context,
-             int stringonelen, const void *stringonedata,
-             int stringtwolen, const void *stringtwodata)
+collation_cb(void *context, int stringonelen, const void *stringonedata, int stringtwolen, const void *stringtwodata)
 {
   PyGILState_STATE gilstate;
   PyObject *cbinfo = (PyObject *)context;
@@ -3492,12 +3487,13 @@ collation_cb(void *context,
   if (!pys1 || !pys2)
     goto finally; /* failed to allocate strings */
 
-  PyObject *vargs[] = {NULL, pys1, pys2};
+  PyObject *vargs[] = { NULL, pys1, pys2 };
   retval = PyObject_Vectorcall(cbinfo, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!retval)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "Collation_callback", "{s: O, s: O, s: O}", "callback", OBJ(cbinfo), "stringone", OBJ(pys1), "stringtwo", OBJ(pys2));
+    AddTraceBackHere(__FILE__, __LINE__, "Collation_callback", "{s: O, s: O, s: O}", "callback", OBJ(cbinfo),
+                     "stringone", OBJ(pys1), "stringtwo", OBJ(pys2));
     goto finally; /* execution failed */
   }
 
@@ -3508,8 +3504,8 @@ collation_cb(void *context,
   }
 
   PyErr_Format(PyExc_TypeError, "Collation callback must return a number");
-  AddTraceBackHere(__FILE__, __LINE__, "collation callback", "{s: O, s: O}",
-                   "stringone", OBJ(pys1), "stringtwo", OBJ(pys2));
+  AddTraceBackHere(__FILE__, __LINE__, "collation callback", "{s: O, s: O}", "stringone", OBJ(pys1), "stringtwo",
+                   OBJ(pys2));
 
 haveval:
   if (PyErr_Occurred())
@@ -3579,13 +3575,9 @@ Connection_create_collation(Connection *self, PyObject *const *fast_args, Py_ssi
     ARG_EPILOG(NULL, Connection_create_collation_USAGE, );
   }
 
-  PYSQLITE_CON_CALL(
-      res = sqlite3_create_collation_v2(self->db,
-                                        name,
-                                        SQLITE_UTF8,
-                                        callback ? callback : NULL,
-                                        callback ? collation_cb : NULL,
-                                        callback ? collation_destroy : NULL));
+  PYSQLITE_CON_CALL(res
+                    = sqlite3_create_collation_v2(self->db, name, SQLITE_UTF8, callback ? callback : NULL,
+                                                  callback ? collation_cb : NULL, callback ? collation_destroy : NULL));
 
   if (res != SQLITE_OK)
   {
@@ -3764,7 +3756,8 @@ Connection_sqlite3_pointer(Connection *self)
    -* sqlite3_wal_autocheckpoint
 */
 static PyObject *
-Connection_wal_autocheckpoint(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_wal_autocheckpoint(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                              PyObject *fast_kwnames)
 {
   int n, res;
   CHECK_USE(NULL);
@@ -3831,7 +3824,8 @@ Connection_wal_checkpoint(Connection *self, PyObject *const *fast_args, Py_ssize
 }
 
 static void apswvtabFree(void *context);
-static struct sqlite3_module *apswvtabSetupModuleDef(PyObject *datasource, int iVersion, int eponymous, int eponymous_only, int read_only);
+static struct sqlite3_module *apswvtabSetupModuleDef(PyObject *datasource, int iVersion, int eponymous,
+                                                     int eponymous_only, int read_only);
 
 /** .. method:: create_module(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
 
@@ -3898,7 +3892,8 @@ Connection_create_module(Connection *self, PyObject *const *fast_args, Py_ssize_
 
   /* SQLite is really finnicky.  Note that it calls the destructor on
      failure  */
-  PYSQLITE_CON_CALL(res = sqlite3_create_module_v2(self->db, name, vti ? vti->sqlite3_module_def : NULL, vti, apswvtabFree));
+  PYSQLITE_CON_CALL(
+      res = sqlite3_create_module_v2(self->db, name, vti ? vti->sqlite3_module_def : NULL, vti, apswvtabFree));
   SET_EXC(res, self->db);
 
   if (res != SQLITE_OK)
@@ -3936,7 +3931,8 @@ Connection_vtab_config(Connection *self, PyObject *const *fast_args, Py_ssize_t 
   }
 
   if (!CALL_CHECK(xConnect))
-    return PyErr_Format(ExcInvalidContext, "You can only call vtab_config while in a virtual table Create/Connect call");
+    return PyErr_Format(ExcInvalidContext,
+                        "You can only call vtab_config while in a virtual table Create/Connect call");
 
   switch (op)
   {
@@ -3986,7 +3982,8 @@ Connection_vtab_on_conflict(Connection *self)
     -* sqlite3_overload_function
 */
 static PyObject *
-Connection_overload_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_overload_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                             PyObject *fast_kwnames)
 {
   const char *name;
   int nargs, res;
@@ -4138,7 +4135,7 @@ Connection_enter(Connection *self)
   {
     int result;
     PyObject *retval = NULL;
-    PyObject *vargs[] = {NULL, (PyObject *)self, PyUnicode_FromString(sql), Py_None};
+    PyObject *vargs[] = { NULL, (PyObject *)self, PyUnicode_FromString(sql), Py_None };
     if (vargs[2])
       retval = PyObject_Vectorcall(self->exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     Py_XDECREF(vargs[2]);
@@ -4187,14 +4184,14 @@ error:
 
 /* A helper function.  Returns -1 on memory error, 0 on failure and 1 on success */
 #undef connection_trace_and_exec
-static int connection_trace_and_exec(Connection *self, int release, int sp, int continue_on_trace_error)
+static int
+connection_trace_and_exec(Connection *self, int release, int sp, int continue_on_trace_error)
 {
 #include "faultinject.h"
   char *sql;
   int res;
 
-  sql = sqlite3_mprintf(release ? "RELEASE SAVEPOINT \"_apsw-%ld\"" : "ROLLBACK TO SAVEPOINT \"_apsw-%ld\"",
-                        sp);
+  sql = sqlite3_mprintf(release ? "RELEASE SAVEPOINT \"_apsw-%ld\"" : "ROLLBACK TO SAVEPOINT \"_apsw-%ld\"", sp);
   if (!sql)
   {
     PyErr_NoMemory();
@@ -4206,7 +4203,7 @@ static int connection_trace_and_exec(Connection *self, int release, int sp, int 
     PyObject *result = NULL;
 
     CHAIN_EXC_BEGIN
-    PyObject *vargs[] = {NULL, (PyObject *)self, PyUnicode_FromString(sql), Py_None};
+    PyObject *vargs[] = { NULL, (PyObject *)self, PyUnicode_FromString(sql), Py_None };
     if (vargs[2])
     {
       result = PyObject_Vectorcall(self->exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -4341,8 +4338,7 @@ Connection_config(Connection *self, PyObject *args)
   case SQLITE_DBCONFIG_TRIGGER_EQP:
   case SQLITE_DBCONFIG_LEGACY_FILE_FORMAT:
   case SQLITE_DBCONFIG_TRUSTED_SCHEMA:
-  case SQLITE_DBCONFIG_REVERSE_SCANORDER:
-  {
+  case SQLITE_DBCONFIG_REVERSE_SCANORDER: {
     int opdup, val, current;
     if (!PyArg_ParseTuple(args, "ii", &opdup, &val))
       return NULL;
@@ -4509,7 +4505,7 @@ Connection_execute(Connection *self, PyObject *const *args, Py_ssize_t nargs, Py
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  PyObject *vargs[] = {NULL, (PyObject *)self};
+  PyObject *vargs[] = { NULL, (PyObject *)self };
   cursor = PyObject_VectorcallMethod(apst.cursor, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!cursor)
   {
@@ -4546,11 +4542,12 @@ Connection_executemany(Connection *self, PyObject *const *args, Py_ssize_t nargs
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  PyObject *vargs[] = {NULL, (PyObject *)self};
+  PyObject *vargs[] = { NULL, (PyObject *)self };
   cursor = PyObject_VectorcallMethod(apst.cursor, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!cursor)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "Connection.executemany", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.executemany", "{s: O}", "cursor_factory",
+                     OBJ(self->cursor_factory));
     goto fail;
   }
   method = PyObject_GetAttr(cursor, apst.executemany);
@@ -4627,16 +4624,11 @@ Connection_pragma(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
 
   query = sqlite3_mprintf("pragma %s%w%s%s\"%w\"%s%s%s",
                           /* surround schema with double quotes and follow with dot if set */
-                          schema ? "\"" : "",
-                          schema ? schema : "",
-                          schema ? "\"" : "",
-                          schema ? "." : "",
+                          schema ? "\"" : "", schema ? schema : "", schema ? "\"" : "", schema ? "." : "",
                           /* pragma */
                           name,
                           /* value surrounded by parens if set */
-                          value_str ? "(" : "",
-                          value_str ? value_str : "",
-                          value_str ? ")" : "");
+                          value_str ? "(" : "", value_str ? value_str : "", value_str ? ")" : "");
 
   if (!query)
   {
@@ -4648,7 +4640,7 @@ Connection_pragma(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
   if (!query_py)
     goto error;
 
-  PyObject *vargs[] = {NULL, query_py, Py_False};
+  PyObject *vargs[] = { NULL, query_py, Py_False };
   PyObject *kwnames = PyTuple_Pack(1, apst.can_cache);
   if (kwnames)
     cursor = Connection_execute(self, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, kwnames);
@@ -4776,7 +4768,8 @@ Connection_table_exists(Connection *self, PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Connection_table_exists_USAGE, );
   }
 
-  PYSQLITE_VOID_CALL(res = sqlite3_table_column_metadata(self->db, dbname, table_name, NULL, NULL, NULL, NULL, NULL, NULL));
+  PYSQLITE_VOID_CALL(res
+                     = sqlite3_table_column_metadata(self->db, dbname, table_name, NULL, NULL, NULL, NULL, NULL, NULL));
 
   return Py_NewRef((res == SQLITE_OK) ? Py_True : Py_False);
 }
@@ -4821,7 +4814,8 @@ Connection_column_metadata(Connection *self, PyObject *const *fast_args, Py_ssiz
     ARG_EPILOG(NULL, Connection_column_metadata_USAGE, );
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_table_column_metadata(self->db, dbname, table_name, column_name, &datatype, &collseq, &notnull, &primarykey, &autoinc));
+  PYSQLITE_CON_CALL(res = sqlite3_table_column_metadata(self->db, dbname, table_name, column_name, &datatype, &collseq,
+                                                        &notnull, &primarykey, &autoinc));
 
   if (res != SQLITE_OK)
   {
@@ -4829,7 +4823,8 @@ Connection_column_metadata(Connection *self, PyObject *const *fast_args, Py_ssiz
     return NULL;
   }
 
-  return Py_BuildValue("(ssOOO)", datatype, collseq, notnull ? Py_True : Py_False, primarykey ? Py_True : Py_False, autoinc ? Py_True : Py_False);
+  return Py_BuildValue("(ssOOO)", datatype, collseq, notnull ? Py_True : Py_False, primarykey ? Py_True : Py_False,
+                       autoinc ? Py_True : Py_False);
 }
 
 /** .. method:: cache_flush() -> None
@@ -5359,9 +5354,10 @@ Connection_data_version(Connection *self, PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Connection_data_version_USAGE, );
   }
   int res, data_version = -1;
-  PYSQLITE_VOID_CALL(res = sqlite3_file_control(self->db, schema ? schema : "main", SQLITE_FCNTL_DATA_VERSION, &data_version));
+  PYSQLITE_VOID_CALL(
+      res = sqlite3_file_control(self->db, schema ? schema : "main", SQLITE_FCNTL_DATA_VERSION, &data_version));
 
-  if(res != SQLITE_OK)
+  if (res != SQLITE_OK)
   {
     /* errmsg is not set on failure */
     SET_EXC(res, NULL);
@@ -5411,7 +5407,7 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   }
 
   fts5_api *api = Connection_fts5_api(self);
-  if(!api)
+  if (!api)
     return NULL;
 
   Py_ssize_t argc = args ? PyList_GET_SIZE(args) : 0;
@@ -5441,7 +5437,7 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   fts5_tokenizer_v2 *tokenizer_class = NULL;
 
   int rc = api->xFindTokenizer_v2(api, name, &userdata, &tokenizer_class);
-  if(rc != SQLITE_OK)
+  if (rc != SQLITE_OK)
   {
     PyErr_Format(get_exception_for_code(rc), "No tokenizer named \"%s\"", name);
     AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xFindTokenizer_v2", "{s:s}", "name", name);
@@ -5450,7 +5446,7 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
 
   /* no objects/memory has been allocated yet */
   const char *name_dup = apsw_strdup(name);
-  if(!name_dup)
+  if (!name_dup)
     goto error;
 
   APSWFTS5Tokenizer *pytok = (APSWFTS5Tokenizer *)_PyObject_New(&APSWFTS5TokenizerType);
@@ -5497,7 +5493,8 @@ error:
       * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__
 */
 static PyObject *
-Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                   PyObject *fast_kwnames)
 {
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -5518,7 +5515,7 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
     return NULL;
 
   TokenizerFactoryData *tfd = PyMem_Calloc(1, sizeof(TokenizerFactoryData));
-  if(!tfd)
+  if (!tfd)
     goto finally;
   tfd->factory_func = Py_NewRef(tokenizer_factory);
   tfd->connection = Py_NewRef((PyObject *)self);
@@ -5528,10 +5525,10 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
                     = api->xCreateTokenizer_v2(api, name, tfd, &APSWPythonTokenizer, APSWPythonTokenizerFactoryDelete),
                     rc = SQLITE_NOMEM);
 
-  finally:
+finally:
   if (rc != SQLITE_OK)
   {
-    if(tfd)
+    if (tfd)
       APSWPythonTokenizerFactoryDelete(tfd);
     SET_EXC(rc, NULL);
     return NULL;
@@ -5586,7 +5583,8 @@ Connection_fts5_tokenizer_available(Connection *self, PyObject *const *fast_args
   and the rest will be the function arguments at the SQL level.
 */
 static PyObject *
-Connection_register_fts5_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_register_fts5_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                  PyObject *fast_kwnames)
 {
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
@@ -5602,27 +5600,29 @@ Connection_register_fts5_function(Connection *self, PyObject *const *fast_args, 
   }
 
   fts5_api *api = Connection_fts5_api(self);
-  if(!api)
+  if (!api)
     return NULL;
 
   struct fts5aux_cbinfo *cbinfo = PyMem_Calloc(1, sizeof(struct fts5aux_cbinfo));
-  if(!cbinfo)
+  if (!cbinfo)
     return NULL;
   cbinfo->callback = Py_NewRef(function);
   cbinfo->name = apsw_strdup(name);
 
   int rc = SQLITE_NOMEM;
-  if(cbinfo->name)
+  if (cbinfo->name)
   {
     APSW_FAULT_INJECT(FTS5FunctionRegister,
-    rc = api->xCreateFunction(api, name, cbinfo, apsw_fts5_extension_function, apsw_fts5_extension_function_destroy),
-    rc = SQLITE_BUSY);
+                      rc = api->xCreateFunction(api, name, cbinfo, apsw_fts5_extension_function,
+                                                apsw_fts5_extension_function_destroy),
+                      rc = SQLITE_BUSY);
   }
-  if(rc != SQLITE_OK)
+  if (rc != SQLITE_OK)
   {
-    if(!PyErr_Occurred())
+    if (!PyErr_Occurred())
       PyErr_Format(get_exception_for_code(rc), "Registering function named \"%s\"", name);
-    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xCreateFunction", "{s:s,s:O}", "name", name, "function", function);
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xCreateFunction", "{s:s,s:O}", "name", name, "function",
+                     function);
     apsw_fts5_extension_function_destroy(cbinfo);
     return NULL;
   }
@@ -5631,28 +5631,30 @@ Connection_register_fts5_function(Connection *self, PyObject *const *fast_args, 
 }
 
 static PyGetSetDef Connection_getseters[] = {
-    /* name getter setter doc closure */
-    {"filename",
-     (getter)Connection_getmainfilename, NULL,
-     Connection_filename_DOC, NULL},
-    {"filename_journal", (getter)Connection_getjournalfilename, NULL, Connection_filename_journal_DOC, NULL},
-    {"filename_wal", (getter)Connection_getwalfilename, NULL, Connection_filename_wal_DOC, NULL},
-    {"cursor_factory", (getter)Connection_get_cursor_factory,
-     (setter)Connection_set_cursor_factory, Connection_cursor_factory_DOC, NULL},
-    {"in_transaction", (getter)Connection_get_in_transaction,
-     NULL, Connection_in_transaction_DOC},
-    {"exec_trace", (getter)Connection_get_exec_trace_attr, (setter)Connection_set_exec_trace_attr, Connection_exec_trace_DOC},
-    {"row_trace", (getter)Connection_get_row_trace_attr, (setter)Connection_set_row_trace_attr, Connection_row_trace_DOC},
-    {"authorizer", (getter)Connection_get_authorizer_attr, (setter)Connection_set_authorizer_attr, Connection_authorizer_DOC},
-    {"system_errno", (getter)Connection_get_system_errno, NULL, Connection_system_errno_DOC},
-    {"is_interrupted", (getter)Connection_is_interrupted, NULL, Connection_is_interrupted_DOC},
+  /* name getter setter doc closure */
+  { "filename", (getter)Connection_getmainfilename, NULL, Connection_filename_DOC, NULL },
+  { "filename_journal", (getter)Connection_getjournalfilename, NULL, Connection_filename_journal_DOC, NULL },
+  { "filename_wal", (getter)Connection_getwalfilename, NULL, Connection_filename_wal_DOC, NULL },
+  { "cursor_factory", (getter)Connection_get_cursor_factory, (setter)Connection_set_cursor_factory,
+    Connection_cursor_factory_DOC, NULL },
+  { "in_transaction", (getter)Connection_get_in_transaction, NULL, Connection_in_transaction_DOC },
+  { "exec_trace", (getter)Connection_get_exec_trace_attr, (setter)Connection_set_exec_trace_attr,
+    Connection_exec_trace_DOC },
+  { "row_trace", (getter)Connection_get_row_trace_attr, (setter)Connection_set_row_trace_attr,
+    Connection_row_trace_DOC },
+  { "authorizer", (getter)Connection_get_authorizer_attr, (setter)Connection_set_authorizer_attr,
+    Connection_authorizer_DOC },
+  { "system_errno", (getter)Connection_get_system_errno, NULL, Connection_system_errno_DOC },
+  { "is_interrupted", (getter)Connection_is_interrupted, NULL, Connection_is_interrupted_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
-    {Connection_exec_trace_OLDNAME, (getter)Connection_get_exec_trace_attr, (setter)Connection_set_exec_trace_attr, Connection_exec_trace_OLDDOC},
-    {Connection_row_trace_OLDNAME, (getter)Connection_get_row_trace_attr, (setter)Connection_set_row_trace_attr, Connection_row_trace_OLDDOC},
+  { Connection_exec_trace_OLDNAME, (getter)Connection_get_exec_trace_attr, (setter)Connection_set_exec_trace_attr,
+    Connection_exec_trace_OLDDOC },
+  { Connection_row_trace_OLDNAME, (getter)Connection_get_row_trace_attr, (setter)Connection_set_row_trace_attr,
+    Connection_row_trace_OLDDOC },
 #endif
-    /* Sentinel */
-    {
-        NULL, NULL, NULL, NULL, NULL}};
+  /* Sentinel */
+  { NULL, NULL, NULL, NULL, NULL }
+};
 
 /** .. attribute:: open_flags
   :type: int
@@ -5693,214 +5695,187 @@ Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
 static PyObject *
 Connection_tp_str(Connection *self)
 {
-  return PyUnicode_FromFormat("<apsw.Connection object %s%s%s at %p>",
-                              self->db ? "\"" : "(",
-                              self->db ? sqlite3_db_filename(self->db, "main") : "closed",
-                              self->db ? "\"" : ")",
-                              self);
+  return PyUnicode_FromFormat("<apsw.Connection object %s%s%s at %p>", self->db ? "\"" : "(",
+                              self->db ? sqlite3_db_filename(self->db, "main") : "closed", self->db ? "\"" : ")", self);
 }
 
 static PyMemberDef Connection_members[] = {
-    /* name type offset flags doc */
-    {"open_flags", T_OBJECT, offsetof(Connection, open_flags), READONLY, Connection_open_flags_DOC},
-    {"open_vfs", T_OBJECT, offsetof(Connection, open_vfs), READONLY, Connection_open_vfs_DOC},
-    {0, 0, 0, 0, 0}};
-
-static PyMethodDef Connection_methods[] = {
-    {"cursor", (PyCFunction)Connection_cursor, METH_NOARGS,
-     Connection_cursor_DOC},
-    {"close", (PyCFunction)Connection_close, METH_FASTCALL | METH_KEYWORDS,
-     Connection_close_DOC},
-    {"set_busy_timeout", (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_busy_timeout_DOC},
-    {"interrupt", (PyCFunction)Connection_interrupt, METH_NOARGS,
-     Connection_interrupt_DOC},
-    {"create_scalar_function", (PyCFunction)Connection_create_scalar_function, METH_FASTCALL | METH_KEYWORDS,
-     Connection_create_scalar_function_DOC},
-    {"create_aggregate_function", (PyCFunction)Connection_create_aggregate_function, METH_FASTCALL | METH_KEYWORDS,
-     Connection_create_aggregate_function_DOC},
-    {"set_busy_handler", (PyCFunction)Connection_set_busy_handler, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_busy_handler_DOC},
-    {"changes", (PyCFunction)Connection_changes, METH_NOARGS,
-     Connection_changes_DOC},
-    {"total_changes", (PyCFunction)Connection_total_changes, METH_NOARGS,
-     Connection_total_changes_DOC},
-    {"get_autocommit", (PyCFunction)Connection_get_autocommit, METH_NOARGS,
-     Connection_get_autocommit_DOC},
-    {"create_collation", (PyCFunction)Connection_create_collation, METH_FASTCALL | METH_KEYWORDS,
-     Connection_create_collation_DOC},
-    {"last_insert_rowid", (PyCFunction)Connection_last_insert_rowid, METH_NOARGS,
-     Connection_last_insert_rowid_DOC},
-    {"set_last_insert_rowid", (PyCFunction)Connection_set_last_insert_rowid, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_last_insert_rowid_DOC},
-    {"collation_needed", (PyCFunction)Connection_collation_needed, METH_FASTCALL | METH_KEYWORDS,
-     Connection_collation_needed_DOC},
-    {"set_authorizer", (PyCFunction)Connection_set_authorizer, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_authorizer_DOC},
-    {"set_update_hook", (PyCFunction)Connection_set_update_hook, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_update_hook_DOC},
-    {"set_rollback_hook", (PyCFunction)Connection_set_rollback_hook, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_rollback_hook_DOC},
-    {"blob_open", (PyCFunction)Connection_blob_open, METH_FASTCALL | METH_KEYWORDS,
-     Connection_blob_open_DOC},
-    {"set_progress_handler", (PyCFunction)Connection_set_progress_handler, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_progress_handler_DOC},
-    {"set_commit_hook", (PyCFunction)Connection_set_commit_hook, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_commit_hook_DOC},
-    {"set_wal_hook", (PyCFunction)Connection_set_wal_hook, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_wal_hook_DOC},
-    {"limit", (PyCFunction)Connection_limit, METH_FASTCALL | METH_KEYWORDS,
-     Connection_limit_DOC},
-    {"set_profile", (PyCFunction)Connection_set_profile, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_profile_DOC},
-#ifndef SQLITE_OMIT_LOAD_EXTENSION
-    {"enable_load_extension", (PyCFunction)Connection_enable_load_extension, METH_FASTCALL | METH_KEYWORDS,
-     Connection_enable_load_extension_DOC},
-    {"load_extension", (PyCFunction)Connection_load_extension, METH_FASTCALL | METH_KEYWORDS,
-     Connection_load_extension_DOC},
-#endif
-    {"create_module", (PyCFunction)Connection_create_module, METH_FASTCALL | METH_KEYWORDS,
-     Connection_create_module_DOC},
-    {"overload_function", (PyCFunction)Connection_overload_function, METH_FASTCALL | METH_KEYWORDS,
-     Connection_overload_function_DOC},
-    {"backup", (PyCFunction)Connection_backup, METH_FASTCALL | METH_KEYWORDS,
-     Connection_backup_DOC},
-    {"file_control", (PyCFunction)Connection_file_control, METH_FASTCALL | METH_KEYWORDS,
-     Connection_file_control_DOC},
-    {"vfsname", (PyCFunction)Connection_vfsname, METH_FASTCALL | METH_KEYWORDS,
-     Connection_vfsname_DOC},
-    {"sqlite3_pointer", (PyCFunction)Connection_sqlite3_pointer, METH_NOARGS,
-     Connection_sqlite3_pointer_DOC},
-    {"set_exec_trace", (PyCFunction)Connection_set_exec_trace, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_exec_trace_DOC},
-    {"set_row_trace", (PyCFunction)Connection_set_row_trace, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_row_trace_DOC},
-    {"get_exec_trace", (PyCFunction)Connection_get_exec_trace, METH_NOARGS,
-     Connection_get_exec_trace_DOC},
-    {"get_row_trace", (PyCFunction)Connection_get_row_trace, METH_NOARGS,
-     Connection_get_row_trace_DOC},
-    {"__enter__", (PyCFunction)Connection_enter, METH_NOARGS,
-     Connection_enter_DOC},
-    {"__exit__", (PyCFunction)Connection_exit, METH_FASTCALL | METH_KEYWORDS,
-     Connection_exit_DOC},
-    {"wal_autocheckpoint", (PyCFunction)Connection_wal_autocheckpoint, METH_FASTCALL | METH_KEYWORDS,
-     Connection_wal_autocheckpoint_DOC},
-    {"wal_checkpoint", (PyCFunction)Connection_wal_checkpoint, METH_FASTCALL | METH_KEYWORDS,
-     Connection_wal_checkpoint_DOC},
-    {"config", (PyCFunction)Connection_config, METH_VARARGS,
-     Connection_config_DOC},
-    {"status", (PyCFunction)Connection_status, METH_FASTCALL | METH_KEYWORDS,
-     Connection_status_DOC},
-    {"readonly", (PyCFunction)Connection_readonly, METH_FASTCALL | METH_KEYWORDS,
-     Connection_readonly_DOC},
-    {"db_filename", (PyCFunction)Connection_db_filename, METH_FASTCALL | METH_KEYWORDS,
-     Connection_db_filename_DOC},
-    {"txn_state", (PyCFunction)Connection_txn_state, METH_FASTCALL | METH_KEYWORDS,
-     Connection_txn_state_DOC},
-    {"serialize", (PyCFunction)Connection_serialize, METH_FASTCALL | METH_KEYWORDS,
-     Connection_serialize_DOC},
-    {"deserialize", (PyCFunction)Connection_deserialize, METH_FASTCALL | METH_KEYWORDS,
-     Connection_deserialize_DOC},
-    {"autovacuum_pages", (PyCFunction)Connection_autovacuum_pages, METH_FASTCALL | METH_KEYWORDS,
-     Connection_autovacuum_pages_DOC},
-    {"db_names", (PyCFunction)Connection_db_names, METH_NOARGS,
-     Connection_db_names_DOC},
-    {"execute", (PyCFunction)Connection_execute, METH_FASTCALL | METH_KEYWORDS,
-     Connection_execute_DOC},
-    {"executemany", (PyCFunction)Connection_executemany, METH_FASTCALL | METH_KEYWORDS,
-     Connection_executemany_DOC},
-    {"cache_stats", (PyCFunction)Connection_cache_stats, METH_FASTCALL | METH_KEYWORDS, Connection_cache_stats_DOC},
-    {"table_exists", (PyCFunction)Connection_table_exists, METH_FASTCALL | METH_KEYWORDS, Connection_table_exists_DOC},
-    {"column_metadata", (PyCFunction)Connection_column_metadata, METH_FASTCALL | METH_KEYWORDS, Connection_column_metadata_DOC},
-    {"trace_v2", (PyCFunction)Connection_trace_v2, METH_FASTCALL | METH_KEYWORDS, Connection_trace_v2_DOC},
-    {"cache_flush", (PyCFunction)Connection_cache_flush, METH_NOARGS, Connection_cache_flush_DOC},
-    {"release_memory", (PyCFunction)Connection_release_memory, METH_FASTCALL | METH_KEYWORDS, Connection_release_memory_DOC},
-    {"drop_modules", (PyCFunction)Connection_drop_modules, METH_FASTCALL | METH_KEYWORDS, Connection_drop_modules_DOC},
-    {"create_window_function", (PyCFunction)Connection_create_window_function, METH_FASTCALL | METH_KEYWORDS,
-     Connection_create_window_function_DOC},
-    {"vtab_config", (PyCFunction)Connection_vtab_config, METH_FASTCALL | METH_KEYWORDS, Connection_vtab_config_DOC},
-    {"vtab_on_conflict", (PyCFunction)Connection_vtab_on_conflict, METH_NOARGS, Connection_vtab_on_conflict_DOC},
-    {"pragma", (PyCFunction)Connection_pragma, METH_FASTCALL | METH_KEYWORDS, Connection_pragma_DOC},
-    {"read", (PyCFunction)Connection_read, METH_FASTCALL | METH_KEYWORDS, Connection_read_DOC},
-    {"fts5_tokenizer", (PyCFunction)Connection_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS, Connection_fts5_tokenizer_DOC},
-    {"register_fts5_tokenizer", (PyCFunction)Connection_register_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS, Connection_register_fts5_tokenizer_DOC},
-    {"fts5_tokenizer_available", (PyCFunction)Connection_fts5_tokenizer_available, METH_FASTCALL | METH_KEYWORDS, Connection_fts5_tokenizer_available_DOC},
-    {"register_fts5_function", (PyCFunction)Connection_register_fts5_function, METH_FASTCALL | METH_KEYWORDS, Connection_register_fts5_function_DOC},
-    {"data_version", (PyCFunction)Connection_data_version, METH_FASTCALL | METH_KEYWORDS, Connection_data_version_DOC},
-#ifndef APSW_OMIT_OLD_NAMES
-    {Connection_set_busy_timeout_OLDNAME, (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_busy_timeout_OLDDOC},
-    {Connection_create_scalar_function_OLDNAME, (PyCFunction)Connection_create_scalar_function, METH_FASTCALL | METH_KEYWORDS,
-     Connection_create_scalar_function_OLDDOC},
-    {Connection_create_aggregate_function_OLDNAME, (PyCFunction)Connection_create_aggregate_function, METH_FASTCALL | METH_KEYWORDS,
-     Connection_create_aggregate_function_OLDDOC},
-    {Connection_set_busy_handler_OLDNAME, (PyCFunction)Connection_set_busy_handler, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_busy_handler_OLDDOC},
-    {Connection_total_changes_OLDNAME, (PyCFunction)Connection_total_changes, METH_NOARGS,
-     Connection_total_changes_OLDDOC},
-    {Connection_get_autocommit_OLDNAME, (PyCFunction)Connection_get_autocommit, METH_NOARGS,
-     Connection_get_autocommit_OLDDOC},
-    {Connection_create_collation_OLDNAME, (PyCFunction)Connection_create_collation, METH_FASTCALL | METH_KEYWORDS,
-     Connection_create_collation_OLDDOC},
-    {Connection_collation_needed_OLDNAME, (PyCFunction)Connection_collation_needed, METH_FASTCALL | METH_KEYWORDS,
-     Connection_collation_needed_OLDDOC},
-    {Connection_set_authorizer_OLDNAME, (PyCFunction)Connection_set_authorizer, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_authorizer_OLDDOC},
-    {Connection_set_update_hook_OLDNAME, (PyCFunction)Connection_set_update_hook, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_update_hook_OLDDOC},
-    {Connection_set_rollback_hook_OLDNAME, (PyCFunction)Connection_set_rollback_hook, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_rollback_hook_OLDDOC},
-    {Connection_blob_open_OLDNAME, (PyCFunction)Connection_blob_open, METH_FASTCALL | METH_KEYWORDS,
-     Connection_blob_open_OLDDOC},
-    {Connection_set_progress_handler_OLDNAME, (PyCFunction)Connection_set_progress_handler, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_progress_handler_OLDDOC},
-    {Connection_set_commit_hook_OLDNAME, (PyCFunction)Connection_set_commit_hook, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_commit_hook_OLDDOC},
-    {Connection_set_wal_hook_OLDNAME, (PyCFunction)Connection_set_wal_hook, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_wal_hook_OLDDOC},
-    {Connection_set_profile_OLDNAME, (PyCFunction)Connection_set_profile, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_profile_OLDDOC},
-    {Connection_create_module_OLDNAME, (PyCFunction)Connection_create_module, METH_FASTCALL | METH_KEYWORDS,
-     Connection_create_module_OLDDOC},
-    {Connection_overload_function_OLDNAME, (PyCFunction)Connection_overload_function, METH_FASTCALL | METH_KEYWORDS,
-     Connection_overload_function_OLDDOC},
-    {Connection_file_control_OLDNAME, (PyCFunction)Connection_file_control, METH_FASTCALL | METH_KEYWORDS,
-     Connection_file_control_OLDDOC},
-    {Connection_sqlite3_pointer_OLDNAME, (PyCFunction)Connection_sqlite3_pointer, METH_NOARGS,
-     Connection_sqlite3_pointer_OLDDOC},
-    {Connection_set_exec_trace_OLDNAME, (PyCFunction)Connection_set_exec_trace, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_exec_trace_OLDDOC},
-    {Connection_set_row_trace_OLDNAME, (PyCFunction)Connection_set_row_trace, METH_FASTCALL | METH_KEYWORDS,
-     Connection_set_row_trace_OLDDOC},
-    {Connection_get_exec_trace_OLDNAME, (PyCFunction)Connection_get_exec_trace, METH_NOARGS,
-     Connection_get_exec_trace_OLDDOC},
-    {Connection_get_row_trace_OLDNAME, (PyCFunction)Connection_get_row_trace, METH_NOARGS,
-     Connection_get_row_trace_OLDDOC},
-    {Connection_cache_flush_OLDNAME, (PyCFunction)Connection_cache_flush, METH_NOARGS, Connection_cache_flush_OLDDOC},
-#ifndef SQLITE_OMIT_LOAD_EXTENSION
-    {Connection_enable_load_extension_OLDNAME, (PyCFunction)Connection_enable_load_extension, METH_FASTCALL | METH_KEYWORDS,
-     Connection_enable_load_extension_OLDDOC},
-    {Connection_load_extension_OLDNAME, (PyCFunction)Connection_load_extension, METH_FASTCALL | METH_KEYWORDS,
-     Connection_load_extension_OLDDOC},
-#endif
-#endif
-    {0, 0, 0, 0} /* Sentinel */
+  /* name type offset flags doc */
+  { "open_flags", T_OBJECT, offsetof(Connection, open_flags), READONLY, Connection_open_flags_DOC },
+  { "open_vfs", T_OBJECT, offsetof(Connection, open_vfs), READONLY, Connection_open_vfs_DOC },
+  { 0, 0, 0, 0, 0 }
 };
 
-static PyTypeObject ConnectionType =
-    {
-        PyVarObject_HEAD_INIT(NULL, 0)
-            .tp_name = "apsw.Connection",
-        .tp_basicsize = sizeof(Connection),
-        .tp_dealloc = (destructor)Connection_dealloc,
-        .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
-        .tp_doc = Connection_class_DOC,
-        .tp_traverse = (traverseproc)Connection_tp_traverse,
-        .tp_weaklistoffset = offsetof(Connection, weakreflist),
-        .tp_methods = Connection_methods,
-        .tp_members = Connection_members,
-        .tp_getset = Connection_getseters,
-        .tp_init = (initproc)Connection_init,
-        .tp_new = Connection_new,
-        .tp_str = (reprfunc)Connection_tp_str,
+static PyMethodDef Connection_methods[] = {
+  { "cursor", (PyCFunction)Connection_cursor, METH_NOARGS, Connection_cursor_DOC },
+  { "close", (PyCFunction)Connection_close, METH_FASTCALL | METH_KEYWORDS, Connection_close_DOC },
+  { "set_busy_timeout", (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_busy_timeout_DOC },
+  { "interrupt", (PyCFunction)Connection_interrupt, METH_NOARGS, Connection_interrupt_DOC },
+  { "create_scalar_function", (PyCFunction)Connection_create_scalar_function, METH_FASTCALL | METH_KEYWORDS,
+    Connection_create_scalar_function_DOC },
+  { "create_aggregate_function", (PyCFunction)Connection_create_aggregate_function, METH_FASTCALL | METH_KEYWORDS,
+    Connection_create_aggregate_function_DOC },
+  { "set_busy_handler", (PyCFunction)Connection_set_busy_handler, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_busy_handler_DOC },
+  { "changes", (PyCFunction)Connection_changes, METH_NOARGS, Connection_changes_DOC },
+  { "total_changes", (PyCFunction)Connection_total_changes, METH_NOARGS, Connection_total_changes_DOC },
+  { "get_autocommit", (PyCFunction)Connection_get_autocommit, METH_NOARGS, Connection_get_autocommit_DOC },
+  { "create_collation", (PyCFunction)Connection_create_collation, METH_FASTCALL | METH_KEYWORDS,
+    Connection_create_collation_DOC },
+  { "last_insert_rowid", (PyCFunction)Connection_last_insert_rowid, METH_NOARGS, Connection_last_insert_rowid_DOC },
+  { "set_last_insert_rowid", (PyCFunction)Connection_set_last_insert_rowid, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_last_insert_rowid_DOC },
+  { "collation_needed", (PyCFunction)Connection_collation_needed, METH_FASTCALL | METH_KEYWORDS,
+    Connection_collation_needed_DOC },
+  { "set_authorizer", (PyCFunction)Connection_set_authorizer, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_authorizer_DOC },
+  { "set_update_hook", (PyCFunction)Connection_set_update_hook, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_update_hook_DOC },
+  { "set_rollback_hook", (PyCFunction)Connection_set_rollback_hook, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_rollback_hook_DOC },
+  { "blob_open", (PyCFunction)Connection_blob_open, METH_FASTCALL | METH_KEYWORDS, Connection_blob_open_DOC },
+  { "set_progress_handler", (PyCFunction)Connection_set_progress_handler, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_progress_handler_DOC },
+  { "set_commit_hook", (PyCFunction)Connection_set_commit_hook, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_commit_hook_DOC },
+  { "set_wal_hook", (PyCFunction)Connection_set_wal_hook, METH_FASTCALL | METH_KEYWORDS, Connection_set_wal_hook_DOC },
+  { "limit", (PyCFunction)Connection_limit, METH_FASTCALL | METH_KEYWORDS, Connection_limit_DOC },
+  { "set_profile", (PyCFunction)Connection_set_profile, METH_FASTCALL | METH_KEYWORDS, Connection_set_profile_DOC },
+#ifndef SQLITE_OMIT_LOAD_EXTENSION
+  { "enable_load_extension", (PyCFunction)Connection_enable_load_extension, METH_FASTCALL | METH_KEYWORDS,
+    Connection_enable_load_extension_DOC },
+  { "load_extension", (PyCFunction)Connection_load_extension, METH_FASTCALL | METH_KEYWORDS,
+    Connection_load_extension_DOC },
+#endif
+  { "create_module", (PyCFunction)Connection_create_module, METH_FASTCALL | METH_KEYWORDS,
+    Connection_create_module_DOC },
+  { "overload_function", (PyCFunction)Connection_overload_function, METH_FASTCALL | METH_KEYWORDS,
+    Connection_overload_function_DOC },
+  { "backup", (PyCFunction)Connection_backup, METH_FASTCALL | METH_KEYWORDS, Connection_backup_DOC },
+  { "file_control", (PyCFunction)Connection_file_control, METH_FASTCALL | METH_KEYWORDS, Connection_file_control_DOC },
+  { "vfsname", (PyCFunction)Connection_vfsname, METH_FASTCALL | METH_KEYWORDS, Connection_vfsname_DOC },
+  { "sqlite3_pointer", (PyCFunction)Connection_sqlite3_pointer, METH_NOARGS, Connection_sqlite3_pointer_DOC },
+  { "set_exec_trace", (PyCFunction)Connection_set_exec_trace, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_exec_trace_DOC },
+  { "set_row_trace", (PyCFunction)Connection_set_row_trace, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_row_trace_DOC },
+  { "get_exec_trace", (PyCFunction)Connection_get_exec_trace, METH_NOARGS, Connection_get_exec_trace_DOC },
+  { "get_row_trace", (PyCFunction)Connection_get_row_trace, METH_NOARGS, Connection_get_row_trace_DOC },
+  { "__enter__", (PyCFunction)Connection_enter, METH_NOARGS, Connection_enter_DOC },
+  { "__exit__", (PyCFunction)Connection_exit, METH_FASTCALL | METH_KEYWORDS, Connection_exit_DOC },
+  { "wal_autocheckpoint", (PyCFunction)Connection_wal_autocheckpoint, METH_FASTCALL | METH_KEYWORDS,
+    Connection_wal_autocheckpoint_DOC },
+  { "wal_checkpoint", (PyCFunction)Connection_wal_checkpoint, METH_FASTCALL | METH_KEYWORDS,
+    Connection_wal_checkpoint_DOC },
+  { "config", (PyCFunction)Connection_config, METH_VARARGS, Connection_config_DOC },
+  { "status", (PyCFunction)Connection_status, METH_FASTCALL | METH_KEYWORDS, Connection_status_DOC },
+  { "readonly", (PyCFunction)Connection_readonly, METH_FASTCALL | METH_KEYWORDS, Connection_readonly_DOC },
+  { "db_filename", (PyCFunction)Connection_db_filename, METH_FASTCALL | METH_KEYWORDS, Connection_db_filename_DOC },
+  { "txn_state", (PyCFunction)Connection_txn_state, METH_FASTCALL | METH_KEYWORDS, Connection_txn_state_DOC },
+  { "serialize", (PyCFunction)Connection_serialize, METH_FASTCALL | METH_KEYWORDS, Connection_serialize_DOC },
+  { "deserialize", (PyCFunction)Connection_deserialize, METH_FASTCALL | METH_KEYWORDS, Connection_deserialize_DOC },
+  { "autovacuum_pages", (PyCFunction)Connection_autovacuum_pages, METH_FASTCALL | METH_KEYWORDS,
+    Connection_autovacuum_pages_DOC },
+  { "db_names", (PyCFunction)Connection_db_names, METH_NOARGS, Connection_db_names_DOC },
+  { "execute", (PyCFunction)Connection_execute, METH_FASTCALL | METH_KEYWORDS, Connection_execute_DOC },
+  { "executemany", (PyCFunction)Connection_executemany, METH_FASTCALL | METH_KEYWORDS, Connection_executemany_DOC },
+  { "cache_stats", (PyCFunction)Connection_cache_stats, METH_FASTCALL | METH_KEYWORDS, Connection_cache_stats_DOC },
+  { "table_exists", (PyCFunction)Connection_table_exists, METH_FASTCALL | METH_KEYWORDS, Connection_table_exists_DOC },
+  { "column_metadata", (PyCFunction)Connection_column_metadata, METH_FASTCALL | METH_KEYWORDS,
+    Connection_column_metadata_DOC },
+  { "trace_v2", (PyCFunction)Connection_trace_v2, METH_FASTCALL | METH_KEYWORDS, Connection_trace_v2_DOC },
+  { "cache_flush", (PyCFunction)Connection_cache_flush, METH_NOARGS, Connection_cache_flush_DOC },
+  { "release_memory", (PyCFunction)Connection_release_memory, METH_FASTCALL | METH_KEYWORDS,
+    Connection_release_memory_DOC },
+  { "drop_modules", (PyCFunction)Connection_drop_modules, METH_FASTCALL | METH_KEYWORDS, Connection_drop_modules_DOC },
+  { "create_window_function", (PyCFunction)Connection_create_window_function, METH_FASTCALL | METH_KEYWORDS,
+    Connection_create_window_function_DOC },
+  { "vtab_config", (PyCFunction)Connection_vtab_config, METH_FASTCALL | METH_KEYWORDS, Connection_vtab_config_DOC },
+  { "vtab_on_conflict", (PyCFunction)Connection_vtab_on_conflict, METH_NOARGS, Connection_vtab_on_conflict_DOC },
+  { "pragma", (PyCFunction)Connection_pragma, METH_FASTCALL | METH_KEYWORDS, Connection_pragma_DOC },
+  { "read", (PyCFunction)Connection_read, METH_FASTCALL | METH_KEYWORDS, Connection_read_DOC },
+  { "fts5_tokenizer", (PyCFunction)Connection_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS,
+    Connection_fts5_tokenizer_DOC },
+  { "register_fts5_tokenizer", (PyCFunction)Connection_register_fts5_tokenizer, METH_FASTCALL | METH_KEYWORDS,
+    Connection_register_fts5_tokenizer_DOC },
+  { "fts5_tokenizer_available", (PyCFunction)Connection_fts5_tokenizer_available, METH_FASTCALL | METH_KEYWORDS,
+    Connection_fts5_tokenizer_available_DOC },
+  { "register_fts5_function", (PyCFunction)Connection_register_fts5_function, METH_FASTCALL | METH_KEYWORDS,
+    Connection_register_fts5_function_DOC },
+  { "data_version", (PyCFunction)Connection_data_version, METH_FASTCALL | METH_KEYWORDS, Connection_data_version_DOC },
+#ifndef APSW_OMIT_OLD_NAMES
+  { Connection_set_busy_timeout_OLDNAME, (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_busy_timeout_OLDDOC },
+  { Connection_create_scalar_function_OLDNAME, (PyCFunction)Connection_create_scalar_function,
+    METH_FASTCALL | METH_KEYWORDS, Connection_create_scalar_function_OLDDOC },
+  { Connection_create_aggregate_function_OLDNAME, (PyCFunction)Connection_create_aggregate_function,
+    METH_FASTCALL | METH_KEYWORDS, Connection_create_aggregate_function_OLDDOC },
+  { Connection_set_busy_handler_OLDNAME, (PyCFunction)Connection_set_busy_handler, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_busy_handler_OLDDOC },
+  { Connection_total_changes_OLDNAME, (PyCFunction)Connection_total_changes, METH_NOARGS,
+    Connection_total_changes_OLDDOC },
+  { Connection_get_autocommit_OLDNAME, (PyCFunction)Connection_get_autocommit, METH_NOARGS,
+    Connection_get_autocommit_OLDDOC },
+  { Connection_create_collation_OLDNAME, (PyCFunction)Connection_create_collation, METH_FASTCALL | METH_KEYWORDS,
+    Connection_create_collation_OLDDOC },
+  { Connection_collation_needed_OLDNAME, (PyCFunction)Connection_collation_needed, METH_FASTCALL | METH_KEYWORDS,
+    Connection_collation_needed_OLDDOC },
+  { Connection_set_authorizer_OLDNAME, (PyCFunction)Connection_set_authorizer, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_authorizer_OLDDOC },
+  { Connection_set_update_hook_OLDNAME, (PyCFunction)Connection_set_update_hook, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_update_hook_OLDDOC },
+  { Connection_set_rollback_hook_OLDNAME, (PyCFunction)Connection_set_rollback_hook, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_rollback_hook_OLDDOC },
+  { Connection_blob_open_OLDNAME, (PyCFunction)Connection_blob_open, METH_FASTCALL | METH_KEYWORDS,
+    Connection_blob_open_OLDDOC },
+  { Connection_set_progress_handler_OLDNAME, (PyCFunction)Connection_set_progress_handler,
+    METH_FASTCALL | METH_KEYWORDS, Connection_set_progress_handler_OLDDOC },
+  { Connection_set_commit_hook_OLDNAME, (PyCFunction)Connection_set_commit_hook, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_commit_hook_OLDDOC },
+  { Connection_set_wal_hook_OLDNAME, (PyCFunction)Connection_set_wal_hook, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_wal_hook_OLDDOC },
+  { Connection_set_profile_OLDNAME, (PyCFunction)Connection_set_profile, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_profile_OLDDOC },
+  { Connection_create_module_OLDNAME, (PyCFunction)Connection_create_module, METH_FASTCALL | METH_KEYWORDS,
+    Connection_create_module_OLDDOC },
+  { Connection_overload_function_OLDNAME, (PyCFunction)Connection_overload_function, METH_FASTCALL | METH_KEYWORDS,
+    Connection_overload_function_OLDDOC },
+  { Connection_file_control_OLDNAME, (PyCFunction)Connection_file_control, METH_FASTCALL | METH_KEYWORDS,
+    Connection_file_control_OLDDOC },
+  { Connection_sqlite3_pointer_OLDNAME, (PyCFunction)Connection_sqlite3_pointer, METH_NOARGS,
+    Connection_sqlite3_pointer_OLDDOC },
+  { Connection_set_exec_trace_OLDNAME, (PyCFunction)Connection_set_exec_trace, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_exec_trace_OLDDOC },
+  { Connection_set_row_trace_OLDNAME, (PyCFunction)Connection_set_row_trace, METH_FASTCALL | METH_KEYWORDS,
+    Connection_set_row_trace_OLDDOC },
+  { Connection_get_exec_trace_OLDNAME, (PyCFunction)Connection_get_exec_trace, METH_NOARGS,
+    Connection_get_exec_trace_OLDDOC },
+  { Connection_get_row_trace_OLDNAME, (PyCFunction)Connection_get_row_trace, METH_NOARGS,
+    Connection_get_row_trace_OLDDOC },
+  { Connection_cache_flush_OLDNAME, (PyCFunction)Connection_cache_flush, METH_NOARGS, Connection_cache_flush_OLDDOC },
+#ifndef SQLITE_OMIT_LOAD_EXTENSION
+  { Connection_enable_load_extension_OLDNAME, (PyCFunction)Connection_enable_load_extension,
+    METH_FASTCALL | METH_KEYWORDS, Connection_enable_load_extension_OLDDOC },
+  { Connection_load_extension_OLDNAME, (PyCFunction)Connection_load_extension, METH_FASTCALL | METH_KEYWORDS,
+    Connection_load_extension_OLDDOC },
+#endif
+#endif
+  { 0, 0, 0, 0 } /* Sentinel */
+};
+
+static PyTypeObject ConnectionType = {
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Connection",
+  .tp_basicsize = sizeof(Connection),
+  .tp_dealloc = (destructor)Connection_dealloc,
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+  .tp_doc = Connection_class_DOC,
+  .tp_traverse = (traverseproc)Connection_tp_traverse,
+  .tp_weaklistoffset = offsetof(Connection, weakreflist),
+  .tp_methods = Connection_methods,
+  .tp_members = Connection_members,
+  .tp_getset = Connection_getseters,
+  .tp_init = (initproc)Connection_init,
+  .tp_new = Connection_new,
+  .tp_str = (reprfunc)Connection_tp_str,
 };

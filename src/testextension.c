@@ -7,10 +7,8 @@ SQLITE_EXTENSION_INIT1
 /*
     ** The half() SQL function returns half of its input value.
     */
-static void halfFunc(
-    sqlite3_context *context,
-    int argc,
-    sqlite3_value **argv)
+static void
+halfFunc(sqlite3_context *context, int argc, sqlite3_value **argv)
 {
   sqlite3_result_double(context, 0.5 * sqlite3_value_double(argv[0]));
 }
@@ -23,10 +21,8 @@ static void halfFunc(
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-int sqlite3_extension_init(
-    sqlite3 *db,
-    char **pzErrMsg,
-    const sqlite3_api_routines *pApi)
+int
+sqlite3_extension_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi)
 {
   SQLITE_EXTENSION_INIT2(pApi)
   sqlite3_create_function(db, "half", 1, SQLITE_ANY, 0, halfFunc, 0, 0);
@@ -36,10 +32,8 @@ int sqlite3_extension_init(
 /* this is code added by me and checks that alternate entry points work by
    providing an double function */
 
-static void doubleFunc(
-    sqlite3_context *context,
-    int argc,
-    sqlite3_value **argv)
+static void
+doubleFunc(sqlite3_context *context, int argc, sqlite3_value **argv)
 {
   sqlite3_result_double(context, 2.0 * sqlite3_value_double(argv[0]));
 }
@@ -47,10 +41,8 @@ static void doubleFunc(
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-int alternate_sqlite3_extension_init(
-    sqlite3 *db,
-    char **pzErrMsg,
-    const sqlite3_api_routines *pApi)
+int
+alternate_sqlite3_extension_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi)
 {
   SQLITE_EXTENSION_INIT2(pApi)
   sqlite3_create_function(db, "doubleup", 1, SQLITE_ANY, 0, doubleFunc, 0, 0);

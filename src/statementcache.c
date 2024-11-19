@@ -186,7 +186,8 @@ apsw_hash_bytes(void *data, Py_ssize_t nbytes)
 }
 
 static int
-statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t utf8size, PyObject *query, APSWStatement **statement_out, APSWStatementOptions *options)
+statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t utf8size, PyObject *query,
+                                APSWStatement **statement_out, APSWStatementOptions *options)
 {
   Py_hash_t hash = SC_SENTINEL_HASH;
   APSWStatement *statement = NULL;
@@ -199,11 +200,13 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   if (sc->maxentries && utf8size < SC_MAX_ITEM_SIZE && options->can_cache)
   {
     unsigned i;
-    hash = apsw_hash_bytes((void*)utf8, utf8size);
+    hash = apsw_hash_bytes((void *)utf8, utf8size);
 
     for (i = 0; i <= sc->highest_used; i++)
     {
-      if (sc->hashes[i] == hash && sc->caches[i]->utf8_size == utf8size && 0 == memcmp(utf8, sc->caches[i]->utf8, utf8size) && 0 == memcmp(&sc->caches[i]->options, options, sizeof(APSWStatementOptions)))
+      if (sc->hashes[i] == hash && sc->caches[i]->utf8_size == utf8size
+          && 0 == memcmp(utf8, sc->caches[i]->utf8, utf8size)
+          && 0 == memcmp(&sc->caches[i]->options, options, sizeof(APSWStatementOptions)))
       {
         /* cache hit */
         sc->hashes[i] = SC_SENTINEL_HASH;
@@ -360,7 +363,8 @@ statementcache_next(StatementCache *sc, APSWStatement **statement)
   assert(statementcache_hasmore(old));
 
   /* we have to prepare the new one ... */
-  res = statementcache_prepare_internal(sc, old->utf8 + old->query_size, old->utf8_size - old->query_size, old->query, &new, &old->options);
+  res = statementcache_prepare_internal(sc, old->utf8 + old->query_size, old->utf8_size - old->query_size, old->query,
+                                        &new, &old->options);
   assert((res == SQLITE_OK && new) || (res != SQLITE_OK && !new));
 
   /* ... before finalizing the old */
@@ -394,7 +398,7 @@ statementcache_free(StatementCache *sc)
     }
     PyMem_Free(sc->caches);
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
-    while(sc->recycle_bin_next > 0)
+    while (sc->recycle_bin_next > 0)
     {
       /* PyMem_Free evaluates its arguments multiple times at the preprocessor level
          which leads to bizarre errors when these two lines are combined */
@@ -440,16 +444,10 @@ statementcache_stats(StatementCache *sc, int include_entries)
      update this */
   PyObject *res = NULL, *entries = NULL, *entry = NULL;
 
-  res = Py_BuildValue("{s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I}",
-                      "size", sc->maxentries,
-                      "evictions", sc->evictions,
-                      "no_cache", sc->no_cache,
-                      "hits", sc->hits,
-                      "no_vdbe", sc->no_vdbe,
-                      "misses", sc->misses,
-                      "too_big", sc->too_big,
-                      "no_cache", sc->no_cache,
-                      "max_cacheable_bytes", SC_MAX_ITEM_SIZE);
+  res = Py_BuildValue("{s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I}", "size", sc->maxentries, "evictions",
+                      sc->evictions, "no_cache", sc->no_cache, "hits", sc->hits, "no_vdbe", sc->no_vdbe, "misses",
+                      sc->misses, "too_big", sc->too_big, "no_cache", sc->no_cache, "max_cacheable_bytes",
+                      SC_MAX_ITEM_SIZE);
   if (res && include_entries)
   {
     int pycres;
@@ -463,12 +461,9 @@ statementcache_stats(StatementCache *sc, int include_entries)
       if (sc->hashes[i] != SC_SENTINEL_HASH)
       {
         APSWStatement *stmt = sc->caches[i];
-        entry = Py_BuildValue("{s: s#, s: O, s: i, s: i, s: I}",
-                              "query", stmt->utf8, stmt->query_size,
-                              "has_more", (stmt->query_size == stmt->utf8_size) ? Py_False : Py_True,
-                              "prepare_flags", stmt->options.prepare_flags,
-                              "explain", stmt->options.explain,
-                              "uses", stmt->uses);
+        entry = Py_BuildValue("{s: s#, s: O, s: i, s: i, s: I}", "query", stmt->utf8, stmt->query_size, "has_more",
+                              (stmt->query_size == stmt->utf8_size) ? Py_False : Py_True, "prepare_flags",
+                              stmt->options.prepare_flags, "explain", stmt->options.explain, "uses", stmt->uses);
         if (!entry)
           goto fail;
         pycres = PyList_Append(entries, entry);

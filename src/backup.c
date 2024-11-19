@@ -36,14 +36,15 @@ come back and copy those changes too until the backup is complete.
 */
 
 /* we love us some macros */
-#define CHECK_BACKUP_CLOSED(e)                                                                                             \
-  do                                                                                                                       \
-  {                                                                                                                        \
-    if (!self->backup || (self->dest && !self->dest->db) || (self->source && !self->source->db))                           \
-    {                                                                                                                      \
-      PyErr_Format(ExcConnectionClosed, "The backup is finished or the source or destination databases have been closed"); \
-      return e;                                                                                                            \
-    }                                                                                                                      \
+#define CHECK_BACKUP_CLOSED(e)                                                                                         \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!self->backup || (self->dest && !self->dest->db) || (self->source && !self->source->db))                       \
+    {                                                                                                                  \
+      PyErr_Format(ExcConnectionClosed,                                                                                \
+                   "The backup is finished or the source or destination databases have been closed");                  \
+      return e;                                                                                                        \
+    }                                                                                                                  \
   } while (0)
 
 /** .. class:: Backup
@@ -54,7 +55,7 @@ come back and copy those changes too until the backup is complete.
 typedef struct APSWBackup
 {
   PyObject_HEAD
-      Connection *dest;
+  Connection *dest;
   Connection *source;
   sqlite3_backup *backup;
   PyObject *done;
@@ -99,8 +100,7 @@ APSWBackup_close_internal(APSWBackup *self, int force)
       break;
     case 1:
       break;
-    case 2:
-    {
+    case 2: {
       PY_ERR_FETCH(exc_save);
 
       SET_EXC(res, self->dest->db);
@@ -349,8 +349,7 @@ APSWBackup_tp_str(APSWBackup *self)
 {
   return PyUnicode_FromFormat("<apsw.Backup object from %S to %S at %p>",
                               self->source ? (PyObject *)self->source : apst.closed,
-                              self->dest ? (PyObject *)self->dest : apst.closed,
-                              self);
+                              self->dest ? (PyObject *)self->dest : apst.closed, self);
 }
 
 /** .. attribute:: done
@@ -359,43 +358,38 @@ APSWBackup_tp_str(APSWBackup *self)
   A boolean that is True if the copy completed in the last call to :meth:`~Backup.step`.
 */
 static PyMemberDef backup_members[] = {
-    /* name type offset flags doc */
-    {"done", T_OBJECT, offsetof(APSWBackup, done), READONLY, Backup_done_DOC},
-    {0, 0, 0, 0, 0}};
+  /* name type offset flags doc */
+  { "done", T_OBJECT, offsetof(APSWBackup, done), READONLY, Backup_done_DOC },
+  { 0, 0, 0, 0, 0 }
+};
 
 static PyGetSetDef backup_getset[] = {
-    /* name getter setter doc closure */
-    {"remaining", (getter)APSWBackup_get_remaining, NULL, Backup_remaining_DOC, NULL},
-    {"page_count", (getter)APSWBackup_get_page_count, NULL, Backup_page_count_DOC, NULL},
+  /* name getter setter doc closure */
+  { "remaining", (getter)APSWBackup_get_remaining, NULL, Backup_remaining_DOC, NULL },
+  { "page_count", (getter)APSWBackup_get_page_count, NULL, Backup_page_count_DOC, NULL },
 #ifndef APSW_OMIT_OLD_NAMES
-    {Backup_page_count_OLDNAME, (getter)APSWBackup_get_page_count, NULL, Backup_page_count_OLDDOC, NULL},
+  { Backup_page_count_OLDNAME, (getter)APSWBackup_get_page_count, NULL, Backup_page_count_OLDDOC, NULL },
 #endif
-    {0, 0, 0, 0, 0}};
+  { 0, 0, 0, 0, 0 }
+};
 
-static PyMethodDef backup_methods[] = {
-    {"__enter__", (PyCFunction)APSWBackup_enter, METH_NOARGS,
-     Backup_enter_DOC},
-    {"__exit__", (PyCFunction)APSWBackup_exit, METH_FASTCALL | METH_KEYWORDS,
-     Backup_exit_DOC},
-    {"step", (PyCFunction)APSWBackup_step, METH_FASTCALL | METH_KEYWORDS,
-     Backup_step_DOC},
-    {"finish", (PyCFunction)APSWBackup_finish, METH_NOARGS,
-     Backup_finish_DOC},
-    {"close", (PyCFunction)APSWBackup_close, METH_FASTCALL | METH_KEYWORDS,
-     Backup_close_DOC},
-    {0, 0, 0, 0}};
+static PyMethodDef backup_methods[]
+    = { { "__enter__", (PyCFunction)APSWBackup_enter, METH_NOARGS, Backup_enter_DOC },
+        { "__exit__", (PyCFunction)APSWBackup_exit, METH_FASTCALL | METH_KEYWORDS, Backup_exit_DOC },
+        { "step", (PyCFunction)APSWBackup_step, METH_FASTCALL | METH_KEYWORDS, Backup_step_DOC },
+        { "finish", (PyCFunction)APSWBackup_finish, METH_NOARGS, Backup_finish_DOC },
+        { "close", (PyCFunction)APSWBackup_close, METH_FASTCALL | METH_KEYWORDS, Backup_close_DOC },
+        { 0, 0, 0, 0 } };
 
-static PyTypeObject APSWBackupType =
-    {
-        PyVarObject_HEAD_INIT(NULL, 0)
-            .tp_name = "apsw.Backup",
-        .tp_basicsize = sizeof(APSWBackup),
-        .tp_dealloc = (destructor)APSWBackup_dealloc,
-        .tp_flags = Py_TPFLAGS_DEFAULT,
-        .tp_doc = Backup_class_DOC,
-        .tp_weaklistoffset = offsetof(APSWBackup, weakreflist),
-        .tp_methods = backup_methods,
-        .tp_members = backup_members,
-        .tp_getset = backup_getset,
-        .tp_str = (reprfunc)APSWBackup_tp_str,
+static PyTypeObject APSWBackupType = {
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Backup",
+  .tp_basicsize = sizeof(APSWBackup),
+  .tp_dealloc = (destructor)APSWBackup_dealloc,
+  .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_doc = Backup_class_DOC,
+  .tp_weaklistoffset = offsetof(APSWBackup, weakreflist),
+  .tp_methods = backup_methods,
+  .tp_members = backup_members,
+  .tp_getset = backup_getset,
+  .tp_str = (reprfunc)APSWBackup_tp_str,
 };

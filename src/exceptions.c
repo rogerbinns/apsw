@@ -26,11 +26,11 @@ static void make_exception(int res, sqlite3 *db);
 /* If res indicates an SQLite error then do all the exception creation
  work.  We don't overwrite earlier exceptions hence the PyErr_Occurred
  check */
-#define SET_EXC(res, db)                       \
-  do                                           \
-  {                                            \
-    if (res != SQLITE_OK && !PyErr_Occurred()) \
-      make_exception(res, db);                 \
+#define SET_EXC(res, db)                                                                                               \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (res != SQLITE_OK && !PyErr_Occurred())                                                                         \
+      make_exception(res, db);                                                                                         \
   } while (0)
 
 /* A dictionary we store the last error from each thread in.  Used
@@ -98,45 +98,45 @@ static struct
   const char *name;
   PyObject *cls;
   const char *doc;
-} exc_descriptors[] =
-    {
-        /* Generic Errors */
-        {SQLITE_ERROR, "SQL", NULL, SQLError_exc_DOC},
-        {SQLITE_MISMATCH, "Mismatch", NULL, MismatchError_exc_DOC},
-        {SQLITE_NOTFOUND, "NotFound", NULL, NotFoundError_exc_DOC},
+} exc_descriptors[] = {
+  /* Generic Errors */
+  { SQLITE_ERROR, "SQL", NULL, SQLError_exc_DOC },
+  { SQLITE_MISMATCH, "Mismatch", NULL, MismatchError_exc_DOC },
+  { SQLITE_NOTFOUND, "NotFound", NULL, NotFoundError_exc_DOC },
 
-        /* Internal Errors */
-        {SQLITE_INTERNAL, "Internal", NULL, InternalError_exc_DOC}, /* NOT USED */
-        {SQLITE_PROTOCOL, "Protocol", NULL, ProtocolError_exc_DOC},
-        {SQLITE_MISUSE, "Misuse", NULL, MisuseError_exc_DOC},
-        {SQLITE_RANGE, "Range", NULL, RangeError_exc_DOC},
+  /* Internal Errors */
+  { SQLITE_INTERNAL, "Internal", NULL, InternalError_exc_DOC }, /* NOT USED */
+  { SQLITE_PROTOCOL, "Protocol", NULL, ProtocolError_exc_DOC },
+  { SQLITE_MISUSE, "Misuse", NULL, MisuseError_exc_DOC },
+  { SQLITE_RANGE, "Range", NULL, RangeError_exc_DOC },
 
-        /* permissions etc */
-        {SQLITE_PERM, "Permissions", NULL, PermissionsError_exc_DOC},
-        {SQLITE_READONLY, "ReadOnly", NULL, ReadOnlyError_exc_DOC},
-        {SQLITE_CANTOPEN, "CantOpen", NULL, CantOpenError_exc_DOC},
-        {SQLITE_AUTH, "Auth", NULL, AuthError_exc_DOC},
+  /* permissions etc */
+  { SQLITE_PERM, "Permissions", NULL, PermissionsError_exc_DOC },
+  { SQLITE_READONLY, "ReadOnly", NULL, ReadOnlyError_exc_DOC },
+  { SQLITE_CANTOPEN, "CantOpen", NULL, CantOpenError_exc_DOC },
+  { SQLITE_AUTH, "Auth", NULL, AuthError_exc_DOC },
 
-        /* abort/busy/etc */
-        {SQLITE_ABORT, "Abort", NULL, AbortError_exc_DOC},
-        {SQLITE_BUSY, "Busy", NULL, BusyError_exc_DOC},
-        {SQLITE_LOCKED, "Locked", NULL, LockedError_exc_DOC},
-        {SQLITE_INTERRUPT, "Interrupt", NULL, InterruptError_exc_DOC},
-        {SQLITE_SCHEMA, "SchemaChange", NULL, SchemaChangeError_exc_DOC},
-        {SQLITE_CONSTRAINT, "Constraint", NULL, ConstraintError_exc_DOC},
+  /* abort/busy/etc */
+  { SQLITE_ABORT, "Abort", NULL, AbortError_exc_DOC },
+  { SQLITE_BUSY, "Busy", NULL, BusyError_exc_DOC },
+  { SQLITE_LOCKED, "Locked", NULL, LockedError_exc_DOC },
+  { SQLITE_INTERRUPT, "Interrupt", NULL, InterruptError_exc_DOC },
+  { SQLITE_SCHEMA, "SchemaChange", NULL, SchemaChangeError_exc_DOC },
+  { SQLITE_CONSTRAINT, "Constraint", NULL, ConstraintError_exc_DOC },
 
-        /* memory/disk/corrupt etc */
-        {SQLITE_NOMEM, "NoMem", NULL, NoMemError_exc_DOC},
-        {SQLITE_IOERR, "IO", NULL, IOError_exc_DOC},
-        {SQLITE_CORRUPT, "Corrupt", NULL, CorruptError_exc_DOC},
-        {SQLITE_FULL, "Full", NULL, FullError_exc_DOC},
-        {SQLITE_TOOBIG, "TooBig", NULL, TooBigError_exc_DOC},
-        {SQLITE_NOLFS, "NoLFS", NULL, NoLFSError_exc_DOC},
-        {SQLITE_EMPTY, "Empty", NULL, EmptyError_exc_DOC},
-        {SQLITE_FORMAT, "Format", NULL, FormatError_exc_DOC},
-        {SQLITE_NOTADB, "NotADB", NULL, NotADBError_exc_DOC},
+  /* memory/disk/corrupt etc */
+  { SQLITE_NOMEM, "NoMem", NULL, NoMemError_exc_DOC },
+  { SQLITE_IOERR, "IO", NULL, IOError_exc_DOC },
+  { SQLITE_CORRUPT, "Corrupt", NULL, CorruptError_exc_DOC },
+  { SQLITE_FULL, "Full", NULL, FullError_exc_DOC },
+  { SQLITE_TOOBIG, "TooBig", NULL, TooBigError_exc_DOC },
+  { SQLITE_NOLFS, "NoLFS", NULL, NoLFSError_exc_DOC },
+  { SQLITE_EMPTY, "Empty", NULL, EmptyError_exc_DOC },
+  { SQLITE_FORMAT, "Format", NULL, FormatError_exc_DOC },
+  { SQLITE_NOTADB, "NotADB", NULL, NotADBError_exc_DOC },
 
-        {-1, 0, 0}};
+  { -1, 0, 0 }
+};
 
 /* EXCEPTION CODE */
 
@@ -147,27 +147,28 @@ typedef struct
   const char *doc;
 } APSWExceptionMapping;
 
-static int init_exceptions(PyObject *m)
+static int
+init_exceptions(PyObject *m)
 {
   char buffy[100]; /* more than enough for anyone :-) */
   unsigned int i;
   PyObject *obj;
 
-  APSWExceptionMapping apswexceptions[] = {
-      {&ExcThreadingViolation, "ThreadingViolationError", ThreadingViolationError_exc_DOC},
-      {&ExcIncomplete, "IncompleteExecutionError", IncompleteExecutionError_exc_DOC},
-      {&ExcBindings, "BindingsError", BindingsError_exc_DOC},
-      {&ExcComplete, "ExecutionCompleteError", ExecutionCompleteError_exc_DOC},
-      {&ExcTraceAbort, "ExecTraceAbort", ExecTraceAbort_exc_DOC},
-      {&ExcExtensionLoading, "ExtensionLoadingError", ExtensionLoadingError_exc_DOC},
-      {&ExcConnectionNotClosed, "ConnectionNotClosedError", ConnectionNotClosedError_exc_DOC},
-      {&ExcConnectionClosed, "ConnectionClosedError", ConnectionClosedError_exc_DOC},
-      {&ExcCursorClosed, "CursorClosedError", CursorClosedError_exc_DOC},
-      {&ExcVFSNotImplemented, "VFSNotImplementedError", VFSNotImplementedError_exc_DOC},
-      {&ExcVFSFileClosed, "VFSFileClosedError", VFSFileClosedError_exc_DOC},
-      {&ExcForkingViolation, "ForkingViolationError", ForkingViolationError_exc_DOC},
-      {&ExcNoFTS5, "NoFTS5Error", NoFTS5Error_exc_DOC},
-      {&ExcInvalidContext, "InvalidContextError", InvalidContextError_exc_DOC}};
+  APSWExceptionMapping apswexceptions[]
+      = { { &ExcThreadingViolation, "ThreadingViolationError", ThreadingViolationError_exc_DOC },
+          { &ExcIncomplete, "IncompleteExecutionError", IncompleteExecutionError_exc_DOC },
+          { &ExcBindings, "BindingsError", BindingsError_exc_DOC },
+          { &ExcComplete, "ExecutionCompleteError", ExecutionCompleteError_exc_DOC },
+          { &ExcTraceAbort, "ExecTraceAbort", ExecTraceAbort_exc_DOC },
+          { &ExcExtensionLoading, "ExtensionLoadingError", ExtensionLoadingError_exc_DOC },
+          { &ExcConnectionNotClosed, "ConnectionNotClosedError", ConnectionNotClosedError_exc_DOC },
+          { &ExcConnectionClosed, "ConnectionClosedError", ConnectionClosedError_exc_DOC },
+          { &ExcCursorClosed, "CursorClosedError", CursorClosedError_exc_DOC },
+          { &ExcVFSNotImplemented, "VFSNotImplementedError", VFSNotImplementedError_exc_DOC },
+          { &ExcVFSFileClosed, "VFSFileClosedError", VFSFileClosedError_exc_DOC },
+          { &ExcForkingViolation, "ForkingViolationError", ForkingViolationError_exc_DOC },
+          { &ExcNoFTS5, "NoFTS5Error", NoFTS5Error_exc_DOC },
+          { &ExcInvalidContext, "InvalidContextError", InvalidContextError_exc_DOC } };
 
   /* PyModule_AddObject uses borrowed reference so we incref whatever
      we give to it, so we still have a copy to use */
@@ -222,7 +223,8 @@ get_exception_for_code(int res)
   return APSWException;
 }
 
-static void make_exception(int res, sqlite3 *db)
+static void
+make_exception(int res, sqlite3 *db)
 {
   const char *errmsg = NULL;
   int error_offset = -1;
@@ -236,7 +238,7 @@ static void make_exception(int res, sqlite3 *db)
     _PYSQLITE_CALL_V(error_offset = sqlite3_error_offset(db));
 
   PyObject *tmp;
-  PyErr_Format(get_exception_for_code(res), "%s",  errmsg);
+  PyErr_Format(get_exception_for_code(res), "%s", errmsg);
   PY_ERR_FETCH(exc);
   PY_ERR_NORMALIZE(exc);
 
@@ -267,7 +269,7 @@ error:
   if (PyErr_Occurred())
     apsw_write_unraisable(NULL);
   PY_ERR_RESTORE(exc);
-      assert(PyErr_Occurred());
+  assert(PyErr_Occurred());
 }
 
 /* Turns the current Python exception into an SQLite error code and

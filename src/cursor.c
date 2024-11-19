@@ -58,7 +58,7 @@ static PyObject *apsw_cursor_null_bindings;
 struct APSWCursor
 {
   PyObject_HEAD
-      Connection *connection; /* pointer to parent connection */
+  Connection *connection; /* pointer to parent connection */
 
   unsigned inuse;                  /* track if we are in use preventing concurrent thread mangling */
   struct APSWStatement *statement; /* statement we are currently using */
@@ -302,10 +302,7 @@ APSWCursor_tp_traverse(APSWCursor *self, visitproc visit, void *arg)
   return 0;
 }
 
-static const char *description_formats[] = {
-    "(ss)",
-    "(ssOOOOO)",
-    "(sssss)"};
+static const char *description_formats[] = { "(ss)", "(ssOOOOO)", "(sssss)" };
 
 static PyObject *
 APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
@@ -341,12 +338,10 @@ APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
 #define INDEX self->statement->vdbestatement, i
 /* this is needed because msvc chokes with the ifdef inside */
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
-#define DESCFMT2 Py_BuildValue(description_formats[fmtnum],         \
-                               column_name,                         \
-                               sqlite3_column_decltype(INDEX),      \
-                               sqlite3_column_database_name(INDEX), \
-                               sqlite3_column_table_name(INDEX),    \
-                               sqlite3_column_origin_name(INDEX))
+#define DESCFMT2                                                                                                       \
+  Py_BuildValue(description_formats[fmtnum], column_name, sqlite3_column_decltype(INDEX),                              \
+                sqlite3_column_database_name(INDEX), sqlite3_column_table_name(INDEX),                                 \
+                sqlite3_column_origin_name(INDEX))
 #else
 #define DESCFMT2 NULL
 #endif
@@ -357,16 +352,10 @@ APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
       PyErr_Format(PyExc_MemoryError, "SQLite call sqlite3_column_name ran out of memory");
       goto error;
     }
-    INUSE_CALL(
-        column = (fmtnum < 2) ? Py_BuildValue(description_formats[fmtnum],
-                                              column_name,
-                                              sqlite3_column_decltype(INDEX),
-                                              Py_None,
-                                              Py_None,
-                                              Py_None,
-                                              Py_None,
-                                              Py_None)
-                              : DESCFMT2);
+    INUSE_CALL(column = (fmtnum < 2)
+                            ? Py_BuildValue(description_formats[fmtnum], column_name, sqlite3_column_decltype(INDEX),
+                                            Py_None, Py_None, Py_None, Py_None, Py_None)
+                            : DESCFMT2);
 #undef INDEX
     if (!column)
       goto error;
@@ -405,7 +394,8 @@ error:
    -* sqlite3_column_name sqlite3_column_decltype
 
 */
-static PyObject *APSWCursor_get_description(APSWCursor *self)
+static PyObject *
+APSWCursor_get_description(APSWCursor *self)
 {
   return APSWCursor_internal_get_description(self, 0);
 }
@@ -419,7 +409,8 @@ static PyObject *APSWCursor_get_description(APSWCursor *self)
     SQLite does not have the information.
 */
 
-static PyObject *APSWCursor_getdescription_dbapi(APSWCursor *self)
+static PyObject *
+APSWCursor_getdescription_dbapi(APSWCursor *self)
 {
   return APSWCursor_internal_get_description(self, 1);
 }
@@ -438,7 +429,8 @@ name, table name, and origin name.
 
 */
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
-static PyObject *APSWCursor_get_description_full(APSWCursor *self)
+static PyObject *
+APSWCursor_get_description_full(APSWCursor *self)
 {
   return APSWCursor_internal_get_description(self, 2);
 }
@@ -502,7 +494,8 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes);
     if (strdata)
     {
-      PYSQLITE_CUR_CALL(res = sqlite3_bind_text64(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8));
+      PYSQLITE_CUR_CALL(res = sqlite3_bind_text64(self->statement->vdbestatement, arg, strdata, strbytes,
+                                                  SQLITE_TRANSIENT, SQLITE_UTF8));
     }
     else
     {
@@ -519,16 +512,19 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     if (asrb != 0)
       return -1;
 
-    PYSQLITE_CUR_CALL(res = sqlite3_bind_blob64(self->statement->vdbestatement, arg, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT));
+    PYSQLITE_CUR_CALL(
+        res = sqlite3_bind_blob64(self->statement->vdbestatement, arg, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT));
     PyBuffer_Release(&py3buffer);
   }
   else if (PyObject_TypeCheck(obj, &ZeroBlobBindType) == 1)
   {
-    PYSQLITE_CUR_CALL(res = sqlite3_bind_zeroblob64(self->statement->vdbestatement, arg, ((ZeroBlobBind *)obj)->blobsize));
+    PYSQLITE_CUR_CALL(res
+                      = sqlite3_bind_zeroblob64(self->statement->vdbestatement, arg, ((ZeroBlobBind *)obj)->blobsize));
   }
   else
   {
-    PyErr_Format(PyExc_TypeError, "Bad binding argument type supplied - argument #%d: type %s", (int)(arg + self->bindingsoffset), Py_TypeName(obj));
+    PyErr_Format(PyExc_TypeError, "Bad binding argument type supplied - argument #%d: type %s",
+                 (int)(arg + self->bindingsoffset), Py_TypeName(obj));
     AddTraceBackHere(__FILE__, __LINE__, "Cursor.dobinding", "{s: i, s: O}", "number", arg, "value", obj);
     return -1;
   }
@@ -622,14 +618,18 @@ APSWCursor_dobindings(APSWCursor *self)
   /* there is another statement after this one ... */
   if (statementcache_hasmore(self->statement) && sz - self->bindingsoffset < nargs)
   {
-    PyErr_Format(ExcBindings, "Incorrect number of bindings supplied.  The current statement uses %d and there are only %d left.  Current offset is %d",
+    PyErr_Format(ExcBindings,
+                 "Incorrect number of bindings supplied.  The current statement uses %d and there are only %d left.  "
+                 "Current offset is %d",
                  nargs, (self->bindings) ? sz : 0, (int)(self->bindingsoffset));
     return -1;
   }
   /* no more statements */
   if (!statementcache_hasmore(self->statement) && sz - self->bindingsoffset != nargs)
   {
-    PyErr_Format(ExcBindings, "Incorrect number of bindings supplied.  The current statement uses %d and there are %d supplied.  Current offset is %d",
+    PyErr_Format(ExcBindings,
+                 "Incorrect number of bindings supplied.  The current statement uses %d and there are %d supplied.  "
+                 "Current offset is %d",
                  nargs, (self->bindings) ? sz : 0, (int)(self->bindingsoffset));
     return -1;
   }
@@ -695,7 +695,7 @@ APSWCursor_do_exec_trace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
     bindings = Py_NewRef(Py_None);
   }
 
-  PyObject *vargs[] = {NULL, (PyObject *)self, sqlcmd, bindings};
+  PyObject *vargs[] = { NULL, (PyObject *)self, sqlcmd, bindings };
   retval = PyObject_Vectorcall(exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_DECREF(sqlcmd);
   Py_DECREF(bindings);
@@ -728,7 +728,7 @@ APSWCursor_do_row_trace(APSWCursor *self, PyObject *retval)
 
   assert(rowtrace);
 
-  PyObject *vargs[] = {NULL, (PyObject *)self, retval};
+  PyObject *vargs[] = { NULL, (PyObject *)self, retval };
   return PyObject_Vectorcall(rowtrace, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 }
 
@@ -742,7 +742,8 @@ APSWCursor_step(APSWCursor *self)
   for (;;)
   {
     assert(!PyErr_Occurred());
-    PYSQLITE_CUR_CALL(res = (self->statement->vdbestatement) ? (sqlite3_step(self->statement->vdbestatement)) : (SQLITE_DONE));
+    PYSQLITE_CUR_CALL(res = (self->statement->vdbestatement) ? (sqlite3_step(self->statement->vdbestatement))
+                                                             : (SQLITE_DONE));
 
     switch (res & 0xff)
     {
@@ -830,7 +831,8 @@ APSWCursor_step(APSWCursor *self)
     {
       /* we are going again in executemany mode */
       assert(self->emiter);
-      INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, self->emoriginalquery, &self->emoptions));
+      INUSE_CALL(self->statement
+                 = statementcache_prepare(self->connection->stmtcache, self->emoriginalquery, &self->emoptions));
       res = (self->statement) ? SQLITE_OK : SQLITE_ERROR;
     }
     else
@@ -965,9 +967,8 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
   INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements, &options));
   if (!self->statement)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare_v3", "{s: O, s: O}",
-                     "Connection", self->connection,
-                     "statement", OBJ(statements));
+    AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare_v3", "{s: O, s: O}", "Connection",
+                     self->connection, "statement", OBJ(statements));
     return NULL;
   }
   assert(!PyErr_Occurred());
@@ -1088,9 +1089,8 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
   INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements, &self->emoptions));
   if (!self->statement)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare_v3", "{s: O, s: O}",
-                     "Connection", self->connection,
-                     "statements", OBJ(statements));
+    AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare_v3", "{s: O, s: O}", "Connection",
+                     self->connection, "statements", OBJ(statements));
     return NULL;
   }
   assert(!PyErr_Occurred());
@@ -1597,10 +1597,7 @@ APSWCursor_has_vdbe(APSWCursor *self)
   CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
-  return Py_NewRef(
-      (self->statement && self->statement->vdbestatement)
-          ? Py_True
-          : Py_False);
+  return Py_NewRef((self->statement && self->statement->vdbestatement) ? Py_True : Py_False);
 }
 
 /** .. attribute:: expanded_sql
@@ -1741,83 +1738,72 @@ static PyObject *
 APSWCursor_tp_str(APSWCursor *self)
 {
   return PyUnicode_FromFormat("<apsw.Cursor object from %S at %p>",
-                              self->connection ? (PyObject *)self->connection : apst.closed,
-                              self);
+                              self->connection ? (PyObject *)self->connection : apst.closed, self);
 }
 
 static PyMethodDef APSWCursor_methods[] = {
-    {"execute", (PyCFunction)APSWCursor_execute, METH_FASTCALL | METH_KEYWORDS,
-     Cursor_execute_DOC},
-    {"executemany", (PyCFunction)APSWCursor_executemany, METH_FASTCALL | METH_KEYWORDS,
-     Cursor_executemany_DOC},
-    {"set_exec_trace", (PyCFunction)APSWCursor_set_exec_trace, METH_FASTCALL | METH_KEYWORDS,
-     Cursor_set_exec_trace_DOC},
-    {"set_row_trace", (PyCFunction)APSWCursor_set_row_trace, METH_FASTCALL | METH_KEYWORDS,
-     Cursor_set_row_trace_DOC},
-    {"get_exec_trace", (PyCFunction)APSWCursor_get_exec_trace, METH_NOARGS,
-     Cursor_get_exec_trace_DOC},
-    {"get_row_trace", (PyCFunction)APSWCursor_get_row_trace, METH_NOARGS,
-     Cursor_get_row_trace_DOC},
-    {"get_connection", (PyCFunction)APSWCursor_get_connection, METH_NOARGS,
-     Cursor_get_connection_DOC},
-    {"get_description", (PyCFunction)APSWCursor_get_description, METH_NOARGS,
-     Cursor_get_description_DOC},
-    {"close", (PyCFunction)APSWCursor_close, METH_FASTCALL | METH_KEYWORDS,
-     Cursor_close_DOC},
-    {"fetchall", (PyCFunction)APSWCursor_fetchall, METH_NOARGS,
-     Cursor_fetchall_DOC},
-    {"fetchone", (PyCFunction)APSWCursor_fetchone, METH_NOARGS,
-     Cursor_fetchone_DOC},
+  { "execute", (PyCFunction)APSWCursor_execute, METH_FASTCALL | METH_KEYWORDS, Cursor_execute_DOC },
+  { "executemany", (PyCFunction)APSWCursor_executemany, METH_FASTCALL | METH_KEYWORDS, Cursor_executemany_DOC },
+  { "set_exec_trace", (PyCFunction)APSWCursor_set_exec_trace, METH_FASTCALL | METH_KEYWORDS,
+    Cursor_set_exec_trace_DOC },
+  { "set_row_trace", (PyCFunction)APSWCursor_set_row_trace, METH_FASTCALL | METH_KEYWORDS, Cursor_set_row_trace_DOC },
+  { "get_exec_trace", (PyCFunction)APSWCursor_get_exec_trace, METH_NOARGS, Cursor_get_exec_trace_DOC },
+  { "get_row_trace", (PyCFunction)APSWCursor_get_row_trace, METH_NOARGS, Cursor_get_row_trace_DOC },
+  { "get_connection", (PyCFunction)APSWCursor_get_connection, METH_NOARGS, Cursor_get_connection_DOC },
+  { "get_description", (PyCFunction)APSWCursor_get_description, METH_NOARGS, Cursor_get_description_DOC },
+  { "close", (PyCFunction)APSWCursor_close, METH_FASTCALL | METH_KEYWORDS, Cursor_close_DOC },
+  { "fetchall", (PyCFunction)APSWCursor_fetchall, METH_NOARGS, Cursor_fetchall_DOC },
+  { "fetchone", (PyCFunction)APSWCursor_fetchone, METH_NOARGS, Cursor_fetchone_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
-    {Cursor_set_exec_trace_OLDNAME, (PyCFunction)APSWCursor_set_exec_trace, METH_FASTCALL | METH_KEYWORDS,
-     Cursor_set_exec_trace_OLDDOC},
-    {Cursor_set_row_trace_OLDNAME, (PyCFunction)APSWCursor_set_row_trace, METH_FASTCALL | METH_KEYWORDS,
-     Cursor_set_row_trace_OLDDOC},
-    {Cursor_get_exec_trace_OLDNAME, (PyCFunction)APSWCursor_get_exec_trace, METH_NOARGS,
-     Cursor_get_exec_trace_OLDDOC},
-    {Cursor_get_row_trace_OLDNAME, (PyCFunction)APSWCursor_get_row_trace, METH_NOARGS,
-     Cursor_get_row_trace_OLDDOC},
-    {Cursor_get_connection_OLDNAME, (PyCFunction)APSWCursor_get_connection, METH_NOARGS,
-     Cursor_get_connection_OLDDOC},
-    {Cursor_get_description_OLDNAME, (PyCFunction)APSWCursor_get_description, METH_NOARGS,
-     Cursor_get_description_OLDDOC},
+  { Cursor_set_exec_trace_OLDNAME, (PyCFunction)APSWCursor_set_exec_trace, METH_FASTCALL | METH_KEYWORDS,
+    Cursor_set_exec_trace_OLDDOC },
+  { Cursor_set_row_trace_OLDNAME, (PyCFunction)APSWCursor_set_row_trace, METH_FASTCALL | METH_KEYWORDS,
+    Cursor_set_row_trace_OLDDOC },
+  { Cursor_get_exec_trace_OLDNAME, (PyCFunction)APSWCursor_get_exec_trace, METH_NOARGS, Cursor_get_exec_trace_OLDDOC },
+  { Cursor_get_row_trace_OLDNAME, (PyCFunction)APSWCursor_get_row_trace, METH_NOARGS, Cursor_get_row_trace_OLDDOC },
+  { Cursor_get_connection_OLDNAME, (PyCFunction)APSWCursor_get_connection, METH_NOARGS, Cursor_get_connection_OLDDOC },
+  { Cursor_get_description_OLDNAME, (PyCFunction)APSWCursor_get_description, METH_NOARGS,
+    Cursor_get_description_OLDDOC },
 #endif
-    {0, 0, 0, 0} /* Sentinel */
+  { 0, 0, 0, 0 } /* Sentinel */
 };
 
-static PyGetSetDef APSWCursor_getset[] = {
-    {"description", (getter)APSWCursor_getdescription_dbapi, NULL, Cursor_description_DOC, NULL},
+static PyGetSetDef APSWCursor_getset[]
+    = { { "description", (getter)APSWCursor_getdescription_dbapi, NULL, Cursor_description_DOC, NULL },
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
-    {"description_full", (getter)APSWCursor_get_description_full, NULL, Cursor_description_full_DOC, NULL},
+        { "description_full", (getter)APSWCursor_get_description_full, NULL, Cursor_description_full_DOC, NULL },
 #endif
-    {"is_explain", (getter)APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL},
-    {"is_readonly", (getter)APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL},
-    {"has_vdbe", (getter)APSWCursor_has_vdbe, NULL, Cursor_has_vdbe_DOC, NULL},
-    {"bindings_count", (getter)APSWCursor_bindings_count, NULL, Cursor_bindings_count_DOC, NULL},
-    {"bindings_names", (getter)APSWCursor_bindings_names, NULL, Cursor_bindings_names_DOC, NULL},
-    {"expanded_sql", (getter)APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL},
-    {"exec_trace", (getter)APSWCursor_get_exec_trace_attr, (setter)APSWCursor_set_exec_trace_attr, Cursor_exec_trace_DOC},
-    {Cursor_exec_trace_OLDNAME, (getter)APSWCursor_get_exec_trace_attr, (setter)APSWCursor_set_exec_trace_attr, Cursor_exec_trace_OLDDOC},
-    {"row_trace", (getter)APSWCursor_get_row_trace_attr, (setter)APSWCursor_set_row_trace_attr, Cursor_row_trace_DOC},
-    {Cursor_row_trace_OLDNAME, (getter)APSWCursor_get_row_trace_attr, (setter)APSWCursor_set_row_trace_attr, Cursor_row_trace_OLDDOC},
-    {"connection", (getter)APSWCursor_get_connection_attr, NULL, Cursor_connection_DOC},
-    {"get", (getter)APSWCursor_get, NULL, Cursor_get_DOC},
-    {NULL, NULL, NULL, NULL, NULL}};
+        { "is_explain", (getter)APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL },
+        { "is_readonly", (getter)APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL },
+        { "has_vdbe", (getter)APSWCursor_has_vdbe, NULL, Cursor_has_vdbe_DOC, NULL },
+        { "bindings_count", (getter)APSWCursor_bindings_count, NULL, Cursor_bindings_count_DOC, NULL },
+        { "bindings_names", (getter)APSWCursor_bindings_names, NULL, Cursor_bindings_names_DOC, NULL },
+        { "expanded_sql", (getter)APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL },
+        { "exec_trace", (getter)APSWCursor_get_exec_trace_attr, (setter)APSWCursor_set_exec_trace_attr,
+          Cursor_exec_trace_DOC },
+        { Cursor_exec_trace_OLDNAME, (getter)APSWCursor_get_exec_trace_attr, (setter)APSWCursor_set_exec_trace_attr,
+          Cursor_exec_trace_OLDDOC },
+        { "row_trace", (getter)APSWCursor_get_row_trace_attr, (setter)APSWCursor_set_row_trace_attr,
+          Cursor_row_trace_DOC },
+        { Cursor_row_trace_OLDNAME, (getter)APSWCursor_get_row_trace_attr, (setter)APSWCursor_set_row_trace_attr,
+          Cursor_row_trace_OLDDOC },
+        { "connection", (getter)APSWCursor_get_connection_attr, NULL, Cursor_connection_DOC },
+        { "get", (getter)APSWCursor_get, NULL, Cursor_get_DOC },
+        { NULL, NULL, NULL, NULL, NULL } };
 
 static PyTypeObject APSWCursorType = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = "apsw.Cursor",
-    .tp_basicsize = sizeof(APSWCursor),
-    .tp_dealloc = (destructor)APSWCursor_dealloc,
-    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
-    .tp_doc = Cursor_class_DOC,
-    .tp_traverse = (traverseproc)APSWCursor_tp_traverse,
-    .tp_weaklistoffset = offsetof(APSWCursor, weakreflist),
-    .tp_iter = (getiterfunc)APSWCursor_iter,
-    .tp_iternext = (iternextfunc)APSWCursor_next,
-    .tp_methods = APSWCursor_methods,
-    .tp_getset = APSWCursor_getset,
-    .tp_init = (initproc)APSWCursor_init,
-    .tp_new = APSWCursor_new,
-    .tp_str = (reprfunc)APSWCursor_tp_str,
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Cursor",
+  .tp_basicsize = sizeof(APSWCursor),
+  .tp_dealloc = (destructor)APSWCursor_dealloc,
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+  .tp_doc = Cursor_class_DOC,
+  .tp_traverse = (traverseproc)APSWCursor_tp_traverse,
+  .tp_weaklistoffset = offsetof(APSWCursor, weakreflist),
+  .tp_iter = (getiterfunc)APSWCursor_iter,
+  .tp_iternext = (iternextfunc)APSWCursor_next,
+  .tp_methods = APSWCursor_methods,
+  .tp_getset = APSWCursor_getset,
+  .tp_init = (initproc)APSWCursor_init,
+  .tp_new = APSWCursor_new,
+  .tp_str = (reprfunc)APSWCursor_tp_str,
 };
