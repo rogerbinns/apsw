@@ -21,6 +21,7 @@ from dataclasses import dataclass
 
 from setuptools import setup, Extension, Command
 from setuptools.command import build_ext, sdist
+
 try:
     # current setuptools has build
     from setuptools.command import build
@@ -31,7 +32,7 @@ except ImportError:
 # This is used to find the compiler and flags for building the test extension
 import distutils.ccompiler
 
-include_dirs = ['src']
+include_dirs = ["src"]
 library_dirs = []
 define_macros = []
 libraries = []
@@ -43,6 +44,7 @@ libraries = []
 patch = False
 try:
     import distutils.dist
+
     if hasattr(distutils.dist.Distribution, "find_config_files"):
         patch = True
 except Exception:
@@ -68,7 +70,7 @@ project_urls = {
     "Documentation": "https://rogerbinns.github.io/apsw/",
     "Issue Tracker": "https://github.com/rogerbinns/apsw/issues",
     "Code": "https://github.com/rogerbinns/apsw",
-    "Example": "https://rogerbinns.github.io/apsw/example.html"
+    "Example": "https://rogerbinns.github.io/apsw/example.html",
 }
 
 
@@ -133,7 +135,6 @@ def fixup_download_url(url):
 
 # Run test suite
 class run_tests(Command):
-
     description = "Run test suite"
 
     # I did originally try using 'verbose' as the option but it turns
@@ -145,7 +146,7 @@ class run_tests(Command):
     ]
 
     # see if you can find boolean_options documented anywhere
-    boolean_options = ['show-tests', "locals"]
+    boolean_options = ["show-tests", "locals"]
 
     def initialize_options(self):
         self.show_tests = 0
@@ -157,6 +158,7 @@ class run_tests(Command):
     def run(self):
         import unittest
         import apsw.tests
+
         apsw.tests.setup()
         suite = unittest.TestLoader().loadTestsFromModule(apsw.tests)
         # verbosity of zero doesn't print anything, one prints a dot
@@ -185,7 +187,7 @@ class build_test_extension(Command):
             return sysconfig.get_config_var(n)
 
         # unixy platforms have this, and is necessary to match the 32/64 bitness of Python itself
-        if v('CC'):
+        if v("CC"):
             cc = f"{ v('CC') } { v('CFLAGS') } { v('CCSHARED') } -Isqlite3 -c src/testextension.c"
             ld = f"{ v('LDSHARED') } testextension.o -o { name }"
 
@@ -227,8 +229,8 @@ class fetch(Command):
         ("sqlite", None, "Download SQLite amalgamation"),
         ("all", None, "Download all downloadable components"),
     ]
-    fetch_options = ['sqlite']
-    boolean_options = fetch_options + ['all', 'missing-checksum-ok']
+    fetch_options = ["sqlite"]
+    boolean_options = fetch_options + ["all", "missing-checksum-ok"]
 
     def initialize_options(self):
         self.version = None
@@ -251,7 +253,7 @@ class fetch(Command):
         if self.version == "latest":
             write("  Getting download page to work out latest SQLite version")
             page = self.download("https://sqlite.org/download.html", text=True, checksum=False)
-            match = re.search(r'sqlite-amalgamation-3([0-9][0-9])([0-9][0-9])([0-9][0-9])\.zip', page)
+            match = re.search(r"sqlite-amalgamation-3([0-9][0-9])([0-9][0-9])([0-9][0-9])\.zip", page)
             if match:
                 self.version = "3.%d.%d.%d" % tuple([int(match.group(n)) for n in range(1, 4)])
                 assert self.version.endswith(".0")  # sqlite doesn't use last component so we do now
@@ -273,7 +275,7 @@ class fetch(Command):
         if self.sqlite:
             write("  Getting the SQLite amalgamation")
 
-            AURL = "https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (self.webversion, )
+            AURL = "https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (self.webversion,)
 
             AURL = fixup_download_url(AURL)
 
@@ -284,11 +286,12 @@ class fetch(Command):
             sqlite3config_h = None
             if os.path.exists("sqlite3/sqlite3config.h"):
                 sqlite3config_h = read_whole_file("sqlite3/sqlite3config.h", "rt")
-            if os.path.exists('sqlite3'):
+            if os.path.exists("sqlite3"):
                 shutil.rmtree("sqlite3")
             # if you get an exception here it is likely that you don't have the python zlib module
             import zlib
-            tar = tarfile.open("nonexistentname to keep old python happy", 'r', data)
+
+            tar = tarfile.open("nonexistentname to keep old python happy", "r", data)
             configmember = None
             kwargs = {}
             if sys.version_info >= (3, 11, 4):
@@ -303,10 +306,10 @@ class fetch(Command):
             if not configmember:
                 write("Unable to determine directory it extracted to.", dest=sys.stderr)
                 sys.exit(19)
-            dirname = configmember.name.split('/')[0]
-            os.rename(dirname, 'sqlite3')
+            dirname = configmember.name.split("/")[0]
+            os.rename(dirname, "sqlite3")
             if sys.platform != "win32":
-                os.chdir('sqlite3')
+                os.chdir("sqlite3")
                 write("    Running configure to work out SQLite compilation flags")
                 res = os.system("./configure >/dev/null")
                 defline = None
@@ -315,17 +318,19 @@ class fetch(Command):
                         defline = line
                         break
                 if not defline:
-                    write("Unable to determine compile flags.  Create sqlite3/sqlite3config.h to manually set.",
-                          sys.stderr)
+                    write(
+                        "Unable to determine compile flags.  Create sqlite3/sqlite3config.h to manually set.",
+                        sys.stderr,
+                    )
                     sys.exit(18)
                 defs = []
                 for part in shlex.split(defline):
                     if part.startswith("-DHAVE"):
                         part = part[2:]
-                        if '=' in part:
-                            part = part.split('=', 1)
+                        if "=" in part:
+                            part = part.split("=", 1)
                         else:
-                            part = (part, )
+                            part = (part,)
                         defs.append(part)
                 if res != 0:
                     raise ValueError("Command execution failed")
@@ -338,7 +343,7 @@ class fetch(Command):
     \n""")
 
                     for define in defs:
-                        op.write('#define %s %s\n' % tuple(define))
+                        op.write("#define %s %s\n" % tuple(define))
                     op.close()
                 os.chdir("..")
             downloaded += 1
@@ -351,8 +356,9 @@ class fetch(Command):
 
     # A function for verifying downloads
     def verifyurl(self, url, data):
-        d = ["%s" % (len(data), )]
+        d = ["%s" % (len(data),)]
         import hashlib
+
         d.append(hashlib.sha256(data).hexdigest())
         d.append(hashlib.sha3_256(data).hexdigest())
 
@@ -376,10 +382,12 @@ class fetch(Command):
                     write("SHA256 does not match.  Expected", l[2], "download was", d[1])
                 if l[3] != d[2]:
                     write("SHA3_256 does not match.  Expected", l[3], "download was", d[2])
-                write("The download does not match the checksums distributed with APSW.\n"
-                      "The download should not have changed since the checksums were\n"
-                      "generated.  The cause could be anything from network corruption\n"
-                      "to a malicious attack.")
+                write(
+                    "The download does not match the checksums distributed with APSW.\n"
+                    "The download should not have changed since the checksums were\n"
+                    "generated.  The cause could be anything from network corruption\n"
+                    "to a malicious attack."
+                )
                 raise ValueError("Checksums do not match")
         # no matching line
         write("    (Not verified.  No match in checksums file)")
@@ -389,8 +397,10 @@ class fetch(Command):
     # download a url
     def download(self, url, text=False, checksum=True):
         import urllib.request
+
         urlopen = urllib.request.urlopen
         import io
+
         bytesio = io.BytesIO
 
         write("    Fetching", url)
@@ -438,12 +448,12 @@ bparent = build.build
 
 
 class apsw_build(bparent):
-    user_options=bparent.user_options+\
-                  [ ("enable=", None, "Enable SQLite options (comma separated list)"),
-                    ("omit=", None, "Omit SQLite functionality (comma separated list)"),
-                    ("enable-all-extensions", None, "Enable all SQLite extensions"),
-                    ("fetch", None, "Fetches SQLite for pypi based build"),
-                    ]
+    user_options = bparent.user_options + [
+        ("enable=", None, "Enable SQLite options (comma separated list)"),
+        ("omit=", None, "Omit SQLite functionality (comma separated list)"),
+        ("enable-all-extensions", None, "Enable all SQLite extensions"),
+        ("fetch", None, "Fetches SQLite for pypi based build"),
+    ]
     boolean_options = bparent.boolean_options + ["enable-all-extensions", "fetch"]
 
     def __init__(self, dist):
@@ -473,8 +483,10 @@ class apsw_build(bparent):
 
 
 def findamalgamation():
-    amalgamation = (os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3.c"),
-                    os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3", "sqlite3.c"))
+    amalgamation = (
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3.c"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3", "sqlite3.c"),
+    )
     for path in amalgamation:
         if os.path.exists(path):
             return path
@@ -498,17 +510,22 @@ beparent = build_ext.build_ext
 
 
 class apsw_build_ext(beparent):
-
-    user_options=beparent.user_options+\
-                  [ ("enable=", None, "Enable SQLite options (comma separated list)"),
-                    ("omit=", None, "Omit SQLite functionality (comma separated list)"),
-                    ("enable-all-extensions", None, "Enable all SQLite extensions"),
-                    ("use-system-sqlite-config", None, "Uses system SQLite library config (enabled/omitted APIs etc)"),
-                    ("definevalues=", None, "Additional defines eg --definevalues SQLITE_MAX_ATTACHED=37,SQLITE_EXTRA_INIT=mycore_init"),
-                    ("apsw-no-old-names", None, "Old non-PEP8 names are excluded")
-                    ]
+    user_options = beparent.user_options + [
+        ("enable=", None, "Enable SQLite options (comma separated list)"),
+        ("omit=", None, "Omit SQLite functionality (comma separated list)"),
+        ("enable-all-extensions", None, "Enable all SQLite extensions"),
+        ("use-system-sqlite-config", None, "Uses system SQLite library config (enabled/omitted APIs etc)"),
+        (
+            "definevalues=",
+            None,
+            "Additional defines eg --definevalues SQLITE_MAX_ATTACHED=37,SQLITE_EXTRA_INIT=mycore_init",
+        ),
+        ("apsw-no-old-names", None, "Old non-PEP8 names are excluded"),
+    ]
     boolean_options = beparent.boolean_options + [
-        "enable-all-extensions", "use-system-sqlite-config", "apsw-no-old-names"
+        "enable-all-extensions",
+        "use-system-sqlite-config",
+        "apsw-no-old-names",
     ]
 
     def initialize_options(self):
@@ -526,8 +543,16 @@ class apsw_build_ext(beparent):
 
         if self.enable_all_extensions:
             exts = [
-                "fts4", "fts3", "fts3_parenthesis", "rtree", "stat4", "fts5", "rbu", "geopoly",
-                "math_functions", "dbstat_vtab",
+                "fts4",
+                "fts3",
+                "fts3_parenthesis",
+                "rtree",
+                "stat4",
+                "fts5",
+                "rbu",
+                "geopoly",
+                "math_functions",
+                "dbstat_vtab",
             ]
             if not self.omit or "icu" not in self.omit.split(","):
                 if get_icu_config():
@@ -539,11 +564,16 @@ class apsw_build_ext(beparent):
 
         ext = self.extensions[0]
 
-        if not ext.define_macros: ext.define_macros = []
-        if not ext.depends: ext.depends = []
-        if not ext.include_dirs: ext.include_dirs = []
-        if not ext.library_dirs: ext.library_dirs = []
-        if not ext.libraries: ext.libraries = []
+        if not ext.define_macros:
+            ext.define_macros = []
+        if not ext.depends:
+            ext.depends = []
+        if not ext.include_dirs:
+            ext.include_dirs = []
+        if not ext.library_dirs:
+            ext.library_dirs = []
+        if not ext.libraries:
+            ext.libraries = []
 
         if self.apsw_no_old_names:
             ext.define_macros.append(("APSW_OMIT_OLD_NAMES", "1"))
@@ -560,22 +590,22 @@ class apsw_build_ext(beparent):
         # Fixup debug setting
         if self.debug:
             # distutils forces NDEBUG even with --debug so overcome that
-            ext.define_macros.append(('APSW_NO_NDEBUG', '1'))  # double negatives are bad
-            ext.define_macros.append(('APSW_TESTFIXTURES', '1'))  # extra test harness code
-            ext.define_macros.append(('SQLITE_DEBUG', '1'))  # also does NDEBUG mangling
+            ext.define_macros.append(("APSW_NO_NDEBUG", "1"))  # double negatives are bad
+            ext.define_macros.append(("APSW_TESTFIXTURES", "1"))  # extra test harness code
+            ext.define_macros.append(("SQLITE_DEBUG", "1"))  # also does NDEBUG mangling
         else:
-            ext.define_macros.append(('NDEBUG', '1'))
+            ext.define_macros.append(("NDEBUG", "1"))
 
         # fork checker?
         if hasattr(os, "fork"):
-            ext.define_macros.append(('APSW_FORK_CHECKER', '1'))
+            ext.define_macros.append(("APSW_FORK_CHECKER", "1"))
 
         # SQLite 3
         # Look for amalgamation in sqlite3 subdirectory
 
         path = findamalgamation()
         if path:
-            ext.define_macros.append(('APSW_USE_SQLITE_AMALGAMATION', '1'))
+            ext.define_macros.append(("APSW_USE_SQLITE_AMALGAMATION", "1"))
             # we also add the directory to include path since icu tries to use it
             ext.include_dirs.insert(0, os.path.dirname(path))
             write("SQLite: Using amalgamation", path)
@@ -593,13 +623,13 @@ class apsw_build_ext(beparent):
                 write("SQLite: Using system sqlite include/libraries")
             if inc:
                 ext.include_dirs.insert(0, sqlite3_dir)
-            ext.libraries.append('sqlite3')
+            ext.libraries.append("sqlite3")
 
         # sqlite3config.h is generated by running configure (optional) or --use-system-sqlite-config
         s3config = os.path.join(ext.include_dirs[0], "sqlite3config.h")
         if os.path.exists(s3config):
             write(f"SQLite: Using generated { s3config }")
-            ext.define_macros.append(('APSW_USE_SQLITE_CONFIG', '1'))
+            ext.define_macros.append(("APSW_USE_SQLITE_CONFIG", "1"))
 
         # enables
         addicuinclib = False
@@ -617,11 +647,26 @@ class apsw_build_ext(beparent):
                 # options - see https://sqlite.org/compile.html but almost
                 # all of those have _ in them, so our abbreviated and
                 # hopefully future proof test
-                if "_" not in e.lower() and \
-                       "memsys" not in e.lower() and \
-                       e.lower() not in ("fts4", "fts3", "rtree", "icu", "iotrace",
-                                         "stat2", "stat3", "stat4", "dbstat_vtab",
-                                         "fts5", "json1", "rbu", "geopoly"):
+                if (
+                    "_" not in e.lower()
+                    and "memsys" not in e.lower()
+                    and e.lower()
+                    not in (
+                        "fts4",
+                        "fts3",
+                        "rtree",
+                        "icu",
+                        "iotrace",
+                        "stat2",
+                        "stat3",
+                        "stat4",
+                        "dbstat_vtab",
+                        "fts5",
+                        "json1",
+                        "rbu",
+                        "geopoly",
+                    )
+                ):
                     write("Unknown enable " + e, sys.stderr)
                     raise ValueError("Bad enable " + e)
 
@@ -642,10 +687,10 @@ class apsw_build_ext(beparent):
                         ext.include_dirs.append(part[2:])
                     elif part.startswith("-D"):
                         part = part[2:]
-                        if '=' in part:
-                            part = tuple(part.split('=', 1))
+                        if "=" in part:
+                            part = tuple(part.split("=", 1))
                         else:
-                            part = (part, '1')
+                            part = (part, "1")
                         ext.define_macros.append(part)
 
                 for part in shlex.split(icc.ldflags, **kwargs):
@@ -671,7 +716,6 @@ sparent = sdist.sdist
 
 
 class apsw_sdist(sparent):
-
     user_options = sparent.user_options + [
         ("add-doc", None, "Includes built documentation from doc/build/html into source"),
         ("for-pypi", None, "Configure for pypi distribution"),
@@ -694,7 +738,7 @@ class apsw_sdist(sparent):
         v = sparent.run(self)
 
         if self.add_doc:
-            if len(list(help_walker(''))) < 20:
+            if len(list(help_walker(""))) < 20:
                 raise Exception("The help is not built")
             for archive in self.get_archive_files():
                 add_doc(archive, self.distribution.get_fullname())
@@ -767,7 +811,7 @@ def help_walker(arcdir):
     assert os.path.isfile("doc/build/html/_sources/about.rst.txt")
     topdir = "doc/build/html/"
     for dirpath, _, filenames in os.walk(topdir):
-        prefix = dirpath[len(topdir):]
+        prefix = dirpath[len(topdir) :]
         for f in filenames:
             yield os.path.join(arcdir, "doc", prefix, f), os.path.join(dirpath, f)
 
@@ -827,46 +871,54 @@ def get_icu_config() -> IcuConfig | None:
 # We depend on every .[ch] file in src except unicode
 depends = [f for f in glob.glob("src/*.[ch]") if f != "src/apsw.c" and "unicode" not in f]
 
-if __name__ == '__main__':
-    setup(name="apsw",
-          version=version,
-          python_requires=">=3.9",
-          description="Another Python SQLite Wrapper",
-          long_description=pathlib.Path("README.rst").read_text(encoding="utf8"),
-          long_description_content_type="text/x-rst",
-          author="Roger Binns",
-          author_email="rogerb@rogerbinns.com",
-          url="https://github.com/rogerbinns/apsw",
-          project_urls=project_urls,
-          classifiers=[
-              "Development Status :: 5 - Production/Stable",
-              "Intended Audience :: Developers",
-              "License :: OSI Approved",
-              "Programming Language :: C",
-              "Programming Language :: Python :: 3",
-              "Topic :: Database :: Front-Ends",
-          ],
-          keywords=["database", "sqlite"],
-          license="OSI Approved",
-          platforms="any",
-          ext_modules=[
-              Extension("apsw.__init__", ["src/apsw.c"],
-                        include_dirs=include_dirs,
-                        library_dirs=library_dirs,
-                        libraries=libraries,
-                        define_macros=define_macros,
-                        depends=depends),
-              Extension("apsw._unicode", ["src/unicode.c"],
-                        depends=["src/_unicodedb.c"],
-                        undef_macros = [ "NDEBUG" ] if os.environ.get("UNICODE_DEBUG") else []),
-              ],
-          packages=["apsw"],
-          package_data={"apsw": ["__init__.pyi", "py.typed", "fts_test_strings"]},
-          cmdclass={
-              'test': run_tests,
-              'build_test_extension': build_test_extension,
-              'fetch': fetch,
-              'build_ext': apsw_build_ext,
-              'build': apsw_build,
-              'sdist': apsw_sdist,
-          })
+if __name__ == "__main__":
+    setup(
+        name="apsw",
+        version=version,
+        python_requires=">=3.9",
+        description="Another Python SQLite Wrapper",
+        long_description=pathlib.Path("README.rst").read_text(encoding="utf8"),
+        long_description_content_type="text/x-rst",
+        author="Roger Binns",
+        author_email="rogerb@rogerbinns.com",
+        url="https://github.com/rogerbinns/apsw",
+        project_urls=project_urls,
+        classifiers=[
+            "Development Status :: 5 - Production/Stable",
+            "Intended Audience :: Developers",
+            "License :: OSI Approved",
+            "Programming Language :: C",
+            "Programming Language :: Python :: 3",
+            "Topic :: Database :: Front-Ends",
+        ],
+        keywords=["database", "sqlite"],
+        license="OSI Approved",
+        platforms="any",
+        ext_modules=[
+            Extension(
+                "apsw.__init__",
+                ["src/apsw.c"],
+                include_dirs=include_dirs,
+                library_dirs=library_dirs,
+                libraries=libraries,
+                define_macros=define_macros,
+                depends=depends,
+            ),
+            Extension(
+                "apsw._unicode",
+                ["src/unicode.c"],
+                depends=["src/_unicodedb.c"],
+                undef_macros=["NDEBUG"] if os.environ.get("UNICODE_DEBUG") else [],
+            ),
+        ],
+        packages=["apsw"],
+        package_data={"apsw": ["__init__.pyi", "py.typed", "fts_test_strings"]},
+        cmdclass={
+            "test": run_tests,
+            "build_test_extension": build_test_extension,
+            "fetch": fetch,
+            "build_ext": apsw_build_ext,
+            "build": apsw_build,
+            "sdist": apsw_sdist,
+        },
+    )
