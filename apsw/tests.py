@@ -5653,6 +5653,9 @@ class APSW(unittest.TestCase):
                     "close_internal",
                     "tp_traverse",
                     "tp_str",
+                    "get_description",
+                    "get_description_full",
+                    "getdescription_dbapi",
                 ),
                 "req": {
                     "use": "CHECK_USE",
@@ -5727,6 +5730,7 @@ class APSW(unittest.TestCase):
             },
             "apswfcntl": {"req": {}},
             "apswurifilename": {"req": {"check": "CHECK_SCOPE"}},
+            "connection": {"req": {}},
             "APSWFTS5ExtensionApi": {"req": {"check": "FTSEXT_CHECK"}},
             # these are in unicode.c and don't have any requirements
             "ToUtf8PositionMapper": {
