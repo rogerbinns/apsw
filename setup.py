@@ -549,7 +549,6 @@ class apsw_build_ext(beparent):
                 "rtree",
                 "stat4",
                 "fts5",
-                "rbu",
                 "geopoly",
                 "math_functions",
                 "dbstat_vtab",
