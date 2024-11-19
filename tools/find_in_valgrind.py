@@ -51,5 +51,5 @@ def process_file(name: str) -> None:
                 has_output = True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     process_file(sys.argv[1])

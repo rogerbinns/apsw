@@ -74,8 +74,7 @@ def genfile(symbols):
 
 returns = {
     # return a pointer, NULL on failure
-    "pointer":
-    """
+    "pointer": """
             convert_value_to_pyobject convert_column_to_pyobject  allocfunccbinfo
             apsw_strdup convertutf8string MakeExistingException get_window_function_context
 
@@ -101,8 +100,7 @@ returns = {
             sqlite3_normalized_sql sqlite3_expanded_sql
             """.split(),
     # numeric return
-    "sqlite":
-    """
+    "sqlite": """
             sqlite3_aggregate_context sqlite3_autovacuum_pages
             sqlite3_backup_finish sqlite3_backup_init
             sqlite3_backup_step sqlite3_bind_blob sqlite3_bind_blob64
@@ -139,8 +137,7 @@ returns = {
             sqlite3_prepare
             """.split(),
     # py functions that return a number to indicate failure
-    "number":
-    """
+    "number": """
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
         PyLong_AsLongLong PyList_Append PyDict_SetItemString
         PyObject_SetAttr _PyBytes_Resize PyDict_SetItem PyList_SetSlice
@@ -152,8 +149,8 @@ returns = {
 
         connection_trace_and_exec getfunctionargs
         """.split(),
-        # PyBuffer_IsContiguous is on an error path although the
-        # function itself can't error
+    # PyBuffer_IsContiguous is on an error path although the
+    # function itself can't error
 }
 
 # some calls like Py_BuildValue are #defined to _Py_BuildValue_SizeT
@@ -176,7 +173,8 @@ for k, v in returns.items():
                 seen.add(val)
 
 # these don't provide meaning for fault injection
-no_error = set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemString PyErr_Clear
+no_error = set(
+    """PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemString PyErr_Clear
     PyErr_Display PyErr_Fetch PyErr_Format PyErr_NoMemory PyErr_NormalizeException
     PyErr_Occurred PyErr_Print PyErr_Restore PyErr_SetObject PyEval_RestoreThread
     PyEval_SaveThread PyGILState_Ensure PyGILState_Release PyOS_snprintf
@@ -184,17 +182,20 @@ no_error = set("""PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemStrin
     PyThreadState_Get PyThread_get_thread_ident PyTraceBack_Here
     PyType_IsSubtype PyUnicode_CopyCharacters  _Py_Dealloc
     _Py_HashBytes _Py_NegativeRefcount _Py_RefTotal PyThreadState_GetFrame
-""".split())
+""".split()
+)
 
 # these could error but are only used in a small number of places where
 # errors are already dealt with
-no_error.update("""PyArg_ParseTuple PyBytes_AsString PyErr_GivenExceptionMatches PyFrame_GetBack
+no_error.update(
+    """PyArg_ParseTuple PyBytes_AsString PyErr_GivenExceptionMatches PyFrame_GetBack
     PyImport_ImportModule PyLong_AsLongAndOverflow PyLong_AsVoidPtr
     PyObject_IsInstance PySys_GetObject PyErr_ExceptionMatches
     PyErr_SetString PyStructSequence_SetItem PyObject_Print Py_EnterRecursiveCall
     Py_GetRecursionLimit Py_LeaveRecursiveCall Py_SetRecursionLimit _PyErr_ChainExceptions
 
-""".split())
+""".split()
+)
 
 
 def check_dll(fname, all):
@@ -214,8 +215,14 @@ def check_dll(fname, all):
             else:
                 1 / 0
 
-        if (sym in all or sym in no_error or sym.endswith("_Check") or sym.endswith("_Type") or sym.endswith("Struct")
-                or sym.startswith("PyExc_")):
+        if (
+            sym in all
+            or sym in no_error
+            or sym.endswith("_Check")
+            or sym.endswith("_Type")
+            or sym.endswith("Struct")
+            or sym.startswith("PyExc_")
+        ):
             continue
 
         not_seen.add(sym)
@@ -224,7 +231,7 @@ def check_dll(fname, all):
     print(len(not_seen), "items")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     all = set()
     for v in returns.values():
         all.update(v)

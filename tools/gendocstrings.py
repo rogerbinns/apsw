@@ -200,7 +200,7 @@ def classify(doc: list[str]) -> dict | None:
                     lines.append(f"{ indent }  * `{ call } <{ funclist[call] }>`__\n")
             else:
                 lines = [f"{ indent }Calls: `{ calls[0] } <{ funclist[calls[0]] }>`__\n"]
-            doc[n:n + len(lines)] = lines
+            doc[n : n + len(lines)] = lines
         n += 1
 
     symbol = make_symbol(f"{ name }.class" if kind == "class" else name)
@@ -211,7 +211,7 @@ def classify(doc: list[str]) -> dict | None:
         "signature_original": signature,
         "signature": analyze_signature(signature) if signature else [],
         "doc": doc,
-        "skip_docstring": name in docstrings_skip or name.split(".")[0] in virtual_table_classes
+        "skip_docstring": name in docstrings_skip or name.split(".")[0] in virtual_table_classes,
     }
 
 
@@ -223,11 +223,10 @@ def make_symbol(n: str) -> str:
 
 
 def cppsafe(lines: list[str], eol: str) -> str:
-
     def backslash(l: str) -> str:
         return l.replace('"', '\\"').replace("\n", "\\n")
 
-    res = "\n".join(f'''"{ backslash(line) }"{ eol }''' for line in lines)
+    res = "\n".join(f""""{ backslash(line) }"{ eol }""" for line in lines)
     res = res.strip().strip("\\").strip()
     return res
 
@@ -239,7 +238,7 @@ def fixup(item: dict, eol: str) -> str:
         # cpython can't handle the arg or return type info
         sig = simple_signature(item["signature"])
         func = item["name"].split(".")[1]
-        lines = [f'''{ func }{ sig }\n--\n\n{ item["name"] }{ item["signature_original"] }\n\n'''] + lines
+        lines = [f"""{ func }{ sig }\n--\n\n{ item["name"] }{ item["signature_original"] }\n\n"""] + lines
 
     return cppsafe(lines, eol)
 
@@ -252,7 +251,7 @@ def simple_signature(signature: list[dict]) -> str:
             continue
         p = param["name"]
         if param["default"]:
-            p += (f"={ param['default'] }")
+            p += f"={ param['default'] }"
         res.append(p)
     return "(" + ",".join(res) + ")"
 
@@ -303,7 +302,7 @@ def analyze_signature(s: str) -> list[dict]:
             nesting -= 1
             continue
 
-        if c == ',':
+        if c == ",":
             assert name
             add_param()
             skip_to_next = False
@@ -351,7 +350,7 @@ def check_and_update_file(filename: str, symbol: str, code: str) -> None:
     else:
         raise ValueError(f"{ symbol } not found in { filename }")
 
-    lines = lines[:lineopen] + code.split("\n") + lines[lineclose + 1:]
+    lines = lines[:lineopen] + code.split("\n") + lines[lineclose + 1 :]
 
     new = "\n".join(lines)
     if not new.endswith("\n"):
@@ -368,42 +367,19 @@ def replace_if_different(filename: str, contents: str) -> None:
 # Python 'int' can be different C sizes (int32, int64 etc) so we override with more
 # specific types here
 type_overrides = {
-    "apsw.soft_heap_limit": {
-        "limit": "int64"
-    },
-    "apsw.hard_heap_limit": {
-        "limit": "int64"
-    },
-    "Blob.read_into": {
-        "buffer": "PyObject",
-        "offset": "int64",
-        "length": "int64"
-    },
-    "Blob.reopen": {
-        "rowid": "int64"
-    },
-    "Connection.blob_open": {
-        "rowid": "int64"
-    },
-    "Connection.drop_modules": {
-        "keep": "PyObject"
-    },
-    "Connection.file_control": {
-        "pointer": "pointer"
-    },
+    "apsw.soft_heap_limit": {"limit": "int64"},
+    "apsw.hard_heap_limit": {"limit": "int64"},
+    "Blob.read_into": {"buffer": "PyObject", "offset": "int64", "length": "int64"},
+    "Blob.reopen": {"rowid": "int64"},
+    "Connection.blob_open": {"rowid": "int64"},
+    "Connection.drop_modules": {"keep": "PyObject"},
+    "Connection.file_control": {"pointer": "pointer"},
     "Connection.read": {
         "offset": "int64",
     },
-    "Connection.set_last_insert_rowid": {
-        "rowid": "int64"
-    },
-    "Cursor.execute": {
-        "statements": "strtype"
-    },
-    "Cursor.executemany": {
-        "statements": "strtype",
-        "sequenceofbindings": "Sequence"
-    },
+    "Connection.set_last_insert_rowid": {"rowid": "int64"},
+    "Cursor.execute": {"statements": "strtype"},
+    "Cursor.executemany": {"statements": "strtype", "sequenceofbindings": "Sequence"},
     "FTS5ExtensionApi.tokenize": {
         "locale": "utf8_and_size_or_none",
     },
@@ -413,40 +389,19 @@ type_overrides = {
     "URIFilename.uri_int": {
         "default": "int64",
     },
-    "VFSFile.__init__": {
-        "filename": "PyObject",
-        "flags": "list[int,int]"
-    },
-    "VFSFile.xFileControl": {
-        "ptr": "pointer"
-    },
-    "VFSFile.xRead": {
-        "offset": "int64"
-    },
-    "VFSFile.xTruncate": {
-        "newsize": "int64"
-    },
-    "VFSFile.xWrite": {
-        "offset": "int64"
-    },
+    "VFSFile.__init__": {"filename": "PyObject", "flags": "list[int,int]"},
+    "VFSFile.xFileControl": {"ptr": "pointer"},
+    "VFSFile.xRead": {"offset": "int64"},
+    "VFSFile.xTruncate": {"newsize": "int64"},
+    "VFSFile.xWrite": {"offset": "int64"},
     "VFSFcntlPragma.__init__": {
         "pointer": "pointer",
     },
-    "VFS.xDlClose": {
-        "handle": "pointer"
-    },
-    "VFS.xDlSym": {
-        "handle": "pointer"
-    },
-    "VFS.xSetSystemCall": {
-        "pointer": "pointer"
-    },
-    "VFS.xOpen": {
-        "flags": "list[int,int]"
-    },
-    "zeroblob.__init__": {
-        "size": "int64"
-    },
+    "VFS.xDlClose": {"handle": "pointer"},
+    "VFS.xDlSym": {"handle": "pointer"},
+    "VFS.xSetSystemCall": {"pointer": "pointer"},
+    "VFS.xOpen": {"flags": "list[int,int]"},
+    "zeroblob.__init__": {"size": "int64"},
 }
 
 
@@ -458,21 +413,21 @@ def callable_erasure(f, token="Callable"):
     rest = f
     while token in rest:
         idx = rest.index(token)
-        res += rest[:idx + len(token)]
-        rest = rest[idx + len(token):]
+        res += rest[: idx + len(token)]
+        rest = rest[idx + len(token) :]
 
         c = rest[0]
-        if c == ']':  # no type to erase
+        if c == "]":  # no type to erase
             continue
-        assert c == '[', f"expected [ at '{ rest }' processing '{ f }'"
+        assert c == "[", f"expected [ at '{ rest }' processing '{ f }'"
         nesting = 1
         rest = rest[1:]
         while nesting:
             c = rest[0]
             rest = rest[1:]
-            if c == '[':
+            if c == "[":
                 nesting += 1
-            elif c == ']':
+            elif c == "]":
                 nesting -= 1
                 if not nesting:
                     break
@@ -484,7 +439,7 @@ def callable_erasure(f, token="Callable"):
 def do_argparse(item):
     for param in item["signature"]:
         try:
-            param["type"] = type_overrides[item['name']][param["name"]]
+            param["type"] = type_overrides[item["name"]][param["name"]]
         except KeyError:
             pass
         if param["name"] != "*" and not param["type"]:
@@ -544,9 +499,9 @@ def do_argparse(item):
             kind = "int"
             if param["default"]:
                 try:
-                    val = int(param['default'])
+                    val = int(param["default"])
                 except ValueError:
-                    val = param['default'].replace("apsw.", "")
+                    val = param["default"].replace("apsw.", "")
                 default_check = f"{ pname } == ({ val })"
         elif param["type"] == "int64":
             type = "long long"
@@ -560,9 +515,14 @@ def do_argparse(item):
                 breakpoint()
                 pass
         elif param["type"] in {
-                "PyObject", "Any", "Optional[type[BaseException]]", "Optional[BaseException]",
-                "Optional[types.TracebackType]", "Optional[VTModule]", "Optional[SQLiteValue]",
-                "Optional[Any]"
+            "PyObject",
+            "Any",
+            "Optional[type[BaseException]]",
+            "Optional[BaseException]",
+            "Optional[types.TracebackType]",
+            "Optional[VTModule]",
+            "Optional[SQLiteValue]",
+            "Optional[Any]",
         }:
             type = "PyObject *"
             kind = "pyobject"
@@ -584,15 +544,15 @@ def do_argparse(item):
                     breakpoint()
                 default_check = f"{ pname } == NULL"
         elif callable_erasure(param["type"]) in {
-                "Optional[Callable]",
-                "Optional[RowTracer]",
-                "Optional[ExecTracer]",
-                "Optional[ScalarProtocol]",
-                "Optional[AggregateFactory]",
-                "Optional[Authorizer]",
-                "Optional[CommitHook]",
-                "Optional[WindowFactory]",
-                "Optional[FTS5TokenizerFactory]",
+            "Optional[Callable]",
+            "Optional[RowTracer]",
+            "Optional[ExecTracer]",
+            "Optional[ScalarProtocol]",
+            "Optional[AggregateFactory]",
+            "Optional[Authorizer]",
+            "Optional[CommitHook]",
+            "Optional[WindowFactory]",
+            "Optional[FTS5TokenizerFactory]",
         }:
             # the above are all callables and we don't check beyond that
             type = "PyObject *"
@@ -617,7 +577,10 @@ def do_argparse(item):
                 else:
                     breakpoint()
                 pass
-        elif param["type"] in {"FTS5TokenizerFactory", "FTS5Function", "FTS5QueryPhrase"} or callable_erasure(param["type"]) == "Callable":
+        elif (
+            param["type"] in {"FTS5TokenizerFactory", "FTS5Function", "FTS5QueryPhrase"}
+            or callable_erasure(param["type"]) == "Callable"
+        ):
             type = "PyObject *"
             kind = "Callable"
             if param["default"]:
@@ -672,21 +635,25 @@ def do_argparse(item):
             res.append(f"  assert({ default_check }); \\")
 
         mandatory = "ARG_MANDATORY " if not seen_star else "ARG_OPTIONAL "
-        code += (f"    { mandatory }ARG_{ kind }({ pname });\n")
+        code += f"    { mandatory }ARG_{ kind }({ pname });\n"
 
     res.append("} while(0)\n")
     if max_pos is None:
         max_pos = len(kwlist)
     is_init = item["symbol"].endswith("_init")
-    code = f"""\
+    code = (
+        f"""\
   {{
     { item['symbol'] }_CHECK;
     { "PREVENT_INIT_MULTIPLE_CALLS;" if is_init else "" }
     { "ARG_CONVERT_VARARGS_TO_FASTCALL;" if is_init else "" }
     ARG_PROLOG({ max_pos}, { item['symbol'] }_KWNAMES);
-""" + code + f"""
+"""
+        + code
+        + f"""
     ARG_EPILOG({ "NULL" if not is_init else -1 }, { item['symbol'] }_USAGE,{ " Py_XDECREF(fast_kwnames)" if is_init else " " });
   }}"""
+    )
 
     code = "\n".join(line for line in code.split("\n") if line.strip())
 
@@ -757,10 +724,10 @@ def generate_typestubs(items: list[dict]) -> None:
             # these end up in an unhelpful place in the sort order
             continue
 
-        klass, name = item['name'].split(".", 1)
+        klass, name = item["name"].split(".", 1)
         signature = item["signature_original"]
         if klass == "apsw":
-            name = item["name"][len("apsw."):]
+            name = item["name"][len("apsw.") :]
             if item["kind"] == "method":
                 assert signature.startswith("(")
                 print(f"{ baseindent }def { name }{ signature }:", file=out)
@@ -830,11 +797,13 @@ def generate_typestubs(items: list[dict]) -> None:
             continue
         mi = get_mapping_info(n)
         print(f"{ n }: dict[str | int, int | str]", file=out)
-        print(f'''"""{ mi["title"] } mapping names to int and int to names.
+        print(
+            f'''"""{ mi["title"] } mapping names to int and int to names.
 Doc at { mi["url"] }
 
 { wrapvals(mi["members"]) }"""''',
-              file=out)
+            file=out,
+        )
         print("", file=out)
 
     # exceptions
@@ -856,11 +825,12 @@ def attribute_type(item: dict) -> str:
     # docstring will start with :type: type
     doc = "\n".join(item["doc"]).strip().split("\n")[0]
     assert doc.startswith(":type:"), f"Expected :type: for doc in { item }"
-    return doc[len(":type:"):].strip()
+    return doc[len(":type:") :].strip()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import json
+
     docdb = json.load(open(sys.argv[1]))
 
     sqlite_links()
@@ -873,13 +843,15 @@ if __name__ == '__main__':
     missing = []
 
     out = io.StringIO()
-    print("""/* This file is generated by rst2docstring */
+    print(
+        """/* This file is generated by rst2docstring */
 
 #ifndef __GNUC__
 #define __builtin_types_compatible_p(x,y) (1)
 #endif
 """,
-          file=out)
+        file=out,
+    )
     method, mid, eol, end = "#define ", " ", " \\", ""
     for item in sorted(items, key=lambda x: x["symbol"]):
         if item["skip_docstring"]:
@@ -889,18 +861,18 @@ if __name__ == '__main__':
         if f"{ item['symbol'] }_CHECK" in allcode:
             print(do_argparse(item), file=out)
         else:
-            if any(param["name"] != "return"
-                   for param in item["signature"]) and not any(param["name"].startswith("*")
-                                                               for param in item["signature"]):
+            if any(param["name"] != "return" for param in item["signature"]) and not any(
+                param["name"].startswith("*") for param in item["signature"]
+            ):
                 if item["name"] not in {
-                        "apsw.format_sql_value",
-                        "VFSFile.excepthook",
-                        "Cursor.__next__",
-                        "Cursor.__iter__",
-                        "VFS.excepthook",
-                        "Connection.execute",
-                        "Connection.executemany",
-                        "Blob.__exit__",
+                    "apsw.format_sql_value",
+                    "VFSFile.excepthook",
+                    "Cursor.__next__",
+                    "Cursor.__iter__",
+                    "VFS.excepthook",
+                    "Connection.execute",
+                    "Connection.executemany",
+                    "Blob.__exit__",
                 }:
                     missing.append(item["name"])
 
@@ -911,8 +883,9 @@ if __name__ == '__main__':
                 if f"{ item['symbol'] }_CHECK" not in allcode:
                     print(f'''#define { item['symbol'] }_USAGE "{ get_usage(item) }"''', file=out)
                 print(
-                    f'''#define { item['symbol'] }_OLDDOC { item['symbol'] }_USAGE "\\n(Old less clear name { old_name })"\n''',
-                    file=out)
+                    f"""#define { item['symbol'] }_OLDDOC { item['symbol'] }_USAGE "\\n(Old less clear name { old_name })"\n""",
+                    file=out,
+                )
 
     for name, doc in sorted(all_exc_doc.items()):
         print(f"""{ method } { name }_exc_DOC{ mid }{ cppsafe(doc, eol) } { end }\n""", file=out)

@@ -19,8 +19,15 @@ def check_old():
     pattern = "(" + "|".join(names) + ")"
 
     excludes = [
-        f":!{n}" for n in ("tools/renames.json", "apsw/tests.py", "apsw/__init__.pyi", "Makefile", "MANIFEST.in",
-                           "src/apsw.docstrings")
+        f":!{n}"
+        for n in (
+            "tools/renames.json",
+            "apsw/tests.py",
+            "apsw/__init__.pyi",
+            "Makefile",
+            "MANIFEST.in",
+            "src/apsw.docstrings",
+        )
     ]
 
     sys.exit(subprocess.run(["git", "--no-pager", "grep", "-E", "-w", pattern, "--"] + excludes).returncode)
@@ -83,7 +90,7 @@ def run_tests():
     unittest.TextTestRunner().run(unittest.defaultTestLoader.loadTestsFromModule(module))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Various maintenance operations for renamed symbols")

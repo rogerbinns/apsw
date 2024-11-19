@@ -32,7 +32,7 @@ xSetSystemCall xSleep xSync xTruncate xUnlock xWrite
 """
 
 # other
-names +="""
+names += """
 close connection_hooks cursor error_offset excepthook execute
 executemany extendedresult get Mapping result add_note
 can_cache
@@ -43,6 +43,7 @@ NULL 0.0 -1e999 1e999
 (closed)
 """
 
+
 # we have to make some valid C identifiers
 def mangle(name):
     return {
@@ -52,6 +53,7 @@ def mangle(name):
         "1e999": "s1e999",
         "(closed)": "closed",
     }.get(name, name)
+
 
 # tokenize names
 

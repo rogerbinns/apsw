@@ -11,23 +11,23 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import setup
 
 sqlitevers = (
-    '3470000',
-    '3460100',
-    '3460000',
-    '3450300',
-    '3450200',
-    '3450100',
-    '3450000',
-    '3440200',
-    '3440100',
-    '3440000',
-    '3430200',
-    '3430100',
-    '3430000',
-    '3420000',
-    '3410200',
-    '3410100',
-    '3410000',
+    "3470000",
+    "3460100",
+    "3460000",
+    "3450300",
+    "3450200",
+    "3450100",
+    "3450000",
+    "3440200",
+    "3440100",
+    "3440000",
+    "3430200",
+    "3430100",
+    "3430000",
+    "3420000",
+    "3410200",
+    "3410100",
+    "3410000",
 )
 
 fixup_download_url = setup.fixup_download_url
@@ -48,7 +48,7 @@ def getline(url):
 
 
 def check(url, data):
-    d = ["%s" % (len(data), ), hashlib.sha256(data).hexdigest(), hashlib.sha3_256(data).hexdigest()]
+    d = ["%s" % (len(data),), hashlib.sha256(data).hexdigest(), hashlib.sha3_256(data).hexdigest()]
     line = getline(url)
     if line:
         if line != d:
@@ -61,7 +61,7 @@ def check(url, data):
 
 for v in sqlitevers:
     # All platforms amalgamation
-    AURL = "https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (v, )
+    AURL = "https://sqlite.org/sqlite-autoconf-%s.tar.gz" % (v,)
     AURL = fixup_download_url(AURL)
     try:
         data = urllib.request.urlopen(AURL).read()

@@ -11,7 +11,7 @@ import os
 def output(filename: str, executed: int, total: int) -> None:
     # Python bug "% 3.2f" doesn't behave correctly (100.00 is formatted with leading space!)
     percent = 100 * executed / max(total, 1)
-    op = [f"{filename:40}", f"{executed:6,}", "  /", f"{total:6,}", "\t    ", "% 3.2f%%" % (percent, )]
+    op = [f"{filename:40}", f"{executed:6,}", "  /", f"{total:6,}", "\t    ", "% 3.2f%%" % (percent,)]
     if percent == 100:
         op[-1] = "100.00%"
     print("".join(op))
@@ -32,7 +32,8 @@ for f in names:
     in_test_fixture = False
     with open(f, "rt") as fd:
         for line in fd:
-            if ":" not in line: continue
+            if ":" not in line:
+                continue
             count, linenum, line = line.split(":", 2)
             line = line.strip()
             if in_test_fixture:

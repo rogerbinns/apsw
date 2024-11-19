@@ -33,8 +33,9 @@ def transmogrify(compile_options: list[str]) -> list[tuple[str, None | int | str
     return res
 
 
-def get_differences(left: list[tuple[str, None | int | str]], left_name: str, right: list[tuple[str, None | int | str]],
-                    right_name: str) -> list[tuple[str, str]]:
+def get_differences(
+    left: list[tuple[str, None | int | str]], left_name: str, right: list[tuple[str, None | int | str]], right_name: str
+) -> list[tuple[str, str]]:
     res: list[tuple[str, str]] = []
 
     def fmt(v):
@@ -98,11 +99,13 @@ def main(options) -> None:
         print(f"{ k:>{ w }} ", v)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
 
-    p = argparse.ArgumentParser(description="Examines compilation options used for SQLite between "
-                                "APSW and sqlite3 module (usually with system sqlite library)")
+    p = argparse.ArgumentParser(
+        description="Examines compilation options used for SQLite between "
+        "APSW and sqlite3 module (usually with system sqlite library)"
+    )
 
     options = p.parse_args()
 

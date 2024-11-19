@@ -12,6 +12,7 @@ import apsw.ext
 @dataclasses.dataclass(slots=True, frozen=True)
 class Row:
     "A row of data for testing, covering various types"
+
     name: str
     unit_price: float
     quantity: int
@@ -36,7 +37,7 @@ random.seed(0)
 def gen_value(t):
     if t is str:
         text = "abcdefghijklmnopqrstuvwxya1324324 "
-        return text[:random.randrange(5, len(text))]
+        return text[: random.randrange(5, len(text))]
     if t is bool:
         return random.choice([False, True])
     if t is int:
@@ -56,8 +57,7 @@ rows_repr: list[Row] = []
 for i in range(10):
     rows.append(Row(**{field.name: gen_value(field.type) for field in dataclasses.fields(Row)}))  # type: ignore
     klass = RowRepr if i == 5 else Row  # make 10% need repr handling
-    rows_repr.append(klass(**{field.name: gen_value(field.type)
-                              for field in dataclasses.fields(klass)}))  # type: ignore
+    rows_repr.append(klass(**{field.name: gen_value(field.type) for field in dataclasses.fields(klass)}))  # type: ignore
 
 columns = tuple(field.name for field in dataclasses.fields(Row))
 
@@ -106,7 +106,7 @@ for i in range(6):
             access = {
                 "index": apsw.ext.VTColumnAccess.By_Index,
                 "dict": apsw.ext.VTColumnAccess.By_Name,
-                "attr": apsw.ext.VTColumnAccess.By_Attr
+                "attr": apsw.ext.VTColumnAccess.By_Attr,
             }[kind]
             data_source.column_access = access
             apsw.ext.make_virtual_module(con, f"data_source{counter}", data_source, repr_invalid=config == "repr")
@@ -117,7 +117,7 @@ for i in range(6):
             counter += 1
             print(f"{rec:20}{ i+ 1}\t", end="", flush=True)
             start = time.perf_counter()
-            for _ in con.execute(query, (ROWS, )):
+            for _ in con.execute(query, (ROWS,)):
                 pass
             end = time.perf_counter()
             times[rec].append(end - start)
@@ -126,5 +126,7 @@ for i in range(6):
 print("\nMedians (stddev)      values per second\n")
 for k, v in sorted(times.items()):
     nvalues = (len(columns) + (1 if "hidden" in k else 0)) * ROWS
-    print(f"{ k:20}%.03f   (%.03f) %s" %
-          (statistics.median(v), statistics.stdev(v), format(int(nvalues / statistics.median(v)), "12,d")))
+    print(
+        f"{ k:20}%.03f   (%.03f) %s"
+        % (statistics.median(v), statistics.stdev(v), format(int(nvalues / statistics.median(v)), "12,d"))
+    )

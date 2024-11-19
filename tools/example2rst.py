@@ -100,12 +100,10 @@ def get_output(filename: str):
     def my_pprint(obj):
         my_print(pprint.pformat(obj))
 
-    if False: # make True if you need to debug the changes
+    if False:  # make True if you need to debug the changes
         print("\n".join(code))
 
-    exec(compile("\n".join(code), filename, "exec"), {"print": my_print,
-                                                      "pprint": my_pprint,
-                                                      "my_io": my_io})
+    exec(compile("\n".join(code), filename, "exec"), {"print": my_print, "pprint": my_pprint, "my_io": my_io})
 
     return output
 

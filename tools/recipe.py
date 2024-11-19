@@ -34,8 +34,20 @@ with con:
 
     with apsw.ext.ShowResourceUsage(sys.stdout, db=con, scope="process"):
         print("words")
-        twords = apsw.fts5.Table.create(con, "search", columns=None, content="recipes", tokenize=["simplify", "casefold", "true", "strip", "true", "unicodewords"])
+        twords = apsw.fts5.Table.create(
+            con,
+            "search",
+            columns=None,
+            content="recipes",
+            tokenize=["simplify", "casefold", "true", "strip", "true", "unicodewords"],
+        )
 
     with apsw.ext.ShowResourceUsage(sys.stdout, db=con, scope="process"):
         print("autocomplete")
-        tautocomplete = apsw.fts5.Table.create(con, "autocomplete", columns=None, content="recipes", tokenize=["simplify", "casefold", "true", "strip", "true", "ngram"])
+        tautocomplete = apsw.fts5.Table.create(
+            con,
+            "autocomplete",
+            columns=None,
+            content="recipes",
+            tokenize=["simplify", "casefold", "true", "strip", "true", "ngram"],
+        )

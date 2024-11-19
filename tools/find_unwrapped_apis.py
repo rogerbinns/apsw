@@ -13,10 +13,13 @@ with tempfile.NamedTemporaryFile() as f:
     db = apsw.Connection(f.name)
     db.row_trace = apsw.ext.DataClassRowFactory(dataclass_kwargs={"frozen": True})
 
-    functions = set(row.name for row in db.execute("""
+    functions = set(
+        row.name
+        for row in db.execute("""
         SELECT * FROM toc WHERE type = 'function' AND status = 0 AND name NOT LIKE '%16%'
             AND name NOT LIKE 'sqlite3_str_%'
-    """))
+    """)
+    )
 
 # functions we won't wrap
 nowrap = {
@@ -24,14 +27,12 @@ nowrap = {
     "sqlite3_msize",
     "sqlite3_realloc",
     "sqlite3_realloc64",
-
     # mutex stuff
     "sqlite3_mutex_alloc",
     "sqlite3_mutex_free",
     "sqlite3_mutex_held",
     "sqlite3_mutex_notheld",
     "sqlite3_mutex_try",
-
     # we use the -64 suffix versions
     "sqlite3_changes",
     "sqlite3_total_changes",
@@ -46,7 +47,6 @@ nowrap = {
     "sqlite3_result_zeroblob",
     "sqlite3_result_blob",
     "sqlite3_status",
-
     # not useful
     "sqlite3_next_stmt",
     "sqlite3_os_end",
@@ -87,7 +87,6 @@ nowrap = {
     "sqlite3_result_error_toobig",
     "sqlite3_libversion_number",  # more useful in C
     "sqlite3_version",  # we provide sqlite3_libversion which is the same
-
     # deprecated but not marked as such (v2+ exists)
     "sqlite3_trace",
     "sqlite3_profile",
@@ -96,21 +95,17 @@ nowrap = {
     "sqlite3_create_module",
     "sqlite3_prepare",
     "sqlite3_prepare_v2",
-
     # windows only, no one has asked for it
     "sqlite3_win32_set_directory",
     "sqlite3_win32_set_directory8",
-
     # shouldn't be exposed to scripting
     "sqlite3_get_clientdata",
     "sqlite3_set_clientdata",
-
     # we don't do subtypes / pointer
     "sqlite3_value_subtype",
     "sqlite3_result_subtype",
     "sqlite3_bind_pointer",
     "sqlite3_result_pointer",
-
     # requires non-default compile options
     "sqlite3_normalized_sql",
     "sqlite3_test_control",

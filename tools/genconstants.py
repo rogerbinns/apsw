@@ -129,7 +129,7 @@ for title, cons in constants.items():
     if not title_to_mapping[title]:
         continue
     op.append(f"    /* { title } */")
-    op.append('    the_dict = Py_BuildValue(')
+    op.append("    the_dict = Py_BuildValue(")
     op.append('        "{' + "siis" * len(cons) + '}",')
     for c in cons:
         top_level.add(c)

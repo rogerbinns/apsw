@@ -98,7 +98,7 @@ def do_mappings():
         vals = m[:]
         vals.sort()
         op.append("")
-        op.append("    %s" % (", ".join(["`%s <%s>`__" % (v, const2page[v]) for v in vals]), ))
+        op.append("    %s" % (", ".join(["`%s <%s>`__" % (v, const2page[v]) for v in vals]),))
         op.append("")
 
     ignores = {
@@ -205,7 +205,7 @@ def do_methods():
         if curclass and curclass.startswith("VT"):
             for line in d:
                 if line.lstrip() != line:
-                    indent = line[:len(line) - len(line.lstrip())]
+                    indent = line[: len(line) - len(line.lstrip())]
                     break
             method = k
             if k.startswith("Update"):
@@ -318,6 +318,7 @@ for line in open(infilename, "rt"):
             else:
                 if methods:
                     import pdb
+
                     pdb.set_trace()
                 assert not methods  # check no outstanding methods
                 op.extend(curop)
