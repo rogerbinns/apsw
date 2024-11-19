@@ -1,8 +1,8 @@
 
 /* These are Python header files */
 #undef PyFrame_New
-#include "faultinject.h"
 #include "frameobject.h"
+#include "faultinject.h"
 
 /* Add a dummy frame to the traceback so the developer has a better idea of what C code was doing
 
