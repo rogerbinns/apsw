@@ -11,14 +11,14 @@ import weakref
 
 
 class APSWTracer(object):
-
     def __init__(self, options):
         self.u = ""
         import _thread
+
         self.threadid = _thread.get_ident
-        self.stringtypes = (str, )
+        self.stringtypes = (str,)
         self.numtypes = (int, float)
-        self.binarytypes = (bytes, )
+        self.binarytypes = (bytes,)
         self.options = options
         if options.output in ("-", "stdout"):
             self._writer = sys.stdout.write
@@ -29,6 +29,7 @@ class APSWTracer(object):
 
         try:
             import apsw
+
             apsw.connection_hooks.append(self.connection_hook)
         except:
             sys.stderr.write(self.u + "Unable to import apsw\n")
@@ -56,9 +57,9 @@ class APSWTracer(object):
         if isinstance(obj, dict):
             return self.formatdict(obj)
         if isinstance(obj, tuple):
-            return self.formatseq(obj, '()')
+            return self.formatseq(obj, "()")
         if isinstance(obj, list):
-            return self.formatseq(obj, '[]')
+            return self.formatseq(obj, "[]")
         if isinstance(obj, self.stringtypes):
             return self.formatstring(obj)
         if obj is True:
@@ -72,13 +73,13 @@ class APSWTracer(object):
         if isinstance(obj, self.binarytypes):
             return self.formatbinary(obj)
         if isinstance(obj, self.zeroblob):
-            return "zeroblob(%d)" % (obj.length(), )
+            return "zeroblob(%d)" % (obj.length(),)
         return repr(obj)
 
     def formatstring(self, obj, quote='"', checkmaxlen=True):
         obj = obj.replace("\n", "\\n").replace("\r", "\\r")
         if checkmaxlen and len(obj) > self.options.length:
-            obj = obj[:self.options.length] + '..'
+            obj = obj[: self.options.length] + ".."
         return self.u + quote + obj + quote
 
     def formatdict(self, obj):
@@ -95,7 +96,7 @@ class APSWTracer(object):
     def formatbinary(self, obj):
         if len(obj) < self.options.length:
             return "X'" + "".join(["%x" % obj[i] for i in range(len(obj))]) + "'"
-        return "(%d) X'" % (len(obj), ) + "".join(["%x" % obj[i] for i in range(self.options.length)]) + "..'"
+        return "(%d) X'" % (len(obj),) + "".join(["%x" % obj[i] for i in range(self.options.length)]) + "..'"
 
     def sanitizesql(self, sql):
         sql = sql.strip("; \t\r\n")
@@ -130,10 +131,15 @@ class APSWTracer(object):
                 self.newcursor[wr] = True
                 self.numcursors += 1
                 if self.options.sql:
-                    self.log(id(cursor), "CURSORFROM:", "%x" % (id(cursor.connection), ), "DB:",
-                             self.formatstring(cursor.connection.filename, checkmaxlen=False))
+                    self.log(
+                        id(cursor),
+                        "CURSORFROM:",
+                        "%x" % (id(cursor.connection),),
+                        "DB:",
+                        self.formatstring(cursor.connection.filename, checkmaxlen=False),
+                    )
         if self.options.sql:
-            args = [id(cursor), "SQL:", self.formatstring(sql, '', False)]
+            args = [id(cursor), "SQL:", self.formatstring(sql, "", False)]
             if bindings:
                 args.extend(["BINDINGS:", self.format(bindings)])
             self.log(*args)
@@ -153,7 +159,7 @@ class APSWTracer(object):
         for k, v in v:
             if value & k:
                 if v.startswith(strip):
-                    v = v[len(strip):]
+                    v = v[len(strip) :]
                 op.append(v)
         return self.u + "|".join(op)
 
@@ -166,15 +172,20 @@ class APSWTracer(object):
         if self.options.rows or self.options.report:
             con.row_trace = self.rowtracer
         if self.options.sql:
-            self.log(id(con), "OPEN:", self.formatstring(con.filename, checkmaxlen=False), con.open_vfs,
-                     self.flagme(con.open_flags, self.mapping_open_flags, "SQLITE_OPEN_"))
+            self.log(
+                id(con),
+                "OPEN:",
+                self.formatstring(con.filename, checkmaxlen=False),
+                con.open_vfs,
+                self.flagme(con.open_flags, self.mapping_open_flags, "SQLITE_OPEN_"),
+            )
 
     def log(self, lid, ltype, *args):
-        out = ["%x" % (lid, )]
+        out = ["%x" % (lid,)]
         if self.options.timestamps:
-            out.append("%.03f" % (time.time() - self.timestart, ))
+            out.append("%.03f" % (time.time() - self.timestart,))
         if self.options.thread:
-            out.append("%x" % (self.threadid(), ))
+            out.append("%x" % (self.threadid(),))
         out.append(ltype)
         out.extend(args)
         self.writer(self.u + " ".join(out))
@@ -182,6 +193,7 @@ class APSWTracer(object):
     def run(self):
         import sys
         import __main__
+
         d = vars(__main__)
         # We use compile so that filename is present in printed exceptions
         code = compile(open(sys.argv[0], "rb").read(), sys.argv[0], "exec")
@@ -211,20 +223,21 @@ class APSWTracer(object):
 
     def report(self):
         import time
+
         if not self.options.report:
             return
         w = lambda *args: self.writer(self.u + " ".join(args))
         if "summary" in self.options.reports:
             w("APSW TRACE SUMMARY REPORT")
             w()
-            w("Program run time                   ", "%.03f seconds" % (time.time() - self.timestart, ))
+            w("Program run time                   ", "%.03f seconds" % (time.time() - self.timestart,))
             w("Total connections                  ", str(self.numconnections))
             w("Total cursors                      ", str(self.numcursors))
             w("Number of threads used for queries ", str(len(self.threadsused)))
         total = 0
         for k, v in self.queries.items():
             total += v
-        fmtq = len("%d" % (total, )) + 1
+        fmtq = len("%d" % (total,)) + 1
         if "summary" in self.options.reports:
             w("Total queries                      ", str(total))
             w("Number of distinct queries         ", str(len(self.queries)))
@@ -241,10 +254,14 @@ class APSWTracer(object):
             w("MOST POPULAR QUERIES")
             w()
             for count, query in self.mostpopular(self.options.reportn):
-                w("% *d" % (
-                    fmtq,
-                    count,
-                ), self.formatstring(query, '', False))
+                w(
+                    "% *d"
+                    % (
+                        fmtq,
+                        count,
+                    ),
+                    self.formatstring(query, "", False),
+                )
 
         # show longest running (aggregate)
         if "aggregate" in self.options.reports:
@@ -255,8 +272,10 @@ class APSWTracer(object):
             for total, count, query in self.longestrunningaggregate(self.options.reportn):
                 if fmtt is None:
                     fmtt = len(fmtfloat(total / 1000000000.0)) + 1
-                w("% *d %s" % (fmtq, count, fmtfloat(total / 1000000000.0, total=fmtt)),
-                  self.formatstring(query, '', False))
+                w(
+                    "% *d %s" % (fmtq, count, fmtfloat(total / 1000000000.0, total=fmtt)),
+                    self.formatstring(query, "", False),
+                )
 
         # show longest running (individual)
         if "individual" in self.options.reports:
@@ -267,7 +286,7 @@ class APSWTracer(object):
             for t, query in self.longestrunningindividual(self.options.reportn):
                 if fmtt is None:
                     fmtt = len(fmtfloat(total / 1000000000.0)) + 1
-                w(fmtfloat(t / 1000000000.0, total=fmtt), self.formatstring(query, '', False))
+                w(fmtfloat(t / 1000000000.0, total=fmtt), self.formatstring(query, "", False))
 
 
 def fmtfloat(n, decimals=3, total=None):
@@ -285,66 +304,69 @@ def main():
 
     reports = ("summary", "popular", "aggregate", "individual")
 
-    parser = argparse.ArgumentParser(prog="python3 -m apsw.trace",
-                                     description="This script runs a Python program that uses APSW "
-                                     "and reports on SQL queries without modifying the program.  This is "
-                                     "done by using connection_hooks and registering row and execution "
-                                     "tracers.  See APSW documentation for more details on the output.")
+    parser = argparse.ArgumentParser(
+        prog="python3 -m apsw.trace",
+        description="This script runs a Python program that uses APSW "
+        "and reports on SQL queries without modifying the program.  This is "
+        "done by using connection_hooks and registering row and execution "
+        "tracers.  See APSW documentation for more details on the output.",
+    )
 
     parser.add_argument(
         "-o",
         "--output",
         dest="output",
         default="stdout",
-        help=
-        "Where to send the output.  Use a filename, a single dash for stdout, or the words stdout and stderr. [%(default)s]"
+        help="Where to send the output.  Use a filename, a single dash for stdout, or the words stdout and stderr. [%(default)s]",
     )
-    parser.add_argument("-s",
-                        "--sql",
-                        dest="sql",
-                        default=False,
-                        action="store_true",
-                        help="Log SQL statements as they are executed. [%(default)s]")
-    parser.add_argument("-r",
-                        "--rows",
-                        dest="rows",
-                        default=False,
-                        action="store_true",
-                        help="Log returned rows as they are returned (turns on sql). [%(default)s]")
-    parser.add_argument("-t",
-                        "--timestamps",
-                        dest="timestamps",
-                        default=False,
-                        action="store_true",
-                        help="Include timestamps in logging")
-    parser.add_argument("-i",
-                        "--thread",
-                        dest="thread",
-                        default=False,
-                        action="store_true",
-                        help="Include thread id in logging")
-    parser.add_argument("-l",
-                        "--length",
-                        dest="length",
-                        default=30,
-                        type=int,
-                        help="Max amount of a string to print [%(default)s]")
+    parser.add_argument(
+        "-s",
+        "--sql",
+        dest="sql",
+        default=False,
+        action="store_true",
+        help="Log SQL statements as they are executed. [%(default)s]",
+    )
+    parser.add_argument(
+        "-r",
+        "--rows",
+        dest="rows",
+        default=False,
+        action="store_true",
+        help="Log returned rows as they are returned (turns on sql). [%(default)s]",
+    )
+    parser.add_argument(
+        "-t",
+        "--timestamps",
+        dest="timestamps",
+        default=False,
+        action="store_true",
+        help="Include timestamps in logging",
+    )
+    parser.add_argument(
+        "-i", "--thread", dest="thread", default=False, action="store_true", help="Include thread id in logging"
+    )
+    parser.add_argument(
+        "-l", "--length", dest="length", default=30, type=int, help="Max amount of a string to print [%(default)s]"
+    )
     parser.add_argument(
         "--no-report",
         dest="report",
         default=True,
         action="store_false",
-        help="A summary report is normally generated at program exit.  This turns off the report and saves memory.")
-    parser.add_argument("--report-items",
-                        dest="reportn",
-                        metavar="N",
-                        default=15,
-                        type=int,
-                        help="How many items to report in top lists [%(default)s]")
-    parser.add_argument("--reports",
-                        dest="reports",
-                        default=",".join(reports),
-                        help="Which reports to show [%(default)s]")
+        help="A summary report is normally generated at program exit.  This turns off the report and saves memory.",
+    )
+    parser.add_argument(
+        "--report-items",
+        dest="reportn",
+        metavar="N",
+        default=15,
+        type=int,
+        help="How many items to report in top lists [%(default)s]",
+    )
+    parser.add_argument(
+        "--reports", dest="reports", default=",".join(reports), help="Which reports to show [%(default)s]"
+    )
     parser.add_argument("python-script", help="Python script to run")
     parser.add_argument("script-args", nargs="*", help="Optional arguments for Python script")
 

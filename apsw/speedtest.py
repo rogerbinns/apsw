@@ -55,8 +55,28 @@ def doit():
             con.create_function("number_name", 1, number_name)
             return con
 
-    ones = ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve",
-            "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen")
+    ones = (
+        "zero",
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "ten",
+        "eleven",
+        "twelve",
+        "thirteen",
+        "fourteen",
+        "fifteen",
+        "sixteen",
+        "seventeen",
+        "eighteen",
+        "nineteen",
+    )
     tens = ("", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
 
     others = ("thousand", "hundred", "zero")
@@ -95,9 +115,10 @@ def doit():
                     newt.append(t)
                     continue
                 while True:
-                    t = random.randint(0xa1, sys.maxunicode)
+                    t = random.randint(0xA1, sys.maxunicode)
                     # we don't want the surrogate range or apostrophe
-                    if t < 0xd800 or t > 0xdfff: break
+                    if t < 0xD800 or t > 0xDFFF:
+                        break
                 newt.append(chr(t))
             text = "".join(newt)
         return text
@@ -132,21 +153,21 @@ def doit():
       CREATE INDEX i2a ON t2(a);
       CREATE INDEX i2b ON t2(b);
       SELECT name FROM sqlite_schema ORDER BY 1""".split(";"):
-            yield (i, )
+            yield (i,)
 
         # 50,000 inserts on an unindexed table
-        yield ("BEGIN", )
+        yield ("BEGIN",)
         for i in range(1, scale * 10000 + 1):
             r = random.randint(0, 500000)
             if bindings:
                 yield ("INSERT INTO t1 VALUES(?, ?, number_name(?))", (i, r, r))
             else:
-                yield ("INSERT INTO t1 VALUES(%d, %d, '%s')" % (i, r, number_name(r)), )
-        yield ("COMMIT", )
+                yield ("INSERT INTO t1 VALUES(%d, %d, '%s')" % (i, r, number_name(r)),)
+        yield ("COMMIT",)
 
         # 50,000 inserts on an indexed table
         t1c_list = []
-        yield ("BEGIN", )
+        yield ("BEGIN",)
         for i in range(1, scale * 10000 + 1):
             r = random.randint(0, 500000)
             x = number_name(r)
@@ -154,104 +175,104 @@ def doit():
             if bindings:
                 yield ("INSERT INTO t2 VALUES(?, ?, number_name(?))", (i, r, r))
             else:
-                yield ("INSERT INTO t2 VALUES(%d, %d, '%s')" % (i, r, x), )
-        yield ("COMMIT", )
+                yield ("INSERT INTO t2 VALUES(%d, %d, '%s')" % (i, r, x),)
+        yield ("COMMIT",)
 
         # 50 SELECTs on an integer comparison.  There is no index so
         # a full table scan is required.
         for i in range(scale):
-            yield ("SELECT count(*), avg(b) FROM t1 WHERE b>=%d AND b<%d" % (i * 100, (i + 10) * 100), )
+            yield ("SELECT count(*), avg(b) FROM t1 WHERE b>=%d AND b<%d" % (i * 100, (i + 10) * 100),)
 
         # 50 SELECTs on an LIKE comparison.  There is no index so a full
         # table scan is required.
         for i in range(scale):
-            yield ("SELECT count(*), avg(b) FROM t1 WHERE c LIKE '%%%s%%'" % (number_name(i), ), )
+            yield ("SELECT count(*), avg(b) FROM t1 WHERE c LIKE '%%%s%%'" % (number_name(i),),)
 
         # Create indices
-        yield ("BEGIN", )
+        yield ("BEGIN",)
         for i in """CREATE INDEX i1a ON t1(a);
                     CREATE INDEX i1b ON t1(b);
                     CREATE INDEX i1c ON t1(c);""".split(";"):
-            yield (i, )
-        yield ("COMMIT", )
+            yield (i,)
+        yield ("COMMIT",)
 
         # 5000 SELECTs on an integer comparison where the integer is
         # indexed.
         for i in range(scale * 100):
-            yield ("SELECT count(*), avg(b) FROM t1 WHERE b>=%d AND b<%d" % (i * 100, (i + 10) * 100), )
+            yield ("SELECT count(*), avg(b) FROM t1 WHERE b>=%d AND b<%d" % (i * 100, (i + 10) * 100),)
 
         # 100000 random SELECTs against rowid.
         for i in range(1, scale * 2000 + 1):
-            yield ("SELECT c FROM t1 WHERE rowid=%d" % (1 + random.randint(0, 50000), ), )
+            yield ("SELECT c FROM t1 WHERE rowid=%d" % (1 + random.randint(0, 50000),),)
 
         # 100000 random SELECTs against a unique indexed column.
         for i in range(1, scale * 2000 + 1):
-            yield ("SELECT c FROM t1 WHERE a=%d" % (1 + random.randint(0, 50000), ), )
+            yield ("SELECT c FROM t1 WHERE a=%d" % (1 + random.randint(0, 50000),),)
 
         # 50000 random SELECTs against an indexed column text column
         for i in range(scale * 1000):
             if bindings:
                 yield (
                     "SELECT c FROM t1 WHERE c=?",
-                    (random.choice(t1c_list), ),
+                    (random.choice(t1c_list),),
                 )
             else:
-                yield ("SELECT c FROM t1 WHERE c='%s'" % (random.choice(t1c_list), ), )
+                yield ("SELECT c FROM t1 WHERE c='%s'" % (random.choice(t1c_list),),)
 
         # Vacuum
         if options.database != ":memory:":
             # opens a disk file
-            yield ("VACUUM", )
+            yield ("VACUUM",)
 
         # 5000 updates of ranges where the field being compared is indexed.
-        yield ("BEGIN", )
+        yield ("BEGIN",)
         for i in range(scale * 100):
-            yield ("UPDATE t1 SET b=b*2 WHERE a>=%d AND a<%d" % (i * 2, (i + 1) * 2), )
-        yield ("COMMIT", )
+            yield ("UPDATE t1 SET b=b*2 WHERE a>=%d AND a<%d" % (i * 2, (i + 1) * 2),)
+        yield ("COMMIT",)
 
         # 50000 single-row updates.  An index is used to find the row quickly.
-        yield ("BEGIN", )
+        yield ("BEGIN",)
         for i in range(scale * 1000):
             if bindings:
-                yield ("UPDATE t1 SET b=? WHERE a=%d" % (i, ), (random.randint(0, 500000), ))
+                yield ("UPDATE t1 SET b=? WHERE a=%d" % (i,), (random.randint(0, 500000),))
             else:
-                yield ("UPDATE t1 SET b=%d WHERE a=%d" % (random.randint(0, 500000), i), )
-        yield ("COMMIT", )
+                yield ("UPDATE t1 SET b=%d WHERE a=%d" % (random.randint(0, 500000), i),)
+        yield ("COMMIT",)
 
         # 1 big text update that touches every row in the table.
-        yield ("UPDATE t1 SET c=a", )
+        yield ("UPDATE t1 SET c=a",)
 
         # Many individual text updates.  Each row in the table is
         # touched through an index.
-        yield ("BEGIN", )
+        yield ("BEGIN",)
         for i in range(1, scale * 1000 + 1):
             if bindings:
-                yield ("UPDATE t1 SET c=? WHERE a=%d" % (i, ), (number_name(random.randint(0, 500000)), ))
+                yield ("UPDATE t1 SET c=? WHERE a=%d" % (i,), (number_name(random.randint(0, 500000)),))
             else:
-                yield ("UPDATE t1 SET c='%s' WHERE a=%d" % (number_name(random.randint(0, 500000)), i), )
-        yield ("COMMIT", )
+                yield ("UPDATE t1 SET c='%s' WHERE a=%d" % (number_name(random.randint(0, 500000)), i),)
+        yield ("COMMIT",)
 
         # Delete all content in a table.
-        yield ("DELETE FROM t1", )
+        yield ("DELETE FROM t1",)
 
         # Copy one table into another
-        yield ("INSERT INTO t1 SELECT * FROM t2", )
+        yield ("INSERT INTO t1 SELECT * FROM t2",)
 
         # Delete all content in a table, one row at a time.
-        yield ("DELETE FROM t1 WHERE 1", )
+        yield ("DELETE FROM t1 WHERE 1",)
 
         # Refill the table yet again
-        yield ("INSERT INTO t1 SELECT * FROM t2", )
+        yield ("INSERT INTO t1 SELECT * FROM t2",)
 
         # Drop the table and recreate it without its indices.
-        yield ("BEGIN", )
-        yield ("DROP TABLE t1", )
-        yield ("CREATE TABLE t1(a INTEGER, b INTEGER, c TEXT)", )
-        yield ("COMMIT", )
+        yield ("BEGIN",)
+        yield ("DROP TABLE t1",)
+        yield ("CREATE TABLE t1(a INTEGER, b INTEGER, c TEXT)",)
+        yield ("COMMIT",)
 
         # Refill the table yet again.  This copy should be faster because
         # there are no indices to deal with.
-        yield ("INSERT INTO t1 SELECT * FROM t2", )
+        yield ("INSERT INTO t1 SELECT * FROM t2",)
 
         # The three following used "ORDER BY random()" but we can't do that
         # as it causes each run to have different values, and hence different
@@ -259,50 +280,56 @@ def doit():
         # replaced by "c", the column that has the stringified number
 
         # Select 20000 rows from the table at random.
-        yield ("SELECT rowid FROM t1 ORDER BY c LIMIT %d" % (scale * 400, ), )
+        yield ("SELECT rowid FROM t1 ORDER BY c LIMIT %d" % (scale * 400,),)
 
         # Delete 20000 random rows from the table.
-        yield ("""  DELETE FROM t1 WHERE rowid IN
-                         (SELECT rowid FROM t1 ORDER BY c LIMIT %d)""" % (scale * 400, ), )
+        yield (
+            """  DELETE FROM t1 WHERE rowid IN
+                         (SELECT rowid FROM t1 ORDER BY c LIMIT %d)"""
+            % (scale * 400,),
+        )
 
-        yield ("SELECT count(*) FROM t1", )
+        yield ("SELECT count(*) FROM t1",)
 
         # Delete 20000 more rows at random from the table.
-        yield ("""DELETE FROM t1 WHERE rowid IN
-                     (SELECT rowid FROM t1 ORDER BY c LIMIT %d)""" % (scale * 400, ), )
+        yield (
+            """DELETE FROM t1 WHERE rowid IN
+                     (SELECT rowid FROM t1 ORDER BY c LIMIT %d)"""
+            % (scale * 400,),
+        )
 
-        yield ("SELECT count(*) FROM t1", )
+        yield ("SELECT count(*) FROM t1",)
 
     # Do a correctness test first
     if options.correctness:
         print("Correctness test\n")
-        if 'bigstmt' in options.tests:
+        if "bigstmt" in options.tests:
             text = ";\n".join([x[0] for x in getlines(scale=1)]) + ";"
-        if 'statements' in options.tests:
+        if "statements" in options.tests:
             withbindings = [line for line in getlines(scale=1, bindings=True)]
-        if 'statements_nobindings' in options.tests:
+        if "statements_nobindings" in options.tests:
             withoutbindings = [line for line in getlines(scale=1, bindings=False)]
 
         res = {}
-        for driver in ('apsw', 'sqlite3'):
+        for driver in ("apsw", "sqlite3"):
             if not getattr(options, driver):
                 continue
 
             for test in options.tests:
                 name = driver + "_" + test
 
-                print(name + '\t')
+                print(name + "\t")
                 sys.stdout.flush()
 
-                if name == 'sqlite3_bigstmt':
-                    print('limited functionality (ignoring)\n')
+                if name == "sqlite3_bigstmt":
+                    print("limited functionality (ignoring)\n")
                     continue
 
                 con = locals().get(driver + "_setup")(":memory:")  # we always correctness test on memory
 
-                if test == 'bigstmt':
+                if test == "bigstmt":
                     cursor = con.cursor()
-                    if driver == 'apsw':
+                    if driver == "apsw":
                         func = cursor.execute
                     else:
                         func = cursor.executescript
@@ -312,9 +339,9 @@ def doit():
                     continue
 
                 cursor = con.cursor()
-                if test == 'statements':
+                if test == "statements":
                     sql = withbindings
-                elif test == 'statements_nobindings':
+                elif test == "statements_nobindings":
                     sql = withoutbindings
 
                 l = []
@@ -431,8 +458,17 @@ def doit():
         for test in timings[driver].keys():
             elapsed = [t[0] for t in timings[driver][test]]
             cpu = [t[1] for t in timings[driver][test]]
-            vals.append((test, driver, f"{ driver }_{ test }", statistics.median(elapsed), statistics.stdev(elapsed),
-                         statistics.median(cpu), statistics.stdev(cpu)))
+            vals.append(
+                (
+                    test,
+                    driver,
+                    f"{ driver }_{ test }",
+                    statistics.median(elapsed),
+                    statistics.stdev(elapsed),
+                    statistics.median(cpu),
+                    statistics.stdev(cpu),
+                )
+            )
 
     print("\nMedian (standard deviation) for elapsed, CPU time - in seconds, lower is better\n")
     vals.sort()
@@ -443,82 +479,83 @@ def doit():
 
 
 parser = argparse.ArgumentParser(prog="apsw.speedtest", description="Tests performance of apsw and sqlite3 packages")
-parser.add_argument("--apsw",
-                    dest="apsw",
-                    action="store_true",
-                    default=False,
-                    help="Include apsw in testing [%(default)s]")
-parser.add_argument("--sqlite3",
-                    action="store_true",
-                    default=False,
-                    help="Include sqlite3 module in testing [%(default)s]")
-parser.add_argument("--correctness",
-                    dest="correctness",
-                    action="store_true",
-                    default=False,
-                    help="Do a correctness test")
+parser.add_argument(
+    "--apsw", dest="apsw", action="store_true", default=False, help="Include apsw in testing [%(default)s]"
+)
+parser.add_argument(
+    "--sqlite3", action="store_true", default=False, help="Include sqlite3 module in testing [%(default)s]"
+)
+parser.add_argument(
+    "--correctness", dest="correctness", action="store_true", default=False, help="Do a correctness test"
+)
 parser.add_argument(
     "--scale",
     dest="scale",
     type=int,
     default=10,
-    help=
-    "How many statements to execute.  Each 5 units takes about 1 second per test on memory only databases. [%(default)s]"
+    help="How many statements to execute.  Each 5 units takes about 1 second per test on memory only databases. [%(default)s]",
 )
 parser.add_argument("--database", dest="database", default=":memory:", help="The database file to use [%(default)s]")
-parser.add_argument("--tests",
-                    dest="tests",
-                    default="bigstmt,statements,statements_nobindings",
-                    help="What tests to run [%(default)s]")
-parser.add_argument("--iterations",
-                    dest="iterations",
-                    default=4,
-                    type=int,
-                    metavar="N",
-                    help="How many times to run the tests [%(default)s]")
-parser.add_argument("--tests-detail",
-                    dest="tests_detail",
-                    default=False,
-                    action="store_true",
-                    help="Print details of what the tests do.  (Does not run the tests)")
-parser.add_argument("--dump-sql",
-                    dest="dump_filename",
-                    metavar="FILENAME",
-                    help="Name of file to dump SQL to.  This is useful for feeding into the SQLite command line shell.")
-parser.add_argument("--sc-size",
-                    dest="scsize",
-                    type=int,
-                    default=128,
-                    metavar="N",
-                    help="Size of the statement cache. [%(default)s]")
-parser.add_argument("--unicode",
-                    dest="unicode",
-                    type=int,
-                    default=0,
-                    help="Percentage of text that is non-ascii unicode characters [%(default)s]")
+parser.add_argument(
+    "--tests", dest="tests", default="bigstmt,statements,statements_nobindings", help="What tests to run [%(default)s]"
+)
+parser.add_argument(
+    "--iterations",
+    dest="iterations",
+    default=4,
+    type=int,
+    metavar="N",
+    help="How many times to run the tests [%(default)s]",
+)
+parser.add_argument(
+    "--tests-detail",
+    dest="tests_detail",
+    default=False,
+    action="store_true",
+    help="Print details of what the tests do.  (Does not run the tests)",
+)
+parser.add_argument(
+    "--dump-sql",
+    dest="dump_filename",
+    metavar="FILENAME",
+    help="Name of file to dump SQL to.  This is useful for feeding into the SQLite command line shell.",
+)
+parser.add_argument(
+    "--sc-size", dest="scsize", type=int, default=128, metavar="N", help="Size of the statement cache. [%(default)s]"
+)
+parser.add_argument(
+    "--unicode",
+    dest="unicode",
+    type=int,
+    default=0,
+    help="Percentage of text that is non-ascii unicode characters [%(default)s]",
+)
 parser.add_argument(
     "--data-size",
     dest="size",
     type=int,
     default=0,
     metavar="SIZE",
-    help="Duplicate the ~50 byte text column value up to this many times (amount randomly selected per row)")
-parser.add_argument("--hide-runs",
-                    dest="showruns",
-                    action="store_false",
-                    default=True,
-                    help="Don't show the individual iteration timings, only final summary")
+    help="Duplicate the ~50 byte text column value up to this many times (amount randomly selected per row)",
+)
+parser.add_argument(
+    "--hide-runs",
+    dest="showruns",
+    action="store_false",
+    default=True,
+    help="Don't show the individual iteration timings, only final summary",
+)
 parser.add_argument(
     "--vfs",
-    help=
-    "Use the named vfs.  'passthru' creates a dummy APSW vfs.  You need to provide a real database filename otherwise the memory vfs is used."
+    help="Use the named vfs.  'passthru' creates a dummy APSW vfs.  You need to provide a real database filename otherwise the memory vfs is used.",
 )
 parser.add_argument(
     "--sqlite-cache",
     type=float,
     default=2,
     dest="sqlite_cache_mb",
-    help="Size of the SQLite in memory cache in megabytes.  Working data outside of this size causes disk I/O. [%(default)s]")
+    help="Size of the SQLite in memory cache in megabytes.  Working data outside of this size causes disk I/O. [%(default)s]",
+)
 tests_detail = """\
 bigstmt:
 
@@ -569,7 +606,6 @@ if __name__ == "__main__":
         import apsw
 
         class passthru(apsw.VFS):
-
             def __init__(self):
                 super().__init__("passthru", "")
 

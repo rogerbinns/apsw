@@ -267,7 +267,7 @@ class NOT:
 
 # Sphinx makes this real ugly
 # https://github.com/sphinx-doc/sphinx/issues/10541
-QUERY: TypeAlias = Union[COLUMNFILTER , NEAR , AND , OR , NOT , PHRASE]
+QUERY: TypeAlias = Union[COLUMNFILTER, NEAR, AND, OR, NOT, PHRASE]
 """Type representing all query types."""
 
 
@@ -584,13 +584,15 @@ _walk_attrs = {
 }
 
 if sys.version_info >= (3, 10):
+
     def _is_QUERY(obj):
-       return isinstance(obj, QUERY)
+        return isinstance(obj, QUERY)
 else:
     # py 3.9 can't do the above so we always return True.  Providing a
     # non-query will result in an inscrutable error lower in walk
     def _is_QUERY(obj):
         return True
+
 
 def walk(start: QUERY) -> Iterator[tuple[tuple[QUERY, ...], QUERY]]:
     """Yields the parents and each node for a query recursively

@@ -70,15 +70,18 @@ class Shell:
         will be displayed by the shell as text so there are no
         specific subclasses as the distinctions between different
         types of errors doesn't matter."""
+
         pass
 
-    def __init__(self,
-                 stdin: TextIO | None = None,
-                 stdout: TextIO | None = None,
-                 stderr: TextIO | None = None,
-                 encoding: str = "utf8",
-                 args: list[str] | None = None,
-                 db: apsw.Connection | None = None):
+    def __init__(
+        self,
+        stdin: TextIO | None = None,
+        stdout: TextIO | None = None,
+        stderr: TextIO | None = None,
+        encoding: str = "utf8",
+        args: list[str] | None = None,
+        db: apsw.Connection | None = None,
+    ):
         """Create instance, set defaults and do argument processing."""
         # The parameter doc has to be in main class doc as sphinx
         # ignores any described here
@@ -102,8 +105,8 @@ class Shell:
         self.timer = False
         self.header = False
         self.nullvalue = ""
-        self.output : Callable = self.output_list
-        self._output_table : str = self._fmt_sql_identifier("table")
+        self.output: Callable = self.output_list
+        self._output_table: str = self._fmt_sql_identifier("table")
         self.widths = []
         # do we truncate output in list mode?
         self.truncate = True
@@ -125,7 +128,7 @@ class Shell:
                 "null": "NULL",
                 "truncate": 4096,
                 "text_width": self._terminal_width(32),
-                "use_unicode": True
+                "use_unicode": True,
             }
 
         # we don't become interactive until the command line args are
@@ -154,8 +157,12 @@ class Shell:
             self.interactive = self._using_a_terminal()
 
     def _using_a_terminal(self):
-        return getattr(self.stdin, "isatty", None) and self.stdin.isatty() and getattr(self.stdout, "isatty",
-                                                                                       None) and self.stdout.isatty()
+        return (
+            getattr(self.stdin, "isatty", None)
+            and self.stdin.isatty()
+            and getattr(self.stdout, "isatty", None)
+            and self.stdout.isatty()
+        )
 
     def _apply_fts(self):
         # Applies the default apsw fts tokenizers and functions
@@ -167,15 +174,14 @@ class Shell:
             except apsw.NoFTS5Error:
                 pass
 
-
     def _ensure_db(self):
         "The database isn't opened until first use.  This function ensures it is now open."
         if not self._db:
             if not self.dbfilename:
                 self.dbfilename = ":memory:"
-            self._db = apsw.Connection(self.dbfilename,
-                                       flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE
-                                       | apsw.SQLITE_OPEN_CREATE)
+            self._db = apsw.Connection(
+                self.dbfilename, flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE
+            )
             self._apply_fts()
         return self._db
 
@@ -394,21 +400,23 @@ OPTIONS include:
                 if o(c) in self._printable:
                     res.append(fromc(c))
                 else:
-                    res.append("\\x%02X" % (o(c), ))
+                    res.append("\\x%02X" % (o(c),))
             res.append('"')
             return "".join(res)
         else:
             # number of some kind
-            return '"%s"' % (v, )
+            return '"%s"' % (v,)
 
     def _fmt_html_col(self, v):
         "Format as HTML (mainly escaping &/</>"
-        return self._fmt_text_col(v).\
-           replace("&", "&amp;"). \
-           replace(">", "&gt;"). \
-           replace("<", "&lt;"). \
-           replace("'", "&apos;"). \
-           replace('"', "&quot;")
+        return (
+            self._fmt_text_col(v)
+            .replace("&", "&amp;")
+            .replace(">", "&gt;")
+            .replace("<", "&lt;")
+            .replace("'", "&apos;")
+            .replace('"', "&quot;")
+        )
 
     def _fmt_json_value(self, v):
         "Format a value."
@@ -429,11 +437,11 @@ OPTIONS include:
                 if i in self._printable:
                     res.append(chr(i))
                 else:
-                    res.append("\\x%02X" % (i, ))
+                    res.append("\\x%02X" % (i,))
             res.append('"')
             return "".join(res)
         else:
-            return "%s" % (v, )
+            return "%s" % (v,)
 
     def _fmt_sql_identifier(self, v):
         "Return the identifier quoted in SQL syntax if needed (eg table and column names)"
@@ -447,8 +455,8 @@ OPTIONS include:
                     return v
         # double quote it unless there are any double quotes in it
         if '"' in nonalnum:
-            return "[%s]" % (v, )
-        return '"%s"' % (v, )
+            return "[%s]" % (v,)
+        return '"%s"' % (v,)
 
     def _fmt_text_col(self, v):
         "Regular text formatting"
@@ -460,7 +468,7 @@ OPTIONS include:
             # sqlite gives back raw bytes!
             return "<Binary data>"
         else:
-            return "%s" % (v, )
+            return "%s" % (v,)
 
     ###
     ### The various output routines.  They are always called with the
@@ -493,13 +501,13 @@ OPTIONS include:
             if self.truncate:
                 self._actualwidths = ["%" + ("-%d.%ds", "%d.%ds")[w < 0] % (abs(w), abs(w)) for w in widths]
             else:
-                self._actualwidths = ["%" + ("-%ds", "%ds")[w < 0] % (abs(w), ) for w in widths]
+                self._actualwidths = ["%" + ("-%ds", "%ds")[w < 0] % (abs(w),) for w in widths]
 
             if self.header:
                 # output the headers
                 c = self.colour
                 cols = [
-                    c.header + (self._actualwidths[i] % (self._fmt_text_col(line[i]), )) + c.header_
+                    c.header + (self._actualwidths[i] % (self._fmt_text_col(line[i]),)) + c.header_
                     for i in range(len(line))
                 ]
                 # sqlite shell uses two spaces between columns
@@ -508,7 +516,7 @@ OPTIONS include:
                     self.output_column(False, ["-" * abs(widths[i]) for i in range(len(widths))])
             return
         cols = [
-            self.colour.colour_value(line[i], self._actualwidths[i] % (self._fmt_text_col(line[i]), ))
+            self.colour.colour_value(line[i], self._actualwidths[i] % (self._fmt_text_col(line[i]),))
             for i in range(len(line))
         ]
         # sqlite shell uses two spaces between columns
@@ -564,10 +572,10 @@ OPTIONS include:
         self._csv[1].writerow(line)
         t = self._csv[0].getvalue()
         # csv lib always does DOS eol
-        assert (t.endswith("\r\n"))
+        assert t.endswith("\r\n")
         t = t[:-2]
         # should not be other eol irregularities
-        assert (not t.endswith("\r") and not t.endswith("\n"))
+        assert not t.endswith("\r") and not t.endswith("\n")
         self.write(self.stdout, t + "\n")
         self._csv[0].truncate(0)
         self._csv[0].seek(0)
@@ -605,17 +613,21 @@ OPTIONS include:
         """
         Output a JSON array.  Blobs are output as base64 encoded strings.
         """
-        if header: return
+        if header:
+            return
         fmt = lambda x: self.colour.colour_value(x, self._fmt_json_value(x))
         out = ["%s: %s" % (self._fmt_json_value(k), fmt(line.row[i])) for i, k in enumerate(line.columns)]
-        self.write(self.stdout,
-                   ("[" if line.is_first else "") + "{ " + ", ".join(out) + "}" + ("]" if line.is_last else ",") + "\n")
+        self.write(
+            self.stdout,
+            ("[" if line.is_first else "") + "{ " + ", ".join(out) + "}" + ("]" if line.is_last else ",") + "\n",
+        )
 
     def output_jsonl(self, header, line: Shell.Row):
         """
         Output as JSON objects, newline separated.  Blobs are output as base64 encoded strings.
         """
-        if header: return
+        if header:
+            return
         fmt = lambda x: self.colour.colour_value(x, self._fmt_json_value(x))
         out = ["%s: %s" % (self._fmt_json_value(k), fmt(line.row[i])) for i, k in enumerate(line.columns)]
         self.write(self.stdout, "{ " + ", ".join(out) + "}\n")
@@ -660,7 +672,7 @@ OPTIONS include:
             fmt = lambda x: c.header + self._fmt_python(x) + c.header_
         else:
             fmt = lambda x: self.colour.colour_value(x, self._fmt_python(x))
-        self.write(self.stdout, '(' + ", ".join([fmt(l) for l in line]) + "),\n")
+        self.write(self.stdout, "(" + ", ".join([fmt(l) for l in line]) + "),\n")
 
     def output_tcl(self, header, line):
         "Outputs TCL/C style strings using current separator"
@@ -742,6 +754,7 @@ Enter ".help" for instructions
         try:
             if self.interactive and self.stdin is sys.stdin:
                 import readline
+
                 old_completer = readline.get_completer()
                 readline.set_completer(self.complete)
                 readline.parse_and_bind("tab: complete")
@@ -823,8 +836,10 @@ Enter ".help" for instructions
 
                 for frame in stack:
                     self.write(
-                        self.stderr, "\nFrame %s in %s at line %d\n" %
-                        (frame.f_code.co_name, frame.f_code.co_filename, frame.f_lineno))
+                        self.stderr,
+                        "\nFrame %s in %s at line %d\n"
+                        % (frame.f_code.co_name, frame.f_code.co_filename, frame.f_lineno),
+                    )
                     vars = list(frame.f_locals.items())
                     vars.sort()
                     for k, v in vars:
@@ -882,7 +897,7 @@ Enter ".help" for instructions
                 e,
                 explain,
             )
-        return Shell._qd(sql[:len(saved)], sql[len(saved):], None, None, None, explain)
+        return Shell._qd(sql[: len(saved)], sql[len(saved) :], None, None, None, explain)
 
     def process_sql(self, sql: str, bindings=None, internal=False, summary=None):
         """Processes SQL text consisting of one or more statements
@@ -927,8 +942,10 @@ Enter ".help" for instructions
                 if qd.error_offset >= 0:
                     offset = qd.error_offset
                     query = qd.query.encode("utf8")
-                    before, after = fixws(query[:offset][-35:].decode("utf8")), \
-                        fixws(query[offset:][:35].decode("utf8"))
+                    before, after = (
+                        fixws(query[:offset][-35:].decode("utf8")),
+                        fixws(query[offset:][:35].decode("utf8")),
+                    )
                     print("  ", before + after, file=self.stderr)
                     print("   " + (" " * len(before)) + "^--- error here", file=self.stderr)
                 qd.exception._handle_exception_saw_this = True
@@ -953,7 +970,9 @@ Enter ".help" for instructions
             p = sig.parameters[param_name]
             use_prow = p.annotation == "Shell.Row"
 
-            with apsw.ext.ShowResourceUsage(file = self.stderr if self.timer else None, db=self.db, scope="thread", indent="* "):
+            with apsw.ext.ShowResourceUsage(
+                file=self.stderr if self.timer else None, db=self.db, scope="thread", indent="* "
+            ):
                 column_names = None
                 rows = [] if getattr(self.output, "all_at_once", False) else None
 
@@ -994,8 +1013,14 @@ Enter ".help" for instructions
 
         changes = self.db.total_changes() - changes_start
         if not internal and changes and self.changes:
-            text = ("changes: " + self.colour.colour_value(changes, str(changes)) + "\t" + "total changes: " +
-                    self.colour.colour_value(self.db.total_changes(), str(self.db.total_changes())) + "\n")
+            text = (
+                "changes: "
+                + self.colour.colour_value(changes, str(changes))
+                + "\t"
+                + "total changes: "
+                + self.colour.colour_value(self.db.total_changes(), str(self.db.total_changes()))
+                + "\n"
+            )
             self.write(self.stdout, text)
 
     def process_command(self, command):
@@ -1010,7 +1035,7 @@ Enter ".help" for instructions
         cmd[0] = cmd[0][1:]
         fn = getattr(self, "command_" + cmd[0], None)
         if not fn:
-            raise self.Error("Unknown command \"%s\".  Enter \".help\" for help" % (cmd[0], ))
+            raise self.Error('Unknown command "%s".  Enter ".help" for help' % (cmd[0],))
         # special handling for .parameter set because we need the value to preserve quoting
         # '33' and 33 are different
         if len(cmd) > 3 and cmd[0] == "parameter" and cmd[1] == "set":
@@ -1018,13 +1043,13 @@ Enter ".help" for instructions
             cmd = cmd[:3] + [command[pos:]]
         # special handling for shell / py because we want to preserve the text exactly
         if cmd[0] in {"shell", "py"}:
-            rest = command[command.index(cmd[0]) + len(cmd[0]):].strip()
+            rest = command[command.index(cmd[0]) + len(cmd[0]) :].strip()
             if rest:
                 cmd = [cmd[0], rest]
         # special handling for ftsq TABLE to preserve exact query
         if len(cmd) > 2 and cmd[0] == "ftsq":
             pos = command.index(cmd[1]) + len(cmd[1])
-            while command[pos].strip(): # test it isn't whitespace, eq quoting
+            while command[pos].strip():  # test it isn't whitespace, eq quoting
                 pos += 1
             cmd = [cmd[0], cmd[1], command[pos:].strip()]
         res = fn(cmd[1:])
@@ -1129,7 +1154,7 @@ Enter ".help" for instructions
                 sel = "*" if self.db is c else " "
                 self.write(
                     self.stdout,
-                    f"{ co.bold}{ sel }{ co.bold_} { co.vnumber }{ i: 2}{ co.vnumber_ } - ({ c.open_vfs }) \"{ co.vstring }{ c.filename }{ co.vstring_ }\"\n"
+                    f'{ co.bold}{ sel }{ co.bold_} { co.vnumber }{ i: 2}{ co.vnumber_ } - ({ c.open_vfs }) "{ co.vstring }{ c.filename }{ co.vstring_ }"\n',
                 )
         elif len(cmd) == 1:
             c = dbs[int(cmd[0])]
@@ -1158,9 +1183,7 @@ Enter ".help" for instructions
     command_color = command_colour
 
     def command_databases(self, cmd):
-        """databases: Lists names and files of attached databases
-
-        """
+        """databases: Lists names and files of attached databases"""
         if len(cmd):
             raise self.Error("databases command doesn't take any parameters")
         self.push_output()
@@ -1174,8 +1197,10 @@ Enter ".help" for instructions
             self.pop_output()
 
     _dbconfig_ignore = {
-        "SQLITE_DBCONFIG_MAINDBNAME", "SQLITE_DBCONFIG_LOOKASIDE", "SQLITE_DBCONFIG_MAX",
-        "SQLITE_DBCONFIG_STMT_SCANSTATUS"
+        "SQLITE_DBCONFIG_MAINDBNAME",
+        "SQLITE_DBCONFIG_LOOKASIDE",
+        "SQLITE_DBCONFIG_MAX",
+        "SQLITE_DBCONFIG_STMT_SCANSTATUS",
     }
 
     def command_dbconfig(self, cmd):
@@ -1191,7 +1216,7 @@ Enter ".help" for instructions
             for k in apsw.mapping_db_config:
                 if type(k) is not str or k in self._dbconfig_ignore:
                     continue
-                pretty = k[len("SQLITE_DBCONFIG_"):].lower()
+                pretty = k[len("SQLITE_DBCONFIG_") :].lower()
                 outputs[pretty] = self.db.config(getattr(apsw, k), -1)
             w = max(len(k) for k in outputs.keys())
             for k, v in outputs.items():
@@ -1242,8 +1267,13 @@ Enter ".help" for instructions
                     outputs.append(("filename", self.db.filename))
                 else:
                     outputs.append(
-                        ("filename",
-                         self.db.filename_wal if self.db.pragma("journal_mode") == "wal" else self.db.filename_journal))
+                        (
+                            "filename",
+                            self.db.filename_wal
+                            if self.db.pragma("journal_mode") == "wal"
+                            else self.db.filename_journal,
+                        )
+                    )
 
         w = max(len(k) for k, v in outputs)
         for k, v in outputs:
@@ -1323,9 +1353,11 @@ Enter ".help" for instructions
             tables = []
             for pattern in cmd:
                 for name, sql in self.db.execute(
-                        "SELECT name,sql FROM sqlite_schema "
-                        "WHERE sql NOT NULL AND type IN ('table','view') "
-                        "AND tbl_name LIKE ?1", (pattern, )):
+                    "SELECT name,sql FROM sqlite_schema "
+                    "WHERE sql NOT NULL AND type IN ('table','view') "
+                    "AND tbl_name LIKE ?1",
+                    (pattern,),
+                ):
                     if check(name, sql) and name not in tables:
                         tables.append(name)
 
@@ -1335,12 +1367,14 @@ Enter ".help" for instructions
             # will we need to analyze anything later?
             analyze_needed = []
             for stat in self.db.execute(
-                    "select name from sqlite_schema where sql not null and type='table' and tbl_name like 'sqlite_stat%'"
+                "select name from sqlite_schema where sql not null and type='table' and tbl_name like 'sqlite_stat%'"
             ):
                 for name in tables:
                     if len(
-                            self.db.execute("select * from " + self._fmt_sql_identifier(stat[0]) + " WHERE tbl=?",
-                                            (name, )).fetchall()):
+                        self.db.execute(
+                            "select * from " + self._fmt_sql_identifier(stat[0]) + " WHERE tbl=?", (name,)
+                        ).fetchall()
+                    ):
                         if name not in analyze_needed:
                             analyze_needed.append(name)
             analyze_needed.sort()
@@ -1353,7 +1387,7 @@ Enter ".help" for instructions
                 self.write(self.stdout, textwrap.fill(s, 78, initial_indent="-- ", subsequent_indent="-- ") + "\n")
 
             pats = ", ".join([(x, "(All)")[x == "%"] for x in cmd])
-            comment("SQLite dump (by APSW %s)" % (apsw.apsw_version(), ))
+            comment("SQLite dump (by APSW %s)" % (apsw.apsw_version(),))
             comment("SQLite version " + apsw.sqlite_lib_version())
             comment("Date: " + unicodify(time.strftime("%c")))
             comment("Tables like: " + pats)
@@ -1361,6 +1395,7 @@ Enter ".help" for instructions
             try:
                 import getpass
                 import socket
+
                 comment("User: %s @ %s" % (unicodify(getpass.getuser()), unicodify(socket.gethostname())))
             except ImportError:
                 pass
@@ -1389,9 +1424,11 @@ Enter ".help" for instructions
                 comment("This pragma is needed to restore virtual tables")
                 self.write(self.stdout, "PRAGMA writable_schema=ON;\n")
             if foreigns:
-                comment("This pragma turns off checking of foreign keys "
-                        "as tables would be inconsistent while restoring.  It was introduced "
-                        "in SQLite 3.6.19.")
+                comment(
+                    "This pragma turns off checking of foreign keys "
+                    "as tables would be inconsistent while restoring.  It was introduced "
+                    "in SQLite 3.6.19."
+                )
                 self.write(self.stdout, "PRAGMA foreign_keys=OFF;\n")
 
             if virtuals or foreigns:
@@ -1417,8 +1454,9 @@ Enter ".help" for instructions
                 self.output = self.output_insert
                 # Dump the table
                 for table in tables:
-                    for sql in self.db.execute("SELECT sql FROM sqlite_schema WHERE name=?1 AND type='table'",
-                                               (table, )):
+                    for sql in self.db.execute(
+                        "SELECT sql FROM sqlite_schema WHERE name=?1 AND type='table'", (table,)
+                    ):
                         comment("Table  " + table)
                         # Special treatment for virtual tables - they
                         # get called back on drops and creates and
@@ -1426,13 +1464,20 @@ Enter ".help" for instructions
                         # sqlite_schema directly
                         if sql[0].lower().split()[:3] == ["create", "virtual", "table"]:
                             self.write(
-                                self.stdout, "DELETE FROM sqlite_schema WHERE name=" + apsw.format_sql_value(table) +
-                                " AND type='table';\n")
+                                self.stdout,
+                                "DELETE FROM sqlite_schema WHERE name="
+                                + apsw.format_sql_value(table)
+                                + " AND type='table';\n",
+                            )
                             self.write(
                                 self.stdout,
                                 "INSERT INTO sqlite_schema(type,name,tbl_name,rootpage,sql) VALUES('table',%s,%s,0,%s);\n"
-                                % (apsw.format_sql_value(table), apsw.format_sql_value(table),
-                                   apsw.format_sql_value(sql[0])))
+                                % (
+                                    apsw.format_sql_value(table),
+                                    apsw.format_sql_value(table),
+                                    apsw.format_sql_value(sql[0]),
+                                ),
+                            )
                         else:
                             self.write(self.stdout, "DROP TABLE IF EXISTS " + self._fmt_sql_identifier(table) + ";\n")
                             self.write(self.stdout, sqldef(sql[0]))
@@ -1441,10 +1486,12 @@ Enter ".help" for instructions
                         # Now any indices or triggers
                         first = True
                         for name, sql in self.db.execute(
-                                "SELECT name,sql FROM sqlite_schema "
-                                "WHERE sql NOT NULL AND type IN ('index', 'trigger') "
-                                "AND tbl_name=?1 AND name NOT LIKE 'sqlite_%' "
-                                "ORDER BY lower(name)", (table, )):
+                            "SELECT name,sql FROM sqlite_schema "
+                            "WHERE sql NOT NULL AND type IN ('index', 'trigger') "
+                            "AND tbl_name=?1 AND name NOT LIKE 'sqlite_%' "
+                            "ORDER BY lower(name)",
+                            (table,),
+                        ):
                             if first:
                                 comment("Triggers and indices on  " + table)
                                 first = False
@@ -1453,14 +1500,15 @@ Enter ".help" for instructions
                 # Views done last.  They have to be done in the same order as they are in sqlite_schema
                 # as they could refer to each other
                 first = True
-                for name, sql in self.db.execute("SELECT name,sql FROM sqlite_schema "
-                                                 "WHERE sql NOT NULL AND type='view' "
-                                                 "AND name IN ( " + ",".join([apsw.format_sql_value(i)
-                                                                              for i in tables]) + ") ORDER BY _ROWID_"):
+                for name, sql in self.db.execute(
+                    "SELECT name,sql FROM sqlite_schema "
+                    "WHERE sql NOT NULL AND type='view' "
+                    "AND name IN ( " + ",".join([apsw.format_sql_value(i) for i in tables]) + ") ORDER BY _ROWID_"
+                ):
                     if first:
                         comment("Views")
                         first = False
-                    self.write(self.stdout, "DROP VIEW IF EXISTS %s;\n" % (self._fmt_sql_identifier(name), ))
+                    self.write(self.stdout, "DROP VIEW IF EXISTS %s;\n" % (self._fmt_sql_identifier(name),))
                     self.write(self.stdout, sqldef(sql))
                 if not first:
                     blank()
@@ -1470,19 +1518,23 @@ Enter ".help" for instructions
                 if len(self.db.execute("select * from sqlite_schema where name='sqlite_sequence'").fetchall()):
                     first = True
                     for t in tables:
-                        v = self.db.execute("select seq from main.sqlite_sequence where name=?1", (t, )).fetchall()
+                        v = self.db.execute("select seq from main.sqlite_sequence where name=?1", (t,)).fetchall()
                         if len(v):
                             assert len(v) == 1
                             if first:
-                                comment("For primary key autoincrements the next id "
-                                        "to use is stored in sqlite_sequence")
+                                comment(
+                                    "For primary key autoincrements the next id " "to use is stored in sqlite_sequence"
+                                )
                                 first = False
                             self.write(
                                 self.stdout,
-                                'DELETE FROM main.sqlite_sequence WHERE name=%s;\n' % (apsw.format_sql_value(t), ))
+                                "DELETE FROM main.sqlite_sequence WHERE name=%s;\n" % (apsw.format_sql_value(t),),
+                            )
                             self.write(
-                                self.stdout, 'INSERT INTO main.sqlite_sequence VALUES (%s, %s);\n' %
-                                (apsw.format_sql_value(t), v[0][0]))
+                                self.stdout,
+                                "INSERT INTO main.sqlite_sequence VALUES (%s, %s);\n"
+                                % (apsw.format_sql_value(t), v[0][0]),
+                            )
                     if not first:
                         blank()
             finally:
@@ -1522,8 +1574,10 @@ Enter ".help" for instructions
                 self.write(self.stdout, "PRAGMA writable_schema=OFF;\n")
                 # schema reread
                 blank()
-                comment("We need to force SQLite to reread the schema because otherwise it doesn't know that "
-                        "the virtual tables we inserted directly into sqlite_schema exist.")
+                comment(
+                    "We need to force SQLite to reread the schema because otherwise it doesn't know that "
+                    "the virtual tables we inserted directly into sqlite_schema exist."
+                )
                 self.write(self.stdout, "BEGIN;\nCREATE TABLE no_such_table(x,y,z);\nROLLBACK;\n")
 
         finally:
@@ -1551,12 +1605,12 @@ Enter ".help" for instructions
         try:
             codecs.lookup(enc)
         except LookupError:
-            raise self.Error("No known encoding '%s'" % (enc, ))
+            raise self.Error("No known encoding '%s'" % (enc,))
         try:
             if errors is not None:
                 codecs.lookup_error(errors)
         except LookupError:
-            raise self.Error("No known codec error handler '%s'" % (errors, ))
+            raise self.Error("No known codec error handler '%s'" % (errors,))
         self.encoding = enc, errors
 
     def command_encoding(self, cmd):
@@ -1632,7 +1686,7 @@ Enter ".help" for instructions
             return "?" + str(len(queryparams))
 
         s = cmd[0]
-        if '%' in s or '_' in s:
+        if "%" in s or "_" in s:
             queryparams.append(s)
             querytemplate.append("%s LIKE " + qp())
         queryparams.append(s)
@@ -1644,13 +1698,14 @@ Enter ".help" for instructions
         except ValueError:
             pass
         querytemplate = " OR ".join(querytemplate)
-        for (table, ) in self.db.execute("SELECT name FROM sqlite_schema WHERE type='table' AND name LIKE ?1",
-                                         (tablefilter, )):
+        for (table,) in self.db.execute(
+            "SELECT name FROM sqlite_schema WHERE type='table' AND name LIKE ?1", (tablefilter,)
+        ):
             t = self._fmt_sql_identifier(table)
-            query = "SELECT * from %s WHERE " % (t, )
+            query = "SELECT * from %s WHERE " % (t,)
             colq = []
-            for _, column, _, _, _, _ in self.db.execute("pragma table_info(%s)" % (t, )):
-                colq.append(querytemplate % ((self._fmt_sql_identifier(column), ) * len(queryparams)))
+            for _, column, _, _, _, _ in self.db.execute("pragma table_info(%s)" % (t,)):
+                colq.append(querytemplate % ((self._fmt_sql_identifier(column),) * len(queryparams)))
             query = query + " OR ".join(colq)
             self.process_sql(query, queryparams, internal=True, summary=("Table " + table + "\n", "\n"))
 
@@ -1662,13 +1717,11 @@ Enter ".help" for instructions
         """
         if len(cmd) != 2:
             raise self.Error("Expected a table name and a query")
-        query =f"select rowid, snippet({ cmd[0] }, -1, '<<', '>>', '...', 10) as 'snippet' from { cmd[0] }(?) order by rank limit 20"
-        self.process_sql(query, (cmd[1], ))
+        query = f"select rowid, snippet({ cmd[0] }, -1, '<<', '>>', '...', 10) as 'snippet' from { cmd[0] }(?) order by rank limit 20"
+        self.process_sql(query, (cmd[1],))
 
     def command_header(self, cmd):
-        """header(s) ON|OFF: Display the column names in output (default OFF)
-
-        """
+        """header(s) ON|OFF: Display the column names in output (default OFF)"""
         self.header = self._boolean_command("header", cmd)
 
     command_headers = command_header
@@ -1695,8 +1748,9 @@ Enter ".help" for instructions
                 #   syntax: one liner\nmulti\nliner
                 d = getattr(self, c).__doc__
                 assert d, c + " command must have documentation"
-                c = c[len("command_"):]
-                if c in ("headers", "color"): continue
+                c = c[len("command_") :]
+                if c in ("headers", "color"):
+                    continue
                 while d[0] == "\n":
                     d = d[1:]
                 parts = d.split("\n", 1)
@@ -1729,7 +1783,7 @@ Enter ".help" for instructions
                         else:
                             multi.append(l)
 
-                self._help_info[c] = ('.' + firstline[0].strip(), firstline[1].strip(), multi)
+                self._help_info[c] = ("." + firstline[0].strip(), firstline[1].strip(), multi)
 
         self.write(self.stderr, "\n")
 
@@ -1764,9 +1818,10 @@ Enter ".help" for instructions
 
             for command in cmd:
                 command = command.lstrip(".")
-                if command == "headers": command = "header"
+                if command == "headers":
+                    command = "header"
                 if command not in self._help_info:
-                    raise self.Error("No such command \"%s\"" % (command, ))
+                    raise self.Error('No such command "%s"' % (command,))
                 out = []
                 hi = self._help_info[command]
                 # usage string
@@ -1829,7 +1884,7 @@ Enter ".help" for instructions
             # how many columns?
             ncols = len(self.db.execute("pragma table_info(" + self._fmt_sql_identifier(cmd[1]) + ")").fetchall())
             if ncols < 1:
-                raise self.Error("No such table '%s'" % (cmd[1], ))
+                raise self.Error("No such table '%s'" % (cmd[1],))
 
             cur = self.db.cursor()
             sql = "insert into %s values(%s)" % (self._fmt_sql_identifier(cmd[1]), ",".join("?" * ncols))
@@ -1903,7 +1958,7 @@ Enter ".help" for instructions
         if len(cmd) < 1 or len(cmd) > 2:
             raise self.Error("Expected one or two parameters")
         if not os.path.exists(cmd[0]):
-            raise self.Error("File \"%s\" does not exist" % (cmd[0], ))
+            raise self.Error('File "%s" does not exist' % (cmd[0],))
         if len(cmd) == 2:
             tablename = cmd[1]
         else:
@@ -1917,8 +1972,8 @@ Enter ".help" for instructions
             if not tablename:
                 tablename = os.path.splitext(os.path.basename(cmd[0]))[0]
 
-            if c.execute("pragma table_info(%s)" % (self._fmt_sql_identifier(tablename), )).fetchall():
-                raise self.Error("Table \"%s\" already exists" % (tablename, ))
+            if c.execute("pragma table_info(%s)" % (self._fmt_sql_identifier(tablename),)).fetchall():
+                raise self.Error('Table "%s" already exists' % (tablename,))
 
             # The types we support deducing
             def DateUS(v):  # US formatted date with wrong ordering of day and month
@@ -1926,7 +1981,8 @@ Enter ".help" for instructions
 
             def DateWorld(v, switchdm=False):  # Sensibly formatted date as used anywhere else in the world
                 y, m, d = self._getdate(v)
-                if switchdm: m, d = d, m
+                if switchdm:
+                    m, d = d, m
                 if m < 1 or m > 12 or d < 1 or d > 31:
                     raise ValueError
                 return "%d-%02d-%02d" % (y, m, d)
@@ -1936,7 +1992,8 @@ Enter ".help" for instructions
 
             def DateTimeWorld(v, switchdm=False):  # Sensible date and time
                 y, m, d, h, M, s = self._getdatetime(v)
-                if switchdm: m, d = d, m
+                if switchdm:
+                    m, d = d, m
                 if m < 1 or m > 12 or d < 1 or d > 31 or h < 0 or h > 23 or M < 0 or M > 59 or s < 0 or s > 65:
                     raise ValueError
                 return "%d-%02d-%02dT%02d:%02d:%02d" % (y, m, d, h, M, s)
@@ -1945,11 +2002,13 @@ Enter ".help" for instructions
                 # Python's float & int constructors allow whitespace which we don't
                 if re.search(r"\s", v):
                     raise ValueError
-                if v == "0": return 0
+                if v == "0":
+                    return 0
                 if v[0] == "+":  # idd prefix
                     raise ValueError
                 if re.match("^[0-9]+$", v):
-                    if v[0] == "0": raise ValueError  # also a phone number
+                    if v[0] == "0":
+                        raise ValueError  # also a phone number
                     return int(v)
                 if v[0] == "0" and not v.startswith("0."):  # deceptive not a number
                     raise ValueError
@@ -2016,8 +2075,9 @@ Enter ".help" for instructions
             if len(possibles) == 0:
                 if encodingissue:
                     raise self.Error(
-                        "The file is probably not in the current encoding \"%s\" and didn't match a known file format" %
-                        (self.encoding[0], ))
+                        'The file is probably not in the current encoding "%s" and didn\'t match a known file format'
+                        % (self.encoding[0],)
+                    )
                 v = "File doesn't appear to match a known type."
                 if len(errors):
                     v += "  Errors reported:\n" + "\n".join(["  " + e for e in errors])
@@ -2027,7 +2087,7 @@ Enter ".help" for instructions
             format, ncols, lines, datas = possibles[0]
             fmt = format.get("dialect", None)
             if fmt is None:
-                fmt = "(delimited by \"%s\")" % (format["delimiter"], )
+                fmt = '(delimited by "%s")' % (format["delimiter"],)
             self.write(self.stdout, "Detected Format %s  Columns %d  Rows %d\n" % (fmt, ncols, lines))
             # Header row
             reader = self._csvin_wrapper(cmd[0], format)
@@ -2037,15 +2097,19 @@ Enter ".help" for instructions
             identity = lambda x: x
             for i in range(ncols):
                 if len(datas[i]) > 1:
-                    raise self.Error("Column #%d \"%s\" has ambiguous data format - %s" %
-                                     (i + 1, header[i], ", ".join([d.__name__ for d in datas[i]])))
+                    raise self.Error(
+                        'Column #%d "%s" has ambiguous data format - %s'
+                        % (i + 1, header[i], ", ".join([d.__name__ for d in datas[i]]))
+                    )
                 if datas[i]:
                     datas[i] = datas[i][0]
                 else:
                     datas[i] = identity
             # Make the table
-            sql = "CREATE TABLE %s(%s)" % (self._fmt_sql_identifier(tablename), ", ".join(
-                [self._fmt_sql_identifier(h) for h in header]))
+            sql = "CREATE TABLE %s(%s)" % (
+                self._fmt_sql_identifier(tablename),
+                ", ".join([self._fmt_sql_identifier(h) for h in header]),
+            )
             c.execute(sql)
             # prep work for each row
             sql = "INSERT INTO %s VALUES(%s)" % (self._fmt_sql_identifier(tablename), ",".join(["?"] * ncols))
@@ -2060,7 +2124,7 @@ Enter ".help" for instructions
                 c.execute(sql, vals)
 
             c.execute("COMMIT")
-            self.write(self.stdout, "Auto-import into table \"%s\" complete\n" % (tablename, ))
+            self.write(self.stdout, 'Auto-import into table "%s" complete\n' % (tablename,))
         except Exception:
             if final:
                 self.db.execute(final)
@@ -2095,9 +2159,7 @@ Enter ".help" for instructions
         return items
 
     def command_indices(self, cmd):
-        """indices TABLE: Lists all indices on table TABLE
-
-        """
+        """indices TABLE: Lists all indices on table TABLE"""
         if len(cmd) != 1:
             raise self.Error("indices takes one table name")
         self.push_output()
@@ -2109,7 +2171,8 @@ Enter ".help" for instructions
                 "UNION ALL SELECT name FROM sqlite_temp_schema WHERE type='index' AND tbl_name LIKE "
                 "?1 ORDER by name",
                 cmd,
-                internal=True)
+                internal=True,
+            )
         finally:
             self.pop_output()
 
@@ -2157,8 +2220,11 @@ Enter ".help" for instructions
         if w == "tabs":
             w = "list"
         if not hasattr(self, "output_" + w):
-            raise self.Error("Expected a valid output mode: " + ", ".join(self._output_modes) +
-                             "\nUse .help mode for a detailed list")
+            raise self.Error(
+                "Expected a valid output mode: "
+                + ", ".join(self._output_modes)
+                + "\nUse .help mode for a detailed list"
+            )
 
         m = getattr(self, "output_" + w)
 
@@ -2184,23 +2250,11 @@ Enter ".help" for instructions
 
         defaults = {
             "quote": w in {"qbox"},
-            "string_sanitize": {
-                "box": 0,
-                "table": 2,
-                "qbox": 1
-            }[w],
+            "string_sanitize": {"box": 0, "table": 2, "qbox": 1}[w],
             "null": "NULL",
-            "truncate": {
-                "box": 1024,
-                "table": 2048,
-                "qbox": 4096
-            }[w],
+            "truncate": {"box": 1024, "table": 2048, "qbox": 4096}[w],
             "text_width": 0 if self.interactive else 80,
-            "use_unicode": {
-                "box": True,
-                "table": False,
-                "qbox": True
-            }[w],
+            "use_unicode": {"box": True, "table": False, "qbox": True}[w],
         }
 
         # argparse unfortunately tries to do too much and really is about program arguments,
@@ -2215,21 +2269,22 @@ Enter ".help" for instructions
             "--string-sanitize",
             type=int,
             choices=(0, 1, 2),
-            help="How much to clean up string characters (0 - none, 1 - medium, 2 - everything) [%(default)s]")
+            help="How much to clean up string characters (0 - none, 1 - medium, 2 - everything) [%(default)s]",
+        )
         p.add_argument("--null", help="How to show NULL [%(default)s]")
         p.add_argument("--truncate", type=int, help="How many characters to truncate long output at [%(default)s]")
-        p.add_argument("--width",
-                       type=int,
-                       dest="text_width",
-                       help="Maximum width of the table [Screen width if terminal, else 80 chars]")
-        p.add_argument("--unicode",
-                       action="store_true",
-                       dest="use_unicode",
-                       help="Use unicode line drawing [%(default)s]")
-        p.add_argument("--no-unicode",
-                       action="store_true",
-                       dest="use_unicode",
-                       help="Use ascii line drawing like +=-+ ")
+        p.add_argument(
+            "--width",
+            type=int,
+            dest="text_width",
+            help="Maximum width of the table [Screen width if terminal, else 80 chars]",
+        )
+        p.add_argument(
+            "--unicode", action="store_true", dest="use_unicode", help="Use unicode line drawing [%(default)s]"
+        )
+        p.add_argument(
+            "--no-unicode", action="store_true", dest="use_unicode", help="Use ascii line drawing like +=-+ "
+        )
         text = io.StringIO()
         try:
             with contextlib.redirect_stderr(text):
@@ -2244,7 +2299,7 @@ Enter ".help" for instructions
 
     # needed so command completion and help can use it
     def _calculate_output_modes(self):
-        modes = [m[len("output_"):] for m in dir(self) if m.startswith("output_")]
+        modes = [m[len("output_") :] for m in dir(self) if m.startswith("output_")]
         modes.append("tabs")
         modes.sort()
         self._output_modes = modes
@@ -2252,7 +2307,7 @@ Enter ".help" for instructions
         detail = []
 
         for m in modes:
-            if m in {'tabs', "column", "line"}:
+            if m in {"tabs", "column", "line"}:
                 continue
             d = getattr(self, "output_" + m).__doc__
             assert d, "output mode " + m + " needs doc"
@@ -2326,10 +2381,9 @@ Enter ".help" for instructions
                     pass
         self.db_references.add(self.db)
         self.dbfilename = dbname if dbname is not None else ""
-        self._db = apsw.Connection(self.dbfilename,
-                                   vfs=vfs,
-                                   flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE
-                                   | apsw.SQLITE_OPEN_CREATE)
+        self._db = apsw.Connection(
+            self.dbfilename, vfs=vfs, flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE
+        )
         self._apply_fts()
 
     def command_output(self, cmd):
@@ -2498,11 +2552,11 @@ Enter ".help" for instructions
             raise self.Error("read takes a single filename")
         if cmd[0].lower().endswith(".py"):
             g = {}
-            g.update({'apsw': apsw, 'shell': self, 'db': self.db})
+            g.update({"apsw": apsw, "shell": self, "db": self.db})
             # compile step is needed to associate name with code
             f = open(cmd[0], "rb")
             try:
-                exec(compile(f.read(), cmd[0], 'exec'), g, g)
+                exec(compile(f.read(), cmd[0], "exec"), g, g)
             finally:
                 f.close()
         else:
@@ -2563,7 +2617,7 @@ Enter ".help" for instructions
         self.header = False
         try:
             if len(cmd) == 0:
-                cmd = ['%']
+                cmd = ["%"]
             for n in cmd:
                 self.process_sql(
                     "SELECT sql||';' FROM "
@@ -2571,8 +2625,10 @@ Enter ".help" for instructions
                     "FROM sqlite_schema UNION ALL "
                     "SELECT sql, type, tbl_name, name FROM sqlite_temp_schema) "
                     "WHERE tbl_name LIKE ?1 AND type!='meta' AND sql NOTNULL AND name NOT LIKE 'sqlite_%' "
-                    "ORDER BY substr(type,2,1), name", (n, ),
-                    internal=True)
+                    "ORDER BY substr(type,2,1), name",
+                    (n,),
+                    internal=True,
+                )
         finally:
             self.pop_output()
 
@@ -2592,8 +2648,18 @@ Enter ".help" for instructions
             raise self.Error("separator takes exactly one parameter")
         self.separator = self.fixup_backslashes(cmd[0])
 
-    _shows = ("echo", "headers", "mode", "changes", "nullvalue", "output", "separator", "width", "exceptions",
-              "encoding")
+    _shows = (
+        "echo",
+        "headers",
+        "mode",
+        "changes",
+        "nullvalue",
+        "output",
+        "separator",
+        "width",
+        "exceptions",
+        "encoding",
+    )
 
     def command_shell(self, cmd):
         """shell CMD ARGS...: Run CMD ARGS in a system shell
@@ -2615,7 +2681,7 @@ Enter ".help" for instructions
         if len(cmd):
             what = cmd[0]
             if what not in self._shows:
-                raise self.Error("Unknown show: '%s'" % (what, ))
+                raise self.Error("Unknown show: '%s'" % (what,))
         else:
             what = None
 
@@ -2626,7 +2692,8 @@ Enter ".help" for instructions
                 continue
             # boolean settings
             if i in ("echo", "headers", "exceptions", "changes"):
-                if i == "headers": i = "header"
+                if i == "headers":
+                    i = "header"
                 v = "off"
                 if getattr(self, i):
                     v = "on"
@@ -2644,7 +2711,7 @@ Enter ".help" for instructions
                 else:
                     v = getattr(self.stdout, "name", "<unknown stdout>")
             elif i == "width":
-                v = " ".join(["%d" % (i, ) for i in self.widths])
+                v = " ".join(["%d" % (i,) for i in self.widths])
             elif i == "encoding":
                 v = self.encoding[0]
                 if self.encoding[1]:
@@ -2672,7 +2739,7 @@ Enter ".help" for instructions
         self.header = False
         try:
             if len(cmd) == 0:
-                cmd = ['%']
+                cmd = ["%"]
 
             # The SQLite shell code filters out sqlite_ prefixes if
             # you specified an argument else leaves them in.  It also
@@ -2686,8 +2753,10 @@ Enter ".help" for instructions
                     "UNION ALL "
                     "SELECT name FROM sqlite_temp_schema "
                     "WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%' "
-                    "ORDER BY 1", (n, ),
-                    internal=True)
+                    "ORDER BY 1",
+                    (n,),
+                    internal=True,
+                )
         finally:
             self.pop_output()
 
@@ -2704,7 +2773,7 @@ Enter ".help" for instructions
         try:
             t = int(cmd[0])
         except ValueError:
-            raise self.Error("%s is not a number" % (cmd[0], ))
+            raise self.Error("%s is not a number" % (cmd[0],))
         self.db.set_busy_timeout(t)
 
     def command_timer(self, cmd):
@@ -2779,7 +2848,7 @@ Enter ".help" for instructions
             try:
                 w.append(int(i))
             except ValueError:
-                raise self.Error("'%s' is not a valid number" % (i, ))
+                raise self.Error("'%s' is not a valid number" % (i,))
         self.widths = w
 
     def _terminal_width(self, minimum):
@@ -2837,7 +2906,7 @@ Enter ".help" for instructions
         if self.interactive:
             return
         res = []
-        res.append("Line %d" % (self.input_line_number, ))
+        res.append("Line %d" % (self.input_line_number,))
         res.append(": " + getattr(self.stdin, "name", "<stdin>"))
         self._input_descriptions.append(" ".join(res))
 
@@ -2847,7 +2916,8 @@ Enter ".help" for instructions
 
         This function is needed because :mod:`shlex` does not do it for us.
         """
-        if "\\" not in s: return s
+        if "\\" not in s:
+            return s
         # See the resolve_backslashes function in SQLite shell source
         res = []
         i = 0
@@ -2894,7 +2964,10 @@ Enter ".help" for instructions
                     c = self.colour.prompt, self.colour.prompt_
                     if self._using_readline:
                         # these are needed so that readline knows they are non-printing characters
-                        c = "\x01" + c[0] + "\x02", "\x01" + c[1] + "\x02",
+                        c = (
+                            "\x01" + c[0] + "\x02",
+                            "\x01" + c[1] + "\x02",
+                        )
                     line = self._raw_input(c[0] + prompt + c[1]) + "\n"  # raw_input excludes newline
                 else:
                     self.write(self.stdout, prompt)
@@ -2924,14 +2997,17 @@ Enter ".help" for instructions
                 return None
             if len(command.strip()) == 0:
                 return ""
-            if command[0] == "?": command = ".help " + command[1:]
+            if command[0] == "?":
+                command = ".help " + command[1:]
             # incomplete SQL?
             while command[0] != "." and not apsw.complete(command):
                 self._completion_first = False
                 line = self.get_line(self.moreprompt)
                 if line is None:  # unexpected eof
-                    raise self.Error("Incomplete SQL (line %d of %s): %s\n" %
-                                     (self.input_line_number, getattr(self.stdin, "name", "<stdin>"), command))
+                    raise self.Error(
+                        "Incomplete SQL (line %d of %s): %s\n"
+                        % (self.input_line_number, getattr(self.stdin, "name", "<stdin>"), command)
+                    )
                 if line in ("go", "/"):
                     break
                 command = command + "\n" + line
@@ -2995,6 +3071,7 @@ Enter ".help" for instructions
         """
         if state == 0:
             import readline
+
             # the whole line
             line = readline.get_line_buffer()
             # beginning and end(+1) of the token in line
@@ -3043,7 +3120,7 @@ Enter ".help" for instructions
         "data_version": None,
         "database_list": None,
         "defer_foreign_keys=": _pragmas_bool,
-        "encoding=": ('UTF-8', 'UTF-16', 'UTF-16le', 'UTF16-16be'),
+        "encoding=": ("UTF-8", "UTF-16", "UTF-16le", "UTF16-16be"),
         "foreign_key_check": None,
         "foreign_key_list(": None,
         "foreign_keys": _pragmas_bool,
@@ -3113,17 +3190,20 @@ Enter ".help" for instructions
                 if db == "temp":
                     master = "sqlite_temp_schema"
                 else:
-                    master = "[%s].sqlite_schema" % (db, )
+                    master = "[%s].sqlite_schema" % (db,)
                 for row in cur.execute("select * from " + master).fetchall():
                     for col in (1, 2):
                         if row[col] not in other and not row[col].startswith("sqlite_"):
                             other.append(row[col])
                     if row[0] == "table":
                         try:
-                            for table in cur.execute("pragma [%s].table_info([%s])" % (
+                            for table in cur.execute(
+                                "pragma [%s].table_info([%s])"
+                                % (
                                     db,
                                     row[1],
-                            )).fetchall():
+                                )
+                            ).fetchall():
                                 if table[1] not in other:
                                     other.append(table[1])
                                 for item in table[2].split():
@@ -3146,7 +3226,12 @@ Enter ".help" for instructions
                 func_list = [fmtfunc(name, narg) for name, narg in functions.items()]
 
             self._completion_cache = [
-                self._sqlite_keywords, func_list, self._sqlite_special_names, collations, databases, other
+                self._sqlite_keywords,
+                func_list,
+                self._sqlite_special_names,
+                collations,
+                databases,
+                other,
             ]
             for i in range(len(self._completion_cache)):
                 self._completion_cache[i].sort()
@@ -3204,7 +3289,7 @@ Enter ".help" for instructions
                             res.append(word.upper())
                     else:
                         # match letter by letter otherwise readline mangles what was typed in
-                        w = token + word[len(token):]
+                        w = token + word[len(token) :]
                         if w not in res:
                             res.append(w)
         return res
@@ -3236,7 +3321,7 @@ Enter ".help" for instructions
         """
         if not self._builtin_commands:
             self._builtin_commands = [
-                "." + x[len("command_"):] for x in dir(self) if x.startswith("command_") and x != "command_headers"
+                "." + x[len("command_") :] for x in dir(self) if x.startswith("command_") and x != "command_headers"
             ]
 
         t = self._get_prev_tokens(line, end)
@@ -3253,7 +3338,8 @@ Enter ".help" for instructions
             completions = [v[1:] for v in self._builtin_commands] + ["all"]
         elif t[0] == "dbconfig":
             completions = [
-                v[len("SQLITE_DBCONFIG_"):].lower() for v in apsw.mapping_db_config
+                v[len("SQLITE_DBCONFIG_") :].lower()
+                for v in apsw.mapping_db_config
                 if isinstance(v, str) and v not in self._dbconfig_ignore
             ]
         elif t[0] == "parameter":
@@ -3268,11 +3354,11 @@ Enter ".help" for instructions
 
         return [v for v in sorted(completions) if v.startswith(token) and v != token]
 
-
     ### Output helpers
     @dataclasses.dataclass(**({"slots": True, "frozen": True} if sys.version_info >= (3, 10) else {}))
     class Row:
         "Returned by :class:`Shell.PositionRow`"
+
         is_first: bool
         is_last: bool
         row: apsw.SQLiteValues
@@ -3331,7 +3417,6 @@ Enter ".help" for instructions
     # so that it doesn't matter if a colour scheme leaves something
     # out.
     class _colourscheme:
-
         def __init__(self, **kwargs):
             for k, v in kwargs.items():
                 setattr(self, k, v)
@@ -3359,56 +3444,65 @@ Enter ".help" for instructions
     # The colour definitions - the convention is the name to turn
     # something on and the name with an underscore suffix to turn it
     # off
-    d = _colourscheme(**dict([(v, "\x1b[" + str(n) + "m") for n, v in {
-        0: "reset",
-        1: "bold",
-        4: "underline",
-        22: "bold_",
-        24: "underline_",
-        7: "inverse",
-        27: "inverse_",
-        30: "fg_black",
-        31: "fg_red",
-        32: "fg_green",
-        33: "fg_yellow",
-        34: "fg_blue",
-        35: "fg_magenta",
-        36: "fg_cyan",
-        37: "fg_white",
-        39: "fg_",
-        40: "bg_black",
-        41: "bg_red",
-        42: "bg_green",
-        43: "bg_yellow",
-        44: "bg_blue",
-        45: "bg_magenta",
-        46: "bg_cyan",
-        47: "bg_white",
-        49: "bg_"
-    }.items()]))
+    d = _colourscheme(
+        **dict(
+            [
+                (v, "\x1b[" + str(n) + "m")
+                for n, v in {
+                    0: "reset",
+                    1: "bold",
+                    4: "underline",
+                    22: "bold_",
+                    24: "underline_",
+                    7: "inverse",
+                    27: "inverse_",
+                    30: "fg_black",
+                    31: "fg_red",
+                    32: "fg_green",
+                    33: "fg_yellow",
+                    34: "fg_blue",
+                    35: "fg_magenta",
+                    36: "fg_cyan",
+                    37: "fg_white",
+                    39: "fg_",
+                    40: "bg_black",
+                    41: "bg_red",
+                    42: "bg_green",
+                    43: "bg_yellow",
+                    44: "bg_blue",
+                    45: "bg_magenta",
+                    46: "bg_cyan",
+                    47: "bg_white",
+                    49: "bg_",
+                }.items()
+            ]
+        )
+    )
 
     _colours = {"off": _colourscheme(colour_value=lambda x, y: y)}
 
-    _colours["default"] = _colourscheme(prompt=d.bold,
-                                        prompt_=d.bold_,
-                                        error=d.fg_red + d.bold,
-                                        error_=d.bold_ + d.fg_,
-                                        intro=d.fg_blue + d.bold,
-                                        intro_=d.bold_ + d.fg_,
-                                        transient=d.fg_green,
-                                        transient_=d.fg_,
-                                        summary=d.fg_blue + d.bold,
-                                        summary_=d.bold_ + d.fg_,
-                                        header=d.underline,
-                                        header_=d.underline_,
-                                        vnull=d.fg_red,
-                                        vnull_=d.fg_,
-                                        vstring=d.fg_yellow,
-                                        vstring_=d.fg_,
-                                        vblob=d.fg_blue,
-                                        vblob_=d.fg_,
-                                        vnumber=d.fg_magenta,
-                                        vnumber_=d.fg_)
+    _colours["default"] = _colourscheme(
+        prompt=d.bold,
+        prompt_=d.bold_,
+        error=d.fg_red + d.bold,
+        error_=d.bold_ + d.fg_,
+        intro=d.fg_blue + d.bold,
+        intro_=d.bold_ + d.fg_,
+        transient=d.fg_green,
+        transient_=d.fg_,
+        summary=d.fg_blue + d.bold,
+        summary_=d.bold_ + d.fg_,
+        header=d.underline,
+        header_=d.underline_,
+        vnull=d.fg_red,
+        vnull_=d.fg_,
+        vstring=d.fg_yellow,
+        vstring_=d.fg_,
+        vblob=d.fg_blue,
+        vblob_=d.fg_,
+        vnumber=d.fg_magenta,
+        vnumber_=d.fg_,
+    )
     # unpollute namespace
     del d
     del _colourscheme
@@ -3444,5 +3538,5 @@ def main() -> None:
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

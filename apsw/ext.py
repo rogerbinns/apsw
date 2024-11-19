@@ -25,12 +25,13 @@ import apsw
 import apsw.unicode
 import sys
 
+
 def result_string(code: int) -> str:
     """Turns a result or extended result code into a string.
     The appropriate mapping based on the value is used."""
     if code < 256:
-        return apsw.mapping_result_codes.get(code, str(code)) # type: ignore
-    return apsw.mapping_extended_result_codes.get(code, str(code)) # type: ignore
+        return apsw.mapping_result_codes.get(code, str(code))  # type: ignore
+    return apsw.mapping_extended_result_codes.get(code, str(code))  # type: ignore
 
 
 class DataClassRowFactory:
@@ -203,8 +204,9 @@ class TypesConverterCursorFactory:
             return TypesConverterCursorFactory.DictAdapter(self, bindings)  # type: ignore[arg-type]
         return tuple(self.adapt_value(v) for v in bindings)
 
-    def wrap_sequence_bindings(self,
-                               sequenceofbindings: Iterable[apsw.Bindings]) -> Generator[apsw.Bindings, None, None]:
+    def wrap_sequence_bindings(
+        self, sequenceofbindings: Iterable[apsw.Bindings]
+    ) -> Generator[apsw.Bindings, None, None]:
         "Wraps a sequence of bindings that are supplied to the underlying executemany"
         for binding in sequenceofbindings:
             yield self.wrap_bindings(binding)  # type: ignore[misc]
@@ -238,29 +240,35 @@ class TypesConverterCursorFactory:
         def _rowtracer(self, cursor: apsw.Cursor, values: apsw.SQLiteValues) -> tuple[Any, ...]:
             return tuple(self.factory.convert_value(d[1], v) for d, v in zip(cursor.get_description(), values))
 
-        def execute(self,
-                    statements: str,
-                    bindings: apsw.Bindings | None = None,
-                    *,
-                    can_cache: bool = True,
-                    prepare_flags: int = 0,
-                    explain: int = -1) -> apsw.Cursor:
+        def execute(
+            self,
+            statements: str,
+            bindings: apsw.Bindings | None = None,
+            *,
+            can_cache: bool = True,
+            prepare_flags: int = 0,
+            explain: int = -1,
+        ) -> apsw.Cursor:
             """Executes the statements doing conversions on supplied and returned values
 
             See :meth:`apsw.Cursor.execute` for parameter details"""
-            return super().execute(statements,
-                                   self.factory.wrap_bindings(bindings),
-                                   can_cache=can_cache,
-                                   prepare_flags=prepare_flags,
-                                   explain=explain)
+            return super().execute(
+                statements,
+                self.factory.wrap_bindings(bindings),
+                can_cache=can_cache,
+                prepare_flags=prepare_flags,
+                explain=explain,
+            )
 
-        def executemany(self,
-                        statements: str,
-                        sequenceofbindings: Iterable[apsw.Bindings],
-                        *,
-                        can_cache: bool = True,
-                        prepare_flags: int = 0,
-                        explain: int = -1) -> apsw.Cursor:
+        def executemany(
+            self,
+            statements: str,
+            sequenceofbindings: Iterable[apsw.Bindings],
+            *,
+            can_cache: bool = True,
+            prepare_flags: int = 0,
+            explain: int = -1,
+        ) -> apsw.Cursor:
             """Executes the statements against each item in sequenceofbindings, doing conversions on supplied and returned values
 
             See :meth:`apsw.Cursor.executemany` for parameter details"""
@@ -269,7 +277,8 @@ class TypesConverterCursorFactory:
                 self.factory.wrap_sequence_bindings(sequenceofbindings),  # type: ignore[arg-type]
                 can_cache=can_cache,
                 prepare_flags=prepare_flags,
-                explain=explain)
+                explain=explain,
+            )
 
 
 def log_sqlite(*, level: int = logging.ERROR, logger: logging.Logger | None = None) -> None:
@@ -284,9 +293,9 @@ def log_sqlite(*, level: int = logging.ERROR, logger: logging.Logger | None = No
         err_str = result_string(errcode)
         extra = {"sqlite_code": errcode, "sqlite_code_name": err_str, "sqlite_message": message}
         # Level defaults to ERROR but some messages aren't as important
-        if errcode & 0xff == apsw.SQLITE_WARNING:
+        if errcode & 0xFF == apsw.SQLITE_WARNING:
             level = min(level, logging.WARNING)
-        elif errcode & 0xff == apsw.SQLITE_NOTICE:
+        elif errcode & 0xFF == apsw.SQLITE_NOTICE:
             # these are really half way between INFO and WARNING and
             # current instances are recovering journals/WAL etc which
             # happens if the previous process exited abruptly.
@@ -297,21 +306,18 @@ def log_sqlite(*, level: int = logging.ERROR, logger: logging.Logger | None = No
             # appropriate!
             level = min(level, logging.INFO)
 
-        (logger or logging).log(level,
-                    "SQLITE_LOG: %s (%d) %s",
-                    message,
-                    errcode,
-                    err_str,
-                    extra=extra)
+        (logger or logging).log(level, "SQLITE_LOG: %s (%d) %s", message, errcode, err_str, extra=extra)
 
     apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
 
 
-def print_augmented_traceback(exc_type: type[BaseException],
-                              exc_value: BaseException,
-                              exc_traceback: types.TracebackType,
-                              *,
-                              file: TextIO | None = None) -> None:
+def print_augmented_traceback(
+    exc_type: type[BaseException],
+    exc_value: BaseException,
+    exc_traceback: types.TracebackType,
+    *,
+    file: TextIO | None = None,
+) -> None:
     """Prints a standard exception, but also includes the value of variables in each stack frame
     which APSW :ref:`adds <augmentedstacktraces>` to help diagnostics and debugging.
 
@@ -335,10 +341,9 @@ def print_augmented_traceback(exc_type: type[BaseException],
         print(line, file=file)
 
 
-def index_info_to_dict(o: apsw.IndexInfo,
-                       *,
-                       column_names: list[str] | None = None,
-                       rowid_name: str = "__ROWID__") -> dict[str, Any]:
+def index_info_to_dict(
+    o: apsw.IndexInfo, *, column_names: list[str] | None = None, rowid_name: str = "__ROWID__"
+) -> dict[str, Any]:
     """
     Returns a :class:`apsw.IndexInfo` as a dictionary.
 
@@ -401,59 +406,61 @@ def index_info_to_dict(o: apsw.IndexInfo,
     """
 
     res = {
-        "nConstraint":
-        o.nConstraint,
-        "aConstraint": [{
-            "iColumn": o.get_aConstraint_iColumn(n),
-            "op": o.get_aConstraint_op(n),
-            "op_str": apsw.mapping_bestindex_constraints.get(o.get_aConstraint_op(n)),
-            "usable": o.get_aConstraint_usable(n),
-            "collation": o.get_aConstraint_collation(n),
-            "rhs": o.get_aConstraint_rhs(n),
-        } for n in range(o.nConstraint)],
-        "nOrderBy":
-        o.nOrderBy,
-        "aOrderBy": [{
-            "iColumn": o.get_aOrderBy_iColumn(n),
-            "desc": o.get_aOrderBy_desc(n),
-        } for n in range(o.nOrderBy)],
-        "aConstraintUsage": [{
-            "argvIndex": o.get_aConstraintUsage_argvIndex(n),
-            "omit": o.get_aConstraintUsage_omit(n),
-            "in": o.get_aConstraintUsage_in(n),
-        } for n in range(o.nConstraint)],
-        "idxNum":
-        o.idxNum,
-        "idxStr":
-        o.idxStr,
-        "orderByConsumed":
-        o.orderByConsumed,
-        "estimatedCost":
-        o.estimatedCost,
-        "estimatedRows":
-        o.estimatedRows,
-        "idxFlags":
-        o.idxFlags,
-        "idxFlags_set":
-        set(v for k, v in apsw.mapping_virtual_table_scan_flags.items() if isinstance(k, int) and o.idxFlags & k),
-        "colUsed":
-        o.colUsed,
-        "distinct":
-        o.distinct,
+        "nConstraint": o.nConstraint,
+        "aConstraint": [
+            {
+                "iColumn": o.get_aConstraint_iColumn(n),
+                "op": o.get_aConstraint_op(n),
+                "op_str": apsw.mapping_bestindex_constraints.get(o.get_aConstraint_op(n)),
+                "usable": o.get_aConstraint_usable(n),
+                "collation": o.get_aConstraint_collation(n),
+                "rhs": o.get_aConstraint_rhs(n),
+            }
+            for n in range(o.nConstraint)
+        ],
+        "nOrderBy": o.nOrderBy,
+        "aOrderBy": [
+            {
+                "iColumn": o.get_aOrderBy_iColumn(n),
+                "desc": o.get_aOrderBy_desc(n),
+            }
+            for n in range(o.nOrderBy)
+        ],
+        "aConstraintUsage": [
+            {
+                "argvIndex": o.get_aConstraintUsage_argvIndex(n),
+                "omit": o.get_aConstraintUsage_omit(n),
+                "in": o.get_aConstraintUsage_in(n),
+            }
+            for n in range(o.nConstraint)
+        ],
+        "idxNum": o.idxNum,
+        "idxStr": o.idxStr,
+        "orderByConsumed": o.orderByConsumed,
+        "estimatedCost": o.estimatedCost,
+        "estimatedRows": o.estimatedRows,
+        "idxFlags": o.idxFlags,
+        "idxFlags_set": set(
+            v for k, v in apsw.mapping_virtual_table_scan_flags.items() if isinstance(k, int) and o.idxFlags & k
+        ),
+        "colUsed": o.colUsed,
+        "distinct": o.distinct,
     }
 
     for aConstraint in res["aConstraint"]:  # type: ignore[attr-defined]
         if aConstraint["op"] in (apsw.SQLITE_INDEX_CONSTRAINT_OFFSET, apsw.SQLITE_INDEX_CONSTRAINT_LIMIT):
             del aConstraint["iColumn"]
         if aConstraint["op"] >= apsw.SQLITE_INDEX_CONSTRAINT_FUNCTION and aConstraint["op"] <= 255:
-            aConstraint[
-                "op_str"] = f"SQLITE_INDEX_CONSTRAINT_FUNCTION+{ aConstraint['op'] - apsw.SQLITE_INDEX_CONSTRAINT_FUNCTION }"
+            aConstraint["op_str"] = (
+                f"SQLITE_INDEX_CONSTRAINT_FUNCTION+{ aConstraint['op'] - apsw.SQLITE_INDEX_CONSTRAINT_FUNCTION }"
+            )
 
     if column_names:
         for aconstraint in res["aConstraint"]:  # type: ignore[attr-defined]
             if "iColumn" in aconstraint:
-                aconstraint["iColumn_name"] = rowid_name if aconstraint["iColumn"] == -1 else column_names[
-                    aconstraint["iColumn"]]
+                aconstraint["iColumn_name"] = (
+                    rowid_name if aconstraint["iColumn"] == -1 else column_names[aconstraint["iColumn"]]
+                )
         for aorderby in res["aOrderBy"]:  # type: ignore[attr-defined]
             aorderby["iColumn_name"] = rowid_name if aorderby["iColumn"] == -1 else column_names[aorderby["iColumn"]]
         # colUsed has all bits set when SQLite just wants the whole row
@@ -465,8 +472,9 @@ def index_info_to_dict(o: apsw.IndexInfo,
     return res
 
 
-def dbinfo(db: apsw.Connection,
-           schema: str = "main") -> tuple[DatabaseFileInfo | None, JournalFileInfo | WALFileInfo | None]:
+def dbinfo(
+    db: apsw.Connection, schema: str = "main"
+) -> tuple[DatabaseFileInfo | None, JournalFileInfo | WALFileInfo | None]:
     """Extracts fields from the database, journal, and wal files
 
     Based on the `file format description <https://www.sqlite.org/fileformat2.html>`__.  The
@@ -523,7 +531,7 @@ def dbinfo(db: apsw.Connection,
             ("version_valid_for", 92, 4, be_int),
             ("sqlite_version", 96, 4, be_int),
         ):
-            b = header_page[offset:offset + size]
+            b = header_page[offset : offset + size]
             kw[name] = converter(b)  # type: ignore [operator]
         dbinfo = DatabaseFileInfo(**kw)
 
@@ -546,7 +554,7 @@ def dbinfo(db: apsw.Connection,
                 ("checksum_1", 24, 4, be_int),
                 ("checksum_2", 28, 4, be_int),
             ):
-                b = journal_page[offset:offset + size]
+                b = journal_page[offset : offset + size]
                 kw[name] = converter(b)  # type: ignore [operator]
             journalinfo = WALFileInfo(**kw)
         else:
@@ -561,7 +569,7 @@ def dbinfo(db: apsw.Connection,
                 ("sector_size", 20, 4, be_int),
                 ("page_size", 24, 4, be_int),
             ):
-                b = journal_page[offset:offset + size]
+                b = journal_page[offset : offset + size]
                 kw[name] = converter(b)  # type: ignore [operator]
             journalinfo = JournalFileInfo(**kw)
 
@@ -670,7 +678,7 @@ class Trace:
 
     def _truncate(self, text: str) -> str:
         text = text.strip()
-        return text[:self.truncate] + "..." if len(text) > self.truncate else text
+        return text[: self.truncate] + "..." if len(text) > self.truncate else text
 
     def __enter__(self):
         if not self.file:
@@ -962,19 +970,21 @@ class ShowResourceUsage:
     }
 
 
-def format_query_table(db: apsw.Connection,
-                       query: str,
-                       bindings: apsw.Bindings | None = None,
-                       *,
-                       colour: bool = False,
-                       quote: bool = False,
-                       string_sanitize: Union[Callable[[str], str], Union[Literal[0], Literal[1], Literal[2]]] = 0,
-                       binary: Callable[[bytes], str] = lambda x: f"[ { len(x) } bytes ]",
-                       null: str = "(null)",
-                       truncate: int = 4096,
-                       truncate_val: str = " ...",
-                       text_width: int = 80,
-                       use_unicode: bool = True) -> str:
+def format_query_table(
+    db: apsw.Connection,
+    query: str,
+    bindings: apsw.Bindings | None = None,
+    *,
+    colour: bool = False,
+    quote: bool = False,
+    string_sanitize: Union[Callable[[str], str], Union[Literal[0], Literal[1], Literal[2]]] = 0,
+    binary: Callable[[bytes], str] = lambda x: f"[ { len(x) } bytes ]",
+    null: str = "(null)",
+    truncate: int = 4096,
+    truncate_val: str = " ...",
+    text_width: int = 80,
+    use_unicode: bool = True,
+) -> str:
     r"""Produces query output in an attractive text table
 
     See :ref:`the example <example_format_query>`.
@@ -1060,11 +1070,19 @@ def format_query_table(db: apsw.Connection,
     return "\n".join(res)
 
 
-def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bool, quote: bool,
-                  string_sanitize: Union[Callable[[str], str],
-                                         Union[Literal[0], Literal[1],
-                                               Literal[2]]], binary: Callable[[bytes], str], null: str, truncate: int,
-                  truncate_val: str, text_width: int, use_unicode: bool) -> str:
+def _format_table(
+    colnames: list[str],
+    rows: list[apsw.SQLiteValues],
+    colour: bool,
+    quote: bool,
+    string_sanitize: Union[Callable[[str], str], Union[Literal[0], Literal[1], Literal[2]]],
+    binary: Callable[[bytes], str],
+    null: str,
+    truncate: int,
+    truncate_val: str,
+    text_width: int,
+    use_unicode: bool,
+) -> str:
     "Internal table formatter"
     if colour:
         c: Callable[[int], str] = lambda v: f"\x1b[{ v }m"
@@ -1159,14 +1177,16 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
             lines = []
             for line in apsw.unicode.split_lines(val):
                 if apsw.unicode.text_width(line) < 0:
-                    line = "".join((c if apsw.unicode.text_width(c) >= 0 else '?') for c in line)
+                    line = "".join((c if apsw.unicode.text_width(c) >= 0 else "?") for c in line)
                 lines.append(line)
             val = "\n".join(lines)
 
             if truncate > 0 and apsw.unicode.grapheme_length(val) > truncate:
                 val = apsw.unicode.grapheme_substr(val, 0, truncate) + truncate_val
             row[i] = (val, type(cell))  # type: ignore[index]
-            colwidths[i] = max(colwidths[i], max(apsw.unicode.text_width(line) for line in apsw.unicode.split_lines(val)) if val else 0)
+            colwidths[i] = max(
+                colwidths[i], max(apsw.unicode.text_width(line) for line in apsw.unicode.split_lines(val)) if val else 0
+            )
 
     ## work out widths
     # we need a space each side of a cell plus a cell separator hence 3
@@ -1207,7 +1227,9 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
 
     # can't fit
     if total_width() > text_width:
-        raise ValueError(f"Results can't be fit in text width { text_width } even with 1 wide columns - at least { total_width() } width is needed")
+        raise ValueError(
+            f"Results can't be fit in text width { text_width } even with 1 wide columns - at least { total_width() } width is needed"
+        )
 
     # break headers and cells into lines
     def wrap(text: str, width: int) -> list[str]:
@@ -1249,8 +1271,8 @@ def _format_table(colnames: list[str], rows: list[apsw.SQLiteValues], colour: bo
                 lt = apsw.unicode.text_width(text)
                 extra = " " * max(colwidths[i] + 2 - lt, 0)
                 if centre:
-                    lpad = extra[:len(extra) // 2]
-                    rpad = extra[len(extra) // 2:]
+                    lpad = extra[: len(extra) // 2]
+                    rpad = extra[len(extra) // 2 :]
                 else:
                     lpad = ""
                     rpad = extra
@@ -1282,6 +1304,7 @@ del _format_table
 
 class VTColumnAccess(enum.Enum):
     "How the column value is accessed from a row, for :meth:`make_virtual_module`"
+
     By_Index = enum.auto()
     "By number like with tuples and lists - eg :code:`row[3]`"
     By_Name = enum.auto()
@@ -1345,13 +1368,15 @@ def get_column_names(row: Any) -> tuple[Sequence[str], VTColumnAccess]:
     raise TypeError(f"Can't figure out columns for { row }")
 
 
-def make_virtual_module(db: apsw.Connection,
-                        name: str,
-                        callable: Callable,
-                        *,
-                        eponymous: bool = True,
-                        eponymous_only: bool = False,
-                        repr_invalid: bool = False) -> None:
+def make_virtual_module(
+    db: apsw.Connection,
+    name: str,
+    callable: Callable,
+    *,
+    eponymous: bool = True,
+    eponymous_only: bool = False,
+    repr_invalid: bool = False,
+) -> None:
     """
     Registers a read-only virtual table module with *db* based on
     *callable*.  The *callable* must have an attribute named *columns*
@@ -1427,9 +1452,14 @@ def make_virtual_module(db: apsw.Connection,
     """
 
     class Module:
-
-        def __init__(self, callable: Callable, columns: tuple[str], column_access: VTColumnAccess,
-                     primary_key: int | None, repr_invalid: bool):
+        def __init__(
+            self,
+            callable: Callable,
+            columns: tuple[str],
+            column_access: VTColumnAccess,
+            primary_key: int | None,
+            repr_invalid: bool,
+        ):
             self.columns = columns
             self.callable: Callable = callable
             if not isinstance(column_access, VTColumnAccess):
@@ -1472,7 +1502,6 @@ def make_virtual_module(db: apsw.Connection,
                 self.schema += " WITHOUT rowid"
 
         def Create(self, db, modulename, dbname, tablename, *args: apsw.SQLiteValue) -> tuple[str, apsw.VTTable]:
-
             if len(args) > len(self.parameters):
                 raise ValueError(f"Too many parameters: parameters accepted are { ' '.join(self.parameters) }")
 
@@ -1483,7 +1512,6 @@ def make_virtual_module(db: apsw.Connection,
         Connect = Create
 
         class Table:
-
             def __init__(self, module: Module, param_values: dict[str, apsw.SQLiteValue]):
                 self.module = module
                 self.param_values = param_values
@@ -1523,7 +1551,6 @@ def make_virtual_module(db: apsw.Connection,
             Destroy = Disconnect
 
         class Cursor:
-
             def __init__(self, module: Module, param_values: dict[str, apsw.SQLiteValue]):
                 self.module = module
                 self.param_values = param_values
@@ -1581,17 +1608,25 @@ def make_virtual_module(db: apsw.Connection,
                 return v if v is None or isinstance(v, (int, float, str, bytes)) else repr(v)
 
             def _Column_By_Attr(self, which: int) -> apsw.SQLiteValue:
-                return getattr(
-                    self.current_row,
-                    self.columns[which]) if which < self.num_columns else self.hidden_values[which - self.num_columns]
+                return (
+                    getattr(self.current_row, self.columns[which])
+                    if which < self.num_columns
+                    else self.hidden_values[which - self.num_columns]
+                )
 
             def _Column_By_Name(self, which: int) -> apsw.SQLiteValue:
-                return self.current_row[self.columns[which]] if which < self.num_columns else self.hidden_values[
-                    which - self.num_columns]
+                return (
+                    self.current_row[self.columns[which]]
+                    if which < self.num_columns
+                    else self.hidden_values[which - self.num_columns]
+                )
 
             def _Column_By_Index(self, which: int) -> apsw.SQLiteValue:
-                return self.current_row[which] if which < self.num_columns else self.hidden_values[which -
-                                                                                                   self.num_columns]
+                return (
+                    self.current_row[which]
+                    if which < self.num_columns
+                    else self.hidden_values[which - self.num_columns]
+                )
 
             def Next(self) -> None:
                 try:
@@ -1611,7 +1646,8 @@ def make_virtual_module(db: apsw.Connection,
         callable.columns,  # type: ignore[attr-defined]
         callable.column_access,  # type: ignore[attr-defined]
         getattr(callable, "primary_key", None),
-        repr_invalid)
+        repr_invalid,
+    )
 
     # unregister any existing first
     db.create_module(name, None)
@@ -1621,10 +1657,11 @@ def make_virtual_module(db: apsw.Connection,
         use_bestindex_object=True,
         eponymous=eponymous,
         eponymous_only=eponymous_only,
-        read_only=True)
+        read_only=True,
+    )
 
 
-def generate_series_sqlite(start=None, stop=0xffffffff, step=1):
+def generate_series_sqlite(start=None, stop=0xFFFFFFFF, step=1):
     """Behaves like SQLite's `generate_series <https://sqlite.org/series.html>`__
 
     Only integers are supported.  If *step* is negative
@@ -1655,15 +1692,15 @@ def generate_series_sqlite(start=None, stop=0xffffffff, step=1):
         step = 1
     if step > 0:
         while start <= stop:
-            yield (start, )
+            yield (start,)
             start += step
     elif step < 0:
         while stop >= start:
-            yield (stop, )
+            yield (stop,)
             stop += step
 
 
-generate_series_sqlite.columns = ("value", )  # type: ignore[attr-defined]
+generate_series_sqlite.columns = ("value",)  # type: ignore[attr-defined]
 generate_series_sqlite.column_access = VTColumnAccess.By_Index  # type: ignore[attr-defined]
 generate_series_sqlite.primary_key = 0  # type: ignore[attr-defined]
 
@@ -1701,30 +1738,32 @@ def generate_series(start, stop, step=None):
 
     if step > 0:
         while start <= stop:
-            yield (start, )
+            yield (start,)
             start += step
     elif step < 0:
         while start >= stop:
-            yield (start, )
+            yield (start,)
             start += step
     else:
         raise ValueError("step of zero is not valid")
 
 
-generate_series.columns = ("value", )  # type: ignore[attr-defined]
+generate_series.columns = ("value",)  # type: ignore[attr-defined]
 generate_series.column_access = VTColumnAccess.By_Index  # type: ignore[attr-defined]
 generate_series.primary_key = 0  # type: ignore[attr-defined]
 
 
-def query_info(db: apsw.Connection,
-               query: str,
-               bindings: apsw.Bindings | None = None,
-               *,
-               prepare_flags: int = 0,
-               actions: bool = False,
-               expanded_sql: bool = False,
-               explain: bool = False,
-               explain_query_plan: bool = False) -> QueryDetails:
+def query_info(
+    db: apsw.Connection,
+    query: str,
+    bindings: apsw.Bindings | None = None,
+    *,
+    prepare_flags: int = 0,
+    actions: bool = False,
+    expanded_sql: bool = False,
+    explain: bool = False,
+    explain_query_plan: bool = False,
+) -> QueryDetails:
     """Returns information about the query, without running it.
 
     `bindings` can be `None` if you want to find out what the bindings
@@ -1758,7 +1797,7 @@ def query_info(db: apsw.Connection,
             res["description_full"] = cursor.description_full
 
         assert query == first_query or query.startswith(first_query)
-        res["query_remaining"] = query[len(first_query):] if len(query) > len(first_query) else None
+        res["query_remaining"] = query[len(first_query) :] if len(query) > len(first_query) else None
         res["expanded_sql"] = cursor.expanded_sql if expanded_sql else None
         return False
 
@@ -1843,7 +1882,8 @@ def query_info(db: apsw.Connection,
         vdbe: list[VDBEInstruction] = []
         for row in cur.execute(res["first_query"], query_bindings, explain=1):
             vdbe.append(
-                VDBEInstruction(**dict((v[0][0], v[1]) for v in zip(cur.get_description(), row) if v[1] is not None)))
+                VDBEInstruction(**dict((v[0][0], v[1]) for v in zip(cur.get_description(), row) if v[1] is not None))
+            )
         res["explain"] = vdbe
 
     if explain_query_plan and not res["is_explain"]:
@@ -1874,6 +1914,7 @@ def query_info(db: apsw.Connection,
 @dataclass
 class QueryDetails:
     "A :mod:`dataclass <dataclasses>` that provides detailed information about a query, returned by :func:`query_info`"
+
     query: str
     "Original query provided"
     bindings: apsw.Bindings | None
@@ -1913,6 +1954,7 @@ class QueryAction:
     """A :mod:`dataclass <dataclasses>` that provides information about one action taken by a query
 
     Depending on the action, only a subset of the fields will have non-None values"""
+
     action: int
     """`Authorizer code <https://sqlite.org/c3ref/c_alter_table.html>`__ (also present
     in :attr:`apsw.mapping_authorizer_function`)"""
@@ -1940,6 +1982,7 @@ class QueryAction:
 @dataclass
 class QueryPlan:
     "A :mod:`dataclass <dataclasses>` for one step of a query plan"
+
     detail: str
     "Description of this step"
     sub: list[QueryPlan] | None = None
@@ -1949,6 +1992,7 @@ class QueryPlan:
 @dataclass
 class VDBEInstruction:
     "A :mod:`dataclass <dataclasses>` representing one instruction and its parameters"
+
     addr: int
     "Address of this opcode.  It will be the target of goto, loops etc"
     opcode: str
@@ -1972,6 +2016,7 @@ class DatabaseFileInfo:
     """Information about the main database file returned by :meth:`dbinfo`
 
     See `file format description <https://www.sqlite.org/fileformat.html#the_database_header>`__"""
+
     filename: str
     "database filena name"
     header: bytes
@@ -2017,6 +2062,7 @@ class JournalFileInfo:
     """Information about the rollback journal returned by :meth:`dbinfo`
 
     See the `file format description <https://www.sqlite.org/fileformat2.html#the_rollback_journal>`__"""
+
     filename: str
     "journal file name"
     header: bytes
@@ -2040,6 +2086,7 @@ class WALFileInfo:
     """Information about the rollback journal returned by :meth:`dbinfo`
 
     See the `file format description <https://www.sqlite.org/fileformat2.html#wal_file_format>`__"""
+
     filename: str
     "WAL file name"
     magic_number: int
