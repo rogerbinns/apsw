@@ -113,9 +113,9 @@ API Reference
 
 /* Python headers */
 #define PY_SSIZE_T_CLEAN
-#include "structmember.h"
 #include <Python.h>
 #include <pythread.h>
+#include "structmember.h"
 
 /* This function does nothing in regular builds, but in faultinjection
 builds allows for an existing exception to be injected in callbacks */
