@@ -10178,7 +10178,8 @@ shell.write(shell.stdout, "hello world\\n")
                 self.assertRaises(apsw.SQLError, con.execute, dqs)
 
         # can't optimize or WAL readonly databases
-        apsw.Connection(self.db.filename, flags=apsw.SQLITE_OPEN_READONLY)
+        with self.assertNoLogs():
+            apsw.Connection(self.db.filename, flags=apsw.SQLITE_OPEN_READONLY)
 
     def testExtTracing(self) -> None:
         "apsw.ext Tracing and Resource usage"

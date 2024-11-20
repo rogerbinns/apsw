@@ -17,8 +17,10 @@ def connection_wal(connection: apsw.Connection) -> None:
     `described here <https://www.sqlite.org/wal.html>`__.
     """
     try:
-        connection.pragma("journal_mode", "wal")
+        if not connection.readonly("main"):
+            connection.pragma("journal_mode", "wal")
     except apsw.ReadOnlyError:
+        # journal/wal etc could still be readonly
         pass
 
 
@@ -75,8 +77,10 @@ def connection_optimize(connection: apsw.Connection) -> None:
     <https://sqlite.org/lang_analyze.html>`__.
     """
     try:
-        connection.pragma("optimize", 0x10002)
+        if not connection.readonly("main"):
+            connection.pragma("optimize", 0x10002)
     except apsw.ReadOnlyError:
+        # journal/wal etc could still be readonly
         pass
 
 
