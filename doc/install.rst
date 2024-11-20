@@ -84,7 +84,7 @@ edit the :file:`setup.apsw` file inside.
   <https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.zip>`__
   (Source, includes this HTML Help)
 
-* `apsw-3.47.0.0.cosign-bundle 
+* `apsw-3.47.0.0.cosign-bundle
   <https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.cosign-bundle>`__
   cosign signature
 
@@ -292,6 +292,88 @@ This performs the compilation of the C code, and provides more control than buil
     * - ``--apsw-no-old-names``
       - Excludes old non :pep:`8` :ref:`complaint name aliases
         <renaming>` from the extension and type stubs.
+
+.. _pyodide:
+
+Pyodide
+-------
+
+`Pyodide <https://pyodide.org/en/stable/index.html>`__ is web assembly
+Python distribution that can run in the browser or via NPM.  PyPI does not
+support pyodide packages yet, but you can compile your own on a Linux
+host.
+
+You should first download the source distribution listed at the top of
+https://pypi.org/project/apsw/#files - the filename ends up being
+``apsw-3.47.0.0.tar.gz`` in this example.  The `cibuildwheel
+<https://cibuildwheel.pypa.io/>`__ tool is used for the building, and
+is the same tool used for the PyPI builds of APSW.
+
+.. code-block:: shell
+
+  # Start out with a clean virtual environment
+  $ python3 -m venv venv
+  # Get cibuildwheel
+  $ venv/bin/pip3 install cibuildwheel
+  # Do the building which will download the necessary compiler and
+  # Python parts
+  $ venv/bin/cibuildwheel --platform pyodide apsw-3.47.0.0.tar.gz
+  # When it has finished the result is in the wheelhouse directory
+  $ ls wheelhouse/
+
+You will then be able to install the wheel using `micropip
+<https://micropip.pyodide.org/>`__.
+
+.. code-block:: pycon
+
+  >>> import micropip
+  >>> await micropip.install("https://url/apsw-3.47.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl")
+  >>> import apsw
+
+At this point you will be able to use APSW as normal.
+
+.. _packagers:
+
+Advice for packagers
+--------------------
+
+This is the recommendation for packagers such as Linux and BSD, who
+want APSW to use the system shared library.
+
+* Use the source file from `github releases
+  <https://github.com/rogerbinns/apsw/releases>`__.  Note you should
+  use the zip file including the version number, not the github
+  repository copy at the end.  The file is signed and :ref:`can be
+  verified <verifydownload>`.
+
+  The file also includes a copy of the built documentation with no
+  analytics, but does include fonts from the documentation theme
+  provider.
+
+* After extracting the zip, create a file named ``setup.apsw`` that
+  sits alongside ``setup.py`` with the following contents:
+
+  .. code-block:: ini
+
+    [build_ext]
+    use_system_sqlite_config = True
+
+  This will probe the system SQLite shared library for its compilation
+  options.  Various C level APIs are included or excluded from the shared
+  library based on those options, so APSW needs to know at compilation
+  time which APIs it can or can't call.
+
+You can compile APSW using whatever works for your packaging system.
+APSW complies with the latest Python packaging guidelines and
+metadata.  Ensure the ``setup.apsw`` is found during compilation
+especially if files get copied to another directory.  You will see lines like the
+following (note the ``Extracting configuration``).
+
+.. code-block:: console
+
+  running build_ext
+  Extracting configuration from libsqlite3.so.0
+  SQLite: Using system sqlite include/libraries
 
 .. _testing:
 

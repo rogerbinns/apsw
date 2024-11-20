@@ -10,6 +10,16 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+next
+====
+
+Documentation on how to :ref:`build for pyodide <pyodide>`, the Python
+WASM implementation that runs in the browser and NPM.  PyPI does not
+accept pyodide packages yet.
+
+Documentation on how to :ref:`build for packagers <packagers>` such as
+those maintaining Linux and BSD distributions.
+
 3.47.0.0
 ========
 
