@@ -20,6 +20,10 @@ Documentation on how to :ref:`build for pyodide <pyodide>`, the Python
 WASM implementation that runs in the browser and NPM.  PyPI does not
 accept pyodide packages yet.
 
+A command line tool ``apsw`` is defined which invokes the :doc:`shell
+<shell>`.  This also allows using `uvx apsw
+<https://docs.astral.sh/uv/guides/tools/>`__ without having to
+explicitly install APSW.
 
 3.47.0.0
 ========
