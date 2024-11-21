@@ -107,10 +107,14 @@ CommitHook = Callable[[], bool]
 """Commit hook is called with no arguments and should return True to abort the commit and False
 to let it continue"""
 
-Tokenizer = Callable[[bytes, int, str | None], Iterable[str | tuple[str, ...] | tuple[int, int, *tuple[str, ...]]]]
-"""The tokenizer is called with UTF8 encoded bytes, int flags, and a locale.  The results are
-iterated and each item should be either a str, a tuple of one or more str, or a tuple of
-int start, int end, and one or more str"""
+TokenizerResult = Iterable[str | tuple[str, ...] | tuple[int, int, *tuple[str, ...]]]
+"""The return from a tokenizer is based on the include_offsets and
+include_colocated parameters you provided, both defaulting to
+``True``.  See :meth:`FTS5Tokenizer.__call__` for examples.
+"""
+
+Tokenizer = Callable[[bytes, int, str | None], TokenizerResult]
+"""The tokenizer is called with UTF8 encoded bytes, int flags, and a locale."""
 
 FTS5TokenizerFactory = Callable[[Connection, list[str]], Tokenizer]
 """The factory is called with a list of strings as an argument and should

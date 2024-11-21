@@ -3022,7 +3022,7 @@
 "\n" \
 "The arguments the tokenizer was created with.\n" 
 
-#define  FTS5Tokenizer_call_DOC "__call__($self,utf8,flags,locale,*,include_offsets=True,include_colocated=True)\n--\n\nFTS5Tokenizer.__call__(utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list[tuple[int, int, *tuple[str, ...]]]\n\n" \
+#define  FTS5Tokenizer_call_DOC "__call__($self,utf8,flags,locale,*,include_offsets=True,include_colocated=True)\n--\n\nFTS5Tokenizer.__call__(utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult\n\n" \
 "Does a tokenization, returning a list of the results.  If you have no\n" \
 "interest in token offsets or colocated tokens then they can be omitted from\n" \
 "the results.\n" \
@@ -3075,7 +3075,7 @@
 "        ]\n" 
 
 #define FTS5Tokenizer_call_KWNAMES "utf8", "flags", "locale", "include_offsets", "include_colocated"
-#define FTS5Tokenizer_call_USAGE "FTS5Tokenizer.__call__(utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list[tuple[int, int, *tuple[str, ...]]]"
+#define FTS5Tokenizer_call_USAGE "FTS5Tokenizer.__call__(utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult"
 
 #define FTS5Tokenizer_call_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(utf8), PyObject *)); \

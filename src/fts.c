@@ -187,7 +187,7 @@ error:
   return SQLITE_ERROR;
 }
 
-/** .. method:: __call__(utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list[tuple[int, int, *tuple[str, ...]]]
+/** .. method:: __call__(utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult
 
   Does a tokenization, returning a list of the results.  If you have no
   interest in token offsets or colocated tokens then they can be omitted from
