@@ -331,11 +331,15 @@ class Shell:
     def usage(self):
         "Returns the usage message."
 
-        msg = """
-Usage: python3 -m apsw [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
+        invoke = "apsw" if sys.argv[0].endswith("apsw") else "python3 -m apsw"
+
+        msg = f"""
+Usage: { invoke } [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
+
 FILENAME is the name of a SQLite database. A new database is
 created if the file does not exist. If omitted or an empty
 string then an in-memory database is created.
+
 OPTIONS include:
 
    -init filename       read/process named file
@@ -1240,7 +1244,7 @@ Enter ".help" for instructions
         """dbinfo ?NAME?: Shows summary and file information about the database
 
         This includes the numbers of tables, indices etc, as well as fields from
-        the files as returned by :func:`apsw.ext.dbinfo`.
+        the file headers.
 
         NAME defaults to 'main', and can be the attached name of a database.
         """
