@@ -2,4 +2,8 @@
 
 import apsw.shell
 
-apsw.shell.main()
+def main():
+    apsw.shell.main()
+
+if __name__ == '__main__':
+    main()

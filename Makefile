@@ -51,7 +51,7 @@ docs: build_ext docs-no-fetch
 docs-no-fetch: $(GENDOCS) doc/example.rst doc/example-fts.rst doc/.static doc/typing.rstgen doc/renames.rstgen
 	rm -f testdb
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
-	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION)
+	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION) $(RELEASEDATE)
 	$(MAKE) PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
 	tools/spellcheck.sh
 	rst2html5 --strict --verbose --exit-status 1 README.rst >/dev/null
@@ -227,7 +227,8 @@ source_nocheck: src/apswversion.h
 	test "`git branch --show-current`" = master
 	find . -depth -name '.*cache' -type d -exec rm -r "{}" \;
 	env APSW_NO_GA=t $(MAKE) doc
-	rm -rf doc/build/html/_static/fonts/ doc/build/html/_static/css/fonts/
+	rm -rf doc/build/html/_static/fonts/ doc/build/html/_static/css/fonts/ doc/build/apsw.1
+	rst2man doc/cli.rst doc/build/apsw.1
 	$(PYTHON) setup.py sdist --formats zip --add-doc
 
 source: source_nocheck # Make the source and then check it builds and tests correctly.  This will catch missing files etc

@@ -830,12 +830,14 @@ def add_doc(archive, topdir):
         oldarchive.close()
         for arcname, fname in help_walker(topdir):
             newarchive.add(fname, arcname)
+        newarchive.add("doc/build/apsw.1", f"{topdir}/man/apsw.1")
         newarchive.close()
         os.rename(archive + "-", archive)
     elif archive.endswith(".zip"):
         ofile = zipfile.ZipFile(archive, "a", zipfile.ZIP_DEFLATED)
         for arcname, fname in help_walker(topdir):
             ofile.write(fname, arcname)
+        ofile.write("doc/build/apsw.1", f"{topdir}/man/apsw.1")
         ofile.close()
     else:
         raise Exception("Don't know what to do with " + archive)
