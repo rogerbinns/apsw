@@ -2,6 +2,9 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[project.scripts]
+apsw = "apsw.__main__:main"
+
 [tool.ruff]
 line-length = 120
 
