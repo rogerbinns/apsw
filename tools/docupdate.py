@@ -12,6 +12,7 @@ import re
 # get the download file names correct
 
 version = sys.argv[1]
+releasedate = sys.argv[2]
 url = "  <https://github.com/rogerbinns/apsw/releases/download/" + version + "/%s>`__"
 version_no_r = version.split("-r")[0]
 
@@ -118,6 +119,72 @@ if op != benchmark:
 import apsw, io, apsw.shell
 
 shell = apsw.shell.Shell()
+
+# Generate help info
+s = io.StringIO()
+shell.stderr = s
+
+
+def tw(*args):
+    return 80
+
+
+shell._terminal_width = tw
+shell.command_help([])
+
+# shell._help_info is now a dict where key is the command, and value
+# is a list. [0] is the command and parameters, [1] is the one liner
+# description shown in overall .help, and v[2] is multi-paragraph text
+# detailed help info.  The following methods help turn that into
+# rst
+
+
+def backtickify(s):
+    s = s.group(0)
+    if s in {"A", "I", "O", "SQL", "APSW", "TCL", "C", "HTML", "JSON", "CSV", "TSV", "US", "VFS"}:
+        return s
+    if s == "'3'":  # example in command_parameter
+        return "``'3'``"
+    if s.startswith("'") and s.endswith("'"):
+        s = s.strip("'")
+        return f"``{ s }``"
+    if all(c.upper() == c and not c.isdigit() for c in s):
+        return f"``{ s }``"
+    return s
+
+
+def long_help_to_rst(long_help):
+    # pass v[2] from above or other long text
+    res = []
+    if long_help:
+        for i, para in enumerate(long_help):
+            if not para:
+                res.append("")
+            else:
+                para = para.replace("\\", "\\\\")
+                if para.lstrip() == para:
+                    # no indent
+                    para = re.sub(r"'?[\w%]+'?", backtickify, para)
+                if para.endswith(":"):
+                    # we have to double up final : if the next
+                    # section is indented further
+                    c = i + 1
+                    # skip blanks
+                    while not long_help[c]:
+                        c += 1
+                    # indented?
+                    if long_help[c].lstrip() != long_help[c]:
+                        para += ":"
+                res.extend(textwrap.wrap(para, width=80))
+        res.append("")
+    return res
+
+def backtick_each_word(s):
+    out = []
+    for word in s.split():
+        out.append(f"``{word}``")
+    return " ".join(out)
+
 incomment = False
 op = []
 for line in open("doc/shell.rst", "rt"):
@@ -126,28 +193,6 @@ for line in open("doc/shell.rst", "rt"):
         op.append(line)
         incomment = True
         op.append("")
-
-        s = io.StringIO()
-
-        def tw(*args):
-            return 80
-
-        def backtickify(s):
-            s = s.group(0)
-            if s in {"SQL", "APSW", "TCL", "C", "HTML", "JSON", "CSV", "TSV", "US", "VFS"}:
-                return s
-            if s == "'3'":  # example in command_parameter
-                return "``'3'``"
-            if s.startswith("'") and s.endswith("'"):
-                s = s.strip("'")
-                return f"``{ s }``"
-            if all(c.upper() == c and not c.isdigit() for c in s):
-                return f"``{ s }``"
-            return s
-
-        shell.stderr = s
-        shell._terminal_width = tw
-        shell.command_help([])
 
         op.append(".. hlist::")
         op.append("  :columns: 3")
@@ -166,22 +211,7 @@ for line in open("doc/shell.rst", "rt"):
             op.append("")
             op.append("*" + v[1] + "*")
             op.append("")
-            if v[2]:
-                for i, para in enumerate(v[2]):
-                    if not para:
-                        op.append("")
-                    else:
-                        para = para.replace("\\", "\\\\")
-                        if para.lstrip() == para:
-                            para = re.sub(r"'?[\w%]+'?", backtickify, para)
-                        if para.endswith(":"):
-                            c = i + 1
-                            while not v[2][c]:
-                                c += 1
-                            if v[2][c].lstrip() != v[2][c]:
-                                para += ":"
-                        op.extend(textwrap.wrap(para, width=80))
-                op.append("")
+            op.extend(long_help_to_rst(v[2]))
 
         continue
     if line == ".. usage-begin:":
@@ -204,3 +234,97 @@ for line in open("doc/shell.rst", "rt"):
 op = "\n".join(op)
 if op != open("doc/shell.rst", "rt").read():
     open("doc/shell.rst", "wt").write(op)
+
+
+# cli shell man page
+incomment = False
+op = []
+for line in open("doc/cli.rst", "rt"):
+    line = line.rstrip()
+    if line.startswith(":version:"):
+        op.append(f":version: apsw {version}")
+        continue
+    if line.startswith(":date:"):
+        op.append(f":date: {releasedate}")
+        continue
+    if line == ".. options-begin:":
+        op.append(line)
+        op.append("")
+        incomment = True
+        usage = shell.usage().split("\n\n")
+        # [0] is invocation
+        # [1] is description
+        # [2] is "Options include"
+        # [3] are the options
+        op.extend(long_help_to_rst(usage[1].splitlines()))
+        assert usage[3].lstrip().startswith("-")
+        assert len(usage) == 4
+
+        each = []
+        for line in usage[3].splitlines():
+            line = line.lstrip()
+            if line.startswith("-"):
+                each.append(re.split(r"  \s*", line))
+            else:
+                each[-1][1] += " " + line
+
+        for option, desc in each:
+            op.append(backtick_each_word(option))
+            for line in long_help_to_rst([desc]):
+                op.append("    " + line)
+
+        op.append("")
+        continue
+
+    if line == ".. commands-begin:":
+        op.append(line)
+        op.append("")
+        incomment = True
+
+        for command in shell._help_info.values():
+            op.append(backtick_each_word(command[0]))
+            for line in long_help_to_rst([command[1]]):
+                op.append("    " + line)
+
+        op.append("")
+        op.append("COMMANDS")
+        op.append("========")
+        op.append("")
+
+        for command in shell._help_info.values():
+            op.append(command[0])
+            op.append("-" * len(command[0]))
+            op.append("")
+            op.extend(long_help_to_rst([command[1]]))
+            if command[2]:
+                op.extend(long_help_to_rst(command[2]))
+                op.append("")
+        continue
+
+    if line == ".. copyright-begin:":
+        op.append(line)
+        op.append("")
+        incomment = True
+
+        for i, line in enumerate(open("doc/copyright.rst", "rt")):
+            line = line.rstrip()
+            if i == 0:
+                op.append(line.upper())
+            else:
+                op.append(line)
+
+        continue
+
+    if line in {".. options-end:", ".. commands-end:", ".. copyright-end:"}:
+        incomment = False
+
+    if incomment:
+        continue
+    op.append(line)
+
+# ensure another blank line at end otherwise weird formatting can happen
+op.append("")
+
+op = "\n".join(op)
+if op != open("doc/cli.rst", "rt").read():
+    open("doc/cli.rst", "wt").write(op)
