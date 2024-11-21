@@ -289,7 +289,7 @@ class Shell:
                 self.write(self.stderr, self.usage())
                 sys.exit(0)
 
-            if args[0] in ("no-colour", "no-color", "nocolour", "nocolor"):
+            if args[0] in ("no-colour", "no-color", "nocolour", "nocolor") or "NO_COLOR" in os.environ:
                 self.colour_scheme = "off"
                 self._out_colour()
                 args = args[1:]
@@ -356,7 +356,8 @@ OPTIONS include:
    -version             show SQLite version
    -encoding 'name'     the encoding to use for files
                         opened via .import, .read & .output
-   -nocolour            disables interactive colour output
+   -nocolour            disables interactive colour output, as does
+                        setting NO_COLOR environment variable
 """
         return msg.lstrip()
 
