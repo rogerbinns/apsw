@@ -28,3 +28,4 @@ Alternatively you may strike the license above and use it under any
 OSI approved open source license such as those listed at
 https://opensource.org/licenses/alphabetical
 
+SPDX-License-Identifier: any-OSI
