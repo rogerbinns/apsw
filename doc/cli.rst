@@ -214,6 +214,9 @@ from SQL.  You can use ``.help`` to see a list of all commands and
 ``.output`` ``FILENAME``
     Send output to ``FILENAME`` (or stdout)
     
+``.pages`` ``SCOPE``
+    Shows page usage summary in human units
+    
 ``.parameter`` ``CMD`` ``...``
     Maintain named bindings you can use in your queries.
     
@@ -641,6 +644,17 @@ Send output to ``FILENAME`` (or stdout)
 If the ``FILENAME`` is ``stdout`` then output is sent to standard output from
 when the shell was started.  The file is opened using the current encoding
 (change with ``encoding`` command).
+
+
+.pages SCOPE
+------------
+
+Shows page usage summary in human units
+
+``SCOPE`` is a number 0, 1, or 2.
+
+0 - shows the database as a whole. 1 - groups by each table, including its
+indices.  2 - shows each table and index separately.
 
 
 .parameter CMD ...

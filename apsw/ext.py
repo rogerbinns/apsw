@@ -970,6 +970,200 @@ class ShowResourceUsage:
     }
 
 
+@dataclasses.dataclass
+class PageUsage:
+    """Returned by :func:`analyze_pages`"""
+
+    page_size: int
+    "Size of pages in bytes.  All pages in the database are the same size."
+    pages_used: int
+    "Pages with content"
+    sequential_pages: int
+    "How many pages were sequential in the database file"
+    data_stored: int
+    "Bytes of SQL content stored"
+    cells: int
+    """Cells are what is `stored <https://www.sqlite.org/fileformat.html#b_tree_pages>`__
+    including sizing information, pointers to overflow etc"""
+    max_payload: int
+    "Largest cell size"
+    tables: list[str]
+    "Names of tables providing these statistics"
+    indices: list[str]
+    "Names of indices providing these statistics"
+
+
+@dataclasses.dataclass
+class DatabasePageUsage(PageUsage):
+    """Returned by :func:`analyze_pages` when asking about the database as a whole"""
+
+    pages_total: int
+    "Number of pages in the database"
+    pages_freelist: int
+    "How many pages are unused, for example if data got deleted"
+    max_page_count: int
+    "Limit on the `number of pages <https://www.sqlite.org/pragma.html#pragma_max_page_count>`__"
+
+
+def _analyze_pages_for_name(con: apsw.Connection, schema: str, name: str, usage: PageUsage):
+    qschema = '"' + schema.replace('"', '""') + '"'
+
+    for pages_used, ncell, payload, mx_payload in con.execute(
+        """SELECT pageno, ncell, payload, mx_payload
+                    FROM dbstat(?, 1) WHERE name=?
+                """,
+        (schema, name),
+    ):
+        usage.pages_used += pages_used
+        usage.data_stored += payload
+        usage.cells += ncell
+        usage.max_payload = max(usage.max_payload, mx_payload)
+        t = con.execute(f"select type from {qschema}.sqlite_schema where name=?", (name,)).get
+        if t == "index":
+            usage.indices.append(name)
+            usage.indices.sort()
+        else:
+            usage.tables.append(name)
+            usage.tables.sort()
+
+        # by definition the first page is sequential but won't match next, so fake it
+        sequential = 1
+        next = None
+        for (pageno,) in con.execute("select pageno from dbstat(?) WHERE name=? ORDER BY path", (schema, name)):
+            sequential += pageno == next
+            next = pageno + 1
+        usage.sequential_pages += sequential
+
+
+def analyze_pages(con: apsw.Connection, scope: int, schema: str = "main") -> DatabasePageUsage | dict[str, PageUsage]:
+    """Summarizes page usage for the database
+
+    The `dbstat <https://www.sqlite.org/dbstat.html>`__ virtual table
+    is used to gather statistics.
+
+    See :download:`example output <../examples/analyze_pages.txt>`.
+
+    :param con: Connection to use
+    :param scope:
+        .. list-table::
+            :widths: auto
+            :header-rows: 1
+
+            * - Value
+              - Scope
+              - Returns
+            * - ``0``
+              - The database as a whole
+              - :class:`DatabasePageUsage`
+            * - ``1``
+              - Tables and their indices are grouped together.  Virtual tables
+                like FTS5 have multiple backing tables which are grouped.
+              - A :class:`dict` where the key is the name of the
+                table, and a corresponding :class:`PageUsage` as the
+                value.  The :attr:`PageUsage.tables` and
+                :attr:`PageUsage.indices` fields tell you which ones
+                were included.
+            * - ``2``
+              - Each table and index separately.
+              - :class:`dict` of each name and a corresponding
+                :class:`PageUsage` where one of the
+                :attr:`PageUsage.tables` and :attr:`PageUsage.indices`
+                fields will have the name.
+
+
+    .. note::
+
+        dbstat is present in PyPI builds, and many platform SQLite
+        distributions.  You can use `pragma module_list
+        <https://www.sqlite.org/pragma.html#pragma_module_list>`__ to
+        check.  If the table is not present then calling this function
+        will give :class:`apsw.SQLError` with message ``no such table:
+        dbstat``.
+    """
+
+    qschema = '"' + schema.replace('"', '""') + '"'
+
+    if scope == 0:
+        total_usage = DatabasePageUsage(
+            page_size=con.pragma("page_size", schema=schema),
+            pages_total=con.pragma("page_count", schema=schema),
+            pages_freelist=con.pragma("freelist_count", schema=schema),
+            max_page_count=con.pragma("max_page_count", schema=schema),
+            pages_used=0,
+            data_stored=0,
+            sequential_pages=0,
+            tables=[],
+            indices=[],
+            cells=0,
+            max_payload=0,
+        )
+
+        _analyze_pages_for_name(con, schema, "sqlite_schema", total_usage)
+        for (name,) in con.execute(f"select name from {qschema}.sqlite_schema where rootpage!=0"):
+            _analyze_pages_for_name(con, schema, name, total_usage)
+
+        return total_usage
+
+    res = {}
+
+    grouping: dict[str, list[str]] = {}
+
+    if scope == 2:
+        grouping["sqlite_schema"] = ["sqlite_schema"]
+        for (name,) in con.execute(f"select name from {qschema}.sqlite_schema where rootpage!=0"):
+            grouping[name] = [name]
+    elif scope == 1:
+        grouping["sqlite"] = ["sqlite_schema"]
+        is_virtual_table: set[str] = set()
+        for type, name, tbl_name, rootpage in con.execute(
+            # the order by tbl_name is so we get eg fts base table
+            # name before the shadow tables.  type desc is so that 'table'
+            # comes before index
+            f"""select type, name, tbl_name, rootpage
+                from {qschema}.sqlite_schema
+                where type in ('table', 'index')
+                order by tbl_name, type desc"""
+        ):
+            if type == "index":
+                # indexes always know their table-
+                grouping[tbl_name].append(name)
+                continue
+            if name.startswith("sqlite_"):
+                grouping["sqlite"].append(name)
+                continue
+            if rootpage == 0:
+                grouping[name] = []
+                is_virtual_table.add(name)
+                continue
+            # shadow table? we assume an underscore separator searching longest names first
+            for n in sorted(grouping, key=lambda x: (len(x), x)):
+                if n in is_virtual_table and name.startswith(n + "_"):
+                    grouping[n].append(name)
+                    break
+            else:
+                grouping[name] = [name] if rootpage else []
+    else:
+        raise ValueError(f"Unknown {scope=}")
+
+    for group, names in sorted(grouping.items()):
+        usage = PageUsage(
+            page_size=con.pragma("page_size", schema=schema),
+            pages_used=0,
+            data_stored=0,
+            sequential_pages=0,
+            tables=[],
+            indices=[],
+            cells=0,
+            max_payload=0,
+        )
+
+        for name in names:
+            _analyze_pages_for_name(con, schema, name, usage)
+        res[group] = usage
+
+    return res
+
+
 def format_query_table(
     db: apsw.Connection,
     query: str,

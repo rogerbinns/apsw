@@ -10531,6 +10531,46 @@ shell.write(shell.stdout, "hello world\\n")
         ):
             self.assertRaises(apsw.SQLError, self.db.execute, query)
 
+    def testExtAnalyzePages(self) -> None:
+        "analyze pages"
+        if "dbstat" not in self.db.pragma("module_list"):
+            return
+
+        self.assertRaises(ValueError, apsw.ext.analyze_pages, self.db, -1)
+        self.assertRaises(ValueError, apsw.ext.analyze_pages, self.db, 3)
+        self.assertRaises(ValueError, apsw.ext.analyze_pages, self.db, "hello")
+
+        # shadow tables
+        if "fts5" in self.db.pragma("module_list"):
+            self.db.execute('create virtual table "fts5_root" using fts5(a,b,c)')
+        if "rtree" in self.db.pragma("module_list"):
+            self.db.execute('create virtual table "rtree_root" using rtree(a,b,c,d,e)')
+        if "geopoly" in self.db.pragma("module_list"):
+            self.db.execute('create virtual table "geopoly_root" using geopoly(a,b,c,d,e)')
+        self.db.execute("""
+                        create table one(x,y);
+                        create index xxx on one(x);
+                        attach '' as [db"2];
+                        create table [db"2].two(x);
+                        create index [db"2].two_index on two(x);
+                        """)
+
+        for group, usage in apsw.ext.analyze_pages(self.db, 1).items():
+            if "root" in group:
+                self.assertTrue(group.endswith("_root"))
+
+        # check schema is obeyed
+        to_check = (
+            [apsw.ext.analyze_pages(self.db, 0, 'db"2')]
+            + list(apsw.ext.analyze_pages(self.db, 1, 'db"2').values())
+            + list(apsw.ext.analyze_pages(self.db, 2, 'db"2').values())
+        )
+        for tc in to_check:
+            for name in tc.tables + tc.indices:
+                if not name.startswith("sqlite_"):
+                    self.assertIn("two", name)
+                    self.assertNotIn("root", name)
+
     def testExtQueryInfo(self) -> None:
         "apsw.ext.query_info"
         qd = apsw.ext.query_info(self.db, "select 3; a syntax error")

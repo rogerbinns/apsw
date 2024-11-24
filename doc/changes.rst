@@ -25,6 +25,11 @@ A command line tool ``apsw`` is defined which invokes the :doc:`shell
 <https://docs.astral.sh/uv/guides/tools/>`__ without having to
 explicitly install APSW.
 
+Added :func:`apsw.ext.analyze_pages` which uses `dbstat
+<https://www.sqlite.org/dbstat.html>`__ to provide useful information
+about the pages making up the database, and fragmentation.  The shell
+:ref:`.pages command <shell-cmd-pages>` shows it in a pretty form.
+
 3.47.0.0
 ========
 

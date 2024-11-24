@@ -14,6 +14,7 @@ import dataclasses
 import inspect
 import io
 import json
+import math
 import os
 import re
 import shlex
@@ -2433,6 +2434,78 @@ Enter ".help" for instructions
                 old.close()
         finally:
             self._out_colour()
+
+    def _command_pages_write_value(self, usage: apsw.ext.PageUsage | apsw.ext.DatabasePageUsage, name: str, width: int):
+        self.write(self.stdout, " " * (width - len(name)))
+        self.write(self.stdout, name + ":  ")
+        value = getattr(usage, name)
+
+
+        def storage(v):
+            if not v:
+                return "0"
+            power = math.floor(math.log(v, 1024))
+            suffix = ["B", "KB", "MB", "GB", "TB", "PB", "EB"][int(power)]
+            if suffix == "B":
+                return f"{v}B"
+            return f"{v / 1024**power:.1f}".rstrip(".0") + suffix
+
+        if name in {"tables", "indices"}:
+            self.write_value(len(value))
+            self.write(self.stdout, "\n")
+            for name in value:
+                self.write(self.stdout, (width * " ") + "   ")
+                self.write(self.stdout, self.colour.colour_value(name, name))
+                self.write(self.stdout, "\n")
+            return
+        elif name in {"page_size", "data_stored", "max_payload"}:
+            self.write(self.stdout, self.colour.colour_value(value, storage(value)))
+        elif name in {"pages_used", "pages_total", "max_page_count"}:
+            self.write(self.stdout, self.colour.colour_value(value, f"{value:,} ({storage(value*usage.page_size)})"))
+        elif name in {"sequential_pages"}:
+            self.write(self.stdout, self.colour.colour_value(value, f"{value:,} ({value/max(usage.pages_used, 1):.0%})"))
+        elif name in {"cells", "pages_freelist"}:
+            self.write(self.stdout, self.colour.colour_value(value, f"{value:,}"))
+        else:
+            self.write_value(value)
+
+        self.write(self.stdout, "\n")
+
+    def command_pages(self, cmd):
+        """pages SCOPE: Shows page usage summary in human units
+
+        SCOPE is a number 0, 1, or 2.
+
+        0 - shows the database as a whole. 1 - groups by each table,
+        including its indices.  2 - shows each table and index
+        separately.
+        """
+        scope = 0
+        try:
+            if len(cmd) != 1:
+                raise ValueError()
+            scope = int(cmd[0])
+            if scope not in {0, 1, 2}:
+                raise ValueError()
+        except ValueError:
+            raise self.Error("Expected a single parameter of 0, 1, or 2 for the scope")
+
+        width = max(
+            len(f.name) for f in dataclasses.fields(apsw.ext.PageUsage) + dataclasses.fields(apsw.ext.DatabasePageUsage)
+        )
+
+        res = apsw.ext.analyze_pages(self.db, scope)
+        if scope == 0:
+            for f in dataclasses.fields(res):
+                self._command_pages_write_value(res, f.name, width)
+            return
+
+        for name, pages in res.items():
+            self.write(self.stdout, self.colour.colour_value(name, name))
+            self.write(self.stdout, "\n")
+            for f in dataclasses.fields(pages):
+                self._command_pages_write_value(pages, f.name, width)
+            self.write(self.stdout, "\n")
 
     def command_parameter(self, cmd):
         """parameter CMD ...:  Maintain named bindings you can use in your queries.

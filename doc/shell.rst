@@ -142,6 +142,7 @@ leading ``.`` (period) - for example::
   * :ref:`nullvalue <shell-cmd-nullvalue>`
   * :ref:`open <shell-cmd-open>`
   * :ref:`output <shell-cmd-output>`
+  * :ref:`pages <shell-cmd-pages>`
   * :ref:`parameter <shell-cmd-parameter>`
   * :ref:`print <shell-cmd-print>`
   * :ref:`prompt <shell-cmd-prompt>`
@@ -616,6 +617,20 @@ output FILENAME
 If the ``FILENAME`` is ``stdout`` then output is sent to standard output from
 when the shell was started.  The file is opened using the current encoding
 (change with ``encoding`` command).
+
+.. _shell-cmd-pages:
+.. index::
+    single: pages (Shell command)
+
+pages SCOPE
+-----------
+
+*Shows page usage summary in human units*
+
+``SCOPE`` is a number 0, 1, or 2.
+
+0 - shows the database as a whole. 1 - groups by each table, including its
+indices.  2 - shows each table and index separately.
 
 .. _shell-cmd-parameter:
 .. index::
