@@ -338,7 +338,7 @@ Advice for packagers
 --------------------
 
 This is the recommendation for packagers such as Linux and BSD
-distributions, who want APSW to use the system shared library.
+distributions, who want APSW to use the system shared SQLite library.
 
 * Use the source file from `github releases
   <https://github.com/rogerbinns/apsw/releases>`__.  Note you should
