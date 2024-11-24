@@ -179,11 +179,13 @@ def long_help_to_rst(long_help):
         res.append("")
     return res
 
+
 def backtick_each_word(s):
     out = []
     for word in s.split():
         out.append(f"``{word}``")
     return " ".join(out)
+
 
 incomment = False
 op = []
@@ -316,6 +318,8 @@ for line in open("doc/cli.rst", "rt"):
         continue
 
     if line in {".. options-end:", ".. commands-end:", ".. copyright-end:"}:
+        # rst behaves badly if there is no blank line before the label
+        op.append("")
         incomment = False
 
     if incomment:

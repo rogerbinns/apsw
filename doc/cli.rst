@@ -104,6 +104,7 @@ string then an in-memory database is created.
     variable
     
 
+
 .. options-end:
 
 SQL
@@ -820,6 +821,7 @@ fit.  Specify new widths using this command.  Use a negative number to right
 justify and zero for default column width.
 
 
+
 .. commands-end:
 
 SEE ALSO
@@ -868,5 +870,7 @@ freely, subject to the following restrictions:
 Alternatively you may strike the license above and use it under any
 OSI approved open source license such as those listed at
 https://opensource.org/licenses/alphabetical
+
+SPDX-License-Identifier: any-OSI
 
 .. copyright-end:
