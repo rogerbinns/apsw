@@ -3893,6 +3893,8 @@ SQLITE_IOCAP_SAFE_APPEND: int = 512
 """For `Device Characteristics <https://sqlite.org/c3ref/c_iocap_atomic.html>'__"""
 SQLITE_IOCAP_SEQUENTIAL: int = 1024
 """For `Device Characteristics <https://sqlite.org/c3ref/c_iocap_atomic.html>'__"""
+SQLITE_IOCAP_SUBPAGE_READ: int = 32768
+"""For `Device Characteristics <https://sqlite.org/c3ref/c_iocap_atomic.html>'__"""
 SQLITE_IOCAP_UNDELETABLE_WHEN_OPEN: int = 2048
 """For `Device Characteristics <https://sqlite.org/c3ref/c_iocap_atomic.html>'__"""
 SQLITE_IOERR: int = 10
@@ -4315,7 +4317,8 @@ SQLITE_IOCAP_ATOMIC2K SQLITE_IOCAP_ATOMIC32K SQLITE_IOCAP_ATOMIC4K
 SQLITE_IOCAP_ATOMIC512 SQLITE_IOCAP_ATOMIC64K SQLITE_IOCAP_ATOMIC8K
 SQLITE_IOCAP_BATCH_ATOMIC SQLITE_IOCAP_IMMUTABLE
 SQLITE_IOCAP_POWERSAFE_OVERWRITE SQLITE_IOCAP_SAFE_APPEND
-SQLITE_IOCAP_SEQUENTIAL SQLITE_IOCAP_UNDELETABLE_WHEN_OPEN"""
+SQLITE_IOCAP_SEQUENTIAL SQLITE_IOCAP_SUBPAGE_READ
+SQLITE_IOCAP_UNDELETABLE_WHEN_OPEN"""
 
 mapping_extended_result_codes: dict[str | int, int | str]
 """Extended Result Codes mapping names to int and int to names.
