@@ -764,14 +764,14 @@ This example shows all the information available during a query.
 
     row_match called with (5, 'hello')
     api.rowid=1642795772696450313
-    api.row_count=173278
+    api.row_count=173279
     api.column_count=3
       col=0 api.column_size(col)=3
-      col=0 api.column_total_size(col)=743406
+      col=0 api.column_total_size(col)=743413
       col=1 api.column_size(col)=4
       col=1 api.column_total_size(col)=8064731
       col=2 api.column_size(col)=9
-      col=2 api.column_total_size(col)=3824644
+      col=2 api.column_total_size(col)=3824650
     api.inst_count=2
       inst=0 api.inst_tokens(inst)=('boiled', 'eggs')
       inst=1 api.inst_tokens(inst)=('boiled', 'eggs')

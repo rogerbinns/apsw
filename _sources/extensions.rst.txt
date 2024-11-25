@@ -33,14 +33,6 @@ expressions in a locale aware way.  The `documentation
 <https://sqlite.org/src/tree?name=ext/icu>`__
 shows how to use it.
 
-.. _ext-rbu:
-
-RBU
-===
-
-Provides `resumable bulk update <https://www.sqlite.org/rbu.html>`__ intended for
-use with large SQLite databases on low power devices at the edge of a network.
-
 .. _ext-rtree:
 
 RTree

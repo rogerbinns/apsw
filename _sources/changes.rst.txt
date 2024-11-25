@@ -10,6 +10,26 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.47.1.0
+========
+
+Documentation on how to :ref:`build for packagers <packagers>` such as
+those maintaining Linux and BSD distributions.
+
+Documentation on how to :ref:`build for pyodide <pyodide>`, the Python
+WASM implementation that runs in the browser and NPM.  PyPI does not
+accept pyodide packages yet.
+
+A command line tool ``apsw`` is defined which invokes the :doc:`shell
+<shell>`.  This also allows using `uvx apsw
+<https://docs.astral.sh/uv/guides/tools/>`__ without having to
+explicitly install APSW.
+
+Added :func:`apsw.ext.analyze_pages` which uses `dbstat
+<https://www.sqlite.org/dbstat.html>`__ to provide useful information
+about the pages making up the database, and fragmentation.  The shell
+:ref:`.pages command <shell-cmd-pages>` shows it in a pretty form.
+
 3.47.0.0
 ========
 

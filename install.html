@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation and customization &mdash; APSW 3.47.0.0 documentation</title>
+  <title>Installation and customization &mdash; APSW 3.47.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=8087e674"></script>
+      <script src="_static/documentation_options.js?v=f152ac2d"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -73,6 +73,8 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#pyodide">Pyodide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#advice-for-packagers">Advice for packagers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
 </ul>
 </li>
@@ -196,9 +198,9 @@ are currently on.</p>
 source from <a class="reference external" href="https://pypi.org/project/apsw/">PyPi</a> then ensure you
 edit the <code class="file docutils literal notranslate"><span class="pre">setup.apsw</span></code> file inside.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.zip">apsw-3.47.0.0.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.47.1.0/apsw-3.47.1.0.zip">apsw-3.47.1.0.zip</a>
 (Source, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.cosign-bundle">apsw-3.47.0.0.cosign-bundle</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.47.1.0/apsw-3.47.1.0.cosign-bundle">apsw-3.47.1.0.cosign-bundle</a>
 cosign signature</p></li>
 </ul>
 <section id="verifying-your-download">
@@ -217,8 +219,8 @@ including Linux, MacOS, and Windows.</p>
 <p>Checking the signature needs to provide the source release, the
 cosign bundle, the maintainer id, and issuer.  The command is all
 one line shown here across multiple lines for clarity.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.47.0.0.zip<span class="w">                           </span><span class="se">\</span>
-<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.47.0.0.cosign-bundle<span class="w">                         </span><span class="se">\</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.47.1.0.zip<span class="w">                           </span><span class="se">\</span>
+<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.47.1.0.cosign-bundle<span class="w">                         </span><span class="se">\</span>
 <span class="w">    </span>--certificate-identity<span class="o">=</span>rogerb@rogerbinns.com<span class="w">                 </span><span class="se">\</span>
 <span class="w">    </span>--certificate-oidc-issuer<span class="o">=</span>https://github.com/login/oauth
 <span class="go">Verified OK</span>
@@ -379,8 +381,76 @@ uppercased.  eg <code class="code docutils literal notranslate"><span class="pre
 </section>
 </section>
 </section>
+<section id="pyodide">
+<span id="id2"></span><h2>Pyodide<a class="headerlink" href="#pyodide" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://pyodide.org/en/stable/index.html">Pyodide</a> is a web
+assembly Python distribution that can run in the browser or via NPM.
+PyPI does not support pyodide binary packages yet, but you can compile
+your own on a Linux host.</p>
+<p>You should first download the source distribution listed at the top of
+<a class="reference external" href="https://pypi.org/project/apsw/#files">https://pypi.org/project/apsw/#files</a> - the filename ends up being
+<code class="docutils literal notranslate"><span class="pre">apsw-3.47.0.0.tar.gz</span></code> in this example.  The <a class="reference external" href="https://cibuildwheel.pypa.io/">cibuildwheel</a> tool is used for the building, and
+is the same tool used for the PyPI builds of APSW.</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Start<span class="w"> </span>out<span class="w"> </span>with<span class="w"> </span>a<span class="w"> </span>clean<span class="w"> </span>virtual<span class="w"> </span>environment
+<span class="gp">$ </span>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+<span class="gp"># </span>Get<span class="w"> </span>cibuildwheel
+<span class="gp">$ </span>venv/bin/pip3<span class="w"> </span>install<span class="w"> </span>cibuildwheel
+<span class="gp"># </span>Do<span class="w"> </span>the<span class="w"> </span>building<span class="w"> </span>which<span class="w"> </span>will<span class="w"> </span>download<span class="w"> </span>the<span class="w"> </span>necessary<span class="w"> </span>compiler<span class="w"> </span>and
+<span class="gp"># </span>Python<span class="w"> </span>parts
+<span class="gp">$ </span>venv/bin/cibuildwheel<span class="w"> </span>--platform<span class="w"> </span>pyodide<span class="w"> </span>apsw-3.47.0.0.tar.gz
+<span class="gp"># </span>When<span class="w"> </span>it<span class="w"> </span>has<span class="w"> </span>finished<span class="w"> </span>the<span class="w"> </span>result<span class="w"> </span>is<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>wheelhouse<span class="w"> </span>directory
+<span class="gp">$ </span>ls<span class="w"> </span>wheelhouse/
+</pre></div>
+</div>
+<p>You will then be able to install the wheel using <a class="reference external" href="https://micropip.pyodide.org/">micropip</a>.</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">micropip</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">await</span> <span class="n">micropip</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="s2">&quot;https://url/apsw-3.47.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">apsw</span>
+</pre></div>
+</div>
+<p>At this point you will be able to use APSW as normal.</p>
+</section>
+<section id="advice-for-packagers">
+<span id="packagers"></span><h2>Advice for packagers<a class="headerlink" href="#advice-for-packagers" title="Link to this heading"></a></h2>
+<p>This is the recommendation for packagers such as Linux and BSD
+distributions, who want APSW to use the system shared SQLite library.</p>
+<ul>
+<li><p>Use the source file from <a class="reference external" href="https://github.com/rogerbinns/apsw/releases">github releases</a>.  Note you should
+use the zip file including the version number, not the github
+repository copy at the end.  The file is signed and <a class="reference internal" href="#verifydownload"><span class="std std-ref">can be
+verified</span></a>.</p>
+<p>The file also includes a copy of the built documentation in HTML
+format with no analytics in the <code class="docutils literal notranslate"><span class="pre">doc/</span></code> subdirectory.</p>
+</li>
+<li><p>After extracting the zip, replace the file named <code class="docutils literal notranslate"><span class="pre">setup.apsw</span></code> that
+sits alongside <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> with the following contents:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[build_ext]</span>
+<span class="na">use_system_sqlite_config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>This will probe the system SQLite shared library for its compilation
+options.  Various C level APIs are included or excluded from the shared
+library based on those options, so APSW needs to know at compilation
+time which APIs it can or can’t call.</p>
+</li>
+<li><p>You can compile APSW using whatever works for your packaging system.
+APSW complies with the latest <a class="reference external" href="https://packaging.python.org/">Python packaging guidelines</a> and metadata.  (The traditional
+<a class="reference external" href="https://github.com/pypa/setuptools">setuptools</a> is the build
+backend.) You will see lines like the following during build (note the
+<code class="docutils literal notranslate"><span class="pre">Extracting</span> <span class="pre">configuration</span></code>).</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">running build_ext</span>
+<span class="go">Extracting configuration from libsqlite3.so.0</span>
+<span class="go">SQLite: Using system sqlite include/libraries</span>
+</pre></div>
+</div>
+</li>
+<li><p><a class="extlink-source reference external" href="https://github.com/rogerbinns/apsw/blob/master/pyproject.toml">pyproject.toml</a> defines a script entry point (command line
+tool) for <code class="docutils literal notranslate"><span class="pre">apsw</span></code> which invokes the <a class="reference internal" href="shell.html"><span class="doc">Shell</span></a>.  It is optional
+to package this.  A man page is included in the <code class="docutils literal notranslate"><span class="pre">man/</span></code> directory.</p></li>
+</ul>
+</section>
 <section id="testing">
-<span id="id2"></span><h2>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h2>
+<span id="id3"></span><h2>Testing<a class="headerlink" href="#testing" title="Link to this heading"></a></h2>
 <p>SQLite itself is <a class="reference external" href="https://sqlite.org/testing.html">extensively tested</a>. It has considerably more code
 dedicated to testing than makes up the actual database functionality.</p>
 <p>APSW includes tests which use the standard Python testing modules to
@@ -406,9 +476,8 @@ executed by the tests. In the source, there is a script that enables
 extra code that deliberately induces extra conditions such as memory
 allocation failures, SQLite returning error codes, Python APIs
 erroring etc.  That brings coverage up to 99.6% of the code.</p>
-<p>A memory checker <a class="reference external" href="https://valgrind.org">Valgrind</a>  and  <a class="reference external" href="https://en.wikipedia.org/wiki/AddressSanitizer">compiler
-sanitizer options</a>
-are also used for further validation.</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/AddressSanitizer">Compiler sanitizers options</a> are also used for
+further validation.</p>
 <p>To ensure compatibility with the various Python versions, a script
 downloads and compiles all supported Python versions in both debug and
 release configurations (and 32 and 64 bit) against the APSW and SQLite
@@ -429,7 +498,7 @@ supported versions running the tests.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 17, 2024.
+      <span class="lastupdated">Last updated on Nov 25, 2024.
       </span></p>
   </div>
 

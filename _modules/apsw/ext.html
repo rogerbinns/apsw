@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.47.0.0 documentation</title>
+  <title>apsw.ext &mdash; APSW 3.47.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8087e674"></script>
+      <script src="../../_static/documentation_options.js?v=f152ac2d"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -126,14 +126,15 @@
 <span class="kn">import</span> <span class="nn">apsw.unicode</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
+
 <div class="viewcode-block" id="result_string">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.result_string">[docs]</a>
 <span class="k">def</span> <span class="nf">result_string</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Turns a result or extended result code into a string.</span>
 <span class="sd">    The appropriate mapping based on the value is used.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">code</span> <span class="o">&lt;</span> <span class="mi">256</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="p">))</span> <span class="c1"># type: ignore</span>
-    <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_extended_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="p">))</span> <span class="c1"># type: ignore</span></div>
+        <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+    <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_extended_result_codes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="p">))</span>  <span class="c1"># type: ignore</span></div>
 
 
 
@@ -347,8 +348,9 @@
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.wrap_sequence_bindings">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.wrap_sequence_bindings">[docs]</a>
-    <span class="k">def</span> <span class="nf">wrap_sequence_bindings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                               <span class="n">sequenceofbindings</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">wrap_sequence_bindings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">sequenceofbindings</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="s2">&quot;Wraps a sequence of bindings that are supplied to the underlying executemany&quot;</span>
         <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">sequenceofbindings</span><span class="p">:</span>
             <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrap_bindings</span><span class="p">(</span><span class="n">binding</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span></div>
@@ -390,32 +392,38 @@
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor.execute">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.execute">[docs]</a>
-        <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                    <span class="n">statements</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                    <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="o">*</span><span class="p">,</span>
-                    <span class="n">can_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                    <span class="n">prepare_flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-                    <span class="n">explain</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">statements</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="o">*</span><span class="p">,</span>
+            <span class="n">can_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="n">prepare_flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">explain</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">:</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Executes the statements doing conversions on supplied and returned values</span>
 
 <span class="sd">            See :meth:`apsw.Cursor.execute` for parameter details&quot;&quot;&quot;</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statements</span><span class="p">,</span>
-                                   <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">wrap_bindings</span><span class="p">(</span><span class="n">bindings</span><span class="p">),</span>
-                                   <span class="n">can_cache</span><span class="o">=</span><span class="n">can_cache</span><span class="p">,</span>
-                                   <span class="n">prepare_flags</span><span class="o">=</span><span class="n">prepare_flags</span><span class="p">,</span>
-                                   <span class="n">explain</span><span class="o">=</span><span class="n">explain</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="n">statements</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">wrap_bindings</span><span class="p">(</span><span class="n">bindings</span><span class="p">),</span>
+                <span class="n">can_cache</span><span class="o">=</span><span class="n">can_cache</span><span class="p">,</span>
+                <span class="n">prepare_flags</span><span class="o">=</span><span class="n">prepare_flags</span><span class="p">,</span>
+                <span class="n">explain</span><span class="o">=</span><span class="n">explain</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor.executemany">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.executemany">[docs]</a>
-        <span class="k">def</span> <span class="nf">executemany</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                        <span class="n">statements</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                        <span class="n">sequenceofbindings</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">],</span>
-                        <span class="o">*</span><span class="p">,</span>
-                        <span class="n">can_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                        <span class="n">prepare_flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-                        <span class="n">explain</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">executemany</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">statements</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">sequenceofbindings</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">],</span>
+            <span class="o">*</span><span class="p">,</span>
+            <span class="n">can_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="n">prepare_flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">explain</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">:</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Executes the statements against each item in sequenceofbindings, doing conversions on supplied and returned values</span>
 
 <span class="sd">            See :meth:`apsw.Cursor.executemany` for parameter details&quot;&quot;&quot;</span>
@@ -424,7 +432,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">wrap_sequence_bindings</span><span class="p">(</span><span class="n">sequenceofbindings</span><span class="p">),</span>  <span class="c1"># type: ignore[arg-type]</span>
                 <span class="n">can_cache</span><span class="o">=</span><span class="n">can_cache</span><span class="p">,</span>
                 <span class="n">prepare_flags</span><span class="o">=</span><span class="n">prepare_flags</span><span class="p">,</span>
-                <span class="n">explain</span><span class="o">=</span><span class="n">explain</span><span class="p">)</span></div>
+                <span class="n">explain</span><span class="o">=</span><span class="n">explain</span><span class="p">,</span>
+            <span class="p">)</span></div>
 </div>
 </div>
 
@@ -444,9 +453,9 @@
         <span class="n">err_str</span> <span class="o">=</span> <span class="n">result_string</span><span class="p">(</span><span class="n">errcode</span><span class="p">)</span>
         <span class="n">extra</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;sqlite_code&quot;</span><span class="p">:</span> <span class="n">errcode</span><span class="p">,</span> <span class="s2">&quot;sqlite_code_name&quot;</span><span class="p">:</span> <span class="n">err_str</span><span class="p">,</span> <span class="s2">&quot;sqlite_message&quot;</span><span class="p">:</span> <span class="n">message</span><span class="p">}</span>
         <span class="c1"># Level defaults to ERROR but some messages aren&#39;t as important</span>
-        <span class="k">if</span> <span class="n">errcode</span> <span class="o">&amp;</span> <span class="mh">0xff</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_WARNING</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">errcode</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_WARNING</span><span class="p">:</span>
             <span class="n">level</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">errcode</span> <span class="o">&amp;</span> <span class="mh">0xff</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_NOTICE</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">errcode</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_NOTICE</span><span class="p">:</span>
             <span class="c1"># these are really half way between INFO and WARNING and</span>
             <span class="c1"># current instances are recovering journals/WAL etc which</span>
             <span class="c1"># happens if the previous process exited abruptly.</span>
@@ -457,12 +466,7 @@
             <span class="c1"># appropriate!</span>
             <span class="n">level</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
 
-        <span class="p">(</span><span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="p">)</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span>
-                    <span class="s2">&quot;SQLITE_LOG: </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%d</span><span class="s2">) </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
-                    <span class="n">message</span><span class="p">,</span>
-                    <span class="n">errcode</span><span class="p">,</span>
-                    <span class="n">err_str</span><span class="p">,</span>
-                    <span class="n">extra</span><span class="o">=</span><span class="n">extra</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="p">)</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="s2">&quot;SQLITE_LOG: </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%d</span><span class="s2">) </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">errcode</span><span class="p">,</span> <span class="n">err_str</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra</span><span class="p">)</span>
 
     <span class="n">apsw</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CONFIG_LOG</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span></div>
 
@@ -470,11 +474,13 @@
 
 <div class="viewcode-block" id="print_augmented_traceback">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.print_augmented_traceback">[docs]</a>
-<span class="k">def</span> <span class="nf">print_augmented_traceback</span><span class="p">(</span><span class="n">exc_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">],</span>
-                              <span class="n">exc_value</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span>
-                              <span class="n">exc_traceback</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">TracebackType</span><span class="p">,</span>
-                              <span class="o">*</span><span class="p">,</span>
-                              <span class="n">file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">print_augmented_traceback</span><span class="p">(</span>
+    <span class="n">exc_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">],</span>
+    <span class="n">exc_value</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span>
+    <span class="n">exc_traceback</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">TracebackType</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prints a standard exception, but also includes the value of variables in each stack frame</span>
 <span class="sd">    which APSW :ref:`adds &lt;augmentedstacktraces&gt;` to help diagnostics and debugging.</span>
 
@@ -501,10 +507,9 @@
 
 <div class="viewcode-block" id="index_info_to_dict">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.index_info_to_dict">[docs]</a>
-<span class="k">def</span> <span class="nf">index_info_to_dict</span><span class="p">(</span><span class="n">o</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">IndexInfo</span><span class="p">,</span>
-                       <span class="o">*</span><span class="p">,</span>
-                       <span class="n">column_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                       <span class="n">rowid_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;__ROWID__&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">index_info_to_dict</span><span class="p">(</span>
+    <span class="n">o</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">IndexInfo</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">column_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rowid_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;__ROWID__&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns a :class:`apsw.IndexInfo` as a dictionary.</span>
 
@@ -567,59 +572,61 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">res</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;nConstraint&quot;</span><span class="p">:</span>
-        <span class="n">o</span><span class="o">.</span><span class="n">nConstraint</span><span class="p">,</span>
-        <span class="s2">&quot;aConstraint&quot;</span><span class="p">:</span> <span class="p">[{</span>
-            <span class="s2">&quot;iColumn&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_iColumn</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-            <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_op</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-            <span class="s2">&quot;op_str&quot;</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_bestindex_constraints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_op</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span>
-            <span class="s2">&quot;usable&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_usable</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-            <span class="s2">&quot;collation&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_collation</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-            <span class="s2">&quot;rhs&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_rhs</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-        <span class="p">}</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">nConstraint</span><span class="p">)],</span>
-        <span class="s2">&quot;nOrderBy&quot;</span><span class="p">:</span>
-        <span class="n">o</span><span class="o">.</span><span class="n">nOrderBy</span><span class="p">,</span>
-        <span class="s2">&quot;aOrderBy&quot;</span><span class="p">:</span> <span class="p">[{</span>
-            <span class="s2">&quot;iColumn&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aOrderBy_iColumn</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-            <span class="s2">&quot;desc&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aOrderBy_desc</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-        <span class="p">}</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">nOrderBy</span><span class="p">)],</span>
-        <span class="s2">&quot;aConstraintUsage&quot;</span><span class="p">:</span> <span class="p">[{</span>
-            <span class="s2">&quot;argvIndex&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraintUsage_argvIndex</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-            <span class="s2">&quot;omit&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraintUsage_omit</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-            <span class="s2">&quot;in&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraintUsage_in</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
-        <span class="p">}</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">nConstraint</span><span class="p">)],</span>
-        <span class="s2">&quot;idxNum&quot;</span><span class="p">:</span>
-        <span class="n">o</span><span class="o">.</span><span class="n">idxNum</span><span class="p">,</span>
-        <span class="s2">&quot;idxStr&quot;</span><span class="p">:</span>
-        <span class="n">o</span><span class="o">.</span><span class="n">idxStr</span><span class="p">,</span>
-        <span class="s2">&quot;orderByConsumed&quot;</span><span class="p">:</span>
-        <span class="n">o</span><span class="o">.</span><span class="n">orderByConsumed</span><span class="p">,</span>
-        <span class="s2">&quot;estimatedCost&quot;</span><span class="p">:</span>
-        <span class="n">o</span><span class="o">.</span><span class="n">estimatedCost</span><span class="p">,</span>
-        <span class="s2">&quot;estimatedRows&quot;</span><span class="p">:</span>
-        <span class="n">o</span><span class="o">.</span><span class="n">estimatedRows</span><span class="p">,</span>
-        <span class="s2">&quot;idxFlags&quot;</span><span class="p">:</span>
-        <span class="n">o</span><span class="o">.</span><span class="n">idxFlags</span><span class="p">,</span>
-        <span class="s2">&quot;idxFlags_set&quot;</span><span class="p">:</span>
-        <span class="nb">set</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_virtual_table_scan_flags</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">o</span><span class="o">.</span><span class="n">idxFlags</span> <span class="o">&amp;</span> <span class="n">k</span><span class="p">),</span>
-        <span class="s2">&quot;colUsed&quot;</span><span class="p">:</span>
-        <span class="n">o</span><span class="o">.</span><span class="n">colUsed</span><span class="p">,</span>
-        <span class="s2">&quot;distinct&quot;</span><span class="p">:</span>
-        <span class="n">o</span><span class="o">.</span><span class="n">distinct</span><span class="p">,</span>
+        <span class="s2">&quot;nConstraint&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">nConstraint</span><span class="p">,</span>
+        <span class="s2">&quot;aConstraint&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;iColumn&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_iColumn</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+                <span class="s2">&quot;op&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_op</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+                <span class="s2">&quot;op_str&quot;</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_bestindex_constraints</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_op</span><span class="p">(</span><span class="n">n</span><span class="p">)),</span>
+                <span class="s2">&quot;usable&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_usable</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+                <span class="s2">&quot;collation&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_collation</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+                <span class="s2">&quot;rhs&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraint_rhs</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">nConstraint</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;nOrderBy&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">nOrderBy</span><span class="p">,</span>
+        <span class="s2">&quot;aOrderBy&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;iColumn&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aOrderBy_iColumn</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+                <span class="s2">&quot;desc&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aOrderBy_desc</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">nOrderBy</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;aConstraintUsage&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;argvIndex&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraintUsage_argvIndex</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+                <span class="s2">&quot;omit&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraintUsage_omit</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+                <span class="s2">&quot;in&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">get_aConstraintUsage_in</span><span class="p">(</span><span class="n">n</span><span class="p">),</span>
+            <span class="p">}</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">nConstraint</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;idxNum&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">idxNum</span><span class="p">,</span>
+        <span class="s2">&quot;idxStr&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">idxStr</span><span class="p">,</span>
+        <span class="s2">&quot;orderByConsumed&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">orderByConsumed</span><span class="p">,</span>
+        <span class="s2">&quot;estimatedCost&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">estimatedCost</span><span class="p">,</span>
+        <span class="s2">&quot;estimatedRows&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">estimatedRows</span><span class="p">,</span>
+        <span class="s2">&quot;idxFlags&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">idxFlags</span><span class="p">,</span>
+        <span class="s2">&quot;idxFlags_set&quot;</span><span class="p">:</span> <span class="nb">set</span><span class="p">(</span>
+            <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_virtual_table_scan_flags</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">o</span><span class="o">.</span><span class="n">idxFlags</span> <span class="o">&amp;</span> <span class="n">k</span>
+        <span class="p">),</span>
+        <span class="s2">&quot;colUsed&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">colUsed</span><span class="p">,</span>
+        <span class="s2">&quot;distinct&quot;</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">distinct</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">for</span> <span class="n">aConstraint</span> <span class="ow">in</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;aConstraint&quot;</span><span class="p">]:</span>  <span class="c1"># type: ignore[attr-defined]</span>
         <span class="k">if</span> <span class="n">aConstraint</span><span class="p">[</span><span class="s2">&quot;op&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_OFFSET</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_LIMIT</span><span class="p">):</span>
             <span class="k">del</span> <span class="n">aConstraint</span><span class="p">[</span><span class="s2">&quot;iColumn&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">aConstraint</span><span class="p">[</span><span class="s2">&quot;op&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_FUNCTION</span> <span class="ow">and</span> <span class="n">aConstraint</span><span class="p">[</span><span class="s2">&quot;op&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">255</span><span class="p">:</span>
-            <span class="n">aConstraint</span><span class="p">[</span>
-                <span class="s2">&quot;op_str&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SQLITE_INDEX_CONSTRAINT_FUNCTION+</span><span class="si">{</span><span class="w"> </span><span class="n">aConstraint</span><span class="p">[</span><span class="s1">&#39;op&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_FUNCTION</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">aConstraint</span><span class="p">[</span><span class="s2">&quot;op_str&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;SQLITE_INDEX_CONSTRAINT_FUNCTION+</span><span class="si">{</span><span class="w"> </span><span class="n">aConstraint</span><span class="p">[</span><span class="s1">&#39;op&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_INDEX_CONSTRAINT_FUNCTION</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">column_names</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">aconstraint</span> <span class="ow">in</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;aConstraint&quot;</span><span class="p">]:</span>  <span class="c1"># type: ignore[attr-defined]</span>
             <span class="k">if</span> <span class="s2">&quot;iColumn&quot;</span> <span class="ow">in</span> <span class="n">aconstraint</span><span class="p">:</span>
-                <span class="n">aconstraint</span><span class="p">[</span><span class="s2">&quot;iColumn_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rowid_name</span> <span class="k">if</span> <span class="n">aconstraint</span><span class="p">[</span><span class="s2">&quot;iColumn&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="n">column_names</span><span class="p">[</span>
-                    <span class="n">aconstraint</span><span class="p">[</span><span class="s2">&quot;iColumn&quot;</span><span class="p">]]</span>
+                <span class="n">aconstraint</span><span class="p">[</span><span class="s2">&quot;iColumn_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">rowid_name</span> <span class="k">if</span> <span class="n">aconstraint</span><span class="p">[</span><span class="s2">&quot;iColumn&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="n">column_names</span><span class="p">[</span><span class="n">aconstraint</span><span class="p">[</span><span class="s2">&quot;iColumn&quot;</span><span class="p">]]</span>
+                <span class="p">)</span>
         <span class="k">for</span> <span class="n">aorderby</span> <span class="ow">in</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;aOrderBy&quot;</span><span class="p">]:</span>  <span class="c1"># type: ignore[attr-defined]</span>
             <span class="n">aorderby</span><span class="p">[</span><span class="s2">&quot;iColumn_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rowid_name</span> <span class="k">if</span> <span class="n">aorderby</span><span class="p">[</span><span class="s2">&quot;iColumn&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="n">column_names</span><span class="p">[</span><span class="n">aorderby</span><span class="p">[</span><span class="s2">&quot;iColumn&quot;</span><span class="p">]]</span>
         <span class="c1"># colUsed has all bits set when SQLite just wants the whole row</span>
@@ -634,8 +641,9 @@
 
 <div class="viewcode-block" id="dbinfo">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.dbinfo">[docs]</a>
-<span class="k">def</span> <span class="nf">dbinfo</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
-           <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DatabaseFileInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">JournalFileInfo</span> <span class="o">|</span> <span class="n">WALFileInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">dbinfo</span><span class="p">(</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DatabaseFileInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">JournalFileInfo</span> <span class="o">|</span> <span class="n">WALFileInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts fields from the database, journal, and wal files</span>
 
 <span class="sd">    Based on the `file format description &lt;https://www.sqlite.org/fileformat2.html&gt;`__.  The</span>
@@ -692,7 +700,7 @@
             <span class="p">(</span><span class="s2">&quot;version_valid_for&quot;</span><span class="p">,</span> <span class="mi">92</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;sqlite_version&quot;</span><span class="p">,</span> <span class="mi">96</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
         <span class="p">):</span>
-            <span class="n">b</span> <span class="o">=</span> <span class="n">header_page</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">header_page</span><span class="p">[</span><span class="n">offset</span> <span class="p">:</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
             <span class="n">kw</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">converter</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>  <span class="c1"># type: ignore [operator]</span>
         <span class="n">dbinfo</span> <span class="o">=</span> <span class="n">DatabaseFileInfo</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">)</span>
 
@@ -715,7 +723,7 @@
                 <span class="p">(</span><span class="s2">&quot;checksum_1&quot;</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
                 <span class="p">(</span><span class="s2">&quot;checksum_2&quot;</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
             <span class="p">):</span>
-                <span class="n">b</span> <span class="o">=</span> <span class="n">journal_page</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">journal_page</span><span class="p">[</span><span class="n">offset</span> <span class="p">:</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
                 <span class="n">kw</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">converter</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>  <span class="c1"># type: ignore [operator]</span>
             <span class="n">journalinfo</span> <span class="o">=</span> <span class="n">WALFileInfo</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -730,7 +738,7 @@
                 <span class="p">(</span><span class="s2">&quot;sector_size&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
                 <span class="p">(</span><span class="s2">&quot;page_size&quot;</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">be_int</span><span class="p">),</span>
             <span class="p">):</span>
-                <span class="n">b</span> <span class="o">=</span> <span class="n">journal_page</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
+                <span class="n">b</span> <span class="o">=</span> <span class="n">journal_page</span><span class="p">[</span><span class="n">offset</span> <span class="p">:</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">size</span><span class="p">]</span>
                 <span class="n">kw</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">converter</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>  <span class="c1"># type: ignore [operator]</span>
             <span class="n">journalinfo</span> <span class="o">=</span> <span class="n">JournalFileInfo</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">)</span>
 
@@ -842,7 +850,7 @@
 
     <span class="k">def</span> <span class="nf">_truncate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span> <span class="k">else</span> <span class="n">text</span>
+        <span class="k">return</span> <span class="n">text</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span> <span class="k">else</span> <span class="n">text</span>
 
     <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span>
@@ -1138,21 +1146,226 @@
 
 
 
+<div class="viewcode-block" id="PageUsage">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.PageUsage">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">PageUsage</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returned by :func:`analyze_pages`&quot;&quot;&quot;</span>
+
+    <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Size of pages in bytes.  All pages in the database are the same size.&quot;</span>
+    <span class="n">pages_used</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Pages with content&quot;</span>
+    <span class="n">sequential_pages</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;How many pages were sequential in the database file&quot;</span>
+    <span class="n">data_stored</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Bytes of SQL content stored&quot;</span>
+    <span class="n">cells</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cells are what is `stored &lt;https://www.sqlite.org/fileformat.html#b_tree_pages&gt;`__</span>
+<span class="sd">    including sizing information, pointers to overflow etc&quot;&quot;&quot;</span>
+    <span class="n">max_payload</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Largest cell size&quot;</span>
+    <span class="n">tables</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="s2">&quot;Names of tables providing these statistics&quot;</span>
+    <span class="n">indices</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="s2">&quot;Names of indices providing these statistics&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="DatabasePageUsage">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.DatabasePageUsage">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">DatabasePageUsage</span><span class="p">(</span><span class="n">PageUsage</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returned by :func:`analyze_pages` when asking about the database as a whole&quot;&quot;&quot;</span>
+
+    <span class="n">pages_total</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Number of pages in the database&quot;</span>
+    <span class="n">pages_freelist</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;How many pages are unused, for example if data got deleted&quot;</span>
+    <span class="n">max_page_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="s2">&quot;Limit on the `number of pages &lt;https://www.sqlite.org/pragma.html#pragma_max_page_count&gt;`__&quot;</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_analyze_pages_for_name</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">PageUsage</span><span class="p">):</span>
+    <span class="n">qschema</span> <span class="o">=</span> <span class="s1">&#39;&quot;&#39;</span> <span class="o">+</span> <span class="n">schema</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&quot;&quot;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&quot;&#39;</span>
+
+    <span class="k">for</span> <span class="n">pages_used</span><span class="p">,</span> <span class="n">ncell</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">mx_payload</span> <span class="ow">in</span> <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;SELECT pageno, ncell, payload, mx_payload</span>
+<span class="sd">                    FROM dbstat(?, 1) WHERE name=?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+    <span class="p">):</span>
+        <span class="n">usage</span><span class="o">.</span><span class="n">pages_used</span> <span class="o">+=</span> <span class="n">pages_used</span>
+        <span class="n">usage</span><span class="o">.</span><span class="n">data_stored</span> <span class="o">+=</span> <span class="n">payload</span>
+        <span class="n">usage</span><span class="o">.</span><span class="n">cells</span> <span class="o">+=</span> <span class="n">ncell</span>
+        <span class="n">usage</span><span class="o">.</span><span class="n">max_payload</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">max_payload</span><span class="p">,</span> <span class="n">mx_payload</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;select type from </span><span class="si">{</span><span class="n">qschema</span><span class="si">}</span><span class="s2">.sqlite_schema where name=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">name</span><span class="p">,))</span><span class="o">.</span><span class="n">get</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span>
+            <span class="n">usage</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">usage</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">usage</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">usage</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="c1"># by definition the first page is sequential but won&#39;t match next, so fake it</span>
+        <span class="n">sequential</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="nb">next</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">pageno</span><span class="p">,)</span> <span class="ow">in</span> <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select pageno from dbstat(?) WHERE name=? ORDER BY path&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">name</span><span class="p">)):</span>
+            <span class="n">sequential</span> <span class="o">+=</span> <span class="n">pageno</span> <span class="o">==</span> <span class="nb">next</span>
+            <span class="nb">next</span> <span class="o">=</span> <span class="n">pageno</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">usage</span><span class="o">.</span><span class="n">sequential_pages</span> <span class="o">+=</span> <span class="n">sequential</span>
+
+
+<div class="viewcode-block" id="analyze_pages">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.analyze_pages">[docs]</a>
+<span class="k">def</span> <span class="nf">analyze_pages</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">scope</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabasePageUsage</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PageUsage</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Summarizes page usage for the database</span>
+
+<span class="sd">    The `dbstat &lt;https://www.sqlite.org/dbstat.html&gt;`__ virtual table</span>
+<span class="sd">    is used to gather statistics.</span>
+
+<span class="sd">    See :download:`example output &lt;../examples/analyze_pages.txt&gt;`.</span>
+
+<span class="sd">    :param con: Connection to use</span>
+<span class="sd">    :param scope:</span>
+<span class="sd">        .. list-table::</span>
+<span class="sd">            :widths: auto</span>
+<span class="sd">            :header-rows: 1</span>
+
+<span class="sd">            * - Value</span>
+<span class="sd">              - Scope</span>
+<span class="sd">              - Returns</span>
+<span class="sd">            * - ``0``</span>
+<span class="sd">              - The database as a whole</span>
+<span class="sd">              - :class:`DatabasePageUsage`</span>
+<span class="sd">            * - ``1``</span>
+<span class="sd">              - Tables and their indices are grouped together.  Virtual tables</span>
+<span class="sd">                like FTS5 have multiple backing tables which are grouped.</span>
+<span class="sd">              - A :class:`dict` where the key is the name of the</span>
+<span class="sd">                table, and a corresponding :class:`PageUsage` as the</span>
+<span class="sd">                value.  The :attr:`PageUsage.tables` and</span>
+<span class="sd">                :attr:`PageUsage.indices` fields tell you which ones</span>
+<span class="sd">                were included.</span>
+<span class="sd">            * - ``2``</span>
+<span class="sd">              - Each table and index separately.</span>
+<span class="sd">              - :class:`dict` of each name and a corresponding</span>
+<span class="sd">                :class:`PageUsage` where one of the</span>
+<span class="sd">                :attr:`PageUsage.tables` and :attr:`PageUsage.indices`</span>
+<span class="sd">                fields will have the name.</span>
+
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        dbstat is present in PyPI builds, and many platform SQLite</span>
+<span class="sd">        distributions.  You can use `pragma module_list</span>
+<span class="sd">        &lt;https://www.sqlite.org/pragma.html#pragma_module_list&gt;`__ to</span>
+<span class="sd">        check.  If the table is not present then calling this function</span>
+<span class="sd">        will give :class:`apsw.SQLError` with message ``no such table:</span>
+<span class="sd">        dbstat``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">qschema</span> <span class="o">=</span> <span class="s1">&#39;&quot;&#39;</span> <span class="o">+</span> <span class="n">schema</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&quot;&quot;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&quot;&#39;</span>
+
+    <span class="k">if</span> <span class="n">scope</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">total_usage</span> <span class="o">=</span> <span class="n">DatabasePageUsage</span><span class="p">(</span>
+            <span class="n">page_size</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;page_size&quot;</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span>
+            <span class="n">pages_total</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;page_count&quot;</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span>
+            <span class="n">pages_freelist</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;freelist_count&quot;</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span>
+            <span class="n">max_page_count</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;max_page_count&quot;</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span>
+            <span class="n">pages_used</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">data_stored</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">sequential_pages</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">tables</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">indices</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">cells</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">max_payload</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">_analyze_pages_for_name</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="s2">&quot;sqlite_schema&quot;</span><span class="p">,</span> <span class="n">total_usage</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,)</span> <span class="ow">in</span> <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;select name from </span><span class="si">{</span><span class="n">qschema</span><span class="si">}</span><span class="s2">.sqlite_schema where rootpage!=0&quot;</span><span class="p">):</span>
+            <span class="n">_analyze_pages_for_name</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">total_usage</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">total_usage</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">grouping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">scope</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">grouping</span><span class="p">[</span><span class="s2">&quot;sqlite_schema&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sqlite_schema&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,)</span> <span class="ow">in</span> <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;select name from </span><span class="si">{</span><span class="n">qschema</span><span class="si">}</span><span class="s2">.sqlite_schema where rootpage!=0&quot;</span><span class="p">):</span>
+            <span class="n">grouping</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">scope</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">grouping</span><span class="p">[</span><span class="s2">&quot;sqlite&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;sqlite_schema&quot;</span><span class="p">]</span>
+        <span class="n">is_virtual_table</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="nb">type</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">tbl_name</span><span class="p">,</span> <span class="n">rootpage</span> <span class="ow">in</span> <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="c1"># the order by tbl_name is so we get eg fts base table</span>
+            <span class="c1"># name before the shadow tables.  type desc is so that &#39;table&#39;</span>
+            <span class="c1"># comes before index</span>
+            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;select type, name, tbl_name, rootpage</span>
+<span class="s2">                from </span><span class="si">{</span><span class="n">qschema</span><span class="si">}</span><span class="s2">.sqlite_schema</span>
+<span class="s2">                where type in (&#39;table&#39;, &#39;index&#39;)</span>
+<span class="s2">                order by tbl_name, type desc&quot;&quot;&quot;</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span>
+                <span class="c1"># indexes always know their table-</span>
+                <span class="n">grouping</span><span class="p">[</span><span class="n">tbl_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;sqlite_&quot;</span><span class="p">):</span>
+                <span class="n">grouping</span><span class="p">[</span><span class="s2">&quot;sqlite&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">rootpage</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">grouping</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">is_virtual_table</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="c1"># shadow table? we assume an underscore separator searching longest names first</span>
+            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">grouping</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">is_virtual_table</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="p">):</span>
+                    <span class="n">grouping</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">grouping</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="n">rootpage</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown </span><span class="si">{</span><span class="n">scope</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">group</span><span class="p">,</span> <span class="n">names</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">grouping</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+        <span class="n">usage</span> <span class="o">=</span> <span class="n">PageUsage</span><span class="p">(</span>
+            <span class="n">page_size</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;page_size&quot;</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span>
+            <span class="n">pages_used</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">data_stored</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">sequential_pages</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">tables</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">indices</span><span class="o">=</span><span class="p">[],</span>
+            <span class="n">cells</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">max_payload</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="n">_analyze_pages_for_name</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">usage</span><span class="p">)</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="n">usage</span>
+
+    <span class="k">return</span> <span class="n">res</span></div>
+
+
+
 <div class="viewcode-block" id="format_query_table">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.format_query_table">[docs]</a>
-<span class="k">def</span> <span class="nf">format_query_table</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
-                       <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                       <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                       <span class="o">*</span><span class="p">,</span>
-                       <span class="n">colour</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                       <span class="n">quote</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                       <span class="n">string_sanitize</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">2</span><span class="p">]]]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-                       <span class="n">binary</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bytes</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;[ </span><span class="si">{</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="si">}</span><span class="s2"> bytes ]&quot;</span><span class="p">,</span>
-                       <span class="n">null</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;(null)&quot;</span><span class="p">,</span>
-                       <span class="n">truncate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
-                       <span class="n">truncate_val</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot; ...&quot;</span><span class="p">,</span>
-                       <span class="n">text_width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span>
-                       <span class="n">use_unicode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">format_query_table</span><span class="p">(</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
+    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">colour</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">quote</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">string_sanitize</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">2</span><span class="p">]]]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">binary</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bytes</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;[ </span><span class="si">{</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="si">}</span><span class="s2"> bytes ]&quot;</span><span class="p">,</span>
+    <span class="n">null</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;(null)&quot;</span><span class="p">,</span>
+    <span class="n">truncate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
+    <span class="n">truncate_val</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot; ...&quot;</span><span class="p">,</span>
+    <span class="n">text_width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span>
+    <span class="n">use_unicode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Produces query output in an attractive text table</span>
 
 <span class="sd">    See :ref:`the example &lt;example_format_query&gt;`.</span>
@@ -1239,11 +1452,19 @@
 
 
 
-<span class="k">def</span> <span class="nf">_format_table</span><span class="p">(</span><span class="n">colnames</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">],</span> <span class="n">colour</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">quote</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-                  <span class="n">string_sanitize</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
-                                         <span class="n">Union</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                                               <span class="n">Literal</span><span class="p">[</span><span class="mi">2</span><span class="p">]]],</span> <span class="n">binary</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bytes</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="n">null</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">truncate</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                  <span class="n">truncate_val</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">text_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">use_unicode</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_format_table</span><span class="p">(</span>
+    <span class="n">colnames</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">],</span>
+    <span class="n">colour</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">quote</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">string_sanitize</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">2</span><span class="p">]]],</span>
+    <span class="n">binary</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bytes</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">null</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">truncate</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">truncate_val</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">text_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">use_unicode</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="s2">&quot;Internal table formatter&quot;</span>
     <span class="k">if</span> <span class="n">colour</span><span class="p">:</span>
         <span class="n">c</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\x1b</span><span class="s2">[</span><span class="si">{</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="si">}</span><span class="s2">m&quot;</span>
@@ -1338,14 +1559,16 @@
             <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">split_lines</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_width</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">c</span> <span class="k">if</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_width</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;?&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">line</span><span class="p">)</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">c</span> <span class="k">if</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_width</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;?&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">line</span><span class="p">)</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
             <span class="n">val</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">truncate</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">grapheme_length</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">truncate</span><span class="p">:</span>
                 <span class="n">val</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">grapheme_substr</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">truncate</span><span class="p">)</span> <span class="o">+</span> <span class="n">truncate_val</span>
             <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">cell</span><span class="p">))</span>  <span class="c1"># type: ignore[index]</span>
-            <span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">max</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_width</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">split_lines</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="k">if</span> <span class="n">val</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                <span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">max</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_width</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">split_lines</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="k">if</span> <span class="n">val</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="p">)</span>
 
     <span class="c1">## work out widths</span>
     <span class="c1"># we need a space each side of a cell plus a cell separator hence 3</span>
@@ -1386,7 +1609,9 @@
 
     <span class="c1"># can&#39;t fit</span>
     <span class="k">if</span> <span class="n">total_width</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">text_width</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Results can&#39;t be fit in text width </span><span class="si">{</span><span class="w"> </span><span class="n">text_width</span><span class="w"> </span><span class="si">}</span><span class="s2"> even with 1 wide columns - at least </span><span class="si">{</span><span class="w"> </span><span class="n">total_width</span><span class="p">()</span><span class="w"> </span><span class="si">}</span><span class="s2"> width is needed&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Results can&#39;t be fit in text width </span><span class="si">{</span><span class="w"> </span><span class="n">text_width</span><span class="w"> </span><span class="si">}</span><span class="s2"> even with 1 wide columns - at least </span><span class="si">{</span><span class="w"> </span><span class="n">total_width</span><span class="p">()</span><span class="w"> </span><span class="si">}</span><span class="s2"> width is needed&quot;</span>
+        <span class="p">)</span>
 
     <span class="c1"># break headers and cells into lines</span>
     <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -1428,8 +1653,8 @@
                 <span class="n">lt</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_width</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
                 <span class="n">extra</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">lt</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">centre</span><span class="p">:</span>
-                    <span class="n">lpad</span> <span class="o">=</span> <span class="n">extra</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span>
-                    <span class="n">rpad</span> <span class="o">=</span> <span class="n">extra</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:]</span>
+                    <span class="n">lpad</span> <span class="o">=</span> <span class="n">extra</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span>
+                    <span class="n">rpad</span> <span class="o">=</span> <span class="n">extra</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="p">:]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">lpad</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
                     <span class="n">rpad</span> <span class="o">=</span> <span class="n">extra</span>
@@ -1463,6 +1688,7 @@
 <a class="viewcode-back" href="../../ext.html#apsw.ext.VTColumnAccess">[docs]</a>
 <span class="k">class</span> <span class="nc">VTColumnAccess</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
     <span class="s2">&quot;How the column value is accessed from a row, for :meth:`make_virtual_module`&quot;</span>
+
     <span class="n">By_Index</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
     <span class="s2">&quot;By number like with tuples and lists - eg :code:`row[3]`&quot;</span>
     <span class="n">By_Name</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
@@ -1532,13 +1758,15 @@
 
 <div class="viewcode-block" id="make_virtual_module">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.make_virtual_module">[docs]</a>
-<span class="k">def</span> <span class="nf">make_virtual_module</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
-                        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                        <span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
-                        <span class="o">*</span><span class="p">,</span>
-                        <span class="n">eponymous</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                        <span class="n">eponymous_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                        <span class="n">repr_invalid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">make_virtual_module</span><span class="p">(</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">eponymous</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">eponymous_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">repr_invalid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Registers a read-only virtual table module with *db* based on</span>
 <span class="sd">    *callable*.  The *callable* must have an attribute named *columns*</span>
@@ -1614,9 +1842,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">class</span> <span class="nc">Module</span><span class="p">:</span>
-
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">column_access</span><span class="p">:</span> <span class="n">VTColumnAccess</span><span class="p">,</span>
-                     <span class="n">primary_key</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">repr_invalid</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+            <span class="n">columns</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+            <span class="n">column_access</span><span class="p">:</span> <span class="n">VTColumnAccess</span><span class="p">,</span>
+            <span class="n">primary_key</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">repr_invalid</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">columns</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">callable</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="nb">callable</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">column_access</span><span class="p">,</span> <span class="n">VTColumnAccess</span><span class="p">):</span>
@@ -1659,7 +1892,6 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">+=</span> <span class="s2">&quot; WITHOUT rowid&quot;</span>
 
         <span class="k">def</span> <span class="nf">Create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">modulename</span><span class="p">,</span> <span class="n">dbname</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">VTTable</span><span class="p">]:</span>
-
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Too many parameters: parameters accepted are </span><span class="si">{</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -1670,7 +1902,6 @@
         <span class="n">Connect</span> <span class="o">=</span> <span class="n">Create</span>
 
         <span class="k">class</span> <span class="nc">Table</span><span class="p">:</span>
-
             <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span> <span class="n">param_values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">module</span> <span class="o">=</span> <span class="n">module</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">param_values</span> <span class="o">=</span> <span class="n">param_values</span>
@@ -1710,7 +1941,6 @@
             <span class="n">Destroy</span> <span class="o">=</span> <span class="n">Disconnect</span>
 
         <span class="k">class</span> <span class="nc">Cursor</span><span class="p">:</span>
-
             <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span> <span class="n">param_values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">module</span> <span class="o">=</span> <span class="n">module</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">param_values</span> <span class="o">=</span> <span class="n">param_values</span>
@@ -1768,17 +1998,25 @@
                 <span class="k">return</span> <span class="n">v</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">))</span> <span class="k">else</span> <span class="nb">repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
             <span class="k">def</span> <span class="nf">_Column_By_Attr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">current_row</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">which</span><span class="p">])</span> <span class="k">if</span> <span class="n">which</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_values</span><span class="p">[</span><span class="n">which</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span><span class="p">]</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_row</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">which</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">which</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span>
+                    <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_values</span><span class="p">[</span><span class="n">which</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span><span class="p">]</span>
+                <span class="p">)</span>
 
             <span class="k">def</span> <span class="nf">_Column_By_Name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">which</span><span class="p">]]</span> <span class="k">if</span> <span class="n">which</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_values</span><span class="p">[</span>
-                    <span class="n">which</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span><span class="p">]</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">current_row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">which</span><span class="p">]]</span>
+                    <span class="k">if</span> <span class="n">which</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span>
+                    <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_values</span><span class="p">[</span><span class="n">which</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span><span class="p">]</span>
+                <span class="p">)</span>
 
             <span class="k">def</span> <span class="nf">_Column_By_Index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_row</span><span class="p">[</span><span class="n">which</span><span class="p">]</span> <span class="k">if</span> <span class="n">which</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_values</span><span class="p">[</span><span class="n">which</span> <span class="o">-</span>
-                                                                                                   <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span><span class="p">]</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">current_row</span><span class="p">[</span><span class="n">which</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">which</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span>
+                    <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_values</span><span class="p">[</span><span class="n">which</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span><span class="p">]</span>
+                <span class="p">)</span>
 
             <span class="k">def</span> <span class="nf">Next</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -1798,7 +2036,8 @@
         <span class="nb">callable</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span>  <span class="c1"># type: ignore[attr-defined]</span>
         <span class="nb">callable</span><span class="o">.</span><span class="n">column_access</span><span class="p">,</span>  <span class="c1"># type: ignore[attr-defined]</span>
         <span class="nb">getattr</span><span class="p">(</span><span class="nb">callable</span><span class="p">,</span> <span class="s2">&quot;primary_key&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-        <span class="n">repr_invalid</span><span class="p">)</span>
+        <span class="n">repr_invalid</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="c1"># unregister any existing first</span>
     <span class="n">db</span><span class="o">.</span><span class="n">create_module</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -1808,13 +2047,14 @@
         <span class="n">use_bestindex_object</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">eponymous</span><span class="o">=</span><span class="n">eponymous</span><span class="p">,</span>
         <span class="n">eponymous_only</span><span class="o">=</span><span class="n">eponymous_only</span><span class="p">,</span>
-        <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="generate_series_sqlite">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.generate_series_sqlite">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_series_sqlite</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mh">0xffffffff</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">generate_series_sqlite</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mh">0xFFFFFFFF</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Behaves like SQLite&#39;s `generate_series &lt;https://sqlite.org/series.html&gt;`__</span>
 
 <span class="sd">    Only integers are supported.  If *step* is negative</span>
@@ -1845,16 +2085,16 @@
         <span class="n">step</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">while</span> <span class="n">start</span> <span class="o">&lt;=</span> <span class="n">stop</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="p">)</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">start</span><span class="p">,)</span>
             <span class="n">start</span> <span class="o">+=</span> <span class="n">step</span>
     <span class="k">elif</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">while</span> <span class="n">stop</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="p">(</span><span class="n">stop</span><span class="p">,</span> <span class="p">)</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">stop</span><span class="p">,)</span>
             <span class="n">stop</span> <span class="o">+=</span> <span class="n">step</span></div>
 
 
 
-<span class="n">generate_series_sqlite</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="p">)</span>  <span class="c1"># type: ignore[attr-defined]</span>
+<span class="n">generate_series_sqlite</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,)</span>  <span class="c1"># type: ignore[attr-defined]</span>
 <span class="n">generate_series_sqlite</span><span class="o">.</span><span class="n">column_access</span> <span class="o">=</span> <span class="n">VTColumnAccess</span><span class="o">.</span><span class="n">By_Index</span>  <span class="c1"># type: ignore[attr-defined]</span>
 <span class="n">generate_series_sqlite</span><span class="o">.</span><span class="n">primary_key</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># type: ignore[attr-defined]</span>
 
@@ -1894,33 +2134,35 @@
 
     <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">while</span> <span class="n">start</span> <span class="o">&lt;=</span> <span class="n">stop</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="p">)</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">start</span><span class="p">,)</span>
             <span class="n">start</span> <span class="o">+=</span> <span class="n">step</span>
     <span class="k">elif</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">while</span> <span class="n">start</span> <span class="o">&gt;=</span> <span class="n">stop</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="p">)</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">start</span><span class="p">,)</span>
             <span class="n">start</span> <span class="o">+=</span> <span class="n">step</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;step of zero is not valid&quot;</span><span class="p">)</span></div>
 
 
 
-<span class="n">generate_series</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="p">)</span>  <span class="c1"># type: ignore[attr-defined]</span>
+<span class="n">generate_series</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="p">,)</span>  <span class="c1"># type: ignore[attr-defined]</span>
 <span class="n">generate_series</span><span class="o">.</span><span class="n">column_access</span> <span class="o">=</span> <span class="n">VTColumnAccess</span><span class="o">.</span><span class="n">By_Index</span>  <span class="c1"># type: ignore[attr-defined]</span>
 <span class="n">generate_series</span><span class="o">.</span><span class="n">primary_key</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># type: ignore[attr-defined]</span>
 
 
 <div class="viewcode-block" id="query_info">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.query_info">[docs]</a>
-<span class="k">def</span> <span class="nf">query_info</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
-               <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-               <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-               <span class="o">*</span><span class="p">,</span>
-               <span class="n">prepare_flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-               <span class="n">actions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-               <span class="n">expanded_sql</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-               <span class="n">explain</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-               <span class="n">explain_query_plan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QueryDetails</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">query_info</span><span class="p">(</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
+    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">prepare_flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">actions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">expanded_sql</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">explain</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">explain_query_plan</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QueryDetails</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns information about the query, without running it.</span>
 
 <span class="sd">    `bindings` can be `None` if you want to find out what the bindings</span>
@@ -1954,7 +2196,7 @@
             <span class="n">res</span><span class="p">[</span><span class="s2">&quot;description_full&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description_full</span>
 
         <span class="k">assert</span> <span class="n">query</span> <span class="o">==</span> <span class="n">first_query</span> <span class="ow">or</span> <span class="n">query</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">first_query</span><span class="p">)</span>
-        <span class="n">res</span><span class="p">[</span><span class="s2">&quot;query_remaining&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">query</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">first_query</span><span class="p">):]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_query</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">res</span><span class="p">[</span><span class="s2">&quot;query_remaining&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">query</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">first_query</span><span class="p">)</span> <span class="p">:]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_query</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="n">res</span><span class="p">[</span><span class="s2">&quot;expanded_sql&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">expanded_sql</span> <span class="k">if</span> <span class="n">expanded_sql</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="kc">False</span>
 
@@ -2039,7 +2281,8 @@
         <span class="n">vdbe</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">VDBEInstruction</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s2">&quot;first_query&quot;</span><span class="p">],</span> <span class="n">query_bindings</span><span class="p">,</span> <span class="n">explain</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
             <span class="n">vdbe</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">VDBEInstruction</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span> <span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)))</span>
+                <span class="n">VDBEInstruction</span><span class="p">(</span><span class="o">**</span><span class="nb">dict</span><span class="p">((</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cur</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span> <span class="n">row</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="p">)</span>
         <span class="n">res</span><span class="p">[</span><span class="s2">&quot;explain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vdbe</span>
 
     <span class="k">if</span> <span class="n">explain_query_plan</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">res</span><span class="p">[</span><span class="s2">&quot;is_explain&quot;</span><span class="p">]:</span>
@@ -2073,6 +2316,7 @@
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">QueryDetails</span><span class="p">:</span>
     <span class="s2">&quot;A :mod:`dataclass &lt;dataclasses&gt;` that provides detailed information about a query, returned by :func:`query_info`&quot;</span>
+
     <span class="n">query</span><span class="p">:</span> <span class="nb">str</span>
     <span class="s2">&quot;Original query provided&quot;</span>
     <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span>
@@ -2115,6 +2359,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A :mod:`dataclass &lt;dataclasses&gt;` that provides information about one action taken by a query</span>
 
 <span class="sd">    Depending on the action, only a subset of the fields will have non-None values&quot;&quot;&quot;</span>
+
     <span class="n">action</span><span class="p">:</span> <span class="nb">int</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;`Authorizer code &lt;https://sqlite.org/c3ref/c_alter_table.html&gt;`__ (also present</span>
 <span class="sd">    in :attr:`apsw.mapping_authorizer_function`)&quot;&quot;&quot;</span>
@@ -2145,6 +2390,7 @@
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">QueryPlan</span><span class="p">:</span>
     <span class="s2">&quot;A :mod:`dataclass &lt;dataclasses&gt;` for one step of a query plan&quot;</span>
+
     <span class="n">detail</span><span class="p">:</span> <span class="nb">str</span>
     <span class="s2">&quot;Description of this step&quot;</span>
     <span class="n">sub</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">QueryPlan</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2157,6 +2403,7 @@
 <span class="nd">@dataclass</span>
 <span class="k">class</span> <span class="nc">VDBEInstruction</span><span class="p">:</span>
     <span class="s2">&quot;A :mod:`dataclass &lt;dataclasses&gt;` representing one instruction and its parameters&quot;</span>
+
     <span class="n">addr</span><span class="p">:</span> <span class="nb">int</span>
     <span class="s2">&quot;Address of this opcode.  It will be the target of goto, loops etc&quot;</span>
     <span class="n">opcode</span><span class="p">:</span> <span class="nb">str</span>
@@ -2183,6 +2430,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the main database file returned by :meth:`dbinfo`</span>
 
 <span class="sd">    See `file format description &lt;https://www.sqlite.org/fileformat.html#the_database_header&gt;`__&quot;&quot;&quot;</span>
+
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
     <span class="s2">&quot;database filena name&quot;</span>
     <span class="n">header</span><span class="p">:</span> <span class="nb">bytes</span>
@@ -2231,6 +2479,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the rollback journal returned by :meth:`dbinfo`</span>
 
 <span class="sd">    See the `file format description &lt;https://www.sqlite.org/fileformat2.html#the_rollback_journal&gt;`__&quot;&quot;&quot;</span>
+
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
     <span class="s2">&quot;journal file name&quot;</span>
     <span class="n">header</span><span class="p">:</span> <span class="nb">bytes</span>
@@ -2257,6 +2506,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the rollback journal returned by :meth:`dbinfo`</span>
 
 <span class="sd">    See the `file format description &lt;https://www.sqlite.org/fileformat2.html#wal_file_format&gt;`__&quot;&quot;&quot;</span>
+
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
     <span class="s2">&quot;WAL file name&quot;</span>
     <span class="n">magic_number</span><span class="p">:</span> <span class="nb">int</span>
@@ -2286,7 +2536,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 17, 2024.
+      <span class="lastupdated">Last updated on Nov 25, 2024.
       </span></p>
   </div>
 

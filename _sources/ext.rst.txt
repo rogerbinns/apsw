@@ -33,6 +33,13 @@ into a virtual table source.
 :meth:`generate_series` and :meth:`generate_series_sqlite` provide
 `generate_series <https://sqlite.org/series.html>`__.
 
+Database storage usage
+----------------------
+
+Use :func:`analyze_pages` to find out how much storage is in use, and
+how fragmented it is.  See :download:`example output
+<../examples/analyze_pages.txt>`.
+
 Accessing result rows by column name
 ------------------------------------
 

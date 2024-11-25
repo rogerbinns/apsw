@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APSW 3.47.0.0 documentation &mdash; APSW 3.47.0.0 documentation</title>
+  <title>APSW 3.47.1.0 documentation &mdash; APSW 3.47.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=8087e674"></script>
+      <script src="_static/documentation_options.js?v=f152ac2d"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -89,7 +89,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">APSW 3.47.0.0 documentation</li>
+      <li class="breadcrumb-item active">APSW 3.47.1.0 documentation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -102,9 +102,9 @@
            <div itemprop="articleBody">
              
   <section id="apsw-version-documentation">
-<h1>APSW 3.47.0.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Link to this heading"></a></h1>
+<h1>APSW 3.47.1.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Link to this heading"></a></h1>
 <p class="centered">
-<strong>APSW 3.47.0.0 released 27 November 2024</strong></p><div class="toctree-wrapper compound">
+<strong>APSW 3.47.1.0 released 25 November 2024</strong></p><div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="about.html#what-apsw-does">What APSW does</a></li>
@@ -178,13 +178,14 @@
 <li class="toctree-l2"><a class="reference internal" href="install.html#linux-bsd-provided">Linux/BSD provided</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#source">Source</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#building-and-customization">Building and customization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#pyodide">Pyodide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#advice-for-packagers">Advice for packagers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#testing">Testing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#fts5">FTS5</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#icu">ICU</a></li>
-<li class="toctree-l2"><a class="reference internal" href="extensions.html#rbu">RBU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#rtree">RTree</a></li>
 </ul>
 </li>
@@ -289,6 +290,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ext.html#pretty-printing">Pretty printing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ext.html#logging-and-tracebacks">Logging and tracebacks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ext.html#virtual-tables">Virtual Tables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ext.html#database-storage-usage">Database storage usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ext.html#accessing-result-rows-by-column-name">Accessing result rows by column name</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ext.html#converting-types-into-and-out-of-sqlite">Converting types into and out of SQLite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ext.html#detailed-query-information">Detailed Query Information</a></li>
@@ -351,7 +353,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 17, 2024.
+      <span class="lastupdated">Last updated on Nov 25, 2024.
       </span></p>
   </div>
 

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; APSW 3.47.0.0 documentation</title>
+  <title>Index &mdash; APSW 3.47.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=8087e674"></script>
+      <script src="_static/documentation_options.js?v=f152ac2d"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -192,6 +192,8 @@
 </li>
       <li><a href="apsw.html#apsw.allow_missing_dict_bindings">allow_missing_dict_bindings() (in module apsw)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.analyze_pages">analyze_pages() (in module apsw.ext)</a>
+</li>
       <li><a href="textsearch.html#apsw.fts5query.AND">AND (class in apsw.fts5query)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5query.applicable_columns">applicable_columns() (in module apsw.fts5query)</a>
@@ -228,10 +230,10 @@
         <li><a href="textsearch.html#module-apsw.fts5">module</a>
 </li>
       </ul></li>
-      <li><a href="example-fts.html#index-19">apsw.fts5.RegexPreTokenizer (example code)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="example-fts.html#index-19">apsw.fts5.RegexPreTokenizer (example code)</a>
+</li>
       <li><a href="example-fts.html#index-18">apsw.fts5.RegexTokenizer (example code)</a>
 </li>
       <li><a href="example-fts.html#index-15">apsw.fts5.SimplifyTokenizer (example code)</a>
@@ -392,6 +394,8 @@
       <li><a href="textsearch.html#apsw.unicode.category">category() (in module apsw.unicode)</a>
 </li>
       <li><a href="shell.html#index-3">cd (Shell command)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.PageUsage.cells">cells (apsw.ext.PageUsage attribute)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.Table.change_cookie">change_cookie (apsw.fts5.Table property)</a>
 </li>
@@ -660,11 +664,15 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ext.html#apsw.ext.PageUsage.data_stored">data_stored (apsw.ext.PageUsage attribute)</a>
+</li>
       <li><a href="connection.html#apsw.Connection.data_version">data_version() (apsw.Connection method)</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.database_name">database_name (apsw.ext.QueryAction attribute)</a>
 </li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo">DatabaseFileInfo (class in apsw.ext)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabasePageUsage">DatabasePageUsage (class in apsw.ext)</a>
 </li>
       <li><a href="shell.html#index-8">databases (Shell command)</a>
 </li>
@@ -692,10 +700,10 @@
 </li>
       <li><a href="example.html#index-14">Defining aggregate functions (example code)</a>
 </li>
-      <li><a href="example.html#index-16">Defining collations (sorting) (example code)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="example.html#index-16">Defining collations (sorting) (example code)</a>
+</li>
       <li><a href="example.html#index-13">Defining scalar functions (example code)</a>
 </li>
       <li><a href="example.html#index-15">Defining window functions (example code)</a>
@@ -1138,8 +1146,12 @@
 </li>
       <li><a href="vtable.html#apsw.IndexInfo">IndexInfo (class in apsw)</a>
 </li>
-      <li><a href="shell.html#index-21">indices (Shell command)</a>
+      <li><a href="ext.html#apsw.ext.PageUsage.indices">indices (apsw.ext.PageUsage attribute)</a>
+
+      <ul>
+        <li><a href="shell.html#index-21">(Shell command)</a>
 </li>
+      </ul></li>
       <li><a href="textsearch.html#apsw.fts5query.PHRASE.initial">initial (apsw.fts5query.PHRASE attribute)</a>
 </li>
       <li><a href="ext.html#apsw.ext.JournalFileInfo.initial_pages">initial_pages (apsw.ext.JournalFileInfo attribute)</a>
@@ -1339,10 +1351,10 @@
 </li>
       <li><a href="apsw.html#apsw.mapping_trace_codes">mapping_trace_codes (in module apsw)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.mapping_txn_state">mapping_txn_state (in module apsw)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.mapping_virtual_table_configuration_options">mapping_virtual_table_configuration_options (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.mapping_virtual_table_scan_flags">mapping_virtual_table_scan_flags (in module apsw)</a>
@@ -1354,6 +1366,10 @@
       <li><a href="textsearch.html#apsw.fts5query.NOT.match">match (apsw.fts5query.NOT attribute)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.MatchInfo">MatchInfo (class in apsw.fts5)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabasePageUsage.max_page_count">max_page_count (apsw.ext.DatabasePageUsage attribute)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.PageUsage.max_payload">max_payload (apsw.ext.PageUsage attribute)</a>
 </li>
       <li><a href="apsw.html#apsw.memory_high_water">memory_high_water() (in module apsw)</a>
 </li>
@@ -1516,6 +1532,8 @@
       <ul>
         <li><a href="ext.html#apsw.ext.JournalFileInfo.page_size">(apsw.ext.JournalFileInfo attribute)</a>
 </li>
+        <li><a href="ext.html#apsw.ext.PageUsage.page_size">(apsw.ext.PageUsage attribute)</a>
+</li>
         <li><a href="ext.html#apsw.ext.WALFileInfo.page_size">(apsw.ext.WALFileInfo attribute)</a>
 </li>
       </ul></li>
@@ -1526,7 +1544,17 @@
         <li><a href="changes.html#index-13">Backup.page_count</a>
 </li>
       </ul></li>
-      <li><a href="shell.html#index-28">parameter (Shell command)</a>
+      <li><a href="shell.html#index-28">pages (Shell command)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabasePageUsage.pages_freelist">pages_freelist (apsw.ext.DatabasePageUsage attribute)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.DatabasePageUsage.pages_total">pages_total (apsw.ext.DatabasePageUsage attribute)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.PageUsage.pages_used">pages_used (apsw.ext.PageUsage attribute)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.PageUsage">PageUsage (class in apsw.ext)</a>
+</li>
+      <li><a href="shell.html#index-29">parameter (Shell command)</a>
 </li>
       <li><a href="vfs.html#apsw.URIFilename.parameters">parameters (apsw.URIFilename attribute)</a>
 </li>
@@ -1554,6 +1582,8 @@
 </li>
       <li><a href="textsearch.html#apsw.FTS5ExtensionApi.phrase_locations">phrase_locations() (apsw.FTS5ExtensionApi method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="textsearch.html#apsw.fts5.QueryInfo.phrases">phrases (apsw.fts5.QueryInfo attribute)</a>
 
       <ul>
@@ -1562,8 +1592,6 @@
         <li><a href="textsearch.html#apsw.fts5query.NEAR.phrases">(apsw.fts5query.NEAR attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="textsearch.html#apsw.fts5query.PHRASE.plus">plus (apsw.fts5query.PHRASE attribute)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.pop_input">pop_input() (apsw.shell.Shell method)</a>
@@ -1588,7 +1616,7 @@
         <li><a href="textsearch.html#apsw.fts5query.PHRASE.prefix">(apsw.fts5query.PHRASE attribute)</a>
 </li>
       </ul></li>
-      <li><a href="shell.html#index-29">print (Shell command)</a>
+      <li><a href="shell.html#index-30">print (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.print_augmented_traceback">print_augmented_traceback() (in module apsw.ext)</a>
 </li>
@@ -1604,7 +1632,7 @@
 </li>
       <li><a href="example.html#index-23">Progress handler (example code)</a>
 </li>
-      <li><a href="shell.html#index-30">prompt (Shell command)</a>
+      <li><a href="shell.html#index-31">prompt (Shell command)</a>
 </li>
       <li><a href="exceptions.html#apsw.ProtocolError">ProtocolError</a>
 </li>
@@ -1612,7 +1640,7 @@
 </li>
       <li><a href="shell.html#apsw.shell.Shell.push_output">push_output() (apsw.shell.Shell method)</a>
 </li>
-      <li><a href="shell.html#index-31">py (Shell command)</a>
+      <li><a href="shell.html#index-32">py (Shell command)</a>
 </li>
       <li>
     Python Enhancement Proposals
@@ -1703,7 +1731,7 @@
 </li>
       <li><a href="exceptions.html#apsw.RangeError">RangeError</a>
 </li>
-      <li><a href="shell.html#index-32">read (Shell command)</a>
+      <li><a href="shell.html#index-33">read (Shell command)</a>
 </li>
       <li><a href="blob.html#apsw.Blob.read">read() (apsw.Blob method)</a>
 
@@ -1769,7 +1797,7 @@
 </li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo.reserved_bytes">reserved_bytes (apsw.ext.DatabaseFileInfo attribute)</a>
 </li>
-      <li><a href="shell.html#index-33">restore (Shell command)</a>
+      <li><a href="shell.html#index-34">restore (Shell command)</a>
 </li>
       <li><a href="exceptions.html#apsw.Error.result">result (apsw.Error attribute)</a>
 
@@ -1830,7 +1858,7 @@
 </li>
       <li><a href="apsw.html#apsw.ScalarProtocol">ScalarProtocol (class in apsw)</a>
 </li>
-      <li><a href="shell.html#index-34">schema (Shell command)</a>
+      <li><a href="shell.html#index-35">schema (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo.schema_cookie">schema_cookie (apsw.ext.DatabaseFileInfo attribute)</a>
 </li>
@@ -1856,7 +1884,9 @@
 </li>
       <li><a href="textsearch.html#apsw.unicode.sentence_next_break">sentence_next_break() (in module apsw.unicode)</a>
 </li>
-      <li><a href="shell.html#index-35">separator (Shell command)</a>
+      <li><a href="shell.html#index-36">separator (Shell command)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.PageUsage.sequential_pages">sequential_pages (apsw.ext.PageUsage attribute)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.serialize">serialize() (apsw.Connection method)</a>
 </li>
@@ -1991,7 +2021,7 @@
         <li><a href="example.html#index-30">(example code)</a>
 </li>
       </ul></li>
-      <li><a href="shell.html#index-36">shell (Shell command)</a>
+      <li><a href="shell.html#index-37">shell (Shell command)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.Error">Shell.Error</a>
 </li>
@@ -1999,7 +2029,7 @@
 </li>
       <li><a href="shell.html#apsw.shell.Shell.Row">Shell.Row (class in apsw.shell)</a>
 </li>
-      <li><a href="shell.html#index-37">show (Shell command)</a>
+      <li><a href="shell.html#index-38">show (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.ShowResourceUsage">ShowResourceUsage (class in apsw.ext)</a>
 </li>
@@ -2090,10 +2120,10 @@
 </li>
       <li><a href="apsw.html#index-1">sqlite3_complete</a>
 </li>
-      <li><a href="apsw.html#index-2">sqlite3_config</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apsw.html#index-2">sqlite3_config</a>
+</li>
       <li><a href="connection.html#index-13">sqlite3_create_collation_v2</a>
 </li>
       <li><a href="connection.html#index-12">sqlite3_create_function_v2</a>, <a href="connection.html#index-15">[1]</a>
@@ -2344,8 +2374,12 @@
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.table_name">table_name (apsw.ext.QueryAction attribute)</a>
 </li>
-      <li><a href="shell.html#index-38">tables (Shell command)</a>
+      <li><a href="ext.html#apsw.ext.PageUsage.tables">tables (apsw.ext.PageUsage attribute)</a>
+
+      <ul>
+        <li><a href="shell.html#index-39">(Shell command)</a>
 </li>
+      </ul></li>
       <li><a href="blob.html#apsw.Blob.tell">tell() (apsw.Blob method)</a>
 </li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo.text_encoding">text_encoding (apsw.ext.DatabaseFileInfo attribute)</a>
@@ -2360,9 +2394,9 @@
 </li>
       <li><a href="exceptions.html#apsw.ThreadingViolationError">ThreadingViolationError</a>
 </li>
-      <li><a href="shell.html#index-39">timeout (Shell command)</a>
+      <li><a href="shell.html#index-40">timeout (Shell command)</a>
 </li>
-      <li><a href="shell.html#index-40">timer (Shell command)</a>
+      <li><a href="shell.html#index-41">timer (Shell command)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5query.to_dict">to_dict() (in module apsw.fts5query)</a>
 </li>
@@ -2397,6 +2431,8 @@
       <li><a href="textsearch.html#apsw.fts5.tokenizer_test_strings">tokenizer_test_strings() (in module apsw.fts5)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.TokenizerArgument">TokenizerArgument (class in apsw.fts5)</a>
+</li>
+      <li><a href="apsw.html#apsw.TokenizerResult">TokenizerResult (class in apsw)</a>
 </li>
       <li><a href="example-fts.html#index-13">Tokenizers (example code)</a>
 </li>
@@ -2503,7 +2539,7 @@
 </li>
       <li><a href="ext.html#apsw.ext.VDBEInstruction">VDBEInstruction (class in apsw.ext)</a>
 </li>
-      <li><a href="shell.html#index-41">version (Shell command)</a>
+      <li><a href="shell.html#index-42">version (Shell command)</a>
 </li>
       <li><a href="textsearch.html#apsw.unicode.version_added">version_added() (in module apsw.unicode)</a>
 </li>
@@ -2525,13 +2561,13 @@
 </li>
       <li><a href="exceptions.html#apsw.VFSFileClosedError">VFSFileClosedError</a>
 </li>
-      <li><a href="shell.html#index-42">vfsinfo (Shell command)</a>
+      <li><a href="shell.html#index-43">vfsinfo (Shell command)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="shell.html#index-43">vfslist (Shell command)</a>
+      <li><a href="shell.html#index-44">vfslist (Shell command)</a>
 </li>
-      <li><a href="shell.html#index-44">vfsname (Shell command)</a>
+      <li><a href="shell.html#index-45">vfsname (Shell command)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.vfsname">vfsname() (apsw.Connection method)</a>
 </li>
@@ -2576,7 +2612,7 @@
 </li>
       <li><a href="example.html#index-5">Why you use bindings to provide values (example code)</a>
 </li>
-      <li><a href="shell.html#index-45">width (Shell command)</a>
+      <li><a href="shell.html#index-46">width (Shell command)</a>
 </li>
       <li><a href="apsw.html#apsw.WindowFactory">WindowFactory (class in apsw)</a>
 </li>
@@ -2717,7 +2753,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 17, 2024.
+      <span class="lastupdated">Last updated on Nov 25, 2024.
       </span></p>
   </div>
 

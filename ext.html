@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Various interesting and useful bits of functionality &mdash; APSW 3.47.0.0 documentation</title>
+  <title>Various interesting and useful bits of functionality &mdash; APSW 3.47.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=8087e674"></script>
+      <script src="_static/documentation_options.js?v=f152ac2d"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -68,6 +68,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#pretty-printing">Pretty printing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#logging-and-tracebacks">Logging and tracebacks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#virtual-tables">Virtual Tables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#database-storage-usage">Database storage usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#accessing-result-rows-by-column-name">Accessing result rows by column name</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#converting-types-into-and-out-of-sqlite">Converting types into and out of SQLite</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#detailed-query-information">Detailed Query Information</a></li>
@@ -101,6 +102,24 @@
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.dbinfo"><code class="docutils literal notranslate"><span class="pre">dbinfo()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.Trace"><code class="docutils literal notranslate"><span class="pre">Trace</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.ShowResourceUsage"><code class="docutils literal notranslate"><span class="pre">ShowResourceUsage</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ext.PageUsage"><code class="docutils literal notranslate"><span class="pre">PageUsage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.PageUsage.page_size"><code class="docutils literal notranslate"><span class="pre">PageUsage.page_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.PageUsage.pages_used"><code class="docutils literal notranslate"><span class="pre">PageUsage.pages_used</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.PageUsage.sequential_pages"><code class="docutils literal notranslate"><span class="pre">PageUsage.sequential_pages</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.PageUsage.data_stored"><code class="docutils literal notranslate"><span class="pre">PageUsage.data_stored</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.PageUsage.cells"><code class="docutils literal notranslate"><span class="pre">PageUsage.cells</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.PageUsage.max_payload"><code class="docutils literal notranslate"><span class="pre">PageUsage.max_payload</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.PageUsage.tables"><code class="docutils literal notranslate"><span class="pre">PageUsage.tables</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.PageUsage.indices"><code class="docutils literal notranslate"><span class="pre">PageUsage.indices</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ext.DatabasePageUsage"><code class="docutils literal notranslate"><span class="pre">DatabasePageUsage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabasePageUsage.pages_total"><code class="docutils literal notranslate"><span class="pre">DatabasePageUsage.pages_total</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabasePageUsage.pages_freelist"><code class="docutils literal notranslate"><span class="pre">DatabasePageUsage.pages_freelist</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.ext.DatabasePageUsage.max_page_count"><code class="docutils literal notranslate"><span class="pre">DatabasePageUsage.max_page_count</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ext.analyze_pages"><code class="docutils literal notranslate"><span class="pre">analyze_pages()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.format_query_table"><code class="docutils literal notranslate"><span class="pre">format_query_table()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.VTColumnAccess"><code class="docutils literal notranslate"><span class="pre">VTColumnAccess</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ext.VTColumnAccess.By_Index"><code class="docutils literal notranslate"><span class="pre">VTColumnAccess.By_Index</span></code></a></li>
@@ -274,6 +293,11 @@ in an easier to print and work with format.</p>
 into a virtual table source.</p>
 <p><a class="reference internal" href="#apsw.ext.generate_series" title="apsw.ext.generate_series"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_series()</span></code></a> and <a class="reference internal" href="#apsw.ext.generate_series_sqlite" title="apsw.ext.generate_series_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_series_sqlite()</span></code></a> provide
 <a class="reference external" href="https://sqlite.org/series.html">generate_series</a>.</p>
+</section>
+<section id="database-storage-usage">
+<h2>Database storage usage<a class="headerlink" href="#database-storage-usage" title="Link to this heading"></a></h2>
+<p>Use <a class="reference internal" href="#apsw.ext.analyze_pages" title="apsw.ext.analyze_pages"><code class="xref py py-func docutils literal notranslate"><span class="pre">analyze_pages()</span></code></a> to find out how much storage is in use, and
+how fragmented it is.  See <a class="reference download internal" download="" href="_downloads/91c3348d532ed46bb5587ad97e9cb6e9/analyze_pages.txt"><code class="xref download docutils literal notranslate"><span class="pre">example</span> <span class="pre">output</span></code></a>.</p>
 </section>
 <section id="accessing-result-rows-by-column-name">
 <h2>Accessing result rows by column name<a class="headerlink" href="#accessing-result-rows-by-column-name" title="Link to this heading"></a></h2>
@@ -722,6 +746,140 @@ this and that at the same time.</p>
 <p>See the <a class="reference internal" href="example.html#example-showresourceusage"><span class="std std-ref">example</span></a>.</p>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.PageUsage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">PageUsage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pages_used</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequential_pages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_stored</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cells</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#PageUsage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.PageUsage" title="Link to this definition"></a></dt>
+<dd><p>Returned by <a class="reference internal" href="#apsw.ext.analyze_pages" title="apsw.ext.analyze_pages"><code class="xref py py-func docutils literal notranslate"><span class="pre">analyze_pages()</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.PageUsage.page_size">
+<span class="sig-name descname"><span class="pre">page_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.PageUsage.page_size" title="Link to this definition"></a></dt>
+<dd><p>Size of pages in bytes.  All pages in the database are the same size.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.PageUsage.pages_used">
+<span class="sig-name descname"><span class="pre">pages_used</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.PageUsage.pages_used" title="Link to this definition"></a></dt>
+<dd><p>Pages with content</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.PageUsage.sequential_pages">
+<span class="sig-name descname"><span class="pre">sequential_pages</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.PageUsage.sequential_pages" title="Link to this definition"></a></dt>
+<dd><p>How many pages were sequential in the database file</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.PageUsage.data_stored">
+<span class="sig-name descname"><span class="pre">data_stored</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.PageUsage.data_stored" title="Link to this definition"></a></dt>
+<dd><p>Bytes of SQL content stored</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.PageUsage.cells">
+<span class="sig-name descname"><span class="pre">cells</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.PageUsage.cells" title="Link to this definition"></a></dt>
+<dd><p>Cells are what is <a class="reference external" href="https://www.sqlite.org/fileformat.html#b_tree_pages">stored</a>
+including sizing information, pointers to overflow etc</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.PageUsage.max_payload">
+<span class="sig-name descname"><span class="pre">max_payload</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.PageUsage.max_payload" title="Link to this definition"></a></dt>
+<dd><p>Largest cell size</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.PageUsage.tables">
+<span class="sig-name descname"><span class="pre">tables</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.ext.PageUsage.tables" title="Link to this definition"></a></dt>
+<dd><p>Names of tables providing these statistics</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.PageUsage.indices">
+<span class="sig-name descname"><span class="pre">indices</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.ext.PageUsage.indices" title="Link to this definition"></a></dt>
+<dd><p>Names of indices providing these statistics</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.DatabasePageUsage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">DatabasePageUsage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pages_used</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequential_pages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_stored</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cells</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pages_total</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pages_freelist</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_page_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#DatabasePageUsage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.DatabasePageUsage" title="Link to this definition"></a></dt>
+<dd><p>Returned by <a class="reference internal" href="#apsw.ext.analyze_pages" title="apsw.ext.analyze_pages"><code class="xref py py-func docutils literal notranslate"><span class="pre">analyze_pages()</span></code></a> when asking about the database as a whole</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabasePageUsage.pages_total">
+<span class="sig-name descname"><span class="pre">pages_total</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabasePageUsage.pages_total" title="Link to this definition"></a></dt>
+<dd><p>Number of pages in the database</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabasePageUsage.pages_freelist">
+<span class="sig-name descname"><span class="pre">pages_freelist</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabasePageUsage.pages_freelist" title="Link to this definition"></a></dt>
+<dd><p>How many pages are unused, for example if data got deleted</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.ext.DatabasePageUsage.max_page_count">
+<span class="sig-name descname"><span class="pre">max_page_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.ext.DatabasePageUsage.max_page_count" title="Link to this definition"></a></dt>
+<dd><p>Limit on the <a class="reference external" href="https://www.sqlite.org/pragma.html#pragma_max_page_count">number of pages</a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.ext.analyze_pages">
+<span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">analyze_pages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">scope</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'main'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.ext.DatabasePageUsage" title="apsw.ext.DatabasePageUsage"><span class="pre">DatabasePageUsage</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#apsw.ext.PageUsage" title="apsw.ext.PageUsage"><span class="pre">PageUsage</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/ext.html#analyze_pages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.analyze_pages" title="Link to this definition"></a></dt>
+<dd><p>Summarizes page usage for the database</p>
+<p>The <a class="reference external" href="https://www.sqlite.org/dbstat.html">dbstat</a> virtual table
+is used to gather statistics.</p>
+<p>See <a class="reference download internal" download="" href="_downloads/91c3348d532ed46bb5587ad97e9cb6e9/analyze_pages.txt"><code class="xref download docutils literal notranslate"><span class="pre">example</span> <span class="pre">output</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>con</strong> – Connection to use</p></li>
+<li><p><strong>scope</strong> – <table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Value</p></th>
+<th class="head"><p>Scope</p></th>
+<th class="head"><p>Returns</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">0</span></code></p></td>
+<td><p>The database as a whole</p></td>
+<td><p><a class="reference internal" href="#apsw.ext.DatabasePageUsage" title="apsw.ext.DatabasePageUsage"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatabasePageUsage</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">1</span></code></p></td>
+<td><p>Tables and their indices are grouped together.  Virtual tables
+like FTS5 have multiple backing tables which are grouped.</p></td>
+<td><p>A <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a> where the key is the name of the
+table, and a corresponding <a class="reference internal" href="#apsw.ext.PageUsage" title="apsw.ext.PageUsage"><code class="xref py py-class docutils literal notranslate"><span class="pre">PageUsage</span></code></a> as the
+value.  The <a class="reference internal" href="#apsw.ext.PageUsage.tables" title="apsw.ext.PageUsage.tables"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PageUsage.tables</span></code></a> and
+<a class="reference internal" href="#apsw.ext.PageUsage.indices" title="apsw.ext.PageUsage.indices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PageUsage.indices</span></code></a> fields tell you which ones
+were included.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">2</span></code></p></td>
+<td><p>Each table and index separately.</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a> of each name and a corresponding
+<a class="reference internal" href="#apsw.ext.PageUsage" title="apsw.ext.PageUsage"><code class="xref py py-class docutils literal notranslate"><span class="pre">PageUsage</span></code></a> where one of the
+<a class="reference internal" href="#apsw.ext.PageUsage.tables" title="apsw.ext.PageUsage.tables"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PageUsage.tables</span></code></a> and <a class="reference internal" href="#apsw.ext.PageUsage.indices" title="apsw.ext.PageUsage.indices"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PageUsage.indices</span></code></a>
+fields will have the name.</p></td>
+</tr>
+</tbody>
+</table>
+</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>dbstat is present in PyPI builds, and many platform SQLite
+distributions.  You can use <a class="reference external" href="https://www.sqlite.org/pragma.html#pragma_module_list">pragma module_list</a> to
+check.  If the table is not present then calling this function
+will give <a class="reference internal" href="exceptions.html#apsw.SQLError" title="apsw.SQLError"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.SQLError</span></code></a> with message <code class="docutils literal notranslate"><span class="pre">no</span> <span class="pre">such</span> <span class="pre">table:</span>
+<span class="pre">dbstat</span></code>.</p>
+</div>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.ext.format_query_table">
 <span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">format_query_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">apsw.Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bindings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.Bindings" title="apsw.Bindings"><span class="pre">apsw.Bindings</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colour</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quote</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">string_sanitize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">0</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">lambda</span> <span class="pre">x:</span> <span class="pre">...</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">null</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'(null)'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truncate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4096</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truncate_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'</span> <span class="pre">...'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">80</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_unicode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#format_query_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.format_query_table" title="Link to this definition"></a></dt>
@@ -919,7 +1077,7 @@ fail with <a class="reference internal" href="exceptions.html#apsw.SQLError" tit
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.ext.generate_series_sqlite">
-<span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">generate_series_sqlite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0xffffffff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#generate_series_sqlite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.generate_series_sqlite" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">generate_series_sqlite</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0xFFFFFFFF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#generate_series_sqlite"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.generate_series_sqlite" title="Link to this definition"></a></dt>
 <dd><p>Behaves like SQLite’s <a class="reference external" href="https://sqlite.org/series.html">generate_series</a></p>
 <p>Only integers are supported.  If <em>step</em> is negative
 then values are generated from <em>stop</em> to <em>start</em></p>
@@ -1477,7 +1635,7 @@ directly expressed in the query itself</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 17, 2024.
+      <span class="lastupdated">Last updated on Nov 25, 2024.
       </span></p>
   </div>
 

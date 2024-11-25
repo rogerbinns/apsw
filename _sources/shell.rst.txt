@@ -50,9 +50,11 @@ You can use the shell directly from the command line.
 .. code-block:: text
 
   Usage: python3 -m apsw [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
+  
   FILENAME is the name of a SQLite database. A new database is
   created if the file does not exist. If omitted or an empty
   string then an in-memory database is created.
+  
   OPTIONS include:
   
      -init filename       read/process named file
@@ -73,7 +75,8 @@ You can use the shell directly from the command line.
      -version             show SQLite version
      -encoding 'name'     the encoding to use for files
                           opened via .import, .read & .output
-     -nocolour            disables interactive colour output
+     -nocolour            disables interactive colour output, as does
+                          setting NO_COLOR environment variable
   
 
 .. usage-end:
@@ -139,6 +142,7 @@ leading ``.`` (period) - for example::
   * :ref:`nullvalue <shell-cmd-nullvalue>`
   * :ref:`open <shell-cmd-open>`
   * :ref:`output <shell-cmd-output>`
+  * :ref:`pages <shell-cmd-pages>`
   * :ref:`parameter <shell-cmd-parameter>`
   * :ref:`print <shell-cmd-print>`
   * :ref:`prompt <shell-cmd-prompt>`
@@ -309,7 +313,7 @@ dbinfo ?NAME?
 *Shows summary and file information about the database*
 
 This includes the numbers of tables, indices etc, as well as fields from the
-files as returned by :func:`apsw.ext.dbinfo`.
+file headers.
 
 ``NAME`` defaults to ``main``, and can be the attached name of a database.
 
@@ -536,9 +540,9 @@ unless the column name (header) is longer in which case that width is used. Use
 the .width command to change column sizes.
 
 csv: Items in csv format (comma separated). Use tabs mode for tab separated. You
-can use the .separator command to use a different one after switching mode.
-``A`` separator of comma uses double quotes for quoting while other separators
-do not do any quoting. The Python csv library used for this only supports single
+can use the .separator command to use a different one after switching mode. A
+separator of comma uses double quotes for quoting while other separators do not
+do any quoting. The Python csv library used for this only supports single
 character separators.
 
 html: HTML table style
@@ -613,6 +617,20 @@ output FILENAME
 If the ``FILENAME`` is ``stdout`` then output is sent to standard output from
 when the shell was started.  The file is opened using the current encoding
 (change with ``encoding`` command).
+
+.. _shell-cmd-pages:
+.. index::
+    single: pages (Shell command)
+
+pages SCOPE
+-----------
+
+*Shows page usage summary in human units*
+
+``SCOPE`` is a number 0, 1, or 2.
+
+0 - shows the database as a whole. 1 - groups by each table, including its
+indices.  2 - shows each table and index separately.
 
 .. _shell-cmd-parameter:
 .. index::

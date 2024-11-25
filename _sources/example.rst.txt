@@ -68,9 +68,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so
-             APSW version 3.47.0.0
-    SQLite header version 3047000
-       SQLite lib version 3.47.0
+             APSW version 3.47.1.0
+    SQLite header version 3047001
+       SQLite lib version 3.47.1
        Using amalgamation True
 
 
@@ -869,11 +869,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 11, 16, 15, 23, 52, 148394))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 11, 25, 9, 48, 17, 121760))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2024, 11, 16, 23, 23, 52, 148394, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2024, 11, 25, 17, 48, 17, 121760, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Query details (example code)
@@ -978,7 +978,12 @@ query (without running it)
      ('address', 'CHAR'))
     
     description_full
-    None
+    (('id', 'INTEGER', 'main', 'orders', 'id'),
+     ('customer_id', 'INTEGER', 'main', 'orders', 'customer_id'),
+     ('item', 'MY_OWN_TYPE', 'main', 'orders', 'item'),
+     ('id', 'INTEGER', 'main', 'customers', 'id'),
+     ('name', 'CHAR', 'main', 'customers', 'name'),
+     ('address', 'CHAR', 'main', 'customers', 'address'))
     
     query_plan
     QueryPlan(detail='QUERY PLAN',
@@ -1286,7 +1291,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9999638168,)
+    (9958510046,)
 
 
 .. index:: File Control (example code)
@@ -1676,33 +1681,33 @@ useful instead.
     
     ┌────────────┬────────────────────────────────┬───────────────┐
     │    date    │           directory            │     name      │
-    │ 2024-10-05 │ /usr/lib/python3.12/pydoc_data │ topics.py     │
-    │ 2024-10-05 │ /usr/lib/python3.12            │ _pydecimal.py │
-    │ 2024-10-05 │ /usr/lib/python3.12/tkinter    │ __init__.py   │
+    │ 2024-11-20 │ /usr/lib/python3.12/pydoc_data │ topics.py     │
+    │ 2024-11-20 │ /usr/lib/python3.12            │ _pydecimal.py │
+    │ 2024-11-20 │ /usr/lib/python3.12/tkinter    │ __init__.py   │
     └────────────┴────────────────────────────────┴───────────────┘
     
     ┌────────────┬────────────┐
     │ extension  │ total_size │
-    │            │ 436921     │
-    │ .a         │ 97341558   │
+    │            │ 436917     │
+    │ .a         │ 97341326   │
     │ .allowlist │ 72         │
     │ .bootstrap │ 1804       │
     │ .c         │ 10948      │
     │ .cfg       │ 341        │
-    │ .csh       │ 936        │
+    │ .csh       │ 934        │
     │ .css       │ 1325       │
-    │ .fish      │ 2215       │
+    │ .fish      │ 2209       │
     │ .in        │ 3504       │
     │ .ini       │ 997        │
     │ .json      │ 2162       │
     │ .local     │ 2136       │
-    │ .o         │ 9328       │
+    │ .o         │ 9360       │
     │ .ps1       │ 9033       │
-    │ .py        │ 11251549   │
-    │ .pyc       │ 11433569   │
+    │ .py        │ 11255359   │
+    │ .pyc       │ 11434843   │
     │ .rst       │ 9561       │
-    │ .sh        │ 4507       │
-    │ .so        │ 26582544   │
+    │ .sh        │ 2652       │
+    │ .so        │ 26583216   │
     │ .sql       │ 1001       │
     │ .stdlib    │ 12562      │
     │ .supp      │ 70         │
@@ -1978,9 +1983,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.47.0.0)
-    -- SQLite version 3.47.0
-    -- Date: Sat Nov 16 15:23:52 2024
+    -- SQLite dump (by APSW 3.47.1.0)
+    -- SQLite version 3.47.1
+    -- Date: Mon Nov 25 09:48:17 2024
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2031,7 +2036,7 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 505696 max 2494424
+    SQLite memory usage 513824 max 2495736
     4968 bytes used to store schema for this connection
 
 
@@ -2098,18 +2103,18 @@ This shows using :meth:`Connection.trace_v2`
 .. code-block:: output
 
     code is  SQLITE_TRACE_STMT
-    {'code': 1, 'id': 1065513528, 'total_changes': 146, 'trigger': False}
+    {'code': 1, 'id': 329480712, 'total_changes': 146, 'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 1065513528}
+    {'code': 4, 'id': 329480712}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 1065513528,
+     'id': 329480712,
      'nanoseconds': 17000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
                      'SQLITE_STMTSTATUS_FULLSCAN_STEP': 1365,
-                     'SQLITE_STMTSTATUS_MEMUSED': 15616,
+                     'SQLITE_STMTSTATUS_MEMUSED': 15784,
                      'SQLITE_STMTSTATUS_REPREPARE': 0,
                      'SQLITE_STMTSTATUS_RUN': 1,
                      'SQLITE_STMTSTATUS_SORT': 2,
@@ -2149,11 +2154,12 @@ Only statistics that have changed are shown in the summary. There are
 
                            Total CPU consumption 0.022
                                       Wall clock 1.322
-                       Maximum resident set size 972
-                            Page faults - no I/O 143
-                    Involuntary context switches 31
+                       Maximum resident set size 1,164
+                            Page faults - no I/O 198
+                    Involuntary context switches 50
                       Voluntary context switches 1
-                               Time in user mode 0.022
+                             Time in system mode 0.001
+                               Time in user mode 0.021
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,351
@@ -2201,7 +2207,7 @@ code.  This also shows behind the scenes SQL.
      > create table multi(x)
          Time: 0.000
      > insert into multi values(?)
-         Time: 0.000  Changes: 1
+         Time: 0.000  Rows: 1  Changes: 1
      > insert into multi values(?)
          Time: 0.000  Changes: 1
      > insert into multi values(?)
@@ -2211,16 +2217,16 @@ code.  This also shows behind the scenes SQL.
      > insert into multi values(?)
          Time: 0.000  Changes: 1
      > select * from multi limit 2
-         Time: 0.000  Rows: 3
+         Time: 0.000  Rows: 2
      > delete from multi where x < 4
          Time: 0.000  Changes: 4
      > select count(*) from pragma_function_list
      V PRAGMA function_list
-         Time: 0.000  Rows: 206  VmStep: 1,446  Mem: 69.7KB
+         Time: 0.001  Rows: 206  VmStep: 1,446  Mem: 70.7KB
      < select count(*) from pragma_function_list
-         Time: 0.000  Rows: 1  VmStep: 423
+         Time: 0.001  Rows: 1  VmStep: 423
      > RELEASE SAVEPOINT "_apsw-0"
-         Time: 0.007
+         Time: 0.006
     
 
 

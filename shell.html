@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shell &mdash; APSW 3.47.0.0 documentation</title>
+  <title>Shell &mdash; APSW 3.47.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=8087e674"></script>
+      <script src="_static/documentation_options.js?v=f152ac2d"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -96,6 +96,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#nullvalue-string">nullvalue STRING</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#open-options-file">open ?OPTIONS? ?FILE?</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#output-filename">output FILENAME</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pages-scope">pages SCOPE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#parameter-cmd">parameter CMD …</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#print-string">print STRING</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#prompt-main-continue">prompt MAIN ?CONTINUE?</a></li>
@@ -226,9 +227,11 @@ key enables for older versions <a class="reference external" href="https://githu
 <h2>Command Line Usage<a class="headerlink" href="#command-line-usage" title="Link to this heading"></a></h2>
 <p>You can use the shell directly from the command line.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Usage: python3 -m apsw [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
+
 FILENAME is the name of a SQLite database. A new database is
 created if the file does not exist. If omitted or an empty
 string then an in-memory database is created.
+
 OPTIONS include:
 
    -init filename       read/process named file
@@ -249,7 +252,8 @@ OPTIONS include:
    -version             show SQLite version
    -encoding &#39;name&#39;     the encoding to use for files
                         opened via .import, .read &amp; .output
-   -nocolour            disables interactive colour output
+   -nocolour            disables interactive colour output, as does
+                        setting NO_COLOR environment variable
 </pre></div>
 </div>
 </section>
@@ -306,6 +310,7 @@ leading <code class="docutils literal notranslate"><span class="pre">.</span></c
 <li><p><a class="reference internal" href="#shell-cmd-nullvalue"><span class="std std-ref">nullvalue</span></a></p></li>
 <li><p><a class="reference internal" href="#shell-cmd-open"><span class="std std-ref">open</span></a></p></li>
 <li><p><a class="reference internal" href="#shell-cmd-output"><span class="std std-ref">output</span></a></p></li>
+<li><p><a class="reference internal" href="#shell-cmd-pages"><span class="std std-ref">pages</span></a></p></li>
 <li><p><a class="reference internal" href="#shell-cmd-parameter"><span class="std std-ref">parameter</span></a></p></li>
 <li><p><a class="reference internal" href="#shell-cmd-print"><span class="std std-ref">print</span></a></p></li>
 <li><p><a class="reference internal" href="#shell-cmd-prompt"><span class="std std-ref">prompt</span></a></p></li>
@@ -410,7 +415,7 @@ change.  For example:</p>
 <span id="index-10"></span><span id="shell-cmd-dbinfo"></span><h3>dbinfo ?NAME?<a class="headerlink" href="#dbinfo-name" title="Link to this heading"></a></h3>
 <p><em>Shows summary and file information about the database</em></p>
 <p>This includes the numbers of tables, indices etc, as well as fields from the
-files as returned by <a class="reference internal" href="ext.html#apsw.ext.dbinfo" title="apsw.ext.dbinfo"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.ext.dbinfo()</span></code></a>.</p>
+file headers.</p>
 <p><code class="docutils literal notranslate"><span class="pre">NAME</span></code> defaults to <code class="docutils literal notranslate"><span class="pre">main</span></code>, and can be the attached name of a database.</p>
 </section>
 <section id="dump-table-table">
@@ -546,9 +551,9 @@ do not fit. If the width hasn’t been specified for a column then 10 is used
 unless the column name (header) is longer in which case that width is used. Use
 the .width command to change column sizes.</p>
 <p>csv: Items in csv format (comma separated). Use tabs mode for tab separated. You
-can use the .separator command to use a different one after switching mode.
-<code class="docutils literal notranslate"><span class="pre">A</span></code> separator of comma uses double quotes for quoting while other separators
-do not do any quoting. The Python csv library used for this only supports single
+can use the .separator command to use a different one after switching mode. A
+separator of comma uses double quotes for quoting while other separators do not
+do any quoting. The Python csv library used for this only supports single
 character separators.</p>
 <p>html: HTML table style</p>
 <p>insert: Lines as SQL insert statements. The table name is “table” unless you
@@ -600,8 +605,15 @@ before opening</p>
 when the shell was started.  The file is opened using the current encoding
 (change with <code class="docutils literal notranslate"><span class="pre">encoding</span></code> command).</p>
 </section>
+<section id="pages-scope">
+<span id="index-28"></span><span id="shell-cmd-pages"></span><h3>pages SCOPE<a class="headerlink" href="#pages-scope" title="Link to this heading"></a></h3>
+<p><em>Shows page usage summary in human units</em></p>
+<p><code class="docutils literal notranslate"><span class="pre">SCOPE</span></code> is a number 0, 1, or 2.</p>
+<p>0 - shows the database as a whole. 1 - groups by each table, including its
+indices.  2 - shows each table and index separately.</p>
+</section>
 <section id="parameter-cmd">
-<span id="index-28"></span><span id="shell-cmd-parameter"></span><h3>parameter CMD …<a class="headerlink" href="#parameter-cmd" title="Link to this heading"></a></h3>
+<span id="index-29"></span><span id="shell-cmd-parameter"></span><h3>parameter CMD …<a class="headerlink" href="#parameter-cmd" title="Link to this heading"></a></h3>
 <p><em>Maintain named bindings you can use in your queries.</em></p>
 <p>Specify a subcommand:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">list</span>            <span class="o">--</span> <span class="n">shows</span> <span class="n">current</span> <span class="n">bindings</span>
@@ -620,13 +632,13 @@ SELECT * FROM sales WHERE price &gt; $floor AND description != $text;
 </div>
 </section>
 <section id="print-string">
-<span id="index-29"></span><span id="shell-cmd-print"></span><h3>print STRING<a class="headerlink" href="#print-string" title="Link to this heading"></a></h3>
+<span id="index-30"></span><span id="shell-cmd-print"></span><h3>print STRING<a class="headerlink" href="#print-string" title="Link to this heading"></a></h3>
 <p><em>print the literal STRING</em></p>
 <p>If more than one argument is supplied then they are printed space separated.
 You can use backslash escapes such as \n and \t.</p>
 </section>
 <section id="prompt-main-continue">
-<span id="index-30"></span><span id="shell-cmd-prompt"></span><h3>prompt MAIN ?CONTINUE?<a class="headerlink" href="#prompt-main-continue" title="Link to this heading"></a></h3>
+<span id="index-31"></span><span id="shell-cmd-prompt"></span><h3>prompt MAIN ?CONTINUE?<a class="headerlink" href="#prompt-main-continue" title="Link to this heading"></a></h3>
 <p><em>Changes the prompts for first line and continuation lines</em></p>
 <p>The default is to print ‘sqlite&gt; ‘ for the main prompt where you can enter a dot
 command or a SQL statement.  If the SQL statement is not complete then you are
@@ -638,7 +650,7 @@ Example:</p>
 <p>You can use backslash escapes such as \n and \t.</p>
 </section>
 <section id="py-python">
-<span id="index-31"></span><span id="shell-cmd-py"></span><h3>py ?PYTHON?<a class="headerlink" href="#py-python" title="Link to this heading"></a></h3>
+<span id="index-32"></span><span id="shell-cmd-py"></span><h3>py ?PYTHON?<a class="headerlink" href="#py-python" title="Link to this heading"></a></h3>
 <p><em>Starts a python REPL or runs the Python statement provided</em></p>
 <p>The namespace provided includes <code class="docutils literal notranslate"><span class="pre">apsw</span></code> for the module, <code class="docutils literal notranslate"><span class="pre">shell</span></code> for this
 shell and <code class="docutils literal notranslate"><span class="pre">db</span></code> for the current database.</p>
@@ -646,7 +658,7 @@ shell and <code class="docutils literal notranslate"><span class="pre">db</span>
 write to <cite>shell.stdout</cite> and <cite>shell.stderr</cite>.</p>
 </section>
 <section id="read-filename">
-<span id="index-32"></span><span id="shell-cmd-read"></span><h3>read FILENAME<a class="headerlink" href="#read-filename" title="Link to this heading"></a></h3>
+<span id="index-33"></span><span id="shell-cmd-read"></span><h3>read FILENAME<a class="headerlink" href="#read-filename" title="Link to this heading"></a></h3>
 <p><em>Processes SQL and commands in FILENAME (or Python if FILENAME ends with .py)</em></p>
 <p>Treats the specified file as input (a mixture or SQL and/or dot commands).  If
 the filename ends in .py then it is treated as Python code instead.</p>
@@ -654,21 +666,21 @@ the filename ends in .py then it is treated as Python code instead.</p>
 refers to the instance of the shell and <code class="docutils literal notranslate"><span class="pre">apsw</span></code> is the apsw module.</p>
 </section>
 <section id="restore-db-file">
-<span id="index-33"></span><span id="shell-cmd-restore"></span><h3>restore ?DB? FILE<a class="headerlink" href="#restore-db-file" title="Link to this heading"></a></h3>
+<span id="index-34"></span><span id="shell-cmd-restore"></span><h3>restore ?DB? FILE<a class="headerlink" href="#restore-db-file" title="Link to this heading"></a></h3>
 <p><em>Restore database from FILE into DB (default “main”)</em></p>
 <p>Copies the contents of <code class="docutils literal notranslate"><span class="pre">FILE</span></code> to the current database (default “main”). The
 backup is done at the page level - SQLite copies the pages as is.  There is no
 round trip through SQL code.</p>
 </section>
 <section id="schema-table-table">
-<span id="index-34"></span><span id="shell-cmd-schema"></span><h3>schema ?TABLE? [TABLE…]<a class="headerlink" href="#schema-table-table" title="Link to this heading"></a></h3>
+<span id="index-35"></span><span id="shell-cmd-schema"></span><h3>schema ?TABLE? [TABLE…]<a class="headerlink" href="#schema-table-table" title="Link to this heading"></a></h3>
 <p><em>Shows SQL for table</em></p>
 <p>If you give one or more tables then their schema is listed (including indices).
 If you don’t specify any then all schemas are listed. <code class="docutils literal notranslate"><span class="pre">TABLE</span></code> is a like
 pattern so you can use <code class="docutils literal notranslate"><span class="pre">%</span></code> for wildcards.</p>
 </section>
 <section id="separator-string">
-<span id="index-35"></span><span id="shell-cmd-separator"></span><h3>separator STRING<a class="headerlink" href="#separator-string" title="Link to this heading"></a></h3>
+<span id="index-36"></span><span id="shell-cmd-separator"></span><h3>separator STRING<a class="headerlink" href="#separator-string" title="Link to this heading"></a></h3>
 <p><em>Change separator for output mode and .import</em></p>
 <p>You can use quotes and backslashes.  For example to set the separator to space
 tab space you can use:</p>
@@ -679,29 +691,29 @@ tab space you can use:</p>
 You should also set it before doing an import (ie , for CSV and \t for TSV).</p>
 </section>
 <section id="shell-cmd-args">
-<span id="index-36"></span><span id="shell-cmd-shell"></span><h3>shell CMD ARGS…<a class="headerlink" href="#shell-cmd-args" title="Link to this heading"></a></h3>
+<span id="index-37"></span><span id="shell-cmd-shell"></span><h3>shell CMD ARGS…<a class="headerlink" href="#shell-cmd-args" title="Link to this heading"></a></h3>
 <p><em>Run CMD ARGS in a system shell</em></p>
 <p>Note that output goes to the process standard output, not whatever the shell
 .output command has configured.</p>
 </section>
 <section id="show">
-<span id="index-37"></span><span id="shell-cmd-show"></span><h3>show<a class="headerlink" href="#show" title="Link to this heading"></a></h3>
+<span id="index-38"></span><span id="shell-cmd-show"></span><h3>show<a class="headerlink" href="#show" title="Link to this heading"></a></h3>
 <p><em>Show the current values for various settings.</em></p>
 </section>
 <section id="tables-pattern">
-<span id="index-38"></span><span id="shell-cmd-tables"></span><h3>tables ?PATTERN?<a class="headerlink" href="#tables-pattern" title="Link to this heading"></a></h3>
+<span id="index-39"></span><span id="shell-cmd-tables"></span><h3>tables ?PATTERN?<a class="headerlink" href="#tables-pattern" title="Link to this heading"></a></h3>
 <p><em>Lists names of tables matching LIKE pattern</em></p>
 <p>This also returns views.</p>
 </section>
 <section id="timeout-ms">
-<span id="index-39"></span><span id="shell-cmd-timeout"></span><h3>timeout MS<a class="headerlink" href="#timeout-ms" title="Link to this heading"></a></h3>
+<span id="index-40"></span><span id="shell-cmd-timeout"></span><h3>timeout MS<a class="headerlink" href="#timeout-ms" title="Link to this heading"></a></h3>
 <p><em>Try opening locked tables for MS milliseconds</em></p>
 <p>If a database is locked by another process SQLite will keep retrying.  This sets
 how many thousandths of a second it will keep trying for.  If you supply zero or
 a negative number then all busy handlers are disabled.</p>
 </section>
 <section id="timer-on-off">
-<span id="index-40"></span><span id="shell-cmd-timer"></span><h3>timer ON|OFF<a class="headerlink" href="#timer-on-off" title="Link to this heading"></a></h3>
+<span id="index-41"></span><span id="shell-cmd-timer"></span><h3>timer ON|OFF<a class="headerlink" href="#timer-on-off" title="Link to this heading"></a></h3>
 <p><em>Control printing of time and resource usage after each query</em></p>
 <p>The values displayed are in seconds when shown as floating point or an absolute
 count.  Only items that have changed since starting the query are shown.  On
@@ -709,23 +721,23 @@ non-Windows platforms considerably more information can be shown.  SQLite
 statistics are also included.</p>
 </section>
 <section id="version">
-<span id="index-41"></span><span id="shell-cmd-version"></span><h3>version<a class="headerlink" href="#version" title="Link to this heading"></a></h3>
+<span id="index-42"></span><span id="shell-cmd-version"></span><h3>version<a class="headerlink" href="#version" title="Link to this heading"></a></h3>
 <p><em>Displays SQLite, APSW, and Python version information</em></p>
 </section>
 <section id="vfsinfo">
-<span id="index-42"></span><span id="shell-cmd-vfsinfo"></span><h3>vfsinfo<a class="headerlink" href="#vfsinfo" title="Link to this heading"></a></h3>
+<span id="index-43"></span><span id="shell-cmd-vfsinfo"></span><h3>vfsinfo<a class="headerlink" href="#vfsinfo" title="Link to this heading"></a></h3>
 <p><em>Shows detailed information about the VFS for the database</em></p>
 </section>
 <section id="vfslist">
-<span id="index-43"></span><span id="shell-cmd-vfslist"></span><h3>vfslist<a class="headerlink" href="#vfslist" title="Link to this heading"></a></h3>
+<span id="index-44"></span><span id="shell-cmd-vfslist"></span><h3>vfslist<a class="headerlink" href="#vfslist" title="Link to this heading"></a></h3>
 <p><em>Shows detailed information about all the VFS available</em></p>
 </section>
 <section id="vfsname">
-<span id="index-44"></span><span id="shell-cmd-vfsname"></span><h3>vfsname<a class="headerlink" href="#vfsname" title="Link to this heading"></a></h3>
+<span id="index-45"></span><span id="shell-cmd-vfsname"></span><h3>vfsname<a class="headerlink" href="#vfsname" title="Link to this heading"></a></h3>
 <p><em>VFS name for database, or attached names</em></p>
 </section>
 <section id="width-num-num">
-<span id="index-45"></span><span id="shell-cmd-width"></span><h3>width NUM NUM …<a class="headerlink" href="#width-num-num" title="Link to this heading"></a></h3>
+<span id="index-46"></span><span id="shell-cmd-width"></span><h3>width NUM NUM …<a class="headerlink" href="#width-num-num" title="Link to this heading"></a></h3>
 <p><em>Set the column widths for “column” mode</em></p>
 <p>In “column” output mode, each column is a fixed width with values truncated to
 fit.  Specify new widths using this command.  Use a negative number to right
@@ -1122,7 +1134,7 @@ automatically passes in sys.argv[1:] and exits Python when done.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 17, 2024.
+      <span class="lastupdated">Last updated on Nov 25, 2024.
       </span></p>
   </div>
 

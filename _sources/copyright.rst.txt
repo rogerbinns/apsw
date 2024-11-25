@@ -1,7 +1,7 @@
 Copyright and License
 =====================
 
-Copyright (C) 2004-2023 `Roger Binns <https://www.rogerbinns.com>`__
+Copyright (C) 2004-2024 `Roger Binns <https://www.rogerbinns.com>`__
 
 
 This software is provided 'as-is', without any express or implied
@@ -27,3 +27,5 @@ freely, subject to the following restrictions:
 Alternatively you may strike the license above and use it under any
 OSI approved open source license such as those listed at
 https://opensource.org/licenses/alphabetical
+
+SPDX-License-Identifier: any-OSI

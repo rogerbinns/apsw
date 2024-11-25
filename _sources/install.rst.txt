@@ -80,12 +80,12 @@ edit the :file:`setup.apsw` file inside.
 
 .. downloads-begin
 
-* `apsw-3.47.0.0.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.zip>`__
+* `apsw-3.47.1.0.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.47.1.0/apsw-3.47.1.0.zip>`__
   (Source, includes this HTML Help)
 
-* `apsw-3.47.0.0.cosign-bundle 
-  <https://github.com/rogerbinns/apsw/releases/download/3.47.0.0/apsw-3.47.0.0.cosign-bundle>`__
+* `apsw-3.47.1.0.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.47.1.0/apsw-3.47.1.0.cosign-bundle>`__
   cosign signature
 
 .. downloads-end
@@ -120,8 +120,8 @@ Verify
 
   .. code-block:: console
 
-    $ cosign verify-blob apsw-3.47.0.0.zip                           \
-        --bundle apsw-3.47.0.0.cosign-bundle                         \
+    $ cosign verify-blob apsw-3.47.1.0.zip                           \
+        --bundle apsw-3.47.1.0.cosign-bundle                         \
         --certificate-identity=rogerb@rogerbinns.com                 \
         --certificate-oidc-issuer=https://github.com/login/oauth
     Verified OK
@@ -293,6 +293,92 @@ This performs the compilation of the C code, and provides more control than buil
       - Excludes old non :pep:`8` :ref:`complaint name aliases
         <renaming>` from the extension and type stubs.
 
+.. _pyodide:
+
+Pyodide
+-------
+
+`Pyodide <https://pyodide.org/en/stable/index.html>`__ is a web
+assembly Python distribution that can run in the browser or via NPM.
+PyPI does not support pyodide binary packages yet, but you can compile
+your own on a Linux host.
+
+You should first download the source distribution listed at the top of
+https://pypi.org/project/apsw/#files - the filename ends up being
+``apsw-3.47.0.0.tar.gz`` in this example.  The `cibuildwheel
+<https://cibuildwheel.pypa.io/>`__ tool is used for the building, and
+is the same tool used for the PyPI builds of APSW.
+
+.. code-block:: shell-session
+
+  # Start out with a clean virtual environment
+  $ python3 -m venv venv
+  # Get cibuildwheel
+  $ venv/bin/pip3 install cibuildwheel
+  # Do the building which will download the necessary compiler and
+  # Python parts
+  $ venv/bin/cibuildwheel --platform pyodide apsw-3.47.0.0.tar.gz
+  # When it has finished the result is in the wheelhouse directory
+  $ ls wheelhouse/
+
+You will then be able to install the wheel using `micropip
+<https://micropip.pyodide.org/>`__.
+
+.. code-block:: pycon
+
+  >>> import micropip
+  >>> await micropip.install("https://url/apsw-3.47.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl")
+  >>> import apsw
+
+At this point you will be able to use APSW as normal.
+
+.. _packagers:
+
+Advice for packagers
+--------------------
+
+This is the recommendation for packagers such as Linux and BSD
+distributions, who want APSW to use the system shared SQLite library.
+
+* Use the source file from `github releases
+  <https://github.com/rogerbinns/apsw/releases>`__.  Note you should
+  use the zip file including the version number, not the github
+  repository copy at the end.  The file is signed and :ref:`can be
+  verified <verifydownload>`.
+
+  The file also includes a copy of the built documentation in HTML
+  format with no analytics in the ``doc/`` subdirectory.
+
+* After extracting the zip, replace the file named ``setup.apsw`` that
+  sits alongside ``setup.py`` with the following contents:
+
+  .. code-block:: ini
+
+    [build_ext]
+    use_system_sqlite_config = True
+
+  This will probe the system SQLite shared library for its compilation
+  options.  Various C level APIs are included or excluded from the shared
+  library based on those options, so APSW needs to know at compilation
+  time which APIs it can or can't call.
+
+* You can compile APSW using whatever works for your packaging system.
+  APSW complies with the latest `Python packaging guidelines
+  <https://packaging.python.org/>`__ and metadata.  (The traditional
+  `setuptools <https://github.com/pypa/setuptools>`__ is the build
+  backend.) You will see lines like the following during build (note the
+  ``Extracting configuration``).
+
+  .. code-block:: console
+
+    running build_ext
+    Extracting configuration from libsqlite3.so.0
+    SQLite: Using system sqlite include/libraries
+
+* :source:`pyproject.toml` defines a script entry point (command line
+  tool) for ``apsw`` which invokes the :doc:`shell`.  It is optional
+  to package this.  A man page is included in the ``man/`` directory.
+
 .. _testing:
 
 Testing
@@ -328,9 +414,9 @@ extra code that deliberately induces extra conditions such as memory
 allocation failures, SQLite returning error codes, Python APIs
 erroring etc.  That brings coverage up to 99.6% of the code.
 
-A memory checker `Valgrind <https://valgrind.org>`_  and  `compiler
-sanitizer options <https://en.wikipedia.org/wiki/AddressSanitizer>`__
-are also used for further validation.
+`Compiler sanitizers options
+<https://en.wikipedia.org/wiki/AddressSanitizer>`__ are also used for
+further validation.
 
 To ensure compatibility with the various Python versions, a script
 downloads and compiles all supported Python versions in both debug and
