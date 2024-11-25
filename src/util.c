@@ -433,7 +433,7 @@ For example, to use for Connection and xCreate:
 
 The implementation uses a sentinel on the stack with a magic number on
 it.  That way if the call exits without CALL_LEAVE a later check will
-assert fail or cause a valgrind error.
+assert fail or cause a sanitizer error.
 
 */
 

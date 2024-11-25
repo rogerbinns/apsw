@@ -414,9 +414,9 @@ extra code that deliberately induces extra conditions such as memory
 allocation failures, SQLite returning error codes, Python APIs
 erroring etc.  That brings coverage up to 99.6% of the code.
 
-A memory checker `Valgrind <https://valgrind.org>`_  and  `compiler
-sanitizer options <https://en.wikipedia.org/wiki/AddressSanitizer>`__
-are also used for further validation.
+`Compiler sanitizers options
+<https://en.wikipedia.org/wiki/AddressSanitizer>`__ are also used for
+further validation.
 
 To ensure compatibility with the various Python versions, a script
 downloads and compiles all supported Python versions in both debug and

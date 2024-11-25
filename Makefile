@@ -21,7 +21,7 @@ GENDOCS = \
 	doc/fts.rst
 
 .PHONY : help all tagpush clean doc docs build_ext build_ext_debug coverage pycoverage test test_debug fulltest linkcheck unwrapped \
-		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug pyvalgrind valgrind valgrind1 \
+		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug \
 		 fossil doc-depends dev-depends docs-no-fetch compile-win-one langserver
 
 help: ## Show this help
@@ -256,8 +256,6 @@ PYDEBUG_VER=3.12.7
 PYDEBUG_DIR=/space/pydebug
 PYTHREAD_VER=$(PYDEBUG_VER)
 PYTHREAD_DIR=/space/pythread
-PYVALGRIND_VER=$(PYDEBUG_VER)
-PYVALGRIND_DIR=/space/pyvalgrind
 # This must end in slash
 PYDEBUG_WORKDIR=/space/apsw-test/
 
@@ -277,29 +275,6 @@ pythread: ## Build a debug python including thread sanitizer.  Extensions it bui
 	env CFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread TSAN_OPTIONS=report_bugs=0 ./configure  --without-pymalloc --with-pydebug --prefix="$(PYTHREAD_DIR)" --without-freelists  && \
 	$(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYTHREAD_DIR)/bin/python3
-
-pyvalgrind: ## Build a debug python with valgrind integration
-	set -x && cd "$(PYVALGRIND_DIR)" && find . -delete && \
-	curl https://www.python.org/ftp/python/`echo $(PYVALGRIND_VER) | sed 's/[abr].*//'`/Python-$(PYVALGRIND_VER).tar.xz | tar xfJ - && \
-	cd Python-$(PYVALGRIND_VER) && \
-	./configure --with-valgrind --without-pymalloc  --with-pydebug --prefix="$(PYVALGRIND_DIR)" \
-	--without-freelists --with-assertions && \
-	$(MAKE) -j install
-	$(MAKE) dev-depends PYTHON=$(PYVALGRIND_DIR)/bin/python3
-
-
-valgrind: $(PYVALGRIND_DIR)/bin/python3 src/faultinject.h ## Runs multiple iterations with valgrind to catch leaks
-	$(PYVALGRIND_DIR)/bin/python3 setup.py fetch --version=$(SQLITEVERSION) --all && \
-	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH APSW_TEST_ITERATIONS=6 tools/valgrind.sh 2>&1 | tee l6 && \
-	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH APSW_TEST_ITERATIONS=7 tools/valgrind.sh 2>&1 | tee l7 && \
-	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH APSW_TEST_ITERATIONS=8 tools/valgrind.sh 2>&1 | tee l8
-
-valgrind1: $(PYVALGRIND_DIR)/bin/python3 src/faultinject.h ## valgrind check (one iteration)
-	$(PYVALGRIND_DIR)/bin/python3 setup.py fetch --version=$(SQLITEVERSION) --all && \
-	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH APSW_TEST_ITERATIONS=1 tools/valgrind.sh
-
-valgrind_no_fetch: $(PYVALGRIND_DIR)/bin/python3 src/faultinject.h ## valgrind check (one iteration) - does not fetch SQLite, using existing directory
-	  env APSWTESTPREFIX=$(PYDEBUG_WORKDIR) PATH=$(PYVALGRIND_DIR)/bin:$$PATH APSW_TEST_ITERATIONS=1 tools/valgrind.sh
 
 langserver:  ## Language server integration json
 	$(PYTHON) tools/gencompilecommands.py > compile_commands.json
