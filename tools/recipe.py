@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 
-import apsw, apsw.ext, apsw.fts5
+# This processes an open recipes database and is used in the fuil text
+# search example code.
+#
+# The recipes are mentioned here https://opendata.stackexchange.com/a/17386
+# and the url is https://s3.amazonaws.com/openrecipes/20170107-061401-recipeitems.json.gz
+# if you search for the filename you can find copies in other places
+
+import apsw
+import apsw.ext
+import apsw.fts5
 import json
 import sys
 import gzip
@@ -40,6 +49,7 @@ with con:
             columns=None,
             content="recipes",
             tokenize=["simplify", "casefold", "true", "strip", "true", "unicodewords"],
+            generate_triggers=True,
         )
 
     with apsw.ext.ShowResourceUsage(sys.stdout, db=con, scope="process"):
@@ -50,4 +60,5 @@ with con:
             columns=None,
             content="recipes",
             tokenize=["simplify", "casefold", "true", "strip", "true", "ngram"],
+            generate_triggers=True,
         )
