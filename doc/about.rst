@@ -3,7 +3,7 @@ About
 
 **APSW** |version| **released** |today|
 
-Use with `SQLite <https://sqlite.org/>`__ 3.47 or later, `Python
+Use with `SQLite <https://sqlite.org/>`__ 3.47.1 or later, `Python
 <https://www.python.org/downloads/>`__ 3.9 and later.
 
 
