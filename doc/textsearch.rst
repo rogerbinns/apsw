@@ -423,7 +423,7 @@ SQLite includes 4 builtin tokenizers while APSW provides several more.
   * - :func:`NGramTokenizer`
     - Generates ngrams from the text, where you can specify the sizes
       and unicode categories.  Useful for doing autocomplete as you
-      type, and substring searches.  Unlike``trigram`` this works on
+      type, and substring searches.  Unlike ``trigram`` this works on
       units of Unicode grapheme clusters  not individual codepoints.
   * - :func:`HTMLTokenizer`
     - Wrapper that converts HTML to plan text for a further tokenizer

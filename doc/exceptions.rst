@@ -267,7 +267,7 @@ Abort/Busy Etc
 
 .. exception:: InterruptError
 
-  SQLITE_INTERRUPT <https://sqlite.org/rescode.html#interrupt>`__.
+  `SQLITE_INTERRUPT <https://sqlite.org/rescode.html#interrupt>`__.
   Operation terminated by `sqlite3_interrupt
   <https://sqlite.org/c3ref/interrupt.html>`_ - use
   :meth:`Connection.interrupt`.
