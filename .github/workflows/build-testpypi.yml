@@ -32,7 +32,7 @@ jobs:
       runs-on: ubuntu-latest
       strategy:
         matrix:
-          arch: [aarch64]
+          arch: [armv7l, aarch64]
           pyver: [cp39, cp310, cp311, cp312, cp313]
           libc: [manylinux, musllinux]
 
