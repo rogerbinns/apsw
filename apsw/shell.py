@@ -2460,11 +2460,11 @@ Enter ".help" for instructions
             return
         elif name in {"page_size", "data_stored", "max_payload"}:
             self.write(self.stdout, self.colour.colour_value(value, storage(value)))
-        elif name in {"pages_used", "pages_total", "max_page_count"}:
+        elif name in {"pages_used", "pages_total", "max_page_count", "pages_freelist"}:
             self.write(self.stdout, self.colour.colour_value(value, f"{value:,} ({storage(value*usage.page_size)})"))
         elif name in {"sequential_pages"}:
             self.write(self.stdout, self.colour.colour_value(value, f"{value:,} ({value/max(usage.pages_used, 1):.0%})"))
-        elif name in {"cells", "pages_freelist"}:
+        elif name in {"cells"}:
             self.write(self.stdout, self.colour.colour_value(value, f"{value:,}"))
         else:
             self.write_value(value)
