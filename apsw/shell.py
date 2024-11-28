@@ -2440,7 +2440,6 @@ Enter ".help" for instructions
         self.write(self.stdout, name + ":  ")
         value = getattr(usage, name)
 
-
         def storage(v):
             if not v:
                 return "0"
@@ -2462,8 +2461,12 @@ Enter ".help" for instructions
             self.write(self.stdout, self.colour.colour_value(value, storage(value)))
         elif name in {"pages_used", "pages_total", "max_page_count", "pages_freelist"}:
             self.write(self.stdout, self.colour.colour_value(value, f"{value:,} ({storage(value*usage.page_size)})"))
+            if name == "max_page_count" and value == 4_294_967_294:
+                self.write(self.stdout, " (default)")
         elif name in {"sequential_pages"}:
-            self.write(self.stdout, self.colour.colour_value(value, f"{value:,} ({value/max(usage.pages_used, 1):.0%})"))
+            self.write(
+                self.stdout, self.colour.colour_value(value, f"{value:,} ({value/max(usage.pages_used, 1):.0%})")
+            )
         elif name in {"cells"}:
             self.write(self.stdout, self.colour.colour_value(value, f"{value:,}"))
         else:
