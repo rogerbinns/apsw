@@ -80,7 +80,7 @@ def slice(id: str, start_angle: float, end_angle: float, start_distance: float, 
     ds = " ".join(d)
 
     fill = colour_for_angle((start_angle + end_angle) / 2)
-    return f"""<path id="{id}" d="{ds}" stroke="black" fill="{fill}" stroke-width="1px"/>"""
+    return f"""<a href="#" id="{id}"><path d="{ds}" stroke="black" fill="{fill}" stroke-width="1px"/></a>"""
 
 
 def text(pos: tuple[float, float], id: str, name: str, ring: int, usage) -> str:
@@ -141,7 +141,7 @@ texts: list[str] = []
 
 # inner summary circle
 id = next_id()
-out.append(f"""<circle id="{id}" r="{c(.3)}" fill="#777"/>""")
+out.append(f"""<a href="#" id="{id}"><circle r="{c(.3)}" fill="#777"/></a>""")
 
 resp = next_id()
 texts.append(text(pos_for_angle(0, 0), resp, os.path.basename(sys.argv[1]), 0, root))
