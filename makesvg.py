@@ -1,5 +1,4 @@
 from __future__ import annotations
-import dis
 
 import apsw, pprint, sys, apsw.ext, math, apsw.shell, os, html, math
 from fractions import Fraction
@@ -180,7 +179,7 @@ out.append(""".infobox { text-anchor: middle; dominant-baseline: middle; font-si
 .name {font-weight: bold;}""")
 for source, target in hover_response.items():
     out.append(f"""#{target} {{ display: none;}}""")
-    out.append(f"""#{source}:hover ~ #{target}, #{target}:hover #{source}:active ~ #{target}, #{target}:active
+    out.append(f"""#{source}:hover ~ #{target}, #{target}:hover, #{source}:active ~ #{target}, #{target}:active
                {{display:block;}}""")
 out.append("</style>")
 
