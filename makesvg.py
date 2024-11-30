@@ -99,6 +99,8 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
             assert isinstance(usage, apsw.ext.DatabasePageUsage)
             total = storage(usage.pages_total * usage.page_size)
             used = storage(usage.pages_used * usage.page_size)
+            page = storage(usage.page_size)
+            res.append(f"""<tspan x="{x}" dy="1em">{page} page size</tspan>""")
             res.append(f"""<tspan x="{x}" dy="1em">{used} / {total}</tspan>""")
             res.append(f"""<tspan x="{x}" dy="1em">{len(usage.tables):,} tables</tspan>""")
             res.append(f"""<tspan x="{x}" dy="1em">{len(usage.indices):,} indices</tspan>""")
@@ -124,6 +126,9 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
     # check we can get the information
     root, group, each = (apsw.ext.analyze_pages(con, n, schema) for n in range(3))
 
+    if not root.pages_total:
+        raise ValueError(f"database {schema=} is empty")
+
     # maps which element hovering over causes a response on
     hover_response: dict[str, str] = {}
 
@@ -148,7 +153,7 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
     # inner summary circle
     id, resp = next_ids()
     print(f"""<a href="#" id="{id}"><circle r="{c(.3)}" fill="#777"/></a>""", file=out)
-    texts.append(text(pos_for_angle(0, 0), resp, os.path.basename(sys.argv[1]), 0, root))
+    texts.append(text(pos_for_angle(0, 0), resp, os.path.basename(con.db_filename(schema)) or '""', 0, root))
 
     # inner ring
     start = Fraction()
