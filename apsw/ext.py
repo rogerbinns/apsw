@@ -1041,7 +1041,7 @@ def analyze_pages(con: apsw.Connection, scope: int, schema: str = "main") -> Dat
     The `dbstat <https://www.sqlite.org/dbstat.html>`__ virtual table
     is used to gather statistics.
 
-    See :download:`example output <../examples/analyze_pages.txt>`.
+    See `example output <_static/samples/analyze_pages.txt>`__.
 
     :param con: Connection to use
     :param scope:
