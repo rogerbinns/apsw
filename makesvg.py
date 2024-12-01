@@ -72,7 +72,14 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
         # outputs a coordinate scaling by RADIUS
         return c(pos_for_angle(angle, distance))
 
-    def slice(id: str, start_angle: float, end_angle: float, start_distance: float, end_distance: float):
+    def slice(
+        id: str,
+        start_angle: float,
+        end_angle: float,
+        start_distance: float,
+        end_distance: float,
+        color: str | None = None,
+    ):
         # produces one of the circular slices
         large = 1 if (end_angle - start_angle) > 1 / 2 else 0
 
@@ -85,40 +92,46 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
 
         ds = " ".join(d)
 
-        fill = colour_for_angle((start_angle + end_angle) / 2)
+        fill = color or colour_for_angle((start_angle + end_angle) / 2)
         return f"""<a href="#" id="{id}"><path d="{ds}" stroke="black" fill="{fill}" stroke-width="1px"/></a>"""
 
     def text(pos: tuple[float, float], id: str, name: str, ring: int, usage: DatabasePageUsage | PageUsage) -> str:
         # produces text infobox
         x, y = c(pos[0]), c(pos[1])
+        vspace='dy="1.1em"'
         e = html.escape
-        res = []
+        res: list[str] = []
         res.append(f"""<text id="{id}" x="{x}" y="{y}" class="infobox">""")
-        res.append(f"""<tspan x="{x}" dy="-4em" class="name">{e(name)}</tspan>""")
-        if ring == 0:
+        res.append(f"""<tspan x="{x}" dy="-3em" class="name">{e(name)}</tspan>""")
+        if ring == -1:
+            size = storage((usage.pages_total - usage.pages_used) * usage.page_size)
+            res.append(f"""<tspan x="{x}" {vspace}>{size} unused</tspan>""")
+
+        elif ring == 0:
             assert isinstance(usage, apsw.ext.DatabasePageUsage)
             total = storage(usage.pages_total * usage.page_size)
             used = storage(usage.pages_used * usage.page_size)
             page = storage(usage.page_size)
-            res.append(f"""<tspan x="{x}" dy="1em">{page} page size</tspan>""")
-            res.append(f"""<tspan x="{x}" dy="1em">{used} / {total}</tspan>""")
-            res.append(f"""<tspan x="{x}" dy="1em">{len(usage.tables):,} tables</tspan>""")
-            res.append(f"""<tspan x="{x}" dy="1em">{len(usage.indices):,} indices</tspan>""")
+            res.append(f"""<tspan x="{x}" {vspace}>{page} page size</tspan>""")
+            res.append(f"""<tspan x="{x}" {vspace}>{used} / {total}</tspan>""")
+            res.append(f"""<tspan x="{x}" {vspace}>{len(usage.tables):,} tables</tspan>""")
+            res.append(f"""<tspan x="{x}" {vspace}>{len(usage.indices):,} indices</tspan>""")
         else:
             if ring == 2:
                 kind = "table" if usage.tables else "index"
-                res.append(f"""<tspan x="{x}" dy="1em">({kind})</tspan>""")
+                res.append(f"""<tspan x="{x}" {vspace}>({kind})</tspan>""")
             size = storage(usage.pages_used * usage.page_size)
-            res.append(f"""<tspan x="{x}" dy="1em">{size}</tspan>""")
+            res.append(f"""<tspan x="{x}" {vspace}>{size}</tspan>""")
             if ring == 1:
-                res.append(f"""<tspan x="{x}" dy="1em">{len(usage.tables):,} tables</tspan>""")
-                res.append(f"""<tspan x="{x}" dy="1em">{len(usage.indices):,} indices</tspan>""")
-        res.append(
-            f"""<tspan x="{x}" dy="1em">{usage.sequential_pages/max(usage.pages_used, 1):.0%} sequential</tspan>"""
-        )
-        res.append(f"""<tspan x="{x}" dy="1em">{storage(usage.data_stored)} SQL data</tspan>""")
-        res.append(f"""<tspan x="{x}" dy="1em">{storage(usage.max_payload)} max payload</tspan>""")
-        res.append(f"""<tspan x="{x}" dy="1em">{usage.cells:,} cells</tspan>""")
+                res.append(f"""<tspan x="{x}" {vspace}>{len(usage.tables):,} tables</tspan>""")
+                res.append(f"""<tspan x="{x}" {vspace}>{len(usage.indices):,} indices</tspan>""")
+        if ring >= 0:
+            res.append(
+                f"""<tspan x="{x}" {vspace}>{usage.sequential_pages/max(usage.pages_used, 1):.0%} sequential</tspan>"""
+            )
+            res.append(f"""<tspan x="{x}" {vspace}>{storage(usage.data_stored)} SQL data</tspan>""")
+            res.append(f"""<tspan x="{x}" {vspace}>{storage(usage.max_payload)} max payload</tspan>""")
+            res.append(f"""<tspan x="{x}" {vspace}>{usage.cells:,} cells</tspan>""")
 
         res.append("""</text>""")
         return "\n".join(res)
@@ -176,6 +189,11 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
             )
             ring2_start += ring2_proportion
 
+    if root.pages_used < root.pages_total:
+        id, resp = next_ids()
+        print(slice(id, float(start), 1.0, 1 / 3, 1.0, "#aaa"), file=out)
+        texts.append(text(pos_for_angle(float((1 + start) / 2), 0.5), resp, "Free Space", -1, root))
+
     for t in texts:
         print(t, file=out)
 
@@ -183,8 +201,9 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
         """<style>
         .infobox { text-anchor: middle; dominant-baseline: middle; font-size: 28pt;
             fill: black; stroke: white; stroke-width:4pt; paint-order: stroke;
-            font-family: sans-serif; }
-        .name {font-weight: bold;}
+            font-family: ui-sans-serif, sans-serif; }
+        tspan {font-weight: 600;}
+        .name {font-weight: 900; text-decoration: underline;}
     """,
         file=out,
     )
