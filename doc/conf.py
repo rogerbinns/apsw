@@ -3,6 +3,7 @@
 
 import os
 
+
 # monkey patch https://github.com/sphinx-doc/sphinx/issues/11253
 def split(self, input):
     res = []
@@ -17,9 +18,9 @@ sphinx.search.SearchEnglish.split = split
 del split
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.extlinks',
-    'sphinx.ext.intersphinx',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
 ]
@@ -27,27 +28,27 @@ extensions = [
 autodoc_preserve_defaults = True
 
 extlinks = {
-    'issue': ('https://github.com/rogerbinns/apsw/issues/%s', 'APSW issue %s'),
-    'source': ('https://github.com/rogerbinns/apsw/blob/master/%s', '%s'),
+    "issue": ("https://github.com/rogerbinns/apsw/issues/%s", "APSW issue %s"),
+    "source": ("https://github.com/rogerbinns/apsw/blob/master/%s", "%s"),
 }
 
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
-pygments_style = 'vs'
+pygments_style = "vs"
 
 # General substitutions.
-project = 'APSW'
+project = "APSW"
 author = "Roger Binns <rogerb@rogerbinns.com>"
-copyright = f'2004-2024, { author }'
+copyright = f"2004-2024, { author }"
 html_logo = "apswlogo.png"
 
 # The default replacements for |version| and |release|, also used in various
@@ -60,9 +61,9 @@ release = version
 today = os.getenv("RELEASEDATE")
 assert version and today
 
-today_fmt = '%B %d, %Y'
+today_fmt = "%B %d, %Y"
 
-exclude_trees = ['build']
+exclude_trees = ["build"]
 exclude_patterns = ["fts.rst", "cli.rst"]
 
 extlinks_detect_hardcoded_links = True
@@ -73,7 +74,7 @@ extlinks_detect_hardcoded_links = True
 # Options for HTML output
 
 html_title = f"{ project } { version } documentation"
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     "analytics_id": "G-2NR9GDCQLT",
     "prev_next_buttons_location": "both",
@@ -85,8 +86,8 @@ if os.getenv("APSW_NO_GA"):
 
 html_favicon = "favicon.ico"
 
-html_static_path = ['_static']
-html_last_updated_fmt = '%b %d, %Y'
+html_static_path = ["_static"]
+html_last_updated_fmt = "%b %d, %Y"
 
 # One page html
 singlehtml_sidebars = {"index": ["globaltoc.html"]}
@@ -100,7 +101,7 @@ epub_scheme = "URL"
 epub_cover = (html_logo, "")
 viewcode_enable_epub = True
 epub_theme = "default"
-epub_theme_options = {'nosidebar': True, 'externalrefs': True, 'globaltoc_maxdepth': 1}
+epub_theme_options = {"nosidebar": True, "externalrefs": True, "globaltoc_maxdepth": 1}
 epub_show_urls = "no"
 
 # pdf using rst2pdf
@@ -125,7 +126,7 @@ def skip_Shell_members(app, what, name, obj, skip, options):
 
 
 def setup(app):
-    app.connect('autodoc-skip-member', skip_Shell_members)
+    app.connect("autodoc-skip-member", skip_Shell_members)
 
 
 nitpicky = True
