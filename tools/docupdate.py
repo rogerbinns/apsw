@@ -200,11 +200,11 @@ for line in open("doc/shell.rst", "rt"):
         op.append("  :columns: 3")
         op.append("")
         for k in shell._help_info:
-            op.append(f"  * :ref:`{ k } <shell-cmd-{ k }>`")
+            op.append(f"  * :ref:`{ k } <shell-cmd-{ k.replace("_", "-")  }>`")
         op.append("")
 
         for k, v in shell._help_info.items():
-            op.append(f".. _shell-cmd-{ k }:")
+            op.append(f".. _shell-cmd-{ k.replace("_", "-") }:")
             op.append(".. index::")
             op.append("    single: " + v[0].lstrip(".").split()[0] + " (Shell command)")
             op.append("")

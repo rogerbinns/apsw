@@ -10,6 +10,13 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+next
+====
+
+Added :func:`apsw.ext.page_usage_to_svg` which shows database usage as
+SVG (`example <_static/samples/chinook.svg>`).  Available as shell
+:ref:`.pages-svg command <shell-cmd-pages-svg>`.
+
 3.47.1.0
 ========
 

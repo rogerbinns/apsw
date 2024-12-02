@@ -10568,6 +10568,14 @@ shell.write(shell.stdout, "hello world\\n")
                     self.assertIn("two", name)
                     self.assertNotIn("root", name)
 
+        # svg
+        s = io.StringIO()
+        apsw.ext.page_usage_to_svg(self.db, s)
+        s = s.getvalue()
+        self.assertIn("xxx", s)
+        self.assertIn("one", s)
+        self.assertIn("</svg>", s)
+
     def testExtQueryInfo(self) -> None:
         "apsw.ext.query_info"
         qd = apsw.ext.query_info(self.db, "select 3; a syntax error")

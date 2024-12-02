@@ -38,7 +38,9 @@ Database storage usage
 
 Use :func:`analyze_pages` to find out how much storage is in use, and
 how fragmented it is.  See `example output
-<_static/samples/analyze_pages.txt>`__.
+<_static/samples/analyze_pages.txt>`__.  It is also available
+graphically with :func:`page_usage_to_svg` - `example output
+<_static/samples/chinook.svg>`__.
 
 Accessing result rows by column name
 ------------------------------------

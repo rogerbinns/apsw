@@ -5,6 +5,7 @@ from __future__ import annotations
 # mypy: ignore-errors
 
 import argparse
+import atexit
 import base64
 import code
 import codecs
@@ -19,10 +20,12 @@ import os
 import re
 import shlex
 import sys
+import tempfile
 import textwrap
 import time
 import traceback
 from typing import Optional, TextIO
+import webbrowser
 
 import apsw
 import apsw.ext
@@ -1039,7 +1042,7 @@ Enter ".help" for instructions
         cmd = shlex.split(command)
         assert cmd[0][0] == "."
         cmd[0] = cmd[0][1:]
-        fn = getattr(self, "command_" + cmd[0], None)
+        fn = getattr(self, "command_" + cmd[0].replace("-", "_"), None)
         if not fn:
             raise self.Error('Unknown command "%s".  Enter ".help" for help' % (cmd[0],))
         # special handling for .parameter set because we need the value to preserve quoting
@@ -2440,14 +2443,7 @@ Enter ".help" for instructions
         self.write(self.stdout, name + ":  ")
         value = getattr(usage, name)
 
-        def storage(v):
-            if not v:
-                return "0"
-            power = math.floor(math.log(v, 1024))
-            suffix = ["B", "KB", "MB", "GB", "TB", "PB", "EB"][int(power)]
-            if suffix == "B":
-                return f"{v}B"
-            return f"{v / 1024**power:.1f}".rstrip(".0") + suffix
+        storage = apsw.ext.storage
 
         if name in {"tables", "indices"}:
             self.write_value(len(value))
@@ -2509,6 +2505,27 @@ Enter ".help" for instructions
             for f in dataclasses.fields(pages):
                 self._command_pages_write_value(pages, f.name, width)
             self.write(self.stdout, "\n")
+
+    def command_pages_svg(self, cmd):
+        """pages-svg ?OUTFILENAME?: Shows space usage in a graphic
+
+        If you do not specify a filename, then a temporary file is created and
+        the browser invoked to show it.
+        """
+        if len(cmd) == 0:
+            fd, filename = tempfile.mkstemp(prefix="apsw-shell-pages-svg", suffix=".svg")
+            os.close(fd)
+            atexit.register(trydelete, filename)
+        elif len(cmd) == 1:
+            filename = cmd[0]
+        else:
+            raise self.Error("Expected no or one filename")
+
+        with open(filename, "wt") as f:
+            apsw.ext.page_usage_to_svg(self.db, f)
+
+        if len(cmd) == 0:
+            webbrowser.open_new_tab(filename)
 
     def command_parameter(self, cmd):
         """parameter CMD ...:  Maintain named bindings you can use in your queries.
@@ -3592,6 +3609,14 @@ Enter ".help" for instructions
         del x
         del v
     except Exception:
+        pass
+
+
+def trydelete(filename: str):
+    ":meta private:"
+    try:
+        os.remove(filename)
+    except (OSError, IOError):
         pass
 
 
