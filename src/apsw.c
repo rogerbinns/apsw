@@ -26,11 +26,10 @@ module have process wide effects.
 Type Annotations
 ================
 
-Comprehensive `type annotations
-<https://docs.python.org/3/library/typing.html>`__ `are included <https://github.com/rogerbinns/apsw/blob/master/apsw/__init__.pyi>`__,
-and your code can be checked using tools like `mypy
-<https://mypy-lang.org/>`__.  You can refer to the types below for your
-annotations (eg as :class:`apsw.SQLiteValue`)
+Comprehensive :mod:`type annotations <typing>` :source:`are included
+<apsw/__init__.pyi>`, and your code can be checked using tools like
+`mypy <https://mypy-lang.org/>`__.  You can refer to the types below
+for your annotations (eg as :class:`apsw.SQLiteValue`)
 
 Your source files should include::
 
@@ -830,8 +829,7 @@ dictionary with the keys being the names of the `sqlite3_vfs
 <https://sqlite.org/c3ref/vfs.html>`__ data structure, and their
 corresponding values.
 
-Pointers are converted using `PyLong_FromVoidPtr
-<https://docs.python.org/3/c-api/long.html?highlight=voidptr#c.PyLong_FromVoidPtr>`__.
+Pointers are converted using :c:func:`PyLong_FromVoidPtr`.
 
 -* sqlite3_vfs_find
 */
@@ -1180,26 +1178,25 @@ static sqlite3_mutex_methods apsw_mutex_methods
   other's work and interfere with each other's locks.)
 
   One example of how you may end up using fork is if you use the
-  `multiprocessing module
-  <https://docs.python.org/3/library/multiprocessing.html>`__ which can use
+  :mod:`multiprocessing module <multiprocessing>` which can use
   fork to make child processes.
 
-  If you do use fork or multiprocessing on a platform that supports
-  fork then you **must** ensure database connections and their objects
+  If you do use fork or multiprocessing on a platform that supports fork
+  then you **must** ensure database connections and their objects
   (cursors, backup, blobs etc) are not used in the parent process, or
   are all closed before calling fork or starting a `Process
   <https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions>`__.
-  (Note you must call close to ensure the underlying SQLite objects
-  are closed.  It is also a good idea to call `gc.collect(2)
-  <https://docs.python.org/3/library/gc.html#gc.collect>`__ to ensure
-  anything you may have missed is also deallocated.)
+  (Note you must call close to ensure the underlying SQLite objects are
+  closed.  It is also a good idea to call :func:`gc.collect(2)
+  <gc.collect>` to ensure anything you may have missed is also
+  deallocated.)
 
   Once you run this method, extra checking code is inserted into
   SQLite's mutex operations (at a very small performance penalty) that
   verifies objects are not used across processes.  You will get a
   :exc:`ForkingViolationError` if you do so.  Note that due to the way
   Python's internals work, the exception will be delivered to
-  `sys.excepthook` in addition to the normal exception mechanisms and
+  :func:`sys.excepthook` in addition to the normal exception mechanisms and
   may be reported by Python after the line where the issue actually
   arose.  (Destructors of objects you didn't close also run between
   lines.)

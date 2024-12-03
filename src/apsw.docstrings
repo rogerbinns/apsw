@@ -124,26 +124,25 @@
 "other's work and interfere with each other's locks.)\n" \
 "\n" \
 "One example of how you may end up using fork is if you use the\n" \
-"`multiprocessing module\n" \
-"<https://docs.python.org/3/library/multiprocessing.html>`__ which can use\n" \
+":mod:`multiprocessing module <multiprocessing>` which can use\n" \
 "fork to make child processes.\n" \
 "\n" \
-"If you do use fork or multiprocessing on a platform that supports\n" \
-"fork then you **must** ensure database connections and their objects\n" \
+"If you do use fork or multiprocessing on a platform that supports fork\n" \
+"then you **must** ensure database connections and their objects\n" \
 "(cursors, backup, blobs etc) are not used in the parent process, or\n" \
 "are all closed before calling fork or starting a `Process\n" \
 "<https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions>`__.\n" \
-"(Note you must call close to ensure the underlying SQLite objects\n" \
-"are closed.  It is also a good idea to call `gc.collect(2)\n" \
-"<https://docs.python.org/3/library/gc.html#gc.collect>`__ to ensure\n" \
-"anything you may have missed is also deallocated.)\n" \
+"(Note you must call close to ensure the underlying SQLite objects are\n" \
+"closed.  It is also a good idea to call :func:`gc.collect(2)\n" \
+"<gc.collect>` to ensure anything you may have missed is also\n" \
+"deallocated.)\n" \
 "\n" \
 "Once you run this method, extra checking code is inserted into\n" \
 "SQLite's mutex operations (at a very small performance penalty) that\n" \
 "verifies objects are not used across processes.  You will get a\n" \
 ":exc:`ForkingViolationError` if you do so.  Note that due to the way\n" \
 "Python's internals work, the exception will be delivered to\n" \
-"`sys.excepthook` in addition to the normal exception mechanisms and\n" \
+":func:`sys.excepthook` in addition to the normal exception mechanisms and\n" \
 "may be reported by Python after the line where the issue actually\n" \
 "arose.  (Destructors of objects you didn't close also run between\n" \
 "lines.)\n" \
@@ -459,8 +458,7 @@
 "<https://sqlite.org/c3ref/vfs.html>`__ data structure, and their\n" \
 "corresponding values.\n" \
 "\n" \
-"Pointers are converted using `PyLong_FromVoidPtr\n" \
-"<https://docs.python.org/3/c-api/long.html?highlight=voidptr#c.PyLong_FromVoidPtr>`__.\n" \
+"Pointers are converted using :c:func:`PyLong_FromVoidPtr`.\n" \
 "\n" \
 "Calls: `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
 
@@ -1509,8 +1507,7 @@
 "<https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.\n" \
 "\n" \
 "If you want data returned back then the *pointer* needs to point to\n" \
-"something mutable.  Here is an example using `ctypes\n" \
-"<https://docs.python.org/3/library/ctypes.html>`_ of\n" \
+"something mutable.  Here is an example using :mod:`ctypes` of\n" \
 "passing a Python dictionary to :meth:`~VFSFile.xFileControl` which\n" \
 "can then modify the dictionary to set return values::\n" \
 "\n" \
@@ -4047,7 +4044,7 @@
 #define  InternalError_exc_DOC "`SQLITE_INTERNAL <https://sqlite.org/rescode.html#internal>`__. (No\n" \
 "longer used) Internal logic error in SQLite.\n" 
 
-#define  InterruptError_exc_DOC "SQLITE_INTERRUPT <https://sqlite.org/rescode.html#interrupt>`__.\n" \
+#define  InterruptError_exc_DOC "`SQLITE_INTERRUPT <https://sqlite.org/rescode.html#interrupt>`__.\n" \
 "Operation terminated by `sqlite3_interrupt\n" \
 "<https://sqlite.org/c3ref/interrupt.html>`_ - use\n" \
 ":meth:`Connection.interrupt`.\n" 

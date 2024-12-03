@@ -244,26 +244,25 @@ def fork_checker() -> None:
     other's work and interfere with each other's locks.)
 
     One example of how you may end up using fork is if you use the
-    `multiprocessing module
-    <https://docs.python.org/3/library/multiprocessing.html>`__ which can use
+    :mod:`multiprocessing module <multiprocessing>` which can use
     fork to make child processes.
 
-    If you do use fork or multiprocessing on a platform that supports
-    fork then you **must** ensure database connections and their objects
+    If you do use fork or multiprocessing on a platform that supports fork
+    then you **must** ensure database connections and their objects
     (cursors, backup, blobs etc) are not used in the parent process, or
     are all closed before calling fork or starting a `Process
     <https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions>`__.
-    (Note you must call close to ensure the underlying SQLite objects
-    are closed.  It is also a good idea to call `gc.collect(2)
-    <https://docs.python.org/3/library/gc.html#gc.collect>`__ to ensure
-    anything you may have missed is also deallocated.)
+    (Note you must call close to ensure the underlying SQLite objects are
+    closed.  It is also a good idea to call :func:`gc.collect(2)
+    <gc.collect>` to ensure anything you may have missed is also
+    deallocated.)
 
     Once you run this method, extra checking code is inserted into
     SQLite's mutex operations (at a very small performance penalty) that
     verifies objects are not used across processes.  You will get a
     :exc:`ForkingViolationError` if you do so.  Note that due to the way
     Python's internals work, the exception will be delivered to
-    `sys.excepthook` in addition to the normal exception mechanisms and
+    :func:`sys.excepthook` in addition to the normal exception mechanisms and
     may be reported by Python after the line where the issue actually
     arose.  (Destructors of objects you didn't close also run between
     lines.)
@@ -483,8 +482,7 @@ def vfs_details() -> list[dict[str, int | str]]:
     <https://sqlite.org/c3ref/vfs.html>`__ data structure, and their
     corresponding values.
 
-    Pointers are converted using `PyLong_FromVoidPtr
-    <https://docs.python.org/3/c-api/long.html?highlight=voidptr#c.PyLong_FromVoidPtr>`__.
+    Pointers are converted using :c:func:`PyLong_FromVoidPtr`.
 
     Calls: `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__"""
     ...
@@ -1283,8 +1281,7 @@ class Connection:
         <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.
 
         If you want data returned back then the *pointer* needs to point to
-        something mutable.  Here is an example using `ctypes
-        <https://docs.python.org/3/library/ctypes.html>`_ of
+        something mutable.  Here is an example using :mod:`ctypes` of
         passing a Python dictionary to :meth:`~VFSFile.xFileControl` which
         can then modify the dictionary to set return values::
 
@@ -2938,8 +2935,8 @@ class VTCursor(Protocol):
     """.. note::
 
       There is no actual *VTCursor* class - it is shown this way for
-      documentation convenience and is present as a `typing protocol
-      <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+      documentation convenience and is present as a :class:`typing protocol
+      <typing.Protocol>`.
 
 
     The :class:`VTCursor` object is used for iterating over a table.
@@ -3022,8 +3019,8 @@ class VTModule(Protocol):
     """.. note::
 
       There is no actual *VTModule* class - it is shown this way for
-      documentation convenience and is present as a `typing protocol
-      <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+      documentation convenience and is present as a :class:`typing protocol
+      <typing.Protocol>`.
 
     A module instance is used to create the virtual tables.  Once you have
     a module object, you register it with a connection by calling
@@ -3097,8 +3094,8 @@ class VTTable(Protocol):
     """.. note::
 
       There is no actual *VTTable* class - it is shown this way for
-      documentation convenience and is present as a `typing protocol
-      <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+      documentation convenience and is present as a :class:`typing protocol
+      <typing.Protocol>`.
 
     The :class:`VTTable` object contains knowledge of the indices, makes
     cursors and can perform transactions.
@@ -4635,7 +4632,7 @@ class InternalError(Error):
     longer used) Internal logic error in SQLite."""
 
 class InterruptError(Error):
-    """SQLITE_INTERRUPT <https://sqlite.org/rescode.html#interrupt>`__.
+    """`SQLITE_INTERRUPT <https://sqlite.org/rescode.html#interrupt>`__.
     Operation terminated by `sqlite3_interrupt
     <https://sqlite.org/c3ref/interrupt.html>`_ - use
     :meth:`Connection.interrupt`."""

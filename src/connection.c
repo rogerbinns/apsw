@@ -3609,8 +3609,7 @@ Connection_create_collation(Connection *self, PyObject *const *fast_args, Py_ssi
   <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.
 
   If you want data returned back then the *pointer* needs to point to
-  something mutable.  Here is an example using `ctypes
-  <https://docs.python.org/3/library/ctypes.html>`_ of
+  something mutable.  Here is an example using :mod:`ctypes` of
   passing a Python dictionary to :meth:`~VFSFile.xFileControl` which
   can then modify the dictionary to set return values::
 

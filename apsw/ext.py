@@ -104,7 +104,7 @@ class DataClassRowFactory:
         return make_dataclass(f"{ self.__class__.__name__ }{ suffix }", zip(names, types), **kwargs), tuple(names)
 
     def get_type(self, t: str | None) -> Any:
-        """Returns the `type hint <https://docs.python.org/3/library/typing.html>`__ to use in the dataclass based on the type in the :meth:`description <apsw.Cursor.get_description>`
+        """Returns the :mod:`type hint <typing>` to use in the dataclass based on the type in the :meth:`description <apsw.Cursor.get_description>`
 
         `SQLite's affinity rules  <https://www.sqlite.org/datatype3.html#affname>`__ are followed.
 

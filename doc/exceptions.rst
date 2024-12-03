@@ -35,10 +35,8 @@ Unraisable
 There are a few places where it is not possible for a Python exception
 to be reported to SQLite as an error, and Python C code does not allow
 destructors to report exceptions.  These exceptions are reported via
-`sys.unraisablehook
-<https://docs.python.org/3/library/sys.html#sys.unraisablehook>`__,
-and if that is not present then `sys.excepthook
-<https://docs.python.org/3/library/sys.html#sys.excepthook>`__.
+:func:`sys.unraisablehook`, and if that is not present then
+:func:`sys.excepthook`.
 
 `sqlite3_log <https://www.sqlite.org/c3ref/log.html>`__ is also called
 so that you will have the context of when the exception happened

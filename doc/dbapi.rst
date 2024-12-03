@@ -78,9 +78,7 @@ as an iterator to get the results (if any).
 it as an iterator to get the results (if any).
 
 fetchone is not available. Use the cursor as an iterator, or call
-Python's `next function
-<https://docs.python.org/3/library/functions.html?highlight=next#next>`__
-to get the next row.
+Python's :func:`next function <next>` to get the next row.
 
 fetchmany is not available. Use :meth:`~Cursor.fetchall` to get all
 remaining results.

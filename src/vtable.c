@@ -787,8 +787,8 @@ static PyTypeObject SqliteIndexInfoType = {
 .. note::
 
   There is no actual *VTModule* class - it is shown this way for
-  documentation convenience and is present as a `typing protocol
-  <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+  documentation convenience and is present as a :class:`typing protocol
+  <typing.Protocol>`.
 
 A module instance is used to create the virtual tables.  Once you have
 a module object, you register it with a connection by calling
@@ -1007,8 +1007,8 @@ apswvtabConnect(sqlite3 *db, void *pAux, int argc, const char *const *argv, sqli
   .. note::
 
     There is no actual *VTTable* class - it is shown this way for
-    documentation convenience and is present as a `typing protocol
-    <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+    documentation convenience and is present as a :class:`typing protocol
+    <typing.Protocol>`.
 
   The :class:`VTTable` object contains knowledge of the indices, makes
   cursors and can perform transactions.
@@ -2284,8 +2284,8 @@ apswvtabIntegrity(sqlite3_vtab *pVtab, const char *zSchema, const char *zName, i
 .. note::
 
   There is no actual *VTCursor* class - it is shown this way for
-  documentation convenience and is present as a `typing protocol
-  <https://docs.python.org/3/library/typing.html#typing.Protocol>`__.
+  documentation convenience and is present as a :class:`typing protocol
+  <typing.Protocol>`.
 
 
 The :class:`VTCursor` object is used for iterating over a table.

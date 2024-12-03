@@ -246,18 +246,16 @@ This is sample output with the following options: **--sql**,
 Each row starts with the following fields:
 
   id
-    This is the `id
-    <https://docs.python.org/3/library/functions.html#id>`_ of the
+    This is the :func:`id` of the
     :class:`Cursor` or :class:`Connection`.  You can easily `filter
-    <https://en.wikipedia.org/wiki/Grep>`_ the log if you just want to
+    <https://en.wikipedia.org/wiki/Grep>`__ the log if you just want to
     find out what happened on a specific cursor or connection.
 
   timestamp
     This is time since the program started in seconds
 
   threadid
-    The unique `thread identifier
-    <https://docs.python.org/library/thread.html#thread.get_ident>`_
+    The unique :func:`thread identifier <threading.get_ident>`
 
 
 The remainder of the line has one of the following forms:
