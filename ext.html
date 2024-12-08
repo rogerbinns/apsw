@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Various interesting and useful bits of functionality &mdash; APSW 3.47.1.0 documentation</title>
+  <title>Various interesting and useful bits of functionality &mdash; APSW 3.47.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=f152ac2d"></script>
+      <script src="_static/documentation_options.js?v=632d72c6"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -120,6 +120,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.analyze_pages"><code class="docutils literal notranslate"><span class="pre">analyze_pages()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ext.page_usage_to_svg"><code class="docutils literal notranslate"><span class="pre">page_usage_to_svg()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.format_query_table"><code class="docutils literal notranslate"><span class="pre">format_query_table()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.VTColumnAccess"><code class="docutils literal notranslate"><span class="pre">VTColumnAccess</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ext.VTColumnAccess.By_Index"><code class="docutils literal notranslate"><span class="pre">VTColumnAccess.By_Index</span></code></a></li>
@@ -297,7 +298,8 @@ into a virtual table source.</p>
 <section id="database-storage-usage">
 <h2>Database storage usage<a class="headerlink" href="#database-storage-usage" title="Link to this heading"></a></h2>
 <p>Use <a class="reference internal" href="#apsw.ext.analyze_pages" title="apsw.ext.analyze_pages"><code class="xref py py-func docutils literal notranslate"><span class="pre">analyze_pages()</span></code></a> to find out how much storage is in use, and
-how fragmented it is.  See <a class="reference download internal" download="" href="_downloads/91c3348d532ed46bb5587ad97e9cb6e9/analyze_pages.txt"><code class="xref download docutils literal notranslate"><span class="pre">example</span> <span class="pre">output</span></code></a>.</p>
+how fragmented it is.  See <a class="reference external" href="_static/samples/analyze_pages.txt">example output</a>.  It is also available
+graphically with <a class="reference internal" href="#apsw.ext.page_usage_to_svg" title="apsw.ext.page_usage_to_svg"><code class="xref py py-func docutils literal notranslate"><span class="pre">page_usage_to_svg()</span></code></a> - <a class="reference external" href="_static/samples/chinook.svg">example output</a>.</p>
 </section>
 <section id="accessing-result-rows-by-column-name">
 <h2>Accessing result rows by column name<a class="headerlink" href="#accessing-result-rows-by-column-name" title="Link to this heading"></a></h2>
@@ -402,7 +404,7 @@ to reduce memory consumption.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.ext.DataClassRowFactory.get_type">
 <span class="sig-name descname"><span class="pre">get_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#DataClassRowFactory.get_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.DataClassRowFactory.get_type" title="Link to this definition"></a></dt>
-<dd><p>Returns the <a class="reference external" href="https://docs.python.org/3/library/typing.html">type hint</a> to use in the dataclass based on the type in the <a class="reference internal" href="cursor.html#apsw.Cursor.get_description" title="apsw.Cursor.get_description"><code class="xref py py-meth docutils literal notranslate"><span class="pre">description</span></code></a></p>
+<dd><p>Returns the <a class="reference external" href="https://docs.python.org/3/library/typing.html#module-typing" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">type</span> <span class="pre">hint</span></code></a> to use in the dataclass based on the type in the <a class="reference internal" href="cursor.html#apsw.Cursor.get_description" title="apsw.Cursor.get_description"><code class="xref py py-meth docutils literal notranslate"><span class="pre">description</span></code></a></p>
 <p><a class="reference external" href="https://www.sqlite.org/datatype3.html#affname">SQLite’s affinity rules</a> are followed.</p>
 <p>The values have no effect on how your program runs, but can be used by tools like
 mypy.  Column information like whether <cite>null</cite> is allowed is not present, so
@@ -831,7 +833,7 @@ including sizing information, pointers to overflow etc</p>
 <dd><p>Summarizes page usage for the database</p>
 <p>The <a class="reference external" href="https://www.sqlite.org/dbstat.html">dbstat</a> virtual table
 is used to gather statistics.</p>
-<p>See <a class="reference download internal" download="" href="_downloads/91c3348d532ed46bb5587ad97e9cb6e9/analyze_pages.txt"><code class="xref download docutils literal notranslate"><span class="pre">example</span> <span class="pre">output</span></code></a>.</p>
+<p>See <a class="reference external" href="_static/samples/analyze_pages.txt">example output</a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -878,6 +880,29 @@ check.  If the table is not present then calling this function
 will give <a class="reference internal" href="exceptions.html#apsw.SQLError" title="apsw.SQLError"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.SQLError</span></code></a> with message <code class="docutils literal notranslate"><span class="pre">no</span> <span class="pre">such</span> <span class="pre">table:</span>
 <span class="pre">dbstat</span></code>.</p>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.ext.page_usage_to_svg">
+<span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">page_usage_to_svg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TextIO" title="(in Python v3.13)"><span class="pre">TextIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'main'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/ext.html#page_usage_to_svg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.page_usage_to_svg" title="Link to this definition"></a></dt>
+<dd><p>Visualize database space usage as a <a class="reference external" href="https://en.wikipedia.org/wiki/SVG">SVG</a></p>
+<p>You can hover or click on segments to get more details.  The
+centre circle shows information about the database as a whole, the
+middle ring shows usage grouped by database (combing indices,
+shadow tables for virtual tables), while the outer ring shows each
+index and table separately.</p>
+<p>Uses <a class="reference internal" href="#apsw.ext.analyze_pages" title="apsw.ext.analyze_pages"><code class="xref py py-func docutils literal notranslate"><span class="pre">analyze_pages()</span></code></a> to gather the information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>con</strong> – Connection to query</p></li>
+<li><p><strong>out</strong> – Where the svg is written to.  You can use
+<a class="reference external" href="https://docs.python.org/3/library/io.html#io.StringIO" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">io.StringIO</span></code></a> if you want it as a string.</p></li>
+<li><p><strong>schema</strong> – Which attached database to query</p></li>
+</ul>
+</dd>
+</dl>
+<p>See <a class="reference external" href="_static/samples/chinook.svg">example output</a>.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -1635,7 +1660,7 @@ directly expressed in the query itself</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 25, 2024.
+      <span class="lastupdated">Last updated on Dec 08, 2024.
       </span></p>
   </div>
 

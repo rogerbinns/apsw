@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.47.1.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.47.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=f152ac2d"></script>
+      <script src="_static/documentation_options.js?v=632d72c6"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -192,9 +192,9 @@ and attribute documentation.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.47.1.0</span>
-<span class="go">SQLite header version 3047001</span>
-<span class="go">   SQLite lib version 3.47.1</span>
+<span class="go">         APSW version 3.47.2.0</span>
+<span class="go">SQLite header version 3047002</span>
+<span class="go">   SQLite lib version 3.47.2</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -822,11 +822,11 @@ conversion, both for types you define and for other types.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 11, 25, 9, 48, 17, 121760))</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 12, 8, 7, 15, 20, 138917))</span>
 <span class="go">querying data</span>
 <span class="go">column 0 = Point(5.2, 7.6)</span>
 <span class="go">column 1 = (3+4j)</span>
-<span class="go">column 2 = datetime.datetime(2024, 11, 25, 17, 48, 17, 121760, tzinfo=datetime.timezone.utc)</span>
+<span class="go">column 2 = datetime.datetime(2024, 12, 8, 15, 15, 20, 138917, tzinfo=datetime.timezone.utc)</span>
 </pre></div>
 </div>
 </section>
@@ -1195,7 +1195,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9958510046,)</span>
+<span class="go">(9984270826,)</span>
 </pre></div>
 </div>
 </section>
@@ -1291,7 +1291,8 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.set_co
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">in commit hook</span>
-<span class="go">commits okay at this time</span>
+<span class="go">no commits out of hours</span>
+<span class="go">commit was not allowed</span>
 </pre></div>
 </div>
 </section>
@@ -1559,7 +1560,7 @@ useful instead.</p>
 <span class="go">│ .local     │ 2136       │</span>
 <span class="go">│ .o         │ 9360       │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11255359   │</span>
+<span class="go">│ .py        │ 11255420   │</span>
 <span class="go">│ .pyc       │ 11434843   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
 <span class="go">│ .sh        │ 2652       │</span>
@@ -1806,9 +1807,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.47.1.0)</span>
-<span class="go">-- SQLite version 3.47.1</span>
-<span class="go">-- Date: Mon Nov 25 09:48:17 2024</span>
+<span class="go">-- SQLite dump (by APSW 3.47.2.0)</span>
+<span class="go">-- SQLite version 3.47.2</span>
+<span class="go">-- Date: Sun Dec  8 07:15:20 2024</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1848,8 +1849,8 @@ for per connection statistics.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 513824 max 2495736</span>
-<span class="go">4968 bytes used to store schema for this connection</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 509184 max 2491056</span>
+<span class="go">4680 bytes used to store schema for this connection</span>
 </pre></div>
 </div>
 </section>
@@ -1905,12 +1906,12 @@ for per connection statistics.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">code is  SQLITE_TRACE_STMT</span>
-<span class="go">{&#39;code&#39;: 1, &#39;id&#39;: 329480712, &#39;total_changes&#39;: 146, &#39;trigger&#39;: False}</span>
+<span class="go">{&#39;code&#39;: 1, &#39;id&#39;: 385403960, &#39;total_changes&#39;: 146, &#39;trigger&#39;: False}</span>
 <span class="go">code is  SQLITE_TRACE_ROW</span>
-<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 329480712}</span>
+<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 385403960}</span>
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;id&#39;: 329480712,</span>
+<span class="go"> &#39;id&#39;: 385403960,</span>
 <span class="go"> &#39;nanoseconds&#39;: 17000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
@@ -1943,14 +1944,14 @@ block of code does.  We use the same query from above.</p>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.3</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.022</span>
-<span class="go">                       Wall clock 1.322</span>
-<span class="go">        Maximum resident set size 1,164</span>
-<span class="go">             Page faults - no I/O 198</span>
-<span class="go">     Involuntary context switches 50</span>
-<span class="go">       Voluntary context switches 1</span>
-<span class="go">              Time in system mode 0.001</span>
-<span class="go">                Time in user mode 0.021</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.020</span>
+<span class="go">                       Wall clock 1.324</span>
+<span class="go">           Block input operations 176</span>
+<span class="go">        Maximum resident set size 768</span>
+<span class="go">             Page faults - no I/O 166</span>
+<span class="go">     Involuntary context switches 4</span>
+<span class="go">       Voluntary context switches 3</span>
+<span class="go">                Time in user mode 0.019</span>
 <span class="go">           SQLite full table scan 1,365</span>
 <span class="go">           SQLite sort operations 2</span>
 <span class="go">             SQLite vm operations 1,015,351</span>
@@ -2002,11 +2003,11 @@ code.  This also shows behind the scenes SQL.</p>
 <span class="go">    Time: 0.000  Changes: 4</span>
 <span class="go">&gt; select count(*) from pragma_function_list</span>
 <span class="go">V PRAGMA function_list</span>
-<span class="go">    Time: 0.001  Rows: 206  VmStep: 1,446  Mem: 70.7KB</span>
+<span class="go">    Time: 0.000  Rows: 206  VmStep: 1,446  Mem: 70.7KB</span>
 <span class="go">&lt; select count(*) from pragma_function_list</span>
-<span class="go">    Time: 0.001  Rows: 1  VmStep: 423</span>
+<span class="go">    Time: 0.000  Rows: 1  VmStep: 423</span>
 <span class="go">&gt; RELEASE SAVEPOINT &quot;_apsw-0&quot;</span>
-<span class="go">    Time: 0.006</span>
+<span class="go">    Time: 0.007</span>
 </pre></div>
 </div>
 </section>
@@ -2127,7 +2128,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 25, 2024.
+      <span class="lastupdated">Last updated on Dec 08, 2024.
       </span></p>
   </div>
 

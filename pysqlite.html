@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>sqlite3 module differences &mdash; APSW 3.47.1.0 documentation</title>
+  <title>sqlite3 module differences &mdash; APSW 3.47.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=f152ac2d"></script>
+      <script src="_static/documentation_options.js?v=632d72c6"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -109,9 +109,9 @@
              
   <section id="sqlite3-module-differences">
 <span id="pysqlitediffs"></span><h1>sqlite3 module differences<a class="headerlink" href="#sqlite3-module-differences" title="Link to this heading"></a></h1>
-<p>The <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html">sqlite3</a>
-standard module and APSW approached the problem of providing access
-to SQLite from Python from fundamentally different directions.</p>
+<p>The <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> standard module and APSW approached the problem of
+providing access to SQLite from Python from fundamentally different
+directions.</p>
 <p>APSW provides access in whatever way is normal for SQLite.  It makes
 no effort to hide how SQLite is different from other databases.  It
 also uses that extra detailed integration to provide a significantly
@@ -211,8 +211,7 @@ for the block</p></li>
 <li><p>sqlite3 swallows exceptions in your callbacks making it far harder
 to debug problems. That also prevents you from raising exceptions in
 your callbacks to be handled in your code that called SQLite.
-sqlite3 does let you turn on <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html?highlight=sqlite#sqlite3.enable_callback_tracebacks">printing of tracebacks</a>
-but that is a poor substitute.</p>
+sqlite3 does let you turn on <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.enable_callback_tracebacks" title="(in Python v3.13)"><code class="xref py py-func docutils literal notranslate"><span class="pre">printing</span> <span class="pre">of</span> <span class="pre">tracebacks</span></code></a> but that is a poor substitute.</p>
 <p>APSW does the right thing as demonstrated by this example.  APSW
 converts Python errors into SQLite errors, so SQLite is aware errors
 happened.</p>
@@ -307,7 +306,7 @@ libraries that abstract away the database layer.</p></li>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 25, 2024.
+      <span class="lastupdated">Last updated on Dec 08, 2024.
       </span></p>
   </div>
 

@@ -10,6 +10,13 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.47.2.0
+========
+
+Added :func:`apsw.ext.page_usage_to_svg` which shows database usage as
+SVG (`example <_static/samples/chinook.svg>`__).  Available as shell
+:ref:`.pages-svg command <shell-cmd-pages-svg>`.
+
 3.47.1.0
 ========
 
@@ -216,10 +223,8 @@ passing and receiving positional and keyword arguments. (:issue:`477`,
 :issue:`446`):
 
 * Conversion of arguments from Python values to C values drops generic
-  `PyArg_ParseTupleAndKeywords
-  <https://docs.python.org/3/c-api/arg.html#c.PyArg_ParseTupleAndKeywords>`__
-  in favour of direct processing which is more efficient and allows
-  better exception messages.
+  :c:func:`PyArg_ParseTupleAndKeywords` in favour of direct processing
+  which is more efficient and allows better exception messages.
 
 * Running :ref:`speedtest` with a VFS that inherits all methods went
   from being 17% slower than pure SQLite to 2% slower.
@@ -331,9 +336,8 @@ Ensure that all applicable options are implemented for
 
 Added :func:`apsw.sleep` (:issue:`419`)
 
-Strings for :meth:`apsw.VFS.xNextSystemCall` are `interned
-<https://docs.python.org/3/c-api/unicode.html#c.PyUnicode_InternInPlace>`__
-avoiding memory leaks. (:issue:`430`)
+Strings for :meth:`apsw.VFS.xNextSystemCall` are :c:func:`interned
+<PyUnicode_InternInPlace>` avoiding memory leaks. (:issue:`430`)
 
 Detect unbound recursion not handled by CPython, and handle better.
 (:issue:`425`)
@@ -433,13 +437,11 @@ Ensure all SQLite APIs are wrapped. :attr:`Connection.system_errno`,
 :meth:`apsw.hard_heap_limit`. :meth:`Connection.drop_modules`
 (:issue:`382`)
 
-When an :ref:`unraisable exception <unraisable>` happens,
-`sqlite3_log <https://www.sqlite.org/c3ref/log.html>`__ is now called
-so you will have context within SQLite's actions.  `sys.unraisablehook
-<https://docs.python.org/3/library/sys.html#sys.unraisablehook>`__ is
-now called first, and if it doesn't exist then `sys.excepthook
-<https://docs.python.org/3/library/sys.html#sys.excepthook>`__ as
-before.  (:issue:`385`)
+When an :ref:`unraisable exception <unraisable>` happens, `sqlite3_log
+<https://www.sqlite.org/c3ref/log.html>`__ is now called so you will
+have context within SQLite's actions.  :func:`sys.unraisablehook` is
+now called first, and if it doesn't exist then :func:`sys.excepthook`
+as before.  (:issue:`385`)
 
 When the wrong type is given for a function argument, the error
 message now includes the parameter name and function signature.
@@ -449,8 +451,7 @@ Let SQLite do size checking instead of APSW for strings and blobs.
 (:issue:`387`)
 
 Added :meth:`apsw.ext.log_sqlite` which installs a handler that
-forwards SQLite messages to the `logging module
-<https://docs.python.org/3/library/logging.html>`__.
+forwards SQLite messages to the :mod:`logging module <logging>`.
 
 Added :meth:`set_default_vfs` and :meth:`unregister_vfs` taking vfs
 names.  The test suite also unregisters `ZipVFS
@@ -474,9 +475,8 @@ setters, including :attr:`Connection.in_transaction`,
 
 Completed: To the extent permitted by CPython APIs every item has the
 same docstring as this documentation.  Every API can use named
-parameters.  The `type stubs
-<https://github.com/rogerbinns/apsw/blob/master/apsw/__init__.pyi>`__
-cover everything including constants.  The type stubs also include
+parameters.  The :source:`type stubs <apsw/__init__.pyi>` cover
+everything including constants.  The type stubs also include
 documentation for everything, which for example Visual Studio Code
 displays as you type or hover.  There is a single source of
 documentation in the source code, which is then automatically
@@ -1690,8 +1690,7 @@ it will be automatically included and *async_initialize* called.
 A :meth:`fork_checker` is available which turns on detection when you
 have used SQLite objects across a fork (a **very** bad thing).  This
 is possible on Unix like operating systems, especially if you use the
-`multiprocessing module
-<https://docs.python.org/3/library/multiprocessing.html>`__.
+:mod:`multiprocessing module <multiprocessing>`.
 
 Extension loading is now compiled in by default when using the
 amalgamation and compiled out when using existing libraries.  This is
@@ -1882,8 +1881,7 @@ compatible with XP.  Thanks to Rudolf Gaertner for assistance in
 detecting and diagnosing this issue.
 
 :class:`Connections <Connection>`, :class:`cursors <Cursor>` and
-:class:`blobs <Blob>` can be used by `weak references
-<https://docs.python.org/3/library/weakref.html>`_.
+:class:`blobs <Blob>` can be used by :mod:`weak references <weakref>`.
 
 You can now install :class:`Connection` wide :meth:`execution
 <Connection.set_exec_trace>` and :meth:`row <Connection.set_row_trace>`
@@ -2153,14 +2151,13 @@ necessary.
 
 All strings are returned as unicode.
 
-`PyErr_WriteUnraisable
-<https://docs.python.org/3/c-api/exceptions.html?highlight=pyerr_writeunraisable#c.PyErr_WriteUnraisable>`__
-was used for errors in destructors. Unfortunately it is almost
-completely useless, merely printing *str* of the object and exception.
-This doesn't help in finding where in your code the issue arose so you
-could fix it. An internal APSW implementation generates a traceback
-and calls :func:`sys.excepthook`, the default implementation of which
-prints the exception and the traceback to sys.stderr.
+:c:func:`PyErr_WriteUnraisable` was used for errors in destructors.
+Unfortunately it is almost completely useless, merely printing ``str``
+of the object and exception.  This doesn't help in finding where in
+your code the issue arose so you could fix it. An internal APSW
+implementation generates a traceback and calls :func:`sys.excepthook`,
+the default implementation of which prints the exception and the
+traceback to sys.stderr.
 
   .. Note:: The line number reported in the traceback is often off by
             1. This is because the destructors run "between" lines of
@@ -2208,9 +2205,9 @@ APSW had the following changes:
 You can use this release against any release of SQLite 3 from 3.3.5
 onwards. A bug was also fixed when reporting an error during the
 cleanup of an aggregate function if there had also been an error in
-the step function.  (`PyErr_WriteUnraisable(NULL)
-<https://docs.python.org/3/c-api/exceptions.html?highlight=pyerr_writeunraisable#c.PyErr_WriteUnraisable>`__
-crashed on some versions of Python but not others.)
+the step function.  (:c:func:`PyErr_WriteUnraisable(NULL)
+<PyErr_WriteUnraisable>` crashed on some versions of Python but not
+others.)
 
 SQLite added several functions for returning metadata about result
 column sets. You have to compile SQLite with

@@ -1,11 +1,12 @@
 About
 =====
 
-**APSW** |version| **released** |today|
+**APSW** |version| **released** |today|.
 
 Use with `SQLite <https://sqlite.org/>`__ 3.47.1 or later, `Python
 <https://www.python.org/downloads/>`__ 3.9 and later.
 
+APSW has been under continuous development since 2004.
 
 What APSW does
 --------------
@@ -28,8 +29,9 @@ APSW and sqlite3 <pysqlite>`.
 Dependencies
 ------------
 
-APSW has no dependencies other than Python itself, and SQLite which
-you can provide or have APSW fetch and include statically in the
+APSW has no dependencies other than Python itself, and SQLite which is
+included in PyPI releases.  When doing your own builds, you can
+provide SQLite, or have APSW fetch it and include it statically in the
 extension.
 
 Hosting
@@ -80,7 +82,7 @@ compatibility with the `file format
 
 APSW wraps the `SQLite C API
 <https://www.sqlite.org/c3ref/intro.html>`__.  That means when SQLite
-adds new constant or API, then so does APSW.  You can think of APSW as
+adds new constants or APIs, then so does APSW.  You can think of APSW as
 the Python expression of SQLite's C API.  You can `lookup
 <genindex.html#S>`__ SQLite APIs to find which APSW functions and
 attributes call them.

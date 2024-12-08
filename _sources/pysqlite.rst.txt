@@ -5,9 +5,9 @@ sqlite3 module differences
 
 .. currentmodule:: apsw
 
-The `sqlite3 <https://docs.python.org/3/library/sqlite3.html>`__
-standard module and APSW approached the problem of providing access
-to SQLite from Python from fundamentally different directions.
+The :mod:`sqlite3` standard module and APSW approached the problem of
+providing access to SQLite from Python from fundamentally different
+directions.
 
 APSW provides access in whatever way is normal for SQLite.  It makes
 no effort to hide how SQLite is different from other databases.  It
@@ -127,9 +127,8 @@ module:
 * sqlite3 swallows exceptions in your callbacks making it far harder
   to debug problems. That also prevents you from raising exceptions in
   your callbacks to be handled in your code that called SQLite.
-  sqlite3 does let you turn on `printing of tracebacks
-  <https://docs.python.org/3/library/sqlite3.html?highlight=sqlite#sqlite3.enable_callback_tracebacks>`__
-  but that is a poor substitute.
+  sqlite3 does let you turn on :func:`printing of tracebacks
+  <sqlite3.enable_callback_tracebacks>` but that is a poor substitute.
 
   APSW does the right thing as demonstrated by this example.  APSW
   converts Python errors into SQLite errors, so SQLite is aware errors

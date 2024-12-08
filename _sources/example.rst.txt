@@ -68,9 +68,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so
-             APSW version 3.47.1.0
-    SQLite header version 3047001
-       SQLite lib version 3.47.1
+             APSW version 3.47.2.0
+    SQLite header version 3047002
+       SQLite lib version 3.47.2
        Using amalgamation True
 
 
@@ -869,11 +869,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 11, 25, 9, 48, 17, 121760))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2024, 12, 8, 7, 15, 20, 138917))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2024, 11, 25, 17, 48, 17, 121760, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2024, 12, 8, 15, 15, 20, 138917, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Query details (example code)
@@ -1291,7 +1291,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9958510046,)
+    (9984270826,)
 
 
 .. index:: File Control (example code)
@@ -1410,7 +1410,8 @@ with  :meth:`Connection.set_commit_hook`.
 .. code-block:: output
 
     in commit hook
-    commits okay at this time
+    no commits out of hours
+    commit was not allowed
 
 
 .. index:: Update hook (example code)
@@ -1703,7 +1704,7 @@ useful instead.
     │ .local     │ 2136       │
     │ .o         │ 9360       │
     │ .ps1       │ 9033       │
-    │ .py        │ 11255359   │
+    │ .py        │ 11255420   │
     │ .pyc       │ 11434843   │
     │ .rst       │ 9561       │
     │ .sh        │ 2652       │
@@ -1983,9 +1984,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.47.1.0)
-    -- SQLite version 3.47.1
-    -- Date: Mon Nov 25 09:48:17 2024
+    -- SQLite dump (by APSW 3.47.2.0)
+    -- SQLite version 3.47.2
+    -- Date: Sun Dec  8 07:15:20 2024
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2036,8 +2037,8 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 513824 max 2495736
-    4968 bytes used to store schema for this connection
+    SQLite memory usage 509184 max 2491056
+    4680 bytes used to store schema for this connection
 
 
 .. index:: Tracing (example code)
@@ -2103,12 +2104,12 @@ This shows using :meth:`Connection.trace_v2`
 .. code-block:: output
 
     code is  SQLITE_TRACE_STMT
-    {'code': 1, 'id': 329480712, 'total_changes': 146, 'trigger': False}
+    {'code': 1, 'id': 385403960, 'total_changes': 146, 'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 329480712}
+    {'code': 4, 'id': 385403960}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 329480712,
+     'id': 385403960,
      'nanoseconds': 17000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
@@ -2152,14 +2153,14 @@ Only statistics that have changed are shown in the summary. There are
 
 .. code-block:: output
 
-                           Total CPU consumption 0.022
-                                      Wall clock 1.322
-                       Maximum resident set size 1,164
-                            Page faults - no I/O 198
-                    Involuntary context switches 50
-                      Voluntary context switches 1
-                             Time in system mode 0.001
-                               Time in user mode 0.021
+                           Total CPU consumption 0.020
+                                      Wall clock 1.324
+                          Block input operations 176
+                       Maximum resident set size 768
+                            Page faults - no I/O 166
+                    Involuntary context switches 4
+                      Voluntary context switches 3
+                               Time in user mode 0.019
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,351
@@ -2222,11 +2223,11 @@ code.  This also shows behind the scenes SQL.
          Time: 0.000  Changes: 4
      > select count(*) from pragma_function_list
      V PRAGMA function_list
-         Time: 0.001  Rows: 206  VmStep: 1,446  Mem: 70.7KB
+         Time: 0.000  Rows: 206  VmStep: 1,446  Mem: 70.7KB
      < select count(*) from pragma_function_list
-         Time: 0.001  Rows: 1  VmStep: 423
+         Time: 0.000  Rows: 1  VmStep: 423
      > RELEASE SAVEPOINT "_apsw-0"
-         Time: 0.006
+         Time: 0.007
     
 
 

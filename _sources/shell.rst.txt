@@ -143,6 +143,7 @@ leading ``.`` (period) - for example::
   * :ref:`open <shell-cmd-open>`
   * :ref:`output <shell-cmd-output>`
   * :ref:`pages <shell-cmd-pages>`
+  * :ref:`pages_svg <shell-cmd-pages-svg>`
   * :ref:`parameter <shell-cmd-parameter>`
   * :ref:`print <shell-cmd-print>`
   * :ref:`prompt <shell-cmd-prompt>`
@@ -631,6 +632,18 @@ pages SCOPE
 
 0 - shows the database as a whole. 1 - groups by each table, including its
 indices.  2 - shows each table and index separately.
+
+.. _shell-cmd-pages-svg:
+.. index::
+    single: pages-svg (Shell command)
+
+pages-svg ?OUTFILENAME?
+-----------------------
+
+*Shows space usage in a graphic*
+
+If you do not specify a filename, then a temporary file is created and the
+browser invoked to show it.
 
 .. _shell-cmd-parameter:
 .. index::

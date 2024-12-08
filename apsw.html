@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APSW Module &mdash; APSW 3.47.1.0 documentation</title>
+  <title>APSW Module &mdash; APSW 3.47.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=f152ac2d"></script>
+      <script src="_static/documentation_options.js?v=632d72c6"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -207,9 +207,9 @@
 module have process wide effects.</p>
 <section id="type-annotations">
 <span id="type-stubs"></span><h2>Type Annotations<a class="headerlink" href="#type-annotations" title="Link to this heading"></a></h2>
-<p>Comprehensive <a class="reference external" href="https://docs.python.org/3/library/typing.html">type annotations</a> <a class="reference external" href="https://github.com/rogerbinns/apsw/blob/master/apsw/__init__.pyi">are included</a>,
-and your code can be checked using tools like <a class="reference external" href="https://mypy-lang.org/">mypy</a>.  You can refer to the types below for your
-annotations (eg as <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.SQLiteValue</span></code></a>)</p>
+<p>Comprehensive <a class="reference external" href="https://docs.python.org/3/library/typing.html#module-typing" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">type</span> <span class="pre">annotations</span></code></a> <a class="extlink-source reference external" href="https://github.com/rogerbinns/apsw/blob/master/apsw/__init__.pyi">are included</a>, and your code can be checked using tools like
+<a class="reference external" href="https://mypy-lang.org/">mypy</a>.  You can refer to the types below
+for your annotations (eg as <a class="reference internal" href="#apsw.SQLiteValue" title="apsw.SQLiteValue"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.SQLiteValue</span></code></a>)</p>
 <p>Your source files should include:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 </pre></div>
@@ -575,21 +575,21 @@ do this to SQLite then parent and child would both consider
 themselves owners of open databases and silently corrupt each
 other’s work and interfere with each other’s locks.)</p>
 <p>One example of how you may end up using fork is if you use the
-<a class="reference external" href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing module</a> which can use
+<a class="reference external" href="https://docs.python.org/3/library/multiprocessing.html#module-multiprocessing" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">multiprocessing</span> <span class="pre">module</span></code></a> which can use
 fork to make child processes.</p>
-<p>If you do use fork or multiprocessing on a platform that supports
-fork then you <strong>must</strong> ensure database connections and their objects
+<p>If you do use fork or multiprocessing on a platform that supports fork
+then you <strong>must</strong> ensure database connections and their objects
 (cursors, backup, blobs etc) are not used in the parent process, or
 are all closed before calling fork or starting a <a class="reference external" href="https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions">Process</a>.
-(Note you must call close to ensure the underlying SQLite objects
-are closed.  It is also a good idea to call <a class="reference external" href="https://docs.python.org/3/library/gc.html#gc.collect">gc.collect(2)</a> to ensure
-anything you may have missed is also deallocated.)</p>
+(Note you must call close to ensure the underlying SQLite objects are
+closed.  It is also a good idea to call <a class="reference external" href="https://docs.python.org/3/library/gc.html#gc.collect" title="(in Python v3.13)"><code class="xref py py-func docutils literal notranslate"><span class="pre">gc.collect(2)</span></code></a> to ensure anything you may have missed is also
+deallocated.)</p>
 <p>Once you run this method, extra checking code is inserted into
 SQLite’s mutex operations (at a very small performance penalty) that
 verifies objects are not used across processes.  You will get a
 <a class="reference internal" href="exceptions.html#apsw.ForkingViolationError" title="apsw.ForkingViolationError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ForkingViolationError</span></code></a> if you do so.  Note that due to the way
 Python’s internals work, the exception will be delivered to
-<cite>sys.excepthook</cite> in addition to the normal exception mechanisms and
+<a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook" title="(in Python v3.13)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sys.excepthook()</span></code></a> in addition to the normal exception mechanisms and
 may be reported by Python after the line where the issue actually
 arose.  (Destructors of objects you didn’t close also run between
 lines.)</p>
@@ -850,7 +850,7 @@ code.</p>
 <p>Returns a list with details of each <a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">vfs</span></a>.  The detail is a
 dictionary with the keys being the names of the <a class="reference external" href="https://sqlite.org/c3ref/vfs.html">sqlite3_vfs</a> data structure, and their
 corresponding values.</p>
-<p>Pointers are converted using <a class="reference external" href="https://docs.python.org/3/c-api/long.html?highlight=voidptr#c.PyLong_FromVoidPtr">PyLong_FromVoidPtr</a>.</p>
+<p>Pointers are converted using <a class="reference external" href="https://docs.python.org/3/c-api/long.html#c.PyLong_FromVoidPtr" title="(in Python v3.13)"><code class="xref c c-func docutils literal notranslate"><span class="pre">PyLong_FromVoidPtr()</span></code></a>.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vfs_find.html">sqlite3_vfs_find</a></p>
 <dl class="py method" id="index-25">
 <dt class="sig sig-object py" id="apsw.vfs_names">
@@ -1088,7 +1088,7 @@ modules etc. For example:</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 25, 2024.
+      <span class="lastupdated">Last updated on Dec 08, 2024.
       </span></p>
   </div>
 

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.47.1.0 documentation</title>
+  <title>apsw.ext &mdash; APSW 3.47.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=f152ac2d"></script>
+      <script src="../../_static/documentation_options.js?v=632d72c6"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -118,7 +118,10 @@
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">keyword</span>
 <span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">fractions</span> <span class="kn">import</span> <span class="n">Fraction</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">html</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">string</span>
@@ -212,7 +215,7 @@
 <div class="viewcode-block" id="DataClassRowFactory.get_type">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.DataClassRowFactory.get_type">[docs]</a>
     <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the `type hint &lt;https://docs.python.org/3/library/typing.html&gt;`__ to use in the dataclass based on the type in the :meth:`description &lt;apsw.Cursor.get_description&gt;`</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the :mod:`type hint &lt;typing&gt;` to use in the dataclass based on the type in the :meth:`description &lt;apsw.Cursor.get_description&gt;`</span>
 
 <span class="sd">        `SQLite&#39;s affinity rules  &lt;https://www.sqlite.org/datatype3.html#affname&gt;`__ are followed.</span>
 
@@ -1225,7 +1228,7 @@
 <span class="sd">    The `dbstat &lt;https://www.sqlite.org/dbstat.html&gt;`__ virtual table</span>
 <span class="sd">    is used to gather statistics.</span>
 
-<span class="sd">    See :download:`example output &lt;../examples/analyze_pages.txt&gt;`.</span>
+<span class="sd">    See `example output &lt;_static/samples/analyze_pages.txt&gt;`__.</span>
 
 <span class="sd">    :param con: Connection to use</span>
 <span class="sd">    :param scope:</span>
@@ -1346,6 +1349,226 @@
         <span class="n">res</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="n">usage</span>
 
     <span class="k">return</span> <span class="n">res</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">storage</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts number to storage size (KB, MB, GB etc)</span>
+
+<span class="sd">    :meta private:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;0&quot;</span>
+    <span class="n">power</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">1024</span><span class="p">))</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;KB&quot;</span><span class="p">,</span> <span class="s2">&quot;MB&quot;</span><span class="p">,</span> <span class="s2">&quot;GB&quot;</span><span class="p">,</span> <span class="s2">&quot;TB&quot;</span><span class="p">,</span> <span class="s2">&quot;PB&quot;</span><span class="p">,</span> <span class="s2">&quot;EB&quot;</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">power</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="n">suffix</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">B&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">v</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1024</span><span class="o">**</span><span class="n">power</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;.0&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">suffix</span>
+
+
+<div class="viewcode-block" id="page_usage_to_svg">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.page_usage_to_svg">[docs]</a>
+<span class="k">def</span> <span class="nf">page_usage_to_svg</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Visualize database space usage as a `SVG &lt;https://en.wikipedia.org/wiki/SVG&gt;`__</span>
+
+<span class="sd">    You can hover or click on segments to get more details.  The</span>
+<span class="sd">    centre circle shows information about the database as a whole, the</span>
+<span class="sd">    middle ring shows usage grouped by database (combing indices,</span>
+<span class="sd">    shadow tables for virtual tables), while the outer ring shows each</span>
+<span class="sd">    index and table separately.</span>
+
+<span class="sd">    Uses :func:`analyze_pages` to gather the information.</span>
+
+<span class="sd">    :param con: Connection to query</span>
+<span class="sd">    :param out: Where the svg is written to.  You can use</span>
+<span class="sd">       :class:`io.StringIO` if you want it as a string.</span>
+<span class="sd">    :param schema: Which attached database to query</span>
+
+<span class="sd">    See `example output &lt;_static/samples/chinook.svg&gt;`__.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Angles and distances are used within.  They are in the range 0.0</span>
+    <span class="c1"># to 1.0 .</span>
+
+    <span class="c1"># Coordinates are output as int, so this is the scaling factor</span>
+    <span class="n">RADIUS</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="c1"># how much whitespace is outside the circles</span>
+    <span class="n">OVERSCAN</span> <span class="o">=</span> <span class="mf">1.05</span>
+
+    <span class="k">def</span> <span class="nf">colour_for_angle</span><span class="p">(</span><span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># we use r g b each offset by a third of the circle</span>
+        <span class="n">radians</span> <span class="o">=</span> <span class="n">angle</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">third</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+
+        <span class="n">red</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">radians</span><span class="p">)))</span>
+        <span class="n">green</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">third</span> <span class="o">+</span> <span class="n">radians</span><span class="p">)))</span>
+        <span class="n">blue</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">third</span> <span class="o">+</span> <span class="n">third</span> <span class="o">+</span> <span class="n">radians</span><span class="p">)))</span>
+
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;#</span><span class="si">{</span><span class="n">red</span><span class="si">:</span><span class="s2">02x</span><span class="si">}{</span><span class="n">green</span><span class="si">:</span><span class="s2">02x</span><span class="si">}{</span><span class="n">blue</span><span class="si">:</span><span class="s2">02x</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span> <span class="nf">pos_for_angle</span><span class="p">(</span><span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="s2">&quot;give x,y for distance from centre&quot;</span>
+
+        <span class="c1"># the minus bit is because trig has east as 0 but we want north as</span>
+        <span class="c1"># zero</span>
+        <span class="n">radians</span> <span class="o">=</span> <span class="n">angle</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">distance</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">radians</span><span class="p">),</span> <span class="n">distance</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">radians</span><span class="p">)</span>
+
+    <span class="c1"># these two are used in fstrings hence the short names</span>
+    <span class="k">def</span> <span class="nf">c</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># outputs a coordinate scaling by RADIUS</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">v</span> <span class="o">*</span> <span class="n">RADIUS</span><span class="p">))</span>
+        <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">RADIUS</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">p</span><span class="p">(</span><span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="c1"># outputs a coordinate scaling by RADIUS</span>
+        <span class="k">return</span> <span class="n">c</span><span class="p">(</span><span class="n">pos_for_angle</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">distance</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">slice</span><span class="p">(</span>
+        <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">start_angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">end_angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">start_distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">end_distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># produces one of the circular slices</span>
+        <span class="n">large</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="n">end_angle</span> <span class="o">-</span> <span class="n">start_angle</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="n">d</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;M </span><span class="si">{</span><span class="n">p</span><span class="p">(</span><span class="n">start_angle</span><span class="p">,</span><span class="w"> </span><span class="n">start_distance</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;L </span><span class="si">{</span><span class="n">p</span><span class="p">(</span><span class="n">start_angle</span><span class="p">,</span><span class="w"> </span><span class="n">end_distance</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">c</span><span class="p">(</span><span class="n">end_distance</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">c</span><span class="p">(</span><span class="n">end_distance</span><span class="p">)</span><span class="si">}</span><span class="s2"> 0 </span><span class="si">{</span><span class="n">large</span><span class="si">}</span><span class="s2"> 1 </span><span class="si">{</span><span class="n">p</span><span class="p">(</span><span class="n">end_angle</span><span class="p">,</span><span class="w"> </span><span class="n">end_distance</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;L </span><span class="si">{</span><span class="n">p</span><span class="p">(</span><span class="n">end_angle</span><span class="p">,</span><span class="w"> </span><span class="n">start_distance</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">c</span><span class="p">(</span><span class="n">start_distance</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">c</span><span class="p">(</span><span class="n">start_distance</span><span class="p">)</span><span class="si">}</span><span class="s2"> 0 </span><span class="si">{</span><span class="n">large</span><span class="si">}</span><span class="s2"> 0 </span><span class="si">{</span><span class="n">p</span><span class="p">(</span><span class="n">start_angle</span><span class="p">,</span><span class="w"> </span><span class="n">start_distance</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">ds</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="n">fill</span> <span class="o">=</span> <span class="n">color</span> <span class="ow">or</span> <span class="n">colour_for_angle</span><span class="p">((</span><span class="n">start_angle</span> <span class="o">+</span> <span class="n">end_angle</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;a href=&quot;#&quot; id=&quot;</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot;&gt;&lt;path d=&quot;</span><span class="si">{</span><span class="n">ds</span><span class="si">}</span><span class="s2">&quot; stroke=&quot;black&quot; fill=&quot;</span><span class="si">{</span><span class="n">fill</span><span class="si">}</span><span class="s2">&quot; stroke-width=&quot;1px&quot;/&gt;&lt;/a&gt;&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">text</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ring</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">DatabasePageUsage</span> <span class="o">|</span> <span class="n">PageUsage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># produces text infobox</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">c</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">c</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">vspace</span> <span class="o">=</span> <span class="s1">&#39;dy=&quot;1.1em&quot;&#39;</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">html</span><span class="o">.</span><span class="n">escape</span>
+        <span class="n">res</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;text id=&quot;</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot; x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; y=&quot;</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot; class=&quot;infobox&quot;&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; dy=&quot;-3em&quot; class=&quot;name&quot;&gt;</span><span class="si">{</span><span class="n">e</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2">&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ring</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">storage</span><span class="p">((</span><span class="n">usage</span><span class="o">.</span><span class="n">pages_total</span> <span class="o">-</span> <span class="n">usage</span><span class="o">.</span><span class="n">pages_used</span><span class="p">)</span> <span class="o">*</span> <span class="n">usage</span><span class="o">.</span><span class="n">page_size</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2"> unused&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">ring</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">DatabasePageUsage</span><span class="p">)</span>
+            <span class="n">total</span> <span class="o">=</span> <span class="n">storage</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">pages_total</span> <span class="o">*</span> <span class="n">usage</span><span class="o">.</span><span class="n">page_size</span><span class="p">)</span>
+            <span class="n">used</span> <span class="o">=</span> <span class="n">storage</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">pages_used</span> <span class="o">*</span> <span class="n">usage</span><span class="o">.</span><span class="n">page_size</span><span class="p">)</span>
+            <span class="n">page</span> <span class="o">=</span> <span class="n">storage</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">page_size</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">page</span><span class="si">}</span><span class="s2"> page size&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">used</span><span class="si">}</span><span class="s2"> / </span><span class="si">{</span><span class="n">total</span><span class="si">}</span><span class="s2"> used&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">tables</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> tables&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> indices&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ring</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">kind</span> <span class="o">=</span> <span class="s2">&quot;table&quot;</span> <span class="k">if</span> <span class="n">usage</span><span class="o">.</span><span class="n">tables</span> <span class="k">else</span> <span class="s2">&quot;index&quot;</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;(</span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2">)&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">storage</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">pages_used</span> <span class="o">*</span> <span class="n">usage</span><span class="o">.</span><span class="n">page_size</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2">&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ring</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">tables</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> tables&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> indices&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ring</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">usage</span><span class="o">.</span><span class="n">sequential_pages</span><span class="o">/</span><span class="nb">max</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">pages_used</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.0%</span><span class="si">}</span><span class="s2"> sequential&lt;/tspan&gt;&quot;&quot;&quot;</span>
+            <span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">storage</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">data_stored</span><span class="p">)</span><span class="si">}</span><span class="s2"> SQL data&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">storage</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">max_payload</span><span class="p">)</span><span class="si">}</span><span class="s2"> max payload&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;tspan x=&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">vspace</span><span class="si">}</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">usage</span><span class="o">.</span><span class="n">cells</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> cells&lt;/tspan&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;&lt;/text&gt;&quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+
+    <span class="c1"># check we can get the information</span>
+    <span class="n">root</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">each</span> <span class="o">=</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">analyze_pages</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">root</span><span class="o">.</span><span class="n">pages_total</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;database </span><span class="si">{</span><span class="n">schema</span><span class="si">=}</span><span class="s2"> is empty&quot;</span><span class="p">)</span>
+
+    <span class="c1"># maps which element hovering over causes a response on</span>
+    <span class="n">hover_response</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># z-order is based on output order so texts go last</span>
+    <span class="n">texts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">id_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">next_ids</span><span class="p">():</span>
+        <span class="c1"># return pais of element ids used to map slice to corresponding text</span>
+        <span class="k">nonlocal</span> <span class="n">id_counter</span>
+        <span class="n">PREFIX</span> <span class="o">=</span> <span class="s2">&quot;id&quot;</span>
+        <span class="n">hover_response</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PREFIX</span><span class="si">}{</span><span class="n">id_counter</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PREFIX</span><span class="si">}{</span><span class="n">id_counter</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">id_counter</span> <span class="o">+=</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PREFIX</span><span class="si">}{</span><span class="n">id_counter</span><span class="o">-</span><span class="mi">2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">PREFIX</span><span class="si">}{</span><span class="n">id_counter</span><span class="o">-</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;-</span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">RADIUS</span><span class="o">*</span><span class="n">OVERSCAN</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="o">-</span><span class="nb">round</span><span class="p">(</span><span class="n">RADIUS</span><span class="o">*</span><span class="n">OVERSCAN</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">RADIUS</span><span class="o">*</span><span class="n">OVERSCAN</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">RADIUS</span><span class="o">*</span><span class="n">OVERSCAN</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;&gt;&quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># inner summary circle</span>
+    <span class="nb">id</span><span class="p">,</span> <span class="n">resp</span> <span class="o">=</span> <span class="n">next_ids</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;a href=&quot;#&quot; id=&quot;</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot;&gt;&lt;circle r=&quot;</span><span class="si">{</span><span class="n">c</span><span class="p">(</span><span class="mf">.3</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot; fill=&quot;#777&quot;/&gt;&lt;/a&gt;&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
+    <span class="n">texts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="n">pos_for_angle</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">resp</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">con</span><span class="o">.</span><span class="n">db_filename</span><span class="p">(</span><span class="n">schema</span><span class="p">))</span> <span class="ow">or</span> <span class="s1">&#39;&quot;&quot;&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">root</span><span class="p">))</span>
+
+    <span class="c1"># inner ring</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">Fraction</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">usage</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">ring1_proportion</span> <span class="o">=</span> <span class="n">Fraction</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">pages_used</span><span class="p">,</span> <span class="n">root</span><span class="o">.</span><span class="n">pages_total</span><span class="p">)</span>
+        <span class="nb">id</span><span class="p">,</span> <span class="n">resp</span> <span class="o">=</span> <span class="n">next_ids</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">ring1_proportion</span><span class="p">),</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">texts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="n">pos_for_angle</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">start</span> <span class="o">+</span> <span class="n">ring1_proportion</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">+</span> <span class="mf">0.6</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">resp</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">usage</span><span class="p">))</span>
+        <span class="n">ring2_start</span> <span class="o">=</span> <span class="n">start</span>
+        <span class="n">start</span> <span class="o">+=</span> <span class="n">ring1_proportion</span>
+
+        <span class="c1"># corresponding outer ring</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">tables</span> <span class="o">+</span> <span class="n">usage</span><span class="o">.</span><span class="n">indices</span><span class="p">):</span>
+            <span class="n">usage2</span> <span class="o">=</span> <span class="n">each</span><span class="p">[</span><span class="n">child</span><span class="p">]</span>
+            <span class="n">ring2_proportion</span> <span class="o">=</span> <span class="n">Fraction</span><span class="p">(</span><span class="n">usage2</span><span class="o">.</span><span class="n">pages_used</span><span class="p">,</span> <span class="n">root</span><span class="o">.</span><span class="n">pages_total</span><span class="p">)</span>
+            <span class="nb">id</span><span class="p">,</span> <span class="n">resp</span> <span class="o">=</span> <span class="n">next_ids</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">ring2_start</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">ring2_start</span> <span class="o">+</span> <span class="n">ring2_proportion</span><span class="p">),</span> <span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
+            <span class="n">texts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">text</span><span class="p">(</span><span class="n">pos_for_angle</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ring2_start</span> <span class="o">+</span> <span class="n">ring2_proportion</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">resp</span><span class="p">,</span> <span class="n">child</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">usage2</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">ring2_start</span> <span class="o">+=</span> <span class="n">ring2_proportion</span>
+
+    <span class="k">if</span> <span class="n">root</span><span class="o">.</span><span class="n">pages_used</span> <span class="o">&lt;</span> <span class="n">root</span><span class="o">.</span><span class="n">pages_total</span><span class="p">:</span>
+        <span class="nb">id</span><span class="p">,</span> <span class="n">resp</span> <span class="o">=</span> <span class="n">next_ids</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;#aaa&quot;</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">texts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="n">pos_for_angle</span><span class="p">(</span><span class="nb">float</span><span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">resp</span><span class="p">,</span> <span class="s2">&quot;Free Space&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">root</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;&lt;style&gt;</span>
+<span class="sd">        .infobox { text-anchor: middle; dominant-baseline: middle; font-size: 28pt;</span>
+<span class="sd">            fill: black; stroke: white; stroke-width:4pt; paint-order: stroke;</span>
+<span class="sd">            font-family: ui-sans-serif, sans-serif; }</span>
+<span class="sd">        tspan {font-weight: 600;}</span>
+<span class="sd">        .name {font-weight: 900; text-decoration: underline;}</span>
+<span class="sd">    &quot;&quot;&quot;</span><span class="p">,</span>
+        <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">hover_response</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&quot;&quot;#</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2"> </span><span class="se">{{</span><span class="s2"> display: none;</span><span class="se">}}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&quot;&quot;#</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">:hover ~ #</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">, #</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">:hover, #</span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">:active ~ #</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">, #</span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">:active</span>
+<span class="s2">                </span><span class="se">{{</span><span class="s2">display:block;</span><span class="se">}}</span><span class="s2">&quot;&quot;&quot;</span><span class="p">,</span>
+            <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&lt;/style&gt;&lt;/svg&gt;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span></div>
 
 
 
@@ -2536,7 +2759,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 25, 2024.
+      <span class="lastupdated">Last updated on Dec 08, 2024.
       </span></p>
   </div>
 
