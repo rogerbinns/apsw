@@ -1,0 +1,499 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1050 -1050 2100 2100">
+<a href="#" id="id0"><circle r="300" fill="#777"/></a>
+<a href="#" id="id2"><path d="M 0 -333 L 0 -600 A 600 600 0 0 1 65 -596 L 36 -331 A 333 333 0 0 0 0 -333" stroke="black" fill="#fe7985" stroke-width="1px"/></a>
+<a href="#" id="id4"><path d="M 0 -667 L 0 -1000 A 1000 1000 0 0 1 78 -997 L 52 -665 A 667 667 0 0 0 0 -667" stroke="black" fill="#fe7b83" stroke-width="1px"/></a>
+<a href="#" id="id6"><path d="M 52 -665 L 78 -997 A 1000 1000 0 0 1 108 -994 L 72 -663 A 667 667 0 0 0 52 -665" stroke="black" fill="#fe7589" stroke-width="1px"/></a>
+<a href="#" id="id8"><path d="M 36 -331 L 65 -596 A 600 600 0 0 1 97 -592 L 54 -329 A 333 333 0 0 0 36 -331" stroke="black" fill="#fe708e" stroke-width="1px"/></a>
+<a href="#" id="id10"><path d="M 72 -663 L 108 -994 A 1000 1000 0 0 1 162 -987 L 108 -658 A 667 667 0 0 0 72 -663" stroke="black" fill="#fe708e" stroke-width="1px"/></a>
+<a href="#" id="id12"><path d="M 54 -329 L 97 -592 A 600 600 0 0 1 129 -586 L 72 -326 A 333 333 0 0 0 54 -329" stroke="black" fill="#fd6993" stroke-width="1px"/></a>
+<a href="#" id="id14"><path d="M 108 -658 L 162 -987 A 1000 1000 0 0 1 209 -978 L 140 -652 A 667 667 0 0 0 108 -658" stroke="black" fill="#fd6a93" stroke-width="1px"/></a>
+<a href="#" id="id16"><path d="M 140 -652 L 209 -978 A 1000 1000 0 0 1 215 -977 L 144 -651 A 667 667 0 0 0 140 -652" stroke="black" fill="#fd6796" stroke-width="1px"/></a>
+<a href="#" id="id18"><path d="M 72 -326 L 129 -586 A 600 600 0 0 1 143 -583 L 80 -324 A 333 333 0 0 0 72 -326" stroke="black" fill="#fd6597" stroke-width="1px"/></a>
+<a href="#" id="id20"><path d="M 144 -651 L 215 -977 A 1000 1000 0 0 1 233 -972 L 155 -648 A 667 667 0 0 0 144 -651" stroke="black" fill="#fd6597" stroke-width="1px"/></a>
+<a href="#" id="id22"><path d="M 155 -648 L 233 -972 A 1000 1000 0 0 1 239 -971 L 159 -647 A 667 667 0 0 0 155 -648" stroke="black" fill="#fd6498" stroke-width="1px"/></a>
+<a href="#" id="id24"><path d="M 80 -324 L 143 -583 A 600 600 0 0 1 147 -582 L 82 -323 A 333 333 0 0 0 80 -324" stroke="black" fill="#fd6399" stroke-width="1px"/></a>
+<a href="#" id="id26"><path d="M 159 -647 L 239 -971 A 1000 1000 0 0 1 245 -970 L 163 -646 A 667 667 0 0 0 159 -647" stroke="black" fill="#fd6399" stroke-width="1px"/></a>
+<a href="#" id="id28"><path d="M 82 -323 L 147 -582 A 600 600 0 0 1 285 -528 L 158 -293 A 333 333 0 0 0 82 -323" stroke="black" fill="#fa54a6" stroke-width="1px"/></a>
+<a href="#" id="id30"><path d="M 163 -646 L 245 -970 A 1000 1000 0 0 1 274 -962 L 183 -641 A 667 667 0 0 0 163 -646" stroke="black" fill="#fc619b" stroke-width="1px"/></a>
+<a href="#" id="id32"><path d="M 183 -641 L 274 -962 A 1000 1000 0 0 1 475 -880 L 316 -587 A 667 667 0 0 0 183 -641" stroke="black" fill="#fa52a7" stroke-width="1px"/></a>
+<a href="#" id="id34"><path d="M 158 -293 L 285 -528 A 600 600 0 0 1 537 -267 L 298 -148 A 333 333 0 0 0 158 -293" stroke="black" fill="#ea1fcb" stroke-width="1px"/></a>
+<a href="#" id="id36"><path d="M 316 -587 L 475 -880 A 1000 1000 0 0 1 601 -799 L 401 -533 A 667 667 0 0 0 316 -587" stroke="black" fill="#f43cb8" stroke-width="1px"/></a>
+<a href="#" id="id38"><path d="M 401 -533 L 601 -799 A 1000 1000 0 0 1 715 -700 L 476 -466 A 667 667 0 0 0 401 -533" stroke="black" fill="#ee29c5" stroke-width="1px"/></a>
+<a href="#" id="id40"><path d="M 476 -466 L 715 -700 A 1000 1000 0 0 1 895 -445 L 597 -297 A 667 667 0 0 0 476 -466" stroke="black" fill="#e20cd6" stroke-width="1px"/></a>
+<a href="#" id="id42"><path d="M 298 -148 L 537 -267 A 600 600 0 0 1 539 -264 L 299 -147 A 333 333 0 0 0 298 -148" stroke="black" fill="#d808e0" stroke-width="1px"/></a>
+<a href="#" id="id44"><path d="M 597 -297 L 895 -445 A 1000 1000 0 0 1 898 -440 L 599 -293 A 667 667 0 0 0 597 -297" stroke="black" fill="#d808e0" stroke-width="1px"/></a>
+<a href="#" id="id46"><path d="M 299 -147 L 539 -264 A 600 600 0 0 1 540 -261 L 300 -145 A 333 333 0 0 0 299 -147" stroke="black" fill="#d809e1" stroke-width="1px"/></a>
+<a href="#" id="id48"><path d="M 599 -293 L 898 -440 A 1000 1000 0 0 1 901 -434 L 601 -290 A 667 667 0 0 0 599 -293" stroke="black" fill="#d809e1" stroke-width="1px"/></a>
+<a href="#" id="id50"><path d="M 300 -145 L 540 -261 A 600 600 0 0 1 112 590 L 62 328 A 333 333 0 0 0 300 -145" stroke="black" fill="#8579fe" stroke-width="1px"/></a>
+<a href="#" id="id52"><path d="M 601 -290 L 901 -434 A 1000 1000 0 0 1 990 141 L 660 94 A 667 667 0 0 0 601 -290" stroke="black" fill="#c12ef0" stroke-width="1px"/></a>
+<a href="#" id="id54"><path d="M 660 94 L 990 141 A 1000 1000 0 0 1 763 646 L 509 431 A 667 667 0 0 0 660 94" stroke="black" fill="#8a74fe" stroke-width="1px"/></a>
+<a href="#" id="id56"><path d="M 509 431 L 763 646 A 1000 1000 0 0 1 186 983 L 124 655 A 667 667 0 0 0 509 431" stroke="black" fill="#42b3f6" stroke-width="1px"/></a>
+<a href="#" id="id58"><path d="M 62 328 L 112 590 A 600 600 0 0 1 -570 -187 L -317 -104 A 333 333 0 0 0 62 328" stroke="black" fill="#69fd94" stroke-width="1px"/></a>
+<a href="#" id="id60"><path d="M 124 655 L 186 983 A 1000 1000 0 0 1 -48 999 L -32 666 A 667 667 0 0 0 124 655" stroke="black" fill="#08d8e1" stroke-width="1px"/></a>
+<a href="#" id="id62"><path d="M -32 666 L -48 999 A 1000 1000 0 0 1 -256 967 L -171 644 A 667 667 0 0 0 -32 666" stroke="black" fill="#13e5d2" stroke-width="1px"/></a>
+<a href="#" id="id64"><path d="M -171 644 L -256 967 A 1000 1000 0 0 1 -437 899 L -291 600 A 667 667 0 0 0 -171 644" stroke="black" fill="#2defc2" stroke-width="1px"/></a>
+<a href="#" id="id66"><path d="M -291 600 L -437 899 A 1000 1000 0 0 1 -950 -311 L -634 -208 A 667 667 0 0 0 -291 600" stroke="black" fill="#8cfe71" stroke-width="1px"/></a>
+<a href="#" id="id68"><path d="M -317 -104 L -570 -187 A 600 600 0 0 1 -559 -217 L -311 -121 A 333 333 0 0 0 -317 -104" stroke="black" fill="#d0e716" stroke-width="1px"/></a>
+<a href="#" id="id70"><path d="M -634 -208 L -950 -311 A 1000 1000 0 0 1 -932 -362 L -621 -242 A 667 667 0 0 0 -634 -208" stroke="black" fill="#d0e716" stroke-width="1px"/></a>
+<a href="#" id="id72"><path d="M -311 -121 L -932 -362 A 1000 1000 0 0 1 0 -1000 L 0 -333 A 333 333 0 0 0 -311 -121" stroke="black" fill="#aaa" stroke-width="1px"/></a>
+<text id="id1" x="0" y="0" class="infobox">
+<tspan x="0" dy="-3em" class="name">Chinook_Sqlite.sqlite</tspan>
+<tspan x="0" dy="1.1em">1KB page size</tspan>
+<tspan x="0" dy="1.1em">843KB / 1MB used</tspan>
+<tspan x="0" dy="1.1em">12 tables</tspan>
+<tspan x="0" dy="1.1em">11 indices</tspan>
+<tspan x="0" dy="1.1em">7% sequential</tspan>
+<tspan x="0" dy="1.1em">579.4KB SQL data</tspan>
+<tspan x="0" dy="1.1em">702B max payload</tspan>
+<tspan x="0" dy="1.1em">49,315 cells</tspan>
+</text>
+<text id="id3" x="25" y="-466" class="infobox">
+<tspan x="25" dy="-3em" class="name">Album</tspan>
+<tspan x="25" dy="1.1em">18KB</tspan>
+<tspan x="25" dy="1.1em">1 tables</tspan>
+<tspan x="25" dy="1.1em">1 indices</tspan>
+<tspan x="25" dy="1.1em">44% sequential</tspan>
+<tspan x="25" dy="1.1em">11.6KB SQL data</tspan>
+<tspan x="25" dy="1.1em">102B max payload</tspan>
+<tspan x="25" dy="1.1em">705 cells</tspan>
+</text>
+<text id="id5" x="33" y="-833" class="infobox">
+<tspan x="33" dy="-3em" class="name">Album</tspan>
+<tspan x="33" dy="1.1em">(table)</tspan>
+<tspan x="33" dy="1.1em">13KB</tspan>
+<tspan x="33" dy="1.1em">31% sequential</tspan>
+<tspan x="33" dy="1.1em">9.6KB SQL data</tspan>
+<tspan x="33" dy="1.1em">102B max payload</tspan>
+<tspan x="33" dy="1.1em">358 cells</tspan>
+</text>
+<text id="id7" x="78" y="-830" class="infobox">
+<tspan x="78" dy="-3em" class="name">IFK_AlbumArtistId</tspan>
+<tspan x="78" dy="1.1em">(index)</tspan>
+<tspan x="78" dy="1.1em">5KB</tspan>
+<tspan x="78" dy="1.1em">80% sequential</tspan>
+<tspan x="78" dy="1.1em">2KB SQL data</tspan>
+<tspan x="78" dy="1.1em">7B max payload</tspan>
+<tspan x="78" dy="1.1em">347 cells</tspan>
+</text>
+<text id="id9" x="63" y="-462" class="infobox">
+<tspan x="63" dy="-3em" class="name">Artist</tspan>
+<tspan x="63" dy="1.1em">9KB</tspan>
+<tspan x="63" dy="1.1em">1 tables</tspan>
+<tspan x="63" dy="1.1em">0 indices</tspan>
+<tspan x="63" dy="1.1em">44% sequential</tspan>
+<tspan x="63" dy="1.1em">6.4KB SQL data</tspan>
+<tspan x="63" dy="1.1em">89B max payload</tspan>
+<tspan x="63" dy="1.1em">282 cells</tspan>
+</text>
+<text id="id11" x="113" y="-826" class="infobox">
+<tspan x="113" dy="-3em" class="name">Artist</tspan>
+<tspan x="113" dy="1.1em">(table)</tspan>
+<tspan x="113" dy="1.1em">9KB</tspan>
+<tspan x="113" dy="1.1em">44% sequential</tspan>
+<tspan x="113" dy="1.1em">6.4KB SQL data</tspan>
+<tspan x="113" dy="1.1em">89B max payload</tspan>
+<tspan x="113" dy="1.1em">282 cells</tspan>
+</text>
+<text id="id13" x="88" y="-458" class="infobox">
+<tspan x="88" dy="-3em" class="name">Customer</tspan>
+<tspan x="88" dy="1.1em">9KB</tspan>
+<tspan x="88" dy="1.1em">1 tables</tspan>
+<tspan x="88" dy="1.1em">1 indices</tspan>
+<tspan x="88" dy="1.1em">22% sequential</tspan>
+<tspan x="88" dy="1.1em">6.7KB SQL data</tspan>
+<tspan x="88" dy="1.1em">204B max payload</tspan>
+<tspan x="88" dy="1.1em">124 cells</tspan>
+</text>
+<text id="id15" x="155" y="-819" class="infobox">
+<tspan x="155" dy="-3em" class="name">Customer</tspan>
+<tspan x="155" dy="1.1em">(table)</tspan>
+<tspan x="155" dy="1.1em">8KB</tspan>
+<tspan x="155" dy="1.1em">12% sequential</tspan>
+<tspan x="155" dy="1.1em">6.4KB SQL data</tspan>
+<tspan x="155" dy="1.1em">204B max payload</tspan>
+<tspan x="155" dy="1.1em">65 cells</tspan>
+</text>
+<text id="id17" x="177" y="-814" class="infobox">
+<tspan x="177" dy="-3em" class="name">IFK_CustomerSupportRepId</tspan>
+<tspan x="177" dy="1.1em">(index)</tspan>
+<tspan x="177" dy="1.1em">1KB</tspan>
+<tspan x="177" dy="1.1em">100% sequential</tspan>
+<tspan x="177" dy="1.1em">294B SQL data</tspan>
+<tspan x="177" dy="1.1em">5B max payload</tspan>
+<tspan x="177" dy="1.1em">59 cells</tspan>
+</text>
+<text id="id19" x="106" y="-454" class="infobox">
+<tspan x="106" dy="-3em" class="name">Employee</tspan>
+<tspan x="106" dy="1.1em">4KB</tspan>
+<tspan x="106" dy="1.1em">1 tables</tspan>
+<tspan x="106" dy="1.1em">1 indices</tspan>
+<tspan x="106" dy="1.1em">50% sequential</tspan>
+<tspan x="106" dy="1.1em">1.4KB SQL data</tspan>
+<tspan x="106" dy="1.1em">182B max payload</tspan>
+<tspan x="106" dy="1.1em">17 cells</tspan>
+</text>
+<text id="id21" x="187" y="-812" class="infobox">
+<tspan x="187" dy="-3em" class="name">Employee</tspan>
+<tspan x="187" dy="1.1em">(table)</tspan>
+<tspan x="187" dy="1.1em">3KB</tspan>
+<tspan x="187" dy="1.1em">33% sequential</tspan>
+<tspan x="187" dy="1.1em">1.4KB SQL data</tspan>
+<tspan x="187" dy="1.1em">182B max payload</tspan>
+<tspan x="187" dy="1.1em">9 cells</tspan>
+</text>
+<text id="id23" x="197" y="-810" class="infobox">
+<tspan x="197" dy="-3em" class="name">IFK_EmployeeReportsTo</tspan>
+<tspan x="197" dy="1.1em">(index)</tspan>
+<tspan x="197" dy="1.1em">1KB</tspan>
+<tspan x="197" dy="1.1em">100% sequential</tspan>
+<tspan x="197" dy="1.1em">36B SQL data</tspan>
+<tspan x="197" dy="1.1em">5B max payload</tspan>
+<tspan x="197" dy="1.1em">8 cells</tspan>
+</text>
+<text id="id25" x="113" y="-453" class="infobox">
+<tspan x="113" dy="-3em" class="name">Genre</tspan>
+<tspan x="113" dy="1.1em">1KB</tspan>
+<tspan x="113" dy="1.1em">1 tables</tspan>
+<tspan x="113" dy="1.1em">0 indices</tspan>
+<tspan x="113" dy="1.1em">100% sequential</tspan>
+<tspan x="113" dy="1.1em">299B SQL data</tspan>
+<tspan x="113" dy="1.1em">21B max payload</tspan>
+<tspan x="113" dy="1.1em">25 cells</tspan>
+</text>
+<text id="id27" x="201" y="-809" class="infobox">
+<tspan x="201" dy="-3em" class="name">Genre</tspan>
+<tspan x="201" dy="1.1em">(table)</tspan>
+<tspan x="201" dy="1.1em">1KB</tspan>
+<tspan x="201" dy="1.1em">100% sequential</tspan>
+<tspan x="201" dy="1.1em">299B SQL data</tspan>
+<tspan x="201" dy="1.1em">21B max payload</tspan>
+<tspan x="201" dy="1.1em">25 cells</tspan>
+</text>
+<text id="id29" x="169" y="-435" class="infobox">
+<tspan x="169" dy="-3em" class="name">Invoice</tspan>
+<tspan x="169" dy="1.1em">41KB</tspan>
+<tspan x="169" dy="1.1em">1 tables</tspan>
+<tspan x="169" dy="1.1em">1 indices</tspan>
+<tspan x="169" dy="1.1em">5% sequential</tspan>
+<tspan x="169" dy="1.1em">33.3KB SQL data</tspan>
+<tspan x="169" dy="1.1em">106B max payload</tspan>
+<tspan x="169" dy="1.1em">858 cells</tspan>
+</text>
+<text id="id31" x="216" y="-805" class="infobox">
+<tspan x="216" dy="-3em" class="name">IFK_InvoiceCustomerId</tspan>
+<tspan x="216" dy="1.1em">(index)</tspan>
+<tspan x="216" dy="1.1em">5KB</tspan>
+<tspan x="216" dy="1.1em">20% sequential</tspan>
+<tspan x="216" dy="1.1em">2.3KB SQL data</tspan>
+<tspan x="216" dy="1.1em">6B max payload</tspan>
+<tspan x="216" dy="1.1em">412 cells</tspan>
+</text>
+<text id="id33" x="314" y="-772" class="infobox">
+<tspan x="314" dy="-3em" class="name">Invoice</tspan>
+<tspan x="314" dy="1.1em">(table)</tspan>
+<tspan x="314" dy="1.1em">36KB</tspan>
+<tspan x="314" dy="1.1em">3% sequential</tspan>
+<tspan x="314" dy="1.1em">31KB SQL data</tspan>
+<tspan x="314" dy="1.1em">106B max payload</tspan>
+<tspan x="314" dy="1.1em">446 cells</tspan>
+</text>
+<text id="id35" x="335" y="-324" class="infobox">
+<tspan x="335" dy="-3em" class="name">InvoiceLine</tspan>
+<tspan x="335" dy="1.1em">102KB</tspan>
+<tspan x="335" dy="1.1em">1 tables</tspan>
+<tspan x="335" dy="1.1em">2 indices</tspan>
+<tspan x="335" dy="1.1em">3% sequential</tspan>
+<tspan x="335" dy="1.1em">68.3KB SQL data</tspan>
+<tspan x="335" dy="1.1em">18B max payload</tspan>
+<tspan x="335" dy="1.1em">6,770 cells</tspan>
+</text>
+<text id="id37" x="450" y="-702" class="infobox">
+<tspan x="450" dy="-3em" class="name">IFK_InvoiceLineInvoiceId</tspan>
+<tspan x="450" dy="1.1em">(index)</tspan>
+<tspan x="450" dy="1.1em">25KB</tspan>
+<tspan x="450" dy="1.1em">4% sequential</tspan>
+<tspan x="450" dy="1.1em">14.5KB SQL data</tspan>
+<tspan x="450" dy="1.1em">7B max payload</tspan>
+<tspan x="450" dy="1.1em">2,240 cells</tspan>
+</text>
+<text id="id39" x="550" y="-626" class="infobox">
+<tspan x="550" dy="-3em" class="name">IFK_InvoiceLineTrackId</tspan>
+<tspan x="550" dy="1.1em">(index)</tspan>
+<tspan x="550" dy="1.1em">25KB</tspan>
+<tspan x="550" dy="1.1em">4% sequential</tspan>
+<tspan x="550" dy="1.1em">15.1KB SQL data</tspan>
+<tspan x="550" dy="1.1em">7B max payload</tspan>
+<tspan x="550" dy="1.1em">2,240 cells</tspan>
+</text>
+<text id="id41" x="679" y="-483" class="infobox">
+<tspan x="679" dy="-3em" class="name">InvoiceLine</tspan>
+<tspan x="679" dy="1.1em">(table)</tspan>
+<tspan x="679" dy="1.1em">52KB</tspan>
+<tspan x="679" dy="1.1em">2% sequential</tspan>
+<tspan x="679" dy="1.1em">38.6KB SQL data</tspan>
+<tspan x="679" dy="1.1em">18B max payload</tspan>
+<tspan x="679" dy="1.1em">2,290 cells</tspan>
+</text>
+<text id="id43" x="419" y="-206" class="infobox">
+<tspan x="419" dy="-3em" class="name">MediaType</tspan>
+<tspan x="419" dy="1.1em">1KB</tspan>
+<tspan x="419" dy="1.1em">1 tables</tspan>
+<tspan x="419" dy="1.1em">0 indices</tspan>
+<tspan x="419" dy="1.1em">100% sequential</tspan>
+<tspan x="419" dy="1.1em">119B SQL data</tspan>
+<tspan x="419" dy="1.1em">30B max payload</tspan>
+<tspan x="419" dy="1.1em">5 cells</tspan>
+</text>
+<text id="id45" x="747" y="-369" class="infobox">
+<tspan x="747" dy="-3em" class="name">MediaType</tspan>
+<tspan x="747" dy="1.1em">(table)</tspan>
+<tspan x="747" dy="1.1em">1KB</tspan>
+<tspan x="747" dy="1.1em">100% sequential</tspan>
+<tspan x="747" dy="1.1em">119B SQL data</tspan>
+<tspan x="747" dy="1.1em">30B max payload</tspan>
+<tspan x="747" dy="1.1em">5 cells</tspan>
+</text>
+<text id="id47" x="420" y="-204" class="infobox">
+<tspan x="420" dy="-3em" class="name">Playlist</tspan>
+<tspan x="420" dy="1.1em">1KB</tspan>
+<tspan x="420" dy="1.1em">1 tables</tspan>
+<tspan x="420" dy="1.1em">0 indices</tspan>
+<tspan x="420" dy="1.1em">100% sequential</tspan>
+<tspan x="420" dy="1.1em">273B SQL data</tspan>
+<tspan x="420" dy="1.1em">29B max payload</tspan>
+<tspan x="420" dy="1.1em">18 cells</tspan>
+</text>
+<text id="id49" x="750" y="-364" class="infobox">
+<tspan x="750" dy="-3em" class="name">Playlist</tspan>
+<tspan x="750" dy="1.1em">(table)</tspan>
+<tspan x="750" dy="1.1em">1KB</tspan>
+<tspan x="750" dy="1.1em">100% sequential</tspan>
+<tspan x="750" dy="1.1em">273B SQL data</tspan>
+<tspan x="750" dy="1.1em">29B max payload</tspan>
+<tspan x="750" dy="1.1em">18 cells</tspan>
+</text>
+<text id="id51" x="417" y="210" class="infobox">
+<tspan x="417" dy="-3em" class="name">PlaylistTrack</tspan>
+<tspan x="417" dy="1.1em">304KB</tspan>
+<tspan x="417" dy="1.1em">1 tables</tspan>
+<tspan x="417" dy="1.1em">2 indices</tspan>
+<tspan x="417" dy="1.1em">7% sequential</tspan>
+<tspan x="417" dy="1.1em">179.6KB SQL data</tspan>
+<tspan x="417" dy="1.1em">9B max payload</tspan>
+<tspan x="417" dy="1.1em">26,236 cells</tspan>
+</text>
+<text id="id53" x="824" y="-128" class="infobox">
+<tspan x="824" dy="-3em" class="name">IFK_PlaylistTrackTrackId</tspan>
+<tspan x="824" dy="1.1em">(index)</tspan>
+<tspan x="824" dy="1.1em">98KB</tspan>
+<tspan x="824" dy="1.1em">5% sequential</tspan>
+<tspan x="824" dy="1.1em">59.1KB SQL data</tspan>
+<tspan x="824" dy="1.1em">7B max payload</tspan>
+<tspan x="824" dy="1.1em">8,715 cells</tspan>
+</text>
+<text id="id55" x="760" y="341" class="infobox">
+<tspan x="760" dy="-3em" class="name">PlaylistTrack</tspan>
+<tspan x="760" dy="1.1em">(table)</tspan>
+<tspan x="760" dy="1.1em">93KB</tspan>
+<tspan x="760" dy="1.1em">1% sequential</tspan>
+<tspan x="760" dy="1.1em">47.5KB SQL data</tspan>
+<tspan x="760" dy="1.1em">6B max payload</tspan>
+<tspan x="760" dy="1.1em">8,806 cells</tspan>
+</text>
+<text id="id57" x="420" y="720" class="infobox">
+<tspan x="420" dy="-3em" class="name">sqlite_autoindex_PlaylistTrack_1</tspan>
+<tspan x="420" dy="1.1em">(index)</tspan>
+<tspan x="420" dy="1.1em">113KB</tspan>
+<tspan x="420" dy="1.1em">13% sequential</tspan>
+<tspan x="420" dy="1.1em">72.9KB SQL data</tspan>
+<tspan x="420" dy="1.1em">9B max payload</tspan>
+<tspan x="420" dy="1.1em">8,715 cells</tspan>
+</text>
+<text id="id59" x="-351" y="308" class="infobox">
+<tspan x="-351" dy="-3em" class="name">Track</tspan>
+<tspan x="-351" dy="1.1em">344KB</tspan>
+<tspan x="-351" dy="1.1em">1 tables</tspan>
+<tspan x="-351" dy="1.1em">3 indices</tspan>
+<tspan x="-351" dy="1.1em">3% sequential</tspan>
+<tspan x="-351" dy="1.1em">266KB SQL data</tspan>
+<tspan x="-351" dy="1.1em">237B max payload</tspan>
+<tspan x="-351" dy="1.1em">14,246 cells</tspan>
+</text>
+<text id="id61" x="58" y="831" class="infobox">
+<tspan x="58" dy="-3em" class="name">IFK_TrackAlbumId</tspan>
+<tspan x="58" dy="1.1em">(index)</tspan>
+<tspan x="58" dy="1.1em">39KB</tspan>
+<tspan x="58" dy="1.1em">10% sequential</tspan>
+<tspan x="58" dy="1.1em">22.3KB SQL data</tspan>
+<tspan x="58" dy="1.1em">7B max payload</tspan>
+<tspan x="58" dy="1.1em">3,503 cells</tspan>
+</text>
+<text id="id63" x="-128" y="824" class="infobox">
+<tspan x="-128" dy="-3em" class="name">IFK_TrackGenreId</tspan>
+<tspan x="-128" dy="1.1em">(index)</tspan>
+<tspan x="-128" dy="1.1em">35KB</tspan>
+<tspan x="-128" dy="1.1em">11% sequential</tspan>
+<tspan x="-128" dy="1.1em">19.1KB SQL data</tspan>
+<tspan x="-128" dy="1.1em">6B max payload</tspan>
+<tspan x="-128" dy="1.1em">3,503 cells</tspan>
+</text>
+<text id="id65" x="-290" y="781" class="infobox">
+<tspan x="-290" dy="-3em" class="name">IFK_TrackMediaTypeId</tspan>
+<tspan x="-290" dy="1.1em">(index)</tspan>
+<tspan x="-290" dy="1.1em">32KB</tspan>
+<tspan x="-290" dy="1.1em">3% sequential</tspan>
+<tspan x="-290" dy="1.1em">17.4KB SQL data</tspan>
+<tspan x="-290" dy="1.1em">6B max payload</tspan>
+<tspan x="-290" dy="1.1em">3,503 cells</tspan>
+</text>
+<text id="id67" x="-767" y="325" class="infobox">
+<tspan x="-767" dy="-3em" class="name">Track</tspan>
+<tspan x="-767" dy="1.1em">(table)</tspan>
+<tspan x="-767" dy="1.1em">238KB</tspan>
+<tspan x="-767" dy="1.1em">0% sequential</tspan>
+<tspan x="-767" dy="1.1em">207.2KB SQL data</tspan>
+<tspan x="-767" dy="1.1em">237B max payload</tspan>
+<tspan x="-767" dy="1.1em">3,737 cells</tspan>
+</text>
+<text id="id69" x="-439" y="-157" class="infobox">
+<tspan x="-439" dy="-3em" class="name">sqlite</tspan>
+<tspan x="-439" dy="1.1em">9KB</tspan>
+<tspan x="-439" dy="1.1em">1 tables</tspan>
+<tspan x="-439" dy="1.1em">0 indices</tspan>
+<tspan x="-439" dy="1.1em">11% sequential</tspan>
+<tspan x="-439" dy="1.1em">5.4KB SQL data</tspan>
+<tspan x="-439" dy="1.1em">702B max payload</tspan>
+<tspan x="-439" dy="1.1em">29 cells</tspan>
+</text>
+<text id="id71" x="-785" y="-281" class="infobox">
+<tspan x="-785" dy="-3em" class="name">sqlite_schema</tspan>
+<tspan x="-785" dy="1.1em">(table)</tspan>
+<tspan x="-785" dy="1.1em">9KB</tspan>
+<tspan x="-785" dy="1.1em">11% sequential</tspan>
+<tspan x="-785" dy="1.1em">5.4KB SQL data</tspan>
+<tspan x="-785" dy="1.1em">702B max payload</tspan>
+<tspan x="-785" dy="1.1em">29 cells</tspan>
+</text>
+<text id="id73" x="-282" y="-413" class="infobox">
+<tspan x="-282" dy="-3em" class="name">Free Space</tspan>
+<tspan x="-282" dy="1.1em">199KB unused</tspan>
+</text>
+<style>
+        .infobox { text-anchor: middle; dominant-baseline: middle; font-size: 28pt;
+            fill: black; stroke: white; stroke-width:4pt; paint-order: stroke;
+            font-family: ui-sans-serif, sans-serif; }
+        tspan {font-weight: 600;}
+        .name {font-weight: 900; text-decoration: underline;}
+    
+#id1 { display: none;}
+#id0:hover ~ #id1, #id1:hover, #id0:active ~ #id1, #id1:active
+                {display:block;}
+#id3 { display: none;}
+#id2:hover ~ #id3, #id3:hover, #id2:active ~ #id3, #id3:active
+                {display:block;}
+#id5 { display: none;}
+#id4:hover ~ #id5, #id5:hover, #id4:active ~ #id5, #id5:active
+                {display:block;}
+#id7 { display: none;}
+#id6:hover ~ #id7, #id7:hover, #id6:active ~ #id7, #id7:active
+                {display:block;}
+#id9 { display: none;}
+#id8:hover ~ #id9, #id9:hover, #id8:active ~ #id9, #id9:active
+                {display:block;}
+#id11 { display: none;}
+#id10:hover ~ #id11, #id11:hover, #id10:active ~ #id11, #id11:active
+                {display:block;}
+#id13 { display: none;}
+#id12:hover ~ #id13, #id13:hover, #id12:active ~ #id13, #id13:active
+                {display:block;}
+#id15 { display: none;}
+#id14:hover ~ #id15, #id15:hover, #id14:active ~ #id15, #id15:active
+                {display:block;}
+#id17 { display: none;}
+#id16:hover ~ #id17, #id17:hover, #id16:active ~ #id17, #id17:active
+                {display:block;}
+#id19 { display: none;}
+#id18:hover ~ #id19, #id19:hover, #id18:active ~ #id19, #id19:active
+                {display:block;}
+#id21 { display: none;}
+#id20:hover ~ #id21, #id21:hover, #id20:active ~ #id21, #id21:active
+                {display:block;}
+#id23 { display: none;}
+#id22:hover ~ #id23, #id23:hover, #id22:active ~ #id23, #id23:active
+                {display:block;}
+#id25 { display: none;}
+#id24:hover ~ #id25, #id25:hover, #id24:active ~ #id25, #id25:active
+                {display:block;}
+#id27 { display: none;}
+#id26:hover ~ #id27, #id27:hover, #id26:active ~ #id27, #id27:active
+                {display:block;}
+#id29 { display: none;}
+#id28:hover ~ #id29, #id29:hover, #id28:active ~ #id29, #id29:active
+                {display:block;}
+#id31 { display: none;}
+#id30:hover ~ #id31, #id31:hover, #id30:active ~ #id31, #id31:active
+                {display:block;}
+#id33 { display: none;}
+#id32:hover ~ #id33, #id33:hover, #id32:active ~ #id33, #id33:active
+                {display:block;}
+#id35 { display: none;}
+#id34:hover ~ #id35, #id35:hover, #id34:active ~ #id35, #id35:active
+                {display:block;}
+#id37 { display: none;}
+#id36:hover ~ #id37, #id37:hover, #id36:active ~ #id37, #id37:active
+                {display:block;}
+#id39 { display: none;}
+#id38:hover ~ #id39, #id39:hover, #id38:active ~ #id39, #id39:active
+                {display:block;}
+#id41 { display: none;}
+#id40:hover ~ #id41, #id41:hover, #id40:active ~ #id41, #id41:active
+                {display:block;}
+#id43 { display: none;}
+#id42:hover ~ #id43, #id43:hover, #id42:active ~ #id43, #id43:active
+                {display:block;}
+#id45 { display: none;}
+#id44:hover ~ #id45, #id45:hover, #id44:active ~ #id45, #id45:active
+                {display:block;}
+#id47 { display: none;}
+#id46:hover ~ #id47, #id47:hover, #id46:active ~ #id47, #id47:active
+                {display:block;}
+#id49 { display: none;}
+#id48:hover ~ #id49, #id49:hover, #id48:active ~ #id49, #id49:active
+                {display:block;}
+#id51 { display: none;}
+#id50:hover ~ #id51, #id51:hover, #id50:active ~ #id51, #id51:active
+                {display:block;}
+#id53 { display: none;}
+#id52:hover ~ #id53, #id53:hover, #id52:active ~ #id53, #id53:active
+                {display:block;}
+#id55 { display: none;}
+#id54:hover ~ #id55, #id55:hover, #id54:active ~ #id55, #id55:active
+                {display:block;}
+#id57 { display: none;}
+#id56:hover ~ #id57, #id57:hover, #id56:active ~ #id57, #id57:active
+                {display:block;}
+#id59 { display: none;}
+#id58:hover ~ #id59, #id59:hover, #id58:active ~ #id59, #id59:active
+                {display:block;}
+#id61 { display: none;}
+#id60:hover ~ #id61, #id61:hover, #id60:active ~ #id61, #id61:active
+                {display:block;}
+#id63 { display: none;}
+#id62:hover ~ #id63, #id63:hover, #id62:active ~ #id63, #id63:active
+                {display:block;}
+#id65 { display: none;}
+#id64:hover ~ #id65, #id65:hover, #id64:active ~ #id65, #id65:active
+                {display:block;}
+#id67 { display: none;}
+#id66:hover ~ #id67, #id67:hover, #id66:active ~ #id67, #id67:active
+                {display:block;}
+#id69 { display: none;}
+#id68:hover ~ #id69, #id69:hover, #id68:active ~ #id69, #id69:active
+                {display:block;}
+#id71 { display: none;}
+#id70:hover ~ #id71, #id71:hover, #id70:active ~ #id71, #id71:active
+                {display:block;}
+#id73 { display: none;}
+#id72:hover ~ #id73, #id73:hover, #id72:active ~ #id73, #id73:active
+                {display:block;}
+</style></svg>
