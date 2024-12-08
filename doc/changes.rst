@@ -14,7 +14,7 @@ APSW changes by version
 ========
 
 Added :func:`apsw.ext.page_usage_to_svg` which shows database usage as
-SVG (`example <_static/samples/chinook.svg>`).  Available as shell
+SVG (`example <_static/samples/chinook.svg>`__).  Available as shell
 :ref:`.pages-svg command <shell-cmd-pages-svg>`.
 
 3.47.1.0
