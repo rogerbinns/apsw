@@ -80,12 +80,12 @@ edit the :file:`setup.apsw` file inside.
 
 .. downloads-begin
 
-* `apsw-3.47.1.0.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.47.1.0/apsw-3.47.1.0.zip>`__
+* `apsw-3.47.2.0.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.47.2.0/apsw-3.47.2.0.zip>`__
   (Source, includes this HTML Help)
 
-* `apsw-3.47.1.0.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.47.1.0/apsw-3.47.1.0.cosign-bundle>`__
+* `apsw-3.47.2.0.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.47.2.0/apsw-3.47.2.0.cosign-bundle>`__
   cosign signature
 
 .. downloads-end
@@ -120,8 +120,8 @@ Verify
 
   .. code-block:: console
 
-    $ cosign verify-blob apsw-3.47.1.0.zip                           \
-        --bundle apsw-3.47.1.0.cosign-bundle                         \
+    $ cosign verify-blob apsw-3.47.2.0.zip                           \
+        --bundle apsw-3.47.2.0.cosign-bundle                         \
         --certificate-identity=rogerb@rogerbinns.com                 \
         --certificate-oidc-issuer=https://github.com/login/oauth
     Verified OK
