@@ -3268,7 +3268,7 @@ Enter ".help" for instructions
 
     def _get_prev_tokens(self, line, end):
         "Returns the tokens prior to pos end in the line"
-        return re.findall(r'"?\w+"?', line[:end])
+        return re.findall(r'"?[\-\w]+"?', line[:end])
 
     def complete_sql(self, line, token, beg, end):
         """Provide some completions for SQL
@@ -3419,7 +3419,9 @@ Enter ".help" for instructions
         """
         if not self._builtin_commands:
             self._builtin_commands = [
-                "." + x[len("command_") :] for x in dir(self) if x.startswith("command_") and x != "command_headers"
+                "." + x[len("command_") :].replace("_", "-")
+                for x in dir(self)
+                if x.startswith("command_") and x != "command_headers"
             ]
 
         t = self._get_prev_tokens(line, end)
