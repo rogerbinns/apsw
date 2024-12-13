@@ -160,9 +160,10 @@ apswversion = apsw_version ## OLD-NAME
 
 compile_options: tuple[str, ...]
 """A tuple of the options used to compile SQLite.  For example it
-will be something like this::
+will be something like this, but with around 50 entries::
 
-    ('ENABLE_LOCKING_STYLE=0', 'TEMP_STORE=1', 'THREADSAFE=1')
+    ('ENABLE_LOCKING_STYLE=0', 'TEMP_STORE=1', 'THREADSAFE=1', 'ENABLE_FTS5',
+     'OMIT_SHARED_CACHE', 'SYSTEM_MALLOC')
 
 Calls: `sqlite3_compileoption_get <https://sqlite.org/c3ref/compileoption_get.html>`__"""
 
