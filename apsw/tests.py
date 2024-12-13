@@ -3436,9 +3436,12 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.enable_shared_cache, "foo")
         self.assertRaises(TypeError, apsw.enable_shared_cache, True, None)
 
-        # the setting can be changed at almost any time
-        apsw.enable_shared_cache(True)
-        apsw.enable_shared_cache(False)
+        if "OMIT_SHARED_CACHE" in apsw.compile_options:
+            self.assertRaises(Exception, apsw.enable_shared_cache, True)
+        else:
+            # the setting can be changed at almost any time
+            apsw.enable_shared_cache(True)
+            apsw.enable_shared_cache(False)
 
     def testSerialize(self):
         "Verify serialize/deserialize calls"
@@ -3715,13 +3718,14 @@ class APSW(unittest.TestCase):
         for i in range(20):
             self.db.create_module("x" * i, lambda x: i)
 
-        # If shared cache is enabled then vtable creation is supposed to fail
-        try:
-            apsw.enable_shared_cache(True)
-            db = apsw.Connection(TESTFILEPREFIX + "testdb2")
-            db.create_module("y", lambda x: 2)
-        finally:
-            apsw.enable_shared_cache(False)
+        if "OMIT_SHARED_CACHE" not in apsw.compile_options:
+            # If shared cache is enabled then vtable creation is supposed to fail
+            try:
+                apsw.enable_shared_cache(True)
+                db = apsw.Connection(TESTFILEPREFIX + "testdb2")
+                db.create_module("y", lambda x: 2)
+            finally:
+                apsw.enable_shared_cache(False)
 
         # The testing uses a different module name each time.  SQLite
         # doc doesn't define the semantics if a 2nd module is

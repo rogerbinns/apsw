@@ -67,6 +67,8 @@ API Reference
 
 #define SQLITE_OMIT_DEPRECATED
 
+#define SQLITE_OMIT_SHARED_CACHE
+
 #ifndef SQLITE_MAX_ATTACHED
 #define SQLITE_MAX_ATTACHED 125
 #endif
@@ -280,20 +282,24 @@ static PyObject *
 enable_shared_cache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs,
                     PyObject *fast_kwnames)
 {
-  int enable = 0, res;
+  int enable = 0;
   {
     Apsw_enable_shared_cache_CHECK;
     ARG_PROLOG(1, Apsw_enable_shared_cache_KWNAMES);
     ARG_MANDATORY ARG_bool(enable);
     ARG_EPILOG(NULL, Apsw_enable_shared_cache_USAGE, );
   }
-  res = sqlite3_enable_shared_cache(enable);
+#ifdef SQLITE_OMIT_SHARED_CACHE
+  return PyErr_Format(PyExc_Exception, "sqlite3_enable_shared_cache has been omitted");
+#else
+  int res = sqlite3_enable_shared_cache(enable);
   SET_EXC(res, NULL);
 
   if (res != SQLITE_OK)
     return NULL;
 
   Py_RETURN_NONE;
+#endif
 }
 
 /** .. method:: connections() -> list[Connection]

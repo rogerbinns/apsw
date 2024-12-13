@@ -10,6 +10,22 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+next
+====
+
+`Shared cache
+<https://www.sqlite.org/compile.html#omit_shared_cache>`__ is omitted
+when APSW includes the amalgamation like PyPI builds.  This is
+`recommended by SQLite
+<https://www.sqlite.org/compile.html#recommended_compile_time_options>`__,
+has been `discouraged for a long time
+<https://sqlite.org/sharedcache.html#use_of_shared_cache_is_discouraged>`__,
+and prevents using `virtual tables
+<https://www.sqlite.org/vtab.html>`__ while enabled.
+:meth:`apsw.enable_shared_cache` will raise an exception if called and
+the shared cache has been omitted.  You can see what options are in
+effect in :attr:`apsw.compile_options`.
+
 3.47.2.0
 ========
 
