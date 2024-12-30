@@ -28,11 +28,19 @@ for line in open("doc/install.rst", "rt"):
         op.append("")
         op.append("* `apsw-%s.zip" % (version,))
         op.append(url % ("apsw-%s.zip" % version))
-        op.append("  (Source, includes this HTML Help)")
+        op.append("  (Source as zip, includes this HTML Help)")
         op.append("")
-        op.append("* `apsw-%s.cosign-bundle" % (version,))
-        op.append(url % ("apsw-%s.cosign-bundle" % version))
-        op.append("  cosign signature")
+        op.append("* `apsw-%s.tar.gz" % (version,))
+        op.append(url % ("apsw-%s.tar.gz" % version))
+        op.append("  (Source as tar.gz, includes this HTML Help)")
+        op.append("")
+        op.append("* `apsw-%s.zip.cosign-bundle" % (version,))
+        op.append(url % ("apsw-%s.zip.cosign-bundle" % version))
+        op.append("  cosign signature for zip source")
+        op.append("")
+        op.append("* `apsw-%s.tar.gz.cosign-bundle" % (version,))
+        op.append(url % ("apsw-%s.tar.gz.cosign-bundle" % version))
+        op.append("  cosign signature for tar.gz source")
         op.append("")
         continue
     if line == "  .. verify-begin":
@@ -46,7 +54,7 @@ for line in open("doc/install.rst", "rt"):
             return s + " " * (65 - len(s)) + "\\"
 
         op.append("    " + back(f"$ cosign verify-blob apsw-{version}.zip"))
-        op.append("    " + back(f"    --bundle apsw-{version}.cosign-bundle"))
+        op.append("    " + back(f"    --bundle apsw-{version}.zip.cosign-bundle"))
         op.append("    " + back("    --certificate-identity=rogerb@rogerbinns.com"))
         op.append("    " + "    --certificate-oidc-issuer=https://github.com/login/oauth")
         op.append("    " + "Verified OK")

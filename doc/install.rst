@@ -82,11 +82,19 @@ edit the :file:`setup.apsw` file inside.
 
 * `apsw-3.47.2.0.zip
   <https://github.com/rogerbinns/apsw/releases/download/3.47.2.0/apsw-3.47.2.0.zip>`__
-  (Source, includes this HTML Help)
+  (Source as zip, includes this HTML Help)
 
-* `apsw-3.47.2.0.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.47.2.0/apsw-3.47.2.0.cosign-bundle>`__
-  cosign signature
+* `apsw-3.47.2.0.tar.gz
+  <https://github.com/rogerbinns/apsw/releases/download/3.47.2.0/apsw-3.47.2.0.tar.gz>`__
+  (Source as tar.gz, includes this HTML Help)
+
+* `apsw-3.47.2.0.zip.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.47.2.0/apsw-3.47.2.0.zip.cosign-bundle>`__
+  cosign signature for zip source
+
+* `apsw-3.47.2.0.tar.gz.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.47.2.0/apsw-3.47.2.0.tar.gz.cosign-bundle>`__
+  cosign signature for tar.gz source
 
 .. downloads-end
 
@@ -121,7 +129,7 @@ Verify
   .. code-block:: console
 
     $ cosign verify-blob apsw-3.47.2.0.zip                           \
-        --bundle apsw-3.47.2.0.cosign-bundle                         \
+        --bundle apsw-3.47.2.0.zip.cosign-bundle                     \
         --certificate-identity=rogerb@rogerbinns.com                 \
         --certificate-oidc-issuer=https://github.com/login/oauth
     Verified OK

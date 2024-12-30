@@ -22,7 +22,7 @@ GENDOCS = \
 
 .PHONY : help all tagpush clean doc docs build_ext build_ext_debug coverage pycoverage test test_debug fulltest linkcheck unwrapped \
 		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug \
-		 fossil doc-depends dev-depends docs-no-fetch compile-win-one langserver
+		 fossil doc-depends dev-depends docs-no-fetch compile-win-one langserver source_check_extracted
 
 help: ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | sort | \
@@ -229,12 +229,18 @@ source_nocheck: src/apswversion.h
 	env APSW_NO_GA=t $(MAKE) doc
 	rm -rf doc/build/html/_static/fonts/ doc/build/html/_static/css/fonts/ doc/build/apsw.1
 	rst2man doc/cli.rst doc/build/apsw.1
-	$(PYTHON) setup.py sdist --formats zip --add-doc
+	$(PYTHON) setup.py sdist --formats zip,gztar --add-doc
 
 source: source_nocheck # Make the source and then check it builds and tests correctly.  This will catch missing files etc
 	mkdir -p work
 	rm -rf work/$(VERDIR)
 	cd work ; unzip -q ../dist/$(VERDIR).zip
+	$(MAKE) source_check_extracted
+	rm -rf work/$(VERDIR)
+	cd work ; tar xfa ../dist/$(VERDIR).tar.gz
+	$(MAKE) source_check_extracted
+
+source_check_extracted:
 # Make certain various files do/do not exist
 	for f in man/cli.1 doc/vfs.html doc/_sources/pysqlite.txt apsw/trace.py src/faultinject.h; do test -f work/$(VERDIR)/$$f ; done
 	for f in sqlite3.c sqlite3/sqlite3.c debian/control ; do test ! -f work/$(VERDIR)/$$f ; done
@@ -244,8 +250,10 @@ source: source_nocheck # Make the source and then check it builds and tests corr
 release: ## Signs built source file(s)
 	test "`git branch --show-current`" = master
 	test -f dist/$(VERDIR).zip
-	-rm -f dist/$(VERDIR).cosign-bundle
-	cosign sign-blob --yes --bundle dist/$(VERDIR).cosign-bundle dist/$(VERDIR).zip
+	test -f dist/$(VERDIR).tar.gz
+	-rm -f dist/$(VERDIR).zip.cosign-bundle dist/$(VERDIR).tar.gz.cosign-bundle
+	cosign sign-blob --yes --bundle dist/$(VERDIR).zip.cosign-bundle dist/$(VERDIR).zip
+	cosign sign-blob --yes --bundle dist/$(VERDIR).tar.gz.cosign-bundle dist/$(VERDIR).tar.gz
 
 src/_unicodedb.c: tools/ucdprops2code.py ## Update generated Unicode database lookups
 	-rm -f $@

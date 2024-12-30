@@ -10,8 +10,10 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
-next
-====
+3.48.0.0
+========
+
+Source releases are also available in tar format (:issue:`548`)
 
 `Shared cache
 <https://www.sqlite.org/compile.html#omit_shared_cache>`__ is omitted
