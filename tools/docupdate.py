@@ -68,9 +68,9 @@ for line in open("doc/install.rst", "rt"):
     op.append(line)
 
 """
-      $ cosign verify-blob apsw.3.46.0.0.zip                 \
-            --bundle apsw.3.46.0.0-cosign.bundle             \
-            --certificate-identity=rogerb@rogerbinns.com     \
+      $ cosign verify-blob --new-bundle-format apsw.3.46.0.0.zip \
+            --bundle apsw.3.46.0.0-cosign.bundle                 \
+            --certificate-identity=rogerb@rogerbinns.com         \
             --certificate-oidc-issuer=https://github.com/login/oauth
       Verified OK
 

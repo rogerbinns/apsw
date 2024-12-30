@@ -252,8 +252,8 @@ release: ## Signs built source file(s)
 	test -f dist/$(VERDIR).zip
 	test -f dist/$(VERDIR).tar.gz
 	-rm -f dist/$(VERDIR).zip.cosign-bundle dist/$(VERDIR).tar.gz.cosign-bundle
-	cosign sign-blob --yes --bundle dist/$(VERDIR).zip.cosign-bundle dist/$(VERDIR).zip
-	cosign sign-blob --yes --bundle dist/$(VERDIR).tar.gz.cosign-bundle dist/$(VERDIR).tar.gz
+	cosign sign-blob --yes --new-bundle-format --bundle dist/$(VERDIR).zip.cosign-bundle dist/$(VERDIR).zip
+	cosign sign-blob --yes --new-bundle-format --bundle dist/$(VERDIR).tar.gz.cosign-bundle dist/$(VERDIR).tar.gz
 
 src/_unicodedb.c: tools/ucdprops2code.py ## Update generated Unicode database lookups
 	-rm -f $@
