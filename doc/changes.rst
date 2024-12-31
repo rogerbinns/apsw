@@ -15,9 +15,7 @@ APSW changes by version
 
 Source releases are also available in tar format (:issue:`548`)
 
-Source releases are :ref:`signed <verifydownload>` using the `new
-bundle format <https://docs.sigstore.dev/about/bundle/>`__
-(:issue:`549`)
+Updated source release signing and instructions. (:issue:`549`)
 
 `Shared cache
 <https://www.sqlite.org/compile.html#omit_shared_cache>`__ is omitted

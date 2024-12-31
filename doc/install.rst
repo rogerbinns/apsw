@@ -108,31 +108,35 @@ Github `source releases <https://github.com/rogerbinns/apsw/releases>`__ are
 digitally signed so you can verify they have not been tampered with,
 and were produced by the project maintainer.
 
-`Sigstore <https://www.sigstore.dev/>`__ is used via the `cosign tool
-<https://docs.sigstore.dev/cosign/signing/>`__.  Download the
-corresponding cosign bundle which contains the signature.
+`Sigstore <https://www.sigstore.dev/>`__ is used.  Instructions are
+shown for the standalone  `cosign tool
+<https://github.com/sigstore/cosign/releases>`__ (easiest,
+recommended), and the `Python sigstore module
+<https://pypi.org/project/sigstore/>`__.
 
 Verify
 
-  `Install cosign
-  <https://docs.sigstore.dev/cosign/system_config/installation/>`__ if you
-  don't have it already.  It is `available for a wide variety of
-  platforms <https://github.com/sigstore/cosign/releases/>`__
-  including Linux, MacOS, and Windows.
-
   Checking the signature needs to provide the source release, the
   cosign bundle, the maintainer id, and issuer.  The command is all
-  one line shown here across multiple lines for clarity.
+  one line shown here across multiple lines for clarity, along with
+  the expected successful output.
 
   .. verify-begin
 
   .. code-block:: console
 
-    $ cosign verify-blob apsw-3.47.2.0.zip                           \
-        --bundle apsw-3.47.2.0.zip.cosign-bundle                     \
-        --certificate-identity=rogerb@rogerbinns.com                 \
+    $ cosign verify-blob apsw-3.47.2.0.zip                        \
+        --new-bundle-format                                       \
+        --bundle apsw-3.47.2.0.zip.cosign-bundle                  \
+        --certificate-identity=rogerb@rogerbinns.com              \
         --certificate-oidc-issuer=https://github.com/login/oauth
     Verified OK
+
+    $ python3 -m sigstore verify identity apsw-3.47.2.0.zip       \
+        --bundle apsw-3.47.2.0.zip.cosign-bundle                  \
+        --cert-identity=rogerb@rogerbinns.com                     \
+        --cert-oidc-issuer=https://github.com/login/oauth
+    OK: apsw-3.47.2.0.zip
 
   .. verify-end
 

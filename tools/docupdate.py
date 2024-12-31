@@ -51,13 +51,21 @@ for line in open("doc/install.rst", "rt"):
         op.append("")
 
         def back(s):
-            return s + " " * (65 - len(s)) + "\\"
+            return s + " " * (62 - len(s)) + "\\"
 
         op.append("    " + back(f"$ cosign verify-blob apsw-{version}.zip"))
+        op.append("    " + back("    --new-bundle-format"))
         op.append("    " + back(f"    --bundle apsw-{version}.zip.cosign-bundle"))
         op.append("    " + back("    --certificate-identity=rogerb@rogerbinns.com"))
         op.append("    " + "    --certificate-oidc-issuer=https://github.com/login/oauth")
         op.append("    " + "Verified OK")
+        op.append("")
+        op.append("    " + back(f"$ python3 -m sigstore verify identity apsw-{version}.zip"))
+        op.append("    " + back(f"    --bundle apsw-{version}.zip.cosign-bundle"))
+        op.append("    " + back("    --cert-identity=rogerb@rogerbinns.com"))
+        op.append("    " + "    --cert-oidc-issuer=https://github.com/login/oauth")
+        op.append("    " + f"OK: apsw-{version}.zip")
+
         op.append("")
     if line == ".. downloads-end":
         indownload = False
