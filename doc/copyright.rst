@@ -1,7 +1,7 @@
 Copyright and License
 =====================
 
-Copyright (C) 2004-2024 `Roger Binns <https://www.rogerbinns.com>`__
+Copyright (C) 2004-2025 `Roger Binns <https://www.rogerbinns.com>`__
 
 
 This software is provided 'as-is', without any express or implied

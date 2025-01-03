@@ -7,7 +7,7 @@ A terminal interface to the APSW SQLite shell modelled after the SQLite shell
 -----------------------------------------------------------------------------
 
 :version: apsw 3.47.2.0
-:date: 8 December 2024
+:date: 20 January 2025
 :manual section: 1
 :manual group: General Commands Manual
 
@@ -870,7 +870,7 @@ https://sqlite.org/cli.html
 COPYRIGHT AND LICENSE
 =====================
 
-Copyright (C) 2004-2024 `Roger Binns <https://www.rogerbinns.com>`__
+Copyright (C) 2004-2025 `Roger Binns <https://www.rogerbinns.com>`__
 
 
 This software is provided 'as-is', without any express or implied
