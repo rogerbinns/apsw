@@ -841,8 +841,6 @@ width_overrides = {
     0xFF9E: 1,
     # HALFWIDTH KATAKANA SEMI-VOICED SOUND MARK
     0xFF9F: 1,
-    # PUA_ANSI_CODEPOINT
-    0xF25B: 0,
 }
 
 # The terminals get widths wrong for codepoints added in 15.1
