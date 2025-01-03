@@ -1391,7 +1391,7 @@ def format_query_table(
     *,
     colour: bool = False,
     quote: bool = False,
-    string_sanitize: Union[Callable[[str], str], Union[Literal[0], Literal[1], Literal[2]]] = 0,
+    string_sanitize: Callable[[str], str] | Literal[0] | Literal[1] | Literal[2] = 0,
     binary: Callable[[bytes], str] = lambda x: f"[ { len(x) } bytes ]",
     null: str = "(null)",
     truncate: int = 4096,
@@ -1489,7 +1489,7 @@ def _format_table(
     rows: list[apsw.SQLiteValues],
     colour: bool,
     quote: bool,
-    string_sanitize: Union[Callable[[str], str], Union[Literal[0], Literal[1], Literal[2]]],
+    string_sanitize: Callable[[str], str] | Literal[0] | Literal[1] | Literal[2],
     binary: Callable[[bytes], str],
     null: str,
     truncate: int,
@@ -1588,7 +1588,7 @@ def _format_table(
             assert isinstance(val, str), f"expected str not { val!r}"
 
             # cleanup lines
-            lines = []
+            lines: list[str] = []
             for line in apsw.unicode.split_lines(val):
                 if apsw.unicode.text_width(line) < 0:
                     line = "".join((c if apsw.unicode.text_width(c) >= 0 else "?") for c in line)
