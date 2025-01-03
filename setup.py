@@ -311,6 +311,7 @@ class fetch(Command):
             if sys.platform != "win32":
                 os.chdir("sqlite3")
                 write("    Running configure to work out SQLite compilation flags")
+                # ::TODO:: replace with subprocess and pass in sysconfig compiler and flags
                 res = os.system("./configure >/dev/null")
                 defline = None
                 for line in read_whole_file("Makefile", "rt").split("\n"):
