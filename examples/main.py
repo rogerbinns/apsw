@@ -521,7 +521,9 @@ def datetime_to_sqlite_value(dt: datetime.datetime) -> float:
 
 # ... require manual registration
 registrar.register_adapter(complex, complex_to_sqlite_value)
-registrar.register_adapter(datetime.datetime, datetime_to_sqlite_value)
+registrar.register_adapter(
+    datetime.datetime, datetime_to_sqlite_value
+)
 
 # conversion from a SQLite value requires registration
 registrar.register_converter("POINT", Point.convert_from_sqlite)
@@ -543,11 +545,15 @@ registrar.register_converter("TIMESTAMP", sqlite_to_datetime)
 
 # note that the type names are case sensitive and must match the
 # registration
-connection.execute("create table conversion(p POINT, c COMPLEX, t TIMESTAMP)")
+connection.execute(
+    "create table conversion(p POINT, c COMPLEX, t TIMESTAMP)"
+)
 
 # convert going into database
 test_data = (Point(5.2, 7.6), 3 + 4j, datetime.datetime.now())
-connection.execute("insert into conversion values(?, ?, ?)", test_data)
+connection.execute(
+    "insert into conversion values(?, ?, ?)", test_data
+)
 print("inserted", test_data)
 
 # and coming back out
@@ -1005,7 +1011,10 @@ def get_files_info(
                         "directory": root,
                         "name": entry.name,
                         "extension": os.path.splitext(entry.name)[1],
-                        **{k: getattr(s, k) for k in get_files_info.stat_columns},
+                        **{
+                            k: getattr(s, k)
+                            for k in get_files_info.stat_columns
+                        },
                     }
 
 
@@ -1336,13 +1345,14 @@ with apsw.ext.ShowResourceUsage(
 
 # Use None instead of stdout and no information is printed or gathered
 with apsw.ext.Trace(sys.stdout, db=connection, vtable=True):
-
     # APSW does a savepoint behind the scenes to wrap the block
     with connection:
         # Some regular SQL
         connection.execute("create table multi(x)")
         # executemany runs the same statement repeatedly
-        connection.executemany("insert into multi values(?)", ((x,) for x in range(5)))
+        connection.executemany(
+            "insert into multi values(?)", ((x,) for x in range(5))
+        )
         # See how many rows were processed
         connection.execute("select * from multi limit 2").fetchall()
         # You can also see how many rows were changed
@@ -1350,7 +1360,9 @@ with apsw.ext.Trace(sys.stdout, db=connection, vtable=True):
         # To implement the table, SQLIte issues the pragma behind the
         # scenes.  Note how the output shows this statement starting,
         # the pragma, and then this statement ending.
-        connection.execute("select count(*) from pragma_function_list")
+        connection.execute(
+            "select count(*) from pragma_function_list"
+        )
 
 ### format_query: Formatting query results table
 # :meth:`apsw.ext.format_query_table` makes it easy
