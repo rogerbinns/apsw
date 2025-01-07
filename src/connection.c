@@ -4770,7 +4770,13 @@ Connection_table_exists(Connection *self, PyObject *const *fast_args, Py_ssize_t
   PYSQLITE_VOID_CALL(res
                      = sqlite3_table_column_metadata(self->db, dbname, table_name, NULL, NULL, NULL, NULL, NULL, NULL));
 
-  return Py_NewRef((res == SQLITE_OK) ? Py_True : Py_False);
+  if (res == SQLITE_OK)
+    Py_RETURN_TRUE;
+  if (res == SQLITE_ERROR)
+    Py_RETURN_FALSE;
+
+  SET_EXC(res, self->db);
+  return NULL;
 }
 
 /** .. method:: column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]
