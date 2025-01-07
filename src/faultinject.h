@@ -150,7 +150,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef sqlite3_deserialize
 #undef sqlite3_drop_modules
 #undef sqlite3_enable_load_extension
-#undef sqlite3_enable_shared_cache
 #undef sqlite3_exec
 #undef sqlite3_expanded_sql
 #undef sqlite3_initialize
@@ -2260,21 +2259,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_sqlite3_enable_load_extension = (typeof (_res_sqlite3_enable_load_extension))18;                                                                                               \
     }                                                                                                                                                                                       \
     _res_sqlite3_enable_load_extension;                                                                                                                                                     \
-})
-#define sqlite3_enable_shared_cache(...) \
-({                                                                                                                                                                                    \
-    __auto_type _res_sqlite3_enable_shared_cache = 0 ? sqlite3_enable_shared_cache(__VA_ARGS__) : 0;                                                                                  \
-                                                                                                                                                                                      \
-    _res_sqlite3_enable_shared_cache = (typeof (_res_sqlite3_enable_shared_cache))APSW_FaultInjectControl("sqlite3_enable_shared_cache", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                                                                      \
-    if ((typeof (_res_sqlite3_enable_shared_cache))0x1FACADE == _res_sqlite3_enable_shared_cache)                                                                                     \
-       _res_sqlite3_enable_shared_cache = sqlite3_enable_shared_cache(__VA_ARGS__);                                                                                                   \
-    else if ((typeof(_res_sqlite3_enable_shared_cache))0x2FACADE == _res_sqlite3_enable_shared_cache)                                                                                 \
-    {                                                                                                                                                                                 \
-        sqlite3_enable_shared_cache(__VA_ARGS__);                                                                                                                                     \
-        _res_sqlite3_enable_shared_cache = (typeof (_res_sqlite3_enable_shared_cache))18;                                                                                             \
-    }                                                                                                                                                                                 \
-    _res_sqlite3_enable_shared_cache;                                                                                                                                                 \
 })
 #define sqlite3_exec(...) \
 ({                                                                                                                                       \

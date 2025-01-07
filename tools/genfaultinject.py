@@ -120,7 +120,7 @@ returns = {
             sqlite3_db_cacheflush sqlite3_db_config sqlite3_db_status
             sqlite3_declare_vtab sqlite3_deserialize
             sqlite3_drop_modules sqlite3_enable_load_extension
-            sqlite3_enable_shared_cache sqlite3_exec
+            sqlite3_exec
             sqlite3_initialize
             sqlite3_load_extension
             sqlite3_open
