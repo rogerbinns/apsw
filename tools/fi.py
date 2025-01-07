@@ -95,7 +95,6 @@ def exercise(example_code, expect_exception):
     apsw.soft_heap_limit(1_000_000_000)
     apsw.hard_heap_limit(1_000_000_000)
     apsw.randomness(32)
-    apsw.enable_shared_cache(False)
     apsw.release_memory(1024)
     apsw.exception_for(3)
     try:
