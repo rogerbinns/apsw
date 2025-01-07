@@ -5,8 +5,6 @@
 # then you must include this future annotations line first.
 from __future__ import annotations
 
-from typing import Optional, Iterator, Any
-
 from pprint import pprint
 import re
 import functools
