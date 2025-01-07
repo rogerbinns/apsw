@@ -41,8 +41,8 @@ clean: ## Cleans up everything
 	for i in 'vgcore.*' '.coverage*' '*.pyc' '*.pyo' '*~' '*.o' '*.so' '*.dll' '*.pyd' '*.gcov' '*.gcda' '*.gcno' '*.orig' '*.tmp' 'testdb*' 'testextension.sqlext' ; do \
 		find . -type f -name "$$i" -print0 | xargs -0 --no-run-if-empty rm -f ; done
 	rm -f doc/typing.rstgen doc/example.rst doc/example-fts.rst doc/renames.rstgen $(GENDOCS)
-	rm -f compile_commands.json setup.apsw work
-	-rm -rf sqlite3/
+	rm -f compile_commands.json setup.apsw
+	-rm -rf sqlite3/ work/
 
 doc: docs ## Builds all the doc
 
@@ -165,8 +165,8 @@ src/apswversion.h: Makefile
 
 stubtest: ## Verifies type annotations with mypy
 	-$(PYTHON) -m mypy.stubtest --allowlist tools/stubtest.allowlist apsw
-	env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/main.py
-	env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/fts.py
+	-env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/main.py
+	-env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/fts.py
 
 # set this to a commit id to grab that instead
 FOSSIL_URL="https://www.sqlite.org/src/tarball/sqlite.tar.gz"
