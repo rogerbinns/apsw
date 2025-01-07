@@ -81,6 +81,30 @@ If a column declaration gives a type then SQLite
   types1 ('12', 3, 4, 5.5, b'\x03r\xf4\x00\x9e')
   types2 (12, 3.0, '4', 5.5, b'\x03r\xf4\x00\x9e')
 
+.. _pyobject:
+
+.. index:: sqlite3_bind_pointer, sqlite3_result_pointer, sqlite3_value_pointer
+
+Runtime Python objects
+======================
+
+While SQLite only :ref:`stores 5 types <types>`, it is possible to
+pass Python objects into SQLite, operate on them with your
+:meth:`functions <Connection.create_scalar_function>` (including
+window, aggregates), and to return them in results.
+
+This is done by wrapping the value in :meth:`apsw.pyobject` when
+supplying it in a binding or function result.  See the :ref:`example
+<example_pyobject>`.
+
+It saves having to convert working objects into SQLite compatible ones
+and back again. It is very useful if you work with numpy.  Any attempt
+to save the objects to the database or provide them to SQLite provided
+functions results in them being seen as ``null``.
+
+Behind the scenes the `pointer passing interface
+<https://sqlite.org/bindptr.html>`__ is used.
+
 
 Transactions
 ============

@@ -1516,20 +1516,25 @@ def _format_table(
             # magenta
             "number_start": c(35),
             "number_end": c(39),
+            # green
+            "pyobject_start": c(32),
+            "pyobject_end": c(39),
         }
 
         def colour_wrap(text: str, kind: type | None, header: bool = False) -> str:
             if header:
                 return colours["header_start"] + text + colours["header_end"]
-            if kind == str:
+            if kind is str:
                 tkind = "string"
-            elif kind == bytes:
+            elif kind is bytes:
                 tkind = "blob"
             elif kind in (int, float):
                 tkind = "number"
-            else:
+            elif kind is types.NoneType:
                 tkind = "null"
-            return colours[tkind + "_start"] + text + colours[tkind + "_end"]
+            else:
+                tkind = "pyobject"
+            return colours[f"{tkind}_start"] + text + colours[f"{tkind}_end"]
 
     else:
         colours = {}
@@ -1575,7 +1580,10 @@ def _format_table(
 
                         cell = re.sub(".", repl, cell)
             if quote:
-                val = apsw.format_sql_value(cell)
+                if isinstance(cell, (types.NoneType, str, float, int, bytes)):
+                    val = apsw.format_sql_value(cell)
+                else:
+                    val = repr(cell)
             else:
                 if isinstance(cell, str):
                     val = cell
@@ -1583,8 +1591,10 @@ def _format_table(
                     val = str(cell)
                 elif isinstance(cell, bytes):
                     val = binary(cell)
-                else:
+                elif cell is None:
                     val = null
+                else:
+                    val = str(cell)
             assert isinstance(val, str), f"expected str not { val!r}"
 
             # cleanup lines

@@ -2588,8 +2588,16 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     return 1;
   }
 
+  if (PyObject_TypeCheck(obj, &PyObjectBindType) == 1)
+  {
+    sqlite3_result_pointer(context, Py_NewRef(((PyObjectBind *)obj)->object), PYOBJECT_BIND_TAG,
+                           pyobject_bind_destructor);
+    return 1;
+  }
+
   PyErr_Format(PyExc_TypeError,
-               "Value from Python is not supported by SQLite.  It should be one of None, int, float, str, or bytes.  "
+               "Value from Python is not supported by SQLite.  It should be one of None, int, float, str, bytes, or "
+               "wrapped with apsw.pyobject.  "
                "Received %s.",
                Py_TypeName(obj));
   sqlite3_result_error(context, "Bad return type from python function callback", -1);

@@ -184,6 +184,27 @@ typedef struct
   int init_was_called;
 } ZeroBlobBind;
 
+typedef struct
+{
+  PyObject_HEAD
+  PyObject *object;
+} PyObjectBind;
+
+/* forward reference */
+static PyTypeObject PyObjectBindType;
+
+/* name used in sqlite3 pointer interfaces to identify pointer type */
+#define PYOBJECT_BIND_TAG "apsw-pyobject"
+
+/* destructor for bind/result */
+static void
+pyobject_bind_destructor(void *value)
+{
+  PyGILState_STATE gilstate = PyGILState_Ensure();
+  Py_DECREF((PyObject *)value);
+  PyGILState_Release(gilstate);
+}
+
 static void apsw_write_unraisable(PyObject *hookobject);
 
 /* string constants struct */
@@ -231,6 +252,16 @@ static int allow_missing_dict_bindings = 0;
 #include "constants.c"
 
 /* MODULE METHODS */
+
+/* Although pyobject is marked as a method, it is really a class but
+   we are trying to hide the implementation details as much as possible.
+*/
+
+/** .. method:: pyobject(object: Any)
+
+  Indicates a Python object is being provided as a
+  :ref:`runtime value <pyobject>`.
+*/
 
 /** .. method:: sqlite_lib_version() -> str
 
@@ -1854,7 +1885,8 @@ PyInit_apsw(void)
       || PyType_Ready(&apswfcntl_pragma_Type) < 0 || PyType_Ready(&APSWURIFilenameType) < 0
       || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0
       || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_object) < 0
-      || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0)
+      || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0
+      || PyType_Ready(&PyObjectBindType) < 0)
     goto fail;
 
   /* PyStructSequence_NewType is broken in some Pythons
@@ -1907,6 +1939,7 @@ PyInit_apsw(void)
   ADD(IndexInfo, SqliteIndexInfoType);
   ADD(FTS5Tokenizer, APSWFTS5TokenizerType);
   ADD(FTS5ExtensionApi, APSWFTS5ExtensionAPIType);
+  ADD(pyobject, PyObjectBindType);
 #undef ADD
 
   /** .. attribute:: connection_hooks

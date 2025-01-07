@@ -5746,6 +5746,9 @@ class APSW(unittest.TestCase):
             "OffsetMapper": {
                 "req": {},
             },
+            "PyObjectBind": {
+                "req": {},
+            },
         }
 
         prefix, base = name.split("_", 1)
@@ -5949,6 +5952,71 @@ class APSW(unittest.TestCase):
         self.assertTrue(type(self.db.sqlite3_pointer()) in (int,))
         self.assertEqual(self.db.sqlite3_pointer(), self.db.sqlite3_pointer())
         self.assertNotEqual(self.db.sqlite3_pointer(), apsw.Connection(":memory:").sqlite3_pointer())
+
+    def testPyObject(self):
+        "apsw.pyobject runtime objects"
+        # a bunch of things SQLite should complain about
+        objects = (set((1, 2, 3)), sys, 3 + 4j, self)
+
+        for o in objects:
+            self.assertRaises(TypeError, self.db.execute, "select ?", (o,))
+            self.assertEqual(o, self.db.execute("select ?", (apsw.pyobject(o),)).get)
+
+        def check(items):
+            for i in items:
+                self.assertIn(i, objects)
+
+        # scalar, aggregate, window, collation
+        def scalar(*args):
+            check(args)
+            return apsw.pyobject(random.choice(objects))
+
+        class aggregate:
+            def step(self, *args):
+                check(args)
+
+            def final(self):
+                return apsw.pyobject(random.choice(objects))
+
+        class window:
+            def step(self, *args):
+                pass
+
+            def final(self):
+                return apsw.pyobject(random.choice(objects))
+
+            def value(self):
+                return apsw.pyobject(random.choice(objects))
+
+            def inverse(self, *args):
+                pass
+
+        self.db.create_scalar_function("pyscalar", scalar)
+        self.db.create_aggregate_function("pyaggregate", aggregate)
+        self.db.create_window_function("pywindow", window)
+
+        N = 10
+        qmark = "(" + ",".join("?" * len(objects)) + ")"
+        sql = "with source(" + ",".join("abcdefghijk"[: len(objects)]) + ") as (values" + ",".join((qmark,) * N) + ") "
+        bindings = [apsw.pyobject(random.choice(objects)) for _ in range(len(objects) * N)]
+
+        # The CTE doesn't preserve pyobjects - they end up null due to
+        # handles temporary values content.  The same
+        # happens if I union selects of # the values.
+
+        for row in self.db.execute(
+            sql + f"select pyscalar{qmark}, pyscalar{qmark} from source", bindings + bindings[: len(objects) * 2]
+        ):
+            check(row)
+
+        for row in self.db.execute(sql + "select pyaggregate(?) from source", bindings + [bindings[0]]):
+            check(row)
+
+        for row in self.db.execute(
+            sql + "select pywindow(?) over (rows between 1 preceding and 1 following) from source",
+            bindings + [bindings[0]],
+        ):
+            check(row)
 
     def testPickle(self):
         "Verify data etc can be pickled"

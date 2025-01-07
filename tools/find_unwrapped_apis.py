@@ -66,7 +66,6 @@ nowrap = {
     "sqlite3_value_free",
     "sqlite3_value_frombind",
     "sqlite3_value_numeric_type",
-    "sqlite3_value_pointer",
     "sqlite3_bind_parameter_index",  # we don't need to do this direction
     "sqlite3_context_db_handle",
     "sqlite3_create_filename",
@@ -104,8 +103,6 @@ nowrap = {
     # we don't do subtypes / pointer
     "sqlite3_value_subtype",
     "sqlite3_result_subtype",
-    "sqlite3_bind_pointer",
-    "sqlite3_result_pointer",
     # requires non-default compile options
     "sqlite3_normalized_sql",
     "sqlite3_test_control",

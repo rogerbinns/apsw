@@ -559,6 +559,60 @@ for row in connection.execute("select * from conversion"):
 # clear registrar
 connection.cursor_factory = apsw.Cursor
 
+### pyobject: Runtime Python objects
+# While only :ref:`5 types <types>` can be stored, you can pass any
+# Python objects :ref:`to and from your functions <pyobject>` at
+# runtime.
+
+# Python set which isn't a supported SQLite type
+# containing items like a complex number and stdout which
+# definitely aren't SQLite compatible
+py_value = {1, 2, "three", 4 + 5j, sys.stdout}
+
+# Trying to pass it as a value gives TypeError
+try:
+    print(connection.execute("select ?", (py_value,)).get)
+except TypeError as exc:
+    print(exc)
+
+# Now wrap it and it works
+print(
+    "select ?",
+    connection.execute("select ?", (apsw.pyobject(py_value),)).get,
+)
+
+# It is still null at the SQL level
+print(
+    "select typeof(?)",
+    connection.execute(
+        "select typeof(?)", (apsw.pyobject(py_value),)
+    ).get,
+)
+
+
+# Lets make a set which SQLite knows nothing about
+def make_set(*args):
+    print(f"make_set got {args!r}")
+    # this will return a set, so we also need to mark it
+    return apsw.pyobject(set(args))
+
+
+connection.create_scalar_function("make_set", make_set)
+
+print(
+    "select make_set(?, ?, ?)",
+    connection.execute(
+        "select make_set(?, ?, ?)",
+        (
+            # these aren't SQLite types
+            apsw.pyobject(3 + 4j),
+            apsw.pyobject(sys.stdin),
+            # but a string is
+            "hello",
+        ),
+    ).get,
+)
+
 ### query_details: Query details
 # :meth:`apsw.ext.query_info` can provide a lot of information about a
 # query (without running it)

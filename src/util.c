@@ -296,6 +296,9 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
       Py_XDECREF(set);
       return NULL;
     }
+    void *pointer = sqlite3_value_pointer(value, PYOBJECT_BIND_TAG);
+    if (pointer)
+      return Py_NewRef((PyObject *)pointer);
     Py_RETURN_NONE;
 
   case SQLITE_BLOB:
@@ -342,8 +345,13 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
   }
 
   default:
-  case SQLITE_NULL:
+  case SQLITE_NULL: {
+    void *pointer;
+    _PYSQLITE_CALL_V(pointer = sqlite3_value_pointer(sqlite3_column_value(stmt, col), PYOBJECT_BIND_TAG));
+    if (pointer)
+      return Py_NewRef((PyObject *)pointer);
     Py_RETURN_NONE;
+  }
 
   case SQLITE_BLOB: {
     const void *data;

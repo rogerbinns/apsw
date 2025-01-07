@@ -14,6 +14,10 @@ APSW changes by version
 ========
 
 Source releases are also available in tar format (:issue:`548`)
+You can :ref:`pass any Python objects <pyobject>` into SQLite, and
+return them when used as runtime values such as functions.  SQLite's
+`pointer passing interface <https://www.sqlite.org/bindptr.html>`__ is
+used behind the scenes. (:issue:`521`)
 
 Updated source release signing and instructions. (:issue:`549`)
 

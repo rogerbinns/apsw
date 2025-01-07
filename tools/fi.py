@@ -714,9 +714,9 @@ class Tester:
                 self.expect_exception.append(MemoryError)
                 return 0
 
-            # we only use this to get fts5api and always claim it was because fts5
+            # we use this to get fts5api and always claim it was because fts5
             # is not present
-            if fname in {"sqlite3_prepare", "sqlite3_bind_pointer"}:
+            if fname in {"sqlite3_prepare", "sqlite3_bind_pointer"} and "fts.c" in key[1]:
                 self.expect_exception.append(apsw_attr("NoFTS5Error"))
                 return self.apsw_attr("SQLITE_ERROR")
 

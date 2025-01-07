@@ -521,6 +521,14 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     PYSQLITE_CUR_CALL(res
                       = sqlite3_bind_zeroblob64(self->statement->vdbestatement, arg, ((ZeroBlobBind *)obj)->blobsize));
   }
+  else if (PyObject_TypeCheck(obj, &PyObjectBindType) == 1)
+  {
+    PyObject *pyobject = ((PyObjectBind *)obj)->object;
+    Py_INCREF(pyobject);
+    PYSQLITE_CUR_CALL(res = sqlite3_bind_pointer(self->statement->vdbestatement, arg, pyobject, PYOBJECT_BIND_TAG,
+                                                 pyobject_bind_destructor));
+    /* sqlite3_bind_pointer calls the destructor on failure */
+  }
   else
   {
     PyErr_Format(PyExc_TypeError, "Bad binding argument type supplied - argument #%d: type %s",
@@ -891,7 +899,8 @@ APSWCursor_step(APSWCursor *self)
     :param statements: One or more SQL statements such as ``select *
       from books`` or ``begin; insert into books ...; select
       last_insert_rowid(); end``.
-    :param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`
+    :param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`,
+      :class:`zeroblob`, or a wrapped :ref:`Python object <pyobject>`
     :param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be
       placed in the cache after execution
     :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.html>`__ passed to
@@ -903,7 +912,7 @@ APSWCursor_step(APSWCursor *self)
     :raises BindingsError: You supplied too many or too few bindings for the statements
     :raises IncompleteExecutionError: There are remaining unexecuted queries from your last execute
 
-    -* sqlite3_prepare_v3 sqlite3_step sqlite3_bind_int64 sqlite3_bind_null sqlite3_bind_text64 sqlite3_bind_double sqlite3_bind_blob64 sqlite3_bind_zeroblob
+    -* sqlite3_prepare_v3 sqlite3_step sqlite3_bind_int64 sqlite3_bind_null sqlite3_bind_text64 sqlite3_bind_double sqlite3_bind_blob64 sqlite3_bind_zeroblob sqlite3_stmt_explain
 
     .. seealso::
 
@@ -1806,4 +1815,30 @@ static PyTypeObject APSWCursorType = {
   .tp_init = (initproc)APSWCursor_init,
   .tp_new = APSWCursor_new,
   .tp_str = (reprfunc)APSWCursor_tp_str,
+};
+
+static int
+PyObjectBind_init(PyObjectBind *self, PyObject *args, PyObject *kwargs)
+{
+  if (!args || kwargs || PyTuple_GET_SIZE(args) != 1)
+  {
+    PyErr_Format(PyExc_TypeError, "apsw.pyobject takes exactly one value");
+    return -1;
+  }
+  Py_CLEAR(self->object);
+  self->object = Py_NewRef(PyTuple_GET_ITEM(args, 0));
+
+  return 0;
+}
+
+static void
+PyObjectBind_finalize(PyObjectBind *self)
+{
+  Py_CLEAR(self->object);
+}
+
+static PyTypeObject PyObjectBindType = {
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.pyobject", .tp_basicsize = sizeof(PyObjectBind),
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,     .tp_init = (initproc)PyObjectBind_init,
+  .tp_finalize = (destructor)PyObjectBind_finalize,         .tp_new = PyType_GenericNew,
 };

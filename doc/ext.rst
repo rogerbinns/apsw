@@ -56,7 +56,8 @@ Use :class:`apsw.ext.DataClassRowFactory` as a
 Converting types into and out of SQLite
 ---------------------------------------
 
-SQLite only stores and returns 5 types:
+SQLite only stores 5 types.  (You can do any :ref:`Python object
+<pyobject>` as runtime only values.)
 
 * None
 * int
