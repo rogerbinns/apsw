@@ -28,6 +28,8 @@ import apsw
 import apsw.unicode
 import sys
 
+NoneType = types.NoneType if sys.version_info > (3, 10) else type(None)
+
 
 def result_string(code: int) -> str:
     """Turns a result or extended result code into a string.
@@ -1530,7 +1532,7 @@ def _format_table(
                 tkind = "blob"
             elif kind in (int, float):
                 tkind = "number"
-            elif kind is types.NoneType:
+            elif kind is NoneType:
                 tkind = "null"
             else:
                 tkind = "pyobject"
@@ -1580,7 +1582,7 @@ def _format_table(
 
                         cell = re.sub(".", repl, cell)
             if quote:
-                if isinstance(cell, (types.NoneType, str, float, int, bytes)):
+                if isinstance(cell, (NoneType, str, float, int, bytes)):
                     val = apsw.format_sql_value(cell)
                 else:
                     val = repr(cell)
