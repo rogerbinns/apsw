@@ -13,17 +13,18 @@ APSW changes by version
 3.48.0.0
 ========
 
-Source releases are also available in tar format (:issue:`548`)
 You can :ref:`pass any Python objects <pyobject>` into SQLite, and
 return them when used as runtime values such as functions.  SQLite's
 `pointer passing interface <https://www.sqlite.org/bindptr.html>`__ is
 used behind the scenes. (:issue:`521`)
 
-Updated source release signing and instructions. (:issue:`549`)
+:ref:`Source releases <sources>` are also available in tar format
+(:issue:`548`), and have updated source release signing and
+:ref:`instructions <verifydownload>`. (:issue:`549`)
 
 `Shared cache
-<https://www.sqlite.org/compile.html#omit_shared_cache>`__ is omitted
-when APSW includes the amalgamation like PyPI builds.  This is
+<https://www.sqlite.org/compile.html#omit_shared_cache>`__ (2006) is
+omitted when APSW includes the amalgamation like PyPI builds.  This is
 `recommended by SQLite
 <https://www.sqlite.org/compile.html#recommended_compile_time_options>`__,
 has been `discouraged for a long time

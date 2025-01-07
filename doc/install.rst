@@ -70,6 +70,8 @@ There is a `full list (150+)
 distributions, the package name for APSW, and what APSW version they
 are currently on.
 
+.. _sources:
+
 Source
 ------
 
