@@ -314,7 +314,7 @@ convert_value_to_pyobject_not_in(sqlite3_value *value)
 
 /* Converts column to PyObject.  Returns a new reference. Almost identical to above
    but we cannot just use sqlite3_column_value and then call the above function as
-   SQLite doesn't allow that ("unprotected values") */
+   SQLite doesn't allow that ("unprotected values") and assertion failure */
 #undef convert_column_to_pyobject
 static PyObject *
 convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
