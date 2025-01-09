@@ -31,7 +31,8 @@ has been `discouraged for a long time
 <https://sqlite.org/sharedcache.html#use_of_shared_cache_is_discouraged>`__.
 :meth:`apsw.enable_shared_cache` will raise an exception if called and
 the shared cache has been omitted.  You can see what options are in
-effect in :attr:`apsw.compile_options`.
+effect in :attr:`apsw.compile_options`.  If you were using it for
+shared memory databases then :ref:`use the memdb VFS <memdb>`.
 
 3.47.2.0
 ========

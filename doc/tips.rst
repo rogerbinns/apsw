@@ -335,3 +335,36 @@ the code source compatible with other database drivers).
 Set :attr:`Connection.cursor_factory` to any callable, which will be
 called with the connection as the only parameter, and return the
 object to use as a cursor.
+
+.. index:: pair: Memory database; memdb
+
+.. _memdb:
+
+Memory databases
+================
+
+You can get an `in-memory only database
+<https://sqlite.org/inmemorydb.html>`__ by using a filename of
+``:memory:`` and a temporary disk backed database with a name of an
+empty string.  (Note :meth:`shared cache
+<apsw.enable_shared_cache>` won't work,)
+
+SQLite has a (currently undocumented) VFS that allows the same
+connection to have multiple distinct memory databases, and for
+separate connections to share a memory database.
+
+Use the name ``memdb`` as the VFS.  If the filename provided starts
+with a ``/`` then it is shared amongst connections, otherwise it is
+private to the connection.
+
+.. code-block::
+
+    # normal opens
+    connection = apsw.Connection("/shared", vfs="memdb")
+    connection = apsw.Connection("not-shared", vfs="memdb")
+
+    # using URI
+    connection = apsw.Connection("file:/shared&vfs=memdb",
+                    flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE)
+    connection = apsw.Connection("file:not-shared&vfs=memdb",
+                    flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE)
