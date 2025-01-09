@@ -19,7 +19,7 @@ return them when used as runtime values such as functions.  SQLite's
 used behind the scenes. (:issue:`521`)
 
 :ref:`Source releases <sources>` are also available in tar format
-(:issue:`548`), and have updated source release signing and
+(:issue:`548`), and have updated source release signing
 :ref:`instructions <verifydownload>`. (:issue:`549`)
 
 `Shared cache
