@@ -111,12 +111,13 @@ MakeExistingException(void)
 {
   return 0;
 }
+
+#ifdef APSW_FAULT_INJECT
+
 #include "faultinject.h"
 
-#ifdef APSW_TESTFIXTURES
-
 /* Fault injection */
-#define APSW_FAULT_INJECT(faultName, good, bad)                                                                        \
+#define APSW_FAULT(faultName, good, bad)                                                                        \
   do                                                                                                                   \
   {                                                                                                                    \
     if (APSW_Should_Fault(#faultName))                                                                                 \
@@ -142,8 +143,8 @@ static int APSW_Should_Fault(const char *);
 #define APSW_TEST_LARGE_OBJECTS
 #endif
 
-#else /* APSW_TESTFIXTURES */
-#define APSW_FAULT_INJECT(faultName, good, bad)                                                                        \
+#else /* APSW_FAULT_INJECT */
+#define APSW_FAULT(faultName, good, bad)                                                                        \
   do                                                                                                                   \
   {                                                                                                                    \
     good;                                                                                                              \
@@ -997,7 +998,7 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
   Py_RETURN_FALSE;
 }
 
-#ifdef APSW_TESTFIXTURES
+#if defined(APSW_DEBUG) || defined(APSW_FAULT_INJECT)
 static PyObject *
 apsw_fini(PyObject *Py_UNUSED(self))
 {
@@ -1820,7 +1821,7 @@ static PyMethodDef module_methods[] = {
   { "unregister_vfs", (PyCFunction)apsw_unregister_vfs, METH_FASTCALL | METH_KEYWORDS, Apsw_unregister_vfs_DOC },
   { "allow_missing_dict_bindings", (PyCFunction)apsw_allow_missing_dict_bindings, METH_FASTCALL | METH_KEYWORDS,
     Apsw_allow_missing_dict_bindings_DOC },
-#ifdef APSW_TESTFIXTURES
+#if defined(APSW_FAULT_INJECT) || defined(APSW_DEBUG)
   { "_fini", (PyCFunction)apsw_fini, METH_NOARGS, "Frees all caches and recycle lists" },
 #endif
 #ifdef APSW_FORK_CHECKER
@@ -1998,8 +1999,8 @@ PyInit_apsw(void)
   if (PyModule_AddObject(m, "_null_bindings", apsw_cursor_null_bindings))
     goto fail;
 
-#ifdef APSW_TESTFIXTURES
-  if (PyModule_AddObject(m, "test_fixtures_present", Py_NewRef(Py_True)))
+#ifdef APSW_FAULT_INJECT
+  if (PyModule_AddObject(m, "apsw_fault_inject", Py_NewRef(Py_True)))
     goto fail;
 #endif
 
@@ -2066,6 +2067,6 @@ PyInit___init__(void)
 }
 #endif
 
-#ifdef APSW_TESTFIXTURES
+#ifdef APSW_FAULT_INJECT
 #include "faultinject.c"
 #endif

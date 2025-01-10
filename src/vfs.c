@@ -1828,7 +1828,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwargs)
       goto error;
     }
     baseversion = self->basevfs->iVersion;
-    APSW_FAULT_INJECT(APSWVFSBadVersion, , baseversion = -789426);
+    APSW_FAULT(APSWVFSBadVersion, , baseversion = -789426);
     if (baseversion < 1 || baseversion > 3)
     {
       PyErr_Format(PyExc_ValueError,
@@ -2393,7 +2393,7 @@ apswvfsfilepy_xUnlock(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t 
   }
   res = self->base->pMethods->xUnlock(self->base, level);
 
-  APSW_FAULT_INJECT(xUnlockFails, , res = SQLITE_IOERR);
+  APSW_FAULT(xUnlockFails, , res = SQLITE_IOERR);
 
   if (res == SQLITE_OK)
     Py_RETURN_NONE;
@@ -2558,7 +2558,7 @@ apswvfsfilepy_xSync(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fa
   }
   res = self->base->pMethods->xSync(self->base, flags);
 
-  APSW_FAULT_INJECT(xSyncFails, , res = SQLITE_IOERR);
+  APSW_FAULT(xSyncFails, , res = SQLITE_IOERR);
 
   if (res == SQLITE_OK)
     Py_RETURN_NONE;
@@ -2716,7 +2716,7 @@ apswvfsfilepy_xFileSize(APSWVFSFile *self)
   VFSFILENOTIMPLEMENTED(xFileSize, 1);
   res = self->base->pMethods->xFileSize(self->base, &size);
 
-  APSW_FAULT_INJECT(xFileSizeFails, , res = SQLITE_IOERR);
+  APSW_FAULT(xFileSizeFails, , res = SQLITE_IOERR);
 
   if (res != SQLITE_OK)
   {
@@ -2770,7 +2770,7 @@ apswvfsfilepy_xCheckReservedLock(APSWVFSFile *self)
 
   res = self->base->pMethods->xCheckReservedLock(self->base, &islocked);
 
-  APSW_FAULT_INJECT(xCheckReservedLockFails, , res = SQLITE_IOERR);
+  APSW_FAULT(xCheckReservedLockFails, , res = SQLITE_IOERR);
 
   if (res != SQLITE_OK)
   {
@@ -2778,7 +2778,7 @@ apswvfsfilepy_xCheckReservedLock(APSWVFSFile *self)
     return NULL;
   }
 
-  APSW_FAULT_INJECT(xCheckReservedLockIsTrue, , islocked = 1);
+  APSW_FAULT(xCheckReservedLockIsTrue, , islocked = 1);
 
   if (islocked)
     Py_RETURN_TRUE;
@@ -2976,7 +2976,7 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
 
   res = self->base->pMethods->xClose(self->base);
 
-  APSW_FAULT_INJECT(xCloseFails, , res = SQLITE_IOERR);
+  APSW_FAULT(xCloseFails, , res = SQLITE_IOERR);
 
   /* we set pMethods to NULL after xClose callback so xClose can call other operations
      such as read or write during close */

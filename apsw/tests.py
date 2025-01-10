@@ -5904,8 +5904,8 @@ class APSW(unittest.TestCase):
         for filename in glob.glob("src/*.c"):
             with open(filename, "rt", encoding="utf8") as f:
                 for line in f:
-                    if "APSW_FAULT_INJECT" in line and "#define" not in line:
-                        mo = re.match(r".*APSW_FAULT_INJECT\s*\(\s*(?P<name>\w+)\s*,.*", line)
+                    if "APSW_FAULT" in line and "#" not in line:
+                        mo = re.match(r".*APSW_FAULT\s*\(\s*(?P<name>\w+)\s*,.*", line)
                         assert mo, f"Failed to match line { line }"
                         name = mo.group("name")
                         assert name not in faults, f"fault inject name { name } found multiple times"
@@ -10896,7 +10896,7 @@ class ZZFaultInjection(unittest.TestCase):
     # testLargeObjects
     def testFaultInjection(self):
         "Deliberately inject faults to exercise all code paths"
-        if not getattr(apsw, "test_fixtures_present", None):
+        if not getattr(apsw, "apsw_fault_inject", None):
             return
 
         apsw.faultdict = dict()
@@ -10921,7 +10921,7 @@ class ZZFaultInjection(unittest.TestCase):
 
         seen = set()
 
-        for macro, faultname in re.findall(r"(APSW_FAULT_INJECT)\s*[(]\s*(?P<fault_name>.*?)\s*,", code):
+        for macro, faultname in re.findall(r"(APSW_FAULT)\s*[(]\s*(?P<fault_name>.*?)\s*,", code):
             if faultname == "faultName":
                 continue
             if faultname not in test_code:

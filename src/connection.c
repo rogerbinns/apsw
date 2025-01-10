@@ -5044,7 +5044,7 @@ Connection_read(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_na
     goto error;
   }
   PYSQLITE_VOID_CALL(res = fp->pMethods->xRead(fp, PyBytes_AS_STRING(bytes), amount, offset));
-  APSW_FAULT_INJECT(ConnectionReadError, , res = SQLITE_IOERR_CORRUPTFS);
+  APSW_FAULT(ConnectionReadError, , res = SQLITE_IOERR_CORRUPTFS);
   if (res != SQLITE_OK && res != SQLITE_IOERR_SHORT_READ)
   {
     SET_EXC(res, NULL);
@@ -5533,7 +5533,7 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
   tfd->factory_func = Py_NewRef(tokenizer_factory);
   tfd->connection = Py_NewRef((PyObject *)self);
 
-  APSW_FAULT_INJECT(FTS5TokenizerRegister,
+  APSW_FAULT(FTS5TokenizerRegister,
                     rc
                     = api->xCreateTokenizer_v2(api, name, tfd, &APSWPythonTokenizer, APSWPythonTokenizerFactoryDelete),
                     rc = SQLITE_NOMEM);
@@ -5625,7 +5625,7 @@ Connection_register_fts5_function(Connection *self, PyObject *const *fast_args, 
   int rc = SQLITE_NOMEM;
   if (cbinfo->name)
   {
-    APSW_FAULT_INJECT(FTS5FunctionRegister,
+    APSW_FAULT(FTS5FunctionRegister,
                       rc = api->xCreateFunction(api, name, cbinfo, apsw_fts5_extension_function,
                                                 apsw_fts5_extension_function_destroy),
                       rc = SQLITE_BUSY);

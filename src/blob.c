@@ -502,7 +502,7 @@ APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
 
   Py_ssize_t calc_end = data_buffer.len + self->curoffset;
 
-  APSW_FAULT_INJECT(BlobWriteTooBig, , calc_end = (Py_ssize_t)0x7FFFFFFF * (Py_ssize_t)0x1000);
+  APSW_FAULT(BlobWriteTooBig, , calc_end = (Py_ssize_t)0x7FFFFFFF * (Py_ssize_t)0x1000);
 
   if ((int)calc_end < 0)
   {

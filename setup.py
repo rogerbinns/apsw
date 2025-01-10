@@ -591,7 +591,7 @@ class apsw_build_ext(beparent):
         if self.debug:
             # distutils forces NDEBUG even with --debug so overcome that
             ext.undef_macros.append("NDEBUG")
-            ext.define_macros.append(("APSW_TESTFIXTURES", "1"))  # extra test harness code
+            ext.define_macros.append(("APSW_DEBUG", "1"))  # extra test harness code
             ext.define_macros.append(("SQLITE_DEBUG", "1"))
         else:
             ext.define_macros.append(("NDEBUG", "1"))

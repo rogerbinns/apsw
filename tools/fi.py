@@ -656,7 +656,7 @@ class Tester:
         apsw_attr = self.apsw_attr
         fname = self.call_remap.get(key[0], key[0])
         try:
-            if key[0] == "APSW_FAULT_INJECT":
+            if key[0] == "APSW_FAULT":
                 self.expect_exception.append(Exception)
                 return True
 
@@ -753,7 +753,7 @@ class Tester:
     def should_fault(self, name, pending_exception):
         if pending_exception != (None, None, None):
             return False
-        key = ("APSW_FAULT_INJECT", "", name, 0, "")
+        key = ("APSW_FAULT", "", name, 0, "")
         res = self.fault_inject_control(key)
         assert res in {self.Proceed, True}
         return res is True
