@@ -1843,7 +1843,12 @@ PyObjectBind_finalize(PyObjectBind *self)
 }
 
 static PyTypeObject PyObjectBindType = {
-  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.pyobject", .tp_basicsize = sizeof(PyObjectBind),
-  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,     .tp_init = (initproc)PyObjectBind_init,
-  .tp_finalize = (destructor)PyObjectBind_finalize,         .tp_new = PyType_GenericNew,
+  PyVarObject_HEAD_INIT(NULL, 0)
+  .tp_name = "apsw.pyobject",
+  .tp_basicsize = sizeof(PyObjectBind),
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+  .tp_init = (initproc)PyObjectBind_init,
+  .tp_finalize = (destructor)PyObjectBind_finalize,
+  .tp_new = PyType_GenericNew,
+  .tp_doc = Apsw_pyobject_DOC,
 };

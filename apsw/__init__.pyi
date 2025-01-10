@@ -348,6 +348,11 @@ no_change: object
 used with :meth:`VTCursor.ColumnNoChange` and
 :meth:`VTTable.UpdateChangeRow`"""
 
+def pyobject(object: Any):
+    """Indicates a Python object is being provided as a
+    :ref:`runtime value <pyobject>`."""
+    ...
+
 def randomness(amount: int)  -> bytes:
     """Gets random data from SQLite's random number generator.
 
@@ -2030,7 +2035,8 @@ class Cursor:
         :param statements: One or more SQL statements such as ``select *
           from books`` or ``begin; insert into books ...; select
           last_insert_rowid(); end``.
-        :param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`
+        :param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`,
+          :class:`zeroblob`, or a wrapped :ref:`Python object <pyobject>`
         :param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be
           placed in the cache after execution
         :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.html>`__ passed to
@@ -2050,7 +2056,8 @@ class Cursor:
           * `sqlite3_bind_text64 <https://sqlite.org/c3ref/bind_blob.html>`__
           * `sqlite3_bind_double <https://sqlite.org/c3ref/bind_blob.html>`__
           * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__
-          * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__"""
+          * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__
+          * `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__"""
         ...
 
     def executemany(self, statements: str, sequenceofbindings: Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
