@@ -51,13 +51,6 @@ API Reference
 =============
 */
 
-/* Fight with setuptools over ndebug */
-#ifdef APSW_NO_NDEBUG
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-#endif
-
 #ifdef APSW_USE_SQLITE_CONFIG
 #include "sqlite3config.h"
 #endif
@@ -77,19 +70,12 @@ API Reference
 #define SQLITE_MAX_MMAP_SIZE 0x1000000000000LL
 #endif
 
-#ifndef APSW_NO_NDEBUG
+#ifndef SQLITE_DEBUG
 #define SQLITE_API static
 #define SQLITE_EXTERN static
 #endif
 
 #include "sqlite3.c"
-
-/* Fight with SQLite over ndebug */
-#ifdef APSW_NO_NDEBUG
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-#endif
 
 #else
 /* SQLite 3 headers */
