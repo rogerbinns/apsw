@@ -873,6 +873,7 @@ if __name__ == "__main__":
                     "Connection.execute",
                     "Connection.executemany",
                     "Blob.__exit__",
+                    "apsw.pyobject",
                 }:
                     missing.append(item["name"])
 

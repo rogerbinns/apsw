@@ -243,6 +243,10 @@
 "used with :meth:`VTCursor.ColumnNoChange` and\n" \
 ":meth:`VTTable.UpdateChangeRow`\n" 
 
+#define  Apsw_pyobject_DOC "pyobject($self,object)\n--\n\napsw.pyobject(object: Any)\n\n" \
+"Indicates a Python object is being provided as a\n" \
+":ref:`runtime value <pyobject>`.\n" 
+
 #define  Apsw_randomness_DOC "randomness($self,amount)\n--\n\napsw.randomness(amount: int)  -> bytes\n\n" \
 "Gets random data from SQLite's random number generator.\n" \
 "\n" \
@@ -2567,7 +2571,8 @@
 ":param statements: One or more SQL statements such as ``select *\n" \
 "  from books`` or ``begin; insert into books ...; select\n" \
 "  last_insert_rowid(); end``.\n" \
-":param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`\n" \
+":param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`,\n" \
+"  :class:`zeroblob`, or a wrapped :ref:`Python object <pyobject>`\n" \
 ":param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be\n" \
 "  placed in the cache after execution\n" \
 ":param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.html>`__ passed to\n" \
@@ -2587,7 +2592,8 @@
 "  * `sqlite3_bind_text64 <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_double <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
-"  * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__\n" 
+"  * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
+"  * `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__\n" 
 
 #define Cursor_execute_KWNAMES "statements", "bindings", "can_cache", "prepare_flags", "explain"
 #define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor"
