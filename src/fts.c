@@ -6,7 +6,6 @@ Connection_fts5_api(Connection *self)
 {
 #include "faultinject.h"
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   if (self->fts5_api_cached)
@@ -19,21 +18,19 @@ Connection_fts5_api(Connection *self)
 
   /* this prevents any other thread from messing with our work.  The
      PYSQLITE_CALL are to let the source checker know those calls are ok */
-  INUSE_CALL({
-    Py_BEGIN_ALLOW_THREADS;
-    res = sqlite3_prepare_v3(self->db, "select fts5(?1)", -1, 0, &stmt, NULL); /* PYSQLITE_CALL */
-    if (res == SQLITE_OK)
-      res = sqlite3_bind_pointer(stmt, 1, &api, "fts5_api_ptr", NULL); /* PYSQLITE_CALL */
-    if (res == SQLITE_OK)
-    {
-      res = sqlite3_step(stmt); /* PYSQLITE_CALL */
-      if (res == SQLITE_ROW)
-        res = SQLITE_OK;
-    }
-    if (stmt)
-      sqlite3_finalize(stmt); /* PYSQLITE_CALL */
-    Py_END_ALLOW_THREADS;
-  });
+  Py_BEGIN_ALLOW_THREADS;
+  res = sqlite3_prepare_v3(self->db, "select fts5(?1)", -1, 0, &stmt, NULL); /* PYSQLITE_CALL */
+  if (res == SQLITE_OK)
+    res = sqlite3_bind_pointer(stmt, 1, &api, "fts5_api_ptr", NULL); /* PYSQLITE_CALL */
+  if (res == SQLITE_OK)
+  {
+    res = sqlite3_step(stmt); /* PYSQLITE_CALL */
+    if (res == SQLITE_ROW)
+      res = SQLITE_OK;
+  }
+  if (stmt)
+    sqlite3_finalize(stmt); /* PYSQLITE_CALL */
+  Py_END_ALLOW_THREADS;
 
   if (res == SQLITE_OK)
   {
@@ -786,8 +783,7 @@ APSWFTS5ExtensionApi_xSetAuxdata(APSWFTS5ExtensionApi *self, PyObject *value)
   FTSEXT_CHECK(-1);
 
   int rc;
-  APSW_FAULT(xSetAuxDataErr, rc = self->pApi->xSetAuxdata(self->pFts, value, auxdata_xdelete),
-                    rc = SQLITE_NOMEM);
+  APSW_FAULT(xSetAuxDataErr, rc = self->pApi->xSetAuxdata(self->pFts, value, auxdata_xdelete), rc = SQLITE_NOMEM);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);

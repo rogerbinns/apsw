@@ -3336,7 +3336,7 @@ class APSW(unittest.TestCase):
         "Verify threading behaviour"
         # We used to require all operations on a connection happen in
         # the same thread.  Now they can happen in any thread, so we
-        # ensure that inuse errors are detected by doing a long
+        # ensure that mutex errors are detected by doing a long
         # running operation in one thread.
         c = self.db.cursor()
         c.execute("create table foo(x);begin;")
@@ -5566,45 +5566,7 @@ class APSW(unittest.TestCase):
 
     # calls that need protection
     calls = {
-        "sqlite3api": {  # items of interest - sqlite3 calls
-            "match": re.compile(r"(sqlite3_[A-Za-z0-9_]+)\s*\("),
-            # what must also be on same or preceding line
-            "needs": re.compile("PYSQLITE(_|_BLOB_|_CON_|_CUR_|_SC_|_VOID_|_BACKUP_)CALL"),
-            # except if match.group(1) matches this - these don't
-            # acquire db mutex so no need to wrap (determined by
-            # examining sqlite3.c).  If they acquire non-database
-            # mutexes then that is ok.
-            # In the case of sqlite3_result_*|declare_vtab, the mutex
-            # is already held by enclosing sqlite3_step and the
-            # methods will only be called from that same thread so it
-            # isn't a problem.
-            "skipcalls": re.compile(
-                "^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes64|total_changes64"
-                "|bind_parameter_name"
-                "|get_"
-                "autocommit|last_insert_rowid|complete|interrupt|limit|malloc64|free|threadsafe|value_.+"
-                "|libversion|enable_"
-                "shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit64|hard_heap_limit64"
-                "|randomness|db_readonly|db_filename|release_"
-                "memory|status64|result_.+|user_data|mprintf|aggregate_context"
-                "|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+"
-                "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
-                "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal|stmt_status|sql|log|vtab_collation"
-                "|vtab_rhs_value|vtab_distinct|vtab_config|vtab_on_conflict|vtab_in_first|vtab_in_next|vtab_in"
-                "|vtab_nochange|is_interrupted|extended_errcode)$"
-            ),
-            # error message
-            "desc": "sqlite3_ calls must wrap with PYSQLITE_CALL",
-        },
-        "inuse": {
-            "match": re.compile(
-                r"(convert_column_to_pyobject|statementcache_prepare|statementcache_finalize|statementcache_next)\s*\("
-            ),
-            "needs": re.compile("INUSE_CALL"),
-            "desc": "call needs INUSE wrapper",
-            "skipfiles": re.compile(r".*[/\\]statementcache.c$"),
-        },
-    }
+     }
 
     def sourceCheckMutexCall(self, filename, name, lines):
         # we check that various calls are wrapped with various macros
@@ -5662,7 +5624,6 @@ class APSW(unittest.TestCase):
                     "getdescription_dbapi",
                 ),
                 "req": {
-                    "use": "CHECK_USE",
                     "closed": "CHECK_CURSOR_CLOSED",
                 },
                 "order": ("use", "closed"),
@@ -5687,19 +5648,18 @@ class APSW(unittest.TestCase):
                     "tp_str",
                 ),
                 "req": {
-                    "use": "CHECK_USE",
                     "closed": "CHECK_CLOSED",
                 },
                 "order": ("use", "closed"),
             },
             "APSWBlob": {
                 "skip": ("dealloc", "init", "close", "close_internal", "tp_str"),
-                "req": {"use": "CHECK_USE", "closed": "CHECK_BLOB_CLOSED"},
+                "req": {"closed": "CHECK_BLOB_CLOSED"},
                 "order": ("use", "closed"),
             },
             "APSWBackup": {
                 "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count", "tp_str"),
-                "req": {"use": "CHECK_USE", "closed": "CHECK_BACKUP_CLOSED"},
+                "req": {"closed": "CHECK_BACKUP_CLOSED"},
                 "order": ("use", "closed"),
             },
             "apswvfs": {
@@ -8087,24 +8047,24 @@ class APSW(unittest.TestCase):
         # can't copy self
         self.assertRaises(ValueError, self.db.backup, "main", self.db, "it doesn't care what is here")
 
-        # try and get inuse error
+        # try and get mutex error
         dbt = apsw.Connection(":memory:")
         vals = {"stop": False, "raised": False}
 
         def wt():
-            # worker thread spins grabbing and releasing inuse flag
+            # worker thread spins grabbing and releasing mutex flag
             while not vals["stop"]:
                 try:
                     dbt.set_busy_timeout(100)
                 except apsw.ThreadingViolationError:
-                    # this means main thread grabbed inuse first
+                    # this means main thread grabbed mutex first
                     pass
 
         runtime = float(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 30
         t = ThreadRunner(wt)
         t.start()
         b4 = time.time()
-        # try to get inuse error
+        # try to get concurrency error
         try:
             try:
                 while not vals["stop"] and time.time() - b4 < runtime:

@@ -60,7 +60,6 @@ struct APSWCursor
   PyObject_HEAD
   Connection *connection; /* pointer to parent connection */
 
-  unsigned inuse;                  /* track if we are in use preventing concurrent thread mangling */
   struct APSWStatement *statement; /* statement we are currently using */
 
   /* what state we are in */
@@ -120,7 +119,7 @@ resetcursor(APSWCursor *self, int force)
 
   if (self->statement)
   {
-    INUSE_CALL(res = statementcache_finalize(self->connection->stmtcache, self->statement));
+    res = statementcache_finalize(self->connection->stmtcache, self->statement);
     if (res == SQLITE_OK && PyErr_Occurred())
       res = SQLITE_ERROR;
     if (res)
@@ -152,7 +151,7 @@ resetcursor(APSWCursor *self, int force)
   if (!force && self->status != C_DONE && self->emiter)
   {
     PyObject *next;
-    INUSE_CALL(next = PyIter_Next(self->emiter));
+    next = PyIter_Next(self->emiter);
     if (next)
     {
       Py_DECREF(next);
@@ -257,7 +256,6 @@ APSWCursor_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->emoriginalquery = 0;
     self->exectrace = 0;
     self->rowtrace = 0;
-    self->inuse = 0;
     self->weakreflist = NULL;
     self->description_cache[0] = 0;
     self->description_cache[1] = 0;
@@ -313,7 +311,6 @@ APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
 
   assert(sizeof(description_formats) == sizeof(self->description_cache));
 
-  CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
   if (!self->statement)
@@ -352,10 +349,10 @@ APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
       PyErr_Format(PyExc_MemoryError, "SQLite call sqlite3_column_name ran out of memory");
       goto error;
     }
-    INUSE_CALL(column = (fmtnum < 2) ? Py_BuildValue(description_formats[fmtnum], column_name,
-                                                     sqlite3_column_decltype(self->statement->vdbestatement, i),
-                                                     Py_None, Py_None, Py_None, Py_None, Py_None)
-                                     : DESCFMT2);
+    column = (fmtnum < 2) ? Py_BuildValue(description_formats[fmtnum], column_name,
+                                          sqlite3_column_decltype(self->statement->vdbestatement, i), Py_None, Py_None,
+                                          Py_None, Py_None, Py_None)
+                          : DESCFMT2;
 
     if (!column)
       goto error;
@@ -805,7 +802,7 @@ APSWCursor_step(APSWCursor *self)
       }
 
       /* we are in executemany mode */
-      INUSE_CALL(next = PyIter_Next(self->emiter));
+      next = PyIter_Next(self->emiter);
       if (PyErr_Occurred())
       {
         assert(!next);
@@ -820,7 +817,7 @@ APSWCursor_step(APSWCursor *self)
       }
 
       /* we need to clear just completed and restart original executemany statement */
-      INUSE_CALL(statementcache_finalize(self->connection->stmtcache, self->statement));
+      statementcache_finalize(self->connection->stmtcache, self->statement);
       self->statement = NULL;
       /* don't need bindings from last round if emiter.next() */
       Py_CLEAR(self->bindings);
@@ -844,14 +841,13 @@ APSWCursor_step(APSWCursor *self)
     {
       /* we are going again in executemany mode */
       assert(self->emiter);
-      INUSE_CALL(self->statement
-                 = statementcache_prepare(self->connection->stmtcache, self->emoriginalquery, &self->emoptions));
+      self->statement = statementcache_prepare(self->connection->stmtcache, self->emoriginalquery, &self->emoptions);
       res = (self->statement) ? SQLITE_OK : SQLITE_ERROR;
     }
     else
     {
       /* next sql statement */
-      INUSE_CALL(res = statementcache_next(self->connection->stmtcache, &self->statement));
+      res = statementcache_next(self->connection->stmtcache, &self->statement);
       SET_EXC(res, self->connection->db);
     }
 
@@ -937,7 +933,6 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
   PyObject *statements, *bindings = NULL;
   APSWStatementOptions options;
 
-  CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
   res = resetcursor(self, /* force= */ 0);
@@ -978,7 +973,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
 
   assert(!self->statement);
   assert(!PyErr_Occurred());
-  INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements, &options));
+  self->statement = statementcache_prepare(self->connection->stmtcache, statements, &options);
   if (!self->statement)
   {
     AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare_v3", "{s: O, s: O}", "Connection",
@@ -1043,7 +1038,6 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
   int prepare_flags = 0;
   int explain = -1;
 
-  CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
   res = resetcursor(self, /* force= */ 0);
@@ -1074,7 +1068,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
     return NULL;
   }
 
-  INUSE_CALL(next = PyIter_Next(self->emiter));
+  next = PyIter_Next(self->emiter);
   if (!next && PyErr_Occurred())
     return NULL;
   if (!next)
@@ -1100,7 +1094,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
   assert(!self->statement);
   assert(!PyErr_Occurred());
   assert(!self->statement);
-  INUSE_CALL(self->statement = statementcache_prepare(self->connection->stmtcache, statements, &self->emoptions));
+  self->statement = statementcache_prepare(self->connection->stmtcache, statements, &self->emoptions);
   if (!self->statement)
   {
     AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare_v3", "{s: O, s: O}", "Connection",
@@ -1165,7 +1159,6 @@ APSWCursor_close(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_n
 {
   int force = 0;
 
-  CHECK_USE(NULL);
   if (!self->connection)
     Py_RETURN_NONE;
 
@@ -1195,7 +1188,6 @@ APSWCursor_next(APSWCursor *self)
   int numcols = -1;
   int i;
 
-  CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
 again:
@@ -1220,7 +1212,7 @@ again:
 
   for (i = 0; i < numcols; i++)
   {
-    INUSE_CALL(item = convert_column_to_pyobject(self->statement->vdbestatement, i));
+    item = convert_column_to_pyobject(self->statement->vdbestatement, i);
     if (!item)
       goto error;
     PyTuple_SET_ITEM(retval, i, item);
@@ -1252,7 +1244,7 @@ error:
 static PyObject *
 APSWCursor_iter(APSWCursor *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   return Py_NewRef((PyObject *)self);
@@ -1266,7 +1258,7 @@ static PyObject *
 APSWCursor_set_exec_trace(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   PyObject *callable = NULL;
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   {
@@ -1292,7 +1284,7 @@ static PyObject *
 APSWCursor_set_row_trace(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   PyObject *callable = NULL;
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   {
@@ -1323,7 +1315,6 @@ APSWCursor_get_exec_trace(APSWCursor *self)
 {
   PyObject *ret;
 
-  CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
   ret = (self->exectrace) ? (self->exectrace) : Py_None;
@@ -1343,7 +1334,7 @@ static PyObject *
 APSWCursor_get_row_trace(APSWCursor *self)
 {
   PyObject *ret;
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
   ret = (self->rowtrace) ? (self->rowtrace) : Py_None;
   return Py_NewRef(ret);
@@ -1357,7 +1348,7 @@ APSWCursor_get_row_trace(APSWCursor *self)
 static PyObject *
 APSWCursor_get_connection(APSWCursor *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   return Py_NewRef((PyObject *)self->connection);
@@ -1372,7 +1363,7 @@ APSWCursor_get_connection(APSWCursor *self)
 static PyObject *
 APSWCursor_fetchall(APSWCursor *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   return PySequence_List((PyObject *)self);
@@ -1388,7 +1379,6 @@ APSWCursor_fetchone(APSWCursor *self)
 {
   PyObject *res;
 
-  CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
   res = APSWCursor_next(self);
@@ -1419,7 +1409,7 @@ APSWCursor_fetchone(APSWCursor *self)
 static PyObject *
 APSWCursor_get_exec_trace_attr(APSWCursor *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   if (self->exectrace)
@@ -1430,7 +1420,6 @@ APSWCursor_get_exec_trace_attr(APSWCursor *self)
 static int
 APSWCursor_set_exec_trace_attr(APSWCursor *self, PyObject *value)
 {
-  CHECK_USE(-1);
   CHECK_CURSOR_CLOSED(-1);
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
@@ -1464,7 +1453,7 @@ APSWCursor_set_exec_trace_attr(APSWCursor *self, PyObject *value)
 static PyObject *
 APSWCursor_get_row_trace_attr(APSWCursor *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   if (self->rowtrace)
@@ -1475,7 +1464,6 @@ APSWCursor_get_row_trace_attr(APSWCursor *self)
 static int
 APSWCursor_set_row_trace_attr(APSWCursor *self, PyObject *value)
 {
-  CHECK_USE(-1);
   CHECK_CURSOR_CLOSED(-1);
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
@@ -1497,7 +1485,7 @@ APSWCursor_set_row_trace_attr(APSWCursor *self, PyObject *value)
 static PyObject *
 APSWCursor_get_connection_attr(APSWCursor *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   return Py_NewRef((PyObject *)self->connection);
@@ -1515,7 +1503,7 @@ APSWCursor_get_connection_attr(APSWCursor *self)
 static PyObject *
 APSWCursor_bindings_count(APSWCursor *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   return PyLong_FromLong((self->statement) ? sqlite3_bind_parameter_count(self->statement->vdbestatement) : 0);
@@ -1537,7 +1525,7 @@ APSWCursor_bindings_count(APSWCursor *self)
 static PyObject *
 APSWCursor_bindings_names(APSWCursor *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   int count = (self->statement) ? sqlite3_bind_parameter_count(self->statement->vdbestatement) : 0;
@@ -1573,7 +1561,7 @@ error:
 static PyObject *
 APSWCursor_is_explain(APSWCursor *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   return PyLong_FromLong((self->statement) ? sqlite3_stmt_isexplain(self->statement->vdbestatement) : 0);
@@ -1591,7 +1579,7 @@ APSWCursor_is_explain(APSWCursor *self)
 static PyObject *
 APSWCursor_is_readonly(APSWCursor *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   if (!self->statement || sqlite3_stmt_readonly(self->statement->vdbestatement))
@@ -1608,7 +1596,7 @@ APSWCursor_is_readonly(APSWCursor *self)
 static PyObject *
 APSWCursor_has_vdbe(APSWCursor *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   return Py_NewRef((self->statement && self->statement->vdbestatement) ? Py_True : Py_False);
@@ -1639,13 +1627,13 @@ APSWCursor_expanded_sql(APSWCursor *self)
 {
   PyObject *res;
   const char *es;
-  CHECK_USE(NULL);
+
   CHECK_CURSOR_CLOSED(NULL);
 
   if (!self->statement)
     Py_RETURN_NONE;
 
-  PYSQLITE_VOID_CALL(es = sqlite3_expanded_sql(self->statement->vdbestatement));
+  es = sqlite3_expanded_sql(self->statement->vdbestatement);
   if (!es)
     return PyErr_NoMemory();
   res = convertutf8string(es);
@@ -1686,7 +1674,6 @@ APSWCursor_get(APSWCursor *self)
   PyObject *step, *item;
   int numcols, i;
 
-  CHECK_USE(NULL);
   CHECK_CURSOR_CLOSED(NULL);
 
   if (self->status == C_DONE)
@@ -1708,7 +1695,7 @@ APSWCursor_get(APSWCursor *self)
     numcols = sqlite3_data_count(self->statement->vdbestatement);
     if (numcols == 1)
     {
-      INUSE_CALL(the_row = convert_column_to_pyobject(self->statement->vdbestatement, 0));
+      the_row = convert_column_to_pyobject(self->statement->vdbestatement, 0);
       if (!the_row)
         goto error;
     }
@@ -1719,7 +1706,7 @@ APSWCursor_get(APSWCursor *self)
         goto error;
       for (i = 0; i < numcols; i++)
       {
-        INUSE_CALL(item = convert_column_to_pyobject(self->statement->vdbestatement, i));
+        item = convert_column_to_pyobject(self->statement->vdbestatement, i);
         if (!item)
           goto error;
         PyTuple_SET_ITEM(the_row, i, item);
@@ -1843,8 +1830,7 @@ PyObjectBind_finalize(PyObjectBind *self)
 }
 
 static PyTypeObject PyObjectBindType = {
-  PyVarObject_HEAD_INIT(NULL, 0)
-  .tp_name = "apsw.pyobject",
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.pyobject",
   .tp_basicsize = sizeof(PyObjectBind),
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
   .tp_init = (initproc)PyObjectBind_init,

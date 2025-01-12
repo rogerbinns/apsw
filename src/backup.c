@@ -59,22 +59,16 @@ typedef struct APSWBackup
   Connection *source;
   sqlite3_backup *backup;
   PyObject *done;
-  int inuse;
   PyObject *weakreflist;
 } APSWBackup;
 
 static void
 APSWBackup_init(APSWBackup *self, Connection *dest, Connection *source, sqlite3_backup *backup)
 {
-  assert(dest->inuse == 0);
-  dest->inuse = 1;
-  assert(source->inuse == 1); /* set by caller */
-
   self->dest = dest;
   self->source = source;
   self->backup = backup;
   self->done = Py_NewRef(Py_False);
-  self->inuse = 0;
   self->weakreflist = NULL;
 }
 
@@ -83,8 +77,6 @@ static int
 APSWBackup_close_internal(APSWBackup *self, int force)
 {
   int res, setexc = 0;
-
-  assert(!self->inuse);
 
   if (!self->backup)
     return 0;
@@ -113,9 +105,6 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   }
 
   self->backup = 0;
-
-  assert(self->dest->inuse);
-  self->dest->inuse = 0;
 
   Connection_remove_dependent(self->dest, (PyObject *)self);
   Connection_remove_dependent(self->source, (PyObject *)self);
@@ -160,7 +149,6 @@ APSWBackup_step(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
 {
   int npages = -1, res;
 
-  CHECK_USE(NULL);
   CHECK_BACKUP_CLOSED(NULL);
 
   {
@@ -210,7 +198,6 @@ static PyObject *
 APSWBackup_finish(APSWBackup *self)
 {
   int setexc;
-  CHECK_USE(NULL);
 
   /* We handle CHECK_BACKUP_CLOSED internally */
   if (!self->backup)
@@ -235,8 +222,6 @@ static PyObject *
 APSWBackup_close(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int force = 0, setexc;
-
-  CHECK_USE(NULL);
 
   /* We handle CHECK_BACKUP_CLOSED internally */
   if (!self->backup)
@@ -267,7 +252,7 @@ APSWBackup_close(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_n
 static PyObject *
 APSWBackup_get_remaining(APSWBackup *self, void *Py_UNUSED(ignored))
 {
-  CHECK_USE(NULL);
+
   return PyLong_FromLong(self->backup ? sqlite3_backup_remaining(self->backup) : 0);
 }
 
@@ -284,7 +269,7 @@ APSWBackup_get_remaining(APSWBackup *self, void *Py_UNUSED(ignored))
 static PyObject *
 APSWBackup_get_page_count(APSWBackup *self, void *Py_UNUSED(ignored))
 {
-  CHECK_USE(NULL);
+
   return PyLong_FromLong(self->backup ? sqlite3_backup_pagecount(self->backup) : 0);
 }
 
@@ -298,7 +283,7 @@ APSWBackup_get_page_count(APSWBackup *self, void *Py_UNUSED(ignored))
 static PyObject *
 APSWBackup_enter(APSWBackup *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_BACKUP_CLOSED(NULL);
 
   return Py_NewRef((PyObject *)self);
@@ -315,7 +300,6 @@ APSWBackup_exit(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
   PyObject *etype, *evalue, *etraceback;
   int setexc;
 
-  CHECK_USE(NULL);
   {
     Backup_exit_CHECK;
     ARG_PROLOG(3, Backup_exit_KWNAMES);

@@ -118,7 +118,6 @@ struct APSWBlob
   PyObject_HEAD
   Connection *connection;
   sqlite3_blob *pBlob;
-  unsigned inuse;        /* track if we are in use preventing concurrent thread mangling */
   int curoffset;         /* SQLite only supports 32 bit signed int offsets */
   PyObject *weakreflist; /* weak reference tracking */
 };
@@ -152,7 +151,6 @@ APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob)
   self->connection = (Connection *)Py_NewRef((PyObject *)connection);
   self->pBlob = blob;
   self->curoffset = 0;
-  self->inuse = 0;
   self->weakreflist = NULL;
 }
 
@@ -230,7 +228,7 @@ APSWBlob_dealloc(APSWBlob *self)
 static PyObject *
 APSWBlob_length(APSWBlob *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_BLOB_CLOSED;
   return PyLong_FromLong(sqlite3_blob_bytes(self->pBlob));
 }
@@ -253,7 +251,6 @@ APSWBlob_read(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   PyObject *buffy = 0;
   char *thebuffer;
 
-  CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
   /* The python file read routine treats negative numbers as read till
@@ -338,7 +335,6 @@ APSWBlob_read_into(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_n
   int bloblen;
   Py_buffer py3buffer;
 
-  CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
   {
     Blob_read_into_CHECK;
@@ -413,7 +409,7 @@ static PyObject *
 APSWBlob_seek(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int offset, whence = 0;
-  CHECK_USE(NULL);
+
   CHECK_BLOB_CLOSED;
 
   {
@@ -457,7 +453,7 @@ out_of_range:
 static PyObject *
 APSWBlob_tell(APSWBlob *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_BLOB_CLOSED;
   return PyLong_FromLong(self->curoffset);
 }
@@ -484,7 +480,6 @@ APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
   Py_buffer data_buffer;
   PyObject *data;
 
-  CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
   {
@@ -564,8 +559,6 @@ APSWBlob_close(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
   int setexc;
   int force = 0;
 
-  CHECK_USE(NULL);
-
   {
     Blob_close_CHECK;
     ARG_PROLOG(1, Blob_close_KWNAMES);
@@ -599,7 +592,7 @@ APSWBlob_close(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
 static PyObject *
 APSWBlob_enter(APSWBlob *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_BLOB_CLOSED;
 
   return Py_NewRef((PyObject *)self);
@@ -616,7 +609,7 @@ static PyObject *
 APSWBlob_exit(APSWBlob *self, PyObject *Py_UNUSED(args))
 {
   int setexc;
-  CHECK_USE(NULL);
+
   CHECK_BLOB_CLOSED;
 
   setexc = APSWBlob_close_internal(self, 0);
@@ -640,7 +633,6 @@ APSWBlob_reopen(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_narg
   int res;
   long long rowid;
 
-  CHECK_USE(NULL);
   CHECK_BLOB_CLOSED;
 
   {

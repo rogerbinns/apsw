@@ -1732,7 +1732,7 @@ apsw_sleep(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t f
   if (milliseconds < 0)
     milliseconds = 0;
 
-  _PYSQLITE_CALL_V(res = sqlite3_sleep(milliseconds));
+  res = sqlite3_sleep(milliseconds);
   return PyLong_FromLong(res);
 }
 

@@ -13,32 +13,21 @@
 
 #define VLA_PYO(name, size) VLA(name, size, PyObject *)
 
-#define _PYSQLITE_CALL_V(x)                                                                                            \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    x;                                                                                                                 \
-  } while (0)
-
 /* Calls where error could be set.  We assume that a variable 'res' is set.  Also need the db to take
    the mutex on */
 #define _PYSQLITE_CALL_E(db, x)                                                                                        \
   do                                                                                                                   \
   {                                                                                                                    \
-      x;                                                                                                               \
-      if (res != SQLITE_OK && res != SQLITE_DONE && res != SQLITE_ROW)                                                 \
-        apsw_set_errmsg(sqlite3_errmsg((db)));                                                                         \
-  } while (0)
-
-#define INUSE_CALL(x)                                                                                                  \
-  do  {                                                                                                                  \
-      x;                                                                                                               \
+    x;                                                                                                                 \
+    if (res != SQLITE_OK && res != SQLITE_DONE && res != SQLITE_ROW)                                                   \
+      apsw_set_errmsg(sqlite3_errmsg((db)));                                                                           \
   } while (0)
 
 /* call from blob code */
-#define PYSQLITE_BLOB_CALL(y) INUSE_CALL(_PYSQLITE_CALL_E(self->connection->db, y))
+#define PYSQLITE_BLOB_CALL(y) _PYSQLITE_CALL_E(self->connection->db, y)
 
 /* call from connection code */
-#define PYSQLITE_CON_CALL(y) INUSE_CALL(_PYSQLITE_CALL_E(self->db, y))
+#define PYSQLITE_CON_CALL(y) _PYSQLITE_CALL_E(self->db, y)
 
 /* call from cursor code - same as blob */
 #define PYSQLITE_CUR_CALL PYSQLITE_BLOB_CALL
@@ -46,11 +35,8 @@
 /* from statement cache */
 #define PYSQLITE_SC_CALL(y) _PYSQLITE_CALL_E(sc->db, y)
 
-/* call to sqlite code that doesn't return an error */
-#define PYSQLITE_VOID_CALL(y) INUSE_CALL(_PYSQLITE_CALL_V(y))
-
 /* call from backup code */
-#define PYSQLITE_BACKUP_CALL(y) INUSE_CALL(_PYSQLITE_CALL_E(self->dest->db, y))
+#define PYSQLITE_BACKUP_CALL(y) _PYSQLITE_CALL_E(self->dest->db, y)
 
 /*
    The default Python PyErr_WriteUnraisable is almost useless, and barely used
@@ -282,32 +268,33 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
 #include "faultinject.h"
   int coltype;
 
-  _PYSQLITE_CALL_V(coltype = sqlite3_column_type(stmt, col));
+  coltype = sqlite3_column_type(stmt, col);
 
   switch (coltype)
   {
   case SQLITE_INTEGER: {
     sqlite3_int64 val;
-    _PYSQLITE_CALL_V(val = sqlite3_column_int64(stmt, col));
+    val = sqlite3_column_int64(stmt, col);
     return PyLong_FromLongLong(val);
   }
 
   case SQLITE_FLOAT: {
     double d;
-    _PYSQLITE_CALL_V(d = sqlite3_column_double(stmt, col));
+    d = sqlite3_column_double(stmt, col);
     return PyFloat_FromDouble(d);
   }
   case SQLITE_TEXT: {
     const char *data;
     size_t len;
-    _PYSQLITE_CALL_V((data = (const char *)sqlite3_column_text(stmt, col), len = sqlite3_column_bytes(stmt, col)));
+    data = (const char *)sqlite3_column_text(stmt, col);
+    len = sqlite3_column_bytes(stmt, col);
     return PyUnicode_FromStringAndSize(data, len);
   }
 
   default:
   case SQLITE_NULL: {
     void *pointer;
-    _PYSQLITE_CALL_V(pointer = sqlite3_value_pointer(sqlite3_column_value(stmt, col), PYOBJECT_BIND_TAG));
+    pointer = sqlite3_value_pointer(sqlite3_column_value(stmt, col), PYOBJECT_BIND_TAG);
     if (pointer)
       return Py_NewRef((PyObject *)pointer);
     Py_RETURN_NONE;
@@ -316,26 +303,14 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
   case SQLITE_BLOB: {
     const void *data;
     size_t len;
-    _PYSQLITE_CALL_V((data = sqlite3_column_blob(stmt, col), len = sqlite3_column_bytes(stmt, col)));
+    data = sqlite3_column_blob(stmt, col);
+    len = sqlite3_column_bytes(stmt, col);
     return PyBytes_FromStringAndSize(data, len);
   }
   }
 }
 
 /* Some macros used for frequent operations */
-
-/* used by Connection and Cursor */
-#define CHECK_USE(e)                                                                                                   \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    if (self->inuse)                                                                                                   \
-    { /* raise exception if we aren't already in one */                                                                \
-      if (!PyErr_Occurred())                                                                                           \
-        PyErr_Format(ExcThreadingViolation, "You are trying to use the same object concurrently in two threads or "    \
-                                            "re-entrantly within the same thread which is not allowed.");              \
-      return e;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
 
 /* used by Connection */
 #define CHECK_CLOSED(connection, e)                                                                                    \
