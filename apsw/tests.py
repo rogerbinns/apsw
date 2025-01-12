@@ -360,10 +360,36 @@ class APSW(unittest.TestCase):
             if name in apsw.vfs_names():
                 apsw.unregister_vfs(name)
 
+    def check_db_mutex(self):
+        # verify a db mutex is not being held by doing work in another
+        # thread
+        try:
+            self.db.readonly("main")
+        except apsw.ConnectionClosedError:
+            return
+
+        val=Exception("The database mutex is still held and should not be")
+
+        def thread():
+            nonlocal val
+            try:
+                val = self.db.execute("select 3").get
+            except BaseException as exc:
+                val = exc
+
+        t = threading.Thread(target=thread, daemon=True)
+        t.start()
+        t.join(1)
+        if val != 3:
+            raise val
+
     def tearDown(self):
         apsw.config(apsw.SQLITE_CONFIG_LOG, None)
         if self.db is not None:
-            self.db.close(True)
+            try:
+                self.check_db_mutex()
+            finally:
+                self.db.close(True)
         del self.db
         for c in apsw.connections():
             c.close()
