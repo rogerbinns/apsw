@@ -119,7 +119,7 @@ MakeExistingException(void)
 #include "faultinject.h"
 
 /* Fault injection */
-#define APSW_FAULT(faultName, good, bad)                                                                        \
+#define APSW_FAULT(faultName, good, bad)                                                                               \
   do                                                                                                                   \
   {                                                                                                                    \
     if (APSW_Should_Fault(#faultName))                                                                                 \
@@ -146,7 +146,7 @@ static int APSW_Should_Fault(const char *);
 #endif
 
 #else /* APSW_FAULT_INJECT */
-#define APSW_FAULT(faultName, good, bad)                                                                        \
+#define APSW_FAULT(faultName, good, bad)                                                                               \
   do                                                                                                                   \
   {                                                                                                                    \
     good;                                                                                                              \
@@ -1004,7 +1004,6 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
 static PyObject *
 apsw_fini(PyObject *Py_UNUSED(self))
 {
-  Py_XDECREF(tls_errmsg);
   fini_apsw_strings();
   Py_RETURN_NONE;
 }
@@ -1298,7 +1297,7 @@ get_compile_options(void)
 
   for (i = 0;; i++)
   {
-    opt = sqlite3_compileoption_get(i); /* No PYSQLITE_CALL needed */
+    opt = sqlite3_compileoption_get(i);
     if (!opt)
       break;
   }
@@ -1309,7 +1308,7 @@ get_compile_options(void)
     goto fail;
   for (i = 0; i < count; i++)
   {
-    opt = sqlite3_compileoption_get(i); /* No PYSQLITE_CALL needed */
+    opt = sqlite3_compileoption_get(i);
     assert(opt);
     tmpstring = PyUnicode_FromString(opt);
     if (!tmpstring)
@@ -1342,10 +1341,10 @@ get_keywords(void)
   if (!res)
     goto fail;
 
-  count = sqlite3_keyword_count(); /* No PYSQLITE_CALL needed */
+  count = sqlite3_keyword_count();
   for (i = 0; i < count; i++)
   {
-    j = sqlite3_keyword_name(i, &name, &size); /* No PYSQLITE_CALL needed */
+    j = sqlite3_keyword_name(i, &name, &size);
     assert(j == SQLITE_OK);
     tmpstring = PyUnicode_FromStringAndSize(name, size);
     if (!tmpstring)
@@ -1534,7 +1533,7 @@ apsw_log(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
     ARG_MANDATORY ARG_str(message);
     ARG_EPILOG(NULL, Apsw_log_USAGE, );
   }
-  sqlite3_log(errorcode, "%s", message); /* PYSQLITE_CALL not needed */
+  sqlite3_log(errorcode, "%s", message);
 
   if (PyErr_Occurred())
     return NULL;
@@ -1564,7 +1563,7 @@ apsw_strlike(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Apsw_strlike_USAGE, );
   }
 
-  res = sqlite3_strlike(glob, string, escape); /* PYSQLITE_CALL not needed */
+  res = sqlite3_strlike(glob, string, escape);
 
   return PyLong_FromLong(res);
 }
@@ -1589,7 +1588,7 @@ apsw_strglob(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Apsw_strglob_USAGE, );
   }
 
-  res = sqlite3_strglob(glob, string); /* PYSQLITE_CALL not needed */
+  res = sqlite3_strglob(glob, string);
 
   return PyLong_FromLong(res);
 }
@@ -1615,7 +1614,7 @@ apsw_stricmp(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Apsw_stricmp_USAGE, );
   }
 
-  res = sqlite3_stricmp(string1, string2); /* PYSQLITE_CALL not needed */
+  res = sqlite3_stricmp(string1, string2);
 
   return PyLong_FromLong(res);
 }
@@ -1642,7 +1641,7 @@ apsw_strnicmp(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Apsw_strnicmp_USAGE, );
   }
 
-  res = sqlite3_strnicmp(string1, string2, count); /* PYSQLITE_CALL not needed */
+  res = sqlite3_strnicmp(string1, string2, count);
 
   return PyLong_FromLong(res);
 }
@@ -1891,10 +1890,6 @@ PyInit_apsw(void)
   m = apswmodule = PyModule_Create2(&apswmoduledef, PYTHON_API_VERSION);
 
   if (m == NULL)
-    goto fail;
-
-  tls_errmsg = PyDict_New();
-  if (!tls_errmsg)
     goto fail;
 
   the_connections = PyList_New(0);

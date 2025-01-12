@@ -16,20 +16,19 @@ Connection_fts5_api(Connection *self)
 
   fts5_api *api = NULL;
 
-  /* this prevents any other thread from messing with our work.  The
-     PYSQLITE_CALL are to let the source checker know those calls are ok */
+  /* ::TODO:: this properly  */
   Py_BEGIN_ALLOW_THREADS;
-  res = sqlite3_prepare_v3(self->db, "select fts5(?1)", -1, 0, &stmt, NULL); /* PYSQLITE_CALL */
+  res = sqlite3_prepare_v3(self->db, "select fts5(?1)", -1, 0, &stmt, NULL);
   if (res == SQLITE_OK)
-    res = sqlite3_bind_pointer(stmt, 1, &api, "fts5_api_ptr", NULL); /* PYSQLITE_CALL */
+    res = sqlite3_bind_pointer(stmt, 1, &api, "fts5_api_ptr", NULL);
   if (res == SQLITE_OK)
   {
-    res = sqlite3_step(stmt); /* PYSQLITE_CALL */
+    res = sqlite3_step(stmt);
     if (res == SQLITE_ROW)
       res = SQLITE_OK;
   }
   if (stmt)
-    sqlite3_finalize(stmt); /* PYSQLITE_CALL */
+    sqlite3_finalize(stmt);
   Py_END_ALLOW_THREADS;
 
   if (res == SQLITE_OK)

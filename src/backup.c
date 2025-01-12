@@ -81,7 +81,7 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   if (!self->backup)
     return 0;
 
-  PYSQLITE_BACKUP_CALL(res = sqlite3_backup_finish(self->backup));
+  res = sqlite3_backup_finish(self->backup);
   if (res)
   {
     switch (force)
@@ -157,7 +157,7 @@ APSWBackup_step(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_OPTIONAL ARG_int(npages);
     ARG_EPILOG(NULL, Backup_step_USAGE, );
   }
-  PYSQLITE_BACKUP_CALL(res = sqlite3_backup_step(self->backup, npages));
+  res = sqlite3_backup_step(self->backup, npages);
 
   /* this would happen if there were errors deep in the vfs */
   MakeExistingException();

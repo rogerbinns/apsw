@@ -477,17 +477,17 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
   assert(!PyErr_Occurred());
 
   if (Py_IsNone(obj))
-    PYSQLITE_CUR_CALL(res = sqlite3_bind_null(self->statement->vdbestatement, arg));
+    res = sqlite3_bind_null(self->statement->vdbestatement, arg);
   else if (PyLong_Check(obj))
   {
     /* nb: PyLong_AsLongLong can cause Python level error */
     long long v = PyLong_AsLongLong(obj);
-    PYSQLITE_CUR_CALL(res = sqlite3_bind_int64(self->statement->vdbestatement, arg, v));
+    res = sqlite3_bind_int64(self->statement->vdbestatement, arg, v);
   }
   else if (PyFloat_Check(obj))
   {
     double v = PyFloat_AS_DOUBLE(obj);
-    PYSQLITE_CUR_CALL(res = sqlite3_bind_double(self->statement->vdbestatement, arg, v));
+    res = sqlite3_bind_double(self->statement->vdbestatement, arg, v);
   }
   else if (PyUnicode_Check(obj))
   {
@@ -496,8 +496,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes);
     if (strdata)
     {
-      PYSQLITE_CUR_CALL(res = sqlite3_bind_text64(self->statement->vdbestatement, arg, strdata, strbytes,
-                                                  SQLITE_TRANSIENT, SQLITE_UTF8));
+      res = sqlite3_bind_text64(self->statement->vdbestatement, arg, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8);
     }
     else
     {
@@ -514,21 +513,19 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     if (asrb != 0)
       return -1;
 
-    PYSQLITE_CUR_CALL(
-        res = sqlite3_bind_blob64(self->statement->vdbestatement, arg, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT));
+    res = sqlite3_bind_blob64(self->statement->vdbestatement, arg, py3buffer.buf, py3buffer.len, SQLITE_TRANSIENT);
     PyBuffer_Release(&py3buffer);
   }
   else if (PyObject_TypeCheck(obj, &ZeroBlobBindType) == 1)
   {
-    PYSQLITE_CUR_CALL(res
-                      = sqlite3_bind_zeroblob64(self->statement->vdbestatement, arg, ((ZeroBlobBind *)obj)->blobsize));
+    res = sqlite3_bind_zeroblob64(self->statement->vdbestatement, arg, ((ZeroBlobBind *)obj)->blobsize);
   }
   else if (PyObject_TypeCheck(obj, &PyObjectBindType) == 1)
   {
     PyObject *pyobject = ((PyObjectBind *)obj)->object;
     Py_INCREF(pyobject);
-    PYSQLITE_CUR_CALL(res = sqlite3_bind_pointer(self->statement->vdbestatement, arg, pyobject, PYOBJECT_BIND_TAG,
-                                                 pyobject_bind_destructor));
+    res = sqlite3_bind_pointer(self->statement->vdbestatement, arg, pyobject, PYOBJECT_BIND_TAG,
+                               pyobject_bind_destructor);
     /* sqlite3_bind_pointer calls the destructor on failure */
   }
   else
@@ -752,8 +749,7 @@ APSWCursor_step(APSWCursor *self)
   for (;;)
   {
     assert(!PyErr_Occurred());
-    PYSQLITE_CUR_CALL(res = (self->statement->vdbestatement) ? (sqlite3_step(self->statement->vdbestatement))
-                                                             : (SQLITE_DONE));
+    res = (self->statement->vdbestatement) ? (sqlite3_step(self->statement->vdbestatement)) : (SQLITE_DONE);
 
     switch (res & 0xff)
     {

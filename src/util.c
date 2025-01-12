@@ -13,31 +13,6 @@
 
 #define VLA_PYO(name, size) VLA(name, size, PyObject *)
 
-/* Calls where error could be set.  We assume that a variable 'res' is set.  Also need the db to take
-   the mutex on */
-#define _PYSQLITE_CALL_E(db, x)                                                                                        \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    x;                                                                                                                 \
-    if (res != SQLITE_OK && res != SQLITE_DONE && res != SQLITE_ROW)                                                   \
-      apsw_set_errmsg(sqlite3_errmsg((db)));                                                                           \
-  } while (0)
-
-/* call from blob code */
-#define PYSQLITE_BLOB_CALL(y) _PYSQLITE_CALL_E(self->connection->db, y)
-
-/* call from connection code */
-#define PYSQLITE_CON_CALL(y) _PYSQLITE_CALL_E(self->db, y)
-
-/* call from cursor code - same as blob */
-#define PYSQLITE_CUR_CALL PYSQLITE_BLOB_CALL
-
-/* from statement cache */
-#define PYSQLITE_SC_CALL(y) _PYSQLITE_CALL_E(sc->db, y)
-
-/* call from backup code */
-#define PYSQLITE_BACKUP_CALL(y) _PYSQLITE_CALL_E(self->dest->db, y)
-
 /*
    The default Python PyErr_WriteUnraisable is almost useless, and barely used
    by CPython.  It gives the developer no clue whatsoever where in

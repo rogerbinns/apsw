@@ -167,7 +167,7 @@ APSWBlob_close_internal(APSWBlob *self, int force)
   if (self->pBlob)
   {
     int res;
-    PYSQLITE_BLOB_CALL(res = sqlite3_blob_close(self->pBlob));
+    res = sqlite3_blob_close(self->pBlob);
     if (res != SQLITE_OK)
     {
       switch (force)
@@ -282,7 +282,7 @@ APSWBlob_read(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     return NULL;
 
   thebuffer = PyBytes_AS_STRING(buffy);
-  PYSQLITE_BLOB_CALL(res = sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset));
+  res = sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset);
 
   MakeExistingException(); /* this could happen if there were issues in the vfs */
 
@@ -371,7 +371,7 @@ APSWBlob_read_into(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_n
   if (length > bloblen - self->curoffset)
     ERREXIT(PyErr_Format(PyExc_ValueError, "More data requested than blob length"));
 
-  PYSQLITE_BLOB_CALL(res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset));
+  res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset);
 
   MakeExistingException(); /* vfs errors could cause this */
 
@@ -511,7 +511,7 @@ APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
     goto finally;
   }
 
-  PYSQLITE_BLOB_CALL(res = sqlite3_blob_write(self->pBlob, data_buffer.buf, data_buffer.len, self->curoffset));
+  res = sqlite3_blob_write(self->pBlob, data_buffer.buf, data_buffer.len, self->curoffset);
   assert(!PyErr_Occurred());
 
   if (res != SQLITE_OK)
@@ -644,7 +644,7 @@ APSWBlob_reopen(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_narg
   /* no matter what happens we always reset current offset */
   self->curoffset = 0;
 
-  PYSQLITE_BLOB_CALL(res = sqlite3_blob_reopen(self->pBlob, rowid));
+  res = sqlite3_blob_reopen(self->pBlob, rowid);
 
   MakeExistingException(); /* a vfs error could cause this */
 
