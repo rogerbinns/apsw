@@ -29,6 +29,7 @@ static void make_exception(int res, sqlite3 *db);
 #define SET_EXC(res, db)                                                                                               \
   do                                                                                                                   \
   {                                                                                                                    \
+    DBMUTEX_ASSERT(db);                                                                                                 \
     if (res != SQLITE_OK && !PyErr_Occurred())                                                                         \
       make_exception(res, db);                                                                                         \
   } while (0)
@@ -235,7 +236,7 @@ make_exception(int res, sqlite3 *db)
     errmsg = "error";
 
   if (db)
-    _PYSQLITE_CALL_V(error_offset = sqlite3_error_offset(db));
+    error_offset = sqlite3_error_offset(db);
 
   PyObject *tmp;
   PyErr_Format(get_exception_for_code(res), "%s", errmsg);
