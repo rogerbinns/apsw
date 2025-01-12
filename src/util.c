@@ -13,37 +13,10 @@
 
 #define VLA_PYO(name, size) VLA(name, size, PyObject *)
 
-/* These macros are to address several issues:
-
-  - Prevent simultaneous calls on the same object while the GIL is
-  released in one thread.  For example if a Cursor is executing
-  sqlite3_step with the GIL released, we don't want Cursor_execute
-  called on another thread since that will thrash what the first
-  thread is doing.  We use a member of Connection, Blob and Cursor
-  named 'inuse' to provide the simple exclusion.
-
-  - The GIL has to be released around all SQLite calls that take the
-  database mutex (which is most of them).  If the GIL is kept even for
-  trivial calls then deadlock will arise.  This is because if you have
-  multiple mutexes you must always acquire them in the same order, or
-  never hold more than one at a time.
-
-  - The SQLite error code is not threadsafe.  This is because the
-  error string is per database connection.  The call to sqlite3_errmsg
-  will return a pointer but that can be replaced by any other thread
-  with an error.  Consequently SQLite added sqlite3_db_mutex (see
-  sqlite-dev mailing list for 4 Nov 2008).  A far better workaround
-  would have been to make the SQLite error stuff be per thread just
-  like errno.  Instead I have had to roll my own thread local storage
-  system for storing the error message.
-*/
-
-/* call where no error is returned */
 #define _PYSQLITE_CALL_V(x)                                                                                            \
   do                                                                                                                   \
   {                                                                                                                    \
-    Py_BEGIN_ALLOW_THREADS { x; }                                                                                      \
-    Py_END_ALLOW_THREADS;                                                                                              \
+    x;                                                                                                                 \
   } while (0)
 
 /* Calls where error could be set.  We assume that a variable 'res' is set.  Also need the db to take
@@ -51,27 +24,14 @@
 #define _PYSQLITE_CALL_E(db, x)                                                                                        \
   do                                                                                                                   \
   {                                                                                                                    \
-    Py_BEGIN_ALLOW_THREADS                                                                                             \
-    {                                                                                                                  \
-      sqlite3_mutex_enter(sqlite3_db_mutex(db));                                                                       \
       x;                                                                                                               \
       if (res != SQLITE_OK && res != SQLITE_DONE && res != SQLITE_ROW)                                                 \
         apsw_set_errmsg(sqlite3_errmsg((db)));                                                                         \
-      sqlite3_mutex_leave(sqlite3_db_mutex(db));                                                                       \
-    }                                                                                                                  \
-    Py_END_ALLOW_THREADS;                                                                                              \
   } while (0)
 
 #define INUSE_CALL(x)                                                                                                  \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    assert(self->inuse == 0);                                                                                          \
-    self->inuse = 1;                                                                                                   \
-    {                                                                                                                  \
+  do  {                                                                                                                  \
       x;                                                                                                               \
-    }                                                                                                                  \
-    assert(self->inuse == 1);                                                                                          \
-    self->inuse = 0;                                                                                                   \
   } while (0)
 
 /* call from blob code */

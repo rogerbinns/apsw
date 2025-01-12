@@ -922,8 +922,6 @@ Connection_db_names(Connection *self)
   CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  sqlite3_mutex_enter(sqlite3_db_mutex(self->db));
-
   res = PyList_New(0);
   if (!res)
     goto error;
@@ -944,10 +942,8 @@ Connection_db_names(Connection *self)
     Py_CLEAR(str);
   }
 
-  sqlite3_mutex_leave(sqlite3_db_mutex(self->db));
   return res;
 error:
-  sqlite3_mutex_leave(sqlite3_db_mutex(self->db));
   assert(PyErr_Occurred());
   Py_XDECREF(res);
   Py_XDECREF(str);
@@ -1289,8 +1285,6 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
       /* only calculate this if needed */
       if (connection->tracehooks[i].mask & SQLITE_TRACE_PROFILE)
       {
-        /* only SQLITE_STMTSTATUS_MEMUSED actually needs mutex */
-        sqlite3_mutex_enter(sqlite3_db_mutex(connection->db));
         param = Py_BuildValue(
             "{s: i, s: O, s: N, s: s, s: L, s: L, s: {" K K K K K K K K "s: i}}", "code", code, "connection",
             connection, "id", PyLong_FromVoidPtr(one), "sql", sqlite3_sql(stmt), "nanoseconds", *nanoseconds,
@@ -1298,7 +1292,6 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
             V(SQLITE_STMTSTATUS_SORT), V(SQLITE_STMTSTATUS_AUTOINDEX), V(SQLITE_STMTSTATUS_VM_STEP),
             V(SQLITE_STMTSTATUS_REPREPARE), V(SQLITE_STMTSTATUS_RUN), V(SQLITE_STMTSTATUS_FILTER_MISS),
             V(SQLITE_STMTSTATUS_FILTER_HIT), V(SQLITE_STMTSTATUS_MEMUSED));
-        sqlite3_mutex_leave(sqlite3_db_mutex(connection->db));
         break;
       }
     }

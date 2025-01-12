@@ -335,28 +335,28 @@ APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
   for (i = 0; i < ncols; i++)
   {
 
-#define INDEX self->statement->vdbestatement, i
 /* this is needed because msvc chokes with the ifdef inside */
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
 #define DESCFMT2                                                                                                       \
-  Py_BuildValue(description_formats[fmtnum], column_name, sqlite3_column_decltype(INDEX),                              \
-                sqlite3_column_database_name(INDEX), sqlite3_column_table_name(INDEX),                                 \
-                sqlite3_column_origin_name(INDEX))
+  Py_BuildValue(description_formats[fmtnum], column_name, sqlite3_column_decltype(self->statement->vdbestatement, i),  \
+                sqlite3_column_database_name(self->statement->vdbestatement, i),                                       \
+                sqlite3_column_table_name(self->statement->vdbestatement, i),                                          \
+                sqlite3_column_origin_name(self->statement->vdbestatement, i))
 #else
 #define DESCFMT2 NULL
 #endif
     /* only column_name is described as returning NULL on error */
-    const char *column_name = sqlite3_column_name(INDEX);
+    const char *column_name = sqlite3_column_name(self->statement->vdbestatement, i);
     if (!column_name)
     {
       PyErr_Format(PyExc_MemoryError, "SQLite call sqlite3_column_name ran out of memory");
       goto error;
     }
-    INUSE_CALL(column = (fmtnum < 2)
-                            ? Py_BuildValue(description_formats[fmtnum], column_name, sqlite3_column_decltype(INDEX),
-                                            Py_None, Py_None, Py_None, Py_None, Py_None)
-                            : DESCFMT2);
-#undef INDEX
+    INUSE_CALL(column = (fmtnum < 2) ? Py_BuildValue(description_formats[fmtnum], column_name,
+                                                     sqlite3_column_decltype(self->statement->vdbestatement, i),
+                                                     Py_None, Py_None, Py_None, Py_None, Py_None)
+                                     : DESCFMT2);
+
     if (!column)
       goto error;
     assert(!PyErr_Occurred());

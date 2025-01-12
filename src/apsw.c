@@ -86,6 +86,8 @@ API Reference
 #error Your SQLite version is too old.  It must be at least 3.47.1
 #endif
 
+#include "sqlite_debug.h"
+
 /* system headers */
 #include <assert.h>
 #include <stdarg.h>

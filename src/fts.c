@@ -21,7 +21,7 @@ Connection_fts5_api(Connection *self)
      PYSQLITE_CALL are to let the source checker know those calls are ok */
   INUSE_CALL({
     Py_BEGIN_ALLOW_THREADS;
-    res = sqlite3_prepare(self->db, "select fts5(?1)", -1, &stmt, NULL); /* PYSQLITE_CALL */
+    res = sqlite3_prepare_v3(self->db, "select fts5(?1)", -1, 0, &stmt, NULL); /* PYSQLITE_CALL */
     if (res == SQLITE_OK)
       res = sqlite3_bind_pointer(stmt, 1, &api, "fts5_api_ptr", NULL); /* PYSQLITE_CALL */
     if (res == SQLITE_OK)
