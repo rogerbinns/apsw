@@ -78,6 +78,8 @@ functions_global = (
     "sqlite3_complete",
     "sqlite3_config",
     "sqlite3_(malloc|malloc|free|realloc)(|64)",
+    # used during open and no need to check mutex
+    "sqlite3_extended_result_codes",
     "sqlite3_hard_heap_limit64",
     "sqlite3_initialize",
     # interrupt could in theory race with close if we release GIL for close
@@ -99,6 +101,8 @@ functions_global = (
     "sqlite3_vfs_(find|register|unregister)",
     "sqlite3_vtab_(collation|distinct|in|in_next|in_first|rhs_value)",
     "sqlite3_win32_.*",
+    # there can't be a dangling refcount on the connection (assertion failure)
+    "sqlite3_close",
     # can't get to db from these
     "sqlite3_filename_(database|journal|wal)",
     "sqlite3_uri_.*",
@@ -157,7 +161,6 @@ functions_arg = (
 functions_arg_one = {
     1: (
         "sqlite3_changes64",
-        "sqlite3_close",
         "sqlite3_db_cacheflush",
         "sqlite3_db_release_memory",
         "sqlite3_(errcode|errmsg|error_offset|extended_errcode)",
@@ -175,7 +178,6 @@ functions_arg_one = {
         "sqlite3_declare_vtab",
         "sqlite3_drop_modules",
         "sqlite3_enable_load_extension",
-        "sqlite3_extended_result_codes",
         "sqlite3_set_last_insert_rowid",
         "sqlite3_txn_state",
         "sqlite3_wal_autocheckpoint",

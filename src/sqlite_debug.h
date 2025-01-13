@@ -160,11 +160,6 @@
     sqlite3_clear_bindings((one));                                            \
 })
 
-#define sqlite3_close(one) ({                            \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
-    sqlite3_close((one));                                \
-})
-
 #undef sqlite3_close_v2
 #define sqlite3_close_v2 *not used*
 
@@ -423,11 +418,6 @@
 #define sqlite3_extended_errcode(one) ({                 \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
     sqlite3_extended_errcode((one));                     \
-})
-
-#define sqlite3_extended_result_codes(one, two) ({       \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
-    sqlite3_extended_result_codes((one), (two));         \
 })
 
 #define sqlite3_file_control(one, two, three, four) ({    \
