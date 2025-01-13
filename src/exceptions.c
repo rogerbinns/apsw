@@ -29,7 +29,8 @@ static void make_exception(int res, sqlite3 *db);
 #define SET_EXC(res, db)                                                                                               \
   do                                                                                                                   \
   {                                                                                                                    \
-    DBMUTEX_ASSERT(db);                                                                                                \
+    if (db)                                                                                                            \
+      DBMUTEX_ASSERT(db);                                                                                              \
     assert(PyGILState_Check());                                                                                        \
     if (res != SQLITE_OK && res != SQLITE_DONE && res != SQLITE_ROW && !PyErr_Occurred())                              \
       make_exception(res, db);                                                                                         \
@@ -278,4 +279,10 @@ MakeSqliteMsgFromPyException(char **errmsg)
   assert(res != -1);
   assert(res > 0);
   return res;
+}
+
+static void
+make_thread_exception(void)
+{
+  PyErr_Format(ExcThreadingViolation, "Connection is busy in another thread");
 }

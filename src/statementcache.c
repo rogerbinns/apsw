@@ -247,7 +247,8 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   if (res != SQLITE_OK || PyErr_Occurred())
   {
     SET_EXC(res, sc->db);
-    sqlite3_finalize(vdbestatement);
+    if(vdbestatement)
+      sqlite3_finalize(vdbestatement);
     return res ? res : SQLITE_ERROR;
   }
   if (!*tail && tail - utf8 < utf8size)

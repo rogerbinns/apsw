@@ -185,6 +185,8 @@ APSWCursor_close_internal(APSWCursor *self, int force)
   PY_ERR_FETCH_IF(force == 2, exc_save);
 
   res = resetcursor(self, force);
+  /* caller must have acquired mutex */
+  sqlite3_mutex_leave(self->connection->dbmutex);
 
   if (force == 2)
     PY_ERR_RESTORE(exc_save);
@@ -230,6 +232,7 @@ APSWCursor_dealloc(APSWCursor *self)
   PyObject_GC_UnTrack(self);
   APSW_CLEAR_WEAKREFS;
 
+  DBMUTEX_FORCE(self->connection->dbmutex);
   APSWCursor_close_internal(self, 2);
 
   if (PyErr_Occurred())
@@ -749,7 +752,9 @@ APSWCursor_step(APSWCursor *self)
   for (;;)
   {
     assert(!PyErr_Occurred());
-    res = (self->statement->vdbestatement) ? (sqlite3_step(self->statement->vdbestatement)) : (SQLITE_DONE);
+    Py_BEGIN_ALLOW_THREADS
+      res = (self->statement->vdbestatement) ? (sqlite3_step(self->statement->vdbestatement)) : (SQLITE_DONE);
+    Py_END_ALLOW_THREADS;
 
     switch (res & 0xff)
     {
@@ -881,10 +886,6 @@ APSWCursor_step(APSWCursor *self)
     assert(self->status == C_DONE);
     self->status = C_BEGIN;
   }
-
-  /* you can't actually get here */
-  assert(0);
-  return NULL;
 }
 
 /** .. method:: execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
@@ -931,13 +932,6 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
 
   CHECK_CURSOR_CLOSED(NULL);
 
-  res = resetcursor(self, /* force= */ 0);
-  if (res != SQLITE_OK)
-  {
-    assert(PyErr_Occurred());
-    return NULL;
-  }
-
   assert(!self->bindings);
   {
     Cursor_execute_CHECK;
@@ -949,6 +943,13 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
     ARG_OPTIONAL ARG_int(explain);
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->connection->dbmutex);
+
+  res = resetcursor(self, /* force= */ 0);
+  if (res != SQLITE_OK)
+    goto error_out;
+
   self->bindings = bindings;
 
   options.can_cache = can_cache;
@@ -963,7 +964,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
     {
       self->bindings = PySequence_Fast(self->bindings, "You must supply a dict or a sequence for execute");
       if (!self->bindings)
-        return NULL;
+        goto error_out;
     }
   }
 
@@ -974,7 +975,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
   {
     AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_execute.sqlite3_prepare_v3", "{s: O, s: O}", "Connection",
                      self->connection, "statement", OBJ(statements));
-    return NULL;
+    goto error_out;
   }
   assert(!PyErr_Occurred());
 
@@ -982,29 +983,26 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
   savedbindingsoffset = 0;
 
   if (APSWCursor_dobindings(self))
-  {
-    assert(PyErr_Occurred());
-    return NULL;
-  }
-
+    goto error_out;
   if (EXECTRACE)
   {
     if (APSWCursor_do_exec_trace(self, savedbindingsoffset))
-    {
-      assert(PyErr_Occurred());
-      return NULL;
-    }
+      goto error_out;
   }
 
   self->status = C_BEGIN;
 
   retval = APSWCursor_step(self);
   if (!retval)
-  {
-    assert(PyErr_Occurred());
-    return NULL;
-  }
+    goto error_out;
+
+  sqlite3_mutex_leave(self->connection->dbmutex);
   return Py_NewRef(retval);
+
+error_out:
+  assert(PyErr_Occurred());
+  sqlite3_mutex_leave(self->connection->dbmutex);
+  return NULL;
 }
 
 /** .. method:: executemany(statements: str, sequenceofbindings: Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
@@ -1036,13 +1034,6 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
 
   CHECK_CURSOR_CLOSED(NULL);
 
-  res = resetcursor(self, /* force= */ 0);
-  if (res != SQLITE_OK)
-  {
-    assert(PyErr_Occurred());
-    return NULL;
-  }
-
   assert(!self->bindings);
   assert(!self->emiter);
   assert(!self->emoriginalquery);
@@ -1057,19 +1048,24 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
     ARG_OPTIONAL ARG_int(explain);
     ARG_EPILOG(NULL, Cursor_executemany_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->connection->dbmutex);
+  res = resetcursor(self, /* force= */ 0);
+  if (res != SQLITE_OK)
+    goto error_out;
+
   self->emiter = PyObject_GetIter(sequenceofbindings);
   if (!self->emiter)
-  {
-    assert(PyErr_Occurred());
-    return NULL;
-  }
+    goto error_out;
 
   next = PyIter_Next(self->emiter);
   if (!next && PyErr_Occurred())
-    return NULL;
+    goto error_out;
+
   if (!next)
   {
     /* empty list */
+    sqlite3_mutex_leave(self->connection->dbmutex);
     return Py_NewRef((PyObject *)self);
   }
 
@@ -1080,7 +1076,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
     self->bindings = PySequence_Fast(next, "You must supply a dict or a sequence for executemany");
     Py_DECREF(next); /* _Fast makes new reference */
     if (!self->bindings)
-      return NULL;
+      goto error_out;
   }
 
   self->emoptions.can_cache = can_cache;
@@ -1095,7 +1091,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
   {
     AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_executemany.sqlite3_prepare_v3", "{s: O, s: O}", "Connection",
                      self->connection, "statements", OBJ(statements));
-    return NULL;
+    goto error_out;
   }
   assert(!PyErr_Occurred());
 
@@ -1105,29 +1101,27 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
   savedbindingsoffset = 0;
 
   if (APSWCursor_dobindings(self))
-  {
-    assert(PyErr_Occurred());
-    return NULL;
-  }
+    goto error_out;
 
   if (EXECTRACE)
   {
     if (APSWCursor_do_exec_trace(self, savedbindingsoffset))
-    {
-      assert(PyErr_Occurred());
-      return NULL;
-    }
+      goto error_out;
   }
 
   self->status = C_BEGIN;
 
   retval = APSWCursor_step(self);
   if (!retval)
-  {
-    assert(PyErr_Occurred());
-    return NULL;
-  }
+    goto error_out;
+
+  sqlite3_mutex_leave(self->connection->dbmutex);
   return Py_NewRef(retval);
+
+error_out:
+  assert(PyErr_Occurred());
+  sqlite3_mutex_leave(self->connection->dbmutex);
+  return NULL;
 }
 
 /** .. method:: close(force: bool = False) -> None
@@ -1164,6 +1158,7 @@ APSWCursor_close(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_OPTIONAL ARG_bool(force);
     ARG_EPILOG(NULL, Cursor_close_USAGE, );
   }
+  DBMUTEX_ENSURE(self->connection->dbmutex);
   APSWCursor_close_internal(self, !!force);
 
   if (PyErr_Occurred())
@@ -1185,16 +1180,19 @@ APSWCursor_next(APSWCursor *self)
   int i;
 
   CHECK_CURSOR_CLOSED(NULL);
+  DBMUTEX_ENSURE(self->connection->dbmutex);
 
 again:
   if (self->status == C_BEGIN)
     if (!APSWCursor_step(self))
-    {
-      assert(PyErr_Occurred());
-      return NULL;
-    }
+      goto error;
+
   if (self->status == C_DONE)
+  {
+    /* end of iteration */
+    sqlite3_mutex_leave(self->connection->dbmutex);
     return NULL;
+  }
 
   assert(self->status == C_ROW);
 
@@ -1218,17 +1216,22 @@ again:
     PyObject *r2 = APSWCursor_do_row_trace(self, retval);
     Py_DECREF(retval);
     if (!r2)
-      return NULL;
+      goto error;
     if (Py_IsNone(r2))
     {
       Py_DECREF(r2);
       goto again;
     }
-    return r2;
+    retval = r2;
   }
+  sqlite3_mutex_leave(self->connection->dbmutex);
   return retval;
+
 error:
   Py_XDECREF(retval);
+  assert(PyErr_Occurred());
+
+  sqlite3_mutex_leave(self->connection->dbmutex);
   return NULL;
 }
 

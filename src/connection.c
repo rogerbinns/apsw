@@ -73,6 +73,7 @@ struct Connection
 {
   PyObject_HEAD
   sqlite3 *db;                      /* the actual database connection */
+  sqlite3_mutex *dbmutex;           /* what we lock */
   struct StatementCache *stmtcache; /* prepared statement cache */
 
   fts5_api *fts5_api_cached;
@@ -274,6 +275,8 @@ Connection_close_internal(Connection *self, int force)
      database */
   sqlite3 *tmp = self->db;
   self->db = 0;
+  /* caller should have acquired */
+  sqlite3_mutex_leave(sqlite3_db_mutex(tmp));
   res = sqlite3_close(tmp);
 
   if (res != SQLITE_OK)
@@ -341,6 +344,8 @@ Connection_close(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_OPTIONAL ARG_bool(force);
     ARG_EPILOG(NULL, Connection_close_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
   if (Connection_close_internal(self, force))
   {
     assert(PyErr_Occurred());
@@ -356,10 +361,11 @@ Connection_dealloc(Connection *self)
   PyObject_GC_UnTrack(self);
   APSW_CLEAR_WEAKREFS;
 
+  DBMUTEX_FORCE(self->dbmutex);
   Connection_close_internal(self, 2);
 
   /* Our dependents all hold a refcount on us, so they must have all
-     released before this destructor could be called */
+      released before this destructor could be called */
   assert(!self->dependents || PyList_GET_SIZE(self->dependents) == 0);
   Py_CLEAR(self->dependents);
 
@@ -375,6 +381,7 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
   if (self != NULL)
   {
     self->db = 0;
+    self->dbmutex = 0;
     self->cursor_factory = Py_NewRef((PyObject *)&APSWCursorType);
     self->dependents = PyList_New(0);
     self->stmtcache = 0;
@@ -471,13 +478,21 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
      Don't do that!  We also have to manage the error message thread
      safety manually as self->db is null on entry. */
   vfsused = sqlite3_vfs_find(vfs);
-  res = sqlite3_open_v2(filename, &self->db, flags, vfs);
-  SET_EXC(res, self->db); /* nb sqlite3_open always allocates the db even on error */
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_open_v2(filename, &self->db, flags, vfs);
+    /* get detailed error codes */
+    sqlite3_extended_result_codes(self->db, 1);
+  Py_END_ALLOW_THREADS;
+
+  if(res != SQLITE_OK)
+    make_exception(res, self->db);
 
   /* normally sqlite will have an error code but some internal vfs
      error codes aren't propagated by PyErr_Occurred will be set*/
   if (res != SQLITE_OK || PyErr_Occurred())
     goto pyexception;
+
+  self->dbmutex = sqlite3_db_mutex(self->db);
 
   if (vfsused && is_apsw_vfs(vfsused))
     self->vfs = Py_NewRef((PyObject *)(vfsused->pAppData));
@@ -492,9 +507,6 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
     if (!self->open_vfs)
       goto pyexception;
   }
-
-  /* get detailed error codes */
-  sqlite3_extended_result_codes(self->db, 1);
 
   /* call connection hooks */
   hooks = PyObject_GetAttr(apswmodule, apst.connection_hooks);
@@ -533,6 +545,7 @@ pyexception:
   /* clean up db since it is useless - no need for user to call close */
   assert(PyErr_Occurred());
   res = -1;
+  DBMUTEX_FORCE(self->dbmutex);
   Connection_close_internal(self, 2);
   assert(PyErr_Occurred());
 
@@ -544,7 +557,10 @@ finally:
   {
     res = apsw_connection_add(self);
     if (res)
+    {
+      DBMUTEX_FORCE(self->dbmutex);
       Connection_close_internal(self, 2);
+    }
   }
   assert((PyErr_Occurred() && res != 0) || (res == 0 && !PyErr_Occurred()));
   return res;
@@ -3302,6 +3318,9 @@ Connection_create_scalar_function(Connection *self, PyObject *const *fast_args, 
     ARG_OPTIONAL ARG_int(flags);
     ARG_EPILOG(NULL, Connection_create_scalar_function_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
+
   if (!callable)
   {
     cbinfo = 0;
@@ -3319,13 +3338,11 @@ Connection_create_scalar_function(Connection *self, PyObject *const *fast_args, 
   res = sqlite3_create_function_v2(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo,
                                    cbinfo ? cbdispatch_func : NULL, NULL, NULL, apsw_free_func);
   if (res)
-  {
     /* Note: On error sqlite3_create_function_v2 calls the destructor (apsw_free_func)! */
     SET_EXC(res, self->db);
-    goto finally;
-  }
 
 finally:
+  sqlite3_mutex_leave(self->dbmutex);
   if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
@@ -3389,6 +3406,7 @@ Connection_create_aggregate_function(Connection *self, PyObject *const *fast_arg
   int flags = 0;
 
   CHECK_CLOSED(self, NULL);
+  DBMUTEX_ENSURE(self->dbmutex);
 
   {
     Connection_create_aggregate_function_CHECK;
@@ -3423,6 +3441,7 @@ Connection_create_aggregate_function(Connection *self, PyObject *const *fast_arg
   }
 
 finally:
+  sqlite3_mutex_leave(self->dbmutex);
   if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
