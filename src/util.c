@@ -13,6 +13,28 @@
 
 #define VLA_PYO(name, size) VLA(name, size, PyObject *)
 
+/* use this most of the time where an exception is raised if we can't get the db mutex */
+#define DBMUTEX_ENSURE(mutex)                                                                                          \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (sqlite3_mutex_try(mutex) != SQLITE_OK)                                                                         \
+    {                                                                                                                  \
+      make_thread_exception();                                                                                         \
+      return NULL;                                                                                                     \
+    }                                                                                                                  \
+  } while (0)
+
+/* use this when we have to get the dbmutex - eg in dealloc functions
+   - where we busy wait releasing gil until dbmutex is acquired */
+#define DBMUTEX_FORCE(mutex)                                                                                           \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    while (sqlite3_mutex_try(mutex) == SQLITE_BUSY)                                                                    \
+    {                                                                                                                  \
+      Py_BEGIN_ALLOW_THREADS Py_END_ALLOW_THREADS;                                                                     \
+    }                                                                                                                  \
+  } while (0)
+
 /*
    The default Python PyErr_WriteUnraisable is almost useless, and barely used
    by CPython.  It gives the developer no clue whatsoever where in
