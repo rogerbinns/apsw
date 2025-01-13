@@ -1678,6 +1678,8 @@ APSWCursor_get(APSWCursor *self)
   if (self->status == C_DONE)
     Py_RETURN_NONE;
 
+  DBMUTEX_ENSURE(self->connection->dbmutex);
+
   do
   {
     assert(self->status == C_ROW);
@@ -1722,12 +1724,15 @@ APSWCursor_get(APSWCursor *self)
       goto error;
   } while (self->status != C_DONE);
 
+  sqlite3_mutex_leave(self->connection->dbmutex);
+
   if (the_list)
     return the_list;
   assert(the_row);
   return the_row;
 
 error:
+  sqlite3_mutex_leave(self->connection->dbmutex);
   assert(PyErr_Occurred());
   Py_CLEAR(the_list);
   Py_CLEAR(the_row);

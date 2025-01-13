@@ -273,11 +273,13 @@ Connection_close_internal(Connection *self, int force)
 
   /* This ensures any SQLITE_TRACE_CLOSE callbacks see a closed
      database */
-  sqlite3 *tmp = self->db;
+  sqlite3 *tmp_db = self->db;
+  sqlite3_mutex *tmp_mutex = self->dbmutex;
   self->db = 0;
+  self->dbmutex = 0;
   /* caller should have acquired */
-  sqlite3_mutex_leave(sqlite3_db_mutex(tmp));
-  res = sqlite3_close(tmp);
+  sqlite3_mutex_leave(tmp_mutex);
+  res = sqlite3_close(tmp_db);
 
   if (res != SQLITE_OK)
   {
@@ -478,13 +480,12 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
      Don't do that!  We also have to manage the error message thread
      safety manually as self->db is null on entry. */
   vfsused = sqlite3_vfs_find(vfs);
-  Py_BEGIN_ALLOW_THREADS
-    res = sqlite3_open_v2(filename, &self->db, flags, vfs);
-    /* get detailed error codes */
-    sqlite3_extended_result_codes(self->db, 1);
+  Py_BEGIN_ALLOW_THREADS res = sqlite3_open_v2(filename, &self->db, flags, vfs);
+  /* get detailed error codes */
+  sqlite3_extended_result_codes(self->db, 1);
   Py_END_ALLOW_THREADS;
 
-  if(res != SQLITE_OK)
+  if (res != SQLITE_OK)
     make_exception(res, self->db);
 
   /* normally sqlite will have an error code but some internal vfs
@@ -845,8 +846,11 @@ Connection_set_busy_timeout(Connection *self, PyObject *const *fast_args, Py_ssi
     ARG_MANDATORY ARG_int(milliseconds);
     ARG_EPILOG(NULL, Connection_set_busy_timeout_USAGE, );
   }
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_busy_timeout(self->db, milliseconds);
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
   if (res != SQLITE_OK)
     return NULL;
 
@@ -1901,26 +1905,30 @@ finally:
   return result;
 }
 
-static int
+/* returns NULL on failure and Py_None on success */
+static void *
 Connection_internal_set_authorizer(Connection *self, PyObject *callable)
 {
   int res = SQLITE_OK;
 
   assert(!Py_IsNone(callable));
 
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_set_authorizer(self->db, callable ? authorizercb : NULL, callable ? self : NULL);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (res != SQLITE_OK)
   {
     SET_EXC(res, self->db);
-    return -1;
+    return NULL;
   }
 
   Py_CLEAR(self->authorizer);
   if (callable)
     self->authorizer = Py_NewRef(callable);
 
-  return 0;
+  return Py_None;
+  ;
 }
 
 /** .. method:: set_authorizer(callable: Optional[Authorizer]) -> None
@@ -1942,8 +1950,12 @@ Connection_set_authorizer(Connection *self, PyObject *const *fast_args, Py_ssize
     ARG_EPILOG(NULL, Connection_set_authorizer_USAGE, );
   }
 
-  if (Connection_internal_set_authorizer(self, callable))
+  void *res = Connection_internal_set_authorizer(self, callable);
+  if (!res)
+  {
+    assert(PyErr_Occurred());
     return NULL;
+  }
   Py_RETURN_NONE;
 }
 
@@ -2037,6 +2049,8 @@ Connection_autovacuum_pages(Connection *self, PyObject *const *fast_args, Py_ssi
     ARG_MANDATORY ARG_optional_Callable(callable);
     ARG_EPILOG(NULL, Connection_autovacuum_pages_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
   if (!callable)
   {
     res = sqlite3_autovacuum_pages(self->db, NULL, NULL, NULL);
@@ -2047,12 +2061,12 @@ Connection_autovacuum_pages(Connection *self, PyObject *const *fast_args, Py_ssi
     if (res == SQLITE_OK)
       Py_INCREF(callable);
   }
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
     return NULL;
-  }
+
   Py_RETURN_NONE;
 }
 
@@ -3406,7 +3420,6 @@ Connection_create_aggregate_function(Connection *self, PyObject *const *fast_arg
   int flags = 0;
 
   CHECK_CLOSED(self, NULL);
-  DBMUTEX_ENSURE(self->dbmutex);
 
   {
     Connection_create_aggregate_function_CHECK;
@@ -3417,6 +3430,8 @@ Connection_create_aggregate_function(Connection *self, PyObject *const *fast_arg
     ARG_OPTIONAL ARG_int(flags);
     ARG_EPILOG(NULL, Connection_create_aggregate_function_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
 
   if (!factory)
     cbinfo = 0;
@@ -3432,13 +3447,9 @@ Connection_create_aggregate_function(Connection *self, PyObject *const *fast_arg
   res = sqlite3_create_function_v2(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo, NULL,
                                    cbinfo ? cbdispatch_step : NULL, cbinfo ? cbdispatch_final : NULL, apsw_free_func);
 
-  if (res)
-  {
-    /* Note: On error sqlite3_create_function_v2 calls the
-   destructor (apsw_free_func)! */
-    SET_EXC(res, self->db);
-    goto finally;
-  }
+  /* Note: On error sqlite3_create_function_v2 calls the
+     destructor (apsw_free_func)! */
+  SET_EXC(res, self->db);
 
 finally:
   sqlite3_mutex_leave(self->dbmutex);
@@ -4391,7 +4402,10 @@ Connection_readonly(Connection *self, PyObject *const *fast_args, Py_ssize_t fas
     ARG_MANDATORY ARG_str(name);
     ARG_EPILOG(NULL, Connection_readonly_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_db_readonly(self->db, name);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (res == 1)
     Py_RETURN_TRUE;
@@ -4735,14 +4749,17 @@ Connection_table_exists(Connection *self, PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Connection_table_exists_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_table_column_metadata(self->db, dbname, table_name, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (res != SQLITE_OK && res != SQLITE_ERROR)
+    SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (res == SQLITE_OK)
     Py_RETURN_TRUE;
   if (res == SQLITE_ERROR)
     Py_RETURN_FALSE;
 
-  SET_EXC(res, self->db);
   return NULL;
 }
 
@@ -5258,7 +5275,11 @@ Connection_set_authorizer_attr(Connection *self, PyObject *value)
     PyErr_Format(PyExc_TypeError, "authorizer expected a Callable or None");
     return -1;
   }
-  return Connection_internal_set_authorizer(self, (!Py_IsNone(value)) ? value : NULL);
+  void *res = Connection_internal_set_authorizer(self, (!Py_IsNone(value)) ? value : NULL);
+  if (res)
+    return 0;
+  assert(PyErr_Occurred());
+  return -1;
 }
 
 /** .. attribute:: system_errno
