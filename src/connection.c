@@ -4287,13 +4287,14 @@ Connection_config(Connection *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "ii", &opdup, &val))
       return NULL;
 
+    DBMUTEX_ENSURE(self->dbmutex);
     res = sqlite3_db_config(self->db, opdup, val, &current);
+    SET_EXC(res, self->db);
+    sqlite3_mutex_leave(self->dbmutex);
 
     if (res != SQLITE_OK)
-    {
-      SET_EXC(res, self->db);
       return NULL;
-    }
+
     return PyLong_FromLong(current);
   }
   default:
@@ -5008,7 +5009,10 @@ Connection_getmainfilename(Connection *self)
 {
 
   CHECK_CLOSED(self, NULL);
-  return convertutf8string(sqlite3_db_filename(self->db, "main"));
+  DBMUTEX_ENSURE(self->dbmutex);
+  PyObject *res = convertutf8string(sqlite3_db_filename(self->db, "main"));
+  sqlite3_mutex_leave(self->dbmutex);
+  return res;
 }
 
 /** .. attribute:: filename_journal
