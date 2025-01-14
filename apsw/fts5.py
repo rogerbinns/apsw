@@ -1656,6 +1656,10 @@ class Table:
         """Optionally sets, and returns `deletemerge <https://www.sqlite.org/fts5.html#the_deletemerge_configuration_option>`__"""
         return self._config_internal("deletemerge", val, 10)  # type: ignore
 
+    def config_insttoken(self, val: bool | None = None) -> bool:
+        """Optionally sets, and returns `insttoken <https://sqlite.org/fts5.html#the_insttoken_configuration_option>`__"""
+        return bool(self._config_internal("insttoken", val, False))  # type: ignore
+
     def config_pgsz(self, val: int | None = None) -> int:
         """Optionally sets, and returns `page size <https://www.sqlite.org/fts5.html#the_pgsz_configuration_option>`__"""
         return self._config_internal("pgsz", val, 4050)  # type: ignore

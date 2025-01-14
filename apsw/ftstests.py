@@ -21,7 +21,6 @@ import sys
 import tempfile
 import typing
 import unittest
-from venv import create
 import zlib
 import zipfile
 
@@ -1360,6 +1359,7 @@ class FTS5Table(unittest.TestCase):
             ("automerge", 4, 16),
             ("crisismerge", 16, 8),
             ("deletemerge", 10, 4),
+            ("insttoken", False, True),
             ("pgsz", 4050, 4072),
             ("rank", "bm25()", "bm25(10.0, 5.0)"),
             ("secure_delete", False, True),
