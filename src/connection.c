@@ -656,7 +656,7 @@ Connection_backup(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
 {
   struct APSWBackup *apswbackup = 0;
   sqlite3_backup *backup = 0;
-  int res = -123456; /* stupid compiler */
+  int res = SQLITE_OK;
   PyObject *result = NULL;
   PyObject *weakref = NULL;
   Connection *sourceconnection = NULL;
@@ -664,36 +664,6 @@ Connection_backup(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
   const char *sourcedatabasename = NULL;
 
   CHECK_CLOSED(self, NULL);
-
-  /* gc dependents removing dead items */
-  Connection_remove_dependent(self, NULL);
-
-  /* self (destination) can't be used if there are outstanding blobs, cursors or backups */
-  if (PyList_GET_SIZE(self->dependents))
-  {
-    PyObject *args = NULL;
-
-    args = PyTuple_New(2);
-    if (!args)
-      goto thisfinally;
-    PyObject *s = PyUnicode_FromString("The destination database has outstanding objects open on it.  They must all be "
-                                       "closed for the backup to proceed (otherwise corruption would be possible.)");
-    if (!s)
-      goto thisfinally;
-    PyTuple_SET_ITEM(args, 0, s);
-    PyTuple_SET_ITEM(args, 1, Py_NewRef(self->dependents));
-
-    PyErr_SetObject(ExcThreadingViolation, args);
-
-    /* this forces the exception ot have a traceback etc */
-    PY_ERR_FETCH(normalize_exc);
-    PY_ERR_NORMALIZE(normalize_exc);
-    PY_ERR_RESTORE(normalize_exc);
-
-  thisfinally:
-    Py_XDECREF(args);
-    goto finally;
-  }
 
   {
     Connection_backup_CHECK;
@@ -704,25 +674,13 @@ Connection_backup(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Connection_backup_USAGE, );
   }
   if (!sourceconnection->db)
-  {
-    PyErr_Format(PyExc_ValueError, "source connection is closed!");
-    goto finally;
-  }
-
-  /* ::TODO:: mutex_try both to check concurrency
-  if (sourceconnection->inuse)
-  {
-    PyErr_Format(ExcThreadingViolation, "source connection is in concurrent use in another thread");
-    goto finally;
-  }
-
-  */
+    return PyErr_Format(PyExc_ValueError, "source connection is closed!");
 
   if (sourceconnection->db == self->db)
-  {
-    PyErr_Format(PyExc_ValueError, "source and destination are the same which sqlite3_backup doesn't allow");
-    goto finally;
-  }
+    return PyErr_Format(PyExc_ValueError, "source and destination are the same");
+
+  DBMUTEXES_ENSURE(sourceconnection->dbmutex, "Backup source Connection is busy in another thread", self->dbmutex,
+                   "Backup destination Connection is busy in another thread");
 
   backup = sqlite3_backup_init(self->db, databasename, sourceconnection->db, sourcedatabasename);
 
@@ -732,8 +690,10 @@ Connection_backup(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
     if (res == SQLITE_OK) /* this happens when doing fault injection */
       res = SQLITE_ERROR;
     SET_EXC(res, self->db);
-    goto finally;
   }
+
+  if (res != SQLITE_OK)
+    goto finally;
 
   apswbackup = (struct APSWBackup *)_PyObject_New(&APSWBackupType);
   if (!apswbackup)
@@ -769,6 +729,9 @@ finally:
   assert(result ? (backup == NULL) : 1);
   if (backup)
     sqlite3_backup_finish(backup);
+
+  sqlite3_mutex_leave(sourceconnection->dbmutex);
+  sqlite3_mutex_leave(self->dbmutex);
 
   Py_XDECREF((PyObject *)apswbackup);
   Py_XDECREF(weakref);

@@ -157,13 +157,20 @@ APSWBackup_step(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_OPTIONAL ARG_int(npages);
     ARG_EPILOG(NULL, Backup_step_USAGE, );
   }
+
+  DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread",
+                   self->dest->dbmutex, "Backup destination Connection is busy in another thread");
+
   res = sqlite3_backup_step(self->backup, npages);
 
   /* this would happen if there were errors deep in the vfs */
   MakeExistingException();
 
-  if (PyErr_Occurred())
-    return NULL;
+  if (res != SQLITE_OK && res != SQLITE_DONE)
+    SET_EXC(res, self->dest->db);
+
+  sqlite3_mutex_leave(self->source->dbmutex);
+  sqlite3_mutex_leave(self->dest->dbmutex);
 
   if (res == SQLITE_DONE)
   {
@@ -173,12 +180,6 @@ APSWBackup_step(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
       self->done = Py_NewRef(Py_True);
     }
     res = SQLITE_OK;
-  }
-
-  if (res)
-  {
-    SET_EXC(res, NULL);
-    return NULL;
   }
 
   return Py_NewRef(self->done);

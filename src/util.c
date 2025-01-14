@@ -24,6 +24,18 @@
     }                                                                                                                  \
   } while (0)
 
+#define DBMUTEXES_ENSURE(mutex1, msg1, mutex2, msg2)                                                                   \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (sqlite3_mutex_try(mutex1) != SQLITE_OK)                                                                        \
+      return PyErr_Format(ExcThreadingViolation, msg1);                                                                \
+    if (sqlite3_mutex_try(mutex2) != SQLITE_OK)                                                                        \
+    {                                                                                                                  \
+      sqlite3_mutex_leave(mutex1);                                                                                     \
+      return PyErr_Format(ExcThreadingViolation, msg2);                                                                \
+    }                                                                                                                  \
+  } while (0)
+
 /* use this when we have to get the dbmutex - eg in dealloc functions
    - where we busy wait releasing gil until dbmutex is acquired */
 #define DBMUTEX_FORCE(mutex)                                                                                           \
