@@ -103,11 +103,13 @@ functions_global = (
     "sqlite3_win32_.*",
     # there can't be a dangling refcount on the connection (assertion failure)
     "sqlite3_close",
+    # don't do any mutexes
+    "sqlite3_backup_(pagecount|remaining)",
     # can't get to db from these
     "sqlite3_filename_(database|journal|wal)",
     "sqlite3_uri_.*",
     "sqlite3_value_.*",
-    # needs manual work
+    # needs manual work ::TODO:: check these are done right
     "sqlite3_blob_close",
     "sqlite3_backup_finish",
     # used below so we can't redefine

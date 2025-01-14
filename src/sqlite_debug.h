@@ -28,16 +28,6 @@
     sqlite3_backup_init((one), (two), (three), (four));                                                 \
 })
 
-#define sqlite3_backup_pagecount(...) ({                                                                                      \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(self->dest->db)) && sqlite3_mutex_held(sqlite3_db_mutex(self->source->db)));  \
-    sqlite3_backup_pagecount(__VA_ARGS__);                                                                                    \
-})
-
-#define sqlite3_backup_remaining(...) ({                                                                                      \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(self->dest->db)) && sqlite3_mutex_held(sqlite3_db_mutex(self->source->db)));  \
-    sqlite3_backup_remaining(__VA_ARGS__);                                                                                    \
-})
-
 #define sqlite3_backup_step(...) ({                                                                                           \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(self->dest->db)) && sqlite3_mutex_held(sqlite3_db_mutex(self->source->db)));  \
     sqlite3_backup_step(__VA_ARGS__);                                                                                         \
