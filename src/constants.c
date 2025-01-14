@@ -495,7 +495,8 @@ add_apsw_constants(PyObject *module)
 
     /* Prepare Flags */
     the_dict = Py_BuildValue(
-        "{siissiissiis}",
+        "{siissiissiissiis}",
+        "SQLITE_PREPARE_DONT_LOG", SQLITE_PREPARE_DONT_LOG, SQLITE_PREPARE_DONT_LOG, "SQLITE_PREPARE_DONT_LOG",
         "SQLITE_PREPARE_NORMALIZE", SQLITE_PREPARE_NORMALIZE, SQLITE_PREPARE_NORMALIZE, "SQLITE_PREPARE_NORMALIZE",
         "SQLITE_PREPARE_NO_VTAB", SQLITE_PREPARE_NO_VTAB, SQLITE_PREPARE_NO_VTAB, "SQLITE_PREPARE_NO_VTAB",
         "SQLITE_PREPARE_PERSISTENT", SQLITE_PREPARE_PERSISTENT, SQLITE_PREPARE_PERSISTENT, "SQLITE_PREPARE_PERSISTENT");
@@ -605,7 +606,7 @@ add_apsw_constants(PyObject *module)
 
     /* Standard File Control Opcodes */
     the_dict = Py_BuildValue(
-        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
+        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
         "SQLITE_FCNTL_BEGIN_ATOMIC_WRITE", SQLITE_FCNTL_BEGIN_ATOMIC_WRITE, SQLITE_FCNTL_BEGIN_ATOMIC_WRITE, "SQLITE_FCNTL_BEGIN_ATOMIC_WRITE",
         "SQLITE_FCNTL_BUSYHANDLER", SQLITE_FCNTL_BUSYHANDLER, SQLITE_FCNTL_BUSYHANDLER, "SQLITE_FCNTL_BUSYHANDLER",
         "SQLITE_FCNTL_CHUNK_SIZE", SQLITE_FCNTL_CHUNK_SIZE, SQLITE_FCNTL_CHUNK_SIZE, "SQLITE_FCNTL_CHUNK_SIZE",
@@ -624,6 +625,7 @@ add_apsw_constants(PyObject *module)
         "SQLITE_FCNTL_LOCKSTATE", SQLITE_FCNTL_LOCKSTATE, SQLITE_FCNTL_LOCKSTATE, "SQLITE_FCNTL_LOCKSTATE",
         "SQLITE_FCNTL_LOCK_TIMEOUT", SQLITE_FCNTL_LOCK_TIMEOUT, SQLITE_FCNTL_LOCK_TIMEOUT, "SQLITE_FCNTL_LOCK_TIMEOUT",
         "SQLITE_FCNTL_MMAP_SIZE", SQLITE_FCNTL_MMAP_SIZE, SQLITE_FCNTL_MMAP_SIZE, "SQLITE_FCNTL_MMAP_SIZE",
+        "SQLITE_FCNTL_NULL_IO", SQLITE_FCNTL_NULL_IO, SQLITE_FCNTL_NULL_IO, "SQLITE_FCNTL_NULL_IO",
         "SQLITE_FCNTL_OVERWRITE", SQLITE_FCNTL_OVERWRITE, SQLITE_FCNTL_OVERWRITE, "SQLITE_FCNTL_OVERWRITE",
         "SQLITE_FCNTL_PDB", SQLITE_FCNTL_PDB, SQLITE_FCNTL_PDB, "SQLITE_FCNTL_PDB",
         "SQLITE_FCNTL_PERSIST_WAL", SQLITE_FCNTL_PERSIST_WAL, SQLITE_FCNTL_PERSIST_WAL, "SQLITE_FCNTL_PERSIST_WAL",
@@ -983,6 +985,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_LOCKSTATE", SQLITE_FCNTL_LOCKSTATE)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_LOCK_TIMEOUT", SQLITE_FCNTL_LOCK_TIMEOUT)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_MMAP_SIZE", SQLITE_FCNTL_MMAP_SIZE)
+        || PyModule_AddIntConstant(module, "SQLITE_FCNTL_NULL_IO", SQLITE_FCNTL_NULL_IO)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_OVERWRITE", SQLITE_FCNTL_OVERWRITE)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_PDB", SQLITE_FCNTL_PDB)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_PERSIST_WAL", SQLITE_FCNTL_PERSIST_WAL)
@@ -1141,6 +1144,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_OPEN_WAL", SQLITE_OPEN_WAL)
         || PyModule_AddIntConstant(module, "SQLITE_PERM", SQLITE_PERM)
         || PyModule_AddIntConstant(module, "SQLITE_PRAGMA", SQLITE_PRAGMA)
+        || PyModule_AddIntConstant(module, "SQLITE_PREPARE_DONT_LOG", SQLITE_PREPARE_DONT_LOG)
         || PyModule_AddIntConstant(module, "SQLITE_PREPARE_NORMALIZE", SQLITE_PREPARE_NORMALIZE)
         || PyModule_AddIntConstant(module, "SQLITE_PREPARE_NO_VTAB", SQLITE_PREPARE_NO_VTAB)
         || PyModule_AddIntConstant(module, "SQLITE_PREPARE_PERSISTENT", SQLITE_PREPARE_PERSISTENT)
