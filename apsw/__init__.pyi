@@ -3770,6 +3770,8 @@ SQLITE_FCNTL_LOCK_TIMEOUT: int = 34
 """For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
 SQLITE_FCNTL_MMAP_SIZE: int = 18
 """For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
+SQLITE_FCNTL_NULL_IO: int = 43
+"""For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
 SQLITE_FCNTL_OVERWRITE: int = 11
 """For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
 SQLITE_FCNTL_PDB: int = 30
@@ -4086,12 +4088,14 @@ SQLITE_PERM: int = 3
 """For `Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_PRAGMA: int = 19
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
+SQLITE_PREPARE_DONT_LOG: int = 16
+"""For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>'__"""
 SQLITE_PREPARE_NORMALIZE: int = 2
-"""For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_normalize.html>'__"""
+"""For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>'__"""
 SQLITE_PREPARE_NO_VTAB: int = 4
-"""For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_normalize.html>'__"""
+"""For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>'__"""
 SQLITE_PREPARE_PERSISTENT: int = 1
-"""For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_normalize.html>'__"""
+"""For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>'__"""
 SQLITE_PROTOCOL: int = 15
 """For `Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_RANGE: int = 25
@@ -4373,14 +4377,14 @@ SQLITE_FCNTL_EXTERNAL_READER SQLITE_FCNTL_FILE_POINTER
 SQLITE_FCNTL_GET_LOCKPROXYFILE SQLITE_FCNTL_HAS_MOVED
 SQLITE_FCNTL_JOURNAL_POINTER SQLITE_FCNTL_LAST_ERRNO
 SQLITE_FCNTL_LOCKSTATE SQLITE_FCNTL_LOCK_TIMEOUT
-SQLITE_FCNTL_MMAP_SIZE SQLITE_FCNTL_OVERWRITE SQLITE_FCNTL_PDB
-SQLITE_FCNTL_PERSIST_WAL SQLITE_FCNTL_POWERSAFE_OVERWRITE
-SQLITE_FCNTL_PRAGMA SQLITE_FCNTL_RBU SQLITE_FCNTL_RESERVE_BYTES
-SQLITE_FCNTL_RESET_CACHE SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE
-SQLITE_FCNTL_SET_LOCKPROXYFILE SQLITE_FCNTL_SIZE_HINT
-SQLITE_FCNTL_SIZE_LIMIT SQLITE_FCNTL_SYNC SQLITE_FCNTL_SYNC_OMITTED
-SQLITE_FCNTL_TEMPFILENAME SQLITE_FCNTL_TRACE SQLITE_FCNTL_VFSNAME
-SQLITE_FCNTL_VFS_POINTER SQLITE_FCNTL_WAL_BLOCK
+SQLITE_FCNTL_MMAP_SIZE SQLITE_FCNTL_NULL_IO SQLITE_FCNTL_OVERWRITE
+SQLITE_FCNTL_PDB SQLITE_FCNTL_PERSIST_WAL
+SQLITE_FCNTL_POWERSAFE_OVERWRITE SQLITE_FCNTL_PRAGMA SQLITE_FCNTL_RBU
+SQLITE_FCNTL_RESERVE_BYTES SQLITE_FCNTL_RESET_CACHE
+SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE SQLITE_FCNTL_SET_LOCKPROXYFILE
+SQLITE_FCNTL_SIZE_HINT SQLITE_FCNTL_SIZE_LIMIT SQLITE_FCNTL_SYNC
+SQLITE_FCNTL_SYNC_OMITTED SQLITE_FCNTL_TEMPFILENAME SQLITE_FCNTL_TRACE
+SQLITE_FCNTL_VFSNAME SQLITE_FCNTL_VFS_POINTER SQLITE_FCNTL_WAL_BLOCK
 SQLITE_FCNTL_WIN32_AV_RETRY SQLITE_FCNTL_WIN32_GET_HANDLE
 SQLITE_FCNTL_WIN32_SET_HANDLE SQLITE_FCNTL_ZIPVFS"""
 
@@ -4436,10 +4440,10 @@ SQLITE_OPEN_WAL"""
 
 mapping_prepare_flags: dict[str | int, int | str]
 """Prepare Flags mapping names to int and int to names.
-Doc at https://sqlite.org/c3ref/c_prepare_normalize.html
+Doc at https://sqlite.org/c3ref/c_prepare_dont_log.html
 
-SQLITE_PREPARE_NORMALIZE SQLITE_PREPARE_NO_VTAB
-SQLITE_PREPARE_PERSISTENT"""
+SQLITE_PREPARE_DONT_LOG SQLITE_PREPARE_NORMALIZE
+SQLITE_PREPARE_NO_VTAB SQLITE_PREPARE_PERSISTENT"""
 
 mapping_result_codes: dict[str | int, int | str]
 """Result Codes mapping names to int and int to names.
