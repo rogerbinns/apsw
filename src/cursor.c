@@ -934,7 +934,6 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
 
   CHECK_CURSOR_CLOSED(NULL);
 
-  assert(!self->bindings);
   {
     Cursor_execute_CHECK;
     ARG_PROLOG(2, Cursor_execute_KWNAMES);
@@ -951,6 +950,8 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
   res = resetcursor(self, /* force= */ 0);
   if (res != SQLITE_OK)
     goto error_out;
+
+  assert(!self->bindings);
 
   self->bindings = bindings;
 
@@ -1036,10 +1037,6 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
 
   CHECK_CURSOR_CLOSED(NULL);
 
-  assert(!self->bindings);
-  assert(!self->emiter);
-  assert(!self->emoriginalquery);
-  assert(self->status == C_DONE);
   {
     Cursor_executemany_CHECK;
     ARG_PROLOG(2, Cursor_executemany_KWNAMES);
@@ -1055,6 +1052,11 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
   res = resetcursor(self, /* force= */ 0);
   if (res != SQLITE_OK)
     goto error_out;
+
+  assert(!self->bindings);
+  assert(!self->emiter);
+  assert(!self->emoriginalquery);
+  assert(self->status == C_DONE);
 
   self->emiter = PyObject_GetIter(sequenceofbindings);
   if (!self->emiter)

@@ -968,7 +968,7 @@ class APSW(unittest.TestCase):
 
         # incomplete execution across executemany
         c.executemany("select * from foo; select ?", ((1,), (2,)))  # we don't read
-        self.assertRaises(apsw.IncompleteExecutionError, c.executemany, "begin")
+        self.assertRaises(apsw.IncompleteExecutionError, c.executemany, "begin", (1, 2))
 
         # set type (pysqlite error with this)
         c.execute("create table xxset(x,y,z)")
