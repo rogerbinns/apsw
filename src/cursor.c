@@ -186,7 +186,8 @@ APSWCursor_close_internal(APSWCursor *self, int force)
 
   res = resetcursor(self, force);
   /* caller must have acquired mutex */
-  sqlite3_mutex_leave(self->connection->dbmutex);
+  if (self->connection)
+    sqlite3_mutex_leave(self->connection->dbmutex);
 
   if (force == 2)
     PY_ERR_RESTORE(exc_save);
@@ -232,7 +233,8 @@ APSWCursor_dealloc(APSWCursor *self)
   PyObject_GC_UnTrack(self);
   APSW_CLEAR_WEAKREFS;
 
-  DBMUTEX_FORCE(self->connection->dbmutex);
+  if (self->connection)
+    DBMUTEX_FORCE(self->connection->dbmutex);
   APSWCursor_close_internal(self, 2);
 
   if (PyErr_Occurred())
@@ -752,8 +754,8 @@ APSWCursor_step(APSWCursor *self)
   for (;;)
   {
     assert(!PyErr_Occurred());
-    Py_BEGIN_ALLOW_THREADS
-      res = (self->statement->vdbestatement) ? (sqlite3_step(self->statement->vdbestatement)) : (SQLITE_DONE);
+    Py_BEGIN_ALLOW_THREADS res
+        = (self->statement->vdbestatement) ? (sqlite3_step(self->statement->vdbestatement)) : (SQLITE_DONE);
     Py_END_ALLOW_THREADS;
 
     switch (res & 0xff)
