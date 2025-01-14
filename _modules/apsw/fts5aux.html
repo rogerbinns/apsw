@@ -5,8 +5,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.fts5aux &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
+  <title>apsw.fts5aux &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
 
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=632d72c6"></script>
+      <script src="../../_static/documentation_options.js?v=9901b351"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -107,12 +107,12 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
-<span class="kn">import</span> <span class="nn">apsw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
 
 
 <span class="c1"># This section is a translation of the bm25 C code from the `SQLite</span>
@@ -122,7 +122,7 @@
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">_Bm25Data</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_Bm25Data</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Statistical information about each query overall&quot;&quot;&quot;</span>
 
     <span class="n">nPhrase</span><span class="p">:</span> <span class="nb">int</span>
@@ -135,7 +135,7 @@
     <span class="s2">&quot;Per column weight - how much each occurrence counts for, defaulting to 1&quot;</span>
 
 
-<span class="k">def</span> <span class="nf">_Bm25GetData</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_Bm25Data</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_Bm25GetData</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_Bm25Data</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates :class:`_Bm25Data`&quot;&quot;&quot;</span>
 
     <span class="c1"># weights must be at least column_count long defaulting to 1.0.</span>
@@ -160,7 +160,7 @@
         <span class="c1"># We need to know how many times the phrase occurs.</span>
         <span class="n">nHit</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="k">def</span> <span class="nf">CountCb</span><span class="p">(</span><span class="n">_api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">_closure</span><span class="p">:</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">CountCb</span><span class="p">(</span><span class="n">_api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">_closure</span><span class="p">:</span> <span class="kc">None</span><span class="p">):</span>
             <span class="c1"># Callback for each row matched.  The parameters are</span>
             <span class="c1"># unused.</span>
             <span class="k">nonlocal</span> <span class="n">nHit</span>
@@ -183,7 +183,7 @@
 
 <div class="viewcode-block" id="bm25">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.bm25">[docs]</a>
-<span class="k">def</span> <span class="nf">bm25</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">bm25</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform the BM25 calculation for a matching row</span>
 
 <span class="sd">    It accepts weights for each column (default 1) which means how much</span>
@@ -236,7 +236,7 @@
 
 <div class="viewcode-block" id="inverse_document_frequency">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.inverse_document_frequency">[docs]</a>
-<span class="k">def</span> <span class="nf">inverse_document_frequency</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">inverse_document_frequency</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Measures how rare each search phrase is in the content</span>
 
 <span class="sd">    This helper method is intended for use in your own ranking</span>
@@ -260,7 +260,7 @@
         <span class="c1"># We need to know how many times the phrase occurs.</span>
         <span class="n">hits</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="k">def</span> <span class="nf">count_callback</span><span class="p">(</span><span class="n">_api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">_closure</span><span class="p">:</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">count_callback</span><span class="p">(</span><span class="n">_api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">_closure</span><span class="p">:</span> <span class="kc">None</span><span class="p">):</span>
             <span class="c1"># Callback for each row matched.  The parameters are</span>
             <span class="c1"># unused.</span>
             <span class="k">nonlocal</span> <span class="n">hits</span>
@@ -281,7 +281,7 @@
 
 <div class="viewcode-block" id="subsequence">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.subsequence">[docs]</a>
-<span class="k">def</span> <span class="nf">subsequence</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">subsequence</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ranking function boosting rows where tokens are in order</span>
 
 <span class="sd">    :func:`bm25` doesn&#39;t take into account ordering.  Phrase matches</span>
@@ -326,7 +326,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_column_spans</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">column</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_column_spans</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">column</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
     <span class="c1"># Helper for subsequence to get the spans (distance between first</span>
     <span class="c1"># token of first phrase and first token of last phrase</span>
     <span class="n">offsets</span> <span class="o">=</span> <span class="p">[</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_column_offsets</span><span class="p">(</span><span class="n">phrase</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span> <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">api</span><span class="o">.</span><span class="n">phrase_count</span><span class="p">)]</span>
@@ -371,7 +371,7 @@
 
 <div class="viewcode-block" id="position_rank">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.position_rank">[docs]</a>
-<span class="k">def</span> <span class="nf">position_rank</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">position_rank</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ranking function boosting the earlier in a column phrases are located</span>
 
 <span class="sd">    :func:`bm25` doesn&#39;t take into where phrases occur.  It makes no</span>
@@ -410,8 +410,8 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

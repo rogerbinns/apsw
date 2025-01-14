@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual File System (VFS) &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+  <title>Virtual File System (VFS) &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=632d72c6"></script>
+      <script src="_static/documentation_options.js?v=9901b351"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -355,7 +355,7 @@ call returns, on a reboot the file would still be deleted.</p></li>
 <dd><p>Close and unload the library corresponding to the handle you
 returned from <a class="reference internal" href="#apsw.VFS.xDlOpen" title="apsw.VFS.xDlOpen"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlOpen()</span></code></a>.  You can use ctypes to do
 this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlClose</span><span class="p">(</span><span class="n">handle</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">xDlClose</span><span class="p">(</span><span class="n">handle</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
    <span class="c1"># Note leading underscore in _ctypes</span>
    <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlclose</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>       <span class="c1"># Linux/Mac/Unix</span>
    <span class="n">_ctypes</span><span class="o">.</span><span class="n">FreeLibrary</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>   <span class="c1"># Windows</span>
@@ -385,7 +385,7 @@ return 0 (NULL). The number is passed as is to
 <a class="reference internal" href="#apsw.VFS.xDlSym" title="apsw.VFS.xDlSym"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlSym()</span></code></a>/<a class="reference internal" href="#apsw.VFS.xDlClose" title="apsw.VFS.xDlClose"><code class="xref py py-meth docutils literal notranslate"><span class="pre">xDlClose()</span></code></a> so it can represent
 anything that is convenient for you (eg an index into an
 array). You can use ctypes to load a library:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlOpen</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">xDlOpen</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
    <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">cdll</span><span class="o">.</span><span class="n">LoadLibrary</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">_handle</span>
 </pre></div>
 </div>
@@ -396,7 +396,7 @@ array). You can use ctypes to load a library:</p>
 <span class="sig-prename descclassname"><span class="pre">VFS.</span></span><span class="sig-name descname"><span class="pre">xDlSym</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">symbol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.VFS.xDlSym" title="Link to this definition"></a></dt>
 <dd><p>Returns the address of the named symbol which will be called by
 SQLite. On error you should return 0 (NULL). You can use ctypes:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">xDlSym</span><span class="p">(</span><span class="n">ptr</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
    <span class="k">return</span> <span class="n">_ctypes</span><span class="o">.</span><span class="n">dlsym</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c1"># Linux/Unix/Mac etc (note leading underscore)</span>
    <span class="k">return</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">win32</span><span class="o">.</span><span class="n">kernel32</span><span class="o">.</span><span class="n">GetProcAddress</span> <span class="p">(</span><span class="n">ptr</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>  <span class="c1"># Windows</span>
 </pre></div>
@@ -607,7 +607,7 @@ internal use.</p>
 </dl>
 <p>Ensure you pass any unrecognised codes through to your super class.
 For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ptr</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">xFileControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ptr</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="mi">1027</span><span class="p">:</span>
         <span class="n">process_quick</span><span class="p">(</span><span class="n">ptr</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="mi">1028</span><span class="p">:</span>
@@ -779,8 +779,8 @@ present.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

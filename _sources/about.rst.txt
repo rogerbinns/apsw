@@ -3,7 +3,7 @@ About
 
 **APSW** |version| **released** |today|.
 
-Use with `SQLite <https://sqlite.org/>`__ 3.47.1 or later, `Python
+Use with `SQLite <https://sqlite.org/>`__ 3.48.0 or later, `Python
 <https://www.python.org/downloads/>`__ 3.9 and later.
 
 APSW has been under continuous development since 2004.
@@ -25,6 +25,10 @@ drivers.
 Use APSW when you want to use SQLite fully, and have an improved
 developer experience.  See more about the :doc:`differences between
 APSW and sqlite3 <pysqlite>`.
+
+Because of the complete integration with SQLite, APSW offers useful
+additional functionality such as :doc:`these <ext>` and comprehensive
+:doc:`full text search support <textsearch>`.
 
 Dependencies
 ------------

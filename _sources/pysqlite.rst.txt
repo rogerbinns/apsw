@@ -200,7 +200,7 @@ module:
 * APSW includes a :doc:`full featured shell <shell>`.  sqlite3 has a
   `simple one
   <https://docs.python.org/3/library/sqlite3.html#command-line-interface>`__
-  available since Python 3.12.`
+  available since Python 3.12.
 
 * APSW is faster than sqlite3 in my testing.  Try the :ref:`speedtest`
   benchmark.  All C code in APSW called by Python implements the

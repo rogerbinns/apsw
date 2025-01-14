@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Full text search &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+  <title>Full text search &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=632d72c6"></script>
+      <script src="_static/documentation_options.js?v=9901b351"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -140,6 +140,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#apsw.fts5.Table.config_automerge"><code class="docutils literal notranslate"><span class="pre">Table.config_automerge()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.fts5.Table.config_crisismerge"><code class="docutils literal notranslate"><span class="pre">Table.config_crisismerge()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.fts5.Table.config_deletemerge"><code class="docutils literal notranslate"><span class="pre">Table.config_deletemerge()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.fts5.Table.config_insttoken"><code class="docutils literal notranslate"><span class="pre">Table.config_insttoken()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.fts5.Table.config_pgsz"><code class="docutils literal notranslate"><span class="pre">Table.config_pgsz()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.fts5.Table.config_rank"><code class="docutils literal notranslate"><span class="pre">Table.config_rank()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.fts5.Table.config_secure_delete"><code class="docutils literal notranslate"><span class="pre">Table.config_secure_delete()</span></code></a></li>
@@ -849,9 +850,9 @@ many different languages, and <a class="reference external" href="https://www.nl
 </div>
 <p>You can use <a class="reference external" href="https://www.nltk.org/howto/wordnet.html">wordnet</a> to get
 synonyms:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nltk.corpus</span> <span class="kn">import</span> <span class="n">wordnet</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">nltk.corpus</span><span class="w"> </span><span class="kn">import</span> <span class="n">wordnet</span>
 
-<span class="k">def</span> <span class="nf">synonyms</span><span class="p">(</span><span class="n">word</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">synonyms</span><span class="p">(</span><span class="n">word</span><span class="p">):</span>
   <span class="k">return</span> <span class="p">[</span><span class="n">syn</span><span class="o">.</span><span class="n">name</span><span class="p">()</span> <span class="k">for</span> <span class="n">syn</span> <span class="ow">in</span> <span class="n">wordnet</span><span class="o">.</span><span class="n">synsets</span><span class="p">(</span><span class="n">word</span><span class="p">)]</span>
 
 <span class="n">wrapper</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">SynonymTokenizer</span><span class="p">(</span><span class="n">synonyms</span><span class="p">)</span>
@@ -1424,6 +1425,12 @@ survive the FTS5 table being renamed, backed up, restored etc.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="apsw.fts5.Table.config_insttoken">
+<span class="sig-name descname"><span class="pre">config_insttoken</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/apsw/fts5.html#Table.config_insttoken"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.fts5.Table.config_insttoken" title="Link to this definition"></a></dt>
+<dd><p>Optionally sets, and returns <a class="reference external" href="https://sqlite.org/fts5.html#the_insttoken_configuration_option">insttoken</a></p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="apsw.fts5.Table.config_pgsz">
 <span class="sig-name descname"><span class="pre">config_pgsz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></span><a class="reference internal" href="_modules/apsw/fts5.html#Table.config_pgsz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.fts5.Table.config_pgsz" title="Link to this definition"></a></dt>
 <dd><p>Optionally sets, and returns <a class="reference external" href="https://www.sqlite.org/fts5.html#the_pgsz_configuration_option">page size</a></p>
@@ -1993,7 +2000,7 @@ the corresponding default, or <a class="reference internal" href="#apsw.fts5.Tok
 <span class="p">}</span>
 
 <span class="c1"># Using &quot;+&quot; in your ``tokenize`` functions</span>
-<span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">locale</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">locale</span><span class="p">):</span>
     <span class="n">tok</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;+&quot;</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">*</span><span class="n">tokens</span> <span class="ow">in</span> <span class="n">tok</span><span class="p">(</span><span class="n">utf8</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">locale</span><span class="p">):</span>
         <span class="c1"># do something</span>
@@ -3291,8 +3298,8 @@ Note that the segment returned includes leading and trailing white space.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

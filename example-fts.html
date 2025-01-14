@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Full Text Search Example/Tour &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+  <title>Full Text Search Example/Tour &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=632d72c6"></script>
+      <script src="_static/documentation_options.js?v=9901b351"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -140,21 +140,19 @@ specific functionality and extras.</p>
 <span class="c1"># This code uses Python&#39;s optional typing annotations.  You can</span>
 <span class="c1"># ignore them and do not need to use them.  If you do use them</span>
 <span class="c1"># then you must include this future annotations line first.</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pprint</span><span class="w"> </span><span class="kn">import</span> <span class="n">pprint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 
-<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">functools</span>
-
-<span class="kn">import</span> <span class="nn">apsw</span>
-<span class="kn">import</span> <span class="nn">apsw.ext</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw.ext</span>
 
 <span class="c1"># The three FTS5 specific modules</span>
-<span class="kn">import</span> <span class="nn">apsw.fts5</span>
-<span class="kn">import</span> <span class="nn">apsw.fts5aux</span>
-<span class="kn">import</span> <span class="nn">apsw.fts5query</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw.fts5</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw.fts5aux</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw.fts5query</span>
 </pre></div>
 </div>
 <section id="is-fts5-available">
@@ -678,7 +676,7 @@ match and row such as <a class="reference external" href="https://www.sqlite.org
 <p>They are called with <a class="reference internal" href="textsearch.html#apsw.FTS5ExtensionApi" title="apsw.FTS5ExtensionApi"><code class="xref py py-class docutils literal notranslate"><span class="pre">FTS5ExtensionApi</span></code></a> as the first
 parameter, and then any function arguments, and return a value.
 This example shows all the information available during a query.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">row_match</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">row_match</span><span class="p">(</span>
     <span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;row_match called with&quot;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
@@ -722,7 +720,7 @@ This example shows all the information available during a query.</p>
 
 <span class="c1"># This is used as the callback from query_phrase above.  Note that the</span>
 <span class="c1"># api instance in this call is different than the above function.</span>
-<span class="k">def</span> <span class="nf">phrase_count</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">closure</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">phrase_count</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">closure</span><span class="p">):</span>
     <span class="n">phrase</span><span class="p">,</span> <span class="n">counts</span> <span class="o">=</span> <span class="n">closure</span>
 
     <span class="c1"># increment counts for this phrase</span>
@@ -971,7 +969,7 @@ the default SQLite tokenizer</p>
 
 
 <span class="c1"># Make a function to show output</span>
-<span class="k">def</span> <span class="nf">show_tokens</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">show_tokens</span><span class="p">(</span>
     <span class="n">text</span><span class="p">,</span>
     <span class="n">tokenizer_name</span><span class="p">,</span>
     <span class="n">tokenizer_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1187,7 +1185,7 @@ to filter your own or other tokenizers.</p>
 <p>We will define our own tokenizer to be the same as above, but
 without all those parameters in the table definition.  A tokenizer
 takes the connection and list of string parameters.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_tokenizer</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_tokenizer</span><span class="p">(</span>
     <span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5Tokenizer</span><span class="p">:</span>
     <span class="c1"># we take no params</span>
@@ -1241,7 +1239,7 @@ tokenizer.  Tokenizers operate on UTF8 and byte offsets.  The
 <a class="reference internal" href="textsearch.html#apsw.fts5.parse_tokenizer_args" title="apsw.fts5.parse_tokenizer_args"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.fts5.parse_tokenizer_args()</span></code></a> makes it easy to handle
 parameters.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">StringTokenizer</span>
-<span class="k">def</span> <span class="nf">atokenizer</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">atokenizer</span><span class="p">(</span>
     <span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5Tokenizer</span><span class="p">:</span>
     <span class="c1"># What we accept</span>
@@ -1260,7 +1258,7 @@ parameters.</p>
     <span class="c1"># show what options we got</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">options</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="c1"># See apsw.fts5.tokenize_reasons for mapping from text to number</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">reason</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="c1"># if a locale table and value was used</span>
@@ -1386,7 +1384,7 @@ extracted text to another tokenizer.</p>
 <span id="example-fts-json"></span><span id="index-21"></span><h2>JSON tokenizer<a class="headerlink" href="#json-tokenizer" title="Link to this heading"></a></h2>
 <p><a class="reference internal" href="textsearch.html#apsw.fts5.JSONTokenizer" title="apsw.fts5.JSONTokenizer"><code class="xref py py-func docutils literal notranslate"><span class="pre">JSONTokenizer()</span></code></a> extracts strings from JSON for
 processing by another tokenizer.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;A car🚗&quot;</span><span class="p">,</span>
@@ -1488,7 +1486,7 @@ tokens.</p>
 stream.  Tokens that appear in almost every row aren’t useful for
 finding good matches, and increase the size of the index.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">StopWordsTokenizer</span>
-<span class="k">def</span> <span class="nf">ignore</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">ignore</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="c1"># Return True if the token should be ignored.  These are common</span>
     <span class="c1"># English tokens that appear in almost all rows of English</span>
     <span class="c1"># content.</span>
@@ -1525,7 +1523,7 @@ finding good matches, and increase the size of the index.</p>
 <span id="example-fts-transform"></span><span id="index-24"></span><h2>Transform tokenizer<a class="headerlink" href="#transform-tokenizer" title="Link to this heading"></a></h2>
 <p><a class="reference internal" href="textsearch.html#apsw.fts5.TransformTokenizer" title="apsw.fts5.TransformTokenizer"><code class="xref py py-func docutils literal notranslate"><span class="pre">TransformTokenizer()</span></code></a> modifies tokens.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">TransformTokenizer</span>
-<span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="c1"># we remove trailing &#39;s&#39; and &#39;ing&#39;</span>
     <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">token</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -1571,8 +1569,8 @@ finding good matches, and increase the size of the index.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

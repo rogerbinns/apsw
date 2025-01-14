@@ -10,6 +10,30 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.48.0.0
+========
+
+You can :ref:`pass any Python objects <pyobject>` into SQLite, and
+return them when used as runtime values such as functions.  SQLite's
+`pointer passing interface <https://www.sqlite.org/bindptr.html>`__ is
+used behind the scenes. (:issue:`521`)
+
+:ref:`Source releases <sources>` are also available in tar format
+(:issue:`548`), and have updated source release signing
+:ref:`instructions <verifydownload>`. (:issue:`549`)
+
+`Shared cache
+<https://www.sqlite.org/compile.html#omit_shared_cache>`__ (2006) is
+omitted when APSW includes the amalgamation like PyPI builds.  This is
+`recommended by SQLite
+<https://www.sqlite.org/compile.html#recommended_compile_time_options>`__,
+has been `discouraged for a long time
+<https://sqlite.org/sharedcache.html#use_of_shared_cache_is_discouraged>`__.
+:meth:`apsw.enable_shared_cache` will raise an exception if called and
+the shared cache has been omitted.  You can see what options are in
+effect in :attr:`apsw.compile_options`.  If you were using it for
+shared memory databases then :ref:`use the memdb VFS <memdb>`.
+
 3.47.2.0
 ========
 

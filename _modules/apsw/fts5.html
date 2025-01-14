@@ -5,8 +5,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.fts5 &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
+  <title>apsw.fts5 &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
 
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=632d72c6"></script>
+      <script src="../../_static/documentation_options.js?v=9901b351"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -109,39 +109,39 @@
 <span class="sd">related functionality.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">collections</span>
-<span class="kn">import</span> <span class="nn">difflib</span>
-<span class="kn">import</span> <span class="nn">fnmatch</span>
-<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">collections</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">difflib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 
 <span class="c1"># avoid clashing with html as a parameter name</span>
-<span class="kn">import</span> <span class="nn">html</span> <span class="k">as</span> <span class="nn">html_module</span>
-<span class="kn">import</span> <span class="nn">html.parser</span> <span class="k">as</span> <span class="nn">html_parser_module</span>
-<span class="kn">import</span> <span class="nn">importlib</span>
-<span class="kn">import</span> <span class="nn">importlib.resources</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">pathlib</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">threading</span>
-<span class="kn">from</span> <span class="nn">contextvars</span> <span class="kn">import</span> <span class="n">ContextVar</span>
-<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">ModuleType</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">html</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">html_module</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">html.parser</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">html_parser_module</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib.resources</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextvars</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContextVar</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModuleType</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Self</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Self</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="c1"># Self is only available in py3.11+ but the other items import anyway</span>
     <span class="k">pass</span>
 
-<span class="kn">import</span> <span class="nn">apsw</span>
-<span class="kn">import</span> <span class="nn">apsw._unicode</span>
-<span class="kn">import</span> <span class="nn">apsw.ext</span>
-<span class="kn">import</span> <span class="nn">apsw.fts5query</span>
-<span class="kn">import</span> <span class="nn">apsw.unicode</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw._unicode</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw.ext</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw.fts5query</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw.unicode</span>
 
 <span class="n">unicode_categories</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;Lu&quot;</span><span class="p">:</span> <span class="s2">&quot;Letter Uppercase&quot;</span><span class="p">,</span>
@@ -189,7 +189,7 @@
 
 <div class="viewcode-block" id="convert_tokenize_reason">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.convert_tokenize_reason">[docs]</a>
-<span class="k">def</span> <span class="nf">convert_tokenize_reason</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_tokenize_reason</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a space separated list of :data:`tokenize_reasons` into a set of corresponding values</span>
 
 <span class="sd">    Use with :func:`parse_tokenizer_args`&quot;&quot;&quot;</span>
@@ -206,7 +206,7 @@
 
 <div class="viewcode-block" id="convert_unicode_categories">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.convert_unicode_categories">[docs]</a>
-<span class="k">def</span> <span class="nf">convert_unicode_categories</span><span class="p">(</span><span class="n">patterns</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_unicode_categories</span><span class="p">(</span><span class="n">patterns</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns Unicode categories matching space separated values</span>
 
 <span class="sd">    :func:`fnmatch.fnmatchcase` is used to check matches.  An example</span>
@@ -244,7 +244,7 @@
 
 <div class="viewcode-block" id="convert_string_to_python">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.convert_string_to_python">[docs]</a>
-<span class="k">def</span> <span class="nf">convert_string_to_python</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_string_to_python</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a string to a Python object</span>
 
 <span class="sd">    This is useful to process command line arguments and arguments to</span>
@@ -278,7 +278,7 @@
 
 <div class="viewcode-block" id="convert_number_ranges">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.convert_number_ranges">[docs]</a>
-<span class="k">def</span> <span class="nf">convert_number_ranges</span><span class="p">(</span><span class="n">numbers</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_number_ranges</span><span class="p">(</span><span class="n">numbers</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts comma separated number ranges</span>
 
 <span class="sd">    Takes input like ``2,3-5,17`` and converts to</span>
@@ -303,7 +303,7 @@
 
 <div class="viewcode-block" id="convert_boolean">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.convert_boolean">[docs]</a>
-<span class="k">def</span> <span class="nf">convert_boolean</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_boolean</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts to boolean</span>
 
 <span class="sd">    Accepts ``0``, ``1``, ``false``, and ``true``&quot;&quot;&quot;</span>
@@ -321,7 +321,7 @@
 
 <div class="viewcode-block" id="tokenizer_test_strings">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.tokenizer_test_strings">[docs]</a>
-<span class="k">def</span> <span class="nf">tokenizer_test_strings</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">tokenizer_test_strings</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides utf-8 bytes sequences for interesting test strings</span>
 
 <span class="sd">    :param filename: File to load.  If None then the builtin one is used</span>
@@ -361,7 +361,7 @@
 
 <div class="viewcode-block" id="StringTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.StringTokenizer">[docs]</a>
-<span class="k">def</span> <span class="nf">StringTokenizer</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5TokenizerFactory</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">StringTokenizer</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5TokenizerFactory</span><span class="p">)</span> <span class="o">-&gt;</span><span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorator for tokenizers that operate on strings</span>
 
 <span class="sd">    FTS5 tokenizers operate on UTF8 bytes for the text and offsets.</span>
@@ -371,11 +371,11 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">string_tokenizer_wrapper</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">string_tokenizer_wrapper</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
         <span class="n">inner_tokenizer</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">con</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">inner_tokenizer</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">outer_tokenizer</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">outer_tokenizer</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">upm</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">_unicode</span><span class="o">.</span><span class="n">to_utf8_position_mapper</span><span class="p">(</span><span class="n">utf8</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">*</span><span class="n">tokens</span> <span class="ow">in</span> <span class="n">inner_tokenizer</span><span class="p">(</span><span class="n">upm</span><span class="o">.</span><span class="n">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">locale</span><span class="p">):</span>
@@ -389,7 +389,7 @@
 
 <div class="viewcode-block" id="QueryTokensTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.QueryTokensTokenizer">[docs]</a>
-<span class="k">def</span> <span class="nf">QueryTokensTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">QueryTokensTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Recognises a special tokens marker and returns those tokens for a query.</span>
 <span class="sd">    This is useful for making queries directly using tokens, instead</span>
 <span class="sd">    of pre-tokenized text.</span>
@@ -404,7 +404,7 @@
 
     <span class="n">options</span> <span class="o">=</span> <span class="n">parse_tokenizer_args</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5_TOKENIZE_QUERY</span><span class="p">:</span>
             <span class="n">decoded</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5query</span><span class="o">.</span><span class="n">QueryTokens</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">utf8</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">decoded</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -420,7 +420,7 @@
 <div class="viewcode-block" id="UnicodeWordsTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.UnicodeWordsTokenizer">[docs]</a>
 <span class="nd">@StringTokenizer</span>
-<span class="k">def</span> <span class="nf">UnicodeWordsTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">UnicodeWordsTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Uses `Unicode segmentation &lt;https://www.unicode.org/reports/tr29/&gt;`__ to extract words</span>
 
 <span class="sd">    The following tokenizer parameters are accepted.  A segment is considered a word</span>
@@ -465,7 +465,7 @@
 
     <span class="n">options</span> <span class="o">=</span> <span class="n">parse_tokenizer_args</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">yield from</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">word_iter_with_offsets</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">tokenize</span></div>
@@ -474,7 +474,7 @@
 
 <div class="viewcode-block" id="SimplifyTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.SimplifyTokenizer">[docs]</a>
-<span class="k">def</span> <span class="nf">SimplifyTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">SimplifyTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Tokenizer wrapper that simplifies tokens by neutralizing case, canonicalization, and diacritic/mark removal</span>
 
 <span class="sd">    Put this before another tokenizer to simplify its output.  For example:</span>
@@ -509,7 +509,7 @@
         <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">casefold</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="n">t</span><span class="p">)),</span>
     <span class="p">}[</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;strip&quot;</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;casefold&quot;</span><span class="p">]]</span>
 
-    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="n">tok</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;+&quot;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">*</span><span class="n">tokens</span> <span class="ow">in</span> <span class="n">tok</span><span class="p">(</span><span class="n">utf8</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">locale</span><span class="p">):</span>
             <span class="n">new_tokens</span> <span class="o">=</span> <span class="p">[]</span>
@@ -527,7 +527,7 @@
 <div class="viewcode-block" id="NGramTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.NGramTokenizer">[docs]</a>
 <span class="nd">@StringTokenizer</span>
-<span class="k">def</span> <span class="nf">NGramTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">NGramTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates ngrams from the text</span>
 
 <span class="sd">    For example if doing 3 (trigram) then ``a big dog`` would result in</span>
@@ -579,7 +579,7 @@
     <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">ngram</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;ngrams&quot;</span><span class="p">]):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ngrams must be at least 1 in </span><span class="si">{</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;ngrams&#39;</span><span class="p">]</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="n">ntokens</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="n">grapheme_cluster_stream</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -638,7 +638,7 @@
 
 <div class="viewcode-block" id="SynonymTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.SynonymTokenizer">[docs]</a>
-<span class="k">def</span> <span class="nf">SynonymTokenizer</span><span class="p">(</span><span class="n">get</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5TokenizerFactory</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">SynonymTokenizer</span><span class="p">(</span><span class="n">get</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5TokenizerFactory</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Adds `colocated tokens &lt;https://www.sqlite.org/fts5.html#synonym_support&gt;`__ such as ``1st`` for ``first``.</span>
 
 <span class="sd">    To use you need a callable that takes a str, and returns a str, a sequence of str, or None.</span>
@@ -657,7 +657,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">get</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">tokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
         <span class="k">nonlocal</span> <span class="n">get</span>
         <span class="n">spec</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;reasons&quot;</span><span class="p">:</span> <span class="n">TokenizerArgument</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;QUERY&quot;</span><span class="p">,</span> <span class="n">convertor</span><span class="o">=</span><span class="n">convert_tokenize_reason</span><span class="p">,</span> <span class="n">convert_default</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
@@ -673,7 +673,7 @@
         <span class="k">if</span> <span class="n">get</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;A callable must be provided by decorator, or parameter&quot;</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">tok</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;+&quot;</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">flags</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;reasons&quot;</span><span class="p">]:</span>
                 <span class="k">yield from</span> <span class="n">tok</span><span class="p">(</span><span class="n">utf8</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">locale</span><span class="p">)</span>
@@ -704,7 +704,7 @@
 
 <div class="viewcode-block" id="StopWordsTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.StopWordsTokenizer">[docs]</a>
-<span class="k">def</span> <span class="nf">StopWordsTokenizer</span><span class="p">(</span><span class="n">test</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5TokenizerFactory</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">StopWordsTokenizer</span><span class="p">(</span><span class="n">test</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5TokenizerFactory</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Removes tokens that are too frequent to be useful</span>
 
 <span class="sd">    To use you need a callable that takes a str, and returns a boolean.  If</span>
@@ -719,7 +719,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">tokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
         <span class="k">nonlocal</span> <span class="n">test</span>
         <span class="n">spec</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;+&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -734,7 +734,7 @@
         <span class="k">if</span> <span class="n">test</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;A callable must be provided by decorator, or parameter&quot;</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">tok</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;+&quot;</span><span class="p">]</span>
 
             <span class="k">if</span> <span class="n">flags</span> <span class="o">==</span> <span class="n">tokenize_reasons</span><span class="p">[</span><span class="s2">&quot;QUERY_PREFIX&quot;</span><span class="p">]:</span>
@@ -760,7 +760,7 @@
 
 <div class="viewcode-block" id="TransformTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.TransformTokenizer">[docs]</a>
-<span class="k">def</span> <span class="nf">TransformTokenizer</span><span class="p">(</span><span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5TokenizerFactory</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">TransformTokenizer</span><span class="p">(</span><span class="n">transform</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5TokenizerFactory</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Transforms tokens to a different token, such as stemming</span>
 
 <span class="sd">    To use you need a callable that takes a str, and returns a list of</span>
@@ -777,7 +777,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">transform</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">tokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
         <span class="k">nonlocal</span> <span class="n">transform</span>
         <span class="n">spec</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;+&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
@@ -790,7 +790,7 @@
         <span class="k">if</span> <span class="n">transform</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;A callable must be provided by decorator, or parameter&quot;</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">tok</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;+&quot;</span><span class="p">]</span>
 
             <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">*</span><span class="n">tokens</span> <span class="ow">in</span> <span class="n">tok</span><span class="p">(</span><span class="n">utf8</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">locale</span><span class="p">):</span>
@@ -813,17 +813,17 @@
 
 
 
-<span class="k">def</span> <span class="nf">extract_html_text</span><span class="p">(</span><span class="n">html</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">_unicode</span><span class="o">.</span><span class="n">OffsetMapper</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_html_text</span><span class="p">(</span><span class="n">html</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">_unicode</span><span class="o">.</span><span class="n">OffsetMapper</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts text from HTML using :class:`html.parser.HTMLParser` under the hood</span>
 
 <span class="sd">    :meta private:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">class</span> <span class="nc">_HTMLTextExtractor</span><span class="p">(</span><span class="n">html_parser_module</span><span class="o">.</span><span class="n">HTMLParser</span><span class="p">):</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">_HTMLTextExtractor</span><span class="p">(</span><span class="n">html_parser_module</span><span class="o">.</span><span class="n">HTMLParser</span><span class="p">):</span>
         <span class="c1"># Extracts text from HTML maintaining a table mapping the offsets</span>
         <span class="c1"># of the extracted text back tot he source HTML.</span>
 
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">html</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">html</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
             <span class="c1"># we handle charrefs because they are multiple codepoints in</span>
             <span class="c1"># the HTML but only one in text - eg &quot;&amp;amp;&quot; is &quot;&amp;&quot;</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">convert_charrefs</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -851,51 +851,51 @@
             <span class="c1"># ensure there is a terminator</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">om</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_offset</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">append_result_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">append_result_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">om</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_offset</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_offset</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">separate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">separate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">om</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_offset</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">om</span><span class="o">.</span><span class="n">separate</span><span class="p">()</span>
 
-        <span class="k">def</span> <span class="nf">handle_starttag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attrs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">handle_starttag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">attrs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_tag</span> <span class="o">=</span> <span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;svg&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">svg_nesting_level</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">separate</span><span class="p">()</span>
 
-        <span class="k">def</span> <span class="nf">handle_endtag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">handle_endtag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">current_tag</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;svg&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">svg_nesting_level</span> <span class="o">-=</span> <span class="mi">1</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">separate</span><span class="p">()</span>
 
-        <span class="k">def</span> <span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">handle_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">svg_nesting_level</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_tag</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;script&quot;</span><span class="p">,</span> <span class="s2">&quot;style&quot;</span><span class="p">}:</span>
                 <span class="k">return</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">append_result_text</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">handle_entityref</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">handle_entityref</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">svg_nesting_level</span><span class="p">:</span>
                 <span class="k">return</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">append_result_text</span><span class="p">(</span><span class="n">html_module</span><span class="o">.</span><span class="n">unescape</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&amp;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">;&quot;</span><span class="p">))</span>
 
-        <span class="k">def</span> <span class="nf">handle_charref</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">handle_charref</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">handle_entityref</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
 
         <span class="c1"># treat some other markup as white space</span>
-        <span class="k">def</span> <span class="nf">ws</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">ws</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">svg_nesting_level</span><span class="p">:</span>
                 <span class="k">return</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">separate</span><span class="p">()</span>
 
         <span class="n">handle_comment</span> <span class="o">=</span> <span class="n">handle_decl</span> <span class="o">=</span> <span class="n">handle_pi</span> <span class="o">=</span> <span class="n">unknown_decl</span> <span class="o">=</span> <span class="n">ws</span>
 
-        <span class="k">def</span> <span class="nf">updatepos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">updatepos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
             <span class="c1"># The parent version does a lot of work trying to keep</span>
             <span class="c1"># track of line numbers which is pointless for us.  We</span>
             <span class="c1"># also have to prevent going backwards.</span>
@@ -910,7 +910,7 @@
 <div class="viewcode-block" id="HTMLTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.HTMLTokenizer">[docs]</a>
 <span class="nd">@StringTokenizer</span>
-<span class="k">def</span> <span class="nf">HTMLTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">HTMLTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts text from HTML suitable for passing on to other tokenizers</span>
 
 <span class="sd">    This should be before the actual tokenizer in the tokenizer list.</span>
@@ -931,7 +931,7 @@
     <span class="n">spec</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;+&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
     <span class="n">options</span> <span class="o">=</span> <span class="n">parse_tokenizer_args</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">html</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">html</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="c1"># we only tokenize what looks like html.  Human typed queries</span>
         <span class="c1"># are unlikely to be html.  We allow for ampersand to catch</span>
         <span class="c1"># entity searches.</span>
@@ -967,7 +967,7 @@
 <span class="p">}</span>
 
 
-<span class="k">def</span> <span class="nf">extract_json</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">include_keys</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">_unicode</span><span class="o">.</span><span class="n">OffsetMapper</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_json</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">include_keys</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">_unicode</span><span class="o">.</span><span class="n">OffsetMapper</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts text values from JSON text</span>
 
 <span class="sd">    Returns the extracted text and an :class:`apsw._unicode.OffsetMapper` to convert locations</span>
@@ -1025,7 +1025,7 @@
 <div class="viewcode-block" id="JSONTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.JSONTokenizer">[docs]</a>
 <span class="nd">@StringTokenizer</span>
-<span class="k">def</span> <span class="nf">JSONTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">JSONTokenizer</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts text from JSON suitable for passing to a tokenizer</span>
 
 <span class="sd">    The following tokenizer arguments are accepted:</span>
@@ -1046,7 +1046,7 @@
     <span class="p">}</span>
     <span class="n">options</span> <span class="o">=</span> <span class="n">parse_tokenizer_args</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">json</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">json</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="c1"># we only tokenize what looks like json.  Human typed queries</span>
         <span class="c1"># are unlikely to be json.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s*[{\[]&quot;</span><span class="p">,</span> <span class="n">json</span><span class="p">):</span>
@@ -1063,7 +1063,7 @@
 
 <div class="viewcode-block" id="string_tokenize">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.string_tokenize">[docs]</a>
-<span class="k">def</span> <span class="nf">string_tokenize</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5Tokenizer</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">string_tokenize</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5Tokenizer</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Tokenizer caller to get string offsets back</span>
 
 <span class="sd">    Calls the tokenizer doing the conversion of `text` to UTF8, and converting the received</span>
@@ -1082,7 +1082,7 @@
 <div class="viewcode-block" id="RegexTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.RegexTokenizer">[docs]</a>
 <span class="nd">@StringTokenizer</span>
-<span class="k">def</span> <span class="nf">RegexTokenizer</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">RegexTokenizer</span><span class="p">(</span>
     <span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">Pattern</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Finds tokens using a regular expression</span>
@@ -1104,7 +1104,7 @@
 
     <span class="n">parse_tokenizer_args</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
             <span class="k">yield</span> <span class="o">*</span><span class="n">match</span><span class="o">.</span><span class="n">span</span><span class="p">(),</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">()</span>
 
@@ -1115,7 +1115,7 @@
 <div class="viewcode-block" id="RegexPreTokenizer">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.RegexPreTokenizer">[docs]</a>
 <span class="nd">@StringTokenizer</span>
-<span class="k">def</span> <span class="nf">RegexPreTokenizer</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">RegexPreTokenizer</span><span class="p">(</span>
     <span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">Pattern</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Tokenizer</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Combines regular expressions and another tokenizer</span>
@@ -1147,11 +1147,11 @@
 
     <span class="n">options</span> <span class="o">=</span> <span class="n">parse_tokenizer_args</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">con</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">process_other</span><span class="p">(</span><span class="n">substring</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_other</span><span class="p">(</span><span class="n">substring</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="o">*</span><span class="n">tokens</span> <span class="ow">in</span> <span class="n">string_tokenize</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;+&quot;</span><span class="p">],</span> <span class="n">substring</span><span class="p">,</span> <span class="n">flags</span><span class="p">,</span> <span class="n">locale</span><span class="p">):</span>
             <span class="k">yield</span> <span class="n">start</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span> <span class="n">end</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span> <span class="o">*</span><span class="n">tokens</span>
 
-    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="n">last_other</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
@@ -1170,7 +1170,7 @@
 <div class="viewcode-block" id="TokenizerArgument">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.TokenizerArgument">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">TokenizerArgument</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TokenizerArgument</span><span class="p">:</span>
     <span class="s2">&quot;Used as spec values to :func:`parse_tokenizer_args` - :ref:`example &lt;example_fts_own_2&gt;`&quot;</span>
 
     <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1186,7 +1186,7 @@
 
 <div class="viewcode-block" id="parse_tokenizer_args">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.parse_tokenizer_args">[docs]</a>
-<span class="k">def</span> <span class="nf">parse_tokenizer_args</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_tokenizer_args</span><span class="p">(</span>
     <span class="n">spec</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TokenizerArgument</span> <span class="o">|</span> <span class="n">Any</span><span class="p">],</span> <span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses the arguments to a tokenizer based on spec returning corresponding values</span>
@@ -1285,7 +1285,7 @@
 <div class="viewcode-block" id="MatchInfo">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.MatchInfo">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">MatchInfo</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MatchInfo</span><span class="p">:</span>
     <span class="s2">&quot;Information about a matched row, returned by :meth:`Table.search`&quot;</span>
 
     <span class="n">query_info</span><span class="p">:</span> <span class="n">QueryInfo</span>
@@ -1302,7 +1302,7 @@
 <div class="viewcode-block" id="QueryInfo">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.QueryInfo">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">QueryInfo</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">QueryInfo</span><span class="p">:</span>
     <span class="s2">&quot;Information relevant to the query as a whole, returned by :meth:`Table.search`&quot;</span>
 
     <span class="n">phrases</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
@@ -1333,7 +1333,7 @@
 
 <div class="viewcode-block" id="register_tokenizers">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.register_tokenizers">[docs]</a>
-<span class="k">def</span> <span class="nf">register_tokenizers</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="nb">map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">]):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">register_tokenizers</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="nb">map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Registers tokenizers named in map with the connection, if not already registered</span>
 
 <span class="sd">    The map contains the tokenizer name, and either the callable or a</span>
@@ -1350,7 +1350,7 @@
 
 <div class="viewcode-block" id="register_functions">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.register_functions">[docs]</a>
-<span class="k">def</span> <span class="nf">register_functions</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="nb">map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">]):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">register_functions</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="nb">map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Registers auxiliary functions named in map with the connection, if not already registered</span>
 
 <span class="sd">    The map contains the function name, and either the callable or a</span>
@@ -1373,7 +1373,7 @@
 
 <div class="viewcode-block" id="Table">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table">[docs]</a>
-<span class="k">class</span> <span class="nc">Table</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Table</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A helpful wrapper around a FTS5 table</span>
 
 <span class="sd">    The table must already exist.  You can use the class method</span>
@@ -1385,7 +1385,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@dataclass</span>
-    <span class="k">class</span> <span class="nc">_cache_class</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">_cache_class</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Data structure representing token cache</span>
 
 <span class="sd">        :meta private:</span>
@@ -1402,7 +1402,7 @@
         <span class="n">tokens_per_column</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
         <span class="s2">&quot;Count of tokens in each column, across all rows.  Unindexed columns have a value of zero&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">db</span><span class="o">.</span><span class="n">table_exists</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Table </span><span class="si">{</span><span class="w"> </span><span class="n">schema</span><span class="w"> </span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="si">}</span><span class="s2"> doesn&#39;t exist&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">db</span>
@@ -1422,13 +1422,13 @@
 
         <span class="n">register_tokenizers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">,</span> <span class="n">map_tokenizers</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;FTS5Table </span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_schema</span><span class="w"> </span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> at 0x</span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">:</span><span class="s2">x</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="w"> </span><span class="si">}</span><span class="s2">&gt;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">_get_change_cookie</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_change_cookie</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;An int that changes if the content of the table has changed.</span>
 
 <span class="sd">        This is useful to validate cached information.</span>
@@ -1441,13 +1441,13 @@
     <span class="n">change_cookie</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_get_change_cookie</span><span class="p">)</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
-    <span class="k">def</span> <span class="nf">columns</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">columns</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
         <span class="s2">&quot;All columns of this table, including unindexed ones.  Unindexed columns are ignored in queries.&quot;</span>
 
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pragma </span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_qschema</span><span class="w"> </span><span class="si">}</span><span class="s2">.table_info(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_qname</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">))</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
-    <span class="k">def</span> <span class="nf">columns_indexed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">columns_indexed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
         <span class="s2">&quot;All columns of this table, excluding unindexed ones&quot;</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
             <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -1457,7 +1457,7 @@
 
 <div class="viewcode-block" id="Table.column_named">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.column_named">[docs]</a>
-    <span class="k">def</span> <span class="nf">column_named</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">column_named</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the column matching `name` or `None` if it doesn&#39;t exist</span>
 
 <span class="sd">        SQLite is ascii case-insensitive, so this tells you the declared name,</span>
@@ -1470,7 +1470,7 @@
 
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
-    <span class="k">def</span> <span class="nf">structure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FTS5TableStructure</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">structure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FTS5TableStructure</span><span class="p">:</span>
         <span class="s2">&quot;Structure of the table from the declared SQL&quot;</span>
         <span class="n">found</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
             <span class="n">sql</span>
@@ -1483,7 +1483,7 @@
         <span class="k">return</span> <span class="n">_fts5_vtable_parse</span><span class="p">(</span><span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
-    <span class="k">def</span> <span class="nf">quoted_table_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">quoted_table_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Provides the full table name for composing your own queries</span>
 
 <span class="sd">        It includes the attached database name and quotes special</span>
@@ -1501,7 +1501,7 @@
 
 <div class="viewcode-block" id="Table.search">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.search">[docs]</a>
-    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">MatchInfo</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">MatchInfo</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterates query matches, best matches first</span>
 
 <span class="sd">        This avoids the need to write SQL.  See :ref:`the example</span>
@@ -1521,7 +1521,7 @@
         <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_internal</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_search_internal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">MatchInfo</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_search_internal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">MatchInfo</span><span class="p">]:</span>
         <span class="n">token</span> <span class="o">=</span> <span class="n">_search_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
         <span class="n">qi</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
@@ -1535,7 +1535,7 @@
 
 <div class="viewcode-block" id="Table.key_tokens">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.key_tokens">[docs]</a>
-    <span class="k">def</span> <span class="nf">key_tokens</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">key_tokens</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">rowid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Finds tokens that are dense in this row, but rare in other rows</span>
@@ -1605,7 +1605,7 @@
 
 <div class="viewcode-block" id="Table.more_like">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.more_like">[docs]</a>
-    <span class="k">def</span> <span class="nf">more_like</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">more_like</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">token_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">MatchInfo</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Like :meth:`search` providing results similar to the provided ids.</span>
@@ -1660,7 +1660,7 @@
 
 <div class="viewcode-block" id="Table.delete">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.delete">[docs]</a>
-    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rowid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rowid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes the identified row</span>
 
 <span class="sd">        If you are using an external content table then the delete is directed</span>
@@ -1685,7 +1685,7 @@
 
 <div class="viewcode-block" id="Table.upsert">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.upsert">[docs]</a>
-    <span class="k">def</span> <span class="nf">upsert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">upsert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Insert or update with columns by positional and keyword arguments</span>
 
 <span class="sd">        You can mix and match positional and keyword arguments::</span>
@@ -1721,7 +1721,7 @@
 
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
-    <span class="k">def</span> <span class="nf">_upsert_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_args</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_upsert_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_args</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="s2">&quot;Figure out SQL and column mapping to do the actual upsert&quot;</span>
 
         <span class="n">columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span>
@@ -1775,7 +1775,7 @@
 
 <div class="viewcode-block" id="Table.command_delete">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.command_delete">[docs]</a>
-    <span class="k">def</span> <span class="nf">command_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rowid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="n">column_values</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rowid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="n">column_values</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Does `delete &lt;https://www.sqlite.org/fts5.html#the_delete_command&gt;`__</span>
 
 <span class="sd">        See :meth:`delete` for regular row deletion.</span>
@@ -1797,7 +1797,7 @@
 
 <div class="viewcode-block" id="Table.command_delete_all">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.command_delete_all">[docs]</a>
-    <span class="k">def</span> <span class="nf">command_delete_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_delete_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Does `delete all &lt;https://www.sqlite.org/fts5.html#the_delete_all_command&gt;`__</span>
 
 <span class="sd">        If you are using an external content table, it is better to use triggers on</span>
@@ -1808,7 +1808,7 @@
 
 <div class="viewcode-block" id="Table.command_integrity_check">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.command_integrity_check">[docs]</a>
-    <span class="k">def</span> <span class="nf">command_integrity_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">external_content</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_integrity_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">external_content</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Does `integrity check &lt;https://www.sqlite.org/fts5.html#the_integrity_check_command&gt;`__</span>
 
 <span class="sd">        If `external_content` is True, then the FTS index is compared to the external content.</span>
@@ -1821,7 +1821,7 @@
 
 <div class="viewcode-block" id="Table.command_merge">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.command_merge">[docs]</a>
-    <span class="k">def</span> <span class="nf">command_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Does `merge &lt;https://www.sqlite.org/fts5.html#the_merge_command&gt;`__</span>
 
 <span class="sd">        See the documentation for what positive and negative values of `n` mean.</span>
@@ -1836,14 +1836,14 @@
 
 <div class="viewcode-block" id="Table.command_optimize">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.command_optimize">[docs]</a>
-    <span class="k">def</span> <span class="nf">command_optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_optimize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="s2">&quot;Does `optimize &lt;https://www.sqlite.org/fts5.html#the_optimize_command&gt;`__&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;insert into </span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_qschema</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_qname</span><span class="w"> </span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_qname</span><span class="si">}</span><span class="s2">) VALUES(&#39;optimize&#39;)&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Table.command_rebuild">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.command_rebuild">[docs]</a>
-    <span class="k">def</span> <span class="nf">command_rebuild</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_rebuild</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Does `rebuild &lt;https://www.sqlite.org/fts5.html#the_rebuild_command&gt;`__&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;insert into </span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_qschema</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_qname</span><span class="w"> </span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_qname</span><span class="si">}</span><span class="s2">) VALUES(&#39;rebuild&#39;)&quot;</span><span class="p">)</span></div>
 
@@ -1860,35 +1860,42 @@
 
 <div class="viewcode-block" id="Table.config_automerge">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.config_automerge">[docs]</a>
-    <span class="k">def</span> <span class="nf">config_automerge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_automerge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Optionally sets, and returns `automerge &lt;https://www.sqlite.org/fts5.html#the_automerge_configuration_option&gt;`__&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_internal</span><span class="p">(</span><span class="s2">&quot;automerge&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
 <div class="viewcode-block" id="Table.config_crisismerge">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.config_crisismerge">[docs]</a>
-    <span class="k">def</span> <span class="nf">config_crisismerge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_crisismerge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Optionally sets, and returns `crisismerge &lt;https://www.sqlite.org/fts5.html#the_crisismerge_configuration_option&gt;`__&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_internal</span><span class="p">(</span><span class="s2">&quot;crisismerge&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
 <div class="viewcode-block" id="Table.config_deletemerge">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.config_deletemerge">[docs]</a>
-    <span class="k">def</span> <span class="nf">config_deletemerge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_deletemerge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Optionally sets, and returns `deletemerge &lt;https://www.sqlite.org/fts5.html#the_deletemerge_configuration_option&gt;`__&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_internal</span><span class="p">(</span><span class="s2">&quot;deletemerge&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
+<div class="viewcode-block" id="Table.config_insttoken">
+<a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.config_insttoken">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_insttoken</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optionally sets, and returns `insttoken &lt;https://sqlite.org/fts5.html#the_insttoken_configuration_option&gt;`__&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config_internal</span><span class="p">(</span><span class="s2">&quot;insttoken&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>  <span class="c1"># type: ignore</span></div>
+
+
 <div class="viewcode-block" id="Table.config_pgsz">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.config_pgsz">[docs]</a>
-    <span class="k">def</span> <span class="nf">config_pgsz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_pgsz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Optionally sets, and returns `page size &lt;https://www.sqlite.org/fts5.html#the_pgsz_configuration_option&gt;`__&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_internal</span><span class="p">(</span><span class="s2">&quot;pgsz&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="mi">4050</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
 <div class="viewcode-block" id="Table.config_rank">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.config_rank">[docs]</a>
-    <span class="k">def</span> <span class="nf">config_rank</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_rank</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Optionally sets, and returns `rank &lt;https://www.sqlite.org/fts5.html#the_rank_configuration_option&gt;`__</span>
 
 <span class="sd">        When setting rank it must consist of a function name, open</span>
@@ -1901,19 +1908,19 @@
 
 <div class="viewcode-block" id="Table.config_secure_delete">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.config_secure_delete">[docs]</a>
-    <span class="k">def</span> <span class="nf">config_secure_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_secure_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Optionally sets, and returns `secure-delete &lt;https://www.sqlite.org/fts5.html#the_secure_delete_configuration_option&gt;`__&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config_internal</span><span class="p">(</span><span class="s2">&quot;secure-delete&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>  <span class="c1"># type: ignore</span></div>
 
 
 <div class="viewcode-block" id="Table.config_usermerge">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.config_usermerge">[docs]</a>
-    <span class="k">def</span> <span class="nf">config_usermerge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_usermerge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Optionally sets, and returns `usermerge &lt;https://www.sqlite.org/fts5.html#the_usermerge_configuration_option&gt;`__&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_internal</span><span class="p">(</span><span class="s2">&quot;usermerge&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_config_internal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_config_internal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
         <span class="s2">&quot;Internal config implementation&quot;</span>
         <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -1924,7 +1931,7 @@
 
 <div class="viewcode-block" id="Table.config">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.config">[docs]</a>
-    <span class="k">def</span> <span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;x-apsw-&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;x-apsw-&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Optionally sets, and gets a `config value &lt;https://www.sqlite.org/fts5.html#configuration_options_config_table_&gt;`__</span>
 
 <span class="sd">        If the value is not None, then it is changed.  It is not</span>
@@ -1950,13 +1957,13 @@
 
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
-    <span class="k">def</span> <span class="nf">tokenizer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5Tokenizer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenizer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5Tokenizer</span><span class="p">:</span>
         <span class="s2">&quot;Tokenizer instance as used by this table&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">fts5_tokenizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">tokenize</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">tokenize</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
 
 <div class="viewcode-block" id="Table.tokenize">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.tokenize">[docs]</a>
-    <span class="k">def</span> <span class="nf">tokenize</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
         <span class="n">reason</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5_TOKENIZE_DOCUMENT</span><span class="p">,</span>
@@ -1971,7 +1978,7 @@
 
 
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
-    <span class="k">def</span> <span class="nf">supports_query_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">supports_query_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="s2">&quot;`True` if you can use :class:`apsw.fts5query.QueryTokens` with this table&quot;</span>
         <span class="c1"># we run a tokenization with crafted tokens to detect if</span>
         <span class="c1"># QueryTokensTokenizer is present.  hence white space,</span>
@@ -1985,7 +1992,7 @@
             <span class="n">include_colocated</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_cache_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="s2">&quot;Ensure cached information is up to date&quot;</span>
         <span class="k">while</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">cookie</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_cookie</span> <span class="ow">or</span> <span class="p">(</span><span class="n">tokens</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">tokens</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
@@ -2018,7 +2025,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span>
 
-    <span class="k">def</span> <span class="nf">_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;All the tokens as a dict with token as key, and the value being how many rows they are in</span>
 
 <span class="sd">        This can take some time on a large corpus - eg 2 seconds on a</span>
@@ -2027,15 +2034,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_check</span><span class="p">(</span><span class="n">tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">tokens</span>
 
-    <span class="k">def</span> <span class="nf">_row_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_row_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="s2">&quot;Number of rows in the table&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_check</span><span class="p">()</span><span class="o">.</span><span class="n">row_count</span>
 
-    <span class="k">def</span> <span class="nf">_token_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_token_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="s2">&quot;Total number of tokens across all indexed columns in all rows&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_check</span><span class="p">()</span><span class="o">.</span><span class="n">token_count</span>
 
-    <span class="k">def</span> <span class="nf">_tokens_per_column</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tokens_per_column</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
         <span class="s2">&quot;Count of tokens in each column, across all rows.  Unindexed columns have a value of zero&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_check</span><span class="p">()</span><span class="o">.</span><span class="n">tokens_per_column</span>
 
@@ -2047,14 +2054,14 @@
 
 <div class="viewcode-block" id="Table.is_token">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.is_token">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns ``True`` if it is a known token&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">token</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokens</span></div>
 
 
 <div class="viewcode-block" id="Table.query_suggest">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.query_suggest">[docs]</a>
-    <span class="k">def</span> <span class="nf">query_suggest</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_suggest</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tft_docs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Suggests alternate query</span>
@@ -2146,7 +2153,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">fts5query</span><span class="o">.</span><span class="n">PHRASE</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5query</span><span class="o">.</span><span class="n">AND</span><span class="p">)):</span>
                 <span class="k">continue</span>
 
-            <span class="k">def</span> <span class="nf">is_simple_phrase</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">is_simple_phrase</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
                 <span class="c1"># we only process these and ignore the more</span>
                 <span class="c1"># complicated ones</span>
                 <span class="k">return</span> <span class="p">(</span>
@@ -2345,7 +2352,7 @@
 
 <div class="viewcode-block" id="Table.token_frequency">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.token_frequency">[docs]</a>
-    <span class="k">def</span> <span class="nf">token_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">token_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Most frequent tokens, useful for building a stop words list</span>
 
 <span class="sd">        This counts the total occurrences of the token, so appearing</span>
@@ -2363,7 +2370,7 @@
 
 <div class="viewcode-block" id="Table.token_doc_frequency">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.token_doc_frequency">[docs]</a>
-    <span class="k">def</span> <span class="nf">token_doc_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">token_doc_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Most frequent occurring tokens, useful for building a stop words list</span>
 
 <span class="sd">        This counts the total number of documents containing the</span>
@@ -2381,7 +2388,7 @@
 
 <div class="viewcode-block" id="Table.text_for_token">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.text_for_token">[docs]</a>
-    <span class="k">def</span> <span class="nf">text_for_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">doc_limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">text_for_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">doc_limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Provides the original text used to produce ``token``</span>
 
 <span class="sd">        Different text produces the same token because case can be</span>
@@ -2440,12 +2447,12 @@
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
             <span class="c1"># most_common returns zero entries either because the</span>
             <span class="c1"># token doesn&#39;t exist or doc_limit is less than 1</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">token</span><span class="si">=}</span><span class="s2"> not found&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">token</span><span class="si">=}</span><span class="s2"> not found&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="Table.row_by_id">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.row_by_id">[docs]</a>
-    <span class="k">def</span> <span class="nf">row_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">row_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the contents of the row `id`</span>
 
 <span class="sd">        You can request one column,, or several columns.  If one</span>
@@ -2470,7 +2477,7 @@
 
 <div class="viewcode-block" id="Table.closest_tokens">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.closest_tokens">[docs]</a>
-    <span class="k">def</span> <span class="nf">closest_tokens</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">closest_tokens</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -2529,7 +2536,7 @@
 <div class="viewcode-block" id="Table.fts5vocab_name">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.fts5vocab_name">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cache</span>
-    <span class="k">def</span> <span class="nf">fts5vocab_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;row&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;col&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;instance&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fts5vocab_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;row&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;col&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;instance&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates a `fts5vocab table &lt;https://www.sqlite.org/fts5.html#the_fts5vocab_virtual_table_module&gt;`__</span>
 <span class="sd">        in temp and returns fully quoted name</span>
@@ -2548,7 +2555,7 @@
 <div class="viewcode-block" id="Table.create">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.create">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2726,7 +2733,7 @@
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">inst</span><span class="o">.</span><span class="n">config_rank</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
                 <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLError</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rank</span><span class="si">=}</span><span class="s2"> is not accepted by FTS5&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="kc">None</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rank</span><span class="si">=}</span><span class="s2"> is not accepted by FTS5&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
             <span class="k">if</span> <span class="n">content</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">generate_triggers</span><span class="p">:</span>
                     <span class="n">qrowid</span> <span class="o">=</span> <span class="n">quote_name</span><span class="p">(</span><span class="n">content_rowid</span> <span class="k">if</span> <span class="n">content_rowid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;_ROWID_&quot;</span><span class="p">)</span>
@@ -2767,7 +2774,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_apsw_get_statistical_info</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_apsw_get_statistical_info</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="s2">&quot;Behind the scenes function used to return stats about the table&quot;</span>
     <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
         <span class="p">{</span>
@@ -2781,7 +2788,7 @@
 <span class="n">_search_context</span><span class="p">:</span> <span class="n">ContextVar</span><span class="p">[</span><span class="n">QueryInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">ContextVar</span><span class="p">(</span><span class="s2">&quot;search_context&quot;</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_do_query_info</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_do_query_info</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">):</span>
     <span class="n">_search_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
         <span class="n">QueryInfo</span><span class="p">(</span>
             <span class="n">phrases</span><span class="o">=</span><span class="n">api</span><span class="o">.</span><span class="n">phrases</span><span class="p">,</span>
@@ -2789,7 +2796,7 @@
     <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_apsw_get_match_info</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_apsw_get_match_info</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">_search_context</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">_do_query_info</span><span class="p">(</span><span class="n">api</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
@@ -2804,7 +2811,7 @@
 <div class="viewcode-block" id="FTS5TableStructure">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.FTS5TableStructure">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">FTS5TableStructure</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FTS5TableStructure</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Table structure from SQL declaration available as :attr:`Table.structure`</span>
 
 <span class="sd">    See :ref:`the example &lt;example_fts_structure&gt;`&quot;&quot;&quot;</span>
@@ -2838,12 +2845,12 @@
 
 
 
-<span class="k">def</span> <span class="nf">_fts5_vtable_tokens</span><span class="p">(</span><span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_fts5_vtable_tokens</span><span class="p">(</span><span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a SQL statement from sqlite_main create table using quoting rules&quot;&quot;&quot;</span>
     <span class="c1"># See tokenize.c in SQLIte source for reference of how various</span>
     <span class="c1"># codepoints are treated</span>
 
-    <span class="k">def</span> <span class="nf">skip_spacing</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">skip_spacing</span><span class="p">():</span>
         <span class="s2">&quot;Return true if we skipped any spaces or comments&quot;</span>
         <span class="k">nonlocal</span> <span class="n">pos</span>
         <span class="n">original_pos</span> <span class="o">=</span> <span class="n">pos</span>
@@ -2862,7 +2869,7 @@
 
         <span class="k">return</span> <span class="n">pos</span> <span class="o">!=</span> <span class="n">original_pos</span>
 
-    <span class="k">def</span> <span class="nf">absorb_quoted</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">absorb_quoted</span><span class="p">():</span>
         <span class="k">nonlocal</span> <span class="n">pos</span>
         <span class="k">if</span> <span class="n">sql</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">`&#39;[&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
@@ -2879,7 +2886,7 @@
         <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">absorb_word</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">absorb_word</span><span class="p">():</span>
         <span class="c1"># identifier-ish.  fts5 allows integers as column names!</span>
         <span class="k">nonlocal</span> <span class="n">pos</span>
 
@@ -2915,7 +2922,7 @@
     <span class="k">return</span> <span class="n">res</span>
 
 
-<span class="k">def</span> <span class="nf">_fts5_vtable_parse</span><span class="p">(</span><span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FTS5TableStructure</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_fts5_vtable_parse</span><span class="p">(</span><span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FTS5TableStructure</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Turn sql into structure&quot;&quot;&quot;</span>
     <span class="n">tokens</span> <span class="o">=</span> <span class="n">_fts5_vtable_tokens</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
     <span class="c1"># SQLite uppercases these</span>
@@ -2980,7 +2987,7 @@
     <span class="k">return</span> <span class="n">FTS5TableStructure</span><span class="p">(</span><span class="o">**</span><span class="n">vals</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">quote_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">quote</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">quote_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">quote</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Quotes name to ensure it is parsed as a name</span>
 
 <span class="sd">    :meta private:</span>
@@ -2990,18 +2997,18 @@
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">argparse</span>
-    <span class="kn">import</span> <span class="nn">html</span>
-    <span class="kn">import</span> <span class="nn">json</span>
-    <span class="kn">import</span> <span class="nn">unicodedata</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">html</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">unicodedata</span>
 
-    <span class="kn">import</span> <span class="nn">apsw.bestpractice</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">apsw.bestpractice</span>
 
     <span class="n">apsw</span><span class="o">.</span><span class="n">bestpractice</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">bestpractice</span><span class="o">.</span><span class="n">recommended</span><span class="p">)</span>
 
     <span class="c1"># This code evolved a lot, and was not intelligently designed.  Sorry.</span>
 
-    <span class="k">def</span> <span class="nf">show_tokenization</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">show_tokenization</span><span class="p">(</span>
         <span class="n">options</span><span class="p">,</span> <span class="n">tok</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5Tokenizer</span><span class="p">,</span> <span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">locale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs the tokenizer and produces a html fragment showing the results for manual inspection&quot;&quot;&quot;</span>
@@ -3009,7 +3016,7 @@
         <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="nd">@dataclass</span>
-        <span class="k">class</span> <span class="nc">Row</span><span class="p">:</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">Row</span><span class="p">:</span>
             <span class="n">start</span><span class="p">:</span> <span class="nb">int</span>
             <span class="n">end</span><span class="p">:</span> <span class="nb">int</span>
             <span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span>
@@ -3041,7 +3048,7 @@
 
         <span class="c1"># Generate html</span>
 
-        <span class="k">def</span> <span class="nf">ud</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">ud</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
             <span class="n">r</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;U+</span><span class="si">{</span><span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="si">:</span><span class="s2">04X</span><span class="si">}</span><span class="s2"> &quot;</span>
             <span class="n">gc</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">category</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
             <span class="n">explain</span> <span class="o">=</span> <span class="n">unicode_categories</span>
@@ -3056,7 +3063,7 @@
                     <span class="n">r</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="w"> </span><span class="n">meth</span><span class="o">.</span><span class="vm">__name__</span><span class="w"> </span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="k">return</span> <span class="n">r</span>
 
-        <span class="k">def</span> <span class="nf">hex_utf8_bytes</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">hex_utf8_bytes</span><span class="p">(</span><span class="n">utf8</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
             <span class="n">codepoints</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">utf8</span><span class="p">):</span>
@@ -3077,7 +3084,7 @@
 
             <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\u2004</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">byte_codepoints</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">open</span><span class="o">=</span><span class="s2">&quot;{&quot;</span><span class="p">,</span> <span class="n">close</span><span class="o">=</span><span class="s2">&quot;}&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">byte_codepoints</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">open</span><span class="o">=</span><span class="s2">&quot;{&quot;</span><span class="p">,</span> <span class="n">close</span><span class="o">=</span><span class="s2">&quot;}&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
                 <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="s2">&quot;&lt;wbr&gt;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -3301,7 +3308,7 @@
 <span class="s2">    &lt;/style&gt;</span>
 <span class="s2">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">show_tokenization_remark</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">show_tokenization_remark</span><span class="p">(</span>
         <span class="n">remark</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;notice&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">link</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">compare</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="nb">id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;id=&#39;</span><span class="si">{</span><span class="w"> </span><span class="nb">id</span><span class="w"> </span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="k">if</span> <span class="nb">id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
@@ -3491,8 +3498,8 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

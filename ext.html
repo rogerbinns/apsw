@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Various interesting and useful bits of functionality &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+  <title>Various interesting and useful bits of functionality &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=632d72c6"></script>
+      <script src="_static/documentation_options.js?v=9901b351"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -310,7 +310,7 @@ graphically with <a class="reference internal" href="#apsw.ext.page_usage_to_svg
 </section>
 <section id="converting-types-into-and-out-of-sqlite">
 <span id="typeconversion"></span><h2>Converting types into and out of SQLite<a class="headerlink" href="#converting-types-into-and-out-of-sqlite" title="Link to this heading"></a></h2>
-<p>SQLite only stores and returns 5 types:</p>
+<p>SQLite only stores 5 types.  (You can do any <a class="reference internal" href="tips.html#pyobject"><span class="std std-ref">Python object</span></a> as runtime only values.)</p>
 <ul class="simple">
 <li><p>None</p></li>
 <li><p>int</p></li>
@@ -1022,7 +1022,7 @@ one (eg a <a class="reference external" href="https://docs.python.org/3/library/
 </tbody>
 </table>
 <p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">method</span><span class="p">(</span><span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">):</span>
     <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;fruit&quot;</span><span class="p">:</span> <span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="mi">17</span><span class="p">,</span> <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
 
 <span class="n">example_row</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">method</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
@@ -1041,7 +1041,7 @@ with a <a class="reference internal" href="#apsw.ext.VTColumnAccess" title="apsw
 See <a class="reference internal" href="#apsw.ext.get_column_names" title="apsw.ext.get_column_names"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_column_names()</span></code></a> for easily figuring that out.</p>
 <p>The goal is to make it very easy to turn a Python function into a
 virtual table.  For example the following Python function:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">gendata</span><span class="p">(</span><span class="n">start_id</span><span class="p">,</span> <span class="n">end_id</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">include_system</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">gendata</span><span class="p">(</span><span class="n">start_id</span><span class="p">,</span> <span class="n">end_id</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">include_system</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="k">yield</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;2020-10-21&quot;</span><span class="p">,</span> <span class="s2">&quot;readme.txt)</span>
     <span class="k">yield</span> <span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="s2">&quot;2019-05-12&quot;</span><span class="p">,</span> <span class="s2">&quot;john.txt)</span>
 
@@ -1659,8 +1659,8 @@ directly expressed in the query itself</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

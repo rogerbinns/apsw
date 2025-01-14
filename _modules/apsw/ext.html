@@ -5,8 +5,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
+  <title>apsw.ext &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
 
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=632d72c6"></script>
+      <script src="../../_static/documentation_options.js?v=9901b351"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -101,38 +101,40 @@
   <h1>Source code for apsw.ext</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Provides various useful routines</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-<span class="kn">import</span> <span class="nn">collections</span>
-<span class="kn">import</span> <span class="nn">collections.abc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">collections</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">collections.abc</span>
 
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">make_dataclass</span><span class="p">,</span> <span class="n">is_dataclass</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">make_dataclass</span><span class="p">,</span> <span class="n">is_dataclass</span>
 
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Generator</span>
-<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Generator</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
 
-<span class="kn">import</span> <span class="nn">functools</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">abc</span>
-<span class="kn">import</span> <span class="nn">enum</span>
-<span class="kn">import</span> <span class="nn">inspect</span>
-<span class="kn">import</span> <span class="nn">keyword</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">from</span> <span class="nn">fractions</span> <span class="kn">import</span> <span class="n">Fraction</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">html</span>
-<span class="kn">import</span> <span class="nn">traceback</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">string</span>
-<span class="kn">import</span> <span class="nn">apsw</span>
-<span class="kn">import</span> <span class="nn">apsw.unicode</span>
-<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">enum</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">keyword</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fractions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Fraction</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">html</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw.unicode</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="n">NoneType</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">NoneType</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="k">else</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="result_string">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.result_string">[docs]</a>
-<span class="k">def</span> <span class="nf">result_string</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">result_string</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Turns a result or extended result code into a string.</span>
 <span class="sd">    The appropriate mapping based on the value is used.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">code</span> <span class="o">&lt;</span> <span class="mi">256</span><span class="p">:</span>
@@ -143,7 +145,7 @@
 
 <div class="viewcode-block" id="DataClassRowFactory">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.DataClassRowFactory">[docs]</a>
-<span class="k">class</span> <span class="nc">DataClassRowFactory</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataClassRowFactory</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns each row as a :mod:`dataclass &lt;dataclasses&gt;`, accessible by column name.</span>
 
 <span class="sd">    To use set an instance as :attr:`Connection.row_trace</span>
@@ -175,14 +177,14 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rename</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">dataclass_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rename</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">dataclass_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dataclass_kwargs</span> <span class="o">=</span> <span class="n">dataclass_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rename</span> <span class="o">=</span> <span class="n">rename</span>
 
 <div class="viewcode-block" id="DataClassRowFactory.get_dataclass">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.DataClassRowFactory.get_dataclass">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_dataclass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_dataclass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns dataclass and tuple of (potentially renamed) column names</span>
 
 <span class="sd">        The dataclass is what is returned for each row with that</span>
@@ -214,7 +216,7 @@
 
 <div class="viewcode-block" id="DataClassRowFactory.get_type">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.DataClassRowFactory.get_type">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the :mod:`type hint &lt;typing&gt;` to use in the dataclass based on the type in the :meth:`description &lt;apsw.Cursor.get_description&gt;`</span>
 
 <span class="sd">        `SQLite&#39;s affinity rules  &lt;https://www.sqlite.org/datatype3.html#affname&gt;`__ are followed.</span>
@@ -240,7 +242,7 @@
 
 <div class="viewcode-block" id="DataClassRowFactory.__call__">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.DataClassRowFactory.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">row</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;What the row tracer calls</span>
 
 <span class="sd">        This :meth:`looks up &lt;get_dataclass&gt;` the dataclass and column</span>
@@ -254,7 +256,7 @@
 
 <div class="viewcode-block" id="SQLiteTypeAdapter">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.SQLiteTypeAdapter">[docs]</a>
-<span class="k">class</span> <span class="nc">SQLiteTypeAdapter</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SQLiteTypeAdapter</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A metaclass to indicate conversion to SQLite types is supported</span>
 
 <span class="sd">    This is one way to indicate your type supports conversion to a</span>
@@ -270,7 +272,7 @@
 <div class="viewcode-block" id="SQLiteTypeAdapter.to_sqlite_value">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.SQLiteTypeAdapter.to_sqlite_value">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">to_sqlite_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_sqlite_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
         <span class="s2">&quot;Return a SQLite compatible value for this object&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 </div>
@@ -279,14 +281,14 @@
 
 <div class="viewcode-block" id="TypesConverterCursorFactory">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory">[docs]</a>
-<span class="k">class</span> <span class="nc">TypesConverterCursorFactory</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TypesConverterCursorFactory</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides cursors that can convert objects into one of the types supported by SQLite,</span>
 <span class="sd">    or back from SQLite</span>
 
 <span class="sd">    :param abstract_base_class: Which metaclass to consider as conversion capable</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abstract_base_class</span><span class="p">:</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span> <span class="o">=</span> <span class="n">SQLiteTypeAdapter</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abstract_base_class</span><span class="p">:</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span> <span class="o">=</span> <span class="n">SQLiteTypeAdapter</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">abstract_base_class</span> <span class="o">=</span> <span class="n">abstract_base_class</span>
         <span class="c1"># to sqlite value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adapters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -295,28 +297,28 @@
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.register_adapter">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.register_adapter">[docs]</a>
-    <span class="k">def</span> <span class="nf">register_adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">klass</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">klass</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Registers a callable that converts from `klass` to one of the supported SQLite types&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adapters</span><span class="p">[</span><span class="n">klass</span><span class="p">]</span> <span class="o">=</span> <span class="nb">callable</span></div>
 
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.register_converter">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.register_converter">[docs]</a>
-    <span class="k">def</span> <span class="nf">register_converter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_converter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Registers a callable that converts from a SQLite value&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">converters</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">callable</span></div>
 
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.__call__">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.__call__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeConverterCursor</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeConverterCursor</span><span class="p">:</span>
         <span class="s2">&quot;Returns a new convertor :class:`cursor &lt;apsw.Cursor&gt;` for the `connection`&quot;</span>
         <span class="k">return</span> <span class="n">TypesConverterCursorFactory</span><span class="o">.</span><span class="n">TypeConverterCursor</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.adapt_value">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.adapt_value">[docs]</a>
-    <span class="k">def</span> <span class="nf">adapt_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">adapt_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
         <span class="s2">&quot;Returns SQLite representation of `value`&quot;</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">value</span>
@@ -330,7 +332,7 @@
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.convert_value">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.convert_value">[docs]</a>
-    <span class="k">def</span> <span class="nf">convert_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schematype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schematype</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="s2">&quot;Returns Python object from schema type and SQLite value&quot;</span>
         <span class="n">converter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">converters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">schematype</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">converter</span><span class="p">:</span>
@@ -340,7 +342,7 @@
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.wrap_bindings">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.wrap_bindings">[docs]</a>
-    <span class="k">def</span> <span class="nf">wrap_bindings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrap_bindings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
         <span class="s2">&quot;Wraps bindings that are supplied to underlying execute&quot;</span>
         <span class="k">if</span> <span class="n">bindings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -351,7 +353,7 @@
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.wrap_sequence_bindings">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.wrap_sequence_bindings">[docs]</a>
-    <span class="k">def</span> <span class="nf">wrap_sequence_bindings</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrap_sequence_bindings</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">sequenceofbindings</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="s2">&quot;Wraps a sequence of bindings that are supplied to the underlying executemany&quot;</span>
@@ -361,41 +363,41 @@
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.DictAdapter">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.DictAdapter">[docs]</a>
-    <span class="k">class</span> <span class="nc">DictAdapter</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">DictAdapter</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
         <span class="s2">&quot;Used to wrap dictionaries supplied as bindings&quot;</span>
 
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">TypesConverterCursorFactory</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]):</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">TypesConverterCursorFactory</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">factory</span> <span class="o">=</span> <span class="n">factory</span>
 
-        <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">adapt_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
 
-        <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="s2">&quot;Required by mapping, but not used&quot;</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-        <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="s2">&quot;Required by mapping, but not used&quot;</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor">[docs]</a>
-    <span class="k">class</span> <span class="nc">TypeConverterCursor</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">):</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">TypeConverterCursor</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">):</span>
         <span class="s2">&quot;Cursor used to do conversions&quot;</span>
 
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">TypesConverterCursorFactory</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">TypesConverterCursorFactory</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">factory</span> <span class="o">=</span> <span class="n">factory</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rowtracer</span>
 
-        <span class="k">def</span> <span class="nf">_rowtracer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_rowtracer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
             <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">convert_value</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span> <span class="n">values</span><span class="p">))</span>
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor.execute">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.execute">[docs]</a>
-        <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">statements</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -418,7 +420,7 @@
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor.executemany">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.executemany">[docs]</a>
-        <span class="k">def</span> <span class="nf">executemany</span><span class="p">(</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">executemany</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">statements</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">sequenceofbindings</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">],</span>
@@ -444,14 +446,14 @@
 
 <div class="viewcode-block" id="log_sqlite">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.log_sqlite">[docs]</a>
-<span class="k">def</span> <span class="nf">log_sqlite</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">log_sqlite</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Send SQLite `log messages &lt;https://www.sqlite.org/errlog.html&gt;`__ to :mod:`logging`</span>
 
 <span class="sd">    :param level: highest `level &lt;https://docs.python.org/3/library/logging.html#levels&gt;`__ to log at</span>
 <span class="sd">    :param logger: Use the specific logger</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">errcode</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handler</span><span class="p">(</span><span class="n">errcode</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">nonlocal</span> <span class="n">level</span>
         <span class="n">err_str</span> <span class="o">=</span> <span class="n">result_string</span><span class="p">(</span><span class="n">errcode</span><span class="p">)</span>
         <span class="n">extra</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;sqlite_code&quot;</span><span class="p">:</span> <span class="n">errcode</span><span class="p">,</span> <span class="s2">&quot;sqlite_code_name&quot;</span><span class="p">:</span> <span class="n">err_str</span><span class="p">,</span> <span class="s2">&quot;sqlite_message&quot;</span><span class="p">:</span> <span class="n">message</span><span class="p">}</span>
@@ -477,7 +479,7 @@
 
 <div class="viewcode-block" id="print_augmented_traceback">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.print_augmented_traceback">[docs]</a>
-<span class="k">def</span> <span class="nf">print_augmented_traceback</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">print_augmented_traceback</span><span class="p">(</span>
     <span class="n">exc_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">],</span>
     <span class="n">exc_value</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span>
     <span class="n">exc_traceback</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">TracebackType</span><span class="p">,</span>
@@ -510,7 +512,7 @@
 
 <div class="viewcode-block" id="index_info_to_dict">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.index_info_to_dict">[docs]</a>
-<span class="k">def</span> <span class="nf">index_info_to_dict</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">index_info_to_dict</span><span class="p">(</span>
     <span class="n">o</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">IndexInfo</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">column_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rowid_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;__ROWID__&quot;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -644,7 +646,7 @@
 
 <div class="viewcode-block" id="dbinfo">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.dbinfo">[docs]</a>
-<span class="k">def</span> <span class="nf">dbinfo</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">dbinfo</span><span class="p">(</span>
     <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">DatabaseFileInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">JournalFileInfo</span> <span class="o">|</span> <span class="n">WALFileInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts fields from the database, journal, and wal files</span>
@@ -668,16 +670,16 @@
 
     <span class="n">be_sint</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s2">&quot;big&quot;</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">be_bool</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">be_bool</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">be_int</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">be_page_size</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">be_page_size</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">be_int</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">v</span> <span class="o">=</span> <span class="mi">65536</span>
         <span class="k">return</span> <span class="n">v</span>
 
-    <span class="k">def</span> <span class="nf">text_encoding</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">text_encoding</span><span class="p">(</span><span class="n">b</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">be_int</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;(pending)&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;UTF-16le&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;UTF-16be&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&lt;&lt; INVALID VALUE </span><span class="si">{</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="si">}</span><span class="s2"> &gt;&gt;&quot;</span><span class="p">)</span>
 
@@ -751,7 +753,7 @@
 
 <div class="viewcode-block" id="Trace">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.Trace">[docs]</a>
-<span class="k">class</span> <span class="nc">Trace</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Trace</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context manager to show each SQL statement run inside the block</span>
 
 <span class="sd">    Statements from your code as well as from other parts of SQLite are shown.::</span>
@@ -823,7 +825,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-    <span class="k">class</span> <span class="nc">stmt</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">stmt</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Tracks a sqlite3_stmt for one statement lifetime</span>
 
 <span class="sd">        :meta private:</span>
@@ -834,7 +836,7 @@
         <span class="n">vtable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">change_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
@@ -851,11 +853,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">=</span> <span class="n">indent</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span> <span class="o">=</span> <span class="n">truncate</span>
 
-    <span class="k">def</span> <span class="nf">_truncate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_truncate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">text</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span> <span class="k">else</span> <span class="n">text</span>
 
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span>
 
@@ -871,7 +873,7 @@
 
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="nf">_sqlite_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sqlite_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_STMT</span><span class="p">:</span>
             <span class="n">stmt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">statements</span><span class="p">[</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]]</span>
             <span class="k">if</span> <span class="n">stmt</span><span class="o">.</span><span class="n">change_count</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
@@ -957,14 +959,14 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">last_emitted</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;sql&quot;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="ShowResourceUsage">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.ShowResourceUsage">[docs]</a>
-<span class="k">class</span> <span class="nc">ShowResourceUsage</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ShowResourceUsage</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context manager to show a summary of time, resource, and SQLite usage inside</span>
 <span class="sd">    the block::</span>
 
@@ -998,7 +1000,7 @@
 <span class="sd">    See the :ref:`example &lt;example_ShowResourceUsage&gt;`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -1014,7 +1016,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">scope</span> <span class="o">=</span> <span class="n">file</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_resource</span> <span class="ow">and</span> <span class="n">scope</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="kn">import</span> <span class="nn">resource</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">resource</span>
 
         <span class="n">_get_resource</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">getrusage</span>
         <span class="n">_get_resource_param</span> <span class="o">=</span> <span class="p">{</span>
@@ -1027,7 +1029,7 @@
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
         <span class="n">_get_resource</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_times</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">process_time</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
@@ -1039,11 +1041,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">db_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_status_get</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="nf">_sqlite_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sqlite_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;stmt_status&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stmt_status</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">stmt_status</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">db_status_get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">db_status_get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
         <span class="s2">&quot;:meta private:&quot;</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;SQLITE_DBSTATUS_LOOKASIDE_USED&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBSTATUS_LOOKASIDE_USED</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
@@ -1060,7 +1062,7 @@
             <span class="s2">&quot;SQLITE_DBSTATUS_DEFERRED_FKS&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBSTATUS_DEFERRED_FKS</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
         <span class="p">}</span>
 
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -1152,7 +1154,7 @@
 <div class="viewcode-block" id="PageUsage">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.PageUsage">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">PageUsage</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PageUsage</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returned by :func:`analyze_pages`&quot;&quot;&quot;</span>
 
     <span class="n">page_size</span><span class="p">:</span> <span class="nb">int</span>
@@ -1178,7 +1180,7 @@
 <div class="viewcode-block" id="DatabasePageUsage">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.DatabasePageUsage">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">DatabasePageUsage</span><span class="p">(</span><span class="n">PageUsage</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DatabasePageUsage</span><span class="p">(</span><span class="n">PageUsage</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returned by :func:`analyze_pages` when asking about the database as a whole&quot;&quot;&quot;</span>
 
     <span class="n">pages_total</span><span class="p">:</span> <span class="nb">int</span>
@@ -1190,7 +1192,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_analyze_pages_for_name</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">PageUsage</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_analyze_pages_for_name</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">PageUsage</span><span class="p">):</span>
     <span class="n">qschema</span> <span class="o">=</span> <span class="s1">&#39;&quot;&#39;</span> <span class="o">+</span> <span class="n">schema</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&quot;&quot;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&quot;&#39;</span>
 
     <span class="k">for</span> <span class="n">pages_used</span><span class="p">,</span> <span class="n">ncell</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">mx_payload</span> <span class="ow">in</span> <span class="n">con</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -1222,7 +1224,7 @@
 
 <div class="viewcode-block" id="analyze_pages">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.analyze_pages">[docs]</a>
-<span class="k">def</span> <span class="nf">analyze_pages</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">scope</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabasePageUsage</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PageUsage</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">analyze_pages</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">scope</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatabasePageUsage</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PageUsage</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Summarizes page usage for the database</span>
 
 <span class="sd">    The `dbstat &lt;https://www.sqlite.org/dbstat.html&gt;`__ virtual table</span>
@@ -1352,7 +1354,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">storage</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">storage</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts number to storage size (KB, MB, GB etc)</span>
 
 <span class="sd">    :meta private:</span>
@@ -1368,7 +1370,7 @@
 
 <div class="viewcode-block" id="page_usage_to_svg">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.page_usage_to_svg">[docs]</a>
-<span class="k">def</span> <span class="nf">page_usage_to_svg</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">page_usage_to_svg</span><span class="p">(</span><span class="n">con</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">out</span><span class="p">:</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Visualize database space usage as a `SVG &lt;https://en.wikipedia.org/wiki/SVG&gt;`__</span>
 
 <span class="sd">    You can hover or click on segments to get more details.  The</span>
@@ -1394,7 +1396,7 @@
     <span class="c1"># how much whitespace is outside the circles</span>
     <span class="n">OVERSCAN</span> <span class="o">=</span> <span class="mf">1.05</span>
 
-    <span class="k">def</span> <span class="nf">colour_for_angle</span><span class="p">(</span><span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">colour_for_angle</span><span class="p">(</span><span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="c1"># we use r g b each offset by a third of the circle</span>
         <span class="n">radians</span> <span class="o">=</span> <span class="n">angle</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
         <span class="n">third</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
@@ -1405,7 +1407,7 @@
 
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;#</span><span class="si">{</span><span class="n">red</span><span class="si">:</span><span class="s2">02x</span><span class="si">}{</span><span class="n">green</span><span class="si">:</span><span class="s2">02x</span><span class="si">}{</span><span class="n">blue</span><span class="si">:</span><span class="s2">02x</span><span class="si">}</span><span class="s2">&quot;</span>
 
-    <span class="k">def</span> <span class="nf">pos_for_angle</span><span class="p">(</span><span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pos_for_angle</span><span class="p">(</span><span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
         <span class="s2">&quot;give x,y for distance from centre&quot;</span>
 
         <span class="c1"># the minus bit is because trig has east as 0 but we want north as</span>
@@ -1415,17 +1417,17 @@
         <span class="k">return</span> <span class="n">distance</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">radians</span><span class="p">),</span> <span class="n">distance</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">radians</span><span class="p">)</span>
 
     <span class="c1"># these two are used in fstrings hence the short names</span>
-    <span class="k">def</span> <span class="nf">c</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="c1"># outputs a coordinate scaling by RADIUS</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">v</span> <span class="o">*</span> <span class="n">RADIUS</span><span class="p">))</span>
         <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">RADIUS</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">p</span><span class="p">(</span><span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">p</span><span class="p">(</span><span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="c1"># outputs a coordinate scaling by RADIUS</span>
         <span class="k">return</span> <span class="n">c</span><span class="p">(</span><span class="n">pos_for_angle</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">distance</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">slice</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">slice</span><span class="p">(</span>
         <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">start_angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">end_angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -1448,7 +1450,7 @@
         <span class="n">fill</span> <span class="o">=</span> <span class="n">color</span> <span class="ow">or</span> <span class="n">colour_for_angle</span><span class="p">((</span><span class="n">start_angle</span> <span class="o">+</span> <span class="n">end_angle</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;&lt;a href=&quot;#&quot; id=&quot;</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&quot;&gt;&lt;path d=&quot;</span><span class="si">{</span><span class="n">ds</span><span class="si">}</span><span class="s2">&quot; stroke=&quot;black&quot; fill=&quot;</span><span class="si">{</span><span class="n">fill</span><span class="si">}</span><span class="s2">&quot; stroke-width=&quot;1px&quot;/&gt;&lt;/a&gt;&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">text</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ring</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">DatabasePageUsage</span> <span class="o">|</span> <span class="n">PageUsage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">text</span><span class="p">(</span><span class="n">pos</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ring</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">DatabasePageUsage</span> <span class="o">|</span> <span class="n">PageUsage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="c1"># produces text infobox</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">c</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">c</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">vspace</span> <span class="o">=</span> <span class="s1">&#39;dy=&quot;1.1em&quot;&#39;</span>
@@ -1503,7 +1505,7 @@
 
     <span class="n">id_counter</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">def</span> <span class="nf">next_ids</span><span class="p">():</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">next_ids</span><span class="p">():</span>
         <span class="c1"># return pais of element ids used to map slice to corresponding text</span>
         <span class="k">nonlocal</span> <span class="n">id_counter</span>
         <span class="n">PREFIX</span> <span class="o">=</span> <span class="s2">&quot;id&quot;</span>
@@ -1574,14 +1576,14 @@
 
 <div class="viewcode-block" id="format_query_table">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.format_query_table">[docs]</a>
-<span class="k">def</span> <span class="nf">format_query_table</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_query_table</span><span class="p">(</span>
     <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
     <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">colour</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">quote</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">string_sanitize</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">2</span><span class="p">]]]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">string_sanitize</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">binary</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bytes</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;[ </span><span class="si">{</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="si">}</span><span class="s2"> bytes ]&quot;</span><span class="p">,</span>
     <span class="n">null</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;(null)&quot;</span><span class="p">,</span>
     <span class="n">truncate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
@@ -1650,7 +1652,7 @@
     <span class="n">colnames</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">def</span> <span class="nf">trace</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">trace</span><span class="p">(</span><span class="n">c</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">nonlocal</span> <span class="n">colnames</span><span class="p">,</span> <span class="n">rows</span>
         <span class="k">if</span> <span class="n">colnames</span><span class="p">:</span>
             <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">format_query_table</span><span class="o">.</span><span class="n">_format_table</span><span class="p">(</span><span class="n">colnames</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
@@ -1675,12 +1677,12 @@
 
 
 
-<span class="k">def</span> <span class="nf">_format_table</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_format_table</span><span class="p">(</span>
     <span class="n">colnames</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
     <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">],</span>
     <span class="n">colour</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">quote</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-    <span class="n">string_sanitize</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">2</span><span class="p">]]],</span>
+    <span class="n">string_sanitize</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
     <span class="n">binary</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">bytes</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
     <span class="n">null</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">truncate</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1707,25 +1709,30 @@
             <span class="c1"># magenta</span>
             <span class="s2">&quot;number_start&quot;</span><span class="p">:</span> <span class="n">c</span><span class="p">(</span><span class="mi">35</span><span class="p">),</span>
             <span class="s2">&quot;number_end&quot;</span><span class="p">:</span> <span class="n">c</span><span class="p">(</span><span class="mi">39</span><span class="p">),</span>
+            <span class="c1"># green</span>
+            <span class="s2">&quot;pyobject_start&quot;</span><span class="p">:</span> <span class="n">c</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
+            <span class="s2">&quot;pyobject_end&quot;</span><span class="p">:</span> <span class="n">c</span><span class="p">(</span><span class="mi">39</span><span class="p">),</span>
         <span class="p">}</span>
 
-        <span class="k">def</span> <span class="nf">colour_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">colour_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">colours</span><span class="p">[</span><span class="s2">&quot;header_start&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">text</span> <span class="o">+</span> <span class="n">colours</span><span class="p">[</span><span class="s2">&quot;header_end&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kind</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
                 <span class="n">tkind</span> <span class="o">=</span> <span class="s2">&quot;string&quot;</span>
-            <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="nb">bytes</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">kind</span> <span class="ow">is</span> <span class="nb">bytes</span><span class="p">:</span>
                 <span class="n">tkind</span> <span class="o">=</span> <span class="s2">&quot;blob&quot;</span>
             <span class="k">elif</span> <span class="n">kind</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
                 <span class="n">tkind</span> <span class="o">=</span> <span class="s2">&quot;number&quot;</span>
-            <span class="k">else</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">kind</span> <span class="ow">is</span> <span class="n">NoneType</span><span class="p">:</span>
                 <span class="n">tkind</span> <span class="o">=</span> <span class="s2">&quot;null&quot;</span>
-            <span class="k">return</span> <span class="n">colours</span><span class="p">[</span><span class="n">tkind</span> <span class="o">+</span> <span class="s2">&quot;_start&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">text</span> <span class="o">+</span> <span class="n">colours</span><span class="p">[</span><span class="n">tkind</span> <span class="o">+</span> <span class="s2">&quot;_end&quot;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tkind</span> <span class="o">=</span> <span class="s2">&quot;pyobject&quot;</span>
+            <span class="k">return</span> <span class="n">colours</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tkind</span><span class="si">}</span><span class="s2">_start&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">text</span> <span class="o">+</span> <span class="n">colours</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tkind</span><span class="si">}</span><span class="s2">_end&quot;</span><span class="p">]</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="n">colours</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="k">def</span> <span class="nf">colour_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">colour_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">text</span>
 
     <span class="n">colwidths</span> <span class="o">=</span> <span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">colnames</span><span class="p">]</span>
@@ -1750,7 +1757,7 @@
 
                     <span class="k">if</span> <span class="n">string_sanitize</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
 
-                        <span class="k">def</span> <span class="nf">repl</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+                        <span class="k">def</span><span class="w"> </span><span class="nf">repl</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
                             <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">printable</span><span class="p">:</span>
                                 <span class="k">return</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                             <span class="k">return</span> <span class="s2">&quot;{&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">codepoint_name</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">x</span><span class="si">{</span><span class="nb">ord</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="si">:</span><span class="s2">02</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span>
@@ -1759,14 +1766,17 @@
 
                     <span class="k">if</span> <span class="n">string_sanitize</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
 
-                        <span class="k">def</span> <span class="nf">repl</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+                        <span class="k">def</span><span class="w"> </span><span class="nf">repl</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
                             <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">printable</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">whitespace</span><span class="p">:</span>
                                 <span class="k">return</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                             <span class="k">return</span> <span class="s2">&quot;.&quot;</span>
 
                         <span class="n">cell</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">repl</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">quote</span><span class="p">:</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">format_sql_value</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="p">(</span><span class="n">NoneType</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)):</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">format_sql_value</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                     <span class="n">val</span> <span class="o">=</span> <span class="n">cell</span>
@@ -1774,12 +1784,14 @@
                     <span class="n">val</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
                     <span class="n">val</span> <span class="o">=</span> <span class="n">binary</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">val</span> <span class="o">=</span> <span class="n">null</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">val</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;expected str not </span><span class="si">{</span><span class="w"> </span><span class="n">val</span><span class="si">!r}</span><span class="s2">&quot;</span>
 
             <span class="c1"># cleanup lines</span>
-            <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">lines</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">split_lines</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_width</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">c</span> <span class="k">if</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_width</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;?&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">line</span><span class="p">)</span>
@@ -1837,7 +1849,7 @@
         <span class="p">)</span>
 
     <span class="c1"># break headers and cells into lines</span>
-    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">width</span><span class="p">))</span>
 
     <span class="n">colnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">wrap</span><span class="p">(</span><span class="n">colnames</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">colwidths</span><span class="p">))]</span>  <span class="c1"># type: ignore</span>
@@ -1857,7 +1869,7 @@
 
     <span class="n">out_lines</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">def</span> <span class="nf">do_bar</span><span class="p">(</span><span class="n">chars</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">do_bar</span><span class="p">(</span><span class="n">chars</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">line</span> <span class="o">=</span> <span class="n">chars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">colwidths</span><span class="p">):</span>
             <span class="n">line</span> <span class="o">+=</span> <span class="n">chars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">w</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
@@ -1867,7 +1879,7 @@
                 <span class="n">line</span> <span class="o">+=</span> <span class="n">chars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">do_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">centre</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">do_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">centre</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">row</span><span class="p">)):</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">sep</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
@@ -1909,7 +1921,7 @@
 
 <div class="viewcode-block" id="VTColumnAccess">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.VTColumnAccess">[docs]</a>
-<span class="k">class</span> <span class="nc">VTColumnAccess</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">VTColumnAccess</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
     <span class="s2">&quot;How the column value is accessed from a row, for :meth:`make_virtual_module`&quot;</span>
 
     <span class="n">By_Index</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
@@ -1923,7 +1935,7 @@
 
 <div class="viewcode-block" id="get_column_names">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.get_column_names">[docs]</a>
-<span class="k">def</span> <span class="nf">get_column_names</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">VTColumnAccess</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_column_names</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">VTColumnAccess</span><span class="p">]:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Works out column names and access given an example row</span>
 
@@ -1981,7 +1993,7 @@
 
 <div class="viewcode-block" id="make_virtual_module">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.make_virtual_module">[docs]</a>
-<span class="k">def</span> <span class="nf">make_virtual_module</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_virtual_module</span><span class="p">(</span>
     <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
@@ -2064,8 +2076,8 @@
 <span class="sd">    &quot;no query solution&quot;</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">class</span> <span class="nc">Module</span><span class="p">:</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Module</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
             <span class="n">columns</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -2114,7 +2126,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">+=</span> <span class="s2">&quot; WITHOUT rowid&quot;</span>
 
-        <span class="k">def</span> <span class="nf">Create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">modulename</span><span class="p">,</span> <span class="n">dbname</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">VTTable</span><span class="p">]:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">Create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">modulename</span><span class="p">,</span> <span class="n">dbname</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">VTTable</span><span class="p">]:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Too many parameters: parameters accepted are </span><span class="si">{</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -2124,12 +2136,12 @@
 
         <span class="n">Connect</span> <span class="o">=</span> <span class="n">Create</span>
 
-        <span class="k">class</span> <span class="nc">Table</span><span class="p">:</span>
-            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span> <span class="n">param_values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]):</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">Table</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span> <span class="n">param_values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">module</span> <span class="o">=</span> <span class="n">module</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">param_values</span> <span class="o">=</span> <span class="n">param_values</span>
 
-            <span class="k">def</span> <span class="nf">BestIndexObject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">IndexInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">BestIndexObject</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">IndexInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
                 <span class="n">idx_str</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">param_start</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">nConstraint</span><span class="p">):</span>
@@ -2155,16 +2167,16 @@
                 <span class="n">o</span><span class="o">.</span><span class="n">estimatedRows</span> <span class="o">=</span> <span class="mi">2147483647</span>
                 <span class="k">return</span> <span class="kc">True</span>
 
-            <span class="k">def</span> <span class="nf">Open</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Module</span><span class="o">.</span><span class="n">Cursor</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">Open</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Module</span><span class="o">.</span><span class="n">Cursor</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">Cursor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_values</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">Disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">Disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">pass</span>
 
             <span class="n">Destroy</span> <span class="o">=</span> <span class="n">Disconnect</span>
 
-        <span class="k">class</span> <span class="nc">Cursor</span><span class="p">:</span>
-            <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span> <span class="n">param_values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]):</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">Cursor</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span> <span class="n">param_values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">module</span> <span class="o">=</span> <span class="n">module</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">param_values</span> <span class="o">=</span> <span class="n">param_values</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2181,7 +2193,7 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Column&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">Filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx_num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">idx_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">Filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx_num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">idx_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                 <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">idx_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">),</span> <span class="n">args</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">callable</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">))</span>
@@ -2192,16 +2204,16 @@
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">hidden_values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span>
 
-            <span class="k">def</span> <span class="nf">Eof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">Eof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span> <span class="ow">is</span> <span class="kc">None</span>
 
-            <span class="k">def</span> <span class="nf">Close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">Close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">:</span>
                     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span><span class="p">):</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="k">def</span> <span class="nf">Column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">Column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
                 <span class="c1"># This is the specification/documentation for the custom</span>
                 <span class="c1"># versions which should produce exactly the same output</span>
                 <span class="k">if</span> <span class="n">which</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span><span class="p">:</span>
@@ -2216,32 +2228,32 @@
                     <span class="n">v</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">v</span>  <span class="c1"># type: ignore[no-any-return]</span>
 
-            <span class="k">def</span> <span class="nf">_Column_repr_invalid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">_Column_repr_invalid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
                 <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Column_get</span><span class="p">(</span><span class="n">which</span><span class="p">)</span>  <span class="c1"># type: ignore[attr-defined]</span>
                 <span class="k">return</span> <span class="n">v</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">))</span> <span class="k">else</span> <span class="nb">repr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">_Column_By_Attr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">_Column_By_Attr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">(</span>
                     <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_row</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">which</span><span class="p">])</span>
                     <span class="k">if</span> <span class="n">which</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span>
                     <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_values</span><span class="p">[</span><span class="n">which</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span><span class="p">]</span>
                 <span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">_Column_By_Name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">_Column_By_Name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">current_row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">which</span><span class="p">]]</span>
                     <span class="k">if</span> <span class="n">which</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span>
                     <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_values</span><span class="p">[</span><span class="n">which</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span><span class="p">]</span>
                 <span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">_Column_By_Index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">_Column_By_Index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">which</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">current_row</span><span class="p">[</span><span class="n">which</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">which</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span>
                     <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_values</span><span class="p">[</span><span class="n">which</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_columns</span><span class="p">]</span>
                 <span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">Next</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">Next</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">current_row</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
                 <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
@@ -2249,7 +2261,7 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># type: ignore[union-attr]</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="k">def</span> <span class="nf">Rowid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">Rowid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">primary_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">return</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_row</span><span class="p">)</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">primary_key</span><span class="p">)</span>
@@ -2277,7 +2289,7 @@
 
 <div class="viewcode-block" id="generate_series_sqlite">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.generate_series_sqlite">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_series_sqlite</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mh">0xFFFFFFFF</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_series_sqlite</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mh">0xFFFFFFFF</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Behaves like SQLite&#39;s `generate_series &lt;https://sqlite.org/series.html&gt;`__</span>
 
 <span class="sd">    Only integers are supported.  If *step* is negative</span>
@@ -2324,7 +2336,7 @@
 
 <div class="viewcode-block" id="generate_series">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.generate_series">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_series</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_series</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Behaves like Postgres and SQL Server</span>
 
 <span class="sd">    `Postgres doc</span>
@@ -2375,7 +2387,7 @@
 
 <div class="viewcode-block" id="query_info">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.query_info">[docs]</a>
-<span class="k">def</span> <span class="nf">query_info</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">query_info</span><span class="p">(</span>
     <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
     <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2399,7 +2411,7 @@
     <span class="c1"># what we use in queries</span>
     <span class="n">query_bindings</span> <span class="o">=</span> <span class="n">bindings</span> <span class="k">if</span> <span class="n">bindings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">apsw</span><span class="o">.</span><span class="n">_null_bindings</span>
 
-    <span class="k">def</span> <span class="nf">tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">first_query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">first_query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">nonlocal</span> <span class="n">res</span>
         <span class="n">res</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
             <span class="p">{</span>
@@ -2425,7 +2437,7 @@
 
     <span class="n">actions_taken</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">def</span> <span class="nf">auther</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">third</span><span class="p">,</span> <span class="n">fourth</span><span class="p">,</span> <span class="n">dbname</span><span class="p">,</span> <span class="n">trigview</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">auther</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">third</span><span class="p">,</span> <span class="n">fourth</span><span class="p">,</span> <span class="n">dbname</span><span class="p">,</span> <span class="n">trigview</span><span class="p">):</span>
         <span class="n">a</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">&quot;action_name&quot;</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_authorizer_function</span><span class="p">[</span><span class="n">code</span><span class="p">]}</span>
         <span class="k">if</span> <span class="n">dbname</span><span class="p">:</span>
             <span class="n">a</span><span class="p">[</span><span class="s2">&quot;database_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dbname</span>
@@ -2522,7 +2534,7 @@
                 <span class="n">parent</span><span class="p">[</span><span class="n">subn</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>  <span class="c1"># type: ignore[call-overload]</span>
             <span class="n">byid</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">node</span>
 
-        <span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">flatten</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
             <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="n">node</span><span class="p">[</span><span class="s2">&quot;detail&quot;</span><span class="p">]}</span>
             <span class="k">if</span> <span class="n">subn</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
                 <span class="n">res</span><span class="p">[</span><span class="n">subn</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">QueryPlan</span><span class="p">(</span><span class="o">**</span><span class="n">flatten</span><span class="p">(</span><span class="n">child</span><span class="p">))</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="p">[</span><span class="n">subn</span><span class="p">]]</span>
@@ -2537,7 +2549,7 @@
 <div class="viewcode-block" id="QueryDetails">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.QueryDetails">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">QueryDetails</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">QueryDetails</span><span class="p">:</span>
     <span class="s2">&quot;A :mod:`dataclass &lt;dataclasses&gt;` that provides detailed information about a query, returned by :func:`query_info`&quot;</span>
 
     <span class="n">query</span><span class="p">:</span> <span class="nb">str</span>
@@ -2578,7 +2590,7 @@
 <div class="viewcode-block" id="QueryAction">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.QueryAction">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">QueryAction</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">QueryAction</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A :mod:`dataclass &lt;dataclasses&gt;` that provides information about one action taken by a query</span>
 
 <span class="sd">    Depending on the action, only a subset of the fields will have non-None values&quot;&quot;&quot;</span>
@@ -2611,7 +2623,7 @@
 <div class="viewcode-block" id="QueryPlan">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.QueryPlan">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">QueryPlan</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">QueryPlan</span><span class="p">:</span>
     <span class="s2">&quot;A :mod:`dataclass &lt;dataclasses&gt;` for one step of a query plan&quot;</span>
 
     <span class="n">detail</span><span class="p">:</span> <span class="nb">str</span>
@@ -2624,7 +2636,7 @@
 <div class="viewcode-block" id="VDBEInstruction">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.VDBEInstruction">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">VDBEInstruction</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">VDBEInstruction</span><span class="p">:</span>
     <span class="s2">&quot;A :mod:`dataclass &lt;dataclasses&gt;` representing one instruction and its parameters&quot;</span>
 
     <span class="n">addr</span><span class="p">:</span> <span class="nb">int</span>
@@ -2649,7 +2661,7 @@
 <div class="viewcode-block" id="DatabaseFileInfo">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.DatabaseFileInfo">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">DatabaseFileInfo</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DatabaseFileInfo</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the main database file returned by :meth:`dbinfo`</span>
 
 <span class="sd">    See `file format description &lt;https://www.sqlite.org/fileformat.html#the_database_header&gt;`__&quot;&quot;&quot;</span>
@@ -2698,7 +2710,7 @@
 <div class="viewcode-block" id="JournalFileInfo">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.JournalFileInfo">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">JournalFileInfo</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">JournalFileInfo</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the rollback journal returned by :meth:`dbinfo`</span>
 
 <span class="sd">    See the `file format description &lt;https://www.sqlite.org/fileformat2.html#the_rollback_journal&gt;`__&quot;&quot;&quot;</span>
@@ -2725,7 +2737,7 @@
 <div class="viewcode-block" id="WALFileInfo">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.WALFileInfo">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">WALFileInfo</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">WALFileInfo</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about the rollback journal returned by :meth:`dbinfo`</span>
 
 <span class="sd">    See the `file format description &lt;https://www.sqlite.org/fileformat2.html#wal_file_format&gt;`__&quot;&quot;&quot;</span>
@@ -2758,8 +2770,8 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

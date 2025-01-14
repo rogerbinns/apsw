@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual Tables &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+  <title>Virtual Tables &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=632d72c6"></script>
+      <script src="_static/documentation_options.js?v=9901b351"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -400,9 +400,9 @@ find and reuse that on the subsequent <a class="reference internal" href="#apsw.
 calls.</p>
 <p>The corresponding call is <a class="reference internal" href="#apsw.VTTable.Disconnect" title="apsw.VTTable.Disconnect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.Disconnect()</span></code></a>.  If you have a simple virtual table implementation, then just
 set <a class="reference internal" href="#apsw.VTModule.Connect" title="apsw.VTModule.Connect"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connect()</span></code></a> to be the same as <a class="reference internal" href="#apsw.VTModule.Create" title="apsw.VTModule.Create"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Create()</span></code></a>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyModule</span><span class="p">:</span>
 
-     <span class="k">def</span> <span class="nf">Create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">modulename</span><span class="p">,</span> <span class="n">databasename</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+     <span class="k">def</span><span class="w"> </span><span class="nf">Create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">modulename</span><span class="p">,</span> <span class="n">databasename</span><span class="p">,</span> <span class="n">tablename</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
          <span class="c1"># do lots of hard work</span>
 
      <span class="n">Connect</span><span class="o">=</span><span class="n">Create</span>
@@ -972,8 +972,8 @@ appropriate indexed and constrained row.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>sqlite3 module differences &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+  <title>sqlite3 module differences &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=632d72c6"></script>
+      <script src="_static/documentation_options.js?v=9901b351"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -165,7 +165,7 @@ has a context manager, but does not implement nesting.</p></li>
 multiple commands in the execute string in APSW. There are no
 restrictions on the type of commands used. For example this will
 work fine in APSW but is not allowed in sqlite3:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
 <span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
 <span class="n">cur</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y,z);insert into foo values (?,?,?);&quot;</span>
@@ -216,11 +216,11 @@ sqlite3 does let you turn on <a class="reference external" href="https://docs.py
 converts Python errors into SQLite errors, so SQLite is aware errors
 happened.</p>
 <p>Source:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">badfunc</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">badfunc</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
     <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="mi">0</span>
 
 <span class="c1"># sqlite3</span>
-<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sqlite3</span>
 
 <span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
 <span class="n">con</span><span class="o">.</span><span class="n">create_function</span><span class="p">(</span><span class="s2">&quot;badfunc&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">)</span>
@@ -228,7 +228,7 @@ happened.</p>
 <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select badfunc(3)&quot;</span><span class="p">)</span>
 
 <span class="c1"># apsw</span>
-<span class="kn">import</span> <span class="nn">apsw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
 <span class="n">con</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
 <span class="n">con</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;badfunc&quot;</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
@@ -277,7 +277,7 @@ example try returning an unsupported type from a registered scalar
 function.</p></li>
 <li><p>APSW includes a <a class="reference internal" href="shell.html"><span class="doc">full featured shell</span></a>.  sqlite3 has a
 <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#command-line-interface">simple one</a>
-available since Python 3.12.`</p></li>
+available since Python 3.12.</p></li>
 <li><p>APSW is faster than sqlite3 in my testing.  Try the <a class="reference internal" href="benchmarking.html#speedtest"><span class="std std-ref">speedtest</span></a>
 benchmark.  All C code in APSW called by Python implements the
 fastcall mechanism, as does most of sqlite3.  All code called from C
@@ -305,8 +305,8 @@ libraries that abstract away the database layer.</p></li>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

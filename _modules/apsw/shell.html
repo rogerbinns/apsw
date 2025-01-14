@@ -5,8 +5,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.shell &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=72bcf2f2" />
+  <title>apsw.shell &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
 
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=632d72c6"></script>
+      <script src="../../_static/documentation_options.js?v=9901b351"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -101,41 +101,41 @@
   <h1>Source code for apsw.shell</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python3</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="c1"># mypy: ignore-errors</span>
 
-<span class="kn">import</span> <span class="nn">argparse</span>
-<span class="kn">import</span> <span class="nn">atexit</span>
-<span class="kn">import</span> <span class="nn">base64</span>
-<span class="kn">import</span> <span class="nn">code</span>
-<span class="kn">import</span> <span class="nn">codecs</span>
-<span class="kn">import</span> <span class="nn">contextlib</span>
-<span class="kn">import</span> <span class="nn">csv</span>
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">import</span> <span class="nn">inspect</span>
-<span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">shlex</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">tempfile</span>
-<span class="kn">import</span> <span class="nn">textwrap</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">traceback</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TextIO</span>
-<span class="kn">import</span> <span class="nn">webbrowser</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">atexit</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">code</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">codecs</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TextIO</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">webbrowser</span>
 
-<span class="kn">import</span> <span class="nn">apsw</span>
-<span class="kn">import</span> <span class="nn">apsw.ext</span>
-<span class="kn">import</span> <span class="nn">apsw.fts5</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw.ext</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw.fts5</span>
 
 
 <div class="viewcode-block" id="Shell">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell">[docs]</a>
-<span class="k">class</span> <span class="nc">Shell</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Shell</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements a SQLite shell</span>
 
 <span class="sd">    :param stdin: Where to read input from (default sys.stdin)</span>
@@ -174,7 +174,7 @@
 
 <div class="viewcode-block" id="Shell.Error">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.Error">[docs]</a>
-    <span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Class raised on errors.  The expectation is that the error</span>
 <span class="sd">        will be displayed by the shell as text so there are no</span>
 <span class="sd">        specific subclasses as the distinctions between different</span>
@@ -183,7 +183,7 @@
         <span class="k">pass</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">stdin</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">stdout</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -266,7 +266,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interactive</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">interactive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_using_a_terminal</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_using_a_terminal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_using_a_terminal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdin</span><span class="p">,</span> <span class="s2">&quot;isatty&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">isatty</span><span class="p">()</span>
@@ -274,7 +274,7 @@
             <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">isatty</span><span class="p">()</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_apply_fts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_fts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Applies the default apsw fts tokenizers and functions</span>
         <span class="c1"># very useful opening databases from CLI shell</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -284,7 +284,7 @@
             <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">NoFTS5Error</span><span class="p">:</span>
                 <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">_ensure_db</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_db</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;The database isn&#39;t opened until first use.  This function ensures it is now open.&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbfilename</span><span class="p">:</span>
@@ -295,7 +295,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_apply_fts</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span>
 
-    <span class="k">def</span> <span class="nf">_set_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newv</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newv</span><span class="p">):</span>
         <span class="s2">&quot;Sets the open database (or None) and filename&quot;</span>
         <span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">dbfilename</span><span class="p">)</span> <span class="o">=</span> <span class="n">newv</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">:</span>
@@ -309,7 +309,7 @@
 
 <div class="viewcode-block" id="Shell.process_args">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_args">[docs]</a>
-    <span class="k">def</span> <span class="nf">process_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Process command line options specified in args.  It is safe to</span>
 <span class="sd">        call this multiple times.  We try to be compatible with SQLite shell</span>
 <span class="sd">        argument parsing.</span>
@@ -429,7 +429,7 @@
 
 <div class="viewcode-block" id="Shell.process_unknown_args">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_unknown_args">[docs]</a>
-    <span class="k">def</span> <span class="nf">process_unknown_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_unknown_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;This is called when :meth:`process_args` encounters an</span>
 <span class="sd">        argument it doesn&#39;t understand.  Override this method if you</span>
 <span class="sd">        want to be able to understand additional command line arguments.</span>
@@ -446,7 +446,7 @@
 
 <div class="viewcode-block" id="Shell.usage">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.usage">[docs]</a>
-    <span class="k">def</span> <span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Returns the usage message.&quot;</span>
 
         <span class="n">invoke</span> <span class="o">=</span> <span class="s2">&quot;apsw&quot;</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;apsw&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;python3 -m apsw&quot;</span>
@@ -495,7 +495,7 @@
         <span class="nb">ord</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="s2">&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&amp;*()`_-+=</span><span class="si">{}</span><span class="s2">[]:;,.&lt;&gt;/?|&quot;</span>
     <span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_fmt_c_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fmt_c_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="s2">&quot;Format as a C string including surrounding double quotes&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">op</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&quot;&#39;</span><span class="p">]</span>
@@ -531,7 +531,7 @@
             <span class="c1"># number of some kind</span>
             <span class="k">return</span> <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="p">,)</span>
 
-    <span class="k">def</span> <span class="nf">_fmt_html_col</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fmt_html_col</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="s2">&quot;Format as HTML (mainly escaping &amp;/&lt;/&gt;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fmt_text_col</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
@@ -542,14 +542,14 @@
             <span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot;&amp;quot;&quot;</span><span class="p">)</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_fmt_json_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fmt_json_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="s2">&quot;Format a value.&quot;</span>
         <span class="c1"># JSON doesn&#39;t have a binary type so we base64 encode it</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
             <span class="k">return</span> <span class="s1">&#39;&quot;&#39;</span> <span class="o">+</span> <span class="n">base64</span><span class="o">.</span><span class="n">encodebytes</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;&quot;&#39;</span>
         <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_fmt_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fmt_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="s2">&quot;Format as python literal&quot;</span>
         <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;None&quot;</span>
@@ -567,7 +567,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="p">,)</span>
 
-    <span class="k">def</span> <span class="nf">_fmt_sql_identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fmt_sql_identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="s2">&quot;Return the identifier quoted in SQL syntax if needed (eg table and column names)&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>  <span class="c1"># yes sqlite does allow zero length identifiers</span>
             <span class="k">return</span> <span class="s1">&#39;&quot;&quot;&#39;</span>
@@ -582,7 +582,7 @@
             <span class="k">return</span> <span class="s2">&quot;[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="p">,)</span>
         <span class="k">return</span> <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="p">,)</span>
 
-    <span class="k">def</span> <span class="nf">_fmt_text_col</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fmt_text_col</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="s2">&quot;Regular text formatting&quot;</span>
         <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nullvalue</span>
@@ -601,7 +601,7 @@
     <span class="c1">### used to generate help.</span>
     <span class="c1">###</span>
 
-    <span class="k">def</span> <span class="nf">output_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Items left aligned in space padded columns.  They are</span>
 <span class="sd">        truncated if they do not fit. If the width hasn&#39;t been</span>
@@ -613,7 +613,7 @@
         <span class="c1"># reset for each query</span>
         <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">gw</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">gw</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
                 <span class="c1"># if width is not present or 0 then autosize</span>
@@ -648,7 +648,7 @@
 
     <span class="n">output_columns</span> <span class="o">=</span> <span class="n">output_column</span>
 
-    <span class="k">def</span> <span class="nf">output_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_csv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Items in csv format (comma separated).  Use tabs mode for tab</span>
 <span class="sd">        separated.  You can use the .separator command to use a</span>
@@ -704,7 +704,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_csv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_csv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">output_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_html</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="s2">&quot;HTML table style&quot;</span>
         <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">:</span>
@@ -721,7 +721,7 @@
         <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;/TR&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">output_insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Lines as SQL insert statements.  The table name is &quot;table&quot;</span>
 <span class="sd">        unless you specified a different one as the second parameter</span>
@@ -733,7 +733,7 @@
         <span class="n">out</span> <span class="o">=</span> <span class="s2">&quot;INSERT INTO &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_table</span> <span class="o">+</span> <span class="s2">&quot; VALUES(&quot;</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fmt</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;);</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">output_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="n">Shell</span><span class="o">.</span><span class="n">Row</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="n">Shell</span><span class="o">.</span><span class="n">Row</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Output a JSON array.  Blobs are output as base64 encoded strings.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -746,7 +746,7 @@
             <span class="p">(</span><span class="s2">&quot;[&quot;</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">is_first</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;{ &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;]&quot;</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">is_last</span> <span class="k">else</span> <span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">output_jsonl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="n">Shell</span><span class="o">.</span><span class="n">Row</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_jsonl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="n">Shell</span><span class="o">.</span><span class="n">Row</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Output as JSON objects, newline separated.  Blobs are output as base64 encoded strings.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -756,7 +756,7 @@
         <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fmt_json_value</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">fmt</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">columns</span><span class="p">)]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;{ &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">output_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        One value per line in the form &#39;column = value&#39; with a blank</span>
 <span class="sd">        line between rows.</span>
@@ -776,7 +776,7 @@
 
     <span class="n">output_lines</span> <span class="o">=</span> <span class="n">output_line</span>
 
-    <span class="k">def</span> <span class="nf">output_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="s2">&quot;All items on one line with separator&quot;</span>
         <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">:</span>
@@ -787,7 +787,7 @@
             <span class="n">fmt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">colour_value</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fmt_text_col</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">separator</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fmt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">output_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="s2">&quot;Tuples in Python source form for each row&quot;</span>
         <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">:</span>
@@ -798,7 +798,7 @@
             <span class="n">fmt</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">colour_value</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fmt_python</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">fmt</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">line</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;),</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">output_tcl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_tcl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">header</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
         <span class="s2">&quot;Outputs TCL/C style strings using current separator&quot;</span>
         <span class="c1"># In theory you could paste the output into your source ...</span>
         <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
@@ -812,7 +812,7 @@
 
     <span class="n">_fqt_kwargs</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">output_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column_names</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column_names</span><span class="p">,</span> <span class="n">rows</span><span class="p">):</span>
         <span class="s2">&quot;Outputs using line drawing and auto sizing columns&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fqt_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># figure out default args</span>
@@ -835,17 +835,17 @@
 
     <span class="n">output_box</span><span class="o">.</span><span class="n">all_at_once</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">output_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Outputs using ascii line drawing and strongly sanitized text&quot;</span>
         <span class="c1"># this function isn&#39;t actually called - output_box is used</span>
         <span class="mi">1</span> <span class="o">/</span> <span class="mi">0</span>
 
-    <span class="k">def</span> <span class="nf">output_qbox</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">output_qbox</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Outputs using line drawing and auto sizing columns quoting values&quot;</span>
         <span class="c1"># this function isn&#39;t actually called - output_box is used</span>
         <span class="mi">1</span> <span class="o">/</span> <span class="mi">0</span>
 
-    <span class="k">def</span> <span class="nf">_output_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">summary</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_output_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">summary</span><span class="p">):</span>
         <span class="c1"># internal routine to output a summary line or two</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">summary</span> <span class="o">+</span> <span class="n">summary</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">summary_</span><span class="p">)</span>
 
@@ -855,7 +855,7 @@
 
 <div class="viewcode-block" id="Shell.cmdloop">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.cmdloop">[docs]</a>
-    <span class="k">def</span> <span class="nf">cmdloop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intro</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">transient</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cmdloop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intro</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">transient</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Runs the main interactive command loop.</span>
 
 <span class="sd">        :param intro: Initial text banner to display instead of the</span>
@@ -879,7 +879,7 @@
         <span class="n">using_readline</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interactive</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdin</span> <span class="ow">is</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="p">:</span>
-                <span class="kn">import</span> <span class="nn">readline</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">readline</span>
 
                 <span class="n">old_completer</span> <span class="o">=</span> <span class="n">readline</span><span class="o">.</span><span class="n">get_completer</span><span class="p">()</span>
                 <span class="n">readline</span><span class="o">.</span><span class="n">set_completer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">complete</span><span class="p">)</span>
@@ -923,7 +923,7 @@
 
 <div class="viewcode-block" id="Shell.handle_exception">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.handle_exception">[docs]</a>
-    <span class="k">def</span> <span class="nf">handle_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handles the current exception, printing a message to stderr as appropriate.</span>
 <span class="sd">        It will reraise the exception if necessary (eg if bail is true)&quot;&quot;&quot;</span>
         <span class="n">eclass</span><span class="p">,</span> <span class="nb">eval</span><span class="p">,</span> <span class="n">etb</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
@@ -987,7 +987,7 @@
 
 
     <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="o">**</span><span class="p">({</span><span class="s2">&quot;slots&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;frozen&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}))</span>
-    <span class="k">class</span> <span class="nc">_qd</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">_qd</span><span class="p">:</span>
         <span class="n">query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
         <span class="n">remaining</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
         <span class="n">error_text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
@@ -995,13 +995,13 @@
         <span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span> <span class="o">|</span> <span class="kc">None</span>
         <span class="n">explain</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_query_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_qd</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_query_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_qd</span><span class="p">:</span>
         <span class="s2">&quot;Internal routine to iterate over statements&quot;</span>
         <span class="n">cur</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
         <span class="n">saved</span> <span class="o">=</span> <span class="n">sql</span>
         <span class="n">explain</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">def</span> <span class="nf">et</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">et</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
             <span class="k">nonlocal</span> <span class="n">saved</span><span class="p">,</span> <span class="n">explain</span>
             <span class="n">saved</span> <span class="o">=</span> <span class="n">statement</span>
             <span class="n">explain</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">is_explain</span>
@@ -1031,7 +1031,7 @@
 
 <div class="viewcode-block" id="Shell.process_sql">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_sql">[docs]</a>
-    <span class="k">def</span> <span class="nf">process_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bindings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Processes SQL text consisting of one or more statements</span>
 
 <span class="sd">        :param sql: SQL to execute</span>
@@ -1051,10 +1051,10 @@
 
         <span class="n">changes_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">total_changes</span><span class="p">()</span>
 
-        <span class="k">def</span> <span class="nf">fixws</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">fixws</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">UNICODE</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">fmt_sql</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">fmt_sql</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
             <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">4096</span><span class="p">:</span>
                 <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">[:</span><span class="mi">4096</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span>
@@ -1158,7 +1158,7 @@
 
 <div class="viewcode-block" id="Shell.process_command">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_command">[docs]</a>
-    <span class="k">def</span> <span class="nf">process_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Processes a dot command.</span>
 
 <span class="sd">        It is split into parts using :func:`shlex.split`</span>
@@ -1194,7 +1194,7 @@
     <span class="c1">### Commands start here</span>
     <span class="c1">###</span>
 
-    <span class="k">def</span> <span class="nf">_boolean_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_boolean_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
         <span class="s2">&quot;Parse and verify boolean parameter&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;off&quot;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot; expected ON or OFF&quot;</span><span class="p">)</span>
@@ -1202,7 +1202,7 @@
 
     <span class="c1"># Note that doc text is used for generating help output.</span>
 
-    <span class="k">def</span> <span class="nf">command_backup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_backup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;backup ?DB? FILE: Backup DB (default &quot;main&quot;) to FILE</span>
 
 <span class="sd">        Copies the contents of the current database to FILE</span>
@@ -1229,7 +1229,7 @@
             <span class="n">b</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
             <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">command_bail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_bail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;bail ON|OFF: Stop after hitting an error (default OFF)</span>
 
 <span class="sd">        If an error is encountered while processing commands or SQL</span>
@@ -1238,7 +1238,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bail</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;bail&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_cd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;cd ?DIR?: Changes current directory</span>
 
 <span class="sd">        If no directory supplied then change to home directory&quot;&quot;&quot;</span>
@@ -1249,7 +1249,7 @@
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="si">}</span><span class="s2">&#39; is not a directory&quot;</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_changes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_changes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;changes ON|OFF: Show changes from last SQL and total changes (default OFF)</span>
 
 <span class="sd">        After executing SQL that makes changes, the number of affected</span>
@@ -1257,7 +1257,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">changes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;changes&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;close: Closes the current database</span>
 
 <span class="sd">        Use .open to open a database, or .connection to switch to another</span>
@@ -1267,7 +1267,7 @@
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Unexpected arguments&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">command_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;connection ?NUMBER?: List connections, or switch active connection</span>
 
 <span class="sd">        This covers all connections, not just those started in this</span>
@@ -1300,7 +1300,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Too many arguments&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_colour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_colour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="p">[]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;colour SCHEME: Selects a colour scheme</span>
 
 <span class="sd">        If using a colour terminal in interactive mode then output is</span>
@@ -1318,7 +1318,7 @@
 
     <span class="n">command_color</span> <span class="o">=</span> <span class="n">command_colour</span>
 
-    <span class="k">def</span> <span class="nf">command_databases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_databases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;databases: Lists names and files of attached databases&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;databases command doesn&#39;t take any parameters&quot;</span><span class="p">)</span>
@@ -1339,7 +1339,7 @@
         <span class="s2">&quot;SQLITE_DBCONFIG_STMT_SCANSTATUS&quot;</span><span class="p">,</span>
     <span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">command_dbconfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_dbconfig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;dbconfig ?NAME VALUE?: Show all dbconfig, or set a specific one</span>
 
 <span class="sd">        With no arguments lists all settings.  Supply a name and integer value</span>
@@ -1371,7 +1371,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_dbinfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_dbinfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;dbinfo ?NAME?: Shows summary and file information about the database</span>
 
 <span class="sd">        This includes the numbers of tables, indices etc, as well as fields from</span>
@@ -1383,7 +1383,7 @@
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;too many parameters&quot;</span><span class="p">)</span>
         <span class="n">schema</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">cmd</span> <span class="k">else</span> <span class="s2">&quot;main&quot;</span>
 
-        <span class="k">def</span> <span class="nf">total</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">total</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;select count(*) from [</span><span class="si">{</span><span class="w"> </span><span class="n">schema</span><span class="w"> </span><span class="si">}</span><span class="s2">].sqlite_schema where type=&#39;</span><span class="si">{</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
 
         <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
@@ -1418,7 +1418,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;dump ?TABLE? [TABLE...]: Dumps all or specified tables in SQL text format</span>
 
 <span class="sd">        The table name is treated as like pattern so you can use % as</span>
@@ -1458,7 +1458,7 @@
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="n">outputstrencoding</span> <span class="o">=</span> <span class="s2">&quot;ascii&quot;</span>
 
-        <span class="k">def</span> <span class="nf">unicodify</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">unicodify</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">outputstrtype</span><span class="p">):</span>
                 <span class="c1"># See issue 142 - it may not be in an expected encoding</span>
                 <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">outputstrencoding</span><span class="p">,</span> <span class="s2">&quot;replace&quot;</span><span class="p">)</span>
@@ -1470,7 +1470,7 @@
             <span class="c1"># prefer not to emit them</span>
             <span class="n">v</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;virtuals&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;foreigns&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 
-            <span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">sql</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">sql</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;sqlite_&quot;</span><span class="p">):</span>
                     <span class="k">return</span> <span class="kc">False</span>
                 <span class="n">sql</span> <span class="o">=</span> <span class="n">sql</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
@@ -1515,10 +1515,10 @@
                             <span class="n">analyze_needed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
             <span class="n">analyze_needed</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
 
-            <span class="k">def</span> <span class="nf">blank</span><span class="p">():</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">blank</span><span class="p">():</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">comment</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">comment</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
                 <span class="n">s</span> <span class="o">=</span> <span class="n">unicodify</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mi">78</span><span class="p">,</span> <span class="n">initial_indent</span><span class="o">=</span><span class="s2">&quot;-- &quot;</span><span class="p">,</span> <span class="n">subsequent_indent</span><span class="o">=</span><span class="s2">&quot;-- &quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -1529,8 +1529,8 @@
             <span class="n">comment</span><span class="p">(</span><span class="s2">&quot;Tables like: &quot;</span> <span class="o">+</span> <span class="n">pats</span><span class="p">)</span>
             <span class="n">comment</span><span class="p">(</span><span class="s2">&quot;Database: &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="kn">import</span> <span class="nn">getpass</span>
-                <span class="kn">import</span> <span class="nn">socket</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">getpass</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
 
                 <span class="n">comment</span><span class="p">(</span><span class="s2">&quot;User: </span><span class="si">%s</span><span class="s2"> @ </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">unicodify</span><span class="p">(</span><span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">()),</span> <span class="n">unicodify</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">())))</span>
             <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -1573,7 +1573,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;BEGIN TRANSACTION;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">blank</span><span class="p">()</span>
 
-            <span class="k">def</span> <span class="nf">sqldef</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">sqldef</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
                 <span class="c1"># return formatted sql watching out for embedded</span>
                 <span class="c1"># comments at the end forcing trailing ; onto next</span>
                 <span class="c1"># line https://sqlite.org/src/info/c04a8b8a4f</span>
@@ -1719,7 +1719,7 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="s2">&quot;END&quot;</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_echo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_echo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;echo ON|OFF: If ON then each SQL statement or command is printed before execution (default OFF)</span>
 
 <span class="sd">        The SQL statement or command is sent to error output so that</span>
@@ -1729,7 +1729,7 @@
 
 <div class="viewcode-block" id="Shell.set_encoding">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.set_encoding">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enc</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enc</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves *enc* as the default encoding, after verifying that</span>
 <span class="sd">        it is valid.  You can also include :error to specify error</span>
 <span class="sd">        handling - eg &#39;cp437:replace&#39;</span>
@@ -1752,7 +1752,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">enc</span><span class="p">,</span> <span class="n">errors</span></div>
 
 
-    <span class="k">def</span> <span class="nf">command_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_encoding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;encoding ENCODING: Set the encoding used for new files opened via .output and imports</span>
 
 <span class="sd">        SQLite and APSW/Python work internally using Unicode and characters.</span>
@@ -1774,7 +1774,7 @@
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Encoding takes one argument&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_encoding</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">command_exceptions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_exceptions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;exceptions ON|OFF: If ON then detailed tracebacks are shown on exceptions (default OFF)</span>
 
 <span class="sd">        Normally when an exception occurs the error string only is</span>
@@ -1786,7 +1786,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exceptions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;exceptions&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;exit ?CODE?: Exit this program with optional exit code&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Too many parameters for exit&quot;</span><span class="p">)</span>
@@ -1796,7 +1796,7 @@
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="w"> </span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="si">}</span><span class="s2"> isn&#39;t an exit code&quot;</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;find value ?TABLE?: Searches all columns of all tables for a value</span>
 
 <span class="sd">        The find command helps you locate data across your database</span>
@@ -1821,7 +1821,7 @@
         <span class="n">querytemplate</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">queryparams</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="k">def</span> <span class="nf">qp</span><span class="p">():</span>  <span class="c1"># binding for current queryparams</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">qp</span><span class="p">():</span>  <span class="c1"># binding for current queryparams</span>
             <span class="k">return</span> <span class="s2">&quot;?&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">queryparams</span><span class="p">))</span>
 
         <span class="n">s</span> <span class="o">=</span> <span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -1848,7 +1848,7 @@
             <span class="n">query</span> <span class="o">=</span> <span class="n">query</span> <span class="o">+</span> <span class="s2">&quot; OR &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">colq</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">queryparams</span><span class="p">,</span> <span class="n">internal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">summary</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Table &quot;</span> <span class="o">+</span> <span class="n">table</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">command_ftsq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_ftsq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;ftsq TABLE query: Issues the query against the named FTS5 table</span>
 
 <span class="sd">        The top 20 results are shown.  Text after the table name is used</span>
@@ -1859,7 +1859,7 @@
         <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;select rowid, snippet(</span><span class="si">{</span><span class="w"> </span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="si">}</span><span class="s2">, -1, &#39;&lt;&lt;&#39;, &#39;&gt;&gt;&#39;, &#39;...&#39;, 10) as &#39;snippet&#39; from </span><span class="si">{</span><span class="w"> </span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="si">}</span><span class="s2">(?) order by rank limit 20&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">process_sql</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">],))</span>
 
-    <span class="k">def</span> <span class="nf">command_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;header(s) ON|OFF: Display the column names in output (default OFF)&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;header&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
@@ -1867,7 +1867,7 @@
 
     <span class="n">_help_info</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">command_help</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_help</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;help ?COMMAND?: Shows list of commands and their usage</span>
 
 <span class="sd">        If COMMAND is specified then shows detail about that COMMAND.</span>
@@ -1981,7 +1981,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_import</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_import</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;import FILE TABLE: Imports separated data from FILE into TABLE</span>
 
 <span class="sd">        Reads data from the file into the named table using the</span>
@@ -2055,7 +2055,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">final</span><span class="p">)</span>
             <span class="k">raise</span>
 
-    <span class="k">def</span> <span class="nf">_csvin_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">dialect</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_csvin_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">dialect</span><span class="p">):</span>
         <span class="c1"># Returns a csv reader that works around python bugs and uses</span>
         <span class="c1"># dialect dict to configure reader</span>
         <span class="n">thefile</span> <span class="o">=</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -2064,7 +2064,7 @@
         <span class="n">thefile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">return</span>
 
-    <span class="k">def</span> <span class="nf">command_autoimport</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_autoimport</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;autoimport FILENAME ?TABLE?: Imports filename creating a table and automatically working out separators and data types (alternative to .import command)</span>
 
 <span class="sd">        The import command requires that you precisely pre-setup the</span>
@@ -2115,10 +2115,10 @@
                 <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s1">&#39;Table &quot;</span><span class="si">%s</span><span class="s1">&quot; already exists&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tablename</span><span class="p">,))</span>
 
             <span class="c1"># The types we support deducing</span>
-            <span class="k">def</span> <span class="nf">DateUS</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>  <span class="c1"># US formatted date with wrong ordering of day and month</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">DateUS</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>  <span class="c1"># US formatted date with wrong ordering of day and month</span>
                 <span class="k">return</span> <span class="n">DateWorld</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">switchdm</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">DateWorld</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">switchdm</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># Sensibly formatted date as used anywhere else in the world</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">DateWorld</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">switchdm</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># Sensibly formatted date as used anywhere else in the world</span>
                 <span class="n">y</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getdate</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">switchdm</span><span class="p">:</span>
                     <span class="n">m</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="p">,</span> <span class="n">m</span>
@@ -2126,10 +2126,10 @@
                     <span class="k">raise</span> <span class="ne">ValueError</span>
                 <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">-</span><span class="si">%02d</span><span class="s2">-</span><span class="si">%02d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">DateTimeUS</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>  <span class="c1"># US date and time</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">DateTimeUS</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>  <span class="c1"># US date and time</span>
                 <span class="k">return</span> <span class="n">DateTimeWorld</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">switchdm</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">DateTimeWorld</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">switchdm</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># Sensible date and time</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">DateTimeWorld</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">switchdm</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># Sensible date and time</span>
                 <span class="n">y</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getdatetime</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">switchdm</span><span class="p">:</span>
                     <span class="n">m</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="p">,</span> <span class="n">m</span>
@@ -2137,7 +2137,7 @@
                     <span class="k">raise</span> <span class="ne">ValueError</span>
                 <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">-</span><span class="si">%02d</span><span class="s2">-</span><span class="si">%02d</span><span class="s2">T</span><span class="si">%02d</span><span class="s2">:</span><span class="si">%02d</span><span class="s2">:</span><span class="si">%02d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">Number</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>  <span class="c1"># we really don&#39;t want phone numbers etc to match</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">Number</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>  <span class="c1"># we really don&#39;t want phone numbers etc to match</span>
                 <span class="c1"># Python&#39;s float &amp; int constructors allow whitespace which we don&#39;t</span>
                 <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span>
@@ -2269,7 +2269,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">final</span><span class="p">)</span>
             <span class="k">raise</span>
 
-    <span class="k">def</span> <span class="nf">_getdate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_getdate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="c1"># Returns a tuple of 3 items y,m,d from string v</span>
         <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^([0-9]+)[^0-9]([0-9]+)[^0-9]([0-9]+)$&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
@@ -2281,7 +2281,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span>
         <span class="k">return</span> <span class="n">y</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">d</span>
 
-    <span class="k">def</span> <span class="nf">_getdatetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_getdatetime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="c1"># must be at least HH:MM</span>
         <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^([0-9]+)[^0-9]([0-9]+)[^0-9]([0-9]+)[^0-9]+([0-9]+)[^0-9]([0-9]+)([^0-9]([0-9]+))?$&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
@@ -2297,7 +2297,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span>
         <span class="k">return</span> <span class="n">items</span>
 
-    <span class="k">def</span> <span class="nf">command_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;indices TABLE: Lists all indices on table TABLE&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;indices takes one table name&quot;</span><span class="p">)</span>
@@ -2315,7 +2315,7 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">command_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;load FILE ?ENTRY?: Loads a SQLite extension library</span>
 
 <span class="sd">        Note: Extension loading may not be enabled in the SQLite</span>
@@ -2341,20 +2341,20 @@
 
 <div class="viewcode-block" id="Shell.log_handler">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.log_handler">[docs]</a>
-    <span class="k">def</span> <span class="nf">log_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
         <span class="s2">&quot;Called with SQLite log messages when logging is ON&quot;</span>
         <span class="n">code</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;( </span><span class="si">{</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="w"> </span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">result_string</span><span class="p">(</span><span class="n">code</span><span class="p">)</span><span class="w"> </span><span class="si">}</span><span class="s2"> ) &quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_error</span><span class="p">(</span><span class="n">code</span> <span class="o">+</span> <span class="n">message</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">command_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
         <span class="s2">&quot;log ON|OFF: Shows SQLite log messages (default off)&quot;</span>
         <span class="n">setting</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
         <span class="n">apsw</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CONFIG_LOG</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_handler</span> <span class="k">if</span> <span class="n">setting</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="n">_output_modes</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">command_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;mode MODE ?OPTIONS?: Sets output mode to one of&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">cmd</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Specify an output mode - use .help mode for detailed list&quot;</span><span class="p">)</span>
@@ -2436,11 +2436,11 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentError</span><span class="p">):</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">message</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">Use --help for options&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">Shell</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span> <span class="kn">from</span> <span class="kc">None</span>
+            <span class="k">raise</span> <span class="n">Shell</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_box</span>
 
     <span class="c1"># needed so command completion and help can use it</span>
-    <span class="k">def</span> <span class="nf">_calculate_output_modes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_output_modes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">modes</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;output_&quot;</span><span class="p">)</span> <span class="p">:]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;output_&quot;</span><span class="p">)]</span>
         <span class="n">modes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;tabs&quot;</span><span class="p">)</span>
         <span class="n">modes</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
@@ -2459,7 +2459,7 @@
             <span class="n">detail</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_output_modes_detail</span> <span class="o">=</span> <span class="n">detail</span>
 
-    <span class="k">def</span> <span class="nf">command_nullvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_nullvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;nullvalue STRING: Print STRING in place of null values</span>
 
 <span class="sd">        This affects textual output modes like column and list and</span>
@@ -2476,7 +2476,7 @@
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;nullvalue takes exactly one parameter&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nullvalue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">command_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;open ?OPTIONS? ?FILE?: Opens a database connection</span>
 
 <span class="sd">        Options are:</span>
@@ -2528,7 +2528,7 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_apply_fts</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">command_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;output FILENAME: Send output to FILENAME (or stdout)</span>
 
 <span class="sd">        If the FILENAME is &#39;stdout&#39; then output is sent to standard</span>
@@ -2571,7 +2571,7 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_out_colour</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_command_pages_write_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">PageUsage</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">DatabasePageUsage</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_command_pages_write_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">PageUsage</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">DatabasePageUsage</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;:  &quot;</span><span class="p">)</span>
         <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
@@ -2603,7 +2603,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_pages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_pages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;pages SCOPE: Shows page usage summary in human units</span>
 
 <span class="sd">        SCOPE is a number 0, 1, or 2.</span>
@@ -2639,7 +2639,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_command_pages_write_value</span><span class="p">(</span><span class="n">pages</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_pages_svg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_pages_svg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;pages-svg ?OUTFILENAME?: Shows space usage in a graphic</span>
 
 <span class="sd">        If you do not specify a filename, then a temporary file is created and</span>
@@ -2660,7 +2660,7 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">webbrowser</span><span class="o">.</span><span class="n">open_new_tab</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_parameter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;parameter CMD ...:  Maintain named bindings you can use in your queries.</span>
 
 <span class="sd">        Specify a subcommand:</span>
@@ -2708,7 +2708,7 @@
                 <span class="k">return</span>
         <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;.parameter command not understood.  Use .help parameter to get usage&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;print STRING: print the literal STRING</span>
 
 <span class="sd">        If more than one argument is supplied then they are printed</span>
@@ -2717,7 +2717,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cmd</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_prompt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;prompt MAIN ?CONTINUE?: Changes the prompts for first line and continuation lines</span>
 
 <span class="sd">        The default is to print &#39;sqlite&gt; &#39; for the main prompt where</span>
@@ -2736,7 +2736,7 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">moreprompt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixup_backslashes</span><span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">command_py</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_py</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;py ?PYTHON?: Starts a python REPL or runs the Python statement provided</span>
 
 <span class="sd">        The namespace provided includes ``apsw`` for the module, ``shell`` for this</span>
@@ -2768,7 +2768,7 @@
             <span class="c1"># argument</span>
             <span class="n">code</span><span class="o">.</span><span class="n">interact</span><span class="p">(</span><span class="n">local</span><span class="o">=</span><span class="nb">vars</span><span class="p">,</span> <span class="n">exitmsg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">intro</span> <span class="o">+</span> <span class="s2">&quot;Returning to APSW shell&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">intro_</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;read FILENAME: Processes SQL and commands in FILENAME (or Python if FILENAME ends with .py)</span>
 
 <span class="sd">        Treats the specified file as input (a mixture or SQL and/or</span>
@@ -2811,7 +2811,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">pop_input</span><span class="p">()</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">command_restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;restore ?DB? FILE: Restore database from FILE into DB (default &quot;main&quot;)</span>
 
 <span class="sd">        Copies the contents of FILE to the current database (default &quot;main&quot;).</span>
@@ -2835,7 +2835,7 @@
             <span class="n">b</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
             <span class="nb">input</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">command_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;schema ?TABLE? [TABLE...]: Shows SQL for table</span>
 
 <span class="sd">        If you give one or more tables then their schema is listed</span>
@@ -2863,7 +2863,7 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">command_separator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_separator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;separator STRING: Change separator for output mode and .import</span>
 
 <span class="sd">        You can use quotes and backslashes.  For example to set the</span>
@@ -2892,7 +2892,7 @@
         <span class="s2">&quot;encoding&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_shell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_shell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;shell CMD ARGS...: Run CMD ARGS in a system shell</span>
 
 <span class="sd">        Note that output goes to the process standard output, not</span>
@@ -2905,7 +2905,7 @@
         <span class="k">if</span> <span class="n">res</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exit code </span><span class="si">{</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;show: Show the current values for various settings.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;show takes at most one parameter&quot;</span><span class="p">)</span>
@@ -2960,7 +2960,7 @@
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">outs</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%*.*s</span><span class="s2">: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">command_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;tables ?PATTERN?: Lists names of tables matching LIKE pattern</span>
 
 <span class="sd">        This also returns views.</span>
@@ -2991,7 +2991,7 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pop_output</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">command_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;timeout MS: Try opening locked tables for MS milliseconds</span>
 
 <span class="sd">        If a database is locked by another process SQLite will keep</span>
@@ -3007,7 +3007,7 @@
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not a number&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">],))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_busy_timeout</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;timer ON|OFF: Control printing of time and resource usage after each query</span>
 
 <span class="sd">        The values displayed are in seconds when shown as floating</span>
@@ -3018,7 +3018,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_boolean_command</span><span class="p">(</span><span class="s2">&quot;timer&quot;</span><span class="p">,</span> <span class="n">cmd</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
         <span class="s2">&quot;version: Displays SQLite, APSW, and Python version information&quot;</span>
         <span class="k">if</span> <span class="n">cmd</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;No parameters taken&quot;</span><span class="p">)</span>
@@ -3033,13 +3033,13 @@
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">versions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">maxw</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="w"> </span><span class="n">v</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_vfsname</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_vfsname</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
         <span class="s2">&quot;vfsname: VFS name for database, or attached names&quot;</span>
         <span class="n">dbnames</span> <span class="o">=</span> <span class="n">cmd</span> <span class="ow">or</span> <span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">dbnames</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">vfsname</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_format_vfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vfs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_format_vfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vfs</span><span class="p">):</span>
         <span class="n">w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">vfs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vfs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)))</span>
@@ -3048,7 +3048,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_vfsinfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_vfsinfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
         <span class="s2">&quot;vfsinfo: Shows detailed information about the VFS for the database&quot;</span>
         <span class="k">if</span> <span class="n">cmd</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;No parameters taken&quot;</span><span class="p">)</span>
@@ -3056,7 +3056,7 @@
             <span class="k">if</span> <span class="n">vfs</span><span class="p">[</span><span class="s2">&quot;zName&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">open_vfs</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_format_vfs</span><span class="p">(</span><span class="n">vfs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_vfslist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_vfslist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
         <span class="s2">&quot;vfslist: Shows detailed information about all the VFS available&quot;</span>
         <span class="k">if</span> <span class="n">cmd</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;No parameters taken&quot;</span><span class="p">)</span>
@@ -3065,7 +3065,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_format_vfs</span><span class="p">(</span><span class="n">vfs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">command_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">command_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;width NUM NUM ...: Set the column widths for &quot;column&quot; mode</span>
 
 <span class="sd">        In &quot;column&quot; output mode, each column is a fixed width with values truncated to</span>
@@ -3082,7 +3082,7 @@
                 <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;&#39;</span><span class="si">%s</span><span class="s2">&#39; is not a valid number&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">widths</span> <span class="o">=</span> <span class="n">w</span>
 
-    <span class="k">def</span> <span class="nf">_terminal_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_terminal_width</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">minimum</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Works out the terminal width which is used for word wrapping</span>
 <span class="sd">        some output (eg .help)&quot;&quot;&quot;</span>
 
@@ -3098,7 +3098,7 @@
 
 <div class="viewcode-block" id="Shell.push_output">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.push_output">[docs]</a>
-    <span class="k">def</span> <span class="nf">push_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">push_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the current output settings onto a stack.  See</span>
 <span class="sd">        :meth:`pop_output` for more details as to why you would use</span>
 <span class="sd">        this.&quot;&quot;&quot;</span>
@@ -3110,7 +3110,7 @@
 
 <div class="viewcode-block" id="Shell.pop_output">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.pop_output">[docs]</a>
-    <span class="k">def</span> <span class="nf">pop_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pop_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Restores most recently pushed output.  There are many</span>
 <span class="sd">        output parameters such as nullvalue, mode</span>
 <span class="sd">        (list/tcl/html/insert etc), column widths, header etc.  If you</span>
@@ -3134,7 +3134,7 @@
             <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_append_input_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_append_input_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;When displaying an error in :meth:`handle_exception` we</span>
 <span class="sd">        want to give context such as when the commands being executed</span>
 <span class="sd">        came from a .read command (which in turn could execute another</span>
@@ -3149,7 +3149,7 @@
 
 <div class="viewcode-block" id="Shell.fixup_backslashes">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.fixup_backslashes">[docs]</a>
-    <span class="k">def</span> <span class="nf">fixup_backslashes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fixup_backslashes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Implements the various backlash sequences in s such as</span>
 <span class="sd">        turning backslash t into a tab.</span>
 
@@ -3178,21 +3178,21 @@
 
 <div class="viewcode-block" id="Shell.write">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.write">[docs]</a>
-    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
         <span class="s2">&quot;Writes text to dest.  dest will typically be one of self.stdout or self.stderr.&quot;</span>
         <span class="n">dest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Shell.write_error">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.write_error">[docs]</a>
-    <span class="k">def</span> <span class="nf">write_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
         <span class="s2">&quot;Writes text to self.stderr colouring it&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">error</span> <span class="o">+</span> <span class="n">text</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">error_</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Shell.write_value">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.write_value">[docs]</a>
-    <span class="k">def</span> <span class="nf">write_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">format_sql_value</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">write_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">format_sql_value</span><span class="p">):</span>
         <span class="s2">&quot;Writes colourized value to self.stdout converting to text with fmt&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span><span class="o">.</span><span class="n">colour_value</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">fmt</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span></div>
 
@@ -3201,7 +3201,7 @@
 
 <div class="viewcode-block" id="Shell.get_line">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.get_line">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a single line of input (may be incomplete SQL) from self.stdin.</span>
 
 <span class="sd">        If EOF is reached then return None.  Do not include trailing</span>
@@ -3237,7 +3237,7 @@
 
 <div class="viewcode-block" id="Shell.get_complete_line">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.get_complete_line">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_complete_line</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_complete_line</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a complete input.</span>
 
 <span class="sd">        For dot commands it will be one line.  For SQL statements it</span>
@@ -3273,7 +3273,7 @@
 
 <div class="viewcode-block" id="Shell.handle_interrupt">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.handle_interrupt">[docs]</a>
-    <span class="k">def</span> <span class="nf">handle_interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_interrupt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Deal with keyboard interrupt (typically Control-C).  It</span>
 <span class="sd">        will :meth:`~apsw.Connection.interrupt` the database and print&quot;^C&quot; if interactive.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">interrupt</span><span class="p">()</span>
@@ -3285,7 +3285,7 @@
 
 <div class="viewcode-block" id="Shell.process_complete_line">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.process_complete_line">[docs]</a>
-    <span class="k">def</span> <span class="nf">process_complete_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_complete_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Given some text will call the appropriate method to process</span>
 <span class="sd">        it (eg :meth:`process_sql` or :meth:`process_command`)&quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
@@ -3301,7 +3301,7 @@
 
 <div class="viewcode-block" id="Shell.push_input">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.push_input">[docs]</a>
-    <span class="k">def</span> <span class="nf">push_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">push_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the current input parameters to a stack.  See :meth:`pop_input`.&quot;&quot;&quot;</span>
         <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="s2">&quot;interactive&quot;</span><span class="p">,</span> <span class="s2">&quot;stdin&quot;</span><span class="p">,</span> <span class="s2">&quot;input_line_number&quot;</span><span class="p">:</span>
@@ -3311,7 +3311,7 @@
 
 <div class="viewcode-block" id="Shell.pop_input">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.pop_input">[docs]</a>
-    <span class="k">def</span> <span class="nf">pop_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pop_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Restore most recently pushed input parameters (interactive,</span>
 <span class="sd">        self.stdin, linenumber etc).  Use this if implementing a</span>
 <span class="sd">        command like read.  Push the current input, read the file and</span>
@@ -3325,7 +3325,7 @@
 
 <div class="viewcode-block" id="Shell.complete">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.complete">[docs]</a>
-    <span class="k">def</span> <span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a possible completion for :mod:`readline`</span>
 
 <span class="sd">        This function is called with state starting at zero to get the</span>
@@ -3339,7 +3339,7 @@
 <span class="sd">        subsequent calls.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="kn">import</span> <span class="nn">readline</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">readline</span>
 
             <span class="c1"># the whole line</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">readline</span><span class="o">.</span><span class="n">get_line_buffer</span><span class="p">()</span>
@@ -3438,13 +3438,13 @@
         <span class="s2">&quot;writable_schema&quot;</span><span class="p">:</span> <span class="n">_pragmas_bool</span><span class="p">,</span>
     <span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">_get_prev_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_prev_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
         <span class="s2">&quot;Returns the tokens prior to pos end in the line&quot;</span>
-        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&quot;?\w+&quot;?&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">[:</span><span class="n">end</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&quot;?[\-\w]+&quot;?&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">[:</span><span class="n">end</span><span class="p">])</span>
 
 <div class="viewcode-block" id="Shell.complete_sql">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.complete_sql">[docs]</a>
-    <span class="k">def</span> <span class="nf">complete_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">complete_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide some completions for SQL</span>
 
 <span class="sd">        :param line: The current complete input line</span>
@@ -3490,7 +3490,7 @@
                     <span class="n">narg</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
                     <span class="n">functions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">narg</span><span class="p">,</span> <span class="n">functions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
-                <span class="k">def</span> <span class="nf">fmtfunc</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">nargs</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">fmtfunc</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">nargs</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">nargs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="k">return</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;()&quot;</span>
                     <span class="k">return</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;(&quot;</span>
@@ -3585,7 +3585,7 @@
 
 <div class="viewcode-block" id="Shell.complete_command">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.complete_command">[docs]</a>
-    <span class="k">def</span> <span class="nf">complete_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">complete_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">beg</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide some completions for dot commands</span>
 
 <span class="sd">        :param line: The current complete input line</span>
@@ -3596,7 +3596,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_builtin_commands</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_builtin_commands</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;command_&quot;</span><span class="p">)</span> <span class="p">:]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;command_&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span> <span class="o">!=</span> <span class="s2">&quot;command_headers&quot;</span>
+                <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;command_&quot;</span><span class="p">)</span> <span class="p">:]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;command_&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span> <span class="o">!=</span> <span class="s2">&quot;command_headers&quot;</span>
             <span class="p">]</span>
 
         <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_prev_tokens</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
@@ -3634,7 +3636,7 @@
 <div class="viewcode-block" id="Shell.Row">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.Row">[docs]</a>
     <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="o">**</span><span class="p">({</span><span class="s2">&quot;slots&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;frozen&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}))</span>
-    <span class="k">class</span> <span class="nc">Row</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">Row</span><span class="p">:</span>
         <span class="s2">&quot;Returned by :class:`Shell.PositionRow`&quot;</span>
 
         <span class="n">is_first</span><span class="p">:</span> <span class="nb">bool</span>
@@ -3645,10 +3647,10 @@
 
 <div class="viewcode-block" id="Shell.PositionRow">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.PositionRow">[docs]</a>
-    <span class="k">class</span> <span class="nc">PositionRow</span><span class="p">:</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">PositionRow</span><span class="p">:</span>
         <span class="s2">&quot;Wraps an iterator so you know if a row is first, last, both, or neither&quot;</span>
 
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="kc">False</span>
@@ -3658,10 +3660,10 @@
             <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ExecutionCompleteError</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="bp">self</span>
 
-        <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Shell</span><span class="o">.</span><span class="n">Row</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Shell</span><span class="o">.</span><span class="n">Row</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">StopIteration</span>
@@ -3686,7 +3688,7 @@
 
     <span class="c1">### Colour support</span>
 
-    <span class="k">def</span> <span class="nf">_out_colour</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_out_colour</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Sets up color for output.  Input being interactive doesn&#39;t</span>
         <span class="c1"># matter.  This method needs to be called on all changes to</span>
         <span class="c1"># output.</span>
@@ -3698,21 +3700,21 @@
     <span class="c1"># This class returns an empty string for all undefined attributes</span>
     <span class="c1"># so that it doesn&#39;t matter if a colour scheme leaves something</span>
     <span class="c1"># out.</span>
-    <span class="k">class</span> <span class="nc">_colourscheme</span><span class="p">:</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">_colourscheme</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">__nonzero__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">True</span>
 
-        <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="s2">&quot;_colourscheme(&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
 
-        <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
             <span class="k">return</span> <span class="s2">&quot;&quot;</span>
 
-        <span class="k">def</span> <span class="nf">colour_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">formatted</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">colour_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">formatted</span><span class="p">):</span>
             <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span>
             <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vnull</span> <span class="o">+</span> <span class="n">formatted</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">vnull_</span>
@@ -3720,8 +3722,10 @@
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vstring</span> <span class="o">+</span> <span class="n">formatted</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">vstring_</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vblob</span> <span class="o">+</span> <span class="n">formatted</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">vblob_</span>
-            <span class="c1"># must be a number - we don&#39;t distinguish between float/int</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vnumber</span> <span class="o">+</span> <span class="n">formatted</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">vnumber_</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vnumber</span> <span class="o">+</span> <span class="n">formatted</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">vnumber_</span>
+            <span class="c1"># must be pyobject</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vpyobject</span> <span class="o">+</span> <span class="n">formatted</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">vpyobject_</span>
 
     <span class="c1"># The colour definitions - the convention is the name to turn</span>
     <span class="c1"># something on and the name with an underscore suffix to turn it</span>
@@ -3784,6 +3788,8 @@
         <span class="n">vblob_</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">fg_</span><span class="p">,</span>
         <span class="n">vnumber</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">fg_magenta</span><span class="p">,</span>
         <span class="n">vnumber_</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">fg_</span><span class="p">,</span>
+        <span class="n">vpyobject</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">fg_green</span><span class="p">,</span>
+        <span class="n">vpyobject_</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">fg_</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="c1"># unpollute namespace</span>
     <span class="k">del</span> <span class="n">d</span>
@@ -3797,7 +3803,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">trydelete</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">trydelete</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="s2">&quot;:meta private:&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
@@ -3807,7 +3813,7 @@
 
 <div class="viewcode-block" id="main">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.main">[docs]</a>
-<span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="c1"># Docstring must start on second line so dedenting works correctly</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Call this to run the :ref:`interactive shell &lt;shell&gt;`.  It</span>
@@ -3843,8 +3849,8 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

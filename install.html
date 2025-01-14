@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation and customization &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+  <title>Installation and customization &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=632d72c6"></script>
+      <script src="_static/documentation_options.js?v=9901b351"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -193,37 +193,46 @@ distributions, the package name for APSW, and what APSW version they
 are currently on.</p>
 </section>
 <section id="source">
-<h2>Source<a class="headerlink" href="#source" title="Link to this heading"></a></h2>
+<span id="sources"></span><h2>Source<a class="headerlink" href="#source" title="Link to this heading"></a></h2>
 <p>It is recommended you get the source from <a class="reference external" href="https://github.com/rogerbinns/apsw/releases">Github releases</a>.  If you get the
 source from <a class="reference external" href="https://pypi.org/project/apsw/">PyPi</a> then ensure you
 edit the <code class="file docutils literal notranslate"><span class="pre">setup.apsw</span></code> file inside.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.47.2.0/apsw-3.47.2.0.zip">apsw-3.47.2.0.zip</a>
-(Source, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.47.2.0/apsw-3.47.2.0.cosign-bundle">apsw-3.47.2.0.cosign-bundle</a>
-cosign signature</p></li>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.48.0.0/apsw-3.48.0.0.zip">apsw-3.48.0.0.zip</a>
+(Source as zip, includes this HTML Help)</p></li>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.48.0.0/apsw-3.48.0.0.tar.gz">apsw-3.48.0.0.tar.gz</a>
+(Source as tar.gz, includes this HTML Help)</p></li>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.48.0.0/apsw-3.48.0.0.zip.cosign-bundle">apsw-3.48.0.0.zip.cosign-bundle</a>
+cosign signature for zip source</p></li>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.48.0.0/apsw-3.48.0.0.tar.gz.cosign-bundle">apsw-3.48.0.0.tar.gz.cosign-bundle</a>
+cosign signature for tar.gz source</p></li>
 </ul>
 <section id="verifying-your-download">
 <span id="verifydownload"></span><h3>Verifying your download<a class="headerlink" href="#verifying-your-download" title="Link to this heading"></a></h3>
 <p>Github <a class="reference external" href="https://github.com/rogerbinns/apsw/releases">source releases</a> are
 digitally signed so you can verify they have not been tampered with,
 and were produced by the project maintainer.</p>
-<p><a class="reference external" href="https://www.sigstore.dev/">Sigstore</a> is used via the <a class="reference external" href="https://docs.sigstore.dev/cosign/signing/">cosign tool</a>.  Download the
-corresponding cosign bundle which contains the signature.</p>
+<p><a class="reference external" href="https://www.sigstore.dev/">Sigstore</a> is used.  Instructions are
+shown for the standalone  <a class="reference external" href="https://github.com/sigstore/cosign/releases">cosign tool</a> (easiest,
+recommended), and the <a class="reference external" href="https://pypi.org/project/sigstore/">Python sigstore module</a>.</p>
 <p>Verify</p>
 <blockquote>
-<div><p><a class="reference external" href="https://docs.sigstore.dev/cosign/system_config/installation/">Install cosign</a> if you
-don’t have it already.  It is <a class="reference external" href="https://github.com/sigstore/cosign/releases/">available for a wide variety of
-platforms</a>
-including Linux, MacOS, and Windows.</p>
-<p>Checking the signature needs to provide the source release, the
+<div><p>Checking the signature needs to provide the source release, the
 cosign bundle, the maintainer id, and issuer.  The command is all
-one line shown here across multiple lines for clarity.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.47.2.0.zip<span class="w">                           </span><span class="se">\</span>
-<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.47.2.0.cosign-bundle<span class="w">                         </span><span class="se">\</span>
-<span class="w">    </span>--certificate-identity<span class="o">=</span>rogerb@rogerbinns.com<span class="w">                 </span><span class="se">\</span>
+one line shown here across multiple lines for clarity, along with
+the expected successful output.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.48.0.0.zip<span class="w">                        </span><span class="se">\</span>
+<span class="w">    </span>--new-bundle-format<span class="w">                                       </span><span class="se">\</span>
+<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.48.0.0.zip.cosign-bundle<span class="w">                  </span><span class="se">\</span>
+<span class="w">    </span>--certificate-identity<span class="o">=</span>rogerb@rogerbinns.com<span class="w">              </span><span class="se">\</span>
 <span class="w">    </span>--certificate-oidc-issuer<span class="o">=</span>https://github.com/login/oauth
 <span class="go">Verified OK</span>
+
+<span class="gp">$ </span>python3<span class="w"> </span>-m<span class="w"> </span>sigstore<span class="w"> </span>verify<span class="w"> </span>identity<span class="w"> </span>apsw-3.48.0.0.zip<span class="w">       </span><span class="se">\</span>
+<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.48.0.0.zip.cosign-bundle<span class="w">                  </span><span class="se">\</span>
+<span class="w">    </span>--cert-identity<span class="o">=</span>rogerb@rogerbinns.com<span class="w">                     </span><span class="se">\</span>
+<span class="w">    </span>--cert-oidc-issuer<span class="o">=</span>https://github.com/login/oauth
+<span class="go">OK: apsw-3.48.0.0.zip</span>
 </pre></div>
 </div>
 <p>Check for a success exit code, and verified message.</p>
@@ -403,9 +412,9 @@ is the same tool used for the PyPI builds of APSW.</p>
 </pre></div>
 </div>
 <p>You will then be able to install the wheel using <a class="reference external" href="https://micropip.pyodide.org/">micropip</a>.</p>
-<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">micropip</span>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">micropip</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">await</span> <span class="n">micropip</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="s2">&quot;https://url/apsw-3.47.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">apsw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
 </pre></div>
 </div>
 <p>At this point you will be able to use APSW as normal.</p>
@@ -497,8 +506,8 @@ supported versions running the tests.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

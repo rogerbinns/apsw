@@ -81,6 +81,30 @@ If a column declaration gives a type then SQLite
   types1 ('12', 3, 4, 5.5, b'\x03r\xf4\x00\x9e')
   types2 (12, 3.0, '4', 5.5, b'\x03r\xf4\x00\x9e')
 
+.. _pyobject:
+
+.. index:: sqlite3_bind_pointer, sqlite3_result_pointer, sqlite3_value_pointer
+
+Runtime Python objects
+======================
+
+While SQLite only :ref:`stores 5 types <types>`, it is possible to
+pass Python objects into SQLite, operate on them with your
+:meth:`functions <Connection.create_scalar_function>` (including
+window, aggregates), and to return them in results.
+
+This is done by wrapping the value in :meth:`apsw.pyobject` when
+supplying it in a binding or function result.  See the :ref:`example
+<example_pyobject>`.
+
+It saves having to convert working objects into SQLite compatible ones
+and back again. It is very useful if you work with numpy.  Any attempt
+to save the objects to the database or provide them to SQLite provided
+functions results in them being seen as ``null``.
+
+Behind the scenes the `pointer passing interface
+<https://sqlite.org/bindptr.html>`__ is used.
+
 
 Transactions
 ============
@@ -311,3 +335,36 @@ the code source compatible with other database drivers).
 Set :attr:`Connection.cursor_factory` to any callable, which will be
 called with the connection as the only parameter, and return the
 object to use as a cursor.
+
+.. index:: pair: Memory database; memdb
+
+.. _memdb:
+
+Memory databases
+================
+
+You can get an `in-memory only database
+<https://sqlite.org/inmemorydb.html>`__ by using a filename of
+``:memory:`` and a temporary disk backed database with a name of an
+empty string.  (Note :meth:`shared cache
+<apsw.enable_shared_cache>` won't work,)
+
+SQLite has a (currently undocumented) VFS that allows the same
+connection to have multiple distinct memory databases, and for
+separate connections to share a memory database.
+
+Use the name ``memdb`` as the VFS.  If the filename provided starts
+with a ``/`` then it is shared amongst connections, otherwise it is
+private to the connection.
+
+.. code-block::
+
+    # normal opens
+    connection = apsw.Connection("/shared", vfs="memdb")
+    connection = apsw.Connection("not-shared", vfs="memdb")
+
+    # using URI
+    connection = apsw.Connection("file:/shared&vfs=memdb",
+                    flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE)
+    connection = apsw.Connection("file:not-shared&vfs=memdb",
+                    flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE)

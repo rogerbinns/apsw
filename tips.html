@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tips &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+  <title>Tips &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=632d72c6"></script>
+      <script src="_static/documentation_options.js?v=9901b351"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -52,6 +52,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tips</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#sqlite-is-different">SQLite is different</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#types">Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#runtime-python-objects">Runtime Python objects</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#transactions">Transactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#queries">Queries</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#bindings">Bindings</a></li>
@@ -63,6 +64,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#write-ahead-logging">Write Ahead Logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#customizing-connections">Customizing Connections</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#customizing-cursors">Customizing Cursors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#memory-databases">Memory databases</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
@@ -190,6 +192,20 @@ the underlying storage will always be one of the 5 storage types.</p>
 </pre></div>
 </div>
 </section>
+<section id="runtime-python-objects">
+<span id="index-2"></span><span id="pyobject"></span><h2>Runtime Python objects<a class="headerlink" href="#runtime-python-objects" title="Link to this heading"></a></h2>
+<p>While SQLite only <a class="reference internal" href="#types"><span class="std std-ref">stores 5 types</span></a>, it is possible to
+pass Python objects into SQLite, operate on them with your
+<a class="reference internal" href="connection.html#apsw.Connection.create_scalar_function" title="apsw.Connection.create_scalar_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">functions</span></code></a> (including
+window, aggregates), and to return them in results.</p>
+<p>This is done by wrapping the value in <a class="reference internal" href="apsw.html#apsw.pyobject" title="apsw.pyobject"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.pyobject()</span></code></a> when
+supplying it in a binding or function result.  See the <a class="reference internal" href="example.html#example-pyobject"><span class="std std-ref">example</span></a>.</p>
+<p>It saves having to convert working objects into SQLite compatible ones
+and back again. It is very useful if you work with numpy.  Any attempt
+to save the objects to the database or provide them to SQLite provided
+functions results in them being seen as <code class="docutils literal notranslate"><span class="pre">null</span></code>.</p>
+<p>Behind the scenes the <a class="reference external" href="https://sqlite.org/bindptr.html">pointer passing interface</a> is used.</p>
+</section>
 <section id="transactions">
 <h2>Transactions<a class="headerlink" href="#transactions" title="Link to this heading"></a></h2>
 <p>Transactions are the changes applied to a database file as a whole.
@@ -283,7 +299,7 @@ forward SQLite log messages to Python’s <a class="reference external" href="ht
 and update your schema.  The hard way of doing this is to test for the
 existence of tables and their columns, and doing that maintenance
 programmatically.  The easy way is to use <a class="reference external" href="https://sqlite.org/pragma.html#pragma_user_version">pragma user_version</a> as in this example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">ensure_schema</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">ensure_schema</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
   <span class="c1"># a new database starts at user_version 0</span>
   <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
     <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
@@ -358,11 +374,11 @@ the new connection as the only parameter.</p>
 <p>For example if you wanted to add an <cite>executescript</cite> method to
 Connections that is like <a class="reference internal" href="connection.html#apsw.Connection.execute" title="apsw.Connection.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.execute()</span></code></a> but ignores all
 returned rows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">executescript</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">executescript</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
   <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
     <span class="k">pass</span>
 
-<span class="k">def</span> <span class="nf">my_hook</span><span class="p">(</span><span class="n">connection</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_hook</span><span class="p">(</span><span class="n">connection</span><span class="p">):</span>
   <span class="n">connection</span><span class="o">.</span><span class="n">executescript</span> <span class="o">=</span> <span class="n">executescript</span>
 
 <span class="n">apsw</span><span class="o">.</span><span class="n">connection_hooks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">my_hook</span><span class="p">)</span>
@@ -379,6 +395,29 @@ the code source compatible with other database drivers).</p>
 called with the connection as the only parameter, and return the
 object to use as a cursor.</p>
 </section>
+<section id="memory-databases">
+<span id="memdb"></span><span id="index-3"></span><h2>Memory databases<a class="headerlink" href="#memory-databases" title="Link to this heading"></a></h2>
+<p>You can get an <a class="reference external" href="https://sqlite.org/inmemorydb.html">in-memory only database</a> by using a filename of
+<code class="docutils literal notranslate"><span class="pre">:memory:</span></code> and a temporary disk backed database with a name of an
+empty string.  (Note <a class="reference internal" href="apsw.html#apsw.enable_shared_cache" title="apsw.enable_shared_cache"><code class="xref py py-meth docutils literal notranslate"><span class="pre">shared</span> <span class="pre">cache</span></code></a> won’t work,)</p>
+<p>SQLite has a (currently undocumented) VFS that allows the same
+connection to have multiple distinct memory databases, and for
+separate connections to share a memory database.</p>
+<p>Use the name <code class="docutils literal notranslate"><span class="pre">memdb</span></code> as the VFS.  If the filename provided starts
+with a <code class="docutils literal notranslate"><span class="pre">/</span></code> then it is shared amongst connections, otherwise it is
+private to the connection.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># normal opens</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;/shared&quot;</span><span class="p">,</span> <span class="n">vfs</span><span class="o">=</span><span class="s2">&quot;memdb&quot;</span><span class="p">)</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;not-shared&quot;</span><span class="p">,</span> <span class="n">vfs</span><span class="o">=</span><span class="s2">&quot;memdb&quot;</span><span class="p">)</span>
+
+<span class="c1"># using URI</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file:/shared&amp;vfs=memdb&quot;</span><span class="p">,</span>
+                <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span><span class="p">)</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file:not-shared&amp;vfs=memdb&quot;</span><span class="p">,</span>
+                <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 
@@ -392,8 +431,8 @@ object to use as a cursor.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 

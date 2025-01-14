@@ -6,8 +6,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exceptions and Errors &mdash; APSW 3.47.2.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=72bcf2f2" />
+  <title>Exceptions and Errors &mdash; APSW 3.48.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
 
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=632d72c6"></script>
+      <script src="_static/documentation_options.js?v=9901b351"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -548,9 +548,9 @@ or virtual tables, triggers firing etc.</p>
 <p>This is an example showing the difference between the tracebacks you
 would have got with earlier versions of apsw and the augmented
 traceback:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">apsw</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
 
-<span class="k">def</span> <span class="nf">myfunc</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">myfunc</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
   <span class="mi">1</span><span class="o">/</span><span class="mi">0</span>
 
 <span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
@@ -629,11 +629,11 @@ almost completely useless!</p>
                    <span class="n">cur</span> <span class="o">=</span>  <span class="o">&lt;</span><span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x988f30</span><span class="o">&gt;</span>
                      <span class="n">i</span> <span class="o">=</span>  <span class="mi">10</span>
                   <span class="bp">self</span> <span class="o">=</span>  <span class="n">testVtables</span> <span class="p">(</span><span class="n">__main__</span><span class="o">.</span><span class="n">APSW</span><span class="p">)</span>
-        <span class="n">allconstraints</span> <span class="o">=</span>  <span class="n">select</span> <span class="n">rowid</span><span class="p">,</span><span class="o">*</span> <span class="kn">from</span> <span class="nn">foo</span> <span class="n">where</span> <span class="n">rowid</span><span class="o">&gt;-</span><span class="mi">1000</span> <span class="o">....</span>
+        <span class="n">allconstraints</span> <span class="o">=</span>  <span class="n">select</span> <span class="n">rowid</span><span class="p">,</span><span class="o">*</span> <span class="kn">from</span><span class="w"> </span><span class="nn">foo</span> <span class="n">where</span> <span class="n">rowid</span><span class="o">&gt;-</span><span class="mi">1000</span> <span class="o">....</span>
 
   <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4050</span><span class="p">,</span> <span class="ow">in</span> <span class="n">Cursor_execute</span><span class="o">.</span><span class="n">sqlite3_prepare</span>
             <span class="n">Connection</span> <span class="o">=</span>  <span class="o">&lt;</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x978800</span><span class="o">&gt;</span>
-             <span class="n">statement</span> <span class="o">=</span>  <span class="n">select</span> <span class="n">rowid</span><span class="p">,</span><span class="o">*</span> <span class="kn">from</span> <span class="nn">foo</span> <span class="n">where</span> <span class="n">rowid</span><span class="o">&gt;-</span><span class="mi">1000</span> <span class="o">....</span>
+             <span class="n">statement</span> <span class="o">=</span>  <span class="n">select</span> <span class="n">rowid</span><span class="p">,</span><span class="o">*</span> <span class="kn">from</span><span class="w"> </span><span class="nn">foo</span> <span class="n">where</span> <span class="n">rowid</span><span class="o">&gt;-</span><span class="mi">1000</span> <span class="o">....</span>
 
   <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">2681</span><span class="p">,</span> <span class="ow">in</span> <span class="n">VirtualTable</span><span class="o">.</span><span class="n">xBestIndex</span>
                   <span class="bp">self</span> <span class="o">=</span>  <span class="o">&lt;</span><span class="n">__main__</span><span class="o">.</span><span class="n">VTable</span> <span class="n">instance</span> <span class="n">at</span> <span class="mh">0x98d8c0</span><span class="o">&gt;</span>
@@ -664,8 +664,8 @@ almost completely useless!</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2024, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Dec 08, 2024.
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Jan 14, 2025.
       </span></p>
   </div>
 
