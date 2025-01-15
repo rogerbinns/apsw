@@ -78,8 +78,8 @@ APSWBackup_close_internal(APSWBackup *self, int force)
 {
   int res, setexc = 0;
 
-  if (!self->backup)
-    return 0;
+  /* should not have been called with active backup */
+  assert(self->backup);
 
   res = sqlite3_backup_finish(self->backup);
   if (res)
@@ -105,6 +105,8 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   }
 
   self->backup = 0;
+  sqlite3_mutex_leave(self->source->dbmutex);
+  sqlite3_mutex_leave(self->dest->dbmutex);
 
   Connection_remove_dependent(self->dest, (PyObject *)self);
   Connection_remove_dependent(self->source, (PyObject *)self);
@@ -120,8 +122,13 @@ APSWBackup_dealloc(APSWBackup *self)
 {
   APSW_CLEAR_WEAKREFS;
 
-  APSWBackup_close_internal(self, 2);
+  if (self->backup)
+  {
+    DBMUTEX_FORCE(self->source->dbmutex);
+    DBMUTEX_FORCE(self->dest->dbmutex);
 
+    APSWBackup_close_internal(self, 2);
+  }
   Py_CLEAR(self->done);
 
   Py_TpFree((PyObject *)self);
@@ -158,8 +165,8 @@ APSWBackup_step(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_EPILOG(NULL, Backup_step_USAGE, );
   }
 
-  DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread",
-                   self->dest->dbmutex, "Backup destination Connection is busy in another thread");
+  DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
+                   "Backup destination Connection is busy in another thread");
 
   res = sqlite3_backup_step(self->backup, npages);
 
@@ -171,6 +178,9 @@ APSWBackup_step(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
 
   sqlite3_mutex_leave(self->source->dbmutex);
   sqlite3_mutex_leave(self->dest->dbmutex);
+
+  if (PyErr_Occurred())
+    return NULL;
 
   if (res == SQLITE_DONE)
   {
@@ -204,6 +214,9 @@ APSWBackup_finish(APSWBackup *self)
   if (!self->backup)
     Py_RETURN_NONE;
 
+  DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
+                   "Backup destination Connection is busy in another thread");
+
   setexc = APSWBackup_close_internal(self, 0);
   if (setexc)
     return NULL;
@@ -234,6 +247,8 @@ APSWBackup_close(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_OPTIONAL ARG_bool(force);
     ARG_EPILOG(NULL, Backup_close_USAGE, );
   }
+  DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
+                   "Backup destination Connection is busy in another thread");
   setexc = APSWBackup_close_internal(self, force);
   if (setexc)
     return NULL;
@@ -318,6 +333,8 @@ APSWBackup_exit(APSWBackup *self, PyObject *const *fast_args, Py_ssize_t fast_na
      close exception has more detail.  At the time of writing this
      code the step method only set an error code but not an error
      message */
+  DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
+                   "Backup destination Connection is busy in another thread");
   setexc = APSWBackup_close_internal(self, !Py_IsNone(etype) || !Py_IsNone(evalue) || !Py_IsNone(etraceback));
 
   if (setexc)

@@ -8139,13 +8139,11 @@ class APSW(unittest.TestCase):
         c.execute("create table x(y); insert into x values(3); select * from x")
         self.db = apsw.Connection(":memory:")
         self.fillWithRandomStuff(self.db)
-        self.assertRaises(apsw.ThreadingViolationError, db2.backup, "main", self.db, "main")
+        self.assertRaisesRegex(apsw.SQLError, "destination database is in use", db2.backup, "main", self.db, "main")
         c.close()
         b = db2.backup("main", self.db, "main")
         # double check cursor really is dead
         self.assertRaises(apsw.CursorClosedError, c.execute, "select 3")
-        # with the backup object existing, all operations on db2 should fail
-        self.assertRaises(apsw.ThreadingViolationError, db2.cursor)
         # finish and then trying to step
         b.finish()
         self.assertRaises(apsw.ConnectionClosedError, b.step)
