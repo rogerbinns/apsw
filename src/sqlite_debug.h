@@ -99,11 +99,6 @@
     sqlite3_bind_zeroblob64((one), (two), (three));                           \
 })
 
-#define sqlite3_blob_bytes(...) ({                                        \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(self->connection->db)));  \
-    sqlite3_blob_bytes(__VA_ARGS__);                                      \
-})
-
 #define sqlite3_blob_open(one, two, three, four, five, six, seven) ({          \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));                        \
     sqlite3_blob_open((one), (two), (three), (four), (five), (six), (seven));  \
@@ -139,11 +134,6 @@
 
 #undef sqlite3_changes
 #define sqlite3_changes *not used*
-
-#define sqlite3_changes64(one) ({                        \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
-    sqlite3_changes64((one));                            \
-})
 
 #define sqlite3_clear_bindings(one) ({                                        \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(sqlite3_db_handle((one)))));  \
@@ -772,11 +762,6 @@
 
 #undef sqlite3_total_changes
 #define sqlite3_total_changes *not used*
-
-#define sqlite3_total_changes64(one) ({                  \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
-    sqlite3_total_changes64((one));                      \
-})
 
 #define sqlite3_trace_v2(one, two, three, four) ({       \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \

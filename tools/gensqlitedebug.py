@@ -103,8 +103,11 @@ functions_global = (
     "sqlite3_win32_.*",
     # there can't be a dangling refcount on the connection (assertion failure)
     "sqlite3_close",
-    # don't do any mutexes
+    # next group don't do any mutexes in sqlite3.c hence don't make any sense for us to
     "sqlite3_backup_(pagecount|remaining)",
+    "sqlite3_blob_bytes",
+    "sqlite3_changes64",
+    "sqlite3_total_changes64",
     # can't get to db from these
     "sqlite3_filename_(database|journal|wal)",
     "sqlite3_uri_.*",
@@ -162,7 +165,6 @@ functions_arg = (
 # the first parameter is sqlite3*.  key is number of args taken
 functions_arg_one = {
     1: (
-        "sqlite3_changes64",
         "sqlite3_db_cacheflush",
         "sqlite3_db_release_memory",
         "sqlite3_(errcode|errmsg|error_offset|extended_errcode)",
@@ -170,7 +172,6 @@ functions_arg_one = {
         "sqlite3_is_interrupted",
         "sqlite3_last_insert_rowid",
         "sqlite3_system_errno",
-        "sqlite3_total_changes64",
         "sqlite3_vtab_on_conflict",
     ),
     2: (
