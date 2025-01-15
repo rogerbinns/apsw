@@ -329,6 +329,8 @@ APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
   if (self->description_cache[fmtnum])
     return Py_NewRef(self->description_cache[fmtnum]);
 
+  DBMUTEX_ENSURE(self->connection->dbmutex);
+
   ncols = sqlite3_column_count(self->statement->vdbestatement);
   result = PyTuple_New(ncols);
   if (!result)
@@ -368,9 +370,11 @@ APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
   }
 
   self->description_cache[fmtnum] = Py_NewRef(result);
+  sqlite3_mutex_leave(self->connection->dbmutex);
   return result;
 
 error:
+  sqlite3_mutex_leave(self->connection->dbmutex);
   Py_XDECREF(result);
   Py_XDECREF(column);
   return NULL;
@@ -564,7 +568,7 @@ APSWCursor_dobindings(APSWCursor *self)
   if (Py_Is(self->bindings, apsw_cursor_null_bindings))
     return 0;
 
-  nargs = sqlite3_bind_parameter_count(self->statement->vdbestatement);
+  nargs = self->statement->vdbestatement ? sqlite3_bind_parameter_count(self->statement->vdbestatement) : 0;
   if (nargs == 0 && !self->bindings)
     return 0; /* common case, no bindings needed or supplied */
 
@@ -1636,11 +1640,17 @@ APSWCursor_expanded_sql(APSWCursor *self)
   if (!self->statement)
     Py_RETURN_NONE;
 
+  DBMUTEX_ENSURE(self->connection->dbmutex);
   es = sqlite3_expanded_sql(self->statement->vdbestatement);
-  if (!es)
-    return PyErr_NoMemory();
-  res = convertutf8string(es);
-  sqlite3_free((void *)es);
+  if (es)
+  {
+    res = convertutf8string(es);
+    sqlite3_free((void *)es);
+  }
+  else
+    res = PyErr_NoMemory();
+  sqlite3_mutex_leave(self->connection->dbmutex);
+
   return res;
 }
 

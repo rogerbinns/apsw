@@ -91,7 +91,7 @@ statementcache_free_statement(StatementCache *sc, APSWStatement *s)
 
   Py_CLEAR(s->query);
 
-  res = sqlite3_finalize(s->vdbestatement);
+  res = s->vdbestatement ? sqlite3_finalize(s->vdbestatement) : SQLITE_OK;
 
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
   if (sc->recycle_bin_next + 1 < SC_STATEMENT_RECYCLE_BIN_ENTRIES)
@@ -247,7 +247,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   if (res != SQLITE_OK || PyErr_Occurred())
   {
     SET_EXC(res, sc->db);
-    if(vdbestatement)
+    if (vdbestatement)
       sqlite3_finalize(vdbestatement);
     return res ? res : SQLITE_ERROR;
   }

@@ -3845,8 +3845,10 @@ Connection_create_module(Connection *self, PyObject *const *fast_args, Py_ssize_
   /* SQLite is really finnicky.  Note that it calls the destructor on
      failure  */
 
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_create_module_v2(self->db, name, vti ? vti->sqlite3_module_def : NULL, vti, apswvtabFree);
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (res != SQLITE_OK)
   {
@@ -4333,8 +4335,10 @@ Connection_status(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Connection_status_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_db_status(self->db, op, &current, &highwater, reset);
   SET_EXC(res, NULL);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (res != SQLITE_OK)
     return NULL;
@@ -4856,6 +4860,8 @@ Connection_drop_modules(Connection *self, PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Connection_drop_modules_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
+
   if (keep != Py_None)
   {
     sequence = PySequence_Fast(keep, "expected a sequence for " Connection_drop_modules_USAGE);
@@ -4902,6 +4908,7 @@ Connection_drop_modules(Connection *self, PyObject *const *fast_args, Py_ssize_t
   SET_EXC(res, self->db);
 
 finally:
+  sqlite3_mutex_leave(self->dbmutex);
   Py_CLEAR(sequence);
   PyMem_Free(strings);
   PyMem_Free((void *)array);
