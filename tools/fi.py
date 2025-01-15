@@ -917,6 +917,8 @@ class Tester:
                         sys.modules["apsw"].shutdown()
                     else:
                         exercise(self.example_code, self.expect_exception)
+                        if hasattr(apsw, "leak_check"):
+                            apsw.leak_check()
                         self.abort = 0
                         if not use_runplan and not self.faulted_this_round:
                             use_runplan = True
