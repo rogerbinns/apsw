@@ -1009,6 +1009,17 @@ apsw_fini(PyObject *Py_UNUSED(self))
 }
 #endif
 
+#ifdef __SANITIZE_ADDRESS__
+#include <sanitizer/lsan_interface.h>
+
+static PyObject *
+apsw_leak_check(PyObject *Py_UNUSED(self))
+{
+  int res = __lsan_do_recoverable_leak_check();
+  return PyLong_FromLong(res);
+}
+#endif
+
 #ifdef APSW_FORK_CHECKER
 
 /*
@@ -1824,6 +1835,9 @@ static PyMethodDef module_methods[] = {
     Apsw_allow_missing_dict_bindings_DOC },
 #if defined(APSW_FAULT_INJECT) || defined(APSW_DEBUG)
   { "_fini", (PyCFunction)apsw_fini, METH_NOARGS, "Frees all caches and recycle lists" },
+#endif
+#ifdef __SANITIZE_ADDRESS__
+  { "leak_check", (PyCFunction)apsw_leak_check, METH_NOARGS, "Runs sanitizer leak check now" },
 #endif
 #ifdef APSW_FORK_CHECKER
   { "fork_checker", (PyCFunction)apsw_fork_checker, METH_NOARGS, Apsw_fork_checker_DOC },

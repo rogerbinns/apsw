@@ -395,6 +395,10 @@ class APSW(unittest.TestCase):
             c.close()
         gc.collect()
         deltempfiles()
+        if hasattr(apsw, "leak_check"):
+            # There is a fatal error if called under gdb which sets $_ to /usr/bin/gdb
+            if not os.environ.get("_", "").endswith("gdb"):
+                apsw.leak_check()
         warnings.filters = self.warnings_filters
         getattr(warnings, "_filters_mutated", lambda: True)()
 
