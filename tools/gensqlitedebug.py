@@ -105,11 +105,14 @@ functions_global = (
     "sqlite3_win32_.*",
     # there can't be a dangling refcount on the connection (assertion failure)
     "sqlite3_close",
-    # next group don't do any mutexes in sqlite3.c hence don't make any sense for us to
+    # next group don't do any mutexes in sqlite3.c hence don't make
+    # any sense for us to.  they generally read or write a single value.
     "sqlite3_backup_(pagecount|remaining)",
     "sqlite3_blob_bytes",
     "sqlite3_changes64",
+    "sqlite3_get_autocommit",
     "sqlite3_total_changes64",
+    "sqlite3_limit",
     # can't get to db from these
     "sqlite3_filename_(database|journal|wal)",
     "sqlite3_uri_.*",
@@ -170,7 +173,6 @@ functions_arg_one = {
         "sqlite3_db_cacheflush",
         "sqlite3_db_release_memory",
         "sqlite3_(errcode|errmsg|error_offset|extended_errcode)",
-        "sqlite3_get_autocommit",
         "sqlite3_is_interrupted",
         "sqlite3_last_insert_rowid",
         "sqlite3_vtab_on_conflict",
@@ -190,7 +192,6 @@ functions_arg_one = {
         "sqlite3_busy_handler",
         "sqlite3_collation_needed",
         "sqlite3_(commit|rollback)_hook",
-        "sqlite3_limit",
         "sqlite3_overload_function",
         "sqlite3_set_authorizer",
         "sqlite3_update_hook",

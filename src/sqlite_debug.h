@@ -420,11 +420,6 @@
 #undef sqlite3_free_table
 #define sqlite3_free_table *not used*
 
-#define sqlite3_get_autocommit(one) ({                   \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
-    sqlite3_get_autocommit((one));                       \
-})
-
 #undef sqlite3_get_auxdata
 #define sqlite3_get_auxdata *not used*
 
@@ -442,11 +437,6 @@
 #define sqlite3_last_insert_rowid(one) ({                \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
     sqlite3_last_insert_rowid((one));                    \
-})
-
-#define sqlite3_limit(one, two, three) ({                \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
-    sqlite3_limit((one), (two), (three));                \
 })
 
 #define sqlite3_load_extension(one, two, three, four) ({    \
