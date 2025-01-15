@@ -10,6 +10,7 @@
 
 #undef DBMUTEX_ASSERT
 #define DBMUTEX_ASSERT(x) do { assert(sqlite3_mutex_held(sqlite3_db_mutex((x)))); } while(0)
+
 #define sqlite3_aggregate_context(one, two) ({                                        \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(sqlite3_context_db_handle((one)))));  \
     sqlite3_aggregate_context((one), (two));                                          \
@@ -746,11 +747,6 @@
 
 #undef sqlite3_str_vappendf
 #define sqlite3_str_vappendf *not used*
-
-#define sqlite3_system_errno(one) ({                     \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
-    sqlite3_system_errno((one));                         \
-})
 
 #define sqlite3_table_column_metadata(one, two, three, four, five, six, seven, eight, nine) ({              \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));                                                     \
