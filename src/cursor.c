@@ -1178,7 +1178,7 @@ APSWCursor_close(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_n
 static PyObject *
 APSWCursor_next(APSWCursor *self)
 {
-  PyObject *retval;
+  PyObject *retval = NULL;
   PyObject *item;
   int numcols = -1;
   int i;

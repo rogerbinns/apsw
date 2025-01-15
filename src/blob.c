@@ -186,13 +186,17 @@ APSWBlob_close_internal(APSWBlob *self, int force)
     self->pBlob = 0;
   }
 
-  /* Remove from connection dependents list.  Has to be done before we
-     decref self->connection otherwise connection could dealloc and
-     we'd still be in list */
   if (self->connection)
+  {
+    sqlite3_mutex_leave(self->connection->dbmutex);
+
+    /* Remove from connection dependents list.  Has to be done before we
+       decref self->connection otherwise connection could dealloc and
+      we'd still be in list */
     Connection_remove_dependent(self->connection, (PyObject *)self);
 
-  Py_CLEAR(self->connection);
+    Py_CLEAR(self->connection);
+  }
 
   if (force == 2)
     PY_ERR_RESTORE(exc_save);
@@ -205,6 +209,8 @@ APSWBlob_dealloc(APSWBlob *self)
 {
   APSW_CLEAR_WEAKREFS;
 
+  if (self->connection)
+    DBMUTEX_FORCE(self->connection->dbmutex);
   APSWBlob_close_internal(self, 2);
 
   Py_TpFree((PyObject *)self);
@@ -281,22 +287,21 @@ APSWBlob_read(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   if (!buffy)
     return NULL;
 
+  DBMUTEX_ENSURE(self->connection->dbmutex);
   thebuffer = PyBytes_AS_STRING(buffy);
   res = sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset);
+  SET_EXC(res, self->connection->db);
+  sqlite3_mutex_leave(self->connection->dbmutex);
 
   MakeExistingException(); /* this could happen if there were issues in the vfs */
 
   if (PyErr_Occurred())
-    return NULL;
-
-  if (res != SQLITE_OK)
   {
     Py_DECREF(buffy);
-    SET_EXC(res, self->connection->db);
     return NULL;
   }
-  else
-    self->curoffset += length;
+
+  self->curoffset += length;
   assert(self->curoffset <= sqlite3_blob_bytes(self->pBlob));
   return buffy;
 }
@@ -345,13 +350,6 @@ APSWBlob_read_into(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_EPILOG(NULL, Blob_read_into_USAGE, );
   }
 
-#define ERREXIT(x)                                                                                                     \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    x;                                                                                                                 \
-    goto errorexit;                                                                                                    \
-  } while (0)
-
   memset(&py3buffer, 0, sizeof(py3buffer));
   aswb = PyObject_GetBufferContiguous(buffer, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE);
   if (aswb)
@@ -363,30 +361,38 @@ APSWBlob_read_into(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_n
     length = py3buffer.len - offset;
 
   if (offset < 0 || offset > py3buffer.len)
-    ERREXIT(PyErr_Format(PyExc_ValueError, "offset is less than zero or beyond end of buffer"));
+  {
+    PyErr_Format(PyExc_ValueError, "offset is less than zero or beyond end of buffer");
+    goto errorexit;
+  }
 
   if (offset + length > py3buffer.len)
-    ERREXIT(PyErr_Format(PyExc_ValueError, "Data would go beyond end of buffer"));
+  {
+    PyErr_Format(PyExc_ValueError, "Data would go beyond end of buffer");
+    goto errorexit;
+  }
 
   if (length > bloblen - self->curoffset)
-    ERREXIT(PyErr_Format(PyExc_ValueError, "More data requested than blob length"));
+  {
+    PyErr_Format(PyExc_ValueError, "More data requested than blob length");
+    goto errorexit;
+  }
 
+  DBMUTEX_ENSURE(self->connection->dbmutex);
   res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset);
 
   MakeExistingException(); /* vfs errors could cause this */
 
-  if (PyErr_Occurred())
-    ERREXIT(NULL);
+  SET_EXC(res, self->connection->db);
+  sqlite3_mutex_leave(self->connection->dbmutex);
 
-  if (res != SQLITE_OK)
+  if (!PyErr_Occurred())
   {
-    SET_EXC(res, self->connection->db);
-    ERREXIT(NULL);
-  }
-  self->curoffset += length;
+    self->curoffset += length;
 
-  PyBuffer_Release(&py3buffer);
-  Py_RETURN_NONE;
+    PyBuffer_Release(&py3buffer);
+    Py_RETURN_NONE;
+  }
 
 errorexit:
   PyBuffer_Release(&py3buffer);
@@ -511,14 +517,14 @@ APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
     goto finally;
   }
 
+  DBMUTEX_ENSURE(self->connection->dbmutex);
   res = sqlite3_blob_write(self->pBlob, data_buffer.buf, data_buffer.len, self->curoffset);
-  assert(!PyErr_Occurred());
+  SET_EXC(res, self->connection->db);
+  sqlite3_mutex_leave(self->connection->dbmutex);
 
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->connection->db);
+  if (PyErr_Occurred())
     goto finally;
-  }
+
   self->curoffset += data_buffer.len;
   assert(self->curoffset <= sqlite3_blob_bytes(self->pBlob));
   ok = 1;
@@ -565,6 +571,8 @@ APSWBlob_close(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
     ARG_OPTIONAL ARG_bool(force);
     ARG_EPILOG(NULL, Blob_close_USAGE, );
   }
+  if (self->connection)
+    DBMUTEX_ENSURE(self->connection->dbmutex);
   setexc = APSWBlob_close_internal(self, !!force);
 
   if (setexc)
@@ -612,6 +620,8 @@ APSWBlob_exit(APSWBlob *self, PyObject *Py_UNUSED(args))
 
   CHECK_BLOB_CLOSED;
 
+  if (self->connection)
+    DBMUTEX_ENSURE(self->connection->dbmutex);
   setexc = APSWBlob_close_internal(self, 0);
   if (setexc)
     return NULL;
@@ -644,18 +654,17 @@ APSWBlob_reopen(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_narg
   /* no matter what happens we always reset current offset */
   self->curoffset = 0;
 
+  DBMUTEX_ENSURE(self->connection->dbmutex);
   res = sqlite3_blob_reopen(self->pBlob, rowid);
 
   MakeExistingException(); /* a vfs error could cause this */
 
+  SET_EXC(res, self->connection->db);
+  sqlite3_mutex_leave(self->connection->dbmutex);
+
   if (PyErr_Occurred())
     return NULL;
 
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->connection->db);
-    return NULL;
-  }
   Py_RETURN_NONE;
 }
 

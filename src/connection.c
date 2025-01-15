@@ -609,9 +609,13 @@ Connection_blob_open(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
     ARG_MANDATORY ARG_bool(writeable);
     ARG_EPILOG(NULL, Connection_blob_open_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_blob_open(self->db, database, table, column, rowid, writeable, &blob);
 
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
   if (res != SQLITE_OK)
     return NULL;
 
@@ -629,6 +633,7 @@ Connection_blob_open(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
   res = PyList_Append(self->dependents, weakref);
   Py_DECREF(weakref);
   if (res)
+    /* ::TODO:: shouldn't this decref apswblob too? and return NULL above */
     return NULL;
   return (PyObject *)apswblob;
 }
@@ -2200,29 +2205,23 @@ Connection_set_busy_handler(Connection *self, PyObject *const *fast_args, Py_ssi
     ARG_EPILOG(NULL, Connection_set_busy_handler_USAGE, );
   }
 
-  if (!callable)
-  {
+  DBMUTEX_ENSURE(self->dbmutex);
+
+  if (callable)
+    res = sqlite3_busy_handler(self->db, busyhandlercb, self);
+  else
     res = sqlite3_busy_handler(self->db, NULL, NULL);
-    if (res != SQLITE_OK)
-    {
-      SET_EXC(res, self->db);
-      return NULL;
-    }
-    goto finally;
-  }
 
-  res = sqlite3_busy_handler(self->db, busyhandlercb, self);
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
+  SET_EXC(res, self->db);
+
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (res)
     return NULL;
-  }
 
-  Py_INCREF(callable);
-
-finally:
-  Py_XDECREF(self->busyhandler);
-  self->busyhandler = callable;
+  Py_CLEAR(self->busyhandler);
+  if (callable)
+    self->busyhandler = Py_NewRef(callable);
 
   Py_RETURN_NONE;
 }
@@ -4792,12 +4791,13 @@ Connection_cache_flush(Connection *self)
 
   CHECK_CLOSED(self, NULL);
 
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_db_cacheflush(self->db);
-  if (res)
-  {
-    SET_EXC(res, self->db);
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
     return NULL;
-  }
 
   Py_RETURN_NONE;
 }
@@ -4815,12 +4815,14 @@ Connection_release_memory(Connection *self)
 
   CHECK_CLOSED(self, NULL);
 
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_db_release_memory(self->db);
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if(PyErr_Occurred())
     return NULL;
-  }
+
 
   Py_RETURN_NONE;
 }
