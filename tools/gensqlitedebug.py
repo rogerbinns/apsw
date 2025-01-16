@@ -111,8 +111,10 @@ functions_global = (
     "sqlite3_blob_bytes",
     "sqlite3_changes64",
     "sqlite3_get_autocommit",
-    "sqlite3_total_changes64",
+    "sqlite3_is_interrupted",
+    "sqlite3_last_insert_rowid",
     "sqlite3_limit",
+    "sqlite3_total_changes64",
     # can't get to db from these
     "sqlite3_filename_(database|journal|wal)",
     "sqlite3_uri_.*",
@@ -173,8 +175,6 @@ functions_arg_one = {
         "sqlite3_db_cacheflush",
         "sqlite3_db_release_memory",
         "sqlite3_(errcode|errmsg|error_offset|extended_errcode)",
-        "sqlite3_is_interrupted",
-        "sqlite3_last_insert_rowid",
         "sqlite3_vtab_on_conflict",
     ),
     2: (

@@ -429,16 +429,6 @@
 #undef sqlite3_get_table
 #define sqlite3_get_table *not used*
 
-#define sqlite3_is_interrupted(one) ({                   \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
-    sqlite3_is_interrupted((one));                       \
-})
-
-#define sqlite3_last_insert_rowid(one) ({                \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
-    sqlite3_last_insert_rowid((one));                    \
-})
-
 #define sqlite3_load_extension(one, two, three, four) ({    \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));     \
     sqlite3_load_extension((one), (two), (three), (four));  \
