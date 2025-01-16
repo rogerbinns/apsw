@@ -1222,7 +1222,7 @@ again:
   if (ROWTRACE)
   {
     PyObject *r2 = APSWCursor_do_row_trace(self, retval);
-    Py_DECREF(retval);
+    Py_CLEAR(retval);
     if (!r2)
       goto error;
     if (Py_IsNone(r2))
