@@ -331,7 +331,7 @@ APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
 
   DBMUTEX_ENSURE(self->connection->dbmutex);
 
-  ncols = sqlite3_column_count(self->statement->vdbestatement);
+  ncols = self->statement->vdbestatement ? sqlite3_column_count(self->statement->vdbestatement) : 0;
   result = PyTuple_New(ncols);
   if (!result)
     goto error;
