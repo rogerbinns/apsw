@@ -243,7 +243,9 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
 
   assert(0 == utf8[utf8size]);
   /* note that prepare can return ok while a python level exception occurred that couldn't be reported */
-  res = sqlite3_prepare_v3(sc->db, utf8, utf8size + 1, options->prepare_flags, &vdbestatement, &tail);
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_prepare_v3(sc->db, utf8, utf8size + 1, options->prepare_flags, &vdbestatement, &tail);
+  Py_END_ALLOW_THREADS;
   if (res != SQLITE_OK || PyErr_Occurred())
   {
     SET_EXC(res, sc->db);
