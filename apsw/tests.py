@@ -368,6 +368,8 @@ class APSW(unittest.TestCase):
         except apsw.ConnectionClosedError:
             return
 
+        self.db.set_progress_handler(None)
+
         val=Exception("The database mutex is still held and should not be")
 
         def thread():
@@ -4745,7 +4747,7 @@ class APSW(unittest.TestCase):
         "Issue 15: Release GIL during calls to prepare"
         self.db.cursor().execute("create table foo(x)")
         self.db.cursor().execute("begin exclusive")
-        db2 = apsw.Connection(TESTFILEPREFIX + "testdb")
+        db2 = apsw.Connection(self.db.filename)
         db2.set_busy_timeout(30000)
         t = ThreadRunner(db2.cursor().execute, "select * from foo")
         t.start()
