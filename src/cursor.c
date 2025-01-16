@@ -949,7 +949,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  CURSOR_MUTEX_WAIT;
 
   res = resetcursor(self, /* force= */ 0);
   if (res != SQLITE_OK)
@@ -1052,7 +1052,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Cursor_executemany_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  CURSOR_MUTEX_WAIT;
   res = resetcursor(self, /* force= */ 0);
   if (res != SQLITE_OK)
     goto error_out;
@@ -1188,7 +1188,7 @@ APSWCursor_next(APSWCursor *self)
   int i;
 
   CHECK_CURSOR_CLOSED(NULL);
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  CURSOR_MUTEX_WAIT;
 
 again:
   if (self->status == C_BEGIN)
