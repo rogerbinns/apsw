@@ -17,6 +17,7 @@ import glob
 import inspect
 import io
 import itertools
+import functools
 import json
 import logging
 import math
@@ -369,8 +370,10 @@ class APSW(unittest.TestCase):
             return
 
         self.db.set_progress_handler(None)
+        self.db.exec_trace = None
+        self.db.row_trace = None
 
-        val=Exception("The database mutex is still held and should not be")
+        val = Exception("The database mutex is still held and should not be")
 
         def thread():
             nonlocal val
@@ -5345,9 +5348,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, apsw.sleep, 2_500_000_000)
         self.assertRaises(TypeError, apsw.sleep, "2_500_000_000")
 
-    def testPysqliteRecursiveIssue(self):
-        "Check an issue that affected pysqlite"
-        # https://code.google.com/p/pysqlite/source/detail?r=260ee266d6686e0f87b0547c36b68a911e6c6cdb
+    def testRecursiveCursor(self):
+        "Check using a cursor recursively"
+
         cur = self.db.cursor()
         cur.execute("create table a(x); create table b(y);")
 
@@ -5356,7 +5359,67 @@ class APSW(unittest.TestCase):
             cur.execute("insert into a values(?)", (1,))
             yield (2,)
 
+        def func(n):
+            nonlocal cur
+            if n == 0:
+                next(cur)
+            elif n == 1:
+                cur.execute("select 3")
+            elif n == 2:
+                cur.executemany("select ?", ((1,), (2,)))
+            elif n == 3:
+                cur.close()
+            elif n == 4:
+                cur.close(True)
+
+            raise Exception("unreachable")
+
+        self.db.create_scalar_function("func", func)
+
+        for i in range(5):
+            self.assertRaises(apsw.ThreadingViolationError, cur.execute, "select func(?)", (i,))
+
         self.assertRaises(apsw.ThreadingViolationError, cur.executemany, "insert into b values(?)", foo())
+
+        for i in range(0, 5):
+
+            def t(n, *args):
+                func(n)
+                1 / 0
+
+            reached = False
+            cur = self.db.cursor()
+            cur.exec_trace = functools.partial(t, i)
+            with contextlib.suppress(apsw.ThreadingViolationError):
+                cur.execute("select 3; select 4").fetchall()
+                reached = True
+            self.assertFalse(reached)
+            cur.exec_trace = None
+
+            cur = self.db.cursor()
+            cur.row_trace = functools.partial(t, i)
+            with contextlib.suppress(apsw.ThreadingViolationError):
+                cur.execute("select 3; select 4").fetchall()
+                reached = True
+            self.assertFalse(reached)
+            cur.row_trace = None
+
+            cur = self.db.cursor()
+            self.db.exec_trace = functools.partial(t, i)
+            with contextlib.suppress(apsw.ThreadingViolationError):
+                cur.execute("select 3;select 4").fetchall()
+                reached = True
+            self.assertFalse(reached)
+            self.db.exec_trace = None
+
+            cur = self.db.cursor()
+            self.db.row_trace = functools.partial(t, i)
+            with contextlib.suppress(apsw.ThreadingViolationError):
+                cur.execute("select 3; select 4").fetchall()
+                reached = True
+            self.assertFalse(reached)
+            self.db.row_trace = None
+
 
     def testWriteUnraisable(self):
         "Verify writeunraisable replacement function"

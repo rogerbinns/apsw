@@ -62,14 +62,6 @@ struct APSWCursor
 
   struct APSWStatement *statement; /* statement we are currently using */
 
-  /* what state we are in */
-  enum
-  {
-    C_BEGIN,
-    C_ROW,
-    C_DONE
-  } status;
-
   /* bindings for query */
   PyObject *bindings;        /* dict or sequence */
   Py_ssize_t bindingsoffset; /* for sequence tracks how far along we are when dealing with multiple statements */
@@ -88,7 +80,17 @@ struct APSWCursor
 
   PyObject *description_cache[3];
 
+  int in_query;
+
   int init_was_called;
+
+  /* what state we are in */
+  enum
+  {
+    C_BEGIN,
+    C_ROW,
+    C_DONE
+  } status;
 };
 
 typedef struct APSWCursor APSWCursor;
@@ -103,6 +105,20 @@ static PyObject *collections_abc_Mapping;
 #define ROWTRACE (self->rowtrace ? self->rowtrace : self->connection->rowtrace)
 
 #define EXECTRACE (self->exectrace ? self->exectrace : self->connection->exectrace)
+
+/* prevent recursive use of the cursor - eg a callback function or
+   tracer executing new SQL while the call stack above is in a
+   sqlite3_step*/
+#define IN_QUERY_CHECK                                                                                                 \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (self->in_query)                                                                                                \
+    {                                                                                                                  \
+      PyErr_Format(ExcThreadingViolation, "Re-using a cursor inside a query by that query is not allowed");            \
+      sqlite3_mutex_leave(self->connection->dbmutex);                                                                  \
+      return NULL;                                                                                                     \
+    }                                                                                                                  \
+  } while (0)
 
 /* Do finalization and free resources.  Returns the SQLITE error code.  If force is 2 then don't raise any exceptions */
 static int
@@ -164,6 +180,7 @@ resetcursor(APSWCursor *self, int force)
   Py_CLEAR(self->emoriginalquery);
 
   self->status = C_DONE;
+  self->in_query = 0;
 
   if (PyErr_Occurred())
   {
@@ -230,6 +247,8 @@ APSWCursor_dealloc(APSWCursor *self)
      clear the current exception */
   PY_ERR_FETCH(exc_save);
 
+  assert(!self->in_query);
+
   PyObject_GC_UnTrack(self);
   APSW_CLEAR_WEAKREFS;
 
@@ -266,6 +285,7 @@ APSWCursor_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->description_cache[1] = 0;
     self->description_cache[2] = 0;
     self->init_was_called = 0;
+    self->in_query = 0;
   }
 
   return (PyObject *)self;
@@ -950,6 +970,8 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
   }
 
   CURSOR_MUTEX_WAIT;
+  CHECK_CURSOR_CLOSED(NULL);
+  IN_QUERY_CHECK;
 
   res = resetcursor(self, /* force= */ 0);
   if (res != SQLITE_OK)
@@ -993,13 +1015,18 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
     goto error_out;
   if (EXECTRACE)
   {
+    self->in_query = 1;
     if (APSWCursor_do_exec_trace(self, savedbindingsoffset))
+    {
+      self->in_query = 0;
       goto error_out;
+    }
   }
 
   self->status = C_BEGIN;
-
+  self->in_query = 1;
   retval = APSWCursor_step(self);
+  self->in_query = 0;
   if (!retval)
     goto error_out;
 
@@ -1053,6 +1080,9 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
   }
 
   CURSOR_MUTEX_WAIT;
+  CHECK_CURSOR_CLOSED(NULL);
+  IN_QUERY_CHECK;
+
   res = resetcursor(self, /* force= */ 0);
   if (res != SQLITE_OK)
     goto error_out;
@@ -1118,8 +1148,9 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
   }
 
   self->status = C_BEGIN;
-
+  self->in_query = 1;
   retval = APSWCursor_step(self);
+  self->in_query = 0;
   if (!retval)
     goto error_out;
 
@@ -1167,6 +1198,7 @@ APSWCursor_close(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_EPILOG(NULL, Cursor_close_USAGE, );
   }
   DBMUTEX_ENSURE(self->connection->dbmutex);
+  IN_QUERY_CHECK;
   APSWCursor_close_internal(self, !!force);
 
   if (PyErr_Occurred())
@@ -1189,11 +1221,18 @@ APSWCursor_next(APSWCursor *self)
 
   CHECK_CURSOR_CLOSED(NULL);
   CURSOR_MUTEX_WAIT;
+  CHECK_CURSOR_CLOSED(NULL);
+  IN_QUERY_CHECK;
 
 again:
   if (self->status == C_BEGIN)
-    if (!APSWCursor_step(self))
+  {
+    self->in_query = 1;
+    int step = !!APSWCursor_step(self);
+    self->in_query = 0;
+    if (!step)
       goto error;
+  }
 
   if (self->status == C_DONE)
   {
@@ -1221,7 +1260,9 @@ again:
   }
   if (ROWTRACE)
   {
+    self->in_query = 1;
     PyObject *r2 = APSWCursor_do_row_trace(self, retval);
+    self->in_query = 0;
     Py_CLEAR(retval);
     if (!r2)
       goto error;
@@ -1733,7 +1774,9 @@ APSWCursor_get(APSWCursor *self)
         goto error;
       Py_CLEAR(the_row);
     }
+    self->in_query = 1;
     step = APSWCursor_step(self);
+    self->in_query = 0;
     if (step == NULL)
       goto error;
   } while (self->status != C_DONE);
