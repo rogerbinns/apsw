@@ -11411,8 +11411,12 @@ def setup():
     if sys.version_info < (3, 10):
         del APSW.testIssue425
 
+    # Fork checker is becoming less usefull on newer Pythons because
+    # multiprocessing really doesn't want you to use fork and does
+    # alternate methods instead.  We also run sanitizers on most
+    # recent Python which makes things even more convoluted.
     forkcheck = False
-    if hasattr(apsw, "fork_checker") and hasattr(os, "fork") and platform.python_implementation() != "PyPy":
+    if hasattr(apsw, "fork_checker") and hasattr(os, "fork") and platform.python_implementation() != "PyPy" and sys.version_info < (3, 13):
         try:
             import multiprocessing
 
