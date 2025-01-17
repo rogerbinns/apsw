@@ -564,13 +564,10 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     AddTraceBackHere(__FILE__, __LINE__, "Cursor.dobinding", "{s: i, s: O}", "number", arg, "value", obj);
     return -1;
   }
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->connection->db);
+  SET_EXC(res, self->connection->db);
+  if(PyErr_Occurred())
     return -1;
-  }
-  if (PyErr_Occurred())
-    return -1;
+
   return 0;
 }
 

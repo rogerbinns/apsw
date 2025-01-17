@@ -315,7 +315,7 @@ enable_shared_cache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
   int res = sqlite3_enable_shared_cache(enable);
   SET_EXC(res, NULL);
 
-  if (res != SQLITE_OK)
+  if (PyErr_Occurred())
     return NULL;
 
   Py_RETURN_NONE;
@@ -402,12 +402,9 @@ initialize(void)
   int res;
 
   res = sqlite3_initialize();
-
-  if (res)
-  {
-    SET_EXC(res, NULL);
+  SET_EXC(res, NULL);
+  if (PyErr_Occurred())
     return NULL;
-  }
 
   Py_RETURN_NONE;
 }
@@ -434,7 +431,7 @@ sqliteshutdown(void)
   res = sqlite3_shutdown();
   SET_EXC(res, NULL);
 
-  if (res != SQLITE_OK)
+  if (PyErr_Occurred())
     return NULL;
 
 #ifdef APSW_FORK_CHECKER
@@ -526,11 +523,10 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
       return NULL;
     assert(opt == optdup);
     res = sqlite3_config(opt, &outval);
-    if (res)
-    {
-      SET_EXC(res, NULL);
+    SET_EXC(res, NULL);
+    if (PyErr_Occurred())
       return NULL;
-    }
+
     return PyLong_FromLong(outval);
   }
 
@@ -599,8 +595,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
   }
 
   SET_EXC(res, NULL);
-
-  if (res != SQLITE_OK)
+  if(PyErr_Occurred())
     return NULL;
 
   Py_RETURN_NONE;
@@ -785,7 +780,7 @@ status(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_na
   res = sqlite3_status64(op, &current, &highwater, reset);
   SET_EXC(res, NULL);
 
-  if (res != SQLITE_OK)
+  if (PyErr_Occurred())
     return NULL;
 
   return Py_BuildValue("(LL)", current, highwater);
@@ -1684,7 +1679,7 @@ apsw_set_default_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py
     return PyErr_Format(PyExc_ValueError, "vfs named \"%s\" not known", name);
   res = sqlite3_vfs_register(vfs, 1);
   SET_EXC(res, NULL);
-  if (res)
+  if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
 }
@@ -1715,7 +1710,7 @@ apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_
     return PyErr_Format(PyExc_ValueError, "vfs named \"%s\" not known", name);
   res = sqlite3_vfs_unregister(vfs);
   SET_EXC(res, NULL);
-  if (res)
+  if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
 }
