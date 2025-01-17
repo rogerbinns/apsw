@@ -671,16 +671,6 @@
     sqlite3_stmt_explain((one), (two));                                       \
 })
 
-#define sqlite3_stmt_isexplain(one) ({                                        \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(sqlite3_db_handle((one)))));  \
-    sqlite3_stmt_isexplain((one));                                            \
-})
-
-#define sqlite3_stmt_readonly(one) ({                                         \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(sqlite3_db_handle((one)))));  \
-    sqlite3_stmt_readonly((one));                                             \
-})
-
 #undef sqlite3_stmt_scanstatus
 #define sqlite3_stmt_scanstatus *not used*
 

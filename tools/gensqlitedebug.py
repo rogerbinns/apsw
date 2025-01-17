@@ -115,6 +115,7 @@ functions_global = (
     "sqlite3_last_insert_rowid",
     "sqlite3_limit",
     "sqlite3_total_changes64",
+    "sqlite3_stmt_(isexplain|readonly)",
     # can't get to db from these
     "sqlite3_filename_(database|journal|wal)",
     "sqlite3_uri_.*",
@@ -159,7 +160,6 @@ functions_arg = (
     ("sqlite3_sql", 1, "sqlite3_db_handle((one))"),
     ("sqlite3_step", 1, "sqlite3_db_handle((one))"),
     ("sqlite3_stmt_explain", 2, "sqlite3_db_handle((one))"),
-    ("sqlite3_stmt_(isexplain|readonly)", 1, "sqlite3_db_handle((one))"),
     ("sqlite3_stmt_status", 3, "sqlite3_db_handle((one))"),
     # returning values
     ("sqlite3_result_(error_nomem|null)", 1, "sqlite3_context_db_handle((one))"),
