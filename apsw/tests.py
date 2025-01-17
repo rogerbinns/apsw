@@ -10960,6 +10960,7 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
 class ZZFaultInjection(unittest.TestCase):
     setUp = APSW.setUp
     tearDown = APSW.tearDown
+    check_db_mutex = APSW.check_db_mutex
     assertRaisesUnraisable = APSW.assertRaisesUnraisable
     baseAssertRaisesUnraisable = APSW.baseAssertRaisesUnraisable
 
