@@ -312,8 +312,10 @@ enable_shared_cache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
 #ifdef SQLITE_OMIT_SHARED_CACHE
   return PyErr_Format(PyExc_Exception, "sqlite3_enable_shared_cache has been omitted");
 #else
+  DBMUTEX_ENSURE(self->dbmutex);
   int res = sqlite3_enable_shared_cache(enable);
   SET_EXC(res, NULL);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (PyErr_Occurred())
     return NULL;

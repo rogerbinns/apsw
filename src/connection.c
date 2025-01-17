@@ -829,7 +829,7 @@ Connection_set_busy_timeout(Connection *self, PyObject *const *fast_args, Py_ssi
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
 
-  if (res != SQLITE_OK)
+  if (PyErr_Occurred())
     return NULL;
 
   /* free any explicit busyhandler we may have had */
@@ -1333,6 +1333,9 @@ finally:
 static PyObject *
 Connection_update_trace_v2(Connection *self)
 {
+  /* callers already do this, but what the heck */
+  CHECK_CLOSED(self, NULL);
+
   unsigned mask = 0;
   for (unsigned i = 0; i < self->tracehooks_count; i++)
     mask |= self->tracehooks[i].mask;
@@ -1886,6 +1889,8 @@ finally:
 static void *
 Connection_internal_set_authorizer(Connection *self, PyObject *callable)
 {
+  CHECK_CLOSED(self, NULL);
+
   int res = SQLITE_OK;
 
   assert(!Py_IsNone(callable));
@@ -1896,14 +1901,12 @@ Connection_internal_set_authorizer(Connection *self, PyObject *callable)
   sqlite3_mutex_leave(self->dbmutex);
   if (PyErr_Occurred())
     return NULL;
-  }
 
   Py_CLEAR(self->authorizer);
   if (callable)
     self->authorizer = Py_NewRef(callable);
 
   return Py_None;
-  ;
 }
 
 /** .. method:: set_authorizer(callable: Optional[Authorizer]) -> None
@@ -2267,9 +2270,12 @@ Connection_serialize(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
   case so this code can't do anything about errors.  See commit
   history for prior attempt */
 
+  DBMUTEX_ENSURE(self->dbmutex);
   serialization = sqlite3_serialize(self->db, name, &size, 0);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  if (serialization)
+  /* pyerror could have been raised in a vfs */
+  if (serialization && !PyErr_Occurred())
     pyres = PyBytes_FromStringAndSize((char *)serialization, size);
 
   sqlite3_free(serialization);
@@ -2335,10 +2341,12 @@ Connection_deserialize(Connection *self, PyObject *const *fast_args, Py_ssize_t 
     PyErr_NoMemory();
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   if (res == SQLITE_OK)
     res = sqlite3_deserialize(self->db, name, (unsigned char *)newcontents, len, len,
                               SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE);
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
   /* sqlite frees the buffer on error due to freeonclose flag */
   if (PyErr_Occurred())
@@ -3730,9 +3738,10 @@ Connection_wal_autocheckpoint(Connection *self, PyObject *const *fast_args, Py_s
     ARG_EPILOG(NULL, Connection_wal_autocheckpoint_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_wal_autocheckpoint(self->db, n);
-
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (PyErr_Occurred())
     return NULL;
@@ -3772,9 +3781,11 @@ Connection_wal_checkpoint(Connection *self, PyObject *const *fast_args, Py_ssize
     ARG_OPTIONAL ARG_int(mode);
     ARG_EPILOG(NULL, Connection_wal_checkpoint_USAGE, );
   }
-  res = sqlite3_wal_checkpoint_v2(self->db, dbname, mode, &nLog, &nCkpt);
 
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_wal_checkpoint_v2(self->db, dbname, mode, &nLog, &nCkpt);
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (!PyErr_Occurred())
     return Py_BuildValue("ii", nLog, nCkpt);
@@ -3955,8 +3966,10 @@ Connection_overload_function(Connection *self, PyObject *const *fast_args, Py_ss
     ARG_EPILOG(NULL, Connection_overload_function_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_overload_function(self->db, name, nargs);
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (PyErr_Occurred())
     return NULL;
@@ -4457,7 +4470,10 @@ Connection_txn_state(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
     ARG_OPTIONAL ARG_optional_str(schema);
     ARG_EPILOG(NULL, Connection_txn_state_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_txn_state(self->db, schema);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (res >= 0)
     return PyLong_FromLong(res);
@@ -5399,10 +5415,6 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
       return NULL;
   }
 
-  fts5_api *api = Connection_fts5_api(self);
-  if (!api)
-    return NULL;
-
   Py_ssize_t argc = args ? PyList_GET_SIZE(args) : 0;
   /* arbitrary but reasonable maximum consuming 1kb of stack */
   if (argc > 128)
@@ -5410,6 +5422,8 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
     PyErr_Format(PyExc_ValueError, "Too many args (%zd)", argc);
     return NULL;
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
 
   /* vla can't be size zero */
   VLA(argv, argc + 1, const char *);
@@ -5424,6 +5438,10 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
      in returned object and don't want that to be modifyable */
   args_as_tuple = PySequence_Tuple(args ? args : tmptuple);
   if (!args_as_tuple)
+    goto error;
+
+  fts5_api *api = Connection_fts5_api(self);
+  if (!api)
     goto error;
 
   void *userdata = NULL;
@@ -5467,10 +5485,12 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   }
   Py_XDECREF(tmptuple);
   Py_DECREF(args_as_tuple);
+  sqlite3_mutex_leave(self->dbmutex);
   return (PyObject *)pytok;
 error:
   Py_XDECREF(tmptuple);
   Py_XDECREF(args_as_tuple);
+  sqlite3_mutex_leave(self->dbmutex);
   return NULL;
 }
 
@@ -5503,7 +5523,9 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
     ARG_EPILOG(NULL, Connection_register_fts5_tokenizer_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   fts5_api *api = Connection_fts5_api(self);
+  sqlite3_mutex_leave(self->dbmutex);
   if (!api)
     return NULL;
 
@@ -5599,33 +5621,39 @@ Connection_register_fts5_function(Connection *self, PyObject *const *fast_args, 
     ARG_EPILOG(NULL, Connection_register_fts5_function_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   fts5_api *api = Connection_fts5_api(self);
-  if (!api)
-    return NULL;
 
-  struct fts5aux_cbinfo *cbinfo = PyMem_Calloc(1, sizeof(struct fts5aux_cbinfo));
-  if (!cbinfo)
-    return NULL;
-  cbinfo->callback = Py_NewRef(function);
-  cbinfo->name = apsw_strdup(name);
+  if (api)
+  {
+    struct fts5aux_cbinfo *cbinfo = PyMem_Calloc(1, sizeof(struct fts5aux_cbinfo));
+    if (!cbinfo)
+      goto finally;
+    cbinfo->callback = Py_NewRef(function);
+    cbinfo->name = apsw_strdup(name);
 
-  int rc = SQLITE_NOMEM;
-  if (cbinfo->name)
-  {
-    APSW_FAULT(FTS5FunctionRegister,
-               rc = api->xCreateFunction(api, name, cbinfo, apsw_fts5_extension_function,
-                                         apsw_fts5_extension_function_destroy),
-               rc = SQLITE_BUSY);
+    int rc = SQLITE_NOMEM;
+    if (cbinfo->name)
+    {
+      APSW_FAULT(FTS5FunctionRegister,
+                 rc = api->xCreateFunction(api, name, cbinfo, apsw_fts5_extension_function,
+                                           apsw_fts5_extension_function_destroy),
+                 rc = SQLITE_BUSY);
+    }
+    if (rc != SQLITE_OK)
+    {
+      if (!PyErr_Occurred())
+        PyErr_Format(get_exception_for_code(rc), "Registering function named \"%s\"", name);
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xCreateFunction", "{s:s,s:O}", "name", name, "function",
+                       function);
+      apsw_fts5_extension_function_destroy(cbinfo);
+    }
   }
-  if (rc != SQLITE_OK)
-  {
-    if (!PyErr_Occurred())
-      PyErr_Format(get_exception_for_code(rc), "Registering function named \"%s\"", name);
-    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xCreateFunction", "{s:s,s:O}", "name", name, "function",
-                     function);
-    apsw_fts5_extension_function_destroy(cbinfo);
+finally:
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
     return NULL;
-  }
 
   Py_RETURN_NONE;
 }
