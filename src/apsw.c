@@ -494,7 +494,7 @@ apsw_logger(void *arg, int errcode, const char *message)
 }
 
 static PyObject *
-config(PyObject *Py_UNUSED(self), PyObject *args)
+apsw_config(PyObject *Py_UNUSED(self), PyObject *args)
 {
   int res, optdup;
   int opt;
@@ -1809,7 +1809,7 @@ static PyMethodDef module_methods[] = {
   { "initialize", (PyCFunction)initialize, METH_NOARGS, Apsw_initialize_DOC },
   { "shutdown", (PyCFunction)sqliteshutdown, METH_NOARGS, Apsw_shutdown_DOC },
   { "format_sql_value", (PyCFunction)formatsqlvalue, METH_O, Apsw_format_sql_value_DOC },
-  { "config", (PyCFunction)config, METH_VARARGS, Apsw_config_DOC },
+  { "config", (PyCFunction)apsw_config, METH_VARARGS, Apsw_config_DOC },
   { "log", (PyCFunction)apsw_log, METH_FASTCALL | METH_KEYWORDS, Apsw_log_DOC },
   { "memory_used", (PyCFunction)memory_used, METH_NOARGS, Apsw_memory_used_DOC },
   { "memory_high_water", (PyCFunction)memory_high_water, METH_FASTCALL | METH_KEYWORDS, Apsw_memory_high_water_DOC },
