@@ -917,8 +917,11 @@ class Tester:
                         sys.modules["apsw"].shutdown()
                     else:
                         exercise(self.example_code, self.expect_exception)
-                        if hasattr(apsw, "leak_check"):
-                            apsw.leak_check()
+                        if "apsw" in sys.modules and hasattr(sys.modules["apsw"], "leak_check"):
+                            print("leak check")
+                            res = getattr(sys.modules["apsw"], "leak_check")()
+                            if res:
+                                input("Leaks found, return to continue> ")
                         self.abort = 0
                         if not use_runplan and not self.faulted_this_round:
                             use_runplan = True
