@@ -47,18 +47,6 @@
     }                                                                                                                  \
   } while (0)
 
-/* busy wait until mutex can be acquired for cursor - this serializes
-   access versus raising an exception.  testIssue31 is example */
-#define CURSOR_MUTEX_WAIT                                                                                              \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    while (SQLITE_OK != sqlite3_mutex_try(self->connection->dbmutex))                                                  \
-    {                                                                                                                  \
-      Py_BEGIN_ALLOW_THREADS Py_END_ALLOW_THREADS;                                                                     \
-      CHECK_CURSOR_CLOSED(NULL);                                                                                       \
-    }                                                                                                                  \
-  } while (0)
-
 /*
    The default Python PyErr_WriteUnraisable is almost useless, and barely used
    by CPython.  It gives the developer no clue whatsoever where in

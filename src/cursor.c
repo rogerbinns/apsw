@@ -775,8 +775,10 @@ APSWCursor_step(APSWCursor *self)
   for (;;)
   {
     assert(!PyErr_Occurred());
-    Py_BEGIN_ALLOW_THREADS res
-        = (self->statement->vdbestatement) ? (sqlite3_step(self->statement->vdbestatement)) : (SQLITE_DONE);
+    Py_BEGIN_ALLOW_THREADS
+    {
+      res = (self->statement->vdbestatement) ? (sqlite3_step(self->statement->vdbestatement)) : (SQLITE_DONE);
+    }
     Py_END_ALLOW_THREADS;
 
     switch (res & 0xff)
@@ -966,8 +968,7 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
-  CURSOR_MUTEX_WAIT;
-  CHECK_CURSOR_CLOSED(NULL);
+  DBMUTEX_ENSURE(self->connection->dbmutex);
   IN_QUERY_CHECK;
 
   res = resetcursor(self, /* force= */ 0);
@@ -1076,8 +1077,7 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Cursor_executemany_USAGE, );
   }
 
-  CURSOR_MUTEX_WAIT;
-  CHECK_CURSOR_CLOSED(NULL);
+  DBMUTEX_ENSURE(self->connection->dbmutex);
   IN_QUERY_CHECK;
 
   res = resetcursor(self, /* force= */ 0);
@@ -1217,8 +1217,7 @@ APSWCursor_next(APSWCursor *self)
   int i;
 
   CHECK_CURSOR_CLOSED(NULL);
-  CURSOR_MUTEX_WAIT;
-  CHECK_CURSOR_CLOSED(NULL);
+  DBMUTEX_ENSURE(self->connection->dbmutex);
   IN_QUERY_CHECK;
 
 again:
