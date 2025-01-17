@@ -1908,9 +1908,6 @@ PyInit_apsw(void)
   if (init_exceptions(m))
     goto fail;
 
-  if (init_apsw_strings())
-    goto fail;
-
 /* we can't avoid leaks with failures until multi-phase initialisation is done */
 #define ADD(name, item)                                                                                                \
   do                                                                                                                   \
@@ -2047,10 +2044,13 @@ modules etc. For example::
     PyObject *mod = PyImport_ImportModule("collections.abc");
     if (mod)
     {
-      collections_abc_Mapping = PyObject_GetAttr(mod, apst.Mapping);
+      collections_abc_Mapping = PyObject_GetAttrString(mod, "Mapping");
       Py_DECREF(mod);
     }
   }
+
+  if (init_apsw_strings())
+    goto fail;
 
   if (!PyErr_Occurred())
   {

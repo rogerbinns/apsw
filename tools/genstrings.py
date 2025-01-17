@@ -34,7 +34,7 @@ xSetSystemCall xSleep xSync xTruncate xUnlock xWrite
 # other
 names += """
 close connection_hooks cursor error_offset excepthook execute
-executemany extendedresult get Mapping result add_note
+executemany extendedresult get result add_note
 can_cache
 
 step final value inverse
@@ -89,8 +89,8 @@ init_apsw_strings()
 {""")
 print("    if (", end="")
 for i, n in enumerate(names):
-    print(f'{ " || " if i else "" }(0 == (apst.{ mangle(n) } = PyUnicode_FromString("{ n }")))', end="")
-print(""")
+    print(f'{ "        || " if i else "" }(!apst.{ mangle(n) } && 0 == (apst.{ mangle(n) } = PyUnicode_FromString("{ n }")))')
+print("""    )
     {
         fini_apsw_strings();
         return -1;
