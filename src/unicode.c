@@ -1857,11 +1857,10 @@ grapheme_substr(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       PyObject *o = PyLong_FromSsize_t(text_offset);
       if (!o)
         goto error;
-      if (PyList_Append(offsets, o) != 0)
-      {
-        Py_DECREF(o);
+      int added = PyList_Append(offsets, o);
+      Py_DECREF(o);
+      if (added != 0)
         goto error;
-      }
     }
     if (start == count)
       start_offset = text_offset;
