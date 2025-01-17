@@ -4822,45 +4822,64 @@ class APSW(unittest.TestCase):
 
         self.db.create_scalar_function("timesten", lambda x: x * 10)
 
-        def dostuff(n):
+        did_work = {}
+        locked = {}
+
+        def dostuff(end):
             # spend n seconds doing stuff to the database
-            c = self.db.cursor()
-            b4 = time.time()
-            while time.time() - b4 < n:
+            myid = threading.get_ident()
+            did_work[myid] = 0
+            locked[myid] = 0
+            while time.time() < end:
                 i = random.choice(randomnumbers)
-                if i % 5 == 0:
-                    sql = "select timesten(x) from foo where x=%d order by x" % (i,)
-                    c.execute(sql)
-                elif i % 5 == 1:
-                    sql = "select timesten(x) from foo where x=? order by x"
-                    called = 0
-                    for row in self.db.cursor().execute(sql, (i,)):
-                        called += 1
-                        self.assertEqual(row[0], 10 * i)
-                    # same value could be present multiple times
-                    self.assertTrue(called >= 1)
-                elif i % 5 == 2:
-                    try:
-                        self.db.cursor().execute("deliberate syntax error")
-                    except apsw.SQLError:
-                        assert "deliberate" in str(sys.exc_info()[1])
-                elif i % 5 == 3:
-                    try:
-                        self.db.cursor().execute("bogus syntax error")
-                    except apsw.SQLError:
-                        assert "bogus" in str(sys.exc_info()[1])
-                else:
-                    sql = "select timesten(x) from foo where x=? order by x"
-                    self.db.cursor().execute(sql, (i,))
+                try:
+                    if i % 5 == 0:
+                        sql = "select timesten(x) from foo where x=%d order by x" % (i,)
+                        self.db.execute(sql)
+                    elif i % 5 == 1:
+                        sql = "select timesten(x) from foo where x=? order by x"
+                        called = 0
+                        for row in self.db.cursor().execute(sql, (i,)):
+                            called += 1
+                            self.assertEqual(row[0], 10 * i)
+                        # same value could be present multiple times
+                        self.assertTrue(called >= 1)
+                    elif i % 5 == 2:
+                        try:
+                            self.db.cursor().execute("deliberate syntax error")
+                        except apsw.SQLError:
+                            assert "deliberate" in str(sys.exc_info()[1])
+                    elif i % 5 == 3:
+                        try:
+                            self.db.cursor().execute("bogus syntax error")
+                        except apsw.SQLError:
+                            assert "bogus" in str(sys.exc_info()[1])
+                    else:
+                        sql = "select timesten(x) from foo where x=? order by x"
+                        self.db.cursor().execute(sql, (i,))
+                except apsw.ThreadingViolationError as exc:
+                    locked[myid] += 1
+                    continue
+                did_work[myid] += 1
+
+                # This is here to release the GIL.  Without it only
+                # this thread does work because the others are
+                # blocked by the db mutex getting the ThreadingViolation
+                # while this one is running.
+                time.sleep(0.01)
 
         runtime = float(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 15
-        threads = [ThreadRunner(dostuff, runtime) for _ in range(20)]
+        end = time.time() + runtime
+        threads = [threading.Thread(target=dostuff, args=(end,)) for _ in range(20)]
         for t in threads:
             t.start()
 
         for t in threads:
-            # if there were any errors then exceptions would be raised here
-            t.go()
+            t.join()
+
+        if runtime >= 15:
+            self.assertTrue(all(v > 0 for v in did_work.values()), f"{did_work=}")
+            self.assertTrue(all(v > 0 for v in locked.values()), f"{locked=}")
 
     def testIssue50(self):
         "Issue 50: Check Blob.read return value on eof"
