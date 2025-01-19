@@ -483,19 +483,31 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
      Don't do that!  We also have to manage the error message thread
      safety manually as self->db is null on entry. */
   vfsused = sqlite3_vfs_find(vfs);
-  Py_BEGIN_ALLOW_THREADS res = sqlite3_open_v2(filename, &self->db, flags, vfs);
-  /* get detailed error codes */
-  sqlite3_extended_result_codes(self->db, 1);
+  Py_BEGIN_ALLOW_THREADS
+  {
+    /* Real SQLite always creates a self->db so you can get the error
+       code etc.  Fault injection leaves it NULL hence the checks for
+       self->db */
+    res = sqlite3_open_v2(filename, &self->db, flags, vfs);
+    /* get detailed error codes */
+    if (self->db)
+      sqlite3_extended_result_codes(self->db, 1);
+  }
   Py_END_ALLOW_THREADS;
 
   if (res != SQLITE_OK && !PyErr_Occurred())
   {
-    /* we have to hold the dbmutex around this */
-    int acquired = sqlite3_mutex_try(sqlite3_db_mutex(self->db));
-    /* there is no reason it could fail */
-    assert(acquired == SQLITE_OK);
+    if (self->db)
+    {
+      /* we have to hold the dbmutex around this */
+      int acquired = sqlite3_mutex_try(sqlite3_db_mutex(self->db));
+      /* there is no reason it could fail */
+      assert(acquired == SQLITE_OK);
+      (void)acquired;
+    }
     make_exception(res, self->db);
-    sqlite3_mutex_leave(sqlite3_db_mutex(self->db));
+    if (self->db)
+      sqlite3_mutex_leave(sqlite3_db_mutex(self->db));
   }
 
   /* normally sqlite will have an error code but some internal vfs
@@ -605,7 +617,7 @@ Connection_blob_open(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
   long long rowid;
   int writeable = 0;
   int res;
-  PyObject *weakref;
+  PyObject *weakref = NULL;
 
   CHECK_CLOSED(self, NULL);
 
@@ -631,21 +643,21 @@ Connection_blob_open(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
 
   apswblob = (struct APSWBlob *)_PyObject_New(&APSWBlobType);
   if (!apswblob)
-  {
-    sqlite3_blob_close(blob);
-    return NULL;
-  }
+    goto error;
 
   APSWBlob_init(apswblob, self, blob);
+  blob = NULL;
   weakref = PyWeakref_NewRef((PyObject *)apswblob, NULL);
   if (!weakref)
-    return NULL;
-  res = PyList_Append(self->dependents, weakref);
-  Py_DECREF(weakref);
-  if (res)
-    /* ::TODO:: shouldn't this decref apswblob too? and return NULL above */
-    return NULL;
-  return (PyObject *)apswblob;
+    goto error;
+  if (0 == PyList_Append(self->dependents, weakref))
+    return (PyObject *)apswblob;
+error:
+  if (blob)
+    sqlite3_blob_close(blob);
+  Py_XDECREF(weakref);
+  Py_XDECREF(apswblob);
+  return NULL;
 }
 
 /** .. method:: backup(databasename: str, sourceconnection: Connection, sourcedatabasename: str)  -> Backup
@@ -3244,7 +3256,10 @@ Connection_create_window_function(Connection *self, PyObject *const *fast_args, 
   sqlite3_mutex_leave(self->dbmutex);
 finally:
   if (PyErr_Occurred())
+  {
+    apsw_free_func(cbinfo);
     return NULL;
+  }
   Py_RETURN_NONE;
 }
 
@@ -5394,6 +5409,7 @@ static PyObject *
 Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *name = NULL;
+  const char *name_dup = NULL;
   PyObject *args = NULL, *args_as_tuple = NULL, *tmptuple = NULL;
 
   CHECK_CLOSED(self, NULL);
@@ -5456,7 +5472,7 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   }
 
   /* no objects/memory has been allocated yet */
-  const char *name_dup = apsw_strdup(name);
+  name_dup = apsw_strdup(name);
   if (!name_dup)
     goto error;
 
@@ -5466,8 +5482,9 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
 
   /* fill in fields */
   pytok->db = self;
-  Py_INCREF(pytok->db);
+  Py_INCREF(self);
   pytok->name = name_dup;
+  name_dup = NULL;
   pytok->args = Py_NewRef(args_as_tuple);
   pytok->xDelete = tokenizer_class->xDelete;
   pytok->xTokenize = tokenizer_class->xTokenize;
@@ -5490,6 +5507,7 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
 error:
   Py_XDECREF(tmptuple);
   Py_XDECREF(args_as_tuple);
+  PyMem_Free((void *)name_dup);
   sqlite3_mutex_leave(self->dbmutex);
   return NULL;
 }

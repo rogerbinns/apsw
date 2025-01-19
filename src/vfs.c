@@ -722,7 +722,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
   sqlite3_file *file = NULL;
   int flagsout = 0;
   int flagsin = 0;
-  int res;
+  int res = SQLITE_ERROR;
 
   PyObject *name = NULL, *flags = NULL, *result = NULL;
   APSWVFSFile *apswfile = NULL;
@@ -772,13 +772,10 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
 
   MakeExistingException();
 
+  SET_EXC(res, NULL);
+
   if (PyErr_Occurred())
     goto finally;
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, NULL);
-    goto finally;
-  }
 
   PyList_SetItem(flags, 1, PyLong_FromLong(flagsout));
   if (PyErr_Occurred())
@@ -795,6 +792,8 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
   result = (PyObject *)apswfile;
 
 finally:
+  if(res == SQLITE_OK && file)
+    file->pMethods->xClose(file);
   if (file)
     PyMem_Free(file);
   if (free_filename)
@@ -2125,11 +2124,10 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwargs)
   if (!pyflagsout)
     goto finally;
 
-  if (-1 == PyList_SetItem(flags, 1, pyflagsout))
-  {
-    Py_DECREF(pyflagsout);
+  if (0 != PyList_SetItem(flags, 1, pyflagsout))
     goto finally;
-  }
+
+  pyflagsout = NULL;
 
   if (PyErr_Occurred())
     goto finally;
@@ -2149,6 +2147,8 @@ finally:
 
     PyMem_Free(file);
   }
+
+  Py_CLEAR(pyflagsout);
 
   assert((res == 0 && !PyErr_Occurred()) || (res != 0 && PyErr_Occurred()));
   return res;
@@ -2259,7 +2259,10 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fa
     while (amount && PyBytes_AS_STRING(buffy)[amount - 1] == 0)
       amount--;
     if (_PyBytes_Resize(&buffy, amount))
+    {
+      Py_DECREF(buffy);
       return NULL;
+    }
 
     return buffy;
   }
