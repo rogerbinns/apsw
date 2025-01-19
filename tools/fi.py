@@ -719,7 +719,7 @@ class Tester:
 
             # we use this to get fts5api and always claim it was because fts5
             # is not present
-            if fname in {"sqlite3_prepare", "sqlite3_bind_pointer"} and "fts.c" in key[1]:
+            if fname in {"sqlite3_prepare_v3", "sqlite3_bind_pointer"} and "fts.c" in key[1]:
                 self.expect_exception.append(apsw_attr("NoFTS5Error"))
                 return self.apsw_attr("SQLITE_ERROR")
 
