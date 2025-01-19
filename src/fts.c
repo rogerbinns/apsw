@@ -16,8 +16,6 @@ Connection_fts5_api(Connection *self)
 
   fts5_api *api = NULL;
 
-  /* ::TODO:: this properly  */
-  Py_BEGIN_ALLOW_THREADS;
   res = sqlite3_prepare_v3(self->db, "select fts5(?1)", -1, 0, &stmt, NULL);
   if (res == SQLITE_OK)
     res = sqlite3_bind_pointer(stmt, 1, &api, "fts5_api_ptr", NULL);
@@ -29,7 +27,6 @@ Connection_fts5_api(Connection *self)
   }
   if (stmt)
     sqlite3_finalize(stmt);
-  Py_END_ALLOW_THREADS;
 
   if (res == SQLITE_OK)
   {
