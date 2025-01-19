@@ -597,7 +597,7 @@ apsw_config(PyObject *Py_UNUSED(self), PyObject *args)
   }
 
   SET_EXC(res, NULL);
-  if(PyErr_Occurred())
+  if (PyErr_Occurred())
     return NULL;
 
   Py_RETURN_NONE;
@@ -1996,12 +1996,12 @@ PyInit_apsw(void)
     goto fail;
 
   /* undocumented sentinel to do no bindings */
-  apsw_cursor_null_bindings = PyObject_CallObject((PyObject *)&PyBaseObject_Type, NULL);
+  if (!apsw_cursor_null_bindings)
+    apsw_cursor_null_bindings = PyObject_CallObject((PyObject *)&PyBaseObject_Type, NULL);
   if (!apsw_cursor_null_bindings)
     goto fail;
 
-  /* give ownership to module intentionally */
-  if (PyModule_AddObject(m, "_null_bindings", apsw_cursor_null_bindings))
+  if (PyModule_AddObject(m, "_null_bindings", Py_NewRef(apsw_cursor_null_bindings)))
     goto fail;
 
 #ifdef APSW_FAULT_INJECT
