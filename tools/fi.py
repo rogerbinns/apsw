@@ -764,6 +764,8 @@ class Tester:
     def fault_inject_control(self, key):
         if testing_recursion and key[2] in {"apsw_write_unraisable", "apswvfs_excepthook"}:
             return self.Proceed
+        if key[2] == "apsw_leak_check":
+            return self.Proceed
         if self.runplan is not None:
             if not self.runplan:
                 return self.Proceed
@@ -920,11 +922,6 @@ class Tester:
                         sys.modules["apsw"].shutdown()
                     else:
                         exercise(self.example_code, self.expect_exception)
-                        if "apsw" in sys.modules and hasattr(sys.modules["apsw"], "leak_check"):
-                            print("leak check")
-                            res = getattr(sys.modules["apsw"], "leak_check")()
-                            if res:
-                                input("Leaks found, return to continue> ")
                         self.abort = 0
                         if not use_runplan and not self.faulted_this_round:
                             use_runplan = True
@@ -941,6 +938,11 @@ class Tester:
                         for c in sys.modules["apsw"].connections():
                             c.close()
                     gc.collect()
+                    if "apsw" in sys.modules and hasattr(sys.modules["apsw"], "leak_check"):
+                        res = getattr(sys.modules["apsw"], "leak_check")()
+                        if res:
+                            input("Leaks found, return to continue> ")
+
 
             self.verify_exception(self.faulted_this_round)
 
@@ -954,6 +956,10 @@ class Tester:
         print(f"Total faults: { len(self.has_faulted_ever) }")
 
         if self.to_fault:
+            if use_runplan:
+                print("Runplan\n")
+                print(self.runplan)
+                print()
             t = f"Failed to fault { len(self.to_fault) }"
             print("=" * len(t))
             print(t)
