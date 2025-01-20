@@ -336,7 +336,35 @@ Set :attr:`Connection.cursor_factory` to any callable, which will be
 called with the connection as the only parameter, and return the
 object to use as a cursor.
 
-.. index:: pair: Memory database; memdb
+.. index::
+  single: URI
+  single: SQLITE_CONFIG_URI
+
+URI names
+=========
+
+SQLite allows `URI filenames <https://www.sqlite.org/uri.html>`__
+where you can provide additional parameters at the time of open for a
+database.  Opens can specify the `SQLITE_OPEN_URI
+<https://www.sqlite.org/c3ref/open.html>`__ flag.  For ``ATTACH``
+databases SQLITE needs to be configured to use URI.
+
+SQLite defaults to URI filenames being off.  Some platforms compile
+with it on.  To ensure URI are enabled you must run:
+
+.. code-block::
+
+  import apsw
+  apsw.config(apsw.SQLITE_CONFIG_URI, 1)
+
+Note that this **must** be done before any other operation with the
+SQLite library, as the setting cannot be changed after the library has
+initialized (a SQLite limitation),
+
+
+.. index::
+  single: Memory database
+  single:  memdb
 
 .. _memdb:
 
