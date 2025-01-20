@@ -364,7 +364,7 @@ private to the connection.
     connection = apsw.Connection("not-shared", vfs="memdb")
 
     # using URI
-    connection = apsw.Connection("file:/shared&vfs=memdb",
+    connection = apsw.Connection("file:/shared?vfs=memdb",
                     flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE)
     connection = apsw.Connection("file:not-shared&vfs=memdb",
                     flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE)
