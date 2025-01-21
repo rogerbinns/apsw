@@ -361,6 +361,25 @@ Note that this **must** be done before any other operation with the
 SQLite library, as the setting cannot be changed after the library has
 initialized (a SQLite limitation),
 
+You should use :mod:`urllib.parse` to correctly create strings handling
+the necessary special characters and quoting.
+
+.. code-block::
+
+  import urllib.parse
+
+  uri_filename = urllib.parse.quote("my db filename.sqlite3")
+
+  uri_parameters = urllib.parse.urlencode(
+    {
+        "vfs": "memdb",
+        "go": "fast",
+        "level": 42,
+    }
+  )
+
+  uri = f"file:{uri_filename}?{uri_parameters}"
+
 
 .. index::
   single: Memory database
@@ -394,5 +413,5 @@ private to the connection.
     # using URI
     connection = apsw.Connection("file:/shared?vfs=memdb",
                     flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE)
-    connection = apsw.Connection("file:not-shared&vfs=memdb",
+    connection = apsw.Connection("file:not-shared?vfs=memdb",
                     flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE)
