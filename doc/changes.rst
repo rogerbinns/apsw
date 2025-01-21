@@ -2382,6 +2382,8 @@ Python naming conventions as documented in :pep:`8`.  For example
 corrected with the compliant names being documented and used in
 examples.  The old names are still available maintaining
 :ref:`backwards compatibility <backcompat>`.
+Consider using the script `tools/update-names.sh` for updating
+the names in your code.
 
 The change happened in version 3.43.2.0.
 
