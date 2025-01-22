@@ -491,7 +491,7 @@ cursor_mutex_get(APSWCursor *self)
 /* sum of delays above - a third of a second */
 #define MAX_WAIT_MS   328
 /* and how many of them there are */
-#define NUM_TRIES (sizeof(delays)/sizeof(delays[0]))
+#define NUM_TRIES ((int)(sizeof(delays)/sizeof(delays[0])))
 
   int attempt = 0;
   int waited = 0;
