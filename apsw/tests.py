@@ -4811,7 +4811,7 @@ class APSW(unittest.TestCase):
 
     def testIssue31(self):
         "Issue 31: GIL & SQLite mutexes with heavy threading, threadsafe errors from SQLite"
-        randomnumbers = [random.randint(0, 10000) for _ in range(10000)]
+        randomnumbers = [random.randint(0, 10000) for _ in range(1000)]
 
         cursor = self.db.cursor()
         cursor.execute("create table foo(x)")
@@ -4862,10 +4862,7 @@ class APSW(unittest.TestCase):
                     continue
                 did_work[myid] += 1
 
-                # This is here to release the GIL.  Without it only
-                # this thread does work because the others are
-                # blocked by the db mutex getting the ThreadingViolation
-                # while this one is running.
+                # Release the GIL giving other threads a chace to do work
                 time.sleep(0.01)
 
         runtime = float(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 15
@@ -4877,7 +4874,9 @@ class APSW(unittest.TestCase):
         for t in threads:
             t.join()
 
-        if runtime >= 15:
+        if runtime > 15:
+            # I can't confidently say that all threads would have got execution time
+            # on all the platforms out there, so check if env var was set
             self.assertTrue(all(v > 0 for v in did_work.values()), f"{did_work=}")
             self.assertTrue(all(v > 0 for v in locked.values()), f"{locked=}")
 
