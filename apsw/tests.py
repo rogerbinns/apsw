@@ -5715,6 +5715,7 @@ class APSW(unittest.TestCase):
             "APSWBuffer",
             "FunctionCBInfo",
             "APSWFTS5Tokenizer",
+            "cursor",
         ):
             return
 
