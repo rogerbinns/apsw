@@ -462,6 +462,81 @@ APSWCursor_get_description_full(APSWCursor *self)
 }
 #endif
 
+/* returns 0 on success, -1 on failure with exception set */
+static int
+cursor_mutex_get(APSWCursor *self)
+{
+  /* this should be used by execute, executemany, and next which
+     release the GIL internally (prepare and step).  We want any thread to
+     be able to execute on the same database without having to add their
+     own mutex mechanism.  it involves trying to get the mutex while the
+     GIL is released, but we do eventually have to give up */
+
+  assert(!PyErr_Occurred());
+
+  int res;
+
+  /* happy path - get it immediately */
+  res = sqlite3_mutex_try(self->connection->dbmutex);
+  if (res == SQLITE_OK)
+    goto checks;
+
+  /*  the delays we do with the GIL released trying to get the mutex.
+      there is no inherent right answer for how long it could take
+      so the arbitrary values chosen are those used by SQLite's
+      default busy handler. */
+
+  static const unsigned char delays[] = { 1, 2, 5, 10, 15, 20, 25, 25,  25,  50,  50, 100 };
+
+/* sum of delays above - a third of a second */
+#define MAX_WAIT_MS   328
+/* and how many of them there are */
+#define NUM_TRIES (sizeof(delays)/sizeof(delays[0]))
+
+  int attempt = 0;
+  int waited = 0;
+
+  for (;;)
+  {
+    Py_BEGIN_ALLOW_THREADS
+    {
+      waited += sqlite3_sleep(delays[attempt]);
+      res = sqlite3_mutex_try(self->connection->dbmutex);
+    }
+    Py_END_ALLOW_THREADS;
+
+  /* shenanigans could have happened while GIL was released */
+  checks:
+    if (!self->connection)
+      PyErr_Format(ExcCursorClosed, "The cursor has been closed");
+    else if (!self->connection->db)
+      PyErr_Format(ExcConnectionClosed, "The connection has been closed");
+    else if (self->in_query)
+      PyErr_Format(ExcThreadingViolation, "Re-using a cursor inside a query by that query is not allowed");
+
+    if (res == SQLITE_OK || PyErr_Occurred())
+      break;
+
+    if (waited > MAX_WAIT_MS || ++attempt >= NUM_TRIES)
+    {
+      if (res != SQLITE_OK)
+        make_thread_exception();
+      break;
+    }
+  }
+
+  /* did we acquire mutex, but a check failed? */
+  if (res == SQLITE_OK && PyErr_Occurred())
+  {
+    if (self->connection)
+      sqlite3_mutex_leave(self->connection->dbmutex);
+    res = SQLITE_ERROR;
+  }
+
+  assert((res == SQLITE_OK && !PyErr_Occurred()) || (res != SQLITE_OK && PyErr_Occurred()));
+  return (SQLITE_OK == res) ? 0 : -1;
+}
+
 static int
 APSWCursor_is_dict_binding(PyObject *obj)
 {
@@ -565,7 +640,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     return -1;
   }
   SET_EXC(res, self->connection->db);
-  if(PyErr_Occurred())
+  if (PyErr_Occurred())
     return -1;
 
   return 0;
@@ -968,8 +1043,8 @@ APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
-  IN_QUERY_CHECK;
+  if (0 != cursor_mutex_get(self))
+    return NULL;
 
   res = resetcursor(self, /* force= */ 0);
   if (res != SQLITE_OK)
@@ -1077,8 +1152,8 @@ APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Cursor_executemany_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
-  IN_QUERY_CHECK;
+  if (0 != cursor_mutex_get(self))
+    return NULL;
 
   res = resetcursor(self, /* force= */ 0);
   if (res != SQLITE_OK)
@@ -1217,8 +1292,8 @@ APSWCursor_next(APSWCursor *self)
   int i;
 
   CHECK_CURSOR_CLOSED(NULL);
-  DBMUTEX_ENSURE(self->connection->dbmutex);
-  IN_QUERY_CHECK;
+  if (0 != cursor_mutex_get(self))
+    return NULL;
 
 again:
   if (self->status == C_BEGIN)
