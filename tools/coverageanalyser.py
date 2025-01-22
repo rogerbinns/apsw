@@ -40,7 +40,7 @@ for f in names:
                 if line.startswith("#else") or line.startswith("#endif"):
                     in_test_fixture = False
                 continue
-            if line == "#ifdef APSW_TESTFIXTURES":
+            if line == "#ifdef APSW_FAULT_INJECT":
                 in_test_fixture = True
                 continue
             count = count.strip()

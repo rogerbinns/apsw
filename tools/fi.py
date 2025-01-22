@@ -656,7 +656,7 @@ class Tester:
         apsw_attr = self.apsw_attr
         fname = self.call_remap.get(key[0], key[0])
         try:
-            if key[0] == "APSW_FAULT_INJECT":
+            if key[0] == "APSW_FAULT":
                 self.expect_exception.append(Exception)
                 return True
 
@@ -674,6 +674,9 @@ class Tester:
                 "sqlite3_close",
                 "sqlite3_vfs_unregister",
                 "sqlite3_backup_finish",
+                # runs the destructor on failure
+                "sqlite3_create_function_v2",
+                "sqlite3_window_function",
             }:
                 self.expect_exception.append(apsw_attr("ConnectionNotClosedError"))
                 self.expect_exception.append(apsw_attr("TooBigError"))  # code 18
@@ -716,7 +719,7 @@ class Tester:
 
             # we use this to get fts5api and always claim it was because fts5
             # is not present
-            if fname in {"sqlite3_prepare", "sqlite3_bind_pointer"} and "fts.c" in key[1]:
+            if fname in {"sqlite3_prepare_v3", "sqlite3_bind_pointer"} and "fts.c" in key[1]:
                 self.expect_exception.append(apsw_attr("NoFTS5Error"))
                 return self.apsw_attr("SQLITE_ERROR")
 
@@ -753,13 +756,15 @@ class Tester:
     def should_fault(self, name, pending_exception):
         if pending_exception != (None, None, None):
             return False
-        key = ("APSW_FAULT_INJECT", "", name, 0, "")
+        key = ("APSW_FAULT", "", name, 0, "")
         res = self.fault_inject_control(key)
         assert res in {self.Proceed, True}
         return res is True
 
     def fault_inject_control(self, key):
         if testing_recursion and key[2] in {"apsw_write_unraisable", "apswvfs_excepthook"}:
+            return self.Proceed
+        if key[2] == "apsw_leak_check":
             return self.Proceed
         if self.runplan is not None:
             if not self.runplan:
@@ -933,6 +938,11 @@ class Tester:
                         for c in sys.modules["apsw"].connections():
                             c.close()
                     gc.collect()
+                    if "apsw" in sys.modules and hasattr(sys.modules["apsw"], "leak_check"):
+                        res = getattr(sys.modules["apsw"], "leak_check")()
+                        if res:
+                            input("Leaks found, return to continue> ")
+
 
             self.verify_exception(self.faulted_this_round)
 
@@ -946,6 +956,10 @@ class Tester:
         print(f"Total faults: { len(self.has_faulted_ever) }")
 
         if self.to_fault:
+            if use_runplan:
+                print("Runplan\n")
+                print(self.runplan)
+                print()
             t = f"Failed to fault { len(self.to_fault) }"
             print("=" * len(t))
             print(t)

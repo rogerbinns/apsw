@@ -25,7 +25,6 @@ static struct _apsw_string_table
     PyObject *Filter;
     PyObject *FindFunction;
     PyObject *Integrity;
-    PyObject *Mapping;
     PyObject *sNULL;
     PyObject *Next;
     PyObject *Open;
@@ -108,7 +107,6 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.Filter);
     Py_CLEAR(apst.FindFunction);
     Py_CLEAR(apst.Integrity);
-    Py_CLEAR(apst.Mapping);
     Py_CLEAR(apst.sNULL);
     Py_CLEAR(apst.Next);
     Py_CLEAR(apst.Open);
@@ -173,7 +171,84 @@ fini_apsw_strings(void)
 static int
 init_apsw_strings()
 {
-    if ((0 == (apst.closed = PyUnicode_FromString("(closed)"))) || (0 == (apst.s_1e999 = PyUnicode_FromString("-1e999"))) || (0 == (apst.s0_0 = PyUnicode_FromString("0.0"))) || (0 == (apst.s1e999 = PyUnicode_FromString("1e999"))) || (0 == (apst.Begin = PyUnicode_FromString("Begin"))) || (0 == (apst.BestIndex = PyUnicode_FromString("BestIndex"))) || (0 == (apst.BestIndexObject = PyUnicode_FromString("BestIndexObject"))) || (0 == (apst.Close = PyUnicode_FromString("Close"))) || (0 == (apst.Column = PyUnicode_FromString("Column"))) || (0 == (apst.ColumnNoChange = PyUnicode_FromString("ColumnNoChange"))) || (0 == (apst.Commit = PyUnicode_FromString("Commit"))) || (0 == (apst.Connect = PyUnicode_FromString("Connect"))) || (0 == (apst.Create = PyUnicode_FromString("Create"))) || (0 == (apst.Destroy = PyUnicode_FromString("Destroy"))) || (0 == (apst.Disconnect = PyUnicode_FromString("Disconnect"))) || (0 == (apst.Eof = PyUnicode_FromString("Eof"))) || (0 == (apst.Filter = PyUnicode_FromString("Filter"))) || (0 == (apst.FindFunction = PyUnicode_FromString("FindFunction"))) || (0 == (apst.Integrity = PyUnicode_FromString("Integrity"))) || (0 == (apst.Mapping = PyUnicode_FromString("Mapping"))) || (0 == (apst.sNULL = PyUnicode_FromString("NULL"))) || (0 == (apst.Next = PyUnicode_FromString("Next"))) || (0 == (apst.Open = PyUnicode_FromString("Open"))) || (0 == (apst.Release = PyUnicode_FromString("Release"))) || (0 == (apst.Rename = PyUnicode_FromString("Rename"))) || (0 == (apst.Rollback = PyUnicode_FromString("Rollback"))) || (0 == (apst.RollbackTo = PyUnicode_FromString("RollbackTo"))) || (0 == (apst.Rowid = PyUnicode_FromString("Rowid"))) || (0 == (apst.Savepoint = PyUnicode_FromString("Savepoint"))) || (0 == (apst.ShadowName = PyUnicode_FromString("ShadowName"))) || (0 == (apst.Sync = PyUnicode_FromString("Sync"))) || (0 == (apst.UpdateChangeRow = PyUnicode_FromString("UpdateChangeRow"))) || (0 == (apst.UpdateDeleteRow = PyUnicode_FromString("UpdateDeleteRow"))) || (0 == (apst.UpdateInsertRow = PyUnicode_FromString("UpdateInsertRow"))) || (0 == (apst.add_note = PyUnicode_FromString("add_note"))) || (0 == (apst.can_cache = PyUnicode_FromString("can_cache"))) || (0 == (apst.close = PyUnicode_FromString("close"))) || (0 == (apst.connection_hooks = PyUnicode_FromString("connection_hooks"))) || (0 == (apst.cursor = PyUnicode_FromString("cursor"))) || (0 == (apst.error_offset = PyUnicode_FromString("error_offset"))) || (0 == (apst.excepthook = PyUnicode_FromString("excepthook"))) || (0 == (apst.execute = PyUnicode_FromString("execute"))) || (0 == (apst.executemany = PyUnicode_FromString("executemany"))) || (0 == (apst.extendedresult = PyUnicode_FromString("extendedresult"))) || (0 == (apst.final = PyUnicode_FromString("final"))) || (0 == (apst.get = PyUnicode_FromString("get"))) || (0 == (apst.inverse = PyUnicode_FromString("inverse"))) || (0 == (apst.result = PyUnicode_FromString("result"))) || (0 == (apst.step = PyUnicode_FromString("step"))) || (0 == (apst.value = PyUnicode_FromString("value"))) || (0 == (apst.xAccess = PyUnicode_FromString("xAccess"))) || (0 == (apst.xCheckReservedLock = PyUnicode_FromString("xCheckReservedLock"))) || (0 == (apst.xClose = PyUnicode_FromString("xClose"))) || (0 == (apst.xCurrentTime = PyUnicode_FromString("xCurrentTime"))) || (0 == (apst.xCurrentTimeInt64 = PyUnicode_FromString("xCurrentTimeInt64"))) || (0 == (apst.xDelete = PyUnicode_FromString("xDelete"))) || (0 == (apst.xDeviceCharacteristics = PyUnicode_FromString("xDeviceCharacteristics"))) || (0 == (apst.xDlClose = PyUnicode_FromString("xDlClose"))) || (0 == (apst.xDlError = PyUnicode_FromString("xDlError"))) || (0 == (apst.xDlOpen = PyUnicode_FromString("xDlOpen"))) || (0 == (apst.xDlSym = PyUnicode_FromString("xDlSym"))) || (0 == (apst.xFileControl = PyUnicode_FromString("xFileControl"))) || (0 == (apst.xFileSize = PyUnicode_FromString("xFileSize"))) || (0 == (apst.xFullPathname = PyUnicode_FromString("xFullPathname"))) || (0 == (apst.xGetLastError = PyUnicode_FromString("xGetLastError"))) || (0 == (apst.xGetSystemCall = PyUnicode_FromString("xGetSystemCall"))) || (0 == (apst.xLock = PyUnicode_FromString("xLock"))) || (0 == (apst.xNextSystemCall = PyUnicode_FromString("xNextSystemCall"))) || (0 == (apst.xOpen = PyUnicode_FromString("xOpen"))) || (0 == (apst.xRandomness = PyUnicode_FromString("xRandomness"))) || (0 == (apst.xRead = PyUnicode_FromString("xRead"))) || (0 == (apst.xSectorSize = PyUnicode_FromString("xSectorSize"))) || (0 == (apst.xSetSystemCall = PyUnicode_FromString("xSetSystemCall"))) || (0 == (apst.xSleep = PyUnicode_FromString("xSleep"))) || (0 == (apst.xSync = PyUnicode_FromString("xSync"))) || (0 == (apst.xTruncate = PyUnicode_FromString("xTruncate"))) || (0 == (apst.xUnlock = PyUnicode_FromString("xUnlock"))) || (0 == (apst.xWrite = PyUnicode_FromString("xWrite"))))
+    if ((!apst.closed && 0 == (apst.closed = PyUnicode_FromString("(closed)")))
+        || (!apst.s_1e999 && 0 == (apst.s_1e999 = PyUnicode_FromString("-1e999")))
+        || (!apst.s0_0 && 0 == (apst.s0_0 = PyUnicode_FromString("0.0")))
+        || (!apst.s1e999 && 0 == (apst.s1e999 = PyUnicode_FromString("1e999")))
+        || (!apst.Begin && 0 == (apst.Begin = PyUnicode_FromString("Begin")))
+        || (!apst.BestIndex && 0 == (apst.BestIndex = PyUnicode_FromString("BestIndex")))
+        || (!apst.BestIndexObject && 0 == (apst.BestIndexObject = PyUnicode_FromString("BestIndexObject")))
+        || (!apst.Close && 0 == (apst.Close = PyUnicode_FromString("Close")))
+        || (!apst.Column && 0 == (apst.Column = PyUnicode_FromString("Column")))
+        || (!apst.ColumnNoChange && 0 == (apst.ColumnNoChange = PyUnicode_FromString("ColumnNoChange")))
+        || (!apst.Commit && 0 == (apst.Commit = PyUnicode_FromString("Commit")))
+        || (!apst.Connect && 0 == (apst.Connect = PyUnicode_FromString("Connect")))
+        || (!apst.Create && 0 == (apst.Create = PyUnicode_FromString("Create")))
+        || (!apst.Destroy && 0 == (apst.Destroy = PyUnicode_FromString("Destroy")))
+        || (!apst.Disconnect && 0 == (apst.Disconnect = PyUnicode_FromString("Disconnect")))
+        || (!apst.Eof && 0 == (apst.Eof = PyUnicode_FromString("Eof")))
+        || (!apst.Filter && 0 == (apst.Filter = PyUnicode_FromString("Filter")))
+        || (!apst.FindFunction && 0 == (apst.FindFunction = PyUnicode_FromString("FindFunction")))
+        || (!apst.Integrity && 0 == (apst.Integrity = PyUnicode_FromString("Integrity")))
+        || (!apst.sNULL && 0 == (apst.sNULL = PyUnicode_FromString("NULL")))
+        || (!apst.Next && 0 == (apst.Next = PyUnicode_FromString("Next")))
+        || (!apst.Open && 0 == (apst.Open = PyUnicode_FromString("Open")))
+        || (!apst.Release && 0 == (apst.Release = PyUnicode_FromString("Release")))
+        || (!apst.Rename && 0 == (apst.Rename = PyUnicode_FromString("Rename")))
+        || (!apst.Rollback && 0 == (apst.Rollback = PyUnicode_FromString("Rollback")))
+        || (!apst.RollbackTo && 0 == (apst.RollbackTo = PyUnicode_FromString("RollbackTo")))
+        || (!apst.Rowid && 0 == (apst.Rowid = PyUnicode_FromString("Rowid")))
+        || (!apst.Savepoint && 0 == (apst.Savepoint = PyUnicode_FromString("Savepoint")))
+        || (!apst.ShadowName && 0 == (apst.ShadowName = PyUnicode_FromString("ShadowName")))
+        || (!apst.Sync && 0 == (apst.Sync = PyUnicode_FromString("Sync")))
+        || (!apst.UpdateChangeRow && 0 == (apst.UpdateChangeRow = PyUnicode_FromString("UpdateChangeRow")))
+        || (!apst.UpdateDeleteRow && 0 == (apst.UpdateDeleteRow = PyUnicode_FromString("UpdateDeleteRow")))
+        || (!apst.UpdateInsertRow && 0 == (apst.UpdateInsertRow = PyUnicode_FromString("UpdateInsertRow")))
+        || (!apst.add_note && 0 == (apst.add_note = PyUnicode_FromString("add_note")))
+        || (!apst.can_cache && 0 == (apst.can_cache = PyUnicode_FromString("can_cache")))
+        || (!apst.close && 0 == (apst.close = PyUnicode_FromString("close")))
+        || (!apst.connection_hooks && 0 == (apst.connection_hooks = PyUnicode_FromString("connection_hooks")))
+        || (!apst.cursor && 0 == (apst.cursor = PyUnicode_FromString("cursor")))
+        || (!apst.error_offset && 0 == (apst.error_offset = PyUnicode_FromString("error_offset")))
+        || (!apst.excepthook && 0 == (apst.excepthook = PyUnicode_FromString("excepthook")))
+        || (!apst.execute && 0 == (apst.execute = PyUnicode_FromString("execute")))
+        || (!apst.executemany && 0 == (apst.executemany = PyUnicode_FromString("executemany")))
+        || (!apst.extendedresult && 0 == (apst.extendedresult = PyUnicode_FromString("extendedresult")))
+        || (!apst.final && 0 == (apst.final = PyUnicode_FromString("final")))
+        || (!apst.get && 0 == (apst.get = PyUnicode_FromString("get")))
+        || (!apst.inverse && 0 == (apst.inverse = PyUnicode_FromString("inverse")))
+        || (!apst.result && 0 == (apst.result = PyUnicode_FromString("result")))
+        || (!apst.step && 0 == (apst.step = PyUnicode_FromString("step")))
+        || (!apst.value && 0 == (apst.value = PyUnicode_FromString("value")))
+        || (!apst.xAccess && 0 == (apst.xAccess = PyUnicode_FromString("xAccess")))
+        || (!apst.xCheckReservedLock && 0 == (apst.xCheckReservedLock = PyUnicode_FromString("xCheckReservedLock")))
+        || (!apst.xClose && 0 == (apst.xClose = PyUnicode_FromString("xClose")))
+        || (!apst.xCurrentTime && 0 == (apst.xCurrentTime = PyUnicode_FromString("xCurrentTime")))
+        || (!apst.xCurrentTimeInt64 && 0 == (apst.xCurrentTimeInt64 = PyUnicode_FromString("xCurrentTimeInt64")))
+        || (!apst.xDelete && 0 == (apst.xDelete = PyUnicode_FromString("xDelete")))
+        || (!apst.xDeviceCharacteristics && 0 == (apst.xDeviceCharacteristics = PyUnicode_FromString("xDeviceCharacteristics")))
+        || (!apst.xDlClose && 0 == (apst.xDlClose = PyUnicode_FromString("xDlClose")))
+        || (!apst.xDlError && 0 == (apst.xDlError = PyUnicode_FromString("xDlError")))
+        || (!apst.xDlOpen && 0 == (apst.xDlOpen = PyUnicode_FromString("xDlOpen")))
+        || (!apst.xDlSym && 0 == (apst.xDlSym = PyUnicode_FromString("xDlSym")))
+        || (!apst.xFileControl && 0 == (apst.xFileControl = PyUnicode_FromString("xFileControl")))
+        || (!apst.xFileSize && 0 == (apst.xFileSize = PyUnicode_FromString("xFileSize")))
+        || (!apst.xFullPathname && 0 == (apst.xFullPathname = PyUnicode_FromString("xFullPathname")))
+        || (!apst.xGetLastError && 0 == (apst.xGetLastError = PyUnicode_FromString("xGetLastError")))
+        || (!apst.xGetSystemCall && 0 == (apst.xGetSystemCall = PyUnicode_FromString("xGetSystemCall")))
+        || (!apst.xLock && 0 == (apst.xLock = PyUnicode_FromString("xLock")))
+        || (!apst.xNextSystemCall && 0 == (apst.xNextSystemCall = PyUnicode_FromString("xNextSystemCall")))
+        || (!apst.xOpen && 0 == (apst.xOpen = PyUnicode_FromString("xOpen")))
+        || (!apst.xRandomness && 0 == (apst.xRandomness = PyUnicode_FromString("xRandomness")))
+        || (!apst.xRead && 0 == (apst.xRead = PyUnicode_FromString("xRead")))
+        || (!apst.xSectorSize && 0 == (apst.xSectorSize = PyUnicode_FromString("xSectorSize")))
+        || (!apst.xSetSystemCall && 0 == (apst.xSetSystemCall = PyUnicode_FromString("xSetSystemCall")))
+        || (!apst.xSleep && 0 == (apst.xSleep = PyUnicode_FromString("xSleep")))
+        || (!apst.xSync && 0 == (apst.xSync = PyUnicode_FromString("xSync")))
+        || (!apst.xTruncate && 0 == (apst.xTruncate = PyUnicode_FromString("xTruncate")))
+        || (!apst.xUnlock && 0 == (apst.xUnlock = PyUnicode_FromString("xUnlock")))
+        || (!apst.xWrite && 0 == (apst.xWrite = PyUnicode_FromString("xWrite")))
+    )
     {
         fini_apsw_strings();
         return -1;

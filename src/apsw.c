@@ -51,13 +51,6 @@ API Reference
 =============
 */
 
-/* Fight with setuptools over ndebug */
-#ifdef APSW_NO_NDEBUG
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-#endif
-
 #ifdef APSW_USE_SQLITE_CONFIG
 #include "sqlite3config.h"
 #endif
@@ -77,19 +70,12 @@ API Reference
 #define SQLITE_MAX_MMAP_SIZE 0x1000000000000LL
 #endif
 
-#ifndef APSW_NO_NDEBUG
+#ifndef SQLITE_DEBUG
 #define SQLITE_API static
 #define SQLITE_EXTERN static
 #endif
 
 #include "sqlite3.c"
-
-/* Fight with SQLite over ndebug */
-#ifdef APSW_NO_NDEBUG
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-#endif
 
 #else
 /* SQLite 3 headers */
@@ -99,6 +85,8 @@ API Reference
 #if SQLITE_VERSION_NUMBER < 3048000
 #error Your SQLite version is too old.  It must be at least 3.48.0
 #endif
+
+#include "sqlite_debug.h"
 
 /* system headers */
 #include <assert.h>
@@ -125,12 +113,13 @@ MakeExistingException(void)
 {
   return 0;
 }
+
+#ifdef APSW_FAULT_INJECT
+
 #include "faultinject.h"
 
-#ifdef APSW_TESTFIXTURES
-
 /* Fault injection */
-#define APSW_FAULT_INJECT(faultName, good, bad)                                                                        \
+#define APSW_FAULT(faultName, good, bad)                                                                               \
   do                                                                                                                   \
   {                                                                                                                    \
     if (APSW_Should_Fault(#faultName))                                                                                 \
@@ -156,8 +145,8 @@ static int APSW_Should_Fault(const char *);
 #define APSW_TEST_LARGE_OBJECTS
 #endif
 
-#else /* APSW_TESTFIXTURES */
-#define APSW_FAULT_INJECT(faultName, good, bad)                                                                        \
+#else /* APSW_FAULT_INJECT */
+#define APSW_FAULT(faultName, good, bad)                                                                               \
   do                                                                                                                   \
   {                                                                                                                    \
     good;                                                                                                              \
@@ -323,10 +312,12 @@ enable_shared_cache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
 #ifdef SQLITE_OMIT_SHARED_CACHE
   return PyErr_Format(PyExc_Exception, "sqlite3_enable_shared_cache has been omitted");
 #else
+  DBMUTEX_ENSURE(self->dbmutex);
   int res = sqlite3_enable_shared_cache(enable);
   SET_EXC(res, NULL);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  if (res != SQLITE_OK)
+  if (PyErr_Occurred())
     return NULL;
 
   Py_RETURN_NONE;
@@ -413,12 +404,9 @@ initialize(void)
   int res;
 
   res = sqlite3_initialize();
-
-  if (res)
-  {
-    SET_EXC(res, NULL);
+  SET_EXC(res, NULL);
+  if (PyErr_Occurred())
     return NULL;
-  }
 
   Py_RETURN_NONE;
 }
@@ -445,7 +433,7 @@ sqliteshutdown(void)
   res = sqlite3_shutdown();
   SET_EXC(res, NULL);
 
-  if (res != SQLITE_OK)
+  if (PyErr_Occurred())
     return NULL;
 
 #ifdef APSW_FORK_CHECKER
@@ -508,7 +496,7 @@ apsw_logger(void *arg, int errcode, const char *message)
 }
 
 static PyObject *
-config(PyObject *Py_UNUSED(self), PyObject *args)
+apsw_config(PyObject *Py_UNUSED(self), PyObject *args)
 {
   int res, optdup;
   int opt;
@@ -537,11 +525,10 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
       return NULL;
     assert(opt == optdup);
     res = sqlite3_config(opt, &outval);
-    if (res)
-    {
-      SET_EXC(res, NULL);
+    SET_EXC(res, NULL);
+    if (PyErr_Occurred())
       return NULL;
-    }
+
     return PyLong_FromLong(outval);
   }
 
@@ -610,8 +597,7 @@ config(PyObject *Py_UNUSED(self), PyObject *args)
   }
 
   SET_EXC(res, NULL);
-
-  if (res != SQLITE_OK)
+  if (PyErr_Occurred())
     return NULL;
 
   Py_RETURN_NONE;
@@ -796,7 +782,7 @@ status(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_na
   res = sqlite3_status64(op, &current, &highwater, reset);
   SET_EXC(res, NULL);
 
-  if (res != SQLITE_OK)
+  if (PyErr_Occurred())
     return NULL;
 
   return Py_BuildValue("(LL)", current, highwater);
@@ -1011,13 +997,23 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
   Py_RETURN_FALSE;
 }
 
-#ifdef APSW_TESTFIXTURES
+#if defined(APSW_DEBUG) || defined(APSW_FAULT_INJECT)
 static PyObject *
 apsw_fini(PyObject *Py_UNUSED(self))
 {
-  Py_XDECREF(tls_errmsg);
   fini_apsw_strings();
   Py_RETURN_NONE;
+}
+#endif
+
+#ifdef __SANITIZE_ADDRESS__
+#include <sanitizer/lsan_interface.h>
+
+static PyObject *
+apsw_leak_check(PyObject *Py_UNUSED(self))
+{
+  int res = __lsan_do_recoverable_leak_check();
+  return PyLong_FromLong(res);
 }
 #endif
 
@@ -1309,7 +1305,7 @@ get_compile_options(void)
 
   for (i = 0;; i++)
   {
-    opt = sqlite3_compileoption_get(i); /* No PYSQLITE_CALL needed */
+    opt = sqlite3_compileoption_get(i);
     if (!opt)
       break;
   }
@@ -1320,7 +1316,7 @@ get_compile_options(void)
     goto fail;
   for (i = 0; i < count; i++)
   {
-    opt = sqlite3_compileoption_get(i); /* No PYSQLITE_CALL needed */
+    opt = sqlite3_compileoption_get(i);
     assert(opt);
     tmpstring = PyUnicode_FromString(opt);
     if (!tmpstring)
@@ -1353,10 +1349,10 @@ get_keywords(void)
   if (!res)
     goto fail;
 
-  count = sqlite3_keyword_count(); /* No PYSQLITE_CALL needed */
+  count = sqlite3_keyword_count();
   for (i = 0; i < count; i++)
   {
-    j = sqlite3_keyword_name(i, &name, &size); /* No PYSQLITE_CALL needed */
+    j = sqlite3_keyword_name(i, &name, &size);
     assert(j == SQLITE_OK);
     tmpstring = PyUnicode_FromStringAndSize(name, size);
     if (!tmpstring)
@@ -1545,7 +1541,7 @@ apsw_log(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_
     ARG_MANDATORY ARG_str(message);
     ARG_EPILOG(NULL, Apsw_log_USAGE, );
   }
-  sqlite3_log(errorcode, "%s", message); /* PYSQLITE_CALL not needed */
+  sqlite3_log(errorcode, "%s", message);
 
   if (PyErr_Occurred())
     return NULL;
@@ -1575,7 +1571,7 @@ apsw_strlike(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Apsw_strlike_USAGE, );
   }
 
-  res = sqlite3_strlike(glob, string, escape); /* PYSQLITE_CALL not needed */
+  res = sqlite3_strlike(glob, string, escape);
 
   return PyLong_FromLong(res);
 }
@@ -1600,7 +1596,7 @@ apsw_strglob(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Apsw_strglob_USAGE, );
   }
 
-  res = sqlite3_strglob(glob, string); /* PYSQLITE_CALL not needed */
+  res = sqlite3_strglob(glob, string);
 
   return PyLong_FromLong(res);
 }
@@ -1626,7 +1622,7 @@ apsw_stricmp(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Apsw_stricmp_USAGE, );
   }
 
-  res = sqlite3_stricmp(string1, string2); /* PYSQLITE_CALL not needed */
+  res = sqlite3_stricmp(string1, string2);
 
   return PyLong_FromLong(res);
 }
@@ -1653,7 +1649,7 @@ apsw_strnicmp(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Apsw_strnicmp_USAGE, );
   }
 
-  res = sqlite3_strnicmp(string1, string2, count); /* PYSQLITE_CALL not needed */
+  res = sqlite3_strnicmp(string1, string2, count);
 
   return PyLong_FromLong(res);
 }
@@ -1685,7 +1681,7 @@ apsw_set_default_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py
     return PyErr_Format(PyExc_ValueError, "vfs named \"%s\" not known", name);
   res = sqlite3_vfs_register(vfs, 1);
   SET_EXC(res, NULL);
-  if (res)
+  if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
 }
@@ -1716,7 +1712,7 @@ apsw_unregister_vfs(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_
     return PyErr_Format(PyExc_ValueError, "vfs named \"%s\" not known", name);
   res = sqlite3_vfs_unregister(vfs);
   SET_EXC(res, NULL);
-  if (res)
+  if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
 }
@@ -1743,7 +1739,7 @@ apsw_sleep(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t f
   if (milliseconds < 0)
     milliseconds = 0;
 
-  _PYSQLITE_CALL_V(res = sqlite3_sleep(milliseconds));
+  res = sqlite3_sleep(milliseconds);
   return PyLong_FromLong(res);
 }
 
@@ -1815,7 +1811,7 @@ static PyMethodDef module_methods[] = {
   { "initialize", (PyCFunction)initialize, METH_NOARGS, Apsw_initialize_DOC },
   { "shutdown", (PyCFunction)sqliteshutdown, METH_NOARGS, Apsw_shutdown_DOC },
   { "format_sql_value", (PyCFunction)formatsqlvalue, METH_O, Apsw_format_sql_value_DOC },
-  { "config", (PyCFunction)config, METH_VARARGS, Apsw_config_DOC },
+  { "config", (PyCFunction)apsw_config, METH_VARARGS, Apsw_config_DOC },
   { "log", (PyCFunction)apsw_log, METH_FASTCALL | METH_KEYWORDS, Apsw_log_DOC },
   { "memory_used", (PyCFunction)memory_used, METH_NOARGS, Apsw_memory_used_DOC },
   { "memory_high_water", (PyCFunction)memory_high_water, METH_FASTCALL | METH_KEYWORDS, Apsw_memory_high_water_DOC },
@@ -1834,8 +1830,11 @@ static PyMethodDef module_methods[] = {
   { "unregister_vfs", (PyCFunction)apsw_unregister_vfs, METH_FASTCALL | METH_KEYWORDS, Apsw_unregister_vfs_DOC },
   { "allow_missing_dict_bindings", (PyCFunction)apsw_allow_missing_dict_bindings, METH_FASTCALL | METH_KEYWORDS,
     Apsw_allow_missing_dict_bindings_DOC },
-#ifdef APSW_TESTFIXTURES
+#if defined(APSW_FAULT_INJECT) || defined(APSW_DEBUG)
   { "_fini", (PyCFunction)apsw_fini, METH_NOARGS, "Frees all caches and recycle lists" },
+#endif
+#ifdef __SANITIZE_ADDRESS__
+  { "leak_check", (PyCFunction)apsw_leak_check, METH_NOARGS, "Runs sanitizer leak check now" },
 #endif
 #ifdef APSW_FORK_CHECKER
   { "fork_checker", (PyCFunction)apsw_fork_checker, METH_NOARGS, Apsw_fork_checker_DOC },
@@ -1902,10 +1901,6 @@ PyInit_apsw(void)
   m = apswmodule = PyModule_Create2(&apswmoduledef, PYTHON_API_VERSION);
 
   if (m == NULL)
-    goto fail;
-
-  tls_errmsg = PyDict_New();
-  if (!tls_errmsg)
     goto fail;
 
   the_connections = PyList_New(0);
@@ -2004,16 +1999,16 @@ PyInit_apsw(void)
     goto fail;
 
   /* undocumented sentinel to do no bindings */
-  apsw_cursor_null_bindings = PyObject_CallObject((PyObject *)&PyBaseObject_Type, NULL);
+  if (!apsw_cursor_null_bindings)
+    apsw_cursor_null_bindings = PyObject_CallObject((PyObject *)&PyBaseObject_Type, NULL);
   if (!apsw_cursor_null_bindings)
     goto fail;
 
-  /* give ownership to module intentionally */
-  if (PyModule_AddObject(m, "_null_bindings", apsw_cursor_null_bindings))
+  if (PyModule_AddObject(m, "_null_bindings", Py_NewRef(apsw_cursor_null_bindings)))
     goto fail;
 
-#ifdef APSW_TESTFIXTURES
-  if (PyModule_AddObject(m, "test_fixtures_present", Py_NewRef(Py_True)))
+#ifdef APSW_FAULT_INJECT
+  if (PyModule_AddObject(m, "apsw_fault_inject", Py_NewRef(Py_True)))
     goto fail;
 #endif
 
@@ -2054,7 +2049,7 @@ modules etc. For example::
     PyObject *mod = PyImport_ImportModule("collections.abc");
     if (mod)
     {
-      collections_abc_Mapping = PyObject_GetAttr(mod, apst.Mapping);
+      collections_abc_Mapping = PyObject_GetAttrString(mod, "Mapping");
       Py_DECREF(mod);
     }
   }
@@ -2080,6 +2075,6 @@ PyInit___init__(void)
 }
 #endif
 
-#ifdef APSW_TESTFIXTURES
+#ifdef APSW_FAULT_INJECT
 #include "faultinject.c"
 #endif

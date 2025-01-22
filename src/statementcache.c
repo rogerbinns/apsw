@@ -91,7 +91,7 @@ statementcache_free_statement(StatementCache *sc, APSWStatement *s)
 
   Py_CLEAR(s->query);
 
-  PYSQLITE_SC_CALL(res = sqlite3_finalize(s->vdbestatement));
+  res = s->vdbestatement ? sqlite3_finalize(s->vdbestatement) : SQLITE_OK;
 
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
   if (sc->recycle_bin_next + 1 < SC_STATEMENT_RECYCLE_BIN_ENTRIES)
@@ -125,7 +125,7 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
   {
     APSWStatement *evictee = NULL;
 
-    PYSQLITE_SC_CALL(res = sqlite3_reset(statement->vdbestatement));
+    res = sqlite3_reset(statement->vdbestatement);
 
     /*
       https://sqlite.org/forum/forumpost/d72cba6ff7
@@ -212,7 +212,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
         sc->hashes[i] = SC_SENTINEL_HASH;
         statement = sc->caches[i];
         sc->caches[i] = NULL;
-        PYSQLITE_SC_CALL(res = sqlite3_clear_bindings(statement->vdbestatement));
+        res = sqlite3_clear_bindings(statement->vdbestatement);
         if (res)
         {
           SET_EXC(res, sc->db);
@@ -243,17 +243,20 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
 
   assert(0 == utf8[utf8size]);
   /* note that prepare can return ok while a python level exception occurred that couldn't be reported */
-  PYSQLITE_SC_CALL(res = sqlite3_prepare_v3(sc->db, utf8, utf8size + 1, options->prepare_flags, &vdbestatement, &tail));
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_prepare_v3(sc->db, utf8, utf8size + 1, options->prepare_flags, &vdbestatement, &tail);
+  Py_END_ALLOW_THREADS;
   if (res != SQLITE_OK || PyErr_Occurred())
   {
     SET_EXC(res, sc->db);
-    PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
+    if (vdbestatement)
+      sqlite3_finalize(vdbestatement);
     return res ? res : SQLITE_ERROR;
   }
   if (!*tail && tail - utf8 < utf8size)
   {
     PyErr_Format(PyExc_ValueError, "null character in query");
-    PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
+    sqlite3_finalize(vdbestatement);
     return SQLITE_ERROR;
   }
 
@@ -270,11 +273,11 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
 
   if (options->explain >= 0)
   {
-    PYSQLITE_SC_CALL(res = sqlite3_stmt_explain(vdbestatement, options->explain));
+    res = sqlite3_stmt_explain(vdbestatement, options->explain);
     if (res != SQLITE_OK)
     {
       SET_EXC(res, sc->db);
-      PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
+      sqlite3_finalize(vdbestatement);
       return res;
     }
   }
@@ -288,7 +291,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     statement = PyMem_Calloc(1, sizeof(APSWStatement));
     if (!statement)
     {
-      PYSQLITE_SC_CALL(sqlite3_finalize(vdbestatement));
+      sqlite3_finalize(vdbestatement);
       res = SQLITE_NOMEM;
       SET_EXC(res, sc->db);
       return res;
@@ -312,7 +315,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   {
     /* no subsequent queries, so use sqlite's copy of the utf8
        providing we didn't grab additional whitespace */
-    statement->utf8 = sqlite3_sql(vdbestatement); /* No PYSQLITE_CALL needed as the function does not take a mutex */
+    statement->utf8 = sqlite3_sql(vdbestatement);
     statement->query = NULL;
   }
   else
