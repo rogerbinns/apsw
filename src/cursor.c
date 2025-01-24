@@ -475,6 +475,8 @@ cursor_mutex_get(APSWCursor *self)
   assert(!PyErr_Occurred());
 
   int res;
+  int attempt = 0;
+  int waited = 0;
 
   /* happy path - get it immediately */
   res = sqlite3_mutex_try(self->connection->dbmutex);
@@ -493,8 +495,6 @@ cursor_mutex_get(APSWCursor *self)
 /* and how many of them there are */
 #define NUM_TRIES ((int)(sizeof(delays)/sizeof(delays[0])))
 
-  int attempt = 0;
-  int waited = 0;
 
   for (;;)
   {
