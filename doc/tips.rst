@@ -194,6 +194,78 @@ ways you never even thought possible.
 The :ref:`tour <example_why_bindings>` shows why you use bindings, and
 the different ways you can supply them.
 
+Query Patterns
+==============
+
+These are suggestions on how to structure your Python code for processing
+queries.
+
+Zero or more rows expected
+--------------------------
+
+Use a for loop.  Note that nothing enforces the Python variables match
+the columns inside the SQL.
+
+.. code-block::
+
+  for name, quantity, status in db.execute("SELECT name, quantity, status FROM ..."):
+    # do something with the row
+    ...
+
+You can use :class:`apsw.ext.DataClassRowFactory` to get the row as
+:mod:`dataclasses`.  It is **strongly** recommended that you provide
+the SQL level names using ``AS`` since there is no guarantee what the
+names will be otherwise.
+
+.. code-block::
+
+  import apsw.ext
+
+  # This affects all queries on db, but not get.  It can be set on
+  # a cursor to only affect that cursor.
+  db.row_trace = apsw.ext.DataClassRowFactory()
+
+  for row in db.execute("SELECT cat.name AS name, orders.quantity AS quantity FROM ..."):
+    # You can access row names
+    print(f"{row.name=} {row.quantity=}")
+    # You will get an Exception with a wrong name
+    print(row.status)
+
+One value expected
+------------------
+
+Use :meth:`get <Cursor.get>` which will return the value or
+:class:`None` if there was no match.
+
+.. code-block::
+
+    name = db.execute("SELECT name FROM ... WHERE id=?", (item_id,)).get
+
+One row expected
+----------------
+
+:meth:`get <Cursor.get>` can be used. There will be an exception if no
+row was found because :class:`None` can't be unpacked into the
+variables.
+
+.. code-block::
+
+  name, status = db.execute("SELECT name, status FROM ... WHERE id=?", (item_id,)).get
+
+`match
+<https://docs.python.org/3/reference/compound_stmts.html#the-match-statement>`__.
+can handle :class:`None` when the row was not found.
+
+.. code-block::
+
+  match db.execute("SELECT name, status FROM ... WHERE id=?", (item_id,)).get:
+    case None:
+      # handle missing
+      raise NotFound(...)
+    case name, status:
+      # do something
+      ...
+
 .. _diagnostics_tips:
 
 Diagnostics
