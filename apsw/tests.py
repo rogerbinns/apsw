@@ -11265,10 +11265,10 @@ class ZZFaultInjection(unittest.TestCase):
         if pid == 0:
             # child
             counter = 0
-            def ueh(unraiseable):
-                if unraiseable.exc_type != apsw.ForkingViolationError:
-                    print("\n\nUnraiseable exception in child process", unraiseable)
-                    return sys.__unraisablehook__(unraiseable)
+            def ueh(unraisable):
+                if unraisable.exc_type != apsw.ForkingViolationError:
+                    print("\n\nUnraisable exception in child process", unraisable)
+                    return sys.__unraisablehook__(unraisable)
                 nonlocal counter
                 counter += 1
                 if counter > 100:
