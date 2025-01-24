@@ -155,7 +155,7 @@ linkcheck:  ## Checks links from doc
 	env PYTHONPATH="`pwd`" $(MAKE) RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
 
 unwrapped:  ## Find SQLite APIs that are not wrapped by APSW
-	env PYTHONPATH=. $(PYTHON) tools/find_unwrapped_apis.py
+	env PYTHONPATH=. $(PYTHON) tools/gensqlitedebug.py
 
 publish: docs
 	rsync -a --delete --exclude=.git --exclude=.nojekyll doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; git status
