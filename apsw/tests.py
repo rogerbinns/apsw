@@ -11210,10 +11210,7 @@ class ZZFaultInjection(unittest.TestCase):
                 blobid = row[0]
             blob = db.blob_open("main", "foo", "x", blobid, 0)
             db2 = apsw.Connection(":memory:")
-            if hasattr(db2, "backup"):
-                backup = db2.backup("main", db, "main")
-            else:
-                backup = None
+            backup = db2.backup("main", db, "main")
             return (db, cur, blob, backup)
 
         # test the objects
@@ -11236,16 +11233,15 @@ class ZZFaultInjection(unittest.TestCase):
 
         def childtest(*args):
             # we can't use unittest methods here since we are in a different process
-            val = args[0]
-            args = args[1:]
+
             # this should work
             teststuff(*getstuff())
 
             # ignore the unraisable stuff sent to sys.excepthook
             def eh(*args):
                 pass
-
             sys.excepthook = eh
+
             # call with each separate item to check
             try:
                 for i in range(len(args)):
@@ -11261,16 +11257,35 @@ class ZZFaultInjection(unittest.TestCase):
                 pass
             # this should work again
             teststuff(*getstuff())
-            val.value = 1
+            os._exit(0)
 
-        import multiprocessing
-
-        val = multiprocessing.Value("i", 0)
-        p = multiprocessing.Process(target=childtest, args=[val] + list(child))
         suppressWarning("DeprecationWarning")  # we are deliberately forking
-        p.start()
-        p.join()
-        self.assertEqual(1, val.value)  # did child complete ok?
+        pid = os.fork()
+
+        if pid == 0:
+            # child
+            counter = 0
+            def ueh(unraiseable):
+                if unraiseable.exc_type != apsw.ForkingViolationError:
+                    print("\n\nUnraiseable exception in child process", unraiseable)
+                    return sys.__unraisablehook__(unraiseable)
+                nonlocal counter
+                counter += 1
+                if counter > 100:
+                    os._exit(0)
+            sys.unraisablehook = ueh
+            try:
+                childtest(*child)
+            except:
+                print("\n\nThis exception in THE CHILD PROCESS OF FORK CHECKER\n", file=sys.stderr)
+                traceback.print_exc()
+                print("\nEnd CHILD traceback\n\n")
+                os._exit(1)
+            os._exit(0)
+
+        rc = os.waitpid(pid, 0)
+        self.assertEqual(0, os.waitstatus_to_exitcode(rc[1]))
+
         teststuff(*parent)
 
         # we call shutdown to free mutexes used in fork checker,
