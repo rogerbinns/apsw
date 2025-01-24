@@ -258,6 +258,9 @@
     sqlite3_commit_hook((one), (two), (three));          \
 })
 
+#undef sqlite3_compileoption_used
+#define sqlite3_compileoption_used *not used*
+
 #undef sqlite3_complete16
 #define sqlite3_complete16 *not used*
 
@@ -362,13 +365,8 @@
     sqlite3_enable_load_extension((one), (two));         \
 })
 
-#undef sqlite3_enable_shared_cache
-#define sqlite3_enable_shared_cache *not used*
-
-#define sqlite3_errcode(one) ({                          \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
-    sqlite3_errcode((one));                              \
-})
+#undef sqlite3_errcode
+#define sqlite3_errcode *not used*
 
 #define sqlite3_errmsg(one) ({                           \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
@@ -429,10 +427,19 @@
 #undef sqlite3_get_table
 #define sqlite3_get_table *not used*
 
+#undef sqlite3_keyword_check
+#define sqlite3_keyword_check *not used*
+
+#undef sqlite3_libversion_number
+#define sqlite3_libversion_number *not used*
+
 #define sqlite3_load_extension(one, two, three, four) ({    \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));     \
     sqlite3_load_extension((one), (two), (three), (four));  \
 })
+
+#undef sqlite3_malloc
+#define sqlite3_malloc *not used*
 
 #undef sqlite3_msize
 #define sqlite3_msize *not used*
@@ -514,6 +521,12 @@
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));       \
     sqlite3_progress_handler((one), (two), (three), (four));  \
 })
+
+#undef sqlite3_realloc
+#define sqlite3_realloc *not used*
+
+#undef sqlite3_realloc64
+#define sqlite3_realloc64 *not used*
 
 #define sqlite3_reset(one) ({                                                 \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(sqlite3_db_handle((one)))));  \
@@ -755,8 +768,26 @@
 #undef sqlite3_value_bytes16
 #define sqlite3_value_bytes16 *not used*
 
+#undef sqlite3_value_dup
+#define sqlite3_value_dup *not used*
+
+#undef sqlite3_value_encoding
+#define sqlite3_value_encoding *not used*
+
+#undef sqlite3_value_free
+#define sqlite3_value_free *not used*
+
+#undef sqlite3_value_frombind
+#define sqlite3_value_frombind *not used*
+
 #undef sqlite3_value_int
 #define sqlite3_value_int *not used*
+
+#undef sqlite3_value_numeric_type
+#define sqlite3_value_numeric_type *not used*
+
+#undef sqlite3_value_subtype
+#define sqlite3_value_subtype *not used*
 
 #undef sqlite3_value_text16
 #define sqlite3_value_text16 *not used*
@@ -809,8 +840,14 @@
     sqlite3_wal_hook((one), (two), (three));             \
 })
 
+#undef sqlite3_win32_set_directory
+#define sqlite3_win32_set_directory *not used*
+
 #undef sqlite3_win32_set_directory16
 #define sqlite3_win32_set_directory16 *not used*
+
+#undef sqlite3_win32_set_directory8
+#define sqlite3_win32_set_directory8 *not used*
 
 
 #endif

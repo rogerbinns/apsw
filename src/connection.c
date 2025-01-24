@@ -20,7 +20,7 @@ processes.
 
 /* CALLBACK INFO */
 
-/* details of a registered function passed as user data to sqlite3_create_function */
+/* details of a registered function passed as user data to sqlite3_create_function_v2 */
 typedef struct
 {
   PyObject_HEAD

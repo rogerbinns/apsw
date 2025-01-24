@@ -1018,7 +1018,7 @@ APSWCursor_step(APSWCursor *self)
     :raises BindingsError: You supplied too many or too few bindings for the statements
     :raises IncompleteExecutionError: There are remaining unexecuted queries from your last execute
 
-    -* sqlite3_prepare_v3 sqlite3_step sqlite3_bind_int64 sqlite3_bind_null sqlite3_bind_text64 sqlite3_bind_double sqlite3_bind_blob64 sqlite3_bind_zeroblob sqlite3_stmt_explain
+    -* sqlite3_prepare_v3 sqlite3_step sqlite3_bind_int64 sqlite3_bind_null sqlite3_bind_text64 sqlite3_bind_double sqlite3_bind_blob64 sqlite3_bind_zeroblob64 sqlite3_stmt_explain
 
     .. seealso::
 

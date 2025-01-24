@@ -25,7 +25,7 @@ int
 sqlite3_extension_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi)
 {
   SQLITE_EXTENSION_INIT2(pApi)
-  sqlite3_create_function(db, "half", 1, SQLITE_ANY, 0, halfFunc, 0, 0);
+  sqlite3_create_function_v2(db, "half", 1, SQLITE_ANY, 0, halfFunc, 0, 0, 0);
   return 0;
 }
 
@@ -45,6 +45,6 @@ int
 alternate_sqlite3_extension_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi)
 {
   SQLITE_EXTENSION_INIT2(pApi)
-  sqlite3_create_function(db, "doubleup", 1, SQLITE_ANY, 0, doubleFunc, 0, 0);
+  sqlite3_create_function_v2(db, "doubleup", 1, SQLITE_ANY, 0, doubleFunc, 0, 0, 0);
   return 0;
 }
