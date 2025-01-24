@@ -282,7 +282,9 @@ MakeSqliteMsgFromPyException(char **errmsg)
 }
 
 static void
-make_thread_exception(void)
+make_thread_exception(const char *message)
 {
-  PyErr_Format(ExcThreadingViolation, "Connection is busy in another thread");
+  /* avoid overwriting existing */
+  if (!PyErr_Occurred())
+    PyErr_Format(ExcThreadingViolation, message ? message : "Connection is busy in another thread");
 }

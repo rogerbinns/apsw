@@ -19,7 +19,7 @@
   {                                                                                                                    \
     if (sqlite3_mutex_try(mutex) != SQLITE_OK)                                                                         \
     {                                                                                                                  \
-      make_thread_exception();                                                                                         \
+      make_thread_exception(NULL);                                                                                     \
       return NULL;                                                                                                     \
     }                                                                                                                  \
   } while (0)
@@ -28,11 +28,15 @@
   do                                                                                                                   \
   {                                                                                                                    \
     if (sqlite3_mutex_try(mutex1) != SQLITE_OK)                                                                        \
-      return PyErr_Format(ExcThreadingViolation, msg1);                                                                \
+    {                                                                                                                  \
+      make_thread_exception(msg1);                                                                                     \
+      return NULL;                                                                                                     \
+    }                                                                                                                  \
     if (sqlite3_mutex_try(mutex2) != SQLITE_OK)                                                                        \
     {                                                                                                                  \
       sqlite3_mutex_leave(mutex1);                                                                                     \
-      return PyErr_Format(ExcThreadingViolation, msg2);                                                                \
+      make_thread_exception(msg2);                                                                                     \
+      return NULL;                                                                                                     \
     }                                                                                                                  \
   } while (0)
 

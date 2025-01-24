@@ -520,7 +520,7 @@ cursor_mutex_get(APSWCursor *self)
     if (waited > MAX_WAIT_MS || ++attempt >= NUM_TRIES)
     {
       if (res != SQLITE_OK)
-        make_thread_exception();
+        make_thread_exception("Cursor couldn't run because the Connection is busy in another thread");
       break;
     }
   }
