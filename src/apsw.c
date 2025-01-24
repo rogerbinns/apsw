@@ -1515,7 +1515,7 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
     return strres;
   }
 
-  return PyErr_Format(PyExc_TypeError, "Unsupported type");
+  return PyErr_Format(PyExc_TypeError, "Expected str, bytes, int, float or None, not %s", Py_TypeName(value));
 }
 
 /** .. method:: log(errorcode: int, message: str) -> None

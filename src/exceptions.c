@@ -170,6 +170,9 @@ get_exception_for_code(int res)
 static void
 make_exception(int res, sqlite3 *db)
 {
+  /* don't overwrite any existing exception */
+  assert(!PyErr_Occurred());
+
   const char *errmsg = NULL;
   int error_offset = -1;
 

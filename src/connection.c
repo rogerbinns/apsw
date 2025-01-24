@@ -1690,7 +1690,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
   }
   if (!PyLong_Check(retval))
   {
-    PyErr_Format(PyExc_TypeError, "wal hook must return a number");
+    PyErr_Format(PyExc_TypeError, "wal hook must return a number not %s", Py_TypeName(retval));
     AddTraceBackHere(__FILE__, __LINE__, "walhookcallback", "{s: O, s: s, s: i, s: O}", "Connection", self, "dbname",
                      dbname, "npages", npages, "retval", OBJ(retval));
     goto finally;
@@ -1881,7 +1881,7 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
     goto haveval;
   }
 
-  PyErr_Format(PyExc_TypeError, "Authorizer must return a number");
+  PyErr_Format(PyExc_TypeError, "Authorizer must return a number not %s", Py_TypeName(retval));
   AddTraceBackHere(__FILE__, __LINE__, "authorizer callback", "{s: i, s: s:, s: s, s: s}", "operation", operation,
                    "paramone", paramone, "paramtwo", paramtwo, "databasename", databasename, "triggerview",
                    triggerview);
@@ -2696,7 +2696,7 @@ getaggregatefunctioncontext(sqlite3_context *context)
       goto finally;
     if (!PyCallable_Check(aggfc->stepfunc))
     {
-      PyErr_Format(PyExc_TypeError, "aggregate step function must be callable");
+      PyErr_Format(PyExc_TypeError, "aggregate step function must be callable not %s", Py_TypeName(aggfc->stepfunc));
       goto finally;
     }
     aggfc->finalfunc = PyObject_GetAttr(retval, apst.final);
@@ -2704,7 +2704,7 @@ getaggregatefunctioncontext(sqlite3_context *context)
       goto finally;
     if (!PyCallable_Check(aggfc->finalfunc))
     {
-      PyErr_Format(PyExc_TypeError, "aggregate final function must be callable");
+      PyErr_Format(PyExc_TypeError, "aggregate final function must be callable not %s", Py_TypeName(aggfc->finalfunc));
       goto finally;
     }
     aggfc->state = afcOK;
@@ -3488,7 +3488,7 @@ collation_cb(void *context, int stringonelen, const void *stringonedata, int str
     goto haveval;
   }
 
-  PyErr_Format(PyExc_TypeError, "Collation callback must return a number");
+  PyErr_Format(PyExc_TypeError, "Collation callback must return a number not %s", Py_TypeName(retval));
   AddTraceBackHere(__FILE__, __LINE__, "collation callback", "{s: O, s: O}", "stringone", OBJ(pys1), "stringtwo",
                    OBJ(pys2));
 
@@ -4430,7 +4430,7 @@ Connection_readonly(Connection *self, PyObject *const *fast_args, Py_ssize_t fas
   if (res == 0)
     Py_RETURN_FALSE;
 
-  return PyErr_Format(exc_descriptors[0].cls, "Unknown database name");
+  return PyErr_Format(exc_descriptors[0].cls, "Unknown database name \"%s\"", name);
 }
 
 /** .. method:: db_filename(name: str) -> str
@@ -4493,7 +4493,7 @@ Connection_txn_state(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
   if (res >= 0)
     return PyLong_FromLong(res);
 
-  return PyErr_Format(PyExc_ValueError, "unknown schema");
+  return PyErr_Format(PyExc_ValueError, "unknown schema %s", schema);
 }
 
 /** .. method:: execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
@@ -5154,7 +5154,7 @@ Connection_set_cursor_factory(Connection *self, PyObject *value)
 {
   if (!PyCallable_Check(value))
   {
-    PyErr_Format(PyExc_TypeError, "cursor_factory expected a Callable");
+    PyErr_Format(PyExc_TypeError, "cursor_factory expected a Callable not %s", Py_TypeName(value));
     return -1;
   }
   Py_CLEAR(self->cursor_factory);
@@ -5214,7 +5214,7 @@ Connection_set_exec_trace_attr(Connection *self, PyObject *value)
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
-    PyErr_Format(PyExc_TypeError, "exec_trace expected a Callable");
+    PyErr_Format(PyExc_TypeError, "exec_trace expected a Callable not %s", Py_TypeName(value));
     return -1;
   }
   Py_CLEAR(self->exectrace);
@@ -5259,7 +5259,7 @@ Connection_set_row_trace_attr(Connection *self, PyObject *value)
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
-    PyErr_Format(PyExc_TypeError, "row trace expected a Callable");
+    PyErr_Format(PyExc_TypeError, "row trace expected a Callable not %s", Py_TypeName(value));
     return -1;
   }
   Py_CLEAR(self->rowtrace);
@@ -5317,7 +5317,7 @@ Connection_set_authorizer_attr(Connection *self, PyObject *value)
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
-    PyErr_Format(PyExc_TypeError, "authorizer expected a Callable or None");
+    PyErr_Format(PyExc_TypeError, "authorizer expected a Callable or None not %s", Py_TypeName(value));
     return -1;
   }
   void *res = Connection_internal_set_authorizer(self, (!Py_IsNone(value)) ? value : NULL);

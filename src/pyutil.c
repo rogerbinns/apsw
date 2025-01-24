@@ -271,9 +271,7 @@ hide all this.
   do                                                                                                                   \
   {                                                                                                                    \
     PY_ERR_FETCH(preserve_exc);                                                                                        \
-                                                                                                                       \
     x;                                                                                                                 \
-                                                                                                                       \
     PY_ERR_RESTORE(preserve_exc);                                                                                      \
   } while (0)
 

@@ -39,6 +39,7 @@ Connection_fts5_api(Connection *self)
     return api;
   }
 
+  /* this overwrites any existing exception but is ok because it is a more helpful message */
   PyErr_Format(ExcNoFTS5, "Getting the FTS5 API failed.  Is the extension included in SQLite?");
   return NULL;
 }
@@ -506,6 +507,8 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context, int
 
   while (rc == SQLITE_OK && (item = PyIter_Next(iterator)))
   {
+    assert(!PyErr_Occurred());
+
     /* single string */
     if (PyUnicode_Check(item))
     {

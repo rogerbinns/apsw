@@ -454,7 +454,7 @@ apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut)
   if (PyLong_Check(pyresult))
     *pResOut = !!PyLong_AsInt(pyresult);
   else
-    PyErr_Format(PyExc_TypeError, "xAccess should return a number");
+    PyErr_Format(PyExc_TypeError, "xAccess should return a number not %s", Py_TypeName(pyresult));
 
 finally:
   if (PyErr_Occurred())
@@ -522,7 +522,7 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
   if (!pyresult || !PyUnicode_Check(pyresult))
   {
     if (pyresult)
-      PyErr_Format(PyExc_TypeError, "Expected a string");
+      PyErr_Format(PyExc_TypeError, "Expected a string not %s", Py_TypeName(pyresult));
     result = MakeSqliteMsgFromPyException(NULL);
     AddTraceBackHere(__FILE__, __LINE__, "vfs.xFullPathname", "{s: s, s: i}", "zName", zName, "nOut", nOut);
   }
@@ -792,7 +792,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
   result = (PyObject *)apswfile;
 
 finally:
-  if(res == SQLITE_OK && file)
+  if (res == SQLITE_OK && file)
     file->pMethods->xClose(file);
   if (file)
     PyMem_Free(file);
