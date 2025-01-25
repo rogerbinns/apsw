@@ -33,6 +33,17 @@ into a virtual table source.
 :meth:`generate_series` and :meth:`generate_series_sqlite` provide
 `generate_series <https://sqlite.org/series.html>`__.
 
+Tracing and performance
+-----------------------
+
+Use :class:`Trace` with a block to see the SQL run and stats about
+each one such as timing, rows returned, changes made, memory used, and
+other SQLite counters.  :ref:`Example <example_Trace>`
+
+Use :class:`ShowResourceUsage` with a block to get overall SQLite
+counters as well as operating system timing, cpu usage, memory, and
+I/O. :ref:`example <example_ShowResourceUsage>`
+
 Database storage usage
 ----------------------
 
