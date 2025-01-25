@@ -60,11 +60,6 @@
     sqlite3_bind_null((one), (two));                                          \
 })
 
-#define sqlite3_bind_parameter_count(one) ({                                  \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(sqlite3_db_handle((one)))));  \
-    sqlite3_bind_parameter_count((one));                                      \
-})
-
 #undef sqlite3_bind_parameter_index
 #define sqlite3_bind_parameter_index *not used*
 

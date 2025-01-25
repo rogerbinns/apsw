@@ -1684,11 +1684,20 @@ class Connection:
 
     setprofile = set_profile ## OLD-NAME
 
-    def set_progress_handler(self, callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None:
-        """Sets a callable which is invoked every *nsteps* SQLite
-        inststructions. The callable should return True to abort
-        or False to continue. (If there is an error in your Python *callable*
-        then True/abort will be returned).
+    def set_progress_handler(self, callable: Optional[Callable[[], bool]], nsteps: int = 100, *, id: Optional[Any] = None) -> None:
+        """Sets a callable which is invoked every *nsteps* SQLite inststructions.
+        The callable should return True to abort or False to continue. (If
+        there is an error in your Python *callable* then True/abort will be
+        returned).  SQLite raises :exc:`InterruptError` for aborts.
+
+        Use :class:`None` to cancel the progress handler.  Multiple handlers
+        can be present at once (implemented by APSW). Registered callbacks are
+        distinguished by their ``id`` - an equality test is done to match ids.
+
+        You can use :class:`apsw.ext.Trace` to see how many steps are used for
+        a representative statement, or :class:`apsw.ext.ShowResourceUsage` to
+        see how many are used in a block.  It will generally be several million
+        per second.
 
         .. seealso::
 
@@ -2056,7 +2065,7 @@ class Cursor:
           * `sqlite3_bind_text64 <https://sqlite.org/c3ref/bind_blob.html>`__
           * `sqlite3_bind_double <https://sqlite.org/c3ref/bind_blob.html>`__
           * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__
-          * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__
+          * `sqlite3_bind_zeroblob64 <https://sqlite.org/c3ref/bind_blob.html>`__
           * `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__"""
         ...
 
@@ -4731,9 +4740,11 @@ class ThreadingViolationError(Error):
     time, or tried to close the same connection in two threads at the
     same time.
 
-    You can also get this exception by using a cursor as an argument to
-    itself (eg as the input data for :meth:`Cursor.executemany`).
-    Cursors can only be used for one thing at a time."""
+    You can also get this exception by using a cursor while it is
+    already inside execution such as executing a new query while inside
+    a function called by that cursor.  It is recommended to use
+    :meth:`Connection.execute` and :meth:`Connection.executemany`
+    instead of using cursors directly."""
 
 class TooBigError(Error):
     """`SQLITE_TOOBIG <https://sqlite.org/rescode.html#toobig>`__.  String

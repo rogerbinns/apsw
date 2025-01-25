@@ -2091,11 +2091,20 @@
 #define Connection_set_profile_OLDNAME "setprofile"
 #define Connection_set_profile_OLDDOC Connection_set_profile_USAGE "\n(Old less clear name setprofile)"
 
-#define  Connection_set_progress_handler_DOC "set_progress_handler($self,callable,nsteps=20)\n--\n\nConnection.set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None\n\n" \
-"Sets a callable which is invoked every *nsteps* SQLite\n" \
-"inststructions. The callable should return True to abort\n" \
-"or False to continue. (If there is an error in your Python *callable*\n" \
-"then True/abort will be returned).\n" \
+#define  Connection_set_progress_handler_DOC "set_progress_handler($self,callable,nsteps=100,*,id=None)\n--\n\nConnection.set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 100, *, id: Optional[Any] = None) -> None\n\n" \
+"Sets a callable which is invoked every *nsteps* SQLite inststructions.\n" \
+"The callable should return True to abort or False to continue. (If\n" \
+"there is an error in your Python *callable* then True/abort will be\n" \
+"returned).  SQLite raises :exc:`InterruptError` for aborts.\n" \
+"\n" \
+"Use :class:`None` to cancel the progress handler.  Multiple handlers\n" \
+"can be present at once (implemented by APSW). Registered callbacks are\n" \
+"distinguished by their ``id`` - an equality test is done to match ids.\n" \
+"\n" \
+"You can use :class:`apsw.ext.Trace` to see how many steps are used for\n" \
+"a representative statement, or :class:`apsw.ext.ShowResourceUsage` to\n" \
+"see how many are used in a block.  It will generally be several million\n" \
+"per second.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -2103,13 +2112,15 @@
 "\n" \
 "Calls: `sqlite3_progress_handler <https://sqlite.org/c3ref/progress_handler.html>`__\n" 
 
-#define Connection_set_progress_handler_KWNAMES "callable", "nsteps"
-#define Connection_set_progress_handler_USAGE "Connection.set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None"
+#define Connection_set_progress_handler_KWNAMES "callable", "nsteps", "id"
+#define Connection_set_progress_handler_USAGE "Connection.set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 100, *, id: Optional[Any] = None) -> None"
 
 #define Connection_set_progress_handler_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(nsteps), int)); \
-  assert(nsteps == (20)); \
+  assert(nsteps == (100)); \
+  assert(__builtin_types_compatible_p(typeof(id), PyObject *)); \
+  assert(id == NULL); \
 } while(0)
 
 
@@ -2592,7 +2603,7 @@
 "  * `sqlite3_bind_text64 <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_double <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
-"  * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
+"  * `sqlite3_bind_zeroblob64 <https://sqlite.org/c3ref/bind_blob.html>`__\n" \
 "  * `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__\n" 
 
 #define Cursor_execute_KWNAMES "statements", "bindings", "can_cache", "prepare_flags", "explain"
@@ -4121,9 +4132,11 @@
 "time, or tried to close the same connection in two threads at the\n" \
 "same time.\n" \
 "\n" \
-"You can also get this exception by using a cursor as an argument to\n" \
-"itself (eg as the input data for :meth:`Cursor.executemany`).\n" \
-"Cursors can only be used for one thing at a time.\n" 
+"You can also get this exception by using a cursor while it is\n" \
+"already inside execution such as executing a new query while inside\n" \
+"a function called by that cursor.  It is recommended to use\n" \
+":meth:`Connection.execute` and :meth:`Connection.executemany`\n" \
+"instead of using cursors directly.\n" 
 
 #define  TooBigError_exc_DOC "`SQLITE_TOOBIG <https://sqlite.org/rescode.html#toobig>`__.  String\n" \
 "or BLOB exceeds size limit.  You can  change the limits using\n" \

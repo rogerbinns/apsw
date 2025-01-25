@@ -126,6 +126,7 @@ functions_global = (
     "sqlite3_close",
     # next group don't do any mutexes in sqlite3.c hence don't make
     # any sense for us to.  they generally read or write a single value.
+    "sqlite3_bind_parameter_count",
     "sqlite3_backup_(pagecount|remaining)",
     "sqlite3_blob_bytes",
     "sqlite3_changes64",
