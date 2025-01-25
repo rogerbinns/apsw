@@ -67,6 +67,13 @@ struct tracehook
   PyObject *id;
 };
 
+struct progresshandler
+{
+  int nsteps;
+  PyObject *callback;
+  PyObject *id;
+};
+
 /* CONNECTION TYPE */
 
 struct Connection
@@ -88,7 +95,6 @@ struct Connection
   PyObject *updatehook;
   PyObject *commithook;
   PyObject *walhook;
-  PyObject *progresshandler;
   PyObject *authorizer;
   PyObject *collationneeded;
   PyObject *exectrace;
@@ -97,6 +103,9 @@ struct Connection
      callback. */
   struct tracehook *tracehooks;
   unsigned tracehooks_count;
+
+  struct progresshandler *progresshandler;
+  unsigned progresshandler_count;
 
   /* if we are using one of our VFS since sqlite doesn't reference count them */
   PyObject *vfs;
@@ -180,7 +189,6 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->updatehook);
   Py_CLEAR(self->commithook);
   Py_CLEAR(self->walhook);
-  Py_CLEAR(self->progresshandler);
   Py_CLEAR(self->authorizer);
   Py_CLEAR(self->collationneeded);
   Py_CLEAR(self->exectrace);
@@ -193,9 +201,20 @@ Connection_internal_cleanup(Connection *self)
     Py_CLEAR(self->tracehooks[i].callback);
     Py_CLEAR(self->tracehooks[i].id);
   }
-  PyMem_Del(self->tracehooks);
+  PyMem_Free(self->tracehooks);
+
   self->tracehooks = 0;
   self->tracehooks_count = 0;
+
+  for (unsigned i = 0; i < self->progresshandler_count; i++)
+  {
+    Py_CLEAR(self->progresshandler[i].callback);
+    Py_CLEAR(self->progresshandler[i].id);
+  }
+  PyMem_Free(self->progresshandler);
+
+  self->progresshandler = 0;
+  self->progresshandler_count = 0;
 }
 
 static void
@@ -396,7 +415,6 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->updatehook = 0;
     self->commithook = 0;
     self->walhook = 0;
-    self->progresshandler = 0;
     self->authorizer = 0;
     self->collationneeded = 0;
     self->exectrace = 0;
@@ -415,6 +433,8 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
       self->tracehooks[0].mask = 0;
       self->tracehooks_count = 1;
     }
+    self->progresshandler = 0;
+    self->progresshandler_count = 0;
     CALL_TRACK_INIT(xConnect);
     if (self->dependents && self->tracehooks)
       return (PyObject *)self;
@@ -1768,20 +1788,32 @@ progresshandlercb(void *context)
   if (PyErr_Occurred())
     goto finally;
 
-  PyObject *vargs[] = { NULL };
-  retval = PyObject_Vectorcall(self->progresshandler, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-
-  if (!retval)
-    goto finally; /* abort due to exception */
-
-  ok = PyObject_IsTrueStrict(retval);
-
-  assert(ok == -1 || ok == 0 || ok == 1);
-  if (ok == -1)
+  for (unsigned i = 0; i < self->progresshandler_count; i++)
   {
-    ok = 1;
-    assert(PyErr_Occurred());
-    goto finally; /* abort due to exception in result */
+    if (!self->progresshandler[i].callback)
+      continue;
+
+    PyObject *vargs[] = { NULL };
+    retval
+        = PyObject_Vectorcall(self->progresshandler[i].callback, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+
+    if (!retval)
+      goto finally; /* abort due to exception */
+
+    ok = PyObject_IsTrueStrict(retval);
+
+    assert(ok == -1 || ok == 0 || ok == 1);
+
+    if (ok == 1)
+      goto finally;
+
+    if (ok == -1)
+    {
+      ok = 1;
+      assert(PyErr_Occurred());
+      goto finally; /* abort due to exception in result */
+    }
+    Py_CLEAR(retval);
   }
 
 finally:
@@ -1791,12 +1823,21 @@ finally:
   return ok;
 }
 
-/** .. method:: set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None
+/** .. method:: set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 100, *, id: Optional[Any] = None) -> None
 
-  Sets a callable which is invoked every *nsteps* SQLite
-  inststructions. The callable should return True to abort
-  or False to continue. (If there is an error in your Python *callable*
-  then True/abort will be returned).
+  Sets a callable which is invoked every *nsteps* SQLite inststructions.
+  The callable should return True to abort or False to continue. (If
+  there is an error in your Python *callable* then True/abort will be
+  returned).  SQLite raises :exc:`InterruptError` for aborts.
+
+  Use :class:`None` to cancel the progress handler.  Multiple handlers
+  can be present at once (implemented by APSW). Registered callbacks are
+  distinguished by their ``id`` - an equality test is done to match ids.
+
+  You can use :class:`apsw.ext.Trace` to see how many steps are used for
+  a representative statement, or :class:`apsw.ext.ShowResourceUsage` to
+  see how many are used in a block.  It will generally be several million
+  per second.
 
   .. seealso::
 
@@ -1809,9 +1850,9 @@ static PyObject *
 Connection_set_progress_handler(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                 PyObject *fast_kwnames)
 {
-  /* sqlite3_progress_handler doesn't return an error code */
-  int nsteps = 20;
+  int nsteps = 100;
   PyObject *callable = NULL;
+  PyObject *id = NULL;
 
   CHECK_CLOSED(self, NULL);
   {
@@ -1819,18 +1860,88 @@ Connection_set_progress_handler(Connection *self, PyObject *const *fast_args, Py
     ARG_PROLOG(2, Connection_set_progress_handler_KWNAMES);
     ARG_MANDATORY ARG_optional_Callable(callable);
     ARG_OPTIONAL ARG_int(nsteps);
+    ARG_OPTIONAL ARG_pyobject(id);
     ARG_EPILOG(NULL, Connection_set_progress_handler_USAGE, );
   }
+
+  if (callable && nsteps <= 0)
+    return PyErr_Format(PyExc_ValueError, "nsteps must be a positive number");
+
+  /* clear out any matching id */
+  for (unsigned i = 0; i < self->progresshandler_count; i++)
+  {
+    if (self->progresshandler[i].callback)
+    {
+      int eq;
+      /* handle either side being NULL */
+      if ((!id || !self->progresshandler[i].id) && id != self->progresshandler[i].id)
+        eq = 0;
+      else
+        eq = PyObject_RichCompareBool(id, self->progresshandler[i].id, Py_EQ);
+
+      if (eq == -1)
+        return NULL;
+      if (eq)
+      {
+        Py_CLEAR(self->progresshandler[i].callback);
+        Py_CLEAR(self->progresshandler[i].id);
+      }
+    }
+  }
+
+  if (callable)
+  {
+    /* find an empty slot */
+    int found = 0;
+    for (unsigned i = 0; i < self->progresshandler_count; i++)
+    {
+      if (!self->progresshandler[i].callback)
+      {
+        self->progresshandler[i].nsteps = nsteps;
+        self->progresshandler[i].id = id ? Py_NewRef(id) : NULL;
+        self->progresshandler[i].callback = Py_NewRef(callable);
+        found = 1;
+        break;
+      }
+    }
+    if (!found)
+    {
+      /* increase progresshandler size - we have an arbitrary limit which
+         makes it easier to test exhaustion */
+      struct progresshandler *new_progresshandler
+          = (self->progresshandler_count < 1024)
+                ? PyMem_Realloc(self->progresshandler,
+                                sizeof(struct progresshandler) * (self->progresshandler_count + 1))
+                : NULL;
+      if (!new_progresshandler)
+        return PyErr_NoMemory();
+      self->progresshandler = new_progresshandler;
+      self->progresshandler[self->progresshandler_count].nsteps = nsteps;
+      self->progresshandler[self->progresshandler_count].id = id ? Py_NewRef(id) : NULL;
+      self->progresshandler[self->progresshandler_count].callback = Py_NewRef(callable);
+      self->progresshandler_count++;
+    }
+  }
+
+  int min_steps = INT_MAX;
+  int active = 0;
+  for (unsigned i = 0; i < self->progresshandler_count; i++)
+  {
+    if (self->progresshandler[i].callback)
+    {
+      min_steps = Py_MIN(min_steps, self->progresshandler[i].nsteps);
+      active += 1;
+    }
+  }
+
   DBMUTEX_ENSURE(self->dbmutex);
-  if (!callable)
-    sqlite3_progress_handler(self->db, 0, NULL, NULL);
+  if (active)
+    sqlite3_progress_handler(self->db, min_steps, progresshandlercb, self);
   else
-    sqlite3_progress_handler(self->db, nsteps, progresshandlercb, self);
+    sqlite3_progress_handler(self->db, 0, NULL, NULL);
   sqlite3_mutex_leave(self->dbmutex);
 
-  Py_CLEAR(self->progresshandler);
-  if (callable)
-    self->progresshandler = Py_NewRef(callable);
+  assert(!PyErr_Occurred());
 
   Py_RETURN_NONE;
 }
@@ -5722,7 +5833,6 @@ Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
   Py_VISIT(self->updatehook);
   Py_VISIT(self->commithook);
   Py_VISIT(self->walhook);
-  Py_VISIT(self->progresshandler);
   Py_VISIT(self->authorizer);
   Py_VISIT(self->collationneeded);
   Py_VISIT(self->exectrace);
@@ -5735,20 +5845,20 @@ Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
     Py_VISIT(self->tracehooks[i].callback);
     Py_VISIT(self->tracehooks[i].id);
   }
+  for (unsigned i = 0; i < self->progresshandler_count; i++)
+  {
+    Py_VISIT(self->progresshandler[i].callback);
+    Py_VISIT(self->progresshandler[i].id);
+  }
   return 0;
 }
 
 static PyObject *
 Connection_tp_str(Connection *self)
 {
-  /* dbmutex will become NULL if the connection is closed */
-  for (; self->dbmutex && SQLITE_OK != sqlite3_mutex_try(self->dbmutex);)
-  {
-    /* another thread could get GIL and close */
-    Py_BEGIN_ALLOW_THREADS Py_END_ALLOW_THREADS;
-  }
   if (self->dbmutex)
   {
+    DBMUTEX_ENSURE(self->dbmutex);
     PyObject *res
         = PyUnicode_FromFormat("<apsw.Connection object \"%s\" at %p>", sqlite3_db_filename(self->db, "main"), self);
     sqlite3_mutex_leave(self->dbmutex);

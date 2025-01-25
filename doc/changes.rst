@@ -10,6 +10,12 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+next
+====
+
+:meth:`Connection.set_progress_handler` allows multiple callbacks
+(multiplexed by APSW).
+
 3.48.0.0
 ========
 

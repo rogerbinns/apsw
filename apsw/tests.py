@@ -19,7 +19,6 @@ import io
 import itertools
 import functools
 import json
-import logging
 import math
 import mmap
 import os
@@ -2933,7 +2932,7 @@ class APSW(unittest.TestCase):
 
         self.assertRaises(TypeError, self.db.set_progress_handler, 12)  # must be callable
         self.assertRaises(TypeError, self.db.set_progress_handler, ph, "foo")  # second param is steps
-        self.db.set_progress_handler(ph, -17)  # SQLite doesn't complain about negative numbers
+        self.assertRaises(ValueError, self.db.set_progress_handler, ph, -17)  # SQLite doesn't complain about negative numbers but we do
         self.db.set_progress_handler(ph, 20)
         curnext(c.execute("select max(x) from foo"))
 
@@ -2957,6 +2956,79 @@ class APSW(unittest.TestCase):
 
         self.db.set_progress_handler(ph, 1)
         self.assertRaises(ZeroDivisionError, c.execute, "update foo set x=-10")
+        self.db.set_progress_handler(None)
+
+        # new id stuff
+        counter = 0
+
+        def toomany():
+            nonlocal counter
+            while True:
+                self.db.set_progress_handler(ph, id=f"xx{counter}")
+                counter += 1
+
+        with contextlib.suppress(MemoryError):
+            toomany()
+
+        self.assertGreater(counter, 1000)
+        for i in range(counter):
+            self.db.set_progress_handler(None, id=f"xx{i}")
+
+        N = 128
+        ids = [f"xyz{n}" for n in range(N)]
+
+        def ph(n):
+            called[n] = True
+            return False
+
+        for trial in {0, 1, 77, 128}:
+            active = random.sample(range(N), trial)
+            for n in range(N):
+                self.db.set_progress_handler(functools.partial(ph, n) if n in active else None, nsteps=1, id=ids[n])
+            called = [False] * N
+            self.db.execute("select 3").get
+            for n in range(N):
+                if n in active:
+                    self.assertTrue(called[n])
+                else:
+                    self.assertFalse(called[n])
+
+        for id in ids:
+            self.db.set_progress_handler(None, id=id)
+
+        called = [False, False]
+        def phabort():
+            called[0] = True
+            return True
+
+        def phcontinue():
+            called[1] = True
+            return False
+
+        # we depend on them being called in this registration order
+        # which does match the implementation
+        self.db.set_progress_handler(phabort, 1, id=phabort)
+        self.db.set_progress_handler(phcontinue, 1, id=phcontinue)
+
+        with contextlib.suppress(apsw.InterruptError):
+            self.db.execute("select 3").get
+
+        self.assertEqual(called, [True, False])
+
+        called = [False, False]
+        self.db.set_progress_handler(None, 1, id=phabort)
+        self.db.set_progress_handler(None, 1, id=phcontinue)
+        self.db.execute("select 3").get
+
+        # verify nsteps
+        called = [False, False]
+        self.db.set_progress_handler(phcontinue, 1000000)
+        self.db.execute("select 3").get
+        self.assertEqual(called, [False, False])
+        self.db.set_progress_handler(phcontinue, 1)
+        self.db.execute("select 3").get
+        self.assertEqual(called, [False, True])
+
 
     def testChanges(self):
         "Verify reporting of changes"
