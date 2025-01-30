@@ -1,32 +1,32 @@
 # Provides various useful routines
 
 from __future__ import annotations
+
+import abc
 import collections
 import collections.abc
-
+import contextvars
 import dataclasses
-from dataclasses import dataclass, make_dataclass, is_dataclass
-
-from typing import Union, Any, Callable, Sequence, Iterable, TextIO, Literal, Iterator, Generator
-import types
-
-import functools
-import time
-import abc
 import enum
+import functools
+import html
 import inspect
 import keyword
-import math
-from fractions import Fraction
 import logging
+import math
 import os
-import html
-import traceback
 import re
 import string
+import sys
+import time
+import traceback
+import types
+from dataclasses import dataclass, is_dataclass, make_dataclass
+from fractions import Fraction
+from typing import Any, Callable, Generator, Iterable, Iterator, Literal, Sequence, TextIO, Union
+
 import apsw
 import apsw.unicode
-import sys
 
 NoneType = types.NoneType if sys.version_info > (3, 10) else type(None)
 
@@ -1169,7 +1169,7 @@ def analyze_pages(con: apsw.Connection, scope: int, schema: str = "main") -> Dat
     return res
 
 
-def storage(v) -> str:
+def storage(v: int) -> str:
     """Converts number to storage size (KB, MB, GB etc)
 
     :meta private:
