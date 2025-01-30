@@ -1492,14 +1492,23 @@ apsw_fts5_extension_function(const Fts5ExtensionApi *pApi, /* API offered by cur
   PyGILState_STATE gilstate = PyGILState_Ensure();
   PyObject *retval = NULL;
 
+  MakeExistingException();
+
   VLA_PYO(vargs, 2 + nVal);
 
-  APSWFTS5ExtensionApi *extapi = fts5extensionapi_acquire();
+  APSWFTS5ExtensionApi *extapi = NULL;
+
+  if (PyErr_Occurred())
+    goto finally;
+
+  extapi = fts5extensionapi_acquire();
   if (!extapi)
   {
     sqlite3_result_error_nomem(pCtx);
     goto finally;
   }
+
+  assert(!PyErr_Occurred());
 
   struct fts5aux_cbinfo *cbinfo = (struct fts5aux_cbinfo *)pApi->xUserData(pFts);
 
