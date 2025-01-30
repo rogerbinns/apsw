@@ -10434,6 +10434,128 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertIn("pragma_function_list", outs)
         self.assertIn("CPU consumption", outs)
 
+    def testQueryLimit(self):
+        "apsw.ext.query_limit"
+
+        # work around https://sqlite.org/forum/forumpost/3547aa1078
+        self.db.set_profile(lambda *args: None)
+
+        query_limit = apsw.ext.query_limit
+
+        apsw.ext.make_virtual_module(self.db, "generate_series", apsw.ext.generate_series)
+
+        with query_limit(self.db, row_limit=30):
+            counter = 0
+            for row in self.db.execute("select * from generate_series(0,40)"):
+                counter += 1
+
+        self.assertEqual(counter, 30)
+
+        exc = None
+        try:
+            with query_limit(self.db, row_limit=30, row_exception=ZeroDivisionError):
+                counter = 0
+                for _ in self.db.execute("select * from generate_series(0,40)"):
+                    counter += 1
+        except ZeroDivisionError as e:
+            exc = e
+
+        self.assertEqual(counter, 30)
+        self.assertIsInstance(exc, ZeroDivisionError)
+
+        # make sure vtable behind the scenes is ignored
+        query = "select name from pragma_function_list where name like 'd%' order by name"
+        correct = self.db.execute(query).get
+        with query_limit(self.db, row_limit=len(correct)):
+            limited = self.db.execute(query).get
+
+        self.assertEqual(correct, limited)
+
+        limited2 = None
+        with query_limit(self.db, row_limit=len(correct) - 1):
+            limited2 = self.db.execute(query).get
+
+        self.assertIsNone(limited2)
+
+        # nested
+        limited2 = None
+        with query_limit(self.db, row_limit=len(correct)):
+            with query_limit(self.db, row_limit=100000):
+                # inner should not be affected by outer
+                self.db.execute("select * from pragma_function_list").get
+
+            limited2 = self.db.execute(query).get
+
+        self.assertEqual(limited2, correct)
+
+        # should pass through exception
+        exc = None
+        res = []
+        try:
+            with query_limit(self.db, row_limit=10000):
+                self.db.execute(query).get
+                with query_limit(self.db, row_limit=2, row_exception=ZeroDivisionError):
+                    for (name,) in self.db.execute("select name from pragma_function_list"):
+                        res.append(name)
+        except Exception as e:
+            exc = e
+
+        self.assertIsInstance(exc, ZeroDivisionError)
+        self.assertEqual(len(res), 2)
+
+        # timeouts
+        fractal = """
+            WITH RECURSIVE
+            xaxis(x) AS (VALUES(-2.0) UNION ALL SELECT x+0.05 FROM xaxis WHERE x<1.2),
+            yaxis(y) AS (VALUES(-1.0) UNION ALL SELECT y+0.1 FROM yaxis WHERE y<1.0),
+            m(iter, cx, cy, x, y) AS (
+                SELECT 0, x, y, 0.0, 0.0 FROM xaxis, yaxis
+                UNION ALL
+                SELECT iter+1, cx, cy, x*x-y*y + cx, 2.0*x*y + cy FROM m
+                WHERE (x*x + y*y) < 4.0 AND iter< 800000 -- this should be 28 and controls how much work is done
+            ),
+            m2(iter, cx, cy) AS (
+                SELECT max(iter), cx, cy FROM m GROUP BY cx, cy
+            ),
+            a(t) AS (
+                SELECT group_concat( substr(' .+*#', 1+min(iter/7,4), 1), '')
+                FROM m2 GROUP BY cy
+            )
+            SELECT group_concat(rtrim(t),x'0a') FROM a;"""
+
+        start = time.monotonic()
+        with query_limit(self.db, timeout=0.1):
+            self.db.execute(fractal).get
+
+        self.assertGreaterEqual(time.monotonic() - start, 0.1)
+
+        exc = None
+        res = []
+        try:
+            with query_limit(self.db, row_limit=10000):
+                self.db.execute(query).get
+                with query_limit(self.db, timeout=0, timeout_exception=ZeroDivisionError, row_steps=1):
+                    for (name,) in self.db.execute("select name from pragma_function_list"):
+                        res.append(name)
+        except Exception as e:
+            exc = e
+
+        self.assertIsInstance(exc, ZeroDivisionError)
+        self.assertEqual(res, [])
+
+        exc = None
+        try:
+            with query_limit(self.db):
+                self.db.execute(query).get
+                with query_limit(self.db):
+                    for (name,) in self.db.execute("select name from pragma_function_list"):
+                        res.append(name)
+                    1 / 0
+        except Exception as e:
+            exc = e
+
+        self.assertIsInstance(exc, ZeroDivisionError)
+
     def testExtDataClassRowFactory(self) -> None:
         "apsw.ext.DataClassRowFactory"
         dcrf = apsw.ext.DataClassRowFactory()

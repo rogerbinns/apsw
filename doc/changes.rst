@@ -16,6 +16,9 @@ next
 :meth:`Connection.set_progress_handler` allows multiple callbacks
 (multiplexed by APSW).
 
+Added :class:`apsw.ext.query_limit` to limit total row count and
+execution time within a block. (:issue:`520`)
+
 3.48.0.0
 ========
 
