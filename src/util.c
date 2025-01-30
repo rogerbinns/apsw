@@ -42,6 +42,13 @@
 
 /* use this when we have to get the dbmutex - eg in dealloc functions
    - where we busy wait releasing gil until dbmutex is acquired.
+
+  a different thread could be running a sqlite3_step with the GIL
+  released and holding the mutex.  when it finishes it will want
+  the GIL so it can copy error messages etc, but we are holding the
+  GIL.  only after it has copied data into python will it then
+  release the db mutex.
+
    if the fork checker is in use and this object was allocated in one
    process and then freed in the next, it will busy loop forever
    on SQLITE_MISUSE and spamming the unraisable exception hook with
