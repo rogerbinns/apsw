@@ -94,6 +94,9 @@ def do_mappings():
         op.append("")
         op.append("    `" + desc + " <" + consts[desc]["page"] + ">`__ constants")
         op.append("")
+        if map.startswith("mapping_session_"):
+            op.append("    (Only present when :doc:`session extension <session>` is enabled)")
+            op.append("")
 
         vals = m[:]
         vals.sort()
