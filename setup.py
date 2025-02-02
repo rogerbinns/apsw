@@ -555,6 +555,7 @@ class apsw_build_ext(beparent):
                 "geopoly",
                 "math_functions",
                 "dbstat_vtab",
+                "session",
             ]
             if not self.omit or "icu" not in self.omit.split(","):
                 if get_icu_config():
@@ -667,6 +668,7 @@ class apsw_build_ext(beparent):
                         "json1",
                         "rbu",
                         "geopoly",
+                        "session",
                     )
                 ):
                     write("Unknown enable " + e, sys.stderr)

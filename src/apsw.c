@@ -55,6 +55,13 @@ API Reference
 #include "sqlite3config.h"
 #endif
 
+/* session requires pre-update hook and you get weird things if session is defined but not the hook */
+#ifdef SQLITE_ENABLE_SESSION
+#ifndef SQLITE_ENABLE_PREUPDATE_HOOK
+#define SQLITE_ENABLE_PREUPDATE_HOOK
+#endif
+#endif
+
 /* SQLite amalgamation */
 #ifdef APSW_USE_SQLITE_AMALGAMATION
 
@@ -236,6 +243,11 @@ static int allow_missing_dict_bindings = 0;
 
 /* virtual file system */
 #include "vfs.c"
+
+/* session extension */
+#ifdef SQLITE_ENABLE_SESSION
+#include "session.c"
+#endif
 
 /* constants */
 #include "constants.c"

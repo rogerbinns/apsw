@@ -18,7 +18,8 @@ GENDOCS = \
 	doc/cursor.rst \
 	doc/apsw.rst \
 	doc/backup.rst \
-	doc/fts.rst
+	doc/fts.rst \
+	doc/session.rst
 
 .PHONY : help all tagpush clean doc docs build_ext build_ext_debug coverage pycoverage test test_debug fulltest linkcheck unwrapped \
 		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug \
