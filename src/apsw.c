@@ -147,11 +147,6 @@ MakeExistingException(void)
 
 static int APSW_Should_Fault(const char *);
 
-/* Are we doing 64 bit? - _LP64 is best way I can find as sizeof isn't valid in cpp #if */
-#if defined(_LP64) && _LP64
-#define APSW_TEST_LARGE_OBJECTS
-#endif
-
 #else /* APSW_FAULT_INJECT */
 #define APSW_FAULT(faultName, good, bad)                                                                               \
   do                                                                                                                   \
