@@ -5749,29 +5749,6 @@ class APSW(unittest.TestCase):
                 self.assertEqual(row[0], text)
             db.close()
 
-    # calls that need protection
-    calls = {
-     }
-
-    def sourceCheckMutexCall(self, filename, name, lines):
-        # we check that various calls are wrapped with various macros
-        for i, line in enumerate(lines):
-            if "PYSQLITE_CALL" in line and "Py" in line:
-                self.fail("%s: %s() line %d - Py call while GIL released - %s" % (filename, name, i, line.strip()))
-            for k, v in self.calls.items():
-                if v.get("skipfiles", None) and v["skipfiles"].match(filename):
-                    continue
-                mo = v["match"].search(line)
-                if mo:
-                    func = mo.group(1)
-                    if v.get("skipcalls", None) and v["skipcalls"].match(func):
-                        continue
-                    if not v["needs"].search(line) and not v["needs"].search(lines[i - 1]):
-                        self.fail(
-                            "%s: %s() line %d call to %s(): %s - %s\n"
-                            % (filename, name, i, func, v["desc"], line.strip())
-                        )
-
     def sourceCheckFunction(self, filename, name, lines):
         # existing exception in callbacks
         if any("PyGILState_Ensure" in line for line in lines):
