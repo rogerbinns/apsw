@@ -27,8 +27,6 @@ class Session:
         # database has to keep ref to this like with
         # blob etc as this has to be closed before
         # the database is
-        # also check no session is already active since
-        # only one can be at a time
         ...
 
     # sqlite3session_delete

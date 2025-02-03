@@ -28,6 +28,7 @@ def generate(options):
             "-Isqlite3",
             "-Isrc",
             "-DSQLITE_ENABLE_FTS5",
+            "-DSQLITE_ENABLE_SESSION",
         ]
     )
 

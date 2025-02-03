@@ -1847,6 +1847,10 @@ static PyMethodDef module_methods[] = {
   { "__getattr__", (PyCFunction)apsw_getattr, METH_O, "module getattr" },
   { "connections", (PyCFunction)apsw_connections, METH_NOARGS, Apsw_connections_DOC },
   { "sleep", (PyCFunction)apsw_sleep, METH_FASTCALL | METH_KEYWORDS, Apsw_sleep_DOC },
+#ifdef SQLITE_ENABLE_SESSION
+  { "session_config", (PyCFunction)apsw_session_config, METH_VARARGS, Apsw_session_config_DOC },
+#endif
+
 #ifndef APSW_OMIT_OLD_NAMES
   { Apsw_sqlite_lib_version_OLDNAME, (PyCFunction)get_sqlite_version, METH_NOARGS, Apsw_sqlite_lib_version_OLDDOC },
   { Apsw_apsw_version_OLDNAME, (PyCFunction)get_apsw_version, METH_NOARGS, Apsw_apsw_version_OLDDOC },
@@ -1890,7 +1894,12 @@ PyInit_apsw(void)
       || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0
       || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_object) < 0
       || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0
-      || PyType_Ready(&PyObjectBindType) < 0)
+      || PyType_Ready(&PyObjectBindType) < 0
+#ifdef SQLITE_ENABLE_SESSION
+      || PyType_Ready(&APSWSessionType) <0  || PyType_Ready(&APSWTableChangeType) <0
+      || PyType_Ready(&APSWChangesetType) <0 || PyType_Ready(&APSWChangesetBuilderType) <0
+#endif
+      )
     goto fail;
 
   /* PyStructSequence_NewType is broken in some Pythons
@@ -1940,6 +1949,12 @@ PyInit_apsw(void)
   ADD(FTS5Tokenizer, APSWFTS5TokenizerType);
   ADD(FTS5ExtensionApi, APSWFTS5ExtensionAPIType);
   ADD(pyobject, PyObjectBindType);
+#ifdef SQLITE_ENABLE_SESSION
+  ADD(Session, APSWSessionType);
+  ADD(Changeset, APSWChangesetType);
+  ADD(ChangesetBuilder, APSWChangesetBuilderType);
+  ADD(TableChange, APSWTableChangeType);
+#endif
 #undef ADD
 
   /** .. attribute:: connection_hooks

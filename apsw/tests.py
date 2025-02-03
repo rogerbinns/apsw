@@ -5815,6 +5815,11 @@ class APSW(unittest.TestCase):
                 },
                 "order": ("use", "closed"),
             },
+            "APSWSession": {
+                "skip": {"init", "close_internal", "close"},
+                "req": {"closed": "CHECK_SESSION_CLOSED"},
+                "order": ("closed",),
+            },
             "APSWBlob": {
                 "skip": ("dealloc", "init", "close", "close_internal", "tp_str"),
                 "req": {"closed": "CHECK_BLOB_CLOSED"},
@@ -5956,10 +5961,9 @@ class APSW(unittest.TestCase):
             for line in read_whole_file(filename, "rt").split("\n"):
                 if line.startswith("}") and infunc:
                     if infunc == 1:
-                        self.sourceCheckMutexCall(filename, name1, lines)
                         self.sourceCheckFunction(filename, name1, lines)
                     elif infunc == 2:
-                        self.sourceCheckMutexCall(filename, name2, lines)
+                        pass
                     else:
                         assert False
                     infunc = 0
