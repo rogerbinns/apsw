@@ -158,6 +158,7 @@ Py_TypeName(PyObject *o)
   return o ? (Py_TYPE(o)->tp_name) : "NULL";
 }
 
+/* ::TODO:: rename this to IsBoolStrict */
 #undef PyObject_IsTrueStrict
 static int
 PyObject_IsTrueStrict(PyObject *o)
