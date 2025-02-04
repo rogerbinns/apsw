@@ -48,7 +48,7 @@ functions_not_used = (
     "sqlite3_create_function",
     "sqlite3_create_module",
     "sqlite3_database_file_object",
-    "sqlite3_err(code|str)",
+    "sqlite3_errcode",
     "sqlite3_filename_database",
     "sqlite3_free_(filename|table)",
     "sqlite3_(get|set)_(auxdata|clientdata|table)",
@@ -91,6 +91,7 @@ functions_special = (
 
 # these do not have a per database mutex
 functions_global = (
+    "sqlite3_errstr",
     "sqlite3_libversion",
     "sqlite3_libversion_number",
     "sqlite3_compileoption_.*",

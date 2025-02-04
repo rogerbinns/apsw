@@ -181,7 +181,10 @@ make_exception(int res, sqlite3 *db)
   if (db)
     errmsg = sqlite3_errmsg(db);
   if (!errmsg)
-    errmsg = "error";
+  {
+    errmsg = sqlite3_errstr(res);
+    if(!errmsg) errmsg ="error";
+  }
 
   if (db)
     error_offset = sqlite3_error_offset(db);
