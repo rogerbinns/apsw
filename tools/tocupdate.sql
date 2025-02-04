@@ -38,9 +38,19 @@ insert into toc values
 
     -- functions
 
+    ("sqlite3session_changeset_size", "function", 0, "Return An Upper-limit For The Size Of The Changeset", "session/sqlite3session_changeset_size.html"),
     ("sqlite3session_config", "function", 0, "Configure global parameters", "session/sqlite3session_config.html"),
     ("sqlite3session_delete", "function", 0, "Delete A Session Object", "session/sqlite3session_delete.html"),
-    ("sqlite3session_enable", "function", 0, "Enable Or Disable A Session Object", "session/sqlite3session_enable.html")
+    ("sqlite3session_diff", "function", 0, "Load The Difference Between Tables Into A Session", "session/sqlite3session_diff.html"),
+    ("sqlite3session_enable", "function", 0, "Enable Or Disable A Session Object", "session/sqlite3session_enable.html"),
+    ("sqlite3session_indirect", "function", 0, "Set Or Clear the Indirect Change Flag", "session/sqlite3session_indirect.html"),
+    ("sqlite3session_isempty", "function", 0, "Test if a changeset has recorded any changes", "session/sqlite3session_isempty.html"),
+    ("sqlite3session_memory_used", "function", 0, "Query for the amount of heap memory used by a session object", "session/sqlite3session_memory_used.html"),
+    ("sqlite3session_table_filter", "function", 0, "Set a table filter on a Session Object", "session/sqlite3session_table_filter.html"),
+    ("sqlite3session_attach", "function", 0, "Attach A Table To A Session Object", "session/sqlite3session_attach.html"),
+    ("sqlite3session_object_config", "function", 0, "Configure a Session Object", "session/sqlite3session_object_config.html")
+
+
     ;
 
 delete from toc where name='SQLITE_TRACE' and title='SQL Trace Event Codes';

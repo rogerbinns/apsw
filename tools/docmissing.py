@@ -76,6 +76,7 @@ vfs = apsw.VFS("aname", "")
 vfsfile = apsw.VFSFile(
     "", con.db_filename("main"), [apsw.SQLITE_OPEN_MAIN_DB | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_READWRITE, 0]
 )
+session = apsw.Session(con, "main")
 
 # virtual tables aren't real - just check their size hasn't changed
 for n, e in (("VTModule", 3), ("VTTable", 17), ("VTCursor", 7)):
@@ -92,6 +93,7 @@ for name, obj in (
     ("apsw", apsw),
     ("VFSFcntlPragma", apsw.VFSFcntlPragma),
     ("zeroblob", apsw.zeroblob(3)),
+    ("Session", session),
 ):
     if name not in classes:
         retval = 1
@@ -136,6 +138,10 @@ for name, obj in (
                 "VFSFcntlPragma",
                 "FTS5Tokenizer",
                 "FTS5ExtensionApi",
+                "Session",
+                "Changeset",
+                "ChangesetBuilder",
+                "TableChange",
             ):
                 continue
             # ignore mappings !!!

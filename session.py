@@ -37,7 +37,7 @@ class Session:
     def attach(self, name: str | None): ...
 
     # sqlite3session_table_filter
-    def attach_filter(Callable[[str], bool]): ...
+    def table_filter(Callable[[str], bool]): ...
 
     # sqlite3session_enable
     enabled : bool   # r/w
@@ -46,7 +46,7 @@ class Session:
     indirect: bool # r/w
 
     # sqlite3session_isempty
-    empty: bool # ro
+    is_empty: bool # ro
 
     # sqlite3session_memory_used
     memory_used: int # ro

@@ -91,6 +91,7 @@ functions_special = (
 
 # these do not have a per database mutex
 functions_global = (
+    "sqlite3session_.*",
     "sqlite3_errstr",
     "sqlite3_libversion",
     "sqlite3_libversion_number",
