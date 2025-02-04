@@ -3,7 +3,9 @@
 Session extension
 *****************
 
-The `session extension <https://www.sqlite.org/sessionintro.html>`
+APSW provides access to all stable session functionality.
+
+The `session extension <https://www.sqlite.org/sessionintro.html>`__
 allows recording changes to a database, and later replaying them on
 another database, or undoing them.  This allows offline syncing, as
 well as collaboration.  It is also useful for debugging, development,
@@ -30,6 +32,19 @@ Notable features include:
 * Using the change set builder, you can accumulate multiple change
   sets, and add changes from an iterator or conflict handler.
 
+.. important::
+
+    By default Session can only record and replay changes that have an
+    explicit `primary key <https://www.sqlite.org/lang_createtable.html#the_primary_key>`__
+    defined (ie ``PRIMARY KEY`` must be present in the table definition).
+    It doesn't matter what type or how many columns make up the primary key.
+    This provides a stable way to identify rows for insertion, changes, and
+    deletion.
+
+    You can use :meth:`Session.config` with `SQLITE_SESSION_OBJCONFIG_ROWID
+    <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__
+    to enable recording of tables without an explicit primary key.
+
 Availability
 ============
 
@@ -42,56 +57,10 @@ APSW should end up with it too.
 The methods and classes documented here are only present if session
 support was enabled.
 
-API
-===
+Extension configuration
+=======================
 
  */
-
-#define CHECK_SESSION_CLOSED(e)                                                                                        \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    if (!self->session)                                                                                                \
-    {                                                                                                                  \
-      PyErr_Format(ExcSessionClosed, "The session has been closed");                                                   \
-      return e;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
-
-typedef struct APSWSession
-{
-  PyObject_HEAD
-
-  sqlite3_session *session;
-  PyObject *connection;
-  int init_was_called;
-
-  PyObject *weakreflist;
-} APSWSession;
-
-static PyTypeObject APSWSessionType;
-
-typedef struct APSWChangeset
-{
-  PyObject_HEAD
-} APSWChangeset;
-
-static PyTypeObject APSWChangesetType;
-
-typedef struct APSWChangesetBuilder
-{
-  PyObject_HEAD
-  sqlite3_changegroup *group;
-} APSWChangesetBuilder;
-
-static PyTypeObject APSWChangesetBuilderType;
-
-typedef struct APSWTableChange
-{
-  PyObject_HEAD
-  sqlite3_changeset_iter *iter;
-} APSWTableChange;
-
-static PyTypeObject APSWTableChangeType;
 
 /** .. method:: session_config(op: int, *args: Any) -> Any
 
@@ -135,7 +104,55 @@ apsw_session_config(PyObject *Py_UNUSED(self), PyObject *args)
   This object wraps a `sqlite3_session
   <https://www.sqlite.org/session/session.html>`__ object.
 
- */
+*/
+
+#define CHECK_SESSION_CLOSED(e)                                                                                        \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!self->session)                                                                                                \
+    {                                                                                                                  \
+      PyErr_Format(ExcSessionClosed, "The session has been closed");                                                   \
+      return e;                                                                                                        \
+    }                                                                                                                  \
+  } while (0)
+
+typedef struct APSWSession
+{
+  PyObject_HEAD
+
+  sqlite3_session *session;
+  Connection *connection;
+  PyObject *table_filter;
+
+  int init_was_called;
+
+  PyObject *weakreflist;
+} APSWSession;
+
+static PyTypeObject APSWSessionType;
+
+typedef struct APSWChangeset
+{
+  PyObject_HEAD
+} APSWChangeset;
+
+static PyTypeObject APSWChangesetType;
+
+typedef struct APSWChangesetBuilder
+{
+  PyObject_HEAD
+  sqlite3_changegroup *group;
+} APSWChangesetBuilder;
+
+static PyTypeObject APSWChangesetBuilderType;
+
+typedef struct APSWTableChange
+{
+  PyObject_HEAD
+  sqlite3_changeset_iter *iter;
+} APSWTableChange;
+
+static PyTypeObject APSWTableChangeType;
 
 /** .. method:: __init__(db: Connection, schema: str)
 
@@ -171,7 +188,8 @@ APSWSession_init(APSWSession *self, PyObject *args, PyObject *kwargs)
 
   self->init_was_called = 1;
 
-  self->connection = Py_NewRef((PyObject *)db);
+  self->connection = db;
+  Py_INCREF(self->connection);
 
   PyObject *weakref = NULL;
 
@@ -201,6 +219,11 @@ APSWSession_close_internal(APSWSession *self)
     sqlite3session_delete(self->session);
     self->session = NULL;
   }
+
+  Py_CLEAR(self->table_filter);
+
+  if (self->connection)
+    Connection_remove_dependent(self->connection, (PyObject *)self);
   Py_CLEAR(self->connection);
 }
 
@@ -227,6 +250,173 @@ APSWSession_close(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast
     return NULL;
 
   Py_RETURN_NONE;
+}
+
+/** .. method:: attach(name: Optional[str] = None) -> None
+
+ Attach to a specific table, or all tables if no name is provided.  The
+ table does not need to exist at the time of the call.  You can call
+ this multiple times.
+
+ .. seealso::
+
+    :meth:`table_filter`
+
+ -* sqlite3session_attach
+*/
+static PyObject *
+APSWSession_attach(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  const char *name = NULL;
+  CHECK_SESSION_CLOSED(NULL);
+  {
+    Session_attach_CHECK;
+    ARG_PROLOG(1, Session_attach_KWNAMES);
+    ARG_OPTIONAL ARG_optional_str(name);
+    ARG_EPILOG(NULL, Session_attach_USAGE, );
+  }
+
+  int rc = sqlite3session_attach(self->session, name);
+  SET_EXC(rc, NULL);
+  if (PyErr_Occurred())
+    return NULL;
+  Py_RETURN_NONE;
+}
+
+/** .. method:: diff(from_schema: str, table: str) -> None
+
+  Loads the changes necessary to update the named ``table`` in the attached database
+  ``from_schema`` to match the same named table in the database this session is
+  attached to.
+
+  -* sqlite3session_diff
+*/
+static PyObject *
+APSWSession_diff(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  CHECK_SESSION_CLOSED(NULL);
+  const char *from_schema = NULL;
+  const char *table = NULL;
+
+  {
+    Session_diff_CHECK;
+    ARG_PROLOG(2, Session_diff_KWNAMES);
+    ARG_MANDATORY ARG_str(from_schema);
+    ARG_MANDATORY ARG_str(table);
+    ARG_EPILOG(NULL, Session_diff_USAGE, );
+  }
+
+  char *pErrMsg = NULL;
+  int rc = sqlite3session_diff(self->session, from_schema, table, &pErrMsg);
+
+  /* a vfs could have errored */
+  if (PyErr_Occurred())
+    return NULL;
+
+  if (rc != SQLITE_OK)
+  {
+    make_exception_with_message(rc, pErrMsg, -1);
+    sqlite3_free(pErrMsg);
+    return NULL;
+  }
+
+  Py_RETURN_NONE;
+}
+
+/** .. method:: table_filter(callback: Callable[[str], bool]) -> None
+
+  Register a callback that says if changes to the named table should be
+  recorded.  If your callback has an exception then ``False`` is
+  returned.
+
+  .. seealso::
+
+    :meth:`attach`
+
+  -* sqlite3session_table_filter
+*/
+
+static int
+session_table_filter_cb(void *pCtx, const char *name)
+{
+  int result = 0;
+  PyGILState_STATE gilstate = PyGILState_Ensure();
+
+  if (!PyErr_Occurred())
+  {
+    PyObject *vargs[] = { NULL, PyUnicode_FromString(name) };
+    if (vargs[1])
+    {
+      PyObject *retval = PyObject_Vectorcall(pCtx, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      if (retval)
+        result = PyObject_IsTrueStrict(retval);
+    }
+    Py_XDECREF(vargs[1]);
+  }
+  if (PyErr_Occurred())
+    result = 0;
+
+  PyGILState_Release(gilstate);
+  return result;
+}
+
+static PyObject *
+APSWSession_table_filter(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  PyObject *callback = NULL;
+  CHECK_SESSION_CLOSED(NULL);
+  {
+    Session_table_filter_CHECK;
+    ARG_PROLOG(1, Session_table_filter_KWNAMES);
+    ARG_MANDATORY ARG_Callable(callback);
+    ARG_EPILOG(NULL, Session_table_filter_USAGE, );
+  }
+
+  Py_CLEAR(self->table_filter);
+  self->table_filter = Py_NewRef(callback);
+  sqlite3session_table_filter(self->session, session_table_filter_cb, callback);
+
+  Py_RETURN_NONE;
+}
+
+/** .. method:: config(op: int, *args) -> Any
+
+  Set or get `configuration values <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__
+
+  For example :code:`session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1)` tells you
+  if size information is enabled.
+
+  -* sqlite3session_object_config
+*/
+
+static PyObject *
+APSWSession_config(APSWSession *self, PyObject *args)
+{
+  CHECK_SESSION_CLOSED(NULL);
+  if (PyTuple_GET_SIZE(args) < 1 || !PyLong_Check(PyTuple_GET_ITEM(args, 0)))
+    return PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
+
+  int opt = PyLong_AsInt(PyTuple_GET_ITEM(args, 0));
+  if (PyErr_Occurred())
+    return NULL;
+
+  switch (opt)
+  {
+  case SQLITE_SESSION_OBJCONFIG_SIZE:
+  case SQLITE_SESSION_OBJCONFIG_ROWID: {
+    int optdup, val;
+    if (!PyArg_ParseTuple(args, "ii", &optdup, &val))
+      return NULL;
+    int res = sqlite3session_object_config(self->session, opt, &val);
+    SET_EXC(res, NULL);
+    if (PyErr_Occurred())
+      return NULL;
+    return PyLong_FromLong(val);
+  }
+
+  default:
+    return PyErr_Format(PyExc_ValueError, "Unknown config value %d", opt);
+  }
 }
 
 /** .. attribute:: enabled
@@ -259,13 +449,104 @@ APSWSession_set_enabled(APSWSession *self, PyObject *value)
   return 0;
 }
 
+/** .. attribute:: indirect
+    :type: bool
+
+    Get or change if this session is in indirect mode
+
+    -* sqlite3session_indirect
+*/
+static PyObject *
+APSWSession_get_indirect(APSWSession *self)
+{
+  CHECK_SESSION_CLOSED(NULL);
+
+  int res = sqlite3session_indirect(self->session, -1);
+  if (res)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+static int
+APSWSession_set_indirect(APSWSession *self, PyObject *value)
+{
+  CHECK_SESSION_CLOSED(-1);
+
+  int enabled = PyObject_IsTrueStrict(value);
+  if (enabled == -1)
+    return -1;
+  sqlite3session_indirect(self->session, enabled);
+  return 0;
+}
+
+/** .. attribute:: is_empty
+    :type: bool
+
+    True if no changes have been recorded.
+
+    -* sqlite3session_isempty
+*/
+static PyObject *
+APSWSession_get_empty(APSWSession *self)
+{
+  CHECK_SESSION_CLOSED(NULL);
+
+  int res = sqlite3session_isempty(self->session);
+  if (res)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+/** .. attribute:: memory_used
+    :type: int
+
+    How many bytes of memory have been used to record session changes.
+
+    -* sqlite3session_memory_used
+*/
+static PyObject *
+APSWSession_get_memory_used(APSWSession *self)
+{
+  CHECK_SESSION_CLOSED(NULL);
+
+  sqlite3_int64 res = sqlite3session_memory_used(self->session);
+
+  return PyLong_FromLongLong(res);
+}
+
+/** .. attribute:: changeset_size
+    :type: int
+
+    Returns upper limit on changeset size, but only if :meth:`Session.config`
+    was used to enable it.  Otherwise it will be zero.
+
+    -* sqlite3session_changeset_size
+*/
+static PyObject *
+APSWSession_get_changeset_size(APSWSession *self)
+{
+  CHECK_SESSION_CLOSED(NULL);
+
+  sqlite3_int64 res = sqlite3session_changeset_size(self->session);
+
+  return PyLong_FromLongLong(res);
+}
+
 static PyMethodDef APSWSession_methods[] = {
   { "close", (PyCFunction)APSWSession_close, METH_FASTCALL | METH_KEYWORDS, Session_close_DOC },
+  { "attach", (PyCFunction)APSWSession_attach, METH_FASTCALL | METH_KEYWORDS, Session_attach_DOC },
+  { "diff", (PyCFunction)APSWSession_diff, METH_FASTCALL | METH_KEYWORDS, Session_diff_DOC },
+  { "table_filter", (PyCFunction)APSWSession_table_filter, METH_FASTCALL | METH_KEYWORDS, Session_table_filter_DOC },
+  { "config", (PyCFunction)APSWSession_config, METH_VARARGS, Session_config_DOC },
   { 0 },
 };
 
 static PyGetSetDef APSWSession_getset[] = {
   { "enabled", (getter)APSWSession_get_enabled, (setter)APSWSession_set_enabled, Session_enabled_DOC },
+  { "indirect", (getter)APSWSession_get_indirect, (setter)APSWSession_set_indirect, Session_indirect_DOC },
+  { "is_empty", (getter)APSWSession_get_empty, NULL, Session_is_empty_DOC },
+  { "memory_used", (getter)APSWSession_get_memory_used, NULL, Session_memory_used_DOC },
+  { "changeset_size", (getter)APSWSession_get_changeset_size, NULL, Session_changeset_size_DOC },
   { 0 },
 };
 
