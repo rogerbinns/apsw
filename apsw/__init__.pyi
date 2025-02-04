@@ -370,6 +370,13 @@ def release_memory(amount: int) -> int:
 
 releasememory = release_memory ## OLD-NAME
 
+def session_config(op: int, *args: Any) -> Any:
+    """:param op: One of the `sqlite3session options <https://www.sqlite.org/session/c_session_config_strmsize.html>`__
+    :param args: Zero or more arguments as appropriate for *op*
+
+     Calls: `sqlite3session_config <https://sqlite.org/session/sqlite3session_config.html>`__"""
+    ...
+
 def set_default_vfs(name: str) -> None:
     """Sets the default vfs to *name* which must be an existing vfs.
     See :meth:`vfs_names`.
@@ -2522,6 +2529,92 @@ class IndexInfo:
         ...
 
 @final
+class Session:
+    """This object wraps a `sqlite3_session
+    <https://www.sqlite.org/session/session.html>`__ object."""
+    def attach(self, name: Optional[str] = None) -> None:
+        """Attach to a specific table, or all tables if no name is provided.  The
+        table does not need to exist at the time of the call.  You can call
+        this multiple times.
+
+        .. seealso::
+
+           :meth:`table_filter`
+
+        Calls: `sqlite3session_attach <https://sqlite.org/session/sqlite3session_attach.html>`__"""
+        ...
+
+    changeset_size: int
+    """Returns upper limit on changeset size, but only if :meth:`Session.config`
+    was used to enable it.  Otherwise it will be zero.
+
+    Calls: `sqlite3session_changeset_size <https://sqlite.org/session/sqlite3session_changeset_size.html>`__"""
+
+    def close(self) -> None:
+        """Ends the session object.  APSW ensures that all
+        Session objects are closed before the database is closed
+        so there is no need to manually call this.
+
+        Calls: `sqlite3session_delete <https://sqlite.org/session/sqlite3session_delete.html>`__"""
+        ...
+
+    def config(self, op: int, *args) -> Any:
+        """Set or get `configuration values <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__
+
+        For example :code:`session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1)` tells you
+        if size information is enabled.
+
+        Calls: `sqlite3session_object_config <https://sqlite.org/session/sqlite3session_object_config.html>`__"""
+        ...
+
+    def diff(self, from_schema: str, table: str) -> None:
+        """Loads the changes necessary to update the named ``table`` in the attached database
+        ``from_schema`` to match the same named table in the database this session is
+        attached to.
+
+        Calls: `sqlite3session_diff <https://sqlite.org/session/sqlite3session_diff.html>`__"""
+        ...
+
+    enabled: bool
+    """Get or change if this session is recording changes.
+
+    Calls: `sqlite3session_enable <https://sqlite.org/session/sqlite3session_enable.html>`__"""
+
+    indirect: bool
+    """Get or change if this session is in indirect mode
+
+    Calls: `sqlite3session_indirect <https://sqlite.org/session/sqlite3session_indirect.html>`__"""
+
+    def __init__(self, db: Connection, schema: str):
+        """Starts a new session.
+
+        :param connection: Which database to operate on
+        :param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__"""
+        ...
+
+    is_empty: bool
+    """True if no changes have been recorded.
+
+    Calls: `sqlite3session_isempty <https://sqlite.org/session/sqlite3session_isempty.html>`__"""
+
+    memory_used: int
+    """How many bytes of memory have been used to record session changes.
+
+    Calls: `sqlite3session_memory_used <https://sqlite.org/session/sqlite3session_memory_used.html>`__"""
+
+    def table_filter(self, callback: Callable[[str], bool]) -> None:
+        """Register a callback that says if changes to the named table should be
+        recorded.  If your callback has an exception then ``False`` is
+        returned.
+
+        .. seealso::
+
+          :meth:`attach`
+
+        Calls: `sqlite3session_table_filter <https://sqlite.org/session/sqlite3session_table_filter.html>`__"""
+        ...
+
+@final
 class URIFilename:
     """SQLite packs `uri parameters
     <https://sqlite.org/uri.html>`__ and the filename together   This class
@@ -3513,6 +3606,32 @@ SQLITE_CANTOPEN_NOTEMPDIR: int = 270
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_CANTOPEN_SYMLINK: int = 1550
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
+SQLITE_CHANGESETAPPLY_FKNOACTION: int = 8
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETAPPLY_IGNORENOOP: int = 4
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETAPPLY_INVERT: int = 2
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETAPPLY_NOSAVEPOINT: int = 1
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETSTART_INVERT: int = 2
+"""For `Flags for sqlite3changeset_start_v2 <https://sqlite.org/session/c_changesetstart_invert.html>'__"""
+SQLITE_CHANGESET_ABORT: int = 2
+"""For `Constants Returned By The Conflict Handler <https://sqlite.org/session/c_changeset_abort.html>'__"""
+SQLITE_CHANGESET_CONFLICT: int = 3
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_CONSTRAINT: int = 4
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_DATA: int = 1
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_FOREIGN_KEY: int = 5
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_NOTFOUND: int = 2
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_OMIT: int = 0
+"""For `Constants Returned By The Conflict Handler <https://sqlite.org/session/c_changeset_abort.html>'__"""
+SQLITE_CHANGESET_REPLACE: int = 1
+"""For `Constants Returned By The Conflict Handler <https://sqlite.org/session/c_changeset_abort.html>'__"""
 SQLITE_CHECKPOINT_FULL: int = 1
 """For `Checkpoint Mode Values <https://sqlite.org/c3ref/c_checkpoint_full.html>'__"""
 SQLITE_CHECKPOINT_PASSIVE: int = 0
@@ -4145,6 +4264,12 @@ SQLITE_SELECT: int = 21
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_SELFORDER1: int = 33554432
 """For `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>'__"""
+SQLITE_SESSION_CONFIG_STRMSIZE: int = 1
+"""For `Values for sqlite3session_config <https://sqlite.org/session/c_session_config_strmsize.html>'__"""
+SQLITE_SESSION_OBJCONFIG_ROWID: int = 2
+"""For `Options for sqlite3session_object_config <https://sqlite.org/session/c_session_objconfig_rowid.html>'__"""
+SQLITE_SESSION_OBJCONFIG_SIZE: int = 1
+"""For `Options for sqlite3session_object_config <https://sqlite.org/session/c_session_objconfig_rowid.html>'__"""
 SQLITE_SHM_EXCLUSIVE: int = 8
 """For `Flags for the xShmLock VFS method <https://sqlite.org/c3ref/c_shm_exclusive.html>'__"""
 SQLITE_SHM_LOCK: int = 2
@@ -4466,6 +4591,45 @@ SQLITE_NOTADB SQLITE_NOTFOUND SQLITE_NOTICE SQLITE_OK SQLITE_PERM
 SQLITE_PROTOCOL SQLITE_RANGE SQLITE_READONLY SQLITE_ROW SQLITE_SCHEMA
 SQLITE_TOOBIG SQLITE_WARNING"""
 
+mapping_session_changeset_apply_v2_flags: dict[str | int, int | str]
+"""Flags for sqlite3changeset_apply_v2 mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changesetapply_fknoaction.html
+
+SQLITE_CHANGESETAPPLY_FKNOACTION SQLITE_CHANGESETAPPLY_IGNORENOOP
+SQLITE_CHANGESETAPPLY_INVERT SQLITE_CHANGESETAPPLY_NOSAVEPOINT"""
+
+mapping_session_changeset_start_v2_flags: dict[str | int, int | str]
+"""Flags for sqlite3changeset_start_v2 mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changesetstart_invert.html
+
+SQLITE_CHANGESETSTART_INVERT"""
+
+mapping_session_config_options: dict[str | int, int | str]
+"""Values for sqlite3session_config mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_session_config_strmsize.html
+
+SQLITE_SESSION_CONFIG_STRMSIZE"""
+
+mapping_session_conflict_handler_conflict: dict[str | int, int | str]
+"""Constants Passed To The Conflict Handler mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changeset_conflict.html
+
+SQLITE_CHANGESET_CONFLICT SQLITE_CHANGESET_CONSTRAINT
+SQLITE_CHANGESET_DATA SQLITE_CHANGESET_FOREIGN_KEY
+SQLITE_CHANGESET_NOTFOUND"""
+
+mapping_session_conflict_handler_response: dict[str | int, int | str]
+"""Constants Returned By The Conflict Handler mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changeset_abort.html
+
+SQLITE_CHANGESET_ABORT SQLITE_CHANGESET_OMIT SQLITE_CHANGESET_REPLACE"""
+
+mapping_session_object_config_options: dict[str | int, int | str]
+"""Options for sqlite3session_object_config mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_session_objconfig_rowid.html
+
+SQLITE_SESSION_OBJCONFIG_ROWID SQLITE_SESSION_OBJCONFIG_SIZE"""
+
 mapping_statement_status: dict[str | int, int | str]
 """Status Parameters for prepared statements mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_stmtstatus_counter.html
@@ -4733,6 +4897,9 @@ class SchemaChangeError(Error):
     Another or the same :class:`Connection` may change the schema again
     before the statement runs.  SQLite will retry before giving up and
     returning this error."""
+
+class SessionClosedError(Error):
+    """You have called :meth:`Session.close` and then tried to use the session.`"""
 
 class ThreadingViolationError(Error):
     """You have used an object concurrently in two threads. For example you
