@@ -170,27 +170,13 @@ get_exception_for_code(int res)
 }
 
 static void
-make_exception(int res, sqlite3 *db)
+make_exception_with_message(int res, const char *errmsg, int error_offset)
 {
-  /* don't overwrite any existing exception */
-  assert(!PyErr_Occurred());
-
-  const char *errmsg = NULL;
-  int error_offset = -1;
-
-  if (db)
-    errmsg = sqlite3_errmsg(db);
   if (!errmsg)
-  {
     errmsg = sqlite3_errstr(res);
-    if(!errmsg) errmsg ="error";
-  }
-
-  if (db)
-    error_offset = sqlite3_error_offset(db);
 
   PyObject *tmp;
-  PyErr_Format(get_exception_for_code(res), "%s", errmsg);
+  PyErr_Format(get_exception_for_code(res), "%s", errmsg ? errmsg : "Error");
   PY_ERR_FETCH(exc);
   PY_ERR_NORMALIZE(exc);
 
@@ -222,6 +208,18 @@ error:
     apsw_write_unraisable(NULL);
   PY_ERR_RESTORE(exc);
   assert(PyErr_Occurred());
+}
+
+static void
+make_exception(int res, sqlite3 *db)
+{
+  /* don't overwrite any existing exception */
+  assert(!PyErr_Occurred());
+
+  if (!db)
+    make_exception_with_message(res, NULL, -1);
+  else
+    make_exception_with_message(res, sqlite3_errmsg(db), sqlite3_error_offset(db));
 }
 
 /* Turns the current Python exception into an SQLite error code and
