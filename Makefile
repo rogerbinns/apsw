@@ -49,7 +49,7 @@ doc: docs ## Builds all the doc
 
 docs: build_ext docs-no-fetch
 
-docs-no-fetch: $(GENDOCS) doc/example.rst doc/example-fts.rst doc/.static doc/typing.rstgen doc/renames.rstgen
+docs-no-fetch: $(GENDOCS) doc/example.rst doc/example-fts.rst doc/.static doc/typing.rstgen doc/renames.rstgen tools/docmissing.py tools/docupdate.py
 	rm -f testdb
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION) $(RELEASEDATE)
