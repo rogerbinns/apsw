@@ -45,7 +45,7 @@ docstrings_skip = {
 virtual_table_classes = {"VTCursor", "VTModule", "VTTable"}
 
 # which classes can be subclassed at runtime - all others are marked final
-subclassable = {"Connection", "Cursor", "VFS", "VFSFile", "zeroblob"}
+subclassable = {"Connection", "Cursor", "VFS", "VFSFile", "zeroblob", "Session", "Changeset"}
 
 
 def sqlite_links():
@@ -726,8 +726,8 @@ def generate_typestubs(items: list[dict]) -> None:
 
         klass, name = item["name"].split(".", 1)
         signature = item["signature_original"]
-        if klass == "apsw":
-            name = item["name"][len("apsw.") :]
+        if klass in {"apsw"}:
+            name = item["name"][len(klass)+1 :]
             if item["kind"] == "method":
                 assert signature.startswith("(")
                 print(f"{ baseindent }def { name }{ signature }:", file=out)
@@ -750,6 +750,7 @@ def generate_typestubs(items: list[dict]) -> None:
                     print("@final", file=out)
                 print(f"{ baseindent }class { klass }{ extra }:", file=out)
                 print(fmt_docstring(doc, indent=f"{ baseindent }    "), file=out)
+                print(file=out)
 
             if item["kind"] == "method":
                 for find, replace in (
@@ -757,8 +758,11 @@ def generate_typestubs(items: list[dict]) -> None:
                     ("list[int,int]", "list[int]"),  # can't see how to type a 2 item list
                 ):
                     signature = signature.replace(find, replace)
-                if not signature.startswith("(self"):
-                    signature = "(self" + (", " if signature[1] != ")" else "") + signature[1:]
+                if klass in {"Changeset"}:
+                    print(f"{ baseindent}    @staticmethod", file=out)
+                else:
+                    if not signature.startswith("(self"):
+                        signature = "(self" + (", " if signature[1] != ")" else "") + signature[1:]
                 print(f"{ baseindent }    def { name }{ signature }:", file=out)
                 print(fmt_docstring(item["doc"], indent=f"{ baseindent }        "), file=out)
                 print(f"{ baseindent }        ...", file=out)
