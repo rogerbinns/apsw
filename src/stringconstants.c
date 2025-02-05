@@ -52,6 +52,7 @@ static struct _apsw_string_table
     PyObject *final;
     PyObject *get;
     PyObject *inverse;
+    PyObject *release;
     PyObject *result;
     PyObject *step;
     PyObject *value;
@@ -134,6 +135,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.final);
     Py_CLEAR(apst.get);
     Py_CLEAR(apst.inverse);
+    Py_CLEAR(apst.release);
     Py_CLEAR(apst.result);
     Py_CLEAR(apst.step);
     Py_CLEAR(apst.value);
@@ -217,6 +219,7 @@ init_apsw_strings()
         || (!apst.final && 0 == (apst.final = PyUnicode_FromString("final")))
         || (!apst.get && 0 == (apst.get = PyUnicode_FromString("get")))
         || (!apst.inverse && 0 == (apst.inverse = PyUnicode_FromString("inverse")))
+        || (!apst.release && 0 == (apst.release = PyUnicode_FromString("release")))
         || (!apst.result && 0 == (apst.result = PyUnicode_FromString("result")))
         || (!apst.step && 0 == (apst.step = PyUnicode_FromString("step")))
         || (!apst.value && 0 == (apst.value = PyUnicode_FromString("value")))

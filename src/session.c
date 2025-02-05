@@ -378,12 +378,18 @@ static int
 APSWSession_xOutput(void *pOut, const void *pData, int nData)
 {
   assert(!PyErr_Occurred());
-  PyObject *result = NULL;
+  PyObject *result = NULL, *result2 = NULL;
   PyObject *vargs[] = { NULL, PyMemoryView_FromMemory((char *)pData, nData, PyBUF_READ) };
   if (vargs[1])
+  {
     result = PyObject_Vectorcall((PyObject *)pOut, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    CHAIN_EXC_BEGIN
+    result2 = PyObject_CallMethodNoArgs(vargs[1], apst.release);
+    CHAIN_EXC_END;
+  }
   Py_XDECREF(vargs[1]);
   Py_XDECREF(result);
+  Py_XDECREF(result2);
   return PyErr_Occurred() ? SQLITE_ERROR : SQLITE_OK;
 }
 
