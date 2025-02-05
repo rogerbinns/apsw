@@ -1,16 +1,18 @@
 # Notes for adding the SQLite session extension API
 
-# ::TODO:: add entries to tocupdate.sql for functions an constants
 
+from typing import Iterator, TypeAlias
+import collections.abc
 
 # Streaming type aliases.
 
 # read between 1 and supplied int number of bytes.  At EOF
-# return 0 length bytes.  Raise exception for error.  Can actually
-# be any buffer compatible object not just bytes
-SessionStreamInput : TypeAlias = Callable[[int], bytes]
+# return None.  Raise exception for error.
+
+
+SessionStreamInput : TypeAlias = Callable[[int], collections.abc.Buffer]
 # called with each output chunk.  Raise exception for error.
-SessionStreamOutput : TypeAlias = Callable[[bytes], None]
+SessionStreamOutput : TypeAlias = Callable[[memoryview], None]
 
 
 
@@ -88,6 +90,24 @@ class Session:
         ...
 
 
+class ChangesetIter:
+    # instances made by Changeset.iter()
+
+    # sqlite3changeset_start, -strm, _v2
+    def __init__(self):
+        ...
+
+
+    def next(self) -> TableChange:
+        # sqlite3changeset_next to advance
+        # construct TableChange
+        ...
+
+    # sqlite3changeset_finalize
+    def __del__(self):
+        ...
+
+
 
 # apsw.Changeset
 class Changeset:
@@ -98,26 +118,10 @@ class Changeset:
 
 
 
-    class Iter:
-        # instances made by Changeset.iter()
-
-        # sqlite3changeset_start, -strm, _v2
-        def __init__(self):
-            ...
-
-
-        def next(self) -> TableChange:
-            # sqlite3changeset_next to advance
-            # construct TableChange
-            ...
-
-        # sqlite3changeset_finalize
-        def __del__(self):
-            ...
 
     @staticmethod
-    def iter(changeset: bytes | SessionStreamInput, flags: int = 0) -> Iter:
-        # see changeset_iter above
+    def iter(changeset: bytes | SessionStreamInput, flags: int = 0) -> Iterator[TableChange]:
+        # see ChangesetIter above
         ...
 
     # sqlite3changeset_apply
