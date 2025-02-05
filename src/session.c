@@ -659,6 +659,59 @@ APSWSession_get_changeset_size(APSWSession *self)
   return PyLong_FromLongLong(res);
 }
 
+/** .. class:: Changeset
+
+ Provides changeset (including patchset) related methods.
+*/
+
+/** .. method:: invert(changeset: bytes) -> bytes
+
+  Produces a changeset that reverses the effect of
+  the supplied changeset.
+
+  -* sqlite3changeset_invert
+*/
+
+static PyObject *
+APSWChangeset_invert(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                     PyObject *fast_kwnames)
+{
+  PyObject *changeset;
+  Py_buffer changeset_buffer;
+
+  {
+    Changeset_invert_CHECK;
+    ARG_PROLOG(1, Changeset_invert_KWNAMES);
+    ARG_MANDATORY ARG_py_buffer(changeset);
+    ARG_EPILOG(NULL, Changeset_invert_USAGE, );
+  }
+
+  if (0 != PyObject_GetBufferContiguous(changeset, &changeset_buffer, PyBUF_SIMPLE))
+  {
+    assert(PyErr_Occurred());
+    return NULL;
+  }
+
+  PyObject *result = NULL;
+
+    /* ::TODO:: turn this into a function that can be fault injected and used in other places */
+  if (changeset_buffer.len > 0x7fffffff)
+    SET_EXC(SQLITE_TOOBIG, NULL);
+  else
+  {
+    int nOut;
+    void *pOut = NULL;
+
+    int rc = sqlite3changeset_invert(changeset_buffer.len, changeset_buffer.buf, &nOut, &pOut);
+    if (rc == SQLITE_OK)
+      result = PyBytes_FromStringAndSize((char *)pOut, nOut);
+    sqlite3_free(pOut);
+  }
+  PyBuffer_Release(&changeset_buffer);
+  assert((PyErr_Occurred() && !result) || (result && !PyErr_Occurred()));
+  return result;
+}
+
 static PyMethodDef APSWSession_methods[] = {
   { "close", (PyCFunction)APSWSession_close, METH_FASTCALL | METH_KEYWORDS, Session_close_DOC },
   { "attach", (PyCFunction)APSWSession_attach, METH_FASTCALL | METH_KEYWORDS, Session_attach_DOC },
@@ -696,9 +749,16 @@ static PyTypeObject APSWSessionType = {
   .tp_weaklistoffset = offsetof(APSWSession, weakreflist),
 };
 
+static PyMethodDef APSWChangeset_methods[] = {
+    { "invert", (PyCFunction)APSWChangeset_invert, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_invert_DOC },
+    {0},
+};
+
 static PyTypeObject APSWChangesetType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Changeset",
+  .tp_doc = Changeset_class_DOC,
   .tp_basicsize = sizeof(APSWChangeset),
+  .tp_methods = APSWChangeset_methods,
 };
 
 static PyTypeObject APSWChangesetBuilderType = {
