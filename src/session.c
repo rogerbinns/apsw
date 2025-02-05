@@ -323,6 +323,127 @@ APSWSession_diff(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_
   Py_RETURN_NONE;
 }
 
+static PyObject *
+APSWSession_get_change_patch_set(APSWSession *self, int changeset)
+{
+  int nChangeset = 0;
+  void *pChangeset = NULL;
+
+  /* ::TODO:: release GIL around this call? */
+
+  int rc = changeset ? sqlite3session_changeset(self->session, &nChangeset, &pChangeset)
+                     : sqlite3session_patchset(self->session, &nChangeset, &pChangeset);
+
+  PyObject *result = NULL;
+  if (rc != SQLITE_OK)
+    SET_EXC(rc, NULL);
+  else
+    result = PyBytes_FromStringAndSize((const char *)pChangeset, nChangeset);
+  if (pChangeset)
+    sqlite3_free(pChangeset);
+  return result;
+}
+
+/** .. method:: changeset() -> bytes
+
+  Produces a changeset of the session so far.
+
+  -* sqlite3session_changeset
+*/
+static PyObject *
+APSWSession_changeset(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  CHECK_SESSION_CLOSED(NULL);
+
+  return APSWSession_get_change_patch_set(self, 1);
+}
+
+/** .. method:: patchset() -> bytes
+
+  Produces a patchset of the session so far.  Patchsets do not include
+  before values of changes, making them smaller, but also harder to detect
+  conflicts.
+
+  -* sqlite3session_patchset
+*/
+static PyObject *
+APSWSession_patchset(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  CHECK_SESSION_CLOSED(NULL);
+
+  return APSWSession_get_change_patch_set(self, 0);
+}
+
+static int
+APSWSession_xOutput(void *pOut, const void *pData, int nData)
+{
+  assert(!PyErr_Occurred());
+  PyObject *result = NULL;
+  PyObject *vargs[] = { NULL, PyMemoryView_FromMemory((char *)pData, nData, PyBUF_READ) };
+  if (vargs[1])
+    result = PyObject_Vectorcall((PyObject *)pOut, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[1]);
+  Py_XDECREF(result);
+  return PyErr_Occurred() ? SQLITE_ERROR : SQLITE_OK;
+}
+
+static PyObject *
+APSWSession_get_change_patch_set_stream(APSWSession *self, int changeset, PyObject *xOutput)
+{
+  /* ::TODO:: release GIL around this call? */
+  int rc = changeset ? sqlite3session_changeset_strm(self->session, APSWSession_xOutput, xOutput)
+                     : sqlite3session_patchset_strm(self->session, APSWSession_xOutput, xOutput);
+  SET_EXC(rc, NULL);
+
+  if (PyErr_Occurred())
+    return NULL;
+  Py_RETURN_NONE;
+}
+
+/** .. method:: changeset_stream(output: Callable[[memoryview], None]) -> None
+
+  Produces a changeset of the session so far in a stream
+
+  -* sqlite3session_changeset_strm
+*/
+static PyObject *
+APSWSession_changeset_stream(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                             PyObject *fast_kwnames)
+{
+  CHECK_SESSION_CLOSED(NULL);
+  PyObject *output;
+  {
+    Session_changeset_stream_CHECK;
+    ARG_PROLOG(1, Session_changeset_stream_KWNAMES);
+    ARG_MANDATORY ARG_Callable(output);
+    ARG_EPILOG(NULL, Session_changeset_stream_USAGE, );
+  }
+
+  return APSWSession_get_change_patch_set_stream(self, 1, output);
+}
+
+/** .. method:: patchset_stream(output: Callable[[memoryview], None]) -> None
+
+  Produces a patchset of the session so far in a stream
+
+  -* sqlite3session_patchset_strm
+*/
+static PyObject *
+APSWSession_patchset_stream(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                            PyObject *fast_kwnames)
+{
+  CHECK_SESSION_CLOSED(NULL);
+  PyObject *output;
+  {
+    Session_patchset_stream_CHECK;
+    ARG_PROLOG(1, Session_patchset_stream_KWNAMES);
+    ARG_MANDATORY ARG_Callable(output);
+    ARG_EPILOG(NULL, Session_patchset_stream_USAGE, );
+  }
+
+  return APSWSession_get_change_patch_set_stream(self, 0, output);
+}
+
 /** .. method:: table_filter(callback: Callable[[str], bool]) -> None
 
   Register a callback that says if changes to the named table should be
@@ -537,6 +658,12 @@ static PyMethodDef APSWSession_methods[] = {
   { "attach", (PyCFunction)APSWSession_attach, METH_FASTCALL | METH_KEYWORDS, Session_attach_DOC },
   { "diff", (PyCFunction)APSWSession_diff, METH_FASTCALL | METH_KEYWORDS, Session_diff_DOC },
   { "table_filter", (PyCFunction)APSWSession_table_filter, METH_FASTCALL | METH_KEYWORDS, Session_table_filter_DOC },
+  { "changeset", (PyCFunction)APSWSession_changeset, METH_FASTCALL | METH_KEYWORDS, Session_changeset_DOC },
+  { "patchset", (PyCFunction)APSWSession_patchset, METH_FASTCALL | METH_KEYWORDS, Session_patchset_DOC },
+  { "changeset_stream", (PyCFunction)APSWSession_changeset_stream, METH_FASTCALL | METH_KEYWORDS,
+    Session_changeset_stream_DOC },
+  { "patchset_stream", (PyCFunction)APSWSession_patchset_stream, METH_FASTCALL | METH_KEYWORDS,
+    Session_patchset_stream_DOC },
   { "config", (PyCFunction)APSWSession_config, METH_VARARGS, Session_config_DOC },
   { 0 },
 };

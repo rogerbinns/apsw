@@ -5816,7 +5816,7 @@ class APSW(unittest.TestCase):
                 "order": ("use", "closed"),
             },
             "APSWSession": {
-                "skip": {"init", "close_internal", "close"},
+                "skip": {"init", "close_internal", "close", "get_change_patch_set", "get_change_patch_set_stream"},
                 "req": {"closed": "CHECK_SESSION_CLOSED"},
                 "order": ("closed",),
             },

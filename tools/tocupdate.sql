@@ -48,8 +48,11 @@ insert into toc values
     ("sqlite3session_memory_used", "function", 0, "Query for the amount of heap memory used by a session object", "session/sqlite3session_memory_used.html"),
     ("sqlite3session_table_filter", "function", 0, "Set a table filter on a Session Object", "session/sqlite3session_table_filter.html"),
     ("sqlite3session_attach", "function", 0, "Attach A Table To A Session Object", "session/sqlite3session_attach.html"),
-    ("sqlite3session_object_config", "function", 0, "Configure a Session Object", "session/sqlite3session_object_config.html")
-
+    ("sqlite3session_object_config", "function", 0, "Configure a Session Object", "session/sqlite3session_object_config.html"),
+    ("sqlite3session_changeset", "function", 0, "Generate A Changeset From A Session Object", "session/sqlite3session_changeset.html"),
+    ("sqlite3session_patchset", "function", 0, "Generate A Patchset From A Session Object", "session/sqlite3session_patchset.html"),
+    ("sqlite3session_patchset_strm", "function", 0, "Streaming Versions of API functions", "session/sqlite3changegroup_add_strm.html"),
+    ("sqlite3session_changeset_strm", "function", 0, "Streaming Versions of API functions", "session/sqlite3changegroup_add_strm.html")
 
     ;
 
