@@ -292,7 +292,7 @@ megatest-build: ## Builds and updates podman container for running megatest
 
 MEGATEST_ARGS=
 megatest-run: ## Runs megatest in container
-	podman run --rm --name apsw-megatest --pids-limit=-1 -i --tty -v "`pwd`/../apsw-test:/megatest/apsw-test" -v "`pwd`:/megatest/apsw" -v "$$HOME/.ccache:/megatest/ccache" apsw-megatest $(MEGATEST_ARGS)
+	podman run --rm --pids-limit=-1 -i --tty -v "`pwd`/../apsw-test:/megatest/apsw-test" -v "`pwd`:/megatest/apsw" -v "$$HOME/.ccache:/megatest/ccache" apsw-megatest $(MEGATEST_ARGS)
 
 megatest-shell: ## Runs a shell in the megatest container
-	podman run --rm --name apsw-megatest -i --tty -v "`pwd`/../apsw-test:/megatest/apsw-test" -v "`pwd`:/megatest/apsw" -v "$$HOME/.ccache:/megatest/ccache" --entrypoint /bin/bash apsw-megatest
+	podman run --rm -i --tty -v "`pwd`/../apsw-test:/megatest/apsw-test" -v "`pwd`:/megatest/apsw" -v "$$HOME/.ccache:/megatest/ccache" --entrypoint /bin/bash apsw-megatest
