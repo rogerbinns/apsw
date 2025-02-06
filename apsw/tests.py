@@ -10443,9 +10443,6 @@ shell.write(shell.stdout, "hello world\\n")
     def testQueryLimit(self):
         "apsw.ext.query_limit"
 
-        # work around https://sqlite.org/forum/forumpost/3547aa1078
-        self.db.set_profile(lambda *args: None)
-
         query_limit = apsw.ext.query_limit
 
         apsw.ext.make_virtual_module(self.db, "generate_series", apsw.ext.generate_series)
@@ -10540,8 +10537,8 @@ shell.write(shell.stdout, "hello world\\n")
         try:
             with query_limit(self.db, row_limit=10000):
                 self.db.execute(query).get
-                with query_limit(self.db, timeout=0, timeout_exception=ZeroDivisionError, row_steps=1):
-                    for (name,) in self.db.execute("select name from pragma_function_list"):
+                with query_limit(self.db, timeout=0, timeout_exception=ZeroDivisionError, timeout_steps=1):
+                    for (name,) in self.db.execute("select name from pragma_function_list order by name"):
                         res.append(name)
         except Exception as e:
             exc = e
