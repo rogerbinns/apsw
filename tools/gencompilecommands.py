@@ -24,7 +24,7 @@ def generate(options):
     cmd.extend(
         [
             "-DAPSW_USE_SQLITE_AMALGAMATION",
-            "-DAPSW_USE_SQLITE_CONFIG",
+            "-DAPSW_USE_SQLITE_CFG_H",
             "-Isqlite3",
             "-Isrc",
             "-DSQLITE_ENABLE_FTS5",

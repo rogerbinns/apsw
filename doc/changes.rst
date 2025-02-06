@@ -21,6 +21,8 @@ execution time within a block. (:issue:`520`)
 
 :meth:`Connection.config` updated with new DBCONFIG options
 
+Adjustments for SQLite's new build process.
+
 3.48.0.0
 ========
 

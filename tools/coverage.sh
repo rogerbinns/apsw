@@ -37,7 +37,7 @@ fi
 
 if [ -f sqlite3/sqlite3config.h ]
 then
-    CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CONFIG"
+    CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CFG_H"
 fi
 
 export APSW_TEST_LARGE=t COVERAGE_RUN=true
