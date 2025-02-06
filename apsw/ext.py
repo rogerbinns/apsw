@@ -1544,7 +1544,7 @@ class query_limit:
         """
         limit: query_limit.limit = query_limit_context.get()
 
-        if limit is self.my_limit and time.monotonic() > limit.time_expiry:
+        if limit is self.my_limit and time.monotonic() >= limit.time_expiry:
             raise self.timeout_exception("query time limit hit")
 
         return False
