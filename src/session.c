@@ -138,6 +138,17 @@ typedef struct APSWChangeset
 
 static PyTypeObject APSWChangesetType;
 
+typedef struct APSWChangesetIterator
+{
+  PyObject_HEAD
+  sqlite3_changeset_iter *iter;
+  PyObject *xInput;
+  PyObject *buffer_source;
+  Py_buffer buffer_buffer;
+} APSWChangesetIterator;
+
+static PyTypeObject APSWChangesetIteratorType;
+
 typedef struct APSWChangesetBuilder
 {
   PyObject_HEAD
@@ -150,6 +161,10 @@ typedef struct APSWTableChange
 {
   PyObject_HEAD
   sqlite3_changeset_iter *iter;
+  const char *table_name;
+  int table_column_count;
+  int operation;
+  int indirect;
 } APSWTableChange;
 
 static PyTypeObject APSWTableChangeType;
@@ -225,6 +240,13 @@ APSWSession_close_internal(APSWSession *self)
   if (self->connection)
     Connection_remove_dependent(self->connection, (PyObject *)self);
   Py_CLEAR(self->connection);
+}
+
+static void
+APSWSession_dealloc(APSWSession *self)
+{
+  APSWSession_close_internal(self);
+  Py_TpFree((PyObject *)self);
 }
 
 /** .. method:: close() -> None
@@ -391,6 +413,48 @@ APSWSession_xOutput(void *pOut, const void *pData, int nData)
   Py_XDECREF(result);
   Py_XDECREF(result2);
   return PyErr_Occurred() ? SQLITE_ERROR : SQLITE_OK;
+}
+
+static int
+APSWSession_xInput(void *pIn, void *pData, int *pnData)
+{
+  assert(!PyErr_Occurred());
+  PyObject *result = NULL;
+  PyObject *vargs[] = { NULL, PyLong_FromLong(*pnData) };
+  if (vargs[1])
+  {
+    result = PyObject_Vectorcall((PyObject *)pIn, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_DECREF(vargs[1]);
+  }
+  if (result)
+  {
+    if (Py_IsNone(result))
+      *pnData = 0;
+    else
+    {
+      Py_buffer result_buffer;
+      if (0 == PyObject_GetBufferContiguous(result, &result_buffer, PyBUF_SIMPLE))
+      {
+        if (result_buffer.len > *pnData || result_buffer.len < 1)
+          PyErr_Format(PyExc_ValueError, "Stream input data must be at least 1 bytes, and at most %d - got %zd",
+                       *pnData, result_buffer.len);
+        else
+        {
+          memcpy(pData, result_buffer.buf, result_buffer.len);
+          *pnData = (int)result_buffer.len;
+        }
+
+        PyBuffer_Release(&result_buffer);
+      }
+    }
+    Py_DECREF(result);
+  }
+  if (PyErr_Occurred())
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "SessionStreamInput", "{s: O, s: d}", "xInput", OBJ(pIn), "amount", *pnData);
+    return MakeSqliteMsgFromPyException(NULL);
+  }
+  return SQLITE_OK;
 }
 
 static PyObject *
@@ -694,7 +758,7 @@ APSWChangeset_invert(void *Py_UNUSED(static_method), PyObject *const *fast_args,
 
   PyObject *result = NULL;
 
-    /* ::TODO:: turn this into a function that can be fault injected and used in other places */
+  /* ::TODO:: turn this into a function that can be fault injected and used in other places */
   if (changeset_buffer.len > 0x7fffffff)
     SET_EXC(SQLITE_TOOBIG, NULL);
   else
@@ -710,6 +774,109 @@ APSWChangeset_invert(void *Py_UNUSED(static_method), PyObject *const *fast_args,
   PyBuffer_Release(&changeset_buffer);
   assert((PyErr_Occurred() && !result) || (result && !PyErr_Occurred()));
   return result;
+}
+
+/** .. method:: iter(changeset: ChangesetInput, *, flags: int = 0) -> Iterator[TableChange]
+
+   Provides an iterator over a changeset.  You can supply the changeset as
+   the bytes, or streamed via a callable.
+
+   If flags is non-zero them the ``v2`` API is used (marked as experimental)
+
+  -* sqlite3changeset_start sqlite3changeset_start_v2 sqlite3changeset_start_strm sqlite3changeset_start_v2_strm
+*/
+
+static PyObject *
+APSWChangeset_iter(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                   PyObject *fast_kwnames)
+{
+  PyObject *changeset = NULL;
+  int flags = 0;
+  {
+    Changeset_iter_CHECK;
+    ARG_PROLOG(1, Changeset_iter_KWNAMES);
+    ARG_MANDATORY ARG_ChangesetInput(changeset);
+    ARG_OPTIONAL ARG_int(flags);
+    ARG_EPILOG(NULL, Changeset_iter_USAGE, );
+  }
+
+  APSWChangesetIterator *iterator = (APSWChangesetIterator *)_PyObject_New(&APSWChangesetIteratorType);
+  if (!iterator)
+    return NULL;
+
+  iterator->iter = NULL;
+  iterator->xInput = NULL;
+  iterator->buffer_source = NULL;
+
+  if (PyCallable_Check(changeset))
+  {
+    int rc = flags ? sqlite3changeset_start_v2_strm(&iterator->iter, APSWSession_xInput, changeset, flags)
+                   : sqlite3changeset_start_strm(&iterator->iter, APSWSession_xInput, changeset);
+    if (rc != SQLITE_OK)
+    {
+      SET_EXC(rc, NULL);
+      goto error;
+    }
+    iterator->xInput = Py_NewRef(changeset);
+  }
+  else
+  {
+    if (0 != PyObject_GetBufferContiguous(changeset, &iterator->buffer_buffer, PyBUF_SIMPLE))
+      goto error;
+    iterator->buffer_source = Py_NewRef(changeset);
+
+    if (iterator->buffer_buffer.len > 0x7fffffff)
+    {
+      SET_EXC(SQLITE_TOOBIG, NULL);
+      goto error;
+    }
+    int rc = flags ? sqlite3changeset_start_v2(&iterator->iter, (int)iterator->buffer_buffer.len,
+                                               iterator->buffer_buffer.buf, flags)
+                   : sqlite3changeset_start(&iterator->iter, (int)iterator->buffer_buffer.len,
+                                            iterator->buffer_buffer.buf);
+    if (rc != SQLITE_OK)
+    {
+      SET_EXC(rc, NULL);
+      goto error;
+    }
+  }
+
+  return (PyObject*)iterator;
+
+error:
+  Py_DECREF(iterator);
+  assert(PyErr_Occurred());
+  return NULL;
+}
+
+static PyObject *
+APSWChangesetIterator_next(APSWChangesetIterator *self)
+{
+  fprintf(stderr, "next called\n");
+  return NULL;
+}
+
+static PyObject *
+APSWChangesetIterator_iter(PyObject *self)
+{
+  return Py_NewRef(self);
+}
+
+static void
+APSWChangesetIterator_dealloc(APSWChangesetIterator *self)
+{
+  if (self->iter)
+  {
+    sqlite3changeset_finalize(self->iter);
+    self->iter = NULL;
+  }
+    Py_CLEAR(self->xInput);
+    if(self->buffer_source)
+    {
+      PyBuffer_Release(&self->buffer_buffer);
+      Py_CLEAR(self->buffer_source);
+    }
+    Py_TpFree((PyObject *)self);
 }
 
 static PyMethodDef APSWSession_methods[] = {
@@ -742,7 +909,7 @@ static PyTypeObject APSWSessionType = {
   .tp_doc = Session_class_DOC,
   .tp_new = PyType_GenericNew,
   .tp_init = (initproc)APSWSession_init,
-  .tp_finalize = (destructor)APSWSession_close_internal,
+  .tp_dealloc = (destructor)APSWSession_dealloc,
   .tp_methods = APSWSession_methods,
   .tp_getset = APSWSession_getset,
   .tp_flags = Py_TPFLAGS_BASETYPE | Py_TPFLAGS_DEFAULT,
@@ -750,8 +917,9 @@ static PyTypeObject APSWSessionType = {
 };
 
 static PyMethodDef APSWChangeset_methods[] = {
-    { "invert", (PyCFunction)APSWChangeset_invert, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_invert_DOC },
-    {0},
+  { "invert", (PyCFunction)APSWChangeset_invert, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_invert_DOC },
+  { "iter", (PyCFunction)APSWChangeset_iter, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_iter_DOC },
+  { 0 },
 };
 
 static PyTypeObject APSWChangesetType = {
@@ -759,6 +927,14 @@ static PyTypeObject APSWChangesetType = {
   .tp_doc = Changeset_class_DOC,
   .tp_basicsize = sizeof(APSWChangeset),
   .tp_methods = APSWChangeset_methods,
+};
+
+static PyTypeObject APSWChangesetIteratorType = {
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.ChangesetIterator",
+  .tp_basicsize = sizeof(APSWChangesetIterator),
+  .tp_iternext = (iternextfunc)APSWChangesetIterator_next,
+  .tp_iter = APSWChangesetIterator_iter,
+  .tp_dealloc = (destructor) APSWChangesetIterator_dealloc,
 };
 
 static PyTypeObject APSWChangesetBuilderType = {

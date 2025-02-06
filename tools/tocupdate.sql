@@ -52,7 +52,13 @@ insert into toc values
     ("sqlite3session_changeset", "function", 0, "Generate A Changeset From A Session Object", "session/sqlite3session_changeset.html"),
     ("sqlite3session_patchset", "function", 0, "Generate A Patchset From A Session Object", "session/sqlite3session_patchset.html"),
     ("sqlite3session_patchset_strm", "function", 0, "Streaming Versions of API functions", "session/sqlite3changegroup_add_strm.html"),
-    ("sqlite3session_changeset_strm", "function", 0, "Streaming Versions of API functions", "session/sqlite3changegroup_add_strm.html")
+    ("sqlite3session_changeset_strm", "function", 0, "Streaming Versions of API functions", "session/sqlite3changegroup_add_strm.html"),
+    ("sqlite3changeset_invert", "function", 0, "Invert A Changeset", "session/sqlite3changeset_invert.html"),
+    ("sqlite3changeset_start", "function", 0, "Create An Iterator To Traverse A Changeset", "session/sqlite3changeset_start.html"),
+    ("sqlite3changeset_start_v2", "function", 0, "Create An Iterator To Traverse A Changeset", "session/sqlite3changeset_start.html"),
+    ("sqlite3changeset_start_strm", "function", 0, "Streaming Versions of API functions", "session/sqlite3changegroup_add_strm.html"),
+    ("sqlite3changeset_start_v2_strm", "function", 0, "Streaming Versions of API functions", "session/sqlite3changegroup_add_strm.html")
+
 
     ;
 

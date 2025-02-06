@@ -8,13 +8,12 @@ import collections.abc
 
 # read between 1 and supplied int number of bytes.  At EOF
 # return None.  Raise exception for error.
+SessionStreamInput : TypeAlias = Callable[[int], collections.abc.Buffer | None]
 
-
-SessionStreamInput : TypeAlias = Callable[[int], collections.abc.Buffer]
 # called with each output chunk.  Raise exception for error.
 SessionStreamOutput : TypeAlias = Callable[[memoryview], None]
 
-
+ChangesetInput : TypeAlias =  SessionStreamInput | collections.abc.Buffer
 
 # sqlite3session_config - expose as apsw.session_config
 def apsw_session_config(op: int, *args):

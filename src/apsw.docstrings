@@ -756,6 +756,44 @@
 } while(0)
 
 
+#define  Changeset_class_DOC "Provides changeset (including patchset) related methods.\n" 
+
+#define  Changeset_invert_DOC "invert($self,changeset)\n--\n\nChangeset.invert(changeset: bytes) -> bytes\n\n" \
+"Produces a changeset that reverses the effect of\n" \
+"the supplied changeset.\n" \
+"\n" \
+"Calls: `sqlite3changeset_invert <https://sqlite.org/session/sqlite3changeset_invert.html>`__\n" 
+
+#define Changeset_invert_KWNAMES "changeset"
+#define Changeset_invert_USAGE "Changeset.invert(changeset: bytes) -> bytes"
+
+#define Changeset_invert_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
+} while(0)
+
+
+#define  Changeset_iter_DOC "iter($self,changeset,*,flags=0)\n--\n\nChangeset.iter(changeset: ChangesetInput, *, flags: int = 0) -> Iterator[TableChange]\n\n" \
+"Provides an iterator over a changeset.  You can supply the changeset as\n" \
+" the bytes, or streamed via a callable.\n" \
+"\n" \
+" If flags is non-zero them the ``v2`` API is used (marked as experimental)\n" \
+"\n" \
+"Calls:\n" \
+"  * `sqlite3changeset_start <https://sqlite.org/session/sqlite3changeset_start.html>`__\n" \
+"  * `sqlite3changeset_start_v2 <https://sqlite.org/session/sqlite3changeset_start.html>`__\n" \
+"  * `sqlite3changeset_start_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" \
+"  * `sqlite3changeset_start_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
+
+#define Changeset_iter_KWNAMES "changeset", "flags"
+#define Changeset_iter_USAGE "Changeset.iter(changeset: ChangesetInput, *, flags: int = 0) -> Iterator[TableChange]"
+
+#define Changeset_iter_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(flags), int)); \
+  assert(flags == (0)); \
+} while(0)
+
+
 #define  Connection_authorizer_DOC ":type: Optional[Authorizer]\n" \
 "\n" \
 "While `preparing <https://sqlite.org/c3ref/prepare.html>`_\n" \
@@ -3353,12 +3391,30 @@
 } while(0)
 
 
+#define  Session_changeset_DOC "changeset($self)\n--\n\nSession.changeset() -> bytes\n\n" \
+"Produces a changeset of the session so far.\n" \
+"\n" \
+"Calls: `sqlite3session_changeset <https://sqlite.org/session/sqlite3session_changeset.html>`__\n" 
+
 #define  Session_changeset_size_DOC ":type: int\n" \
 "\n" \
 "Returns upper limit on changeset size, but only if :meth:`Session.config`\n" \
 "was used to enable it.  Otherwise it will be zero.\n" \
 "\n" \
 "Calls: `sqlite3session_changeset_size <https://sqlite.org/session/sqlite3session_changeset_size.html>`__\n" 
+
+#define  Session_changeset_stream_DOC "changeset_stream($self,output)\n--\n\nSession.changeset_stream(output: Callable[[memoryview], None]) -> None\n\n" \
+"Produces a changeset of the session so far in a stream\n" \
+"\n" \
+"Calls: `sqlite3session_changeset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
+
+#define Session_changeset_stream_KWNAMES "output"
+#define Session_changeset_stream_USAGE "Session.changeset_stream(output: Callable[[memoryview], None]) -> None"
+
+#define Session_changeset_stream_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(output), PyObject *)); \
+} while(0)
+
 
 #define  Session_class_DOC "This object wraps a `sqlite3_session\n" \
 "<https://www.sqlite.org/session/session.html>`__ object.\n" 
@@ -3439,6 +3495,26 @@
 "How many bytes of memory have been used to record session changes.\n" \
 "\n" \
 "Calls: `sqlite3session_memory_used <https://sqlite.org/session/sqlite3session_memory_used.html>`__\n" 
+
+#define  Session_patchset_DOC "patchset($self)\n--\n\nSession.patchset() -> bytes\n\n" \
+"Produces a patchset of the session so far.  Patchsets do not include\n" \
+"before values of changes, making them smaller, but also harder to detect\n" \
+"conflicts.\n" \
+"\n" \
+"Calls: `sqlite3session_patchset <https://sqlite.org/session/sqlite3session_patchset.html>`__\n" 
+
+#define  Session_patchset_stream_DOC "patchset_stream($self,output)\n--\n\nSession.patchset_stream(output: Callable[[memoryview], None]) -> None\n\n" \
+"Produces a patchset of the session so far in a stream\n" \
+"\n" \
+"Calls: `sqlite3session_patchset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
+
+#define Session_patchset_stream_KWNAMES "output"
+#define Session_patchset_stream_USAGE "Session.patchset_stream(output: Callable[[memoryview], None]) -> None"
+
+#define Session_patchset_stream_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(output), PyObject *)); \
+} while(0)
+
 
 #define  Session_table_filter_DOC "table_filter($self,callback)\n--\n\nSession.table_filter(callback: Callable[[str], bool]) -> None\n\n" \
 "Register a callback that says if changes to the named table should be\n" \

@@ -602,6 +602,12 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
+        elif param["type"] == "ChangesetInput":
+            type = "PyObject *"
+            kind = "ChangesetInput"
+            if param["default"]:
+                breakpoint()
+                pass
         elif param["type"] == "strtype":
             type = "PyObject *"
             kind = "PyUnicode"

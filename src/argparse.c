@@ -289,6 +289,19 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     argp_optindex++;                                                                                                   \
   } while (0)
 
+#define ARG_ChangesetInput(varname)                                                                                    \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!PyCallable_Check(useargs[argp_optindex]) && !PyObject_CheckBuffer(useargs[argp_optindex]))                    \
+    {                                                                                                                  \
+      PyErr_Format(PyExc_TypeError, "Expected bytes, buffer or compatible, or a callable, not %s",                     \
+                   Py_TypeName(useargs[argp_optindex]));                                                               \
+      goto param_error;                                                                                                \
+    }                                                                                                                  \
+    varname = useargs[argp_optindex];                                                                                  \
+    argp_optindex++;                                                                                                   \
+  } while (0)
+
 #define ARG_unsigned_long(varname)                                                                                     \
   do                                                                                                                   \
   {                                                                                                                    \

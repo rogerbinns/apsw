@@ -1898,6 +1898,7 @@ PyInit_apsw(void)
 #ifdef SQLITE_ENABLE_SESSION
       || PyType_Ready(&APSWSessionType) <0  || PyType_Ready(&APSWTableChangeType) <0
       || PyType_Ready(&APSWChangesetType) <0 || PyType_Ready(&APSWChangesetBuilderType) <0
+      || PyType_Ready(&APSWChangesetIteratorType) <0
 #endif
       )
     goto fail;

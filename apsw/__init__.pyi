@@ -512,6 +512,7 @@ vfsnames = vfs_names ## OLD-NAME
 @final
 class Backup:
     """You create a backup instance by calling :meth:`Connection.backup`."""
+
     def close(self, force: bool = False) -> None:
         """Does the same thing as :meth:`~Backup.finish`.  This extra api is
         provided to give the same api as other APSW objects and files.
@@ -595,6 +596,7 @@ class Blob:
       <https://sqlite.org/lang_corefunc.html>`_ function.
 
     See the :ref:`example <example_blob_io>`."""
+
     def close(self, force: bool = False) -> None:
         """Closes the blob.  Note that even if an error occurs the blob is
         still closed.
@@ -710,9 +712,35 @@ class Blob:
         Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__"""
         ...
 
+class Changeset:
+    """Provides changeset (including patchset) related methods."""
+
+    @staticmethod
+    def invert(changeset: bytes) -> bytes:
+        """Produces a changeset that reverses the effect of
+        the supplied changeset.
+
+        Calls: `sqlite3changeset_invert <https://sqlite.org/session/sqlite3changeset_invert.html>`__"""
+        ...
+
+    @staticmethod
+    def iter(changeset: ChangesetInput, *, flags: int = 0) -> Iterator[TableChange]:
+        """Provides an iterator over a changeset.  You can supply the changeset as
+         the bytes, or streamed via a callable.
+
+         If flags is non-zero them the ``v2`` API is used (marked as experimental)
+
+        Calls:
+          * `sqlite3changeset_start <https://sqlite.org/session/sqlite3changeset_start.html>`__
+          * `sqlite3changeset_start_v2 <https://sqlite.org/session/sqlite3changeset_start.html>`__
+          * `sqlite3changeset_start_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
+          * `sqlite3changeset_start_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
 class Connection:
     """This object wraps a `sqlite3 pointer
     <https://sqlite.org/c3ref/sqlite3.html>`_."""
+
     authorizer: Optional[Authorizer]
     """While `preparing <https://sqlite.org/c3ref/prepare.html>`_
     statements, SQLite will call any defined authorizer to see if a
@@ -1967,6 +1995,7 @@ class Connection:
 
 class Cursor:
     """"""
+
     bindings_count: int
     """How many bindings are in the statement.  The ``?`` form
     results in the largest number.  For example you could do
@@ -2259,6 +2288,7 @@ class FTS5ExtensionApi:
     passed as the first parameter to auxiliary functions.
 
     See :ref:`the example <example_fts5_auxfunc>`."""
+
     aux_data: Any
     """You can store an object as `auxiliary data <https://www.sqlite.org/fts5.html#xSetAuxdata>`__
     which is available across matching rows.  It starts out as :class:`None`.
@@ -2356,6 +2386,7 @@ class FTS5ExtensionApi:
 @final
 class FTS5Tokenizer:
     """Wraps a registered tokenizer.  Returned by :meth:`Connection.fts5_tokenizer`."""
+
     args: tuple[str]
     """The arguments the tokenizer was created with."""
 
@@ -2433,6 +2464,7 @@ class IndexInfo:
 
     :meth:`apsw.ext.index_info_to_dict` provides a convenient
     representation of this object as a :class:`dict`."""
+
     colUsed: set[int]
     """(Read-only) Columns used by the statement.  Note that a set is returned, not
     the underlying integer."""
@@ -2528,10 +2560,10 @@ class IndexInfo:
         """Sets *omit* for *aConstraintUsage[which]*"""
         ...
 
-@final
 class Session:
     """This object wraps a `sqlite3_session
     <https://www.sqlite.org/session/session.html>`__ object."""
+
     def attach(self, name: Optional[str] = None) -> None:
         """Attach to a specific table, or all tables if no name is provided.  The
         table does not need to exist at the time of the call.  You can call
@@ -2544,11 +2576,23 @@ class Session:
         Calls: `sqlite3session_attach <https://sqlite.org/session/sqlite3session_attach.html>`__"""
         ...
 
+    def changeset(self) -> bytes:
+        """Produces a changeset of the session so far.
+
+        Calls: `sqlite3session_changeset <https://sqlite.org/session/sqlite3session_changeset.html>`__"""
+        ...
+
     changeset_size: int
     """Returns upper limit on changeset size, but only if :meth:`Session.config`
     was used to enable it.  Otherwise it will be zero.
 
     Calls: `sqlite3session_changeset_size <https://sqlite.org/session/sqlite3session_changeset_size.html>`__"""
+
+    def changeset_stream(self, output: Callable[[memoryview], None]) -> None:
+        """Produces a changeset of the session so far in a stream
+
+        Calls: `sqlite3session_changeset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
 
     def close(self) -> None:
         """Ends the session object.  APSW ensures that all
@@ -2602,6 +2646,20 @@ class Session:
 
     Calls: `sqlite3session_memory_used <https://sqlite.org/session/sqlite3session_memory_used.html>`__"""
 
+    def patchset(self) -> bytes:
+        """Produces a patchset of the session so far.  Patchsets do not include
+        before values of changes, making them smaller, but also harder to detect
+        conflicts.
+
+        Calls: `sqlite3session_patchset <https://sqlite.org/session/sqlite3session_patchset.html>`__"""
+        ...
+
+    def patchset_stream(self, output: Callable[[memoryview], None]) -> None:
+        """Produces a patchset of the session so far in a stream
+
+        Calls: `sqlite3session_patchset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
     def table_filter(self, callback: Callable[[str], bool]) -> None:
         """Register a callback that says if changes to the named table should be
         recorded.  If your callback has an exception then ``False`` is
@@ -2629,6 +2687,7 @@ class URIFilename:
     which knows how to get the name back out.  The URIFilename is
     only valid for the duration of the xOpen call.  If you save
     and use the object later you will get an exception."""
+
     def filename(self) -> str:
         """Returns the filename."""
         ...
@@ -2667,6 +2726,7 @@ class VFSFcntlPragma:
 
     It is only valid while in :meth:`VFSFile.xFileControl`, and using
     outside of that will result in memory corruption and crashes."""
+
     def __init__(self, pointer: int):
         """The pointer must be what your xFileControl method received."""
         ...
@@ -2684,6 +2744,7 @@ class VFSFile:
     """Wraps access to a file.  You only need to derive from this class
     if you want the file object returned from :meth:`VFS.xOpen` to
     inherit from an existing VFS implementation."""
+
     def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None:
         """Called when there has been an exception in a :class:`VFSFile`
         routine, and it can't be reported to the caller as usual.
@@ -2831,6 +2892,7 @@ class VFS:
     """Provides operating system access.  You can get an overview in the
     `SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To
     create a VFS your Python class must inherit from :class:`VFS`."""
+
     def excepthook(self, etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any:
         """Called when there has been an exception in a :class:`VFS` routine,
         and it can't be reported to the caller as usual.
@@ -3052,6 +3114,7 @@ class VTCursor(Protocol):
     The :class:`VTCursor` object is used for iterating over a table.
     There may be many cursors simultaneously so each one needs to keep
     track of where in the table it is."""
+
     def Close(self) -> None:
         """This is the destructor for the cursor. Note that you must
         cleanup. The method will not be called again if you raise an
@@ -3148,6 +3211,7 @@ class VTModule(Protocol):
     The create step is to tell SQLite about the existence of the table.
     Any number of tables referring to the same module can be made this
     way."""
+
     def Connect(self, connection: Connection, modulename: str, databasename: str, tablename: str, *args: tuple[SQLiteValue, ...])  -> tuple[str, VTTable]:
         """The parameters and return are identical to
         :meth:`~VTModule.Create`.  This method is called
@@ -3224,6 +3288,7 @@ class VTTable(Protocol):
 
     It is possible to `not have a rowid
     <https://www.sqlite.org/vtab.html#_without_rowid_virtual_tables_>`__"""
+
     def Begin(self) -> None:
         """This function is used as part of transactions.  You do not have to
         provide the method."""
@@ -3546,6 +3611,7 @@ class zeroblob:
     You can then overwrite parts in smaller chunks, without having
     to do it all at once.  The :ref:`example <example_blob_io>` shows
     how to use it."""
+
     def __init__(self, size: int):
         """:param size: Number of zeroed bytes to create"""
         ...

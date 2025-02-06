@@ -5765,6 +5765,7 @@ class APSW(unittest.TestCase):
             "FunctionCBInfo",
             "APSWFTS5Tokenizer",
             "cursor",
+            "APSWChangesetIterator",
         ):
             return
 
@@ -5816,7 +5817,7 @@ class APSW(unittest.TestCase):
                 "order": ("use", "closed"),
             },
             "APSWSession": {
-                "skip": {"init", "close_internal", "close", "get_change_patch_set", "get_change_patch_set_stream"},
+                "skip": {"init", "close_internal", "close", "get_change_patch_set", "get_change_patch_set_stream", "dealloc"},
                 "req": {"closed": "CHECK_SESSION_CLOSED"},
                 "order": ("closed",),
             },
