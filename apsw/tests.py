@@ -642,6 +642,12 @@ class APSW(unittest.TestCase):
         self.db.config(apsw.SQLITE_DBCONFIG_REVERSE_SCANORDER, 0)
         self.assertEqual(0, self.db.pragma("reverse_unordered_selects"))
 
+        self.assertEqual(1, self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_COMMENTS, -1))
+        self.db.execute("-- hello")
+        self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_COMMENTS, 0)
+        self.assertRaises(apsw.SQLError, self.db.execute, "-- hello")
+
+
     def testConnectionMetadata(self):
         "Test uses of sqlite3_table_column_metadata"
         self.db.create_collation("BreadFruit", lambda x, y: 1)

@@ -4445,7 +4445,10 @@ Connection_config(Connection *self, PyObject *args)
   case SQLITE_DBCONFIG_TRIGGER_EQP:
   case SQLITE_DBCONFIG_LEGACY_FILE_FORMAT:
   case SQLITE_DBCONFIG_TRUSTED_SCHEMA:
-  case SQLITE_DBCONFIG_REVERSE_SCANORDER: {
+  case SQLITE_DBCONFIG_REVERSE_SCANORDER:
+  case SQLITE_DBCONFIG_ENABLE_ATTACH_CREATE:
+  case SQLITE_DBCONFIG_ENABLE_ATTACH_WRITE:
+  case SQLITE_DBCONFIG_ENABLE_COMMENTS: {
     int opdup, val, current;
     if (!PyArg_ParseTuple(args, "ii", &opdup, &val))
       return NULL;

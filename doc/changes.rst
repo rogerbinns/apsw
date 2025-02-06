@@ -19,6 +19,8 @@ APSW changes by version
 Added :class:`apsw.ext.query_limit` to limit total row count and
 execution time within a block. (:issue:`520`)
 
+:meth:`Connection.config` updated with new DBCONFIG options
+
 3.48.0.0
 ========
 
