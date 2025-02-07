@@ -51,6 +51,10 @@ API Reference
 =============
 */
 
+#ifdef APSW_USE_SQLITE_CFG_H
+#include "sqlite_cfg.h"
+#endif
+
 #ifdef APSW_USE_SQLITE_CONFIG
 #include "sqlite3config.h"
 #endif
@@ -89,7 +93,7 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3048000
+#if SQLITE_VERSION_NUMBER < 3049000
 #error Your SQLite version is too old.  It must be at least 3.48.0
 #endif
 

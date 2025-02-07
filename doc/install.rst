@@ -82,20 +82,20 @@ edit the :file:`setup.apsw` file inside.
 
 .. downloads-begin
 
-* `apsw-3.48.0.0.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.48.0.0/apsw-3.48.0.0.zip>`__
+* `apsw-3.49.0.0.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.49.0.0/apsw-3.49.0.0.zip>`__
   (Source as zip, includes this HTML Help)
 
-* `apsw-3.48.0.0.tar.gz
-  <https://github.com/rogerbinns/apsw/releases/download/3.48.0.0/apsw-3.48.0.0.tar.gz>`__
+* `apsw-3.49.0.0.tar.gz
+  <https://github.com/rogerbinns/apsw/releases/download/3.49.0.0/apsw-3.49.0.0.tar.gz>`__
   (Source as tar.gz, includes this HTML Help)
 
-* `apsw-3.48.0.0.zip.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.48.0.0/apsw-3.48.0.0.zip.cosign-bundle>`__
+* `apsw-3.49.0.0.zip.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.49.0.0/apsw-3.49.0.0.zip.cosign-bundle>`__
   cosign signature for zip source
 
-* `apsw-3.48.0.0.tar.gz.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.48.0.0/apsw-3.48.0.0.tar.gz.cosign-bundle>`__
+* `apsw-3.49.0.0.tar.gz.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.49.0.0/apsw-3.49.0.0.tar.gz.cosign-bundle>`__
   cosign signature for tar.gz source
 
 .. downloads-end
@@ -127,18 +127,18 @@ Verify
 
   .. code-block:: console
 
-    $ cosign verify-blob apsw-3.48.0.0.zip                        \
+    $ cosign verify-blob apsw-3.49.0.0.zip                        \
         --new-bundle-format                                       \
-        --bundle apsw-3.48.0.0.zip.cosign-bundle                  \
+        --bundle apsw-3.49.0.0.zip.cosign-bundle                  \
         --certificate-identity=rogerb@rogerbinns.com              \
         --certificate-oidc-issuer=https://github.com/login/oauth
     Verified OK
 
-    $ python3 -m sigstore verify identity apsw-3.48.0.0.zip       \
-        --bundle apsw-3.48.0.0.zip.cosign-bundle                  \
+    $ python3 -m sigstore verify identity apsw-3.49.0.0.zip       \
+        --bundle apsw-3.49.0.0.zip.cosign-bundle                  \
         --cert-identity=rogerb@rogerbinns.com                     \
         --cert-oidc-issuer=https://github.com/login/oauth
-    OK: apsw-3.48.0.0.zip
+    OK: apsw-3.49.0.0.zip
 
   .. verify-end
 

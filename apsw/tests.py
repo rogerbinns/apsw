@@ -642,6 +642,12 @@ class APSW(unittest.TestCase):
         self.db.config(apsw.SQLITE_DBCONFIG_REVERSE_SCANORDER, 0)
         self.assertEqual(0, self.db.pragma("reverse_unordered_selects"))
 
+        self.assertEqual(1, self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_COMMENTS, -1))
+        self.db.execute("-- hello")
+        self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_COMMENTS, 0)
+        self.assertRaises(apsw.SQLError, self.db.execute, "-- hello")
+
+
     def testConnectionMetadata(self):
         "Test uses of sqlite3_table_column_metadata"
         self.db.create_collation("BreadFruit", lambda x, y: 1)
@@ -10419,9 +10425,6 @@ shell.write(shell.stdout, "hello world\\n")
     def testQueryLimit(self):
         "apsw.ext.query_limit"
 
-        # work around https://sqlite.org/forum/forumpost/3547aa1078
-        self.db.set_profile(lambda *args: None)
-
         query_limit = apsw.ext.query_limit
 
         apsw.ext.make_virtual_module(self.db, "generate_series", apsw.ext.generate_series)
@@ -10516,8 +10519,8 @@ shell.write(shell.stdout, "hello world\\n")
         try:
             with query_limit(self.db, row_limit=10000):
                 self.db.execute(query).get
-                with query_limit(self.db, timeout=0, timeout_exception=ZeroDivisionError, row_steps=1):
-                    for (name,) in self.db.execute("select name from pragma_function_list"):
+                with query_limit(self.db, timeout=0, timeout_exception=ZeroDivisionError, timeout_steps=1):
+                    for (name,) in self.db.execute("select name from pragma_function_list order by name"):
                         res.append(name)
         except Exception as e:
             exc = e

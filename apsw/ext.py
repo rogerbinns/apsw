@@ -1423,7 +1423,8 @@ class query_limit:
         is hit
     :param timeout_exception: Class of exception to raise when timeout
         is hit
-    :param row_steps: How often the elapsed time is checked
+    :param timeout_steps: How often the elapsed time is checked in
+        SQLite internal operations (see :meth:`~apsw.Connection.set_progress_handler`)
 
     If the exception is :class:`QueryLimitNoException` (default) then
     no exception is passed on when the block exits.
@@ -1470,14 +1471,14 @@ class query_limit:
         timeout: float | None = None,
         row_exception: type[Exception] = QueryLimitNoException,
         timeout_exception: type[Exception] = QueryLimitNoException,
-        row_steps: int = 100,
+        timeout_steps: int = 100,
     ):
         self.db = db
         self.row_limit = row_limit
         self.timeout = timeout
         self.row_exception = row_exception
         self.timeout_exception = timeout_exception
-        self.row_steps = row_steps
+        self.timeout_steps = timeout_steps
 
     def __enter__(self) -> None:
         "Context manager entry point"
@@ -1492,7 +1493,7 @@ class query_limit:
 
         if self.timeout is not None:
             limit.time_expiry = time.monotonic() + self.timeout
-            self.db.set_progress_handler(self.progress, self.row_steps, id=self)
+            self.db.set_progress_handler(self.progress, self.timeout_steps, id=self)
 
         self.context_token = query_limit_context.set(limit)
         self.my_limit = limit
@@ -1543,7 +1544,7 @@ class query_limit:
         """
         limit: query_limit.limit = query_limit_context.get()
 
-        if limit is self.my_limit and time.monotonic() > limit.time_expiry:
+        if limit is self.my_limit and time.monotonic() >= limit.time_expiry:
             raise self.timeout_exception("query time limit hit")
 
         return False

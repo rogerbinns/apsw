@@ -3822,6 +3822,12 @@ SQLITE_DBCONFIG_DQS_DDL: int = 1014
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_DQS_DML: int = 1013
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
+SQLITE_DBCONFIG_ENABLE_ATTACH_CREATE: int = 1020
+"""For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
+SQLITE_DBCONFIG_ENABLE_ATTACH_WRITE: int = 1021
+"""For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
+SQLITE_DBCONFIG_ENABLE_COMMENTS: int = 1022
+"""For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_ENABLE_FKEY: int = 1002
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER: int = 1004
@@ -3842,7 +3848,7 @@ SQLITE_DBCONFIG_LOOKASIDE: int = 1001
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_MAINDBNAME: int = 1000
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
-SQLITE_DBCONFIG_MAX: int = 1019
+SQLITE_DBCONFIG_MAX: int = 1022
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE: int = 1006
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
@@ -4493,8 +4499,9 @@ mapping_db_config: dict[str | int, int | str]
 Doc at https://sqlite.org/c3ref/c_dbconfig_defensive.html
 
 SQLITE_DBCONFIG_DEFENSIVE SQLITE_DBCONFIG_DQS_DDL
-SQLITE_DBCONFIG_DQS_DML SQLITE_DBCONFIG_ENABLE_FKEY
-SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER
+SQLITE_DBCONFIG_DQS_DML SQLITE_DBCONFIG_ENABLE_ATTACH_CREATE
+SQLITE_DBCONFIG_ENABLE_ATTACH_WRITE SQLITE_DBCONFIG_ENABLE_COMMENTS
+SQLITE_DBCONFIG_ENABLE_FKEY SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER
 SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION SQLITE_DBCONFIG_ENABLE_QPSG
 SQLITE_DBCONFIG_ENABLE_TRIGGER SQLITE_DBCONFIG_ENABLE_VIEW
 SQLITE_DBCONFIG_LEGACY_ALTER_TABLE SQLITE_DBCONFIG_LEGACY_FILE_FORMAT
