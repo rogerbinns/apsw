@@ -4,13 +4,6 @@ Execution and tracing
 
 .. currentmodule:: apsw
 
-Quick start
-===========
-
-You may find :meth:`apsw.ext.Trace` as a quick convenient overview of
-what get executed and its effects.  If you need more detailed
-information than that, then keep reading.
-
 .. _executionmodel:
 
 Execution model
@@ -25,7 +18,8 @@ or the statement is complete.
 The :meth:`Cursor.execute` method automatically does the preparing and
 starts execution. If none of the statements return rows then execution
 will go to the end. If a row is returned then you use the cursor as an
-iterator. Execution will resume as necessary to return each result row.
+iterator. Execution will resume as necessary to return the next result
+row.
 
 However this means that if you don't read the rows returned then the
 rest of your statements won't be executed.  APSW will detect
@@ -43,34 +37,51 @@ following create table command didn't have a chance to get
 executed. On the next execute that condition is detected and an
 exception raised.
 
-Multi-threading and re-entrancy
-===============================
+Multi-threading
+===============
 
 ASPW lets you use SQLite in multi-threaded programs and will let other
 threads execute while SQLite is working.  It checks at start that
 SQLite was compiled in `threadsafe mode
-<https://www.sqlite.org/threadsafe.html>`__ which is the default.  The
-`GIL
-<https://docs.python.org/3/glossary.html#term-global-interpreter-lock>`_
-is released when when SQLite APIs are called, and re-acquired while
-running any Python code.
+<https://www.sqlite.org/threadsafe.html>`__ which is the default.
+
+SQLite can only be executing in one thread at a time, and uses a mutex
+to ensure this.  You can issue further queries in the same thread, for
+example in callback functions and virtual tables.
+
+Attempts to do SQLite operations in one thread while another is busy
+will result in a :exc:`ThreadingViolationError`.  However calling
+:meth:`Cursor.execute`, :meth:`Cursor.executemany`, or
+:meth:`iteration <Cursor.__next__>`  will wait up to a third of second
+for the mutex before raising the exception.
+
+You will not get any concurrency by trying to use multiple threads on
+the same :class:`Connection`.  You will however get concurrency by
+using multiple connections.
+
+Python has a global lock to ensure only one thread at a time is
+running Python code (maintaining the integrity of Python data
+structures) named the `GIL
+<https://docs.python.org/3/glossary.html#term-global-interpreter-lock>`__.
+APSW releases the GIL around SQLite calls that could take time like
+preparing statements for execution, and executing them.
+
+Re-entrancy
+===========
 
 You cannot use the same cursor object in multiple threads concurrently
 to execute statements. APSW will detect this and raise an
-:exc:`ThreadingViolationError`. It is safe to use the object serially
-(eg calling :meth:`Cursor.execute` in one thread and iterator in
+:exc:`ThreadingViolationError`. It is safe to use the cursor serially
+such as calling :meth:`Cursor.execute` in one thread and iterator next in
 another. You also can't do things like try to
 :meth:`~Connection.close` a Connection concurrently in two threads.
 
-A cursor object can only be executing one query at a time. You cannot
+A cursor object can only be executing one query at a time. You can
 issue a new query from inside a trace function or from a user defined
-function or collation since these are called while executing a
-query. You can however make new cursors and use those without
-issue. You may want to remember the Connection object when you set
-your trace or user defined functions.
+function or collation provided you use a new cursor.
 
-64 bit hosts
-============
+64 bit
+======
 
 APSW is tested and works correctly on 32 and 64 bit hosts.
 SQLite is limited to 32 bit quantities for strings,
@@ -98,7 +109,6 @@ You should pick a larger cache size if you have more than 100 unique
 queries that you run.  For example if you have 101 different queries
 you run in order then the cache will not help.
 
-
 If you are using :attr:`authorizers <Connection.authorizer>` then be
 aware authorizer callback is only called while statements are being
 prepared.  You can :class:`specify zero <Connection>` which will
@@ -109,6 +119,10 @@ flag to `execute`/`executemany`.
 
 Tracing
 =======
+
+You may find :meth:`apsw.ext.Trace` as a quick convenient overview of
+what get executed and its effects.  If you need more detailed
+information than that, then keep reading.
 
 You can install tracers on :class:`cursors <Cursor>` or
 :class:`connections <Connection>` as an easy way of seeing exactly
@@ -124,7 +138,7 @@ code.
   in the tracer then do them from a new cursor object.  For example::
 
     def exec_tracer(cursor, sql, bindings):
-      cursor.connection.cursor().execute("insert into log values(?,?)", (sql,str(bindings)))
+      cursor.connection.execute("insert into log values(?,?)", (sql,str(bindings)))
       return True
 
 .. _executiontracer:

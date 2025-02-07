@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Connections to a database &mdash; APSW 3.48.0.0 documentation</title>
+  <title>Connections to a database &mdash; APSW 3.49.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9901b351"></script>
+      <script src="_static/documentation_options.js?v=64718c17"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -1317,11 +1317,18 @@ read the first result, then you won’t reach the end of the statement.</p>
 
 <dl class="py method" id="index-43">
 <dt class="sig sig-object py" id="apsw.Connection.set_progress_handler">
-<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_progress_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsteps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_progress_handler" title="Link to this definition"></a></dt>
-<dd><p>Sets a callable which is invoked every <em>nsteps</em> SQLite
-inststructions. The callable should return True to abort
-or False to continue. (If there is an error in your Python <em>callable</em>
-then True/abort will be returned).</p>
+<span class="sig-prename descclassname"><span class="pre">Connection.</span></span><span class="sig-name descname"><span class="pre">set_progress_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsteps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Connection.set_progress_handler" title="Link to this definition"></a></dt>
+<dd><p>Sets a callable which is invoked every <em>nsteps</em> SQLite inststructions.
+The callable should return True to abort or False to continue. (If
+there is an error in your Python <em>callable</em> then True/abort will be
+returned).  SQLite raises <a class="reference internal" href="exceptions.html#apsw.InterruptError" title="apsw.InterruptError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InterruptError</span></code></a> for aborts.</p>
+<p>Use <code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code> to cancel the progress handler.  Multiple handlers
+can be present at once (implemented by APSW). Registered callbacks are
+distinguished by their <code class="docutils literal notranslate"><span class="pre">id</span></code> - an equality test is done to match ids.</p>
+<p>You can use <a class="reference internal" href="ext.html#apsw.ext.Trace" title="apsw.ext.Trace"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.Trace</span></code></a> to see how many steps are used for
+a representative statement, or <a class="reference internal" href="ext.html#apsw.ext.ShowResourceUsage" title="apsw.ext.ShowResourceUsage"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.ShowResourceUsage</span></code></a> to
+see how many are used in a block.  It will generally be several million
+per second.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
@@ -1631,7 +1638,7 @@ number of frames checkpointed as described in the
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 14, 2025.
+      <span class="lastupdated">Last updated on Feb 07, 2025.
       </span></p>
   </div>
 

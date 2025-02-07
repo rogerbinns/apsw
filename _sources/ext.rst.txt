@@ -33,6 +33,21 @@ into a virtual table source.
 :meth:`generate_series` and :meth:`generate_series_sqlite` provide
 `generate_series <https://sqlite.org/series.html>`__.
 
+Query limiting, tracing and performance
+---------------------------------------
+
+Use :class:`query_limit` with a block (:ref:`example
+<example_query_limit>`) to limit total number of rows
+processed or elapsed time.
+
+Use :class:`Trace` with a block (:ref:`example <example_Trace>`) to
+see the SQL run and stats about each one such as timing, rows
+returned, changes made, memory used, and other SQLite counters.
+
+Use :class:`ShowResourceUsage` with a block (:ref:`example
+<example_ShowResourceUsage>`) to get overall SQLite counters as well
+as operating system timing, cpu usage, memory, and I/O.
+
 Database storage usage
 ----------------------
 

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.fts5 &mdash; APSW 3.48.0.0 documentation</title>
+  <title>apsw.fts5 &mdash; APSW 3.49.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9901b351"></script>
+      <script src="../../_static/documentation_options.js?v=64718c17"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -3407,6 +3407,12 @@
         <span class="s2">&quot;For example to run the trigram tokenizer on unicode61 keeping diacritics use: trigram unicode61 remove_diacritics 0&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">options</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="c1"># systrem python on macos gives text based output when - is used even though binary was requested</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="s2">&quot;encoding&quot;</span><span class="p">):</span>
+        <span class="c1"># so use raw underlying binary</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">buffer</span>
+
     <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">output</span><span class="o">.</span><span class="n">isatty</span><span class="p">():</span>
         <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Refusing to spew HTML to your terminal.  Redirect/pipe output or use the --output option&quot;</span><span class="p">)</span>
 
@@ -3499,7 +3505,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 14, 2025.
+      <span class="lastupdated">Last updated on Feb 07, 2025.
       </span></p>
   </div>
 

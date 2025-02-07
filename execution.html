@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Execution and tracing &mdash; APSW 3.48.0.0 documentation</title>
+  <title>Execution and tracing &mdash; APSW 3.49.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9901b351"></script>
+      <script src="_static/documentation_options.js?v=64718c17"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -67,10 +67,10 @@
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Execution and tracing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#quick-start">Quick start</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#execution-model">Execution model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#multi-threading-and-re-entrancy">Multi-threading and re-entrancy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#bit-hosts">64 bit hosts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#multi-threading">Multi-threading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#re-entrancy">Re-entrancy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bit">64 bit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#statement-cache">Statement Cache</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tracing">Tracing</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#execution-tracer">Execution Tracer</a></li>
@@ -118,12 +118,6 @@
              
   <section id="execution-and-tracing">
 <h1>Execution and tracing<a class="headerlink" href="#execution-and-tracing" title="Link to this heading"></a></h1>
-<section id="quick-start">
-<h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
-<p>You may find <a class="reference internal" href="ext.html#apsw.ext.Trace" title="apsw.ext.Trace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.Trace()</span></code></a> as a quick convenient overview of
-what get executed and its effects.  If you need more detailed
-information than that, then keep reading.</p>
-</section>
 <section id="execution-model">
 <span id="executionmodel"></span><h2>Execution model<a class="headerlink" href="#execution-model" title="Link to this heading"></a></h2>
 <p>SQLite does execution in two steps. First a statement is prepared,
@@ -134,7 +128,8 @@ or the statement is complete.</p>
 <p>The <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> method automatically does the preparing and
 starts execution. If none of the statements return rows then execution
 will go to the end. If a row is returned then you use the cursor as an
-iterator. Execution will resume as necessary to return each result row.</p>
+iterator. Execution will resume as necessary to return the next result
+row.</p>
 <p>However this means that if you don’t read the rows returned then the
 rest of your statements won’t be executed.  APSW will detect
 unexecuted previous statements and generate an exception. For
@@ -151,29 +146,42 @@ following create table command didn’t have a chance to get
 executed. On the next execute that condition is detected and an
 exception raised.</p>
 </section>
-<section id="multi-threading-and-re-entrancy">
-<h2>Multi-threading and re-entrancy<a class="headerlink" href="#multi-threading-and-re-entrancy" title="Link to this heading"></a></h2>
+<section id="multi-threading">
+<h2>Multi-threading<a class="headerlink" href="#multi-threading" title="Link to this heading"></a></h2>
 <p>ASPW lets you use SQLite in multi-threaded programs and will let other
 threads execute while SQLite is working.  It checks at start that
-SQLite was compiled in <a class="reference external" href="https://www.sqlite.org/threadsafe.html">threadsafe mode</a> which is the default.  The
-<a class="reference external" href="https://docs.python.org/3/glossary.html#term-global-interpreter-lock">GIL</a>
-is released when when SQLite APIs are called, and re-acquired while
-running any Python code.</p>
+SQLite was compiled in <a class="reference external" href="https://www.sqlite.org/threadsafe.html">threadsafe mode</a> which is the default.</p>
+<p>SQLite can only be executing in one thread at a time, and uses a mutex
+to ensure this.  You can issue further queries in the same thread, for
+example in callback functions and virtual tables.</p>
+<p>Attempts to do SQLite operations in one thread while another is busy
+will result in a <a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ThreadingViolationError</span></code></a>.  However calling
+<a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a>, <a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.executemany()</span></code></a>, or
+<a class="reference internal" href="cursor.html#apsw.Cursor.__next__" title="apsw.Cursor.__next__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">iteration</span></code></a>  will wait up to a third of second
+for the mutex before raising the exception.</p>
+<p>You will not get any concurrency by trying to use multiple threads on
+the same <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>.  You will however get concurrency by
+using multiple connections.</p>
+<p>Python has a global lock to ensure only one thread at a time is
+running Python code (maintaining the integrity of Python data
+structures) named the <a class="reference external" href="https://docs.python.org/3/glossary.html#term-global-interpreter-lock">GIL</a>.
+APSW releases the GIL around SQLite calls that could take time like
+preparing statements for execution, and executing them.</p>
+</section>
+<section id="re-entrancy">
+<h2>Re-entrancy<a class="headerlink" href="#re-entrancy" title="Link to this heading"></a></h2>
 <p>You cannot use the same cursor object in multiple threads concurrently
 to execute statements. APSW will detect this and raise an
-<a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ThreadingViolationError</span></code></a>. It is safe to use the object serially
-(eg calling <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> in one thread and iterator in
+<a class="reference internal" href="exceptions.html#apsw.ThreadingViolationError" title="apsw.ThreadingViolationError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ThreadingViolationError</span></code></a>. It is safe to use the cursor serially
+such as calling <a class="reference internal" href="cursor.html#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Cursor.execute()</span></code></a> in one thread and iterator next in
 another. You also can’t do things like try to
 <a class="reference internal" href="connection.html#apsw.Connection.close" title="apsw.Connection.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">close()</span></code></a> a Connection concurrently in two threads.</p>
-<p>A cursor object can only be executing one query at a time. You cannot
+<p>A cursor object can only be executing one query at a time. You can
 issue a new query from inside a trace function or from a user defined
-function or collation since these are called while executing a
-query. You can however make new cursors and use those without
-issue. You may want to remember the Connection object when you set
-your trace or user defined functions.</p>
+function or collation provided you use a new cursor.</p>
 </section>
-<section id="bit-hosts">
-<h2>64 bit hosts<a class="headerlink" href="#bit-hosts" title="Link to this heading"></a></h2>
+<section id="bit">
+<h2>64 bit<a class="headerlink" href="#bit" title="Link to this heading"></a></h2>
 <p>APSW is tested and works correctly on 32 and 64 bit hosts.
 SQLite is limited to 32 bit quantities for strings,
 blobs, number of columns etc even when compiled for 64 bit.
@@ -201,6 +209,9 @@ flag to <cite>execute</cite>/<cite>executemany</cite>.</p>
 </section>
 <section id="tracing">
 <span id="id1"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Link to this heading"></a></h2>
+<p>You may find <a class="reference internal" href="ext.html#apsw.ext.Trace" title="apsw.ext.Trace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.Trace()</span></code></a> as a quick convenient overview of
+what get executed and its effects.  If you need more detailed
+information than that, then keep reading.</p>
 <p>You can install tracers on <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">cursors</span></code></a> or
 <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">connections</span></code></a> as an easy way of seeing exactly
 what gets executed and what is returned. The tracers can also abort
@@ -213,7 +224,7 @@ code.</p>
 your tracer was called from. If you would like to make more queries
 in the tracer then do them from a new cursor object.  For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">exec_tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
-  <span class="n">cursor</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into log values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
+  <span class="n">cursor</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into log values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
   <span class="k">return</span> <span class="kc">True</span>
 </pre></div>
 </div>
@@ -461,7 +472,7 @@ illustrates how time spent busy waiting is included.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 14, 2025.
+      <span class="lastupdated">Last updated on Feb 07, 2025.
       </span></p>
   </div>
 

@@ -149,7 +149,7 @@ Calls:
     * :ref:`executiontracer`
     * :attr:`Connection.exec_trace`
 
-.. index:: sqlite3_prepare_v3, sqlite3_step, sqlite3_bind_int64, sqlite3_bind_null, sqlite3_bind_text64, sqlite3_bind_double, sqlite3_bind_blob64, sqlite3_bind_zeroblob, sqlite3_stmt_explain
+.. index:: sqlite3_prepare_v3, sqlite3_step, sqlite3_bind_int64, sqlite3_bind_null, sqlite3_bind_text64, sqlite3_bind_double, sqlite3_bind_blob64, sqlite3_bind_zeroblob64, sqlite3_stmt_explain
 
 .. method:: Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
@@ -186,7 +186,7 @@ Calls:
       * `sqlite3_bind_text64 <https://sqlite.org/c3ref/bind_blob.html>`__
       * `sqlite3_bind_double <https://sqlite.org/c3ref/bind_blob.html>`__
       * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__
-      * `sqlite3_bind_zeroblob <https://sqlite.org/c3ref/bind_blob.html>`__
+      * `sqlite3_bind_zeroblob64 <https://sqlite.org/c3ref/bind_blob.html>`__
       * `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
 
 .. method:: Cursor.executemany(statements: str, sequenceofbindings: Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor

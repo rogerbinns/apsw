@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.48.0.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.49.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9901b351"></script>
+      <script src="_static/documentation_options.js?v=64718c17"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -71,6 +71,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#accessing-results-by-column-name">Accessing results by column name</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#type-conversion-into-out-of-database">Type conversion into/out of database</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#runtime-python-objects">Runtime Python objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#query-limiting">Query limiting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#query-details">Query details</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#blob-i-o">Blob I/O</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#backup-an-open-database">Backup an open database</a></li>
@@ -193,9 +194,9 @@ and attribute documentation.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.48.0.0</span>
-<span class="go">SQLite header version 3048000</span>
-<span class="go">   SQLite lib version 3.48.0</span>
+<span class="go">         APSW version 3.49.0.0</span>
+<span class="go">SQLite header version 3049000</span>
+<span class="go">   SQLite lib version 3.49.0</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -829,11 +830,11 @@ conversion, both for types you define and for other types.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 1, 14, 7, 32, 52, 633923))</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 2, 7, 6, 17, 20, 79747))</span>
 <span class="go">querying data</span>
 <span class="go">column 0 = Point(5.2, 7.6)</span>
 <span class="go">column 1 = (3+4j)</span>
-<span class="go">column 2 = datetime.datetime(2025, 1, 14, 15, 32, 52, 633923, tzinfo=datetime.timezone.utc)</span>
+<span class="go">column 2 = datetime.datetime(2025, 2, 7, 14, 17, 20, 79747, tzinfo=datetime.timezone.utc)</span>
 </pre></div>
 </div>
 </section>
@@ -893,15 +894,78 @@ runtime.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Bad binding argument type supplied - argument #1: type set</span>
-<span class="go">select ? {1, 2, &lt;_io.StringIO object at 0x713f9fe93ac0&gt;, (4+5j), &#39;three&#39;}</span>
+<span class="go">select ? {1, 2, (4+5j), &lt;_io.StringIO object at 0x742cf5863b80&gt;, &#39;three&#39;}</span>
 <span class="go">select typeof(?) null</span>
 <span class="go">make_set got ((3+4j), &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, &#39;hello&#39;)</span>
-<span class="go">select make_set(?, ?, ?) {&lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, &#39;hello&#39;, (3+4j)}</span>
+<span class="go">select make_set(?, ?, ?) {&#39;hello&#39;, &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, (3+4j)}</span>
+</pre></div>
+</div>
+</section>
+<section id="query-limiting">
+<span id="example-query-limit"></span><span id="index-20"></span><h2>Query limiting<a class="headerlink" href="#query-limiting" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="ext.html#apsw.ext.query_limit" title="apsw.ext.query_limit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.query_limit()</span></code></a> limits rows and time in a block
+across all the queries within the block</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">apsw.ext</span>
+
+<span class="c1"># Use this to make many (virtual) rows</span>
+<span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">make_virtual_module</span><span class="p">(</span>
+    <span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;generate_series&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">generate_series</span>
+<span class="p">)</span>
+
+<span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">query_limit</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+    <span class="c1"># 11 rows will come from this</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">number</span><span class="p">,)</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="s2">&quot;select * from generate_series(0, 10)&quot;</span>
+    <span class="p">):</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+    <span class="c1"># next query would be 1,000 but we will hit</span>
+    <span class="c1"># the limit</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">number</span><span class="p">,)</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="s2">&quot;select * from generate_series(0, 999)&quot;</span>
+    <span class="p">):</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">number</span><span class="p">)</span>
+
+<span class="c1"># lets see what we got</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># We can also time limit</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">query_limit</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">number</span><span class="p">,)</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="s2">&quot;select * from generate_series(0, 1000000000)&quot;</span>
+    <span class="p">):</span>
+        <span class="k">pass</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;After </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> seconds, we hit </span><span class="si">{</span><span class="n">number</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># We used the default &quot;no exception&quot; exception.  Lets have an explicit exception.</span>
+<span class="c1"># with both row and time limits ...</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">query_limit</span><span class="p">(</span>
+        <span class="n">connection</span><span class="p">,</span>
+        <span class="n">row_limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">row_exception</span><span class="o">=</span><span class="ne">IndexError</span><span class="p">,</span>
+        <span class="n">timeout_exception</span><span class="o">=</span><span class="ne">TimeoutError</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">number</span><span class="p">,)</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="s2">&quot;select * from generate_series(0, 1000000000)&quot;</span>
+        <span class="p">):</span>
+            <span class="k">pass</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exc</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">len(rows)=20</span>
+<span class="go">After 0.200 seconds, we hit number=209829</span>
+<span class="go">exc=IndexError(&#39;query row limit hit&#39;)</span>
 </pre></div>
 </div>
 </section>
 <section id="query-details">
-<span id="example-query-details"></span><span id="index-20"></span><h2>Query details<a class="headerlink" href="#query-details" title="Link to this heading"></a></h2>
+<span id="example-query-details"></span><span id="index-21"></span><h2>Query details<a class="headerlink" href="#query-details" title="Link to this heading"></a></h2>
 <p><a class="reference internal" href="ext.html#apsw.ext.query_info" title="apsw.ext.query_info"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.query_info()</span></code></a> can provide a lot of information about a
 query (without running it)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">apsw.ext</span>
@@ -1122,7 +1186,7 @@ query (without running it)</p>
 </div>
 </section>
 <section id="blob-i-o">
-<span id="example-blob-io"></span><span id="index-21"></span><h2>Blob I/O<a class="headerlink" href="#blob-i-o" title="Link to this heading"></a></h2>
+<span id="example-blob-io"></span><span id="index-22"></span><h2>Blob I/O<a class="headerlink" href="#blob-i-o" title="Link to this heading"></a></h2>
 <p>BLOBS (binary large objects) are supported by SQLite.  Note that you
 cannot change the size of one, but you can allocate one filled with
 zeroes, and then later open it and read / write the contents similar
@@ -1149,7 +1213,7 @@ to a file, without having the entire blob in memory.  Use
 </div>
 </section>
 <section id="backup-an-open-database">
-<span id="example-backup"></span><span id="index-22"></span><h2>Backup an open database<a class="headerlink" href="#backup-an-open-database" title="Link to this heading"></a></h2>
+<span id="example-backup"></span><span id="index-23"></span><h2>Backup an open database<a class="headerlink" href="#backup-an-open-database" title="Link to this heading"></a></h2>
 <p>You can <a class="reference internal" href="backup.html#backup"><span class="std std-ref">backup</span></a> a database that is open.  The pages are copied in
 batches of your choosing and allow continued use of the source
 database.</p>
@@ -1174,7 +1238,7 @@ database.</p>
 </div>
 </section>
 <section id="authorizer-control-what-sql-can-do">
-<span id="example-authorizer"></span><span id="index-23"></span><h2>Authorizer (control what SQL can do)<a class="headerlink" href="#authorizer-control-what-sql-can-do" title="Link to this heading"></a></h2>
+<span id="example-authorizer"></span><span id="index-24"></span><h2>Authorizer (control what SQL can do)<a class="headerlink" href="#authorizer-control-what-sql-can-do" title="Link to this heading"></a></h2>
 <p>You can allow, deny, or ignore what SQL does.  Use
 <a class="reference internal" href="connection.html#apsw.Connection.authorizer" title="apsw.Connection.authorizer"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.authorizer</span></code></a> to set an authorizer.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">auth</span><span class="p">(</span>
@@ -1227,7 +1291,7 @@ database.</p>
 </div>
 </section>
 <section id="progress-handler">
-<span id="example-progress-handler"></span><span id="index-24"></span><h2>Progress handler<a class="headerlink" href="#progress-handler" title="Link to this heading"></a></h2>
+<span id="example-progress-handler"></span><span id="index-25"></span><h2>Progress handler<a class="headerlink" href="#progress-handler" title="Link to this heading"></a></h2>
 <p>Some operations (eg joins, sorting) can take many operations to
 complete.  Register a progress handler callback with
 <a class="reference internal" href="connection.html#apsw.Connection.set_progress_handler" title="apsw.Connection.set_progress_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_progress_handler()</span></code></a> which lets you provide
@@ -1265,12 +1329,12 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9985493945,)</span>
+<span class="go">(9896547731,)</span>
 </pre></div>
 </div>
 </section>
 <section id="file-control">
-<span id="example-filecontrol"></span><span id="index-25"></span><h2>File Control<a class="headerlink" href="#file-control" title="Link to this heading"></a></h2>
+<span id="example-filecontrol"></span><span id="index-26"></span><h2>File Control<a class="headerlink" href="#file-control" title="Link to this heading"></a></h2>
 <p>We can get/set low level information using the
 <a class="reference internal" href="connection.html#apsw.Connection.file_control" title="apsw.Connection.file_control"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.file_control()</span></code></a> interface.  In this example we get
 the <a class="reference external" href="https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion">data version</a>.
@@ -1334,7 +1398,7 @@ doesn’t change for commits on the same connection.</p>
 </div>
 </section>
 <section id="commit-hook">
-<span id="example-commit-hook"></span><span id="index-26"></span><h2>Commit hook<a class="headerlink" href="#commit-hook" title="Link to this heading"></a></h2>
+<span id="example-commit-hook"></span><span id="index-27"></span><h2>Commit hook<a class="headerlink" href="#commit-hook" title="Link to this heading"></a></h2>
 <p>A commit hook can allow or veto commits.  Register a commit hook
 with  <a class="reference internal" href="connection.html#apsw.Connection.set_commit_hook" title="apsw.Connection.set_commit_hook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.set_commit_hook()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_commit_hook</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1367,7 +1431,7 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.set_co
 </div>
 </section>
 <section id="update-hook">
-<span id="example-update-hook"></span><span id="index-27"></span><h2>Update hook<a class="headerlink" href="#update-hook" title="Link to this heading"></a></h2>
+<span id="example-update-hook"></span><span id="index-28"></span><h2>Update hook<a class="headerlink" href="#update-hook" title="Link to this heading"></a></h2>
 <p>Update hooks let you know that data has been added, changed, or
 removed.  For example you could use this to discard cached
 information.  Register a hook using
@@ -1399,7 +1463,7 @@ information.  Register a hook using
 </div>
 </section>
 <section id="virtual-tables">
-<span id="example-virtual-tables"></span><span id="index-28"></span><h2>Virtual tables<a class="headerlink" href="#virtual-tables" title="Link to this heading"></a></h2>
+<span id="example-virtual-tables"></span><span id="index-29"></span><h2>Virtual tables<a class="headerlink" href="#virtual-tables" title="Link to this heading"></a></h2>
 <p><a class="reference internal" href="vtable.html#virtualtables"><span class="std std-ref">Virtual tables</span></a> let you provide data on demand
 as a SQLite table so you can use SQL queries against that data.
 Writing your own virtual table requires understanding how to return
@@ -1611,15 +1675,15 @@ useful instead.</p>
 
 <span class="go">┌────────────┬────────────────────────────────┬───────────────┐</span>
 <span class="go">│    date    │           directory            │     name      │</span>
-<span class="go">│ 2024-11-20 │ /usr/lib/python3.12/pydoc_data │ topics.py     │</span>
-<span class="go">│ 2024-11-20 │ /usr/lib/python3.12            │ _pydecimal.py │</span>
-<span class="go">│ 2024-11-20 │ /usr/lib/python3.12/tkinter    │ __init__.py   │</span>
+<span class="go">│ 2025-01-21 │ /usr/lib/python3.12/pydoc_data │ topics.py     │</span>
+<span class="go">│ 2025-01-21 │ /usr/lib/python3.12            │ _pydecimal.py │</span>
+<span class="go">│ 2025-01-21 │ /usr/lib/python3.12/tkinter    │ __init__.py   │</span>
 <span class="go">└────────────┴────────────────────────────────┴───────────────┘</span>
 
 <span class="go">┌────────────┬────────────┐</span>
 <span class="go">│ extension  │ total_size │</span>
 <span class="go">│            │ 436917     │</span>
-<span class="go">│ .a         │ 97341326   │</span>
+<span class="go">│ .a         │ 97345022   │</span>
 <span class="go">│ .allowlist │ 72         │</span>
 <span class="go">│ .bootstrap │ 1804       │</span>
 <span class="go">│ .c         │ 10948      │</span>
@@ -1633,11 +1697,11 @@ useful instead.</p>
 <span class="go">│ .local     │ 2136       │</span>
 <span class="go">│ .o         │ 9360       │</span>
 <span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11256269   │</span>
-<span class="go">│ .pyc       │ 11445919   │</span>
+<span class="go">│ .py        │ 11265536   │</span>
+<span class="go">│ .pyc       │ 11434891   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
-<span class="go">│ .sh        │ 2652       │</span>
-<span class="go">│ .so        │ 26583216   │</span>
+<span class="go">│ .sh        │ 2643       │</span>
+<span class="go">│ .so        │ 26583424   │</span>
 <span class="go">│ .sql       │ 1001       │</span>
 <span class="go">│ .stdlib    │ 12562      │</span>
 <span class="go">│ .supp      │ 70         │</span>
@@ -1647,7 +1711,7 @@ useful instead.</p>
 </div>
 </section>
 <section id="vfs-virtual-file-system">
-<span id="example-vfs"></span><span id="index-29"></span><h2>VFS - Virtual File System<a class="headerlink" href="#vfs-virtual-file-system" title="Link to this heading"></a></h2>
+<span id="example-vfs"></span><span id="index-30"></span><h2>VFS - Virtual File System<a class="headerlink" href="#vfs-virtual-file-system" title="Link to this heading"></a></h2>
 <p><a class="reference internal" href="vfs.html#vfs"><span class="std std-ref">VFS</span></a> lets you control how SQLite accesses storage.  APSW
 makes it easy to “inherit” from an existing VFS and monitor or alter
 data as it flows through.</p>
@@ -1785,7 +1849,7 @@ for receiving parameters once a database is open.</p>
 </div>
 </section>
 <section id="limits">
-<span id="example-limits"></span><span id="index-30"></span><h2>Limits<a class="headerlink" href="#limits" title="Link to this heading"></a></h2>
+<span id="example-limits"></span><span id="index-31"></span><h2>Limits<a class="headerlink" href="#limits" title="Link to this heading"></a></h2>
 <p>SQLite lets you see and update various limits via
 <a class="reference internal" href="connection.html#apsw.Connection.limit" title="apsw.Connection.limit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.limit()</span></code></a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print some limits</span>
@@ -1828,7 +1892,7 @@ for receiving parameters once a database is open.</p>
 </div>
 </section>
 <section id="shell">
-<span id="example-shell"></span><span id="index-31"></span><h2>Shell<a class="headerlink" href="#shell" title="Link to this heading"></a></h2>
+<span id="example-shell"></span><span id="index-32"></span><h2>Shell<a class="headerlink" href="#shell" title="Link to this heading"></a></h2>
 <p>APSW includes a <a class="reference internal" href="shell.html#shell"><span class="std std-ref">shell</span></a>  like the one in <a class="reference external" href="https://sqlite.org/cli.html">SQLite</a>, and is also extensible from
 Python.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">apsw.shell</span>
@@ -1880,9 +1944,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.48.0.0)</span>
-<span class="go">-- SQLite version 3.48.0</span>
-<span class="go">-- Date: Tue Jan 14 07:32:53 2025</span>
+<span class="go">-- SQLite dump (by APSW 3.49.0.0)</span>
+<span class="go">-- SQLite version 3.49.0</span>
+<span class="go">-- Date: Fri Feb  7 06:17:20 2025</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1911,7 +1975,7 @@ Python.</p>
 </div>
 </section>
 <section id="statistics">
-<span id="example-status"></span><span id="index-32"></span><h2>Statistics<a class="headerlink" href="#statistics" title="Link to this heading"></a></h2>
+<span id="example-status"></span><span id="index-33"></span><h2>Statistics<a class="headerlink" href="#statistics" title="Link to this heading"></a></h2>
 <p>SQLite provides statistics by <a class="reference internal" href="apsw.html#apsw.status" title="apsw.status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">status()</span></code></a>.  Use <a class="reference internal" href="connection.html#apsw.Connection.status" title="apsw.Connection.status"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.status()</span></code></a>
 for per connection statistics.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">current_usage</span><span class="p">,</span> <span class="n">max_usage</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_STATUS_MEMORY_USED</span><span class="p">)</span>
@@ -1922,13 +1986,13 @@ for per connection statistics.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 509400 max 2491272</span>
-<span class="go">4680 bytes used to store schema for this connection</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 516928 max 2500384</span>
+<span class="go">5816 bytes used to store schema for this connection</span>
 </pre></div>
 </div>
 </section>
 <section id="tracing">
-<span id="example-trace-v2"></span><span id="index-33"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Link to this heading"></a></h2>
+<span id="example-trace-v2"></span><span id="index-34"></span><h2>Tracing<a class="headerlink" href="#tracing" title="Link to this heading"></a></h2>
 <p>This shows using <a class="reference internal" href="connection.html#apsw.Connection.trace_v2" title="apsw.Connection.trace_v2"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.trace_v2()</span></code></a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># From https://www.sqlite.org/lang_with.html</span>
 <span class="c1"># Outlandish Recursive Query Examples</span>
@@ -1979,18 +2043,18 @@ for per connection statistics.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">code is  SQLITE_TRACE_STMT</span>
-<span class="go">{&#39;code&#39;: 1, &#39;id&#39;: 940675976, &#39;total_changes&#39;: 146, &#39;trigger&#39;: False}</span>
+<span class="go">{&#39;code&#39;: 1, &#39;id&#39;: 1066596816, &#39;total_changes&#39;: 146, &#39;trigger&#39;: False}</span>
 <span class="go">code is  SQLITE_TRACE_ROW</span>
-<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 940675976}</span>
+<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 1066596816}</span>
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;id&#39;: 940675976,</span>
-<span class="go"> &#39;nanoseconds&#39;: 19000000,</span>
+<span class="go"> &#39;id&#39;: 1066596816,</span>
+<span class="go"> &#39;nanoseconds&#39;: 16000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FULLSCAN_STEP&#39;: 1365,</span>
-<span class="go">                 &#39;SQLITE_STMTSTATUS_MEMUSED&#39;: 15784,</span>
+<span class="go">                 &#39;SQLITE_STMTSTATUS_MEMUSED&#39;: 16040,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_REPREPARE&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_RUN&#39;: 1,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_SORT&#39;: 2,</span>
@@ -2000,7 +2064,7 @@ for per connection statistics.</p>
 </div>
 </section>
 <section id="system-and-sqlite-resource-usage-in-a-block">
-<span id="example-showresourceusage"></span><span id="index-34"></span><h2>System and SQLite resource usage in a block<a class="headerlink" href="#system-and-sqlite-resource-usage-in-a-block" title="Link to this heading"></a></h2>
+<span id="example-showresourceusage"></span><span id="index-35"></span><h2>System and SQLite resource usage in a block<a class="headerlink" href="#system-and-sqlite-resource-usage-in-a-block" title="Link to this heading"></a></h2>
 <p>Use <a class="reference internal" href="ext.html#apsw.ext.ShowResourceUsage" title="apsw.ext.ShowResourceUsage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.ShowResourceUsage()</span></code></a> to see what resources a
 block of code does.  We use the same query from above.</p>
 <p>Only statistics that have changed are shown in the summary. There are
@@ -2017,15 +2081,13 @@ block of code does.  We use the same query from above.</p>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.3</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.022</span>
-<span class="go">                       Wall clock 1.324</span>
-<span class="go">           Block input operations 208</span>
-<span class="go">        Maximum resident set size 384</span>
-<span class="go">             Page faults - no I/O 90</span>
-<span class="go">     Involuntary context switches 28</span>
-<span class="go">       Voluntary context switches 4</span>
-<span class="go">              Time in system mode 0.002</span>
-<span class="go">                Time in user mode 0.021</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.020</span>
+<span class="go">                       Wall clock 1.320</span>
+<span class="go">        Maximum resident set size 768</span>
+<span class="go">             Page faults - no I/O 151</span>
+<span class="go">     Involuntary context switches 6</span>
+<span class="go">       Voluntary context switches 1</span>
+<span class="go">                Time in user mode 0.019</span>
 <span class="go">           SQLite full table scan 1,365</span>
 <span class="go">           SQLite sort operations 2</span>
 <span class="go">             SQLite vm operations 1,015,351</span>
@@ -2035,7 +2097,7 @@ block of code does.  We use the same query from above.</p>
 </div>
 </section>
 <section id="sql-statement-tracing-in-a-block">
-<span id="example-trace"></span><span id="index-35"></span><h2>SQL statement tracing in a block<a class="headerlink" href="#sql-statement-tracing-in-a-block" title="Link to this heading"></a></h2>
+<span id="example-trace"></span><span id="index-36"></span><h2>SQL statement tracing in a block<a class="headerlink" href="#sql-statement-tracing-in-a-block" title="Link to this heading"></a></h2>
 <p>Use <a class="reference internal" href="ext.html#apsw.ext.Trace" title="apsw.ext.Trace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.Trace()</span></code></a> to see SQL statements inside a block of
 code.  This also shows behind the scenes SQL.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use None instead of stdout and no information is printed or gathered</span>
@@ -2063,7 +2125,7 @@ code.  This also shows behind the scenes SQL.</p>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">&gt; SAVEPOINT &quot;_apsw-0&quot;</span>
 <span class="go">    Time: 0.000</span>
 <span class="go">&gt; create table multi(x)</span>
-<span class="go">    Time: 0.001</span>
+<span class="go">    Time: 0.000</span>
 <span class="go">&gt; insert into multi values(?)</span>
 <span class="go">    Time: 0.000  Rows: 1  Changes: 1</span>
 <span class="go">&gt; insert into multi values(?)</span>
@@ -2080,16 +2142,16 @@ code.  This also shows behind the scenes SQL.</p>
 <span class="go">    Time: 0.000  Changes: 4</span>
 <span class="go">&gt; select count(*) from pragma_function_list</span>
 <span class="go">V PRAGMA function_list</span>
-<span class="go">    Time: 0.000  Rows: 211  VmStep: 1,481  Mem: 70.8KB</span>
+<span class="go">    Time: 0.001  Rows: 209  VmStep: 1,467  Mem: 80.5KB</span>
 <span class="go">&lt; select count(*) from pragma_function_list</span>
-<span class="go">    Time: 0.001  Rows: 1  VmStep: 433</span>
+<span class="go">    Time: 0.001  Rows: 1  VmStep: 429</span>
 <span class="go">&gt; RELEASE SAVEPOINT &quot;_apsw-0&quot;</span>
-<span class="go">    Time: 0.011</span>
+<span class="go">    Time: 0.006</span>
 </pre></div>
 </div>
 </section>
 <section id="formatting-query-results-table">
-<span id="example-format-query"></span><span id="index-36"></span><h2>Formatting query results table<a class="headerlink" href="#formatting-query-results-table" title="Link to this heading"></a></h2>
+<span id="example-format-query"></span><span id="index-37"></span><h2>Formatting query results table<a class="headerlink" href="#formatting-query-results-table" title="Link to this heading"></a></h2>
 <p><a class="reference internal" href="ext.html#apsw.ext.format_query_table" title="apsw.ext.format_query_table"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.format_query_table()</span></code></a> makes it easy
 to format the results of a query in an automatic
 adjusting table, colour, sanitizing strings,
@@ -2180,7 +2242,7 @@ truncation etc.</p>
 </div>
 </section>
 <section id="cleanup">
-<span id="example-cleanup"></span><span id="index-37"></span><h2>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading"></a></h2>
+<span id="example-cleanup"></span><span id="index-38"></span><h2>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading"></a></h2>
 <p>As a general rule you do not need to do any cleanup.  Standard
 Python garbage collection will take of everything.  Even if the
 process crashes with a connection in the middle of a transaction,
@@ -2205,7 +2267,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 14, 2025.
+      <span class="lastupdated">Last updated on Feb 07, 2025.
       </span></p>
   </div>
 

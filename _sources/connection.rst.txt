@@ -1060,12 +1060,21 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_progress_handler
 
-.. method:: Connection.set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None
+.. method:: Connection.set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 100, *, id: Optional[Any] = None) -> None
 
-  Sets a callable which is invoked every *nsteps* SQLite
-  inststructions. The callable should return True to abort
-  or False to continue. (If there is an error in your Python *callable*
-  then True/abort will be returned).
+  Sets a callable which is invoked every *nsteps* SQLite inststructions.
+  The callable should return True to abort or False to continue. (If
+  there is an error in your Python *callable* then True/abort will be
+  returned).  SQLite raises :exc:`InterruptError` for aborts.
+
+  Use :class:`None` to cancel the progress handler.  Multiple handlers
+  can be present at once (implemented by APSW). Registered callbacks are
+  distinguished by their ``id`` - an equality test is done to match ids.
+
+  You can use :class:`apsw.ext.Trace` to see how many steps are used for
+  a representative statement, or :class:`apsw.ext.ShowResourceUsage` to
+  see how many are used in a block.  It will generally be several million
+  per second.
 
   .. seealso::
 

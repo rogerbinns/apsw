@@ -68,9 +68,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so
-             APSW version 3.48.0.0
-    SQLite header version 3048000
-       SQLite lib version 3.48.0
+             APSW version 3.49.0.0
+    SQLite header version 3049000
+       SQLite lib version 3.49.0
        Using amalgamation True
 
 
@@ -875,11 +875,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 1, 14, 7, 32, 52, 633923))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 2, 7, 6, 17, 20, 79747))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2025, 1, 14, 15, 32, 52, 633923, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2025, 2, 7, 14, 17, 20, 79747, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Runtime Python objects (example code)
@@ -949,10 +949,84 @@ runtime.
 .. code-block:: output
 
     Bad binding argument type supplied - argument #1: type set
-    select ? {1, 2, <_io.StringIO object at 0x713f9fe93ac0>, (4+5j), 'three'}
+    select ? {1, 2, (4+5j), <_io.StringIO object at 0x742cf5863b80>, 'three'}
     select typeof(?) null
     make_set got ((3+4j), <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello')
-    select make_set(?, ?, ?) {<_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello', (3+4j)}
+    select make_set(?, ?, ?) {'hello', <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, (3+4j)}
+
+
+.. index:: Query limiting (example code)
+
+.. _example_query_limit:
+
+Query limiting
+--------------
+
+:meth:`apsw.ext.query_limit` limits rows and time in a block
+across all the queries within the block
+
+.. code-block:: python
+
+   import apsw.ext
+   
+   # Use this to make many (virtual) rows
+   apsw.ext.make_virtual_module(
+       connection, "generate_series", apsw.ext.generate_series
+   )
+   
+   rows = []
+   
+   with apsw.ext.query_limit(connection, row_limit=20):
+       # 11 rows will come from this
+       for (number,) in connection.execute(
+           "select * from generate_series(0, 10)"
+       ):
+           rows.append(number)
+       # next query would be 1,000 but we will hit
+       # the limit
+       for (number,) in connection.execute(
+           "select * from generate_series(0, 999)"
+       ):
+           rows.append(number)
+   
+   # lets see what we got
+   print(f"{len(rows)=}")
+   
+   # We can also time limit
+   start = time.monotonic()
+   with apsw.ext.query_limit(connection, timeout=0.2):
+       for (number,) in connection.execute(
+           "select * from generate_series(0, 1000000000)"
+       ):
+           pass
+   
+   print(f"After {time.monotonic() - start:.3f} seconds, we hit {number=}")
+   
+   # We used the default "no exception" exception.  Lets have an explicit exception.
+   # with both row and time limits ...
+   try:
+       with apsw.ext.query_limit(
+           connection,
+           row_limit=1000,
+           timeout=1000,
+           row_exception=IndexError,
+           timeout_exception=TimeoutError,
+       ):
+           for (number,) in connection.execute(
+               "select * from generate_series(0, 1000000000)"
+           ):
+               pass
+   except Exception as exc:
+       print(f"{exc=}")
+   
+   
+
+
+.. code-block:: output
+
+    len(rows)=20
+    After 0.200 seconds, we hit number=209829
+    exc=IndexError('query row limit hit')
 
 
 .. index:: Query details (example code)
@@ -1370,7 +1444,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9985493945,)
+    (9896547731,)
 
 
 .. index:: File Control (example code)
@@ -1764,15 +1838,15 @@ useful instead.
     
     ┌────────────┬────────────────────────────────┬───────────────┐
     │    date    │           directory            │     name      │
-    │ 2024-11-20 │ /usr/lib/python3.12/pydoc_data │ topics.py     │
-    │ 2024-11-20 │ /usr/lib/python3.12            │ _pydecimal.py │
-    │ 2024-11-20 │ /usr/lib/python3.12/tkinter    │ __init__.py   │
+    │ 2025-01-21 │ /usr/lib/python3.12/pydoc_data │ topics.py     │
+    │ 2025-01-21 │ /usr/lib/python3.12            │ _pydecimal.py │
+    │ 2025-01-21 │ /usr/lib/python3.12/tkinter    │ __init__.py   │
     └────────────┴────────────────────────────────┴───────────────┘
     
     ┌────────────┬────────────┐
     │ extension  │ total_size │
     │            │ 436917     │
-    │ .a         │ 97341326   │
+    │ .a         │ 97345022   │
     │ .allowlist │ 72         │
     │ .bootstrap │ 1804       │
     │ .c         │ 10948      │
@@ -1786,11 +1860,11 @@ useful instead.
     │ .local     │ 2136       │
     │ .o         │ 9360       │
     │ .ps1       │ 9033       │
-    │ .py        │ 11256269   │
-    │ .pyc       │ 11445919   │
+    │ .py        │ 11265536   │
+    │ .pyc       │ 11434891   │
     │ .rst       │ 9561       │
-    │ .sh        │ 2652       │
-    │ .so        │ 26583216   │
+    │ .sh        │ 2643       │
+    │ .so        │ 26583424   │
     │ .sql       │ 1001       │
     │ .stdlib    │ 12562      │
     │ .supp      │ 70         │
@@ -2066,9 +2140,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.48.0.0)
-    -- SQLite version 3.48.0
-    -- Date: Tue Jan 14 07:32:53 2025
+    -- SQLite dump (by APSW 3.49.0.0)
+    -- SQLite version 3.49.0
+    -- Date: Fri Feb  7 06:17:20 2025
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2119,8 +2193,8 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 509400 max 2491272
-    4680 bytes used to store schema for this connection
+    SQLite memory usage 516928 max 2500384
+    5816 bytes used to store schema for this connection
 
 
 .. index:: Tracing (example code)
@@ -2186,18 +2260,18 @@ This shows using :meth:`Connection.trace_v2`
 .. code-block:: output
 
     code is  SQLITE_TRACE_STMT
-    {'code': 1, 'id': 940675976, 'total_changes': 146, 'trigger': False}
+    {'code': 1, 'id': 1066596816, 'total_changes': 146, 'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 940675976}
+    {'code': 4, 'id': 1066596816}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 940675976,
-     'nanoseconds': 19000000,
+     'id': 1066596816,
+     'nanoseconds': 16000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
                      'SQLITE_STMTSTATUS_FULLSCAN_STEP': 1365,
-                     'SQLITE_STMTSTATUS_MEMUSED': 15784,
+                     'SQLITE_STMTSTATUS_MEMUSED': 16040,
                      'SQLITE_STMTSTATUS_REPREPARE': 0,
                      'SQLITE_STMTSTATUS_RUN': 1,
                      'SQLITE_STMTSTATUS_SORT': 2,
@@ -2235,15 +2309,13 @@ Only statistics that have changed are shown in the summary. There are
 
 .. code-block:: output
 
-                           Total CPU consumption 0.022
-                                      Wall clock 1.324
-                          Block input operations 208
-                       Maximum resident set size 384
-                            Page faults - no I/O 90
-                    Involuntary context switches 28
-                      Voluntary context switches 4
-                             Time in system mode 0.002
-                               Time in user mode 0.021
+                           Total CPU consumption 0.020
+                                      Wall clock 1.320
+                       Maximum resident set size 768
+                            Page faults - no I/O 151
+                    Involuntary context switches 6
+                      Voluntary context switches 1
+                               Time in user mode 0.019
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,351
@@ -2292,7 +2364,7 @@ code.  This also shows behind the scenes SQL.
      > SAVEPOINT "_apsw-0"
          Time: 0.000
      > create table multi(x)
-         Time: 0.001
+         Time: 0.000
      > insert into multi values(?)
          Time: 0.000  Rows: 1  Changes: 1
      > insert into multi values(?)
@@ -2309,11 +2381,11 @@ code.  This also shows behind the scenes SQL.
          Time: 0.000  Changes: 4
      > select count(*) from pragma_function_list
      V PRAGMA function_list
-         Time: 0.000  Rows: 211  VmStep: 1,481  Mem: 70.8KB
+         Time: 0.001  Rows: 209  VmStep: 1,467  Mem: 80.5KB
      < select count(*) from pragma_function_list
-         Time: 0.001  Rows: 1  VmStep: 433
+         Time: 0.001  Rows: 1  VmStep: 429
      > RELEASE SAVEPOINT "_apsw-0"
-         Time: 0.011
+         Time: 0.006
     
 
 

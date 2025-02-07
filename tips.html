@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tips &mdash; APSW 3.48.0.0 documentation</title>
+  <title>Tips &mdash; APSW 3.49.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9901b351"></script>
+      <script src="_static/documentation_options.js?v=64718c17"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -56,6 +56,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#transactions">Transactions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#queries">Queries</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#bindings">Bindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#query-patterns">Query Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#zero-or-more-rows-expected">Zero or more rows expected</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#one-value-expected">One value expected</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#one-row-expected">One row expected</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#diagnostics">Diagnostics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#managing-and-updating-your-schema">Managing and updating your schema</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#parsing-sql">Parsing SQL</a></li>
@@ -64,6 +70,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#write-ahead-logging">Write Ahead Logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#customizing-connections">Customizing Connections</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#customizing-cursors">Customizing Cursors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#uri-names">URI names</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#memory-databases">Memory databases</a></li>
 </ul>
 </li>
@@ -284,6 +291,66 @@ ways you never even thought possible.</p>
 <p>The <a class="reference internal" href="example.html#example-why-bindings"><span class="std std-ref">tour</span></a> shows why you use bindings, and
 the different ways you can supply them.</p>
 </section>
+<section id="query-patterns">
+<h2>Query Patterns<a class="headerlink" href="#query-patterns" title="Link to this heading"></a></h2>
+<p>These are suggestions on how to structure your Python code for processing
+queries.</p>
+<section id="zero-or-more-rows-expected">
+<h3>Zero or more rows expected<a class="headerlink" href="#zero-or-more-rows-expected" title="Link to this heading"></a></h3>
+<p>Use a for loop.  Note that nothing enforces the Python variables match
+the columns inside the SQL.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">quantity</span><span class="p">,</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT name, quantity, status FROM ...&quot;</span><span class="p">):</span>
+  <span class="c1"># do something with the row</span>
+  <span class="o">...</span>
+</pre></div>
+</div>
+<p>You can use <a class="reference internal" href="ext.html#apsw.ext.DataClassRowFactory" title="apsw.ext.DataClassRowFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.DataClassRowFactory</span></code></a> to get the row as
+<a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code></a>.  It is <strong>strongly</strong> recommended that you provide
+the SQL level names using <code class="docutils literal notranslate"><span class="pre">AS</span></code> since there is no guarantee what the
+names will be otherwise.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">apsw.ext</span>
+
+<span class="c1"># This affects all queries on db, but not get.  It can be set on</span>
+<span class="c1"># a cursor to only affect that cursor.</span>
+<span class="n">db</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">DataClassRowFactory</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT cat.name AS name, orders.quantity AS quantity FROM ...&quot;</span><span class="p">):</span>
+  <span class="c1"># You can access row names</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="o">.</span><span class="n">name</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">row</span><span class="o">.</span><span class="n">quantity</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="c1"># You will get an Exception with a wrong name</span>
+  <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="one-value-expected">
+<h3>One value expected<a class="headerlink" href="#one-value-expected" title="Link to this heading"></a></h3>
+<p>Use <a class="reference internal" href="cursor.html#apsw.Cursor.get" title="apsw.Cursor.get"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get</span></code></a> which will return the value or
+<code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code> if there was no match.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT name FROM ... WHERE id=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">item_id</span><span class="p">,))</span><span class="o">.</span><span class="n">get</span>
+</pre></div>
+</div>
+</section>
+<section id="one-row-expected">
+<h3>One row expected<a class="headerlink" href="#one-row-expected" title="Link to this heading"></a></h3>
+<p><a class="reference internal" href="cursor.html#apsw.Cursor.get" title="apsw.Cursor.get"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get</span></code></a> can be used. There will be an exception if no
+row was found because <code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code> can’t be unpacked into the
+variables.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">name</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT name, status FROM ... WHERE id=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">item_id</span><span class="p">,))</span><span class="o">.</span><span class="n">get</span>
+</pre></div>
+</div>
+<p><a class="reference external" href="https://docs.python.org/3/reference/compound_stmts.html#the-match-statement">match</a>.
+can handle <code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code> when the row was not found.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">match</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT name, status FROM ... WHERE id=?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">item_id</span><span class="p">,))</span><span class="o">.</span><span class="n">get</span><span class="p">:</span>
+  <span class="k">case</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># handle missing</span>
+    <span class="k">raise</span> <span class="n">NotFound</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+  <span class="k">case</span> <span class="n">name</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span>
+    <span class="c1"># do something</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
 <section id="diagnostics">
 <span id="diagnostics-tips"></span><h2>Diagnostics<a class="headerlink" href="#diagnostics" title="Link to this heading"></a></h2>
 <p>Both SQLite and APSW provide detailed diagnostic information.  Errors
@@ -395,8 +462,32 @@ the code source compatible with other database drivers).</p>
 called with the connection as the only parameter, and return the
 object to use as a cursor.</p>
 </section>
+<section id="uri-names">
+<span id="index-3"></span><h2>URI names<a class="headerlink" href="#uri-names" title="Link to this heading"></a></h2>
+<p>SQLite allows <a class="reference external" href="https://www.sqlite.org/uri.html">URI filenames</a>
+where you can provide additional parameters at the time of open for a
+database.  Opens can include the <a class="reference external" href="https://www.sqlite.org/c3ref/open.html">SQLITE_OPEN_URI</a> flag, which will
+also apply to <code class="docutils literal notranslate"><span class="pre">ATTACH</span></code> on that connection.</p>
+<p>You should use <a class="reference external" href="https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">urllib.parse</span></code></a> to correctly create strings handling
+the necessary special characters and quoting.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">urllib.parse</span>
+
+<span class="n">uri_filename</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="s2">&quot;my db filename.sqlite3&quot;</span><span class="p">)</span>
+
+<span class="n">uri_parameters</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(</span>
+  <span class="p">{</span>
+      <span class="s2">&quot;vfs&quot;</span><span class="p">:</span> <span class="s2">&quot;memdb&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;go&quot;</span><span class="p">:</span> <span class="s2">&quot;fast&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span>
+  <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="n">uri</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;file:</span><span class="si">{</span><span class="n">uri_filename</span><span class="si">}</span><span class="s2">?</span><span class="si">{</span><span class="n">uri_parameters</span><span class="si">}</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</section>
 <section id="memory-databases">
-<span id="memdb"></span><span id="index-3"></span><h2>Memory databases<a class="headerlink" href="#memory-databases" title="Link to this heading"></a></h2>
+<span id="memdb"></span><span id="index-4"></span><h2>Memory databases<a class="headerlink" href="#memory-databases" title="Link to this heading"></a></h2>
 <p>You can get an <a class="reference external" href="https://sqlite.org/inmemorydb.html">in-memory only database</a> by using a filename of
 <code class="docutils literal notranslate"><span class="pre">:memory:</span></code> and a temporary disk backed database with a name of an
 empty string.  (Note <a class="reference internal" href="apsw.html#apsw.enable_shared_cache" title="apsw.enable_shared_cache"><code class="xref py py-meth docutils literal notranslate"><span class="pre">shared</span> <span class="pre">cache</span></code></a> won’t work,)</p>
@@ -411,9 +502,9 @@ private to the connection.</p>
 <span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;not-shared&quot;</span><span class="p">,</span> <span class="n">vfs</span><span class="o">=</span><span class="s2">&quot;memdb&quot;</span><span class="p">)</span>
 
 <span class="c1"># using URI</span>
-<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file:/shared&amp;vfs=memdb&quot;</span><span class="p">,</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file:/shared?vfs=memdb&quot;</span><span class="p">,</span>
                 <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span><span class="p">)</span>
-<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file:not-shared&amp;vfs=memdb&quot;</span><span class="p">,</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;file:not-shared?vfs=memdb&quot;</span><span class="p">,</span>
                 <span class="n">flags</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_URI</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_OPEN_READWRITE</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -432,7 +523,7 @@ private to the connection.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 14, 2025.
+      <span class="lastupdated">Last updated on Feb 07, 2025.
       </span></p>
   </div>
 

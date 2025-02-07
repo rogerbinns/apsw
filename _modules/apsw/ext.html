@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.48.0.0 documentation</title>
+  <title>apsw.ext &mdash; APSW 3.49.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9901b351"></script>
+      <script src="../../_static/documentation_options.js?v=64718c17"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -102,32 +102,32 @@
 <span></span><span class="c1"># Provides various useful routines</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">collections</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">collections.abc</span>
-
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextvars</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">make_dataclass</span><span class="p">,</span> <span class="n">is_dataclass</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Generator</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">enum</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">html</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">keyword</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">fractions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Fraction</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">html</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">is_dataclass</span><span class="p">,</span> <span class="n">make_dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fractions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Fraction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Union</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">apsw.unicode</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 
 <span class="n">NoneType</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">NoneType</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="k">else</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 
@@ -1354,7 +1354,7 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">storage</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">storage</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts number to storage size (KB, MB, GB etc)</span>
 
 <span class="sd">    :meta private:</span>
@@ -1571,6 +1571,177 @@
         <span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&lt;/style&gt;&lt;/svg&gt;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span></div>
+
+
+
+<span class="n">query_limit_context</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">[</span><span class="n">query_limit</span><span class="o">.</span><span class="n">limit</span><span class="p">]</span> <span class="o">=</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">(</span><span class="s2">&quot;apsw.ext.query_limit_context&quot;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Stores the current query limits</span>
+
+<span class="sd">:meta private:</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="QueryLimitNoException">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.QueryLimitNoException">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">QueryLimitNoException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates that no exception will be raised when a :class:`query_limit` is exceeded&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="query_limit">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.query_limit">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">query_limit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context manager to limit execution time and rows processed in the block</span>
+
+<span class="sd">    When the total number of rows processed hits the row limit, or</span>
+<span class="sd">    timeout seconds have elapsed an exception is raised to exit the</span>
+<span class="sd">    block.</span>
+
+<span class="sd">    .. code-block::</span>
+
+<span class="sd">        with query_limit(db, row_limit = 1000, timeout = 2.5):</span>
+<span class="sd">            db.execute(&quot;...&quot;)</span>
+<span class="sd">            for row in db.execute(&quot;...&quot;):</span>
+<span class="sd">                ,,,</span>
+<span class="sd">            db.execute(&quot;...&quot;)</span>
+
+<span class="sd">    :param db: Connection to monitor</span>
+<span class="sd">    :param row_limit: Maximum number of rows to process, across all</span>
+<span class="sd">        queries.  :class:`None` (default) means no limit</span>
+<span class="sd">    :param timeout: Maximum elapsed time in seconds.  :class:`None`</span>
+<span class="sd">        (default) means no limit</span>
+<span class="sd">    :param row_exception: Class of exception to raise when row limit</span>
+<span class="sd">        is hit</span>
+<span class="sd">    :param timeout_exception: Class of exception to raise when timeout</span>
+<span class="sd">        is hit</span>
+<span class="sd">    :param timeout_steps: How often the elapsed time is checked in</span>
+<span class="sd">        SQLite internal operations (see :meth:`~apsw.Connection.set_progress_handler`)</span>
+
+<span class="sd">    If the exception is :class:`QueryLimitNoException` (default) then</span>
+<span class="sd">    no exception is passed on when the block exits.</span>
+
+<span class="sd">    Row limits are implemented by :meth:`~apsw.Connection.trace_v2` to</span>
+<span class="sd">    monitor rows.  Only rows directly in your queries are counted -</span>
+<span class="sd">    for example rows used by virual tables like FTS5 in the</span>
+<span class="sd">    background, or triggers are not counted.</span>
+
+<span class="sd">    Time limits are implemented by</span>
+<span class="sd">    :meth:`~apsw.Connection.set_progress_handler` to monitor the</span>
+<span class="sd">    elapsed :func:`time &lt;time.monotonic&gt;`.  This means the elapsed</span>
+<span class="sd">    time is only checked while running SQLite queries.</span>
+
+<span class="sd">    :meth:`~apsw.Connection.trace_v2` and</span>
+<span class="sd">    :meth:`~apsw.Connection.set_progress_handler` implement multiple</span>
+<span class="sd">    registrations so query_limit will not interfere with any you may</span>
+<span class="sd">    have registered.</span>
+
+<span class="sd">    If you use nested query_limit blocks then only the limits set by</span>
+<span class="sd">    the closest block apply within that block.</span>
+
+<span class="sd">    See the :ref:`example &lt;example_query_limit&gt;`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">limit</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;Current limit in effect</span>
+
+<span class="sd">        :meta private:&quot;&quot;&quot;</span>
+
+        <span class="n">rows_remaining</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="s2">&quot;How many more rows can be returned&quot;</span>
+        <span class="n">time_expiry</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="s2">&quot;time.monotic value when we stop&quot;</span>
+        <span class="n">statements</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;key is statement id, value is if its rows count towards rows remaining&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">row_limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">row_exception</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="n">QueryLimitNoException</span><span class="p">,</span>
+        <span class="n">timeout_exception</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="ne">Exception</span><span class="p">]</span> <span class="o">=</span> <span class="n">QueryLimitNoException</span><span class="p">,</span>
+        <span class="n">timeout_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_limit</span> <span class="o">=</span> <span class="n">row_limit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_exception</span> <span class="o">=</span> <span class="n">row_exception</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout_exception</span> <span class="o">=</span> <span class="n">timeout_exception</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout_steps</span> <span class="o">=</span> <span class="n">timeout_steps</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="s2">&quot;Context manager entry point&quot;</span>
+
+        <span class="n">limit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span>
+                <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_STMT</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_ROW</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_PROFILE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trace</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span>
+            <span class="p">)</span>
+            <span class="n">limit</span><span class="o">.</span><span class="n">rows_remaining</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_limit</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">limit</span><span class="o">.</span><span class="n">time_expiry</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_progress_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">progress</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout_steps</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">context_token</span> <span class="o">=</span> <span class="n">query_limit_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">my_limit</span> <span class="o">=</span> <span class="n">limit</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+        <span class="s2">&quot;Context manager exit point&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_progress_handler</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">limit</span><span class="p">:</span> <span class="n">query_limit</span><span class="o">.</span><span class="n">limit</span> <span class="o">=</span> <span class="n">query_limit_context</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="n">query_limit_context</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context_token</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">my_limit</span> <span class="ow">and</span> <span class="n">exc_type</span> <span class="ow">is</span> <span class="n">QueryLimitNoException</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="c1"># pass on whatever the exception was</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process statement events to check for row limits</span>
+
+<span class="sd">        :meta private:&quot;&quot;&quot;</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="n">query_limit</span><span class="o">.</span><span class="n">limit</span> <span class="o">=</span> <span class="n">query_limit_context</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">my_limit</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_PROFILE</span><span class="p">:</span>
+            <span class="n">limit</span><span class="o">.</span><span class="n">statements</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_STMT</span><span class="p">:</span>
+            <span class="c1"># trigger is True for both triggers and vtables, and we ignore them</span>
+            <span class="n">limit</span><span class="o">.</span><span class="n">statements</span><span class="p">[</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;trigger&quot;</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_ROW</span><span class="p">:</span>
+            <span class="c1"># we ignore unknown statements</span>
+            <span class="k">if</span> <span class="n">limit</span><span class="o">.</span><span class="n">statements</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">limit</span><span class="o">.</span><span class="n">rows_remaining</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">limit</span><span class="o">.</span><span class="n">rows_remaining</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_exception</span><span class="p">(</span><span class="s2">&quot;query row limit hit&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">progress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Progress handler to check for time expiry</span>
+
+<span class="sd">        :meta private:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="n">query_limit</span><span class="o">.</span><span class="n">limit</span> <span class="o">=</span> <span class="n">query_limit_context</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">my_limit</span> <span class="ow">and</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">limit</span><span class="o">.</span><span class="n">time_expiry</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout_exception</span><span class="p">(</span><span class="s2">&quot;query time limit hit&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">False</span></div>
+
 
 
 
@@ -2771,7 +2942,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 14, 2025.
+      <span class="lastupdated">Last updated on Feb 07, 2025.
       </span></p>
   </div>
 

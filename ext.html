@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Various interesting and useful bits of functionality &mdash; APSW 3.48.0.0 documentation</title>
+  <title>Various interesting and useful bits of functionality &mdash; APSW 3.49.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9901b351"></script>
+      <script src="_static/documentation_options.js?v=64718c17"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -68,6 +68,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#pretty-printing">Pretty printing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#logging-and-tracebacks">Logging and tracebacks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#virtual-tables">Virtual Tables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#query-limiting-tracing-and-performance">Query limiting, tracing and performance</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#database-storage-usage">Database storage usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#accessing-result-rows-by-column-name">Accessing result rows by column name</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#converting-types-into-and-out-of-sqlite">Converting types into and out of SQLite</a></li>
@@ -121,6 +122,8 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.analyze_pages"><code class="docutils literal notranslate"><span class="pre">analyze_pages()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.page_usage_to_svg"><code class="docutils literal notranslate"><span class="pre">page_usage_to_svg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ext.QueryLimitNoException"><code class="docutils literal notranslate"><span class="pre">QueryLimitNoException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ext.query_limit"><code class="docutils literal notranslate"><span class="pre">query_limit</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.format_query_table"><code class="docutils literal notranslate"><span class="pre">format_query_table()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ext.VTColumnAccess"><code class="docutils literal notranslate"><span class="pre">VTColumnAccess</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#apsw.ext.VTColumnAccess.By_Index"><code class="docutils literal notranslate"><span class="pre">VTColumnAccess.By_Index</span></code></a></li>
@@ -294,6 +297,16 @@ in an easier to print and work with format.</p>
 into a virtual table source.</p>
 <p><a class="reference internal" href="#apsw.ext.generate_series" title="apsw.ext.generate_series"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_series()</span></code></a> and <a class="reference internal" href="#apsw.ext.generate_series_sqlite" title="apsw.ext.generate_series_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate_series_sqlite()</span></code></a> provide
 <a class="reference external" href="https://sqlite.org/series.html">generate_series</a>.</p>
+</section>
+<section id="query-limiting-tracing-and-performance">
+<h2>Query limiting, tracing and performance<a class="headerlink" href="#query-limiting-tracing-and-performance" title="Link to this heading"></a></h2>
+<p>Use <a class="reference internal" href="#apsw.ext.query_limit" title="apsw.ext.query_limit"><code class="xref py py-class docutils literal notranslate"><span class="pre">query_limit</span></code></a> with a block (<a class="reference internal" href="example.html#example-query-limit"><span class="std std-ref">example</span></a>) to limit total number of rows
+processed or elapsed time.</p>
+<p>Use <a class="reference internal" href="#apsw.ext.Trace" title="apsw.ext.Trace"><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></a> with a block (<a class="reference internal" href="example.html#example-trace"><span class="std std-ref">example</span></a>) to
+see the SQL run and stats about each one such as timing, rows
+returned, changes made, memory used, and other SQLite counters.</p>
+<p>Use <a class="reference internal" href="#apsw.ext.ShowResourceUsage" title="apsw.ext.ShowResourceUsage"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShowResourceUsage</span></code></a> with a block (<a class="reference internal" href="example.html#example-showresourceusage"><span class="std std-ref">example</span></a>) to get overall SQLite counters as well
+as operating system timing, cpu usage, memory, and I/O.</p>
 </section>
 <section id="database-storage-usage">
 <h2>Database storage usage<a class="headerlink" href="#database-storage-usage" title="Link to this heading"></a></h2>
@@ -903,6 +916,62 @@ index and table separately.</p>
 </dd>
 </dl>
 <p>See <a class="reference external" href="_static/samples/chinook.svg">example output</a>.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="apsw.ext.QueryLimitNoException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">QueryLimitNoException</span></span><a class="reference internal" href="_modules/apsw/ext.html#QueryLimitNoException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.QueryLimitNoException" title="Link to this definition"></a></dt>
+<dd><p>Indicates that no exception will be raised when a <a class="reference internal" href="#apsw.ext.query_limit" title="apsw.ext.query_limit"><code class="xref py py-class docutils literal notranslate"><span class="pre">query_limit</span></code></a> is exceeded</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.ext.query_limit">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.ext.</span></span><span class="sig-name descname"><span class="pre">query_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_exception</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><span class="pre">Exception</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">QueryLimitNoException</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_exception</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><span class="pre">Exception</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">QueryLimitNoException</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/ext.html#query_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.ext.query_limit" title="Link to this definition"></a></dt>
+<dd><p>Use as a context manager to limit execution time and rows processed in the block</p>
+<p>When the total number of rows processed hits the row limit, or
+timeout seconds have elapsed an exception is raised to exit the
+block.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">query_limit</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">row_limit</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">timeout</span> <span class="o">=</span> <span class="mf">2.5</span><span class="p">):</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">):</span>
+        <span class="p">,,,</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> – Connection to monitor</p></li>
+<li><p><strong>row_limit</strong> – Maximum number of rows to process, across all
+queries.  <code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code> (default) means no limit</p></li>
+<li><p><strong>timeout</strong> – Maximum elapsed time in seconds.  <code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code>
+(default) means no limit</p></li>
+<li><p><strong>row_exception</strong> – Class of exception to raise when row limit
+is hit</p></li>
+<li><p><strong>timeout_exception</strong> – Class of exception to raise when timeout
+is hit</p></li>
+<li><p><strong>timeout_steps</strong> – How often the elapsed time is checked in
+SQLite internal operations (see <a class="reference internal" href="connection.html#apsw.Connection.set_progress_handler" title="apsw.Connection.set_progress_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_progress_handler()</span></code></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<p>If the exception is <a class="reference internal" href="#apsw.ext.QueryLimitNoException" title="apsw.ext.QueryLimitNoException"><code class="xref py py-class docutils literal notranslate"><span class="pre">QueryLimitNoException</span></code></a> (default) then
+no exception is passed on when the block exits.</p>
+<p>Row limits are implemented by <a class="reference internal" href="connection.html#apsw.Connection.trace_v2" title="apsw.Connection.trace_v2"><code class="xref py py-meth docutils literal notranslate"><span class="pre">trace_v2()</span></code></a> to
+monitor rows.  Only rows directly in your queries are counted -
+for example rows used by virual tables like FTS5 in the
+background, or triggers are not counted.</p>
+<p>Time limits are implemented by
+<a class="reference internal" href="connection.html#apsw.Connection.set_progress_handler" title="apsw.Connection.set_progress_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_progress_handler()</span></code></a> to monitor the
+elapsed <a class="reference external" href="https://docs.python.org/3/library/time.html#time.monotonic" title="(in Python v3.13)"><code class="xref py py-func docutils literal notranslate"><span class="pre">time</span></code></a>.  This means the elapsed
+time is only checked while running SQLite queries.</p>
+<p><a class="reference internal" href="connection.html#apsw.Connection.trace_v2" title="apsw.Connection.trace_v2"><code class="xref py py-meth docutils literal notranslate"><span class="pre">trace_v2()</span></code></a> and
+<a class="reference internal" href="connection.html#apsw.Connection.set_progress_handler" title="apsw.Connection.set_progress_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_progress_handler()</span></code></a> implement multiple
+registrations so query_limit will not interfere with any you may
+have registered.</p>
+<p>If you use nested query_limit blocks then only the limits set by
+the closest block apply within that block.</p>
+<p>See the <a class="reference internal" href="example.html#example-query-limit"><span class="std std-ref">example</span></a></p>
 </dd></dl>
 
 <dl class="py function">
@@ -1660,7 +1729,7 @@ directly expressed in the query itself</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 14, 2025.
+      <span class="lastupdated">Last updated on Feb 07, 2025.
       </span></p>
   </div>
 
