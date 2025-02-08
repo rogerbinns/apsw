@@ -27,9 +27,9 @@ Type Annotations
 ================
 
 Comprehensive :mod:`type annotations <typing>` :source:`are included
-<apsw/__init__.pyi>`, and your code can be checked using tools like
-`mypy <https://mypy-lang.org/>`__.  You can refer to the types below
-for your annotations (eg as :class:`apsw.SQLiteValue`)
+<apsw/__init__.pyi>`, and your code can be checked by your editor or
+tools like `mypy <https://mypy-lang.org/>`__.  You can refer to the
+types below for your annotations (eg as :class:`apsw.SQLiteValue`)
 
 Your source files should include::
 
