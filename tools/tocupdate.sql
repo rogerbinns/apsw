@@ -57,8 +57,13 @@ insert into toc values
     ("sqlite3changeset_start", "function", 0, "Create An Iterator To Traverse A Changeset", "session/sqlite3changeset_start.html"),
     ("sqlite3changeset_start_v2", "function", 0, "Create An Iterator To Traverse A Changeset", "session/sqlite3changeset_start.html"),
     ("sqlite3changeset_start_strm", "function", 0, "Streaming Versions of API functions", "session/sqlite3changegroup_add_strm.html"),
-    ("sqlite3changeset_start_v2_strm", "function", 0, "Streaming Versions of API functions", "session/sqlite3changegroup_add_strm.html")
-
+    ("sqlite3changeset_start_v2_strm", "function", 0, "Streaming Versions of API functions", "session/sqlite3changegroup_add_strm.html"),
+    ("sqlite3changeset_new", "function", 0, "Obtain new.* Values From A Changeset Iterator", "session/sqlite3changeset_new.html"),
+    ("sqlite3changeset_old", "function", 0, "Obtain old.* Values From A Changeset Iterator", "session/sqlite3changeset_old.html"),
+    ("sqlite3changeset_op", "function", 0, "Obtain The Current Operation From A Changeset Iterator", "session/sqlite3changeset_op.html"),
+    ("sqlite3changeset_conflict", "function", 0, "Obtain Conflicting Row Values From A Changeset Iterator", "session/sqlite3changeset_conflict.html"),
+    ("sqlite3changeset_fk_conflicts", "function", 0, "Determine The Number Of Foreign Key Constraint Violations", "session/sqlite3changeset_fk_conflicts.html"),
+    ("sqlite3changeset_pk", "function", 0, "Obtain The Primary Key Definition Of A Table", "session/sqlite3changeset_pk.html")
 
     ;
 

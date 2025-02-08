@@ -32,6 +32,10 @@ Notable features include:
 * Using the change set builder, you can accumulate multiple change
   sets, and add changes from an iterator or conflict handler.
 
+* It is efficient only storing enough to make the semantic change.
+  For example if mutiple changes are made to the same row, then
+  they can be accumulated into one change record, not many.
+
 .. important::
 
     By default Session can only record and replay changes that have an
@@ -739,6 +743,7 @@ APSWSession_get_changeset_size(APSWSession *self)
   you try to access fields when out of scope.  This means you can't save TableChanges
   for later, and need to copy out any information you need.
 
+  -* sqlite3changeset_op
  */
 
 #define CHECK_TABLE_SCOPE                                                                                              \
@@ -837,7 +842,6 @@ APSWTableChange_op(APSWTableChange *self)
   ``True`` if this is an `indirect <https://sqlite.org/session/sqlite3session_indirect.html>`__
   change - for example made by triggers or foreign keys.
 */
-
 static PyObject *
 APSWTableChange_indirect(APSWTableChange *self)
 {
@@ -846,6 +850,208 @@ APSWTableChange_indirect(APSWTableChange *self)
     Py_RETURN_TRUE;
 
   Py_RETURN_FALSE;
+}
+
+/** .. attribute:: new
+  :type: tuple[SQLiteValue | no_change, ...] | None
+
+  :class:`None` if not applicable (like a DELETE).  Otherwise a
+  tuple of the new values for the row, with :attr:`apsw.no_change`
+  if no value was provided for that column.
+
+  -* sqlite3changeset_new
+ */
+static PyObject *
+APSWTableChange_new(APSWTableChange *self)
+{
+  CHECK_TABLE_SCOPE;
+
+  sqlite3_value *value;
+  if (SQLITE_MISUSE == sqlite3changeset_new(self->iter, 0, &value))
+    Py_RETURN_NONE;
+
+  PyObject *tuple = PyTuple_New(self->table_column_count);
+  if (!tuple)
+    goto error;
+
+  for (int i = 0; i < self->table_column_count; i++)
+  {
+    int res = sqlite3changeset_new(self->iter, 0, &value);
+    if (res != SQLITE_OK)
+    {
+      SET_EXC(res, NULL);
+      goto error;
+    }
+    if (value == NULL)
+      PyTuple_SET_ITEM(tuple, i, Py_NewRef((PyObject *)&apsw_no_change_object));
+    else
+    {
+      PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
+      if (!pyvalue)
+        goto error;
+      PyTuple_SET_ITEM(tuple, i, pyvalue);
+    }
+  }
+  return tuple;
+
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(tuple);
+  return NULL;
+}
+
+/** .. attribute:: old
+  :type: tuple[SQLiteValue, ...] | None
+
+  :class:`None` if not applicable (like an INSERT).  Otherwise a
+  tuple of the old values for the row before this change
+
+  -* sqlite3changeset_old
+ */
+static PyObject *
+APSWTableChange_old(APSWTableChange *self)
+{
+  CHECK_TABLE_SCOPE;
+
+  sqlite3_value *value;
+  if (SQLITE_MISUSE == sqlite3changeset_old(self->iter, 0, &value))
+    Py_RETURN_NONE;
+
+  PyObject *tuple = PyTuple_New(self->table_column_count);
+  if (!tuple)
+    goto error;
+
+  for (int i = 0; i < self->table_column_count; i++)
+  {
+    int res = sqlite3changeset_old(self->iter, 0, &value);
+    if (res != SQLITE_OK)
+    {
+      SET_EXC(res, NULL);
+      goto error;
+    }
+    PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
+    if (!pyvalue)
+      goto error;
+    PyTuple_SET_ITEM(tuple, i, pyvalue);
+  }
+  return tuple;
+
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(tuple);
+  return NULL;
+}
+
+/** .. attribute:: conflict
+  :type: tuple[SQLiteValue, ...] | None
+
+  :class:`None` if not applicable (not in a conflict).  Otherwise a
+  tuple of values for the conflicting row.
+
+  -* sqlite3changeset_conflict
+ */
+static PyObject *
+APSWTableChange_conflict(APSWTableChange *self)
+{
+  CHECK_TABLE_SCOPE;
+  sqlite3_value *value;
+  if (SQLITE_MISUSE == sqlite3changeset_conflict(self->iter, 0, &value))
+    Py_RETURN_NONE;
+
+  PyObject *tuple = PyTuple_New(self->table_column_count);
+  if (!tuple)
+    goto error;
+
+  for (int i = 0; i < self->table_column_count; i++)
+  {
+    int res = sqlite3changeset_conflict(self->iter, 0, &value);
+    if (res != SQLITE_OK)
+    {
+      SET_EXC(res, NULL);
+      goto error;
+    }
+    PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
+    if (!pyvalue)
+      goto error;
+    PyTuple_SET_ITEM(tuple, i, pyvalue);
+  }
+  return tuple;
+
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(tuple);
+  return NULL;
+}
+
+/** .. attribute:: fk_conflicts
+  :type: int | None
+
+  The number of known foreign key conflicts, or :class:`None` if not in a
+  conflict handler.
+
+  -* sqlite3changeset_fk_conflicts
+*/
+
+static PyObject *
+APSWTableChange_fk_conflicts(APSWTableChange *self)
+{
+  CHECK_TABLE_SCOPE;
+
+  int nOut;
+
+  int res = sqlite3changeset_fk_conflicts(self->iter, &nOut);
+  if (res == SQLITE_MISUSE)
+    Py_RETURN_NONE;
+  if (res == SQLITE_OK)
+    return PyLong_FromLong(nOut);
+  SET_EXC(res, NULL);
+  return NULL;
+}
+
+/** .. attribute:: pk_columns
+  :type: set[int]
+
+  Which columns make up the primary key for this table
+
+  -* sqlite3changeset_pk
+*/
+static PyObject *
+APSWTableChange_pk_columns(APSWTableChange *self)
+{
+  CHECK_TABLE_SCOPE;
+
+  unsigned char *abPK;
+  int nCol;
+
+  int res = sqlite3changeset_pk(self->iter, &abPK, &nCol);
+  if (res != SQLITE_OK)
+  {
+    SET_EXC(res, NULL);
+    return NULL;
+  }
+
+  PyObject *value = NULL, *set = PySet_New(NULL);
+  if (!set)
+    goto error;
+  for (int i = 0; i < nCol; i++)
+  {
+    if (abPK[i])
+    {
+      value = PyLong_FromLong(i);
+      if (!value)
+        goto error;
+      if (0 != PySet_Add(set, value))
+        goto error;
+      Py_CLEAR(value);
+    }
+  }
+
+  return set;
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(set);
+  Py_XDECREF(value);
+  return NULL;
 }
 
 static PyObject *
@@ -1109,6 +1315,11 @@ static PyGetSetDef APSWTableChange_getset[] = {
   { "op", (getter)APSWTableChange_op, NULL, TableChange_op_DOC },
   { "opcode", (getter)APSWTableChange_opcode, NULL, TableChange_opcode_DOC },
   { "indirect", (getter)APSWTableChange_indirect, NULL, TableChange_indirect_DOC },
+  { "old", (getter)APSWTableChange_old, NULL, TableChange_old_DOC },
+  { "new", (getter)APSWTableChange_new, NULL, TableChange_new_DOC },
+  { "conflict", (getter)APSWTableChange_conflict, NULL, TableChange_conflict_DOC },
+  { "fk_conflicts", (getter)APSWTableChange_fk_conflicts, NULL, TableChange_fk_conflicts_DOC },
+  { "pk_columns", (getter)APSWTableChange_pk_columns, NULL, TableChange_pk_columns_DOC },
   { 0 },
 };
 
