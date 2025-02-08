@@ -2,7 +2,7 @@
 import sys
 
 from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
-from collections.abc import Mapping
+from collections.abc import Mapping, Buffer
 import array
 import types
 
@@ -127,6 +127,19 @@ from the SQL"""
 
 FTS5QueryPhrase = Callable[[FTS5ExtensionApi, Any], None]
 """Callback from :meth:`FTS5ExtensionApi.query_phrase`"""
+
+# The Session extension allows streaming of inputs and outputs
+
+SessionStreamInput = Callable[[int], Buffer | None]
+"""Streaming input function that is called with a number of bytes requested
+returning data from 1 to that many bytes, or None at end of stream"""
+
+ChangesetInput =  SessionStreamInput | Buffer
+"""Changeset input can either be a streaming callback or data"""
+
+SessionStreamOutput  = Callable[[memoryview], None]
+"""Streaming output callable is called with each block of streaming data"""
+
 
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
@@ -345,8 +358,8 @@ memoryused = memory_used ## OLD-NAME
 
 no_change: object
 """A sentinel value used to indicate no change in a value when
-used with :meth:`VTCursor.ColumnNoChange` and
-:meth:`VTTable.UpdateChangeRow`"""
+used with :meth:`VTCursor.ColumnNoChange`,
+:meth:`VTTable.UpdateChangeRow`, and :attr:`TableChange.new`."""
 
 def pyobject(object: Any):
     """Indicates a Python object is being provided as a
@@ -2673,6 +2686,70 @@ class Session:
         ...
 
 @final
+class TableChange:
+    """Represents a `change <https://sqlite.org/session/changeset_iter.html>`__.  They come from
+    :meth:`changeset iteration <Changeset.iter>` and from the :meth:`conflict handler in apply
+    <Changeset.apply>`.
+
+    It is only valid when your conflict handler is active, or has just been provided by a
+    changeset iterator.  It goes out of scope after your conflict handler returns, or the
+    iterator moves to the next entry.  You will get :exc:`~apsw.InvalidContextError` if
+    you try to access fields when out of scope.  This means you can't save TableChanges
+    for later, and need to copy out any information you need.
+
+    Calls: `sqlite3changeset_op <https://sqlite.org/session/sqlite3changeset_op.html>`__"""
+
+    column_count: int
+    """ Number of columns in the affected table"""
+
+    conflict: tuple[SQLiteValue, ...] | None
+    """:class:`None` if not applicable (not in a conflict).  Otherwise a
+    tuple of values for the conflicting row.
+
+    Calls: `sqlite3changeset_conflict <https://sqlite.org/session/sqlite3changeset_conflict.html>`__"""
+
+    fk_conflicts: int | None
+    """The number of known foreign key conflicts, or :class:`None` if not in a
+    conflict handler.
+
+    Calls: `sqlite3changeset_fk_conflicts <https://sqlite.org/session/sqlite3changeset_fk_conflicts.html>`__"""
+
+    indirect: bool
+    """``True`` if this is an `indirect <https://sqlite.org/session/sqlite3session_indirect.html>`__
+    change - for example made by triggers or foreign keys."""
+
+    name: str
+    """ Name of the affected table"""
+
+    new: tuple[SQLiteValue | no_change, ...] | None
+    """:class:`None` if not applicable (like a DELETE).  Otherwise a
+    tuple of the new values for the row, with :attr:`apsw.no_change`
+    if no value was provided for that column.
+
+    Calls: `sqlite3changeset_new <https://sqlite.org/session/sqlite3changeset_new.html>`__"""
+
+    old: tuple[SQLiteValue, ...] | None
+    """:class:`None` if not applicable (like an INSERT).  Otherwise a
+    tuple of the old values for the row before this change
+
+    Calls: `sqlite3changeset_old <https://sqlite.org/session/sqlite3changeset_old.html>`__"""
+
+    op: str
+    """ The operation code as a string  ``INSERT``,
+     ``DELETE``, or ``UPDATE``.  See :attr:`opcode`
+     for this as a number."""
+
+    opcode: int
+    """ The operation code - :attr:`apsw.SQLITE_INSERT`,
+     attr:`apsw.SQLITE_DELETE`, or attr:`apsw.SQLITE_UPDATE`.
+     See :attr:`op` for this as a string."""
+
+    pk_columns: set[int]
+    """Which columns make up the primary key for this table
+
+    Calls: `sqlite3changeset_pk <https://sqlite.org/session/sqlite3changeset_pk.html>`__"""
+
+@final
 class URIFilename:
     """SQLite packs `uri parameters
     <https://sqlite.org/uri.html>`__ and the filename together   This class
@@ -4896,11 +4973,15 @@ class InterruptError(Error):
     :meth:`Connection.interrupt`."""
 
 class InvalidContextError(Error):
-    """Context is no longer valid.  Examples include using an
-    :class:`IndexInfo` outside of the :meth:`VTTable.BestIndexObject`
-    method, a registered :class:`FTS5Tokenizer` when the underlying
-    tokenizer has been deleted/replaced, or :meth:`Connection.vtab_config`
-    when not inside :meth:`VTModule.Create`."""
+    """Context is no longer valid.  Examples include:
+
+    * Using an :class:`IndexInfo` outside of the :meth:`VTTable.BestIndexObject`
+      method
+    * Using a registered :class:`FTS5Tokenizer` when the underlying
+      tokenizer has been deleted/replaced
+    * Using :meth:`Connection.vtab_config` when not inside :meth:`VTModule.Create`
+    * Using a :class:`TableChange` outside of a :meth:`~Changeset.apply` conflict
+      handler, or when no longer the current :meth:`Changeset.iter` item"""
 
 class LockedError(Error):
     """`SQLITE_LOCKED <https://sqlite.org/rescode.html#locked>`__.  Shared
