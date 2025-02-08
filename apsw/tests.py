@@ -5827,6 +5827,11 @@ class APSW(unittest.TestCase):
                 "req": {"closed": "CHECK_SESSION_CLOSED"},
                 "order": ("closed",),
             },
+            "APSWTableChange": {
+                "skip": {"tp_str", "dealloc", },
+                "req": {"scope": "CHECK_TABLE_SCOPE"},
+                "order": ("scope",),
+            },
             "APSWBlob": {
                 "skip": ("dealloc", "init", "close", "close_internal", "tp_str"),
                 "req": {"closed": "CHECK_BLOB_CLOSED"},

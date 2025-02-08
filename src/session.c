@@ -145,6 +145,7 @@ typedef struct APSWChangesetIterator
   PyObject *xInput;
   PyObject *buffer_source;
   Py_buffer buffer_buffer;
+  struct APSWTableChange *last_table_change;
 } APSWChangesetIterator;
 
 static PyTypeObject APSWChangesetIteratorType;
@@ -160,6 +161,9 @@ static PyTypeObject APSWChangesetBuilderType;
 typedef struct APSWTableChange
 {
   PyObject_HEAD
+  /* the iter field is used to mark this change as still in scope and
+     valid, plus to get the fields other than those from
+     sqlite3changeset_op */
   sqlite3_changeset_iter *iter;
   const char *table_name;
   int table_column_count;
@@ -263,6 +267,9 @@ APSWSession_close(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast
   {
     Session_close_CHECK;
     ARG_PROLOG(0, Session_close_KWNAMES);
+    /* this is to stop whining about unused label */
+    if(0)
+      goto param_error;
     ARG_EPILOG(NULL, Session_close_USAGE, );
   }
 
@@ -723,6 +730,90 @@ APSWSession_get_changeset_size(APSWSession *self)
   return PyLong_FromLongLong(res);
 }
 
+/** .. class:: TableChange
+
+  Represents a `change <https://sqlite.org/session/changeset_iter.html>`__.  They come from
+  :meth:`changeset iteration <Changeset.iter>` and from the :meth:`conflict handler in apply
+  <Changeset.apply>`.
+
+  It is only valid when your conflict handler is active, or has just been provided by a
+  changeset iterator.  It goes out of scope after your conflict handler returns, or the
+  iterator moves to the next entry.  You will get :exc:`~apsw.InvalidContextError` if
+  you try to access fields when out of scope.  This means you can't save TableChanges
+  for later, and need to copy out any information you need.
+
+ */
+
+#define CHECK_TABLE_SCOPE                                                                                              \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!self->iter)                                                                                                   \
+      return PyErr_Format(ExcInvalidContext, "The table change has gone out of scope");                                \
+  } while (0)
+
+static APSWTableChange *
+MakeTableChange(sqlite3_changeset_iter *iter)
+{
+  APSWTableChange *tc = (APSWTableChange *)_PyObject_New(&APSWTableChangeType);
+  if (!tc)
+    return NULL;
+  tc->iter = NULL;
+
+  int rc = sqlite3changeset_op(iter, &tc->table_name, &tc->table_column_count, &tc->operation, &tc->indirect);
+  if (rc != SQLITE_OK)
+  {
+    Py_DECREF(tc);
+    return NULL;
+  }
+
+  tc->iter = iter;
+
+  return tc;
+}
+
+/** .. attribute:: name
+  :type: str
+
+   Name of the affected table
+*/
+static PyObject *
+APSWTableChange_name(APSWTableChange *self)
+{
+  CHECK_TABLE_SCOPE;
+
+  return PyUnicode_FromString(self->table_name);
+}
+
+/** .. attribute:: column_count
+  :type: int
+
+   Number of columns in the affected table
+*/
+static PyObject *
+APSWTableChange_column_count(APSWTableChange *self)
+{
+  CHECK_TABLE_SCOPE;
+
+  return PyLong_FromLong(self->table_column_count);
+}
+
+static PyObject *
+APSWTableChange_tp_str(APSWTableChange *self)
+{
+  if (!self->iter)
+    return PyUnicode_FromFormat("<apsw.TableChange out of scope at %p>", self);
+
+  return PyUnicode_FromFormat("<apsw.TableChange name \"%s\" column_count %d operation %d indirect %S at %p>",
+                              self->table_name, self->table_column_count, self->operation,
+                              (self->indirect) ? Py_True : Py_False, self);
+}
+
+static void
+APSWTableChange_dealloc(PyObject *self)
+{
+  Py_TpFree(self);
+}
+
 /** .. class:: Changeset
 
  Provides changeset (including patchset) related methods.
@@ -807,6 +898,7 @@ APSWChangeset_iter(void *Py_UNUSED(static_method), PyObject *const *fast_args, P
   iterator->iter = NULL;
   iterator->xInput = NULL;
   iterator->buffer_source = NULL;
+  iterator->last_table_change = NULL;
 
   if (PyCallable_Check(changeset))
   {
@@ -841,7 +933,7 @@ APSWChangeset_iter(void *Py_UNUSED(static_method), PyObject *const *fast_args, P
     }
   }
 
-  return (PyObject*)iterator;
+  return (PyObject *)iterator;
 
 error:
   Py_DECREF(iterator);
@@ -852,8 +944,28 @@ error:
 static PyObject *
 APSWChangesetIterator_next(APSWChangesetIterator *self)
 {
-  fprintf(stderr, "next called\n");
-  return NULL;
+  /* invalidate what we previous made */
+  if (self->last_table_change)
+  {
+    self->last_table_change->iter = NULL;
+    self->last_table_change = NULL;
+  }
+
+  int rc = sqlite3changeset_next(self->iter);
+  if (rc == SQLITE_DONE)
+    return NULL;
+
+  if (rc != SQLITE_ROW)
+  {
+    SET_EXC(rc, NULL);
+    return NULL;
+  }
+
+  self->last_table_change = MakeTableChange(self->iter);
+
+  assert((self->last_table_change == NULL && PyErr_Occurred())
+         || (self->last_table_change != NULL && !PyErr_Occurred()));
+  return self->last_table_change ? (PyObject *)self->last_table_change : NULL;
 }
 
 static PyObject *
@@ -870,13 +982,13 @@ APSWChangesetIterator_dealloc(APSWChangesetIterator *self)
     sqlite3changeset_finalize(self->iter);
     self->iter = NULL;
   }
-    Py_CLEAR(self->xInput);
-    if(self->buffer_source)
-    {
-      PyBuffer_Release(&self->buffer_buffer);
-      Py_CLEAR(self->buffer_source);
-    }
-    Py_TpFree((PyObject *)self);
+  Py_CLEAR(self->xInput);
+  if (self->buffer_source)
+  {
+    PyBuffer_Release(&self->buffer_buffer);
+    Py_CLEAR(self->buffer_source);
+  }
+  Py_TpFree((PyObject *)self);
 }
 
 static PyMethodDef APSWSession_methods[] = {
@@ -930,11 +1042,9 @@ static PyTypeObject APSWChangesetType = {
 };
 
 static PyTypeObject APSWChangesetIteratorType = {
-  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.ChangesetIterator",
-  .tp_basicsize = sizeof(APSWChangesetIterator),
-  .tp_iternext = (iternextfunc)APSWChangesetIterator_next,
-  .tp_iter = APSWChangesetIterator_iter,
-  .tp_dealloc = (destructor) APSWChangesetIterator_dealloc,
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.ChangesetIterator", .tp_basicsize = sizeof(APSWChangesetIterator),
+  .tp_iternext = (iternextfunc)APSWChangesetIterator_next,           .tp_iter = APSWChangesetIterator_iter,
+  .tp_dealloc = (destructor)APSWChangesetIterator_dealloc,
 };
 
 static PyTypeObject APSWChangesetBuilderType = {
@@ -942,7 +1052,17 @@ static PyTypeObject APSWChangesetBuilderType = {
   .tp_basicsize = sizeof(APSWChangesetBuilder),
 };
 
+static PyGetSetDef APSWTableChange_getset[] = {
+  { "name", (getter)APSWTableChange_name, NULL, TableChange_name_DOC },
+  { "column_count", (getter)APSWTableChange_column_count, NULL, TableChange_column_count_DOC },
+  { 0 },
+};
+
 static PyTypeObject APSWTableChangeType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.TableChange",
   .tp_basicsize = sizeof(APSWTableChange),
+  .tp_getset = APSWTableChange_getset,
+  .tp_doc = TableChange_class_DOC,
+  .tp_dealloc = (destructor)APSWTableChange_dealloc,
+  .tp_str = (reprfunc)APSWTableChange_tp_str,
 };
