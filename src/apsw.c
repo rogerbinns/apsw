@@ -2016,8 +2016,8 @@ PyInit_apsw(void)
     :type: object
 
     A sentinel value used to indicate no change in a value when
-    used with :meth:`VTCursor.ColumnNoChange` and
-    :meth:`VTTable.UpdateChangeRow`
+    used with :meth:`VTCursor.ColumnNoChange`,
+    :meth:`VTTable.UpdateChangeRow`, and :attr:`TableChange.new`.
   */
 
   if (PyModule_AddObject(m, "no_change", Py_NewRef((PyObject *)&apsw_no_change_object)))
