@@ -267,9 +267,6 @@ APSWSession_close(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast
   {
     Session_close_CHECK;
     ARG_PROLOG(0, Session_close_KWNAMES);
-    /* this is to stop whining about unused label */
-    if(0)
-      goto param_error;
     ARG_EPILOG(NULL, Session_close_USAGE, );
   }
 
@@ -797,6 +794,60 @@ APSWTableChange_column_count(APSWTableChange *self)
   return PyLong_FromLong(self->table_column_count);
 }
 
+/** .. attribute:: opcode
+  :type: int
+
+   The operation code - :attr:`apsw.SQLITE_INSERT`,
+   attr:`apsw.SQLITE_DELETE`, or attr:`apsw.SQLITE_UPDATE`.
+   See :attr:`op` for this as a string.
+*/
+
+static PyObject *
+APSWTableChange_opcode(APSWTableChange *self)
+{
+  CHECK_TABLE_SCOPE;
+
+  return PyLong_FromLong(self->operation);
+}
+
+/** .. attribute:: op
+  :type: str
+
+   The operation code as a string  ``INSERT``,
+   ``DELETE``, or ``UPDATE``.  See :attr:`opcode`
+   for this as a number.
+*/
+static PyObject *
+APSWTableChange_op(APSWTableChange *self)
+{
+  CHECK_TABLE_SCOPE;
+
+  if (self->operation == SQLITE_INSERT)
+    return Py_NewRef(apst.INSERT);
+  if (self->operation == SQLITE_DELETE)
+    return Py_NewRef(apst.DELETE);
+
+  assert(self->operation == SQLITE_UPDATE);
+  return Py_NewRef(apst.UPDATE);
+}
+
+/** .. attribute:: indirect
+  :type: bool
+
+  ``True`` if this is an `indirect <https://sqlite.org/session/sqlite3session_indirect.html>`__
+  change - for example made by triggers or foreign keys.
+*/
+
+static PyObject *
+APSWTableChange_indirect(APSWTableChange *self)
+{
+  CHECK_TABLE_SCOPE;
+  if (self->indirect)
+    Py_RETURN_TRUE;
+
+  Py_RETURN_FALSE;
+}
+
 static PyObject *
 APSWTableChange_tp_str(APSWTableChange *self)
 {
@@ -1055,6 +1106,9 @@ static PyTypeObject APSWChangesetBuilderType = {
 static PyGetSetDef APSWTableChange_getset[] = {
   { "name", (getter)APSWTableChange_name, NULL, TableChange_name_DOC },
   { "column_count", (getter)APSWTableChange_column_count, NULL, TableChange_column_count_DOC },
+  { "op", (getter)APSWTableChange_op, NULL, TableChange_op_DOC },
+  { "opcode", (getter)APSWTableChange_opcode, NULL, TableChange_opcode_DOC },
+  { "indirect", (getter)APSWTableChange_indirect, NULL, TableChange_indirect_DOC },
   { 0 },
 };
 
