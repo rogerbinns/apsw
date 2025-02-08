@@ -2362,6 +2362,8 @@ def query_info(
 
     Set the various parameters to `True` if you also want the
     actions, expanded_sql, explain, query_plan etc filled in.
+
+    See the :ref:`example <example_query_details>`.
     """
     res: dict[str, Any] = {"actions": None, "query_plan": None, "explain": None}
 
