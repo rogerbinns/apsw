@@ -1,7 +1,7 @@
 import sys
 
 from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
-from collections.abc import Mapping
+from collections.abc import Mapping, Buffer
 import array
 import types
 
@@ -126,3 +126,16 @@ from the SQL"""
 
 FTS5QueryPhrase = Callable[[FTS5ExtensionApi, Any], None]
 """Callback from :meth:`FTS5ExtensionApi.query_phrase`"""
+
+# The Session extension allows streaming of inputs and outputs
+
+SessionStreamInput = Callable[[int], Buffer | None]
+"""Streaming input function that is called with a number of bytes requested
+returning data from 1 to that many bytes, or None at end of stream"""
+
+ChangesetInput =  SessionStreamInput | Buffer
+"""Changeset input can either be a streaming callback or data"""
+
+SessionStreamOutput  = Callable[[memoryview], None]
+"""Streaming output callable is called with each block of streaming data"""
+

@@ -50,7 +50,11 @@ std_typing = {
     "Mapping",
     "Protocol",
 }
-std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple", "bool", "list"}
+
+# stuff in collections.abc
+std_collections_abc = { "Buffer" }
+
+std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple", "bool", "list", "memoryview"}
 
 # from apsw
 apsw_mod = {"zeroblob", "Cursor", "Connection", "FTS5ExtensionApi"}
@@ -62,6 +66,9 @@ def sub(m: re.Match) -> str:
     # space is used then the output has weird spaces everywhere
     sp = "\\\u200b"
     text: str = m.group("name")
+
+    if text in std_collections_abc:
+        return f":class:`~collections.abc.{ text }`{sp}"
     if text in std_typing:
         return f":class:`~typing.{ text }`{sp}"
     if text in std_other:
@@ -90,7 +97,7 @@ def output(doc: list[tuple[str, str, str]]) -> str:
     for name, _, _ in doc:
         in_doc.add(name)
     in_doc.update(apsw_mod)
-    pattern = r"\b(?P<name>" + "|".join(std_other.union(std_typing.union(in_doc))) + r")\b"
+    pattern = r"\b(?P<name>" + "|".join(std_other | std_collections_abc | std_typing | in_doc) + r")\b"
     res = ""
     for name, value, descr in doc:
         value = nomunge(pattern, sub, value)
