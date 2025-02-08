@@ -45,6 +45,8 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
   Py_ssize_t actual_nargs = PyVectorcall_NARGS(fast_nargs);                                                            \
   if (actual_nargs > maxpos_args)                                                                                      \
     goto too_many_args;                                                                                                \
+  if (0)                                                                                                               \
+    goto param_error;                                                                                                  \
   if (fast_kwnames)                                                                                                    \
   {                                                                                                                    \
     useargs = myargs;                                                                                                  \
