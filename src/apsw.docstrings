@@ -756,7 +756,85 @@
 } while(0)
 
 
+#define  Changeset_apply_DOC "apply($self,changeset,db,*,filter=None,conflict=None,flags=0)\n--\n\nChangeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0)\n\n" \
+"Applies a changeset to a database.\n" \
+"\n" \
+":param source: The changeset either as the bytes, or a stream\n" \
+":param db: The connection to make the change on\n" \
+":param filter: Callback to determine if changes to a table are done\n" \
+":param conflict: Callback to handle a change that cannot be applied\n" \
+":param flags: `v2 API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.\n" \
+"    If flags are supplied then the experimental v2 API is used, otherwise the original is.\n" \
+"\n" \
+"Filter\n" \
+"------\n" \
+"\n" \
+"Callback called with a table name, once per table that has a change.  It should return ``True``\n" \
+"if changes to that table should be applied, or ``False`` to ignore them.  If not supplied then\n" \
+"all tables have changes applied.\n" \
+"\n" \
+"Conflict\n" \
+"--------\n" \
+"\n" \
+"When a change cannot be applied the conflict handler determines what to do.  It is called with a\n" \
+"`conflict reason <https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the first parameter,\n" \
+"and a :class:`TableChange` as the second.\n" \
+"\n" \
+"It should return the `action to take <https://www.sqlite.org/session/c_changeset_abort.html>`__.\n" \
+"\n" \
+"If not supplied or on error, ``SQLITE_CHANGESET_ABORT`` is returned.\n" \
+"\n" \
+"Calls:\n" \
+"  * `sqlite3changeset_apply <https://sqlite.org/session/sqlite3changeset_apply.html>`__\n" \
+"  * `sqlite3changeset_apply_v2 <https://sqlite.org/session/sqlite3changeset_apply.html>`__\n" \
+"  * `sqlite3changeset_apply_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" \
+"  * `sqlite3changeset_apply_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
+
+#define Changeset_apply_KWNAMES "changeset", "db", "filter", "conflict", "flags"
+#define Changeset_apply_USAGE "Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0)"
+
+#define Changeset_apply_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(db), Connection *)); \
+  assert(__builtin_types_compatible_p(typeof(filter), PyObject *)); \
+  assert(filter == NULL); \
+  assert(__builtin_types_compatible_p(typeof(conflict), PyObject *)); \
+  assert(conflict == NULL); \
+  assert(__builtin_types_compatible_p(typeof(flags), int)); \
+  assert(flags == (0)); \
+} while(0)
+
+
 #define  Changeset_class_DOC "Provides changeset (including patchset) related methods.\n" 
+
+#define  Changeset_concat_DOC "concat($self,A,B)\n--\n\nChangeset.concat(A: bytes, B: bytes) -> bytes\n\n" \
+"Returns combined changesets\n" \
+"\n" \
+"Calls: `sqlite3changeset_concat <https://sqlite.org/session/sqlite3changeset_concat.html>`__\n" 
+
+#define Changeset_concat_KWNAMES "A", "B"
+#define Changeset_concat_USAGE "Changeset.concat(A: bytes, B: bytes) -> bytes"
+
+#define Changeset_concat_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(A), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(B), PyObject *)); \
+} while(0)
+
+
+#define  Changeset_concat_stream_DOC "concat_stream($self,A,B,output)\n--\n\nChangeset.concat_stream(A: SessionStreamInput, B: SessionStreamInput, output: SessionStreamOutput) -> None\n\n" \
+"Streaming concatenate two changesets\n" \
+"\n" \
+"Calls: `sqlite3changeset_concat_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
+
+#define Changeset_concat_stream_KWNAMES "A", "B", "output"
+#define Changeset_concat_stream_USAGE "Changeset.concat_stream(A: SessionStreamInput, B: SessionStreamInput, output: SessionStreamOutput) -> None"
+
+#define Changeset_concat_stream_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(A), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(B), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(output), PyObject *)); \
+} while(0)
+
 
 #define  Changeset_invert_DOC "invert($self,changeset)\n--\n\nChangeset.invert(changeset: bytes) -> bytes\n\n" \
 "Produces a changeset that reverses the effect of\n" \
@@ -769,6 +847,20 @@
 
 #define Changeset_invert_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
+} while(0)
+
+
+#define  Changeset_invert_stream_DOC "invert_stream($self,changeset,output)\n--\n\nChangeset.invert_stream(changeset: SessionStreamInput, output: SessionStreamOutput) -> None\n\n" \
+"Streaming reverses the effect of the supplied changeset.\n" \
+"\n" \
+"Calls: `sqlite3changeset_invert_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
+
+#define Changeset_invert_stream_KWNAMES "changeset", "output"
+#define Changeset_invert_stream_USAGE "Changeset.invert_stream(changeset: SessionStreamInput, output: SessionStreamOutput) -> None"
+
+#define Changeset_invert_stream_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(output), PyObject *)); \
 } while(0)
 
 
@@ -791,6 +883,25 @@
   assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(flags), int)); \
   assert(flags == (0)); \
+} while(0)
+
+
+#define  Changeset_upgrade_DOC "upgrade($self,db,schema,changeset)\n--\n\nChangeset.upgrade(db: Connection, schema: str, changeset: bytes) -> bytes\n\n" \
+"Upgrade the schema of a changeset\n" \
+"\n" \
+":param db: Connection to use\n" \
+":param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
+":param changeset: Original changeset\n" \
+"\n" \
+"Calls: `sqlite3changeset_upgrade <https://sqlite.org/session/sqlite3changeset_upgrade.html>`__\n" 
+
+#define Changeset_upgrade_KWNAMES "db", "schema", "changeset"
+#define Changeset_upgrade_USAGE "Changeset.upgrade(db: Connection, schema: str, changeset: bytes) -> bytes"
+
+#define Changeset_upgrade_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(db), Connection *)); \
+  assert(__builtin_types_compatible_p(typeof(schema), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
 } while(0)
 
 
@@ -3403,13 +3514,13 @@
 "\n" \
 "Calls: `sqlite3session_changeset_size <https://sqlite.org/session/sqlite3session_changeset_size.html>`__\n" 
 
-#define  Session_changeset_stream_DOC "changeset_stream($self,output)\n--\n\nSession.changeset_stream(output: Callable[[memoryview], None]) -> None\n\n" \
+#define  Session_changeset_stream_DOC "changeset_stream($self,output)\n--\n\nSession.changeset_stream(output: SessionStreamOutput) -> None\n\n" \
 "Produces a changeset of the session so far in a stream\n" \
 "\n" \
 "Calls: `sqlite3session_changeset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
 
 #define Session_changeset_stream_KWNAMES "output"
-#define Session_changeset_stream_USAGE "Session.changeset_stream(output: Callable[[memoryview], None]) -> None"
+#define Session_changeset_stream_USAGE "Session.changeset_stream(output: SessionStreamOutput) -> None"
 
 #define Session_changeset_stream_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(output), PyObject *)); \
@@ -3503,13 +3614,13 @@
 "\n" \
 "Calls: `sqlite3session_patchset <https://sqlite.org/session/sqlite3session_patchset.html>`__\n" 
 
-#define  Session_patchset_stream_DOC "patchset_stream($self,output)\n--\n\nSession.patchset_stream(output: Callable[[memoryview], None]) -> None\n\n" \
+#define  Session_patchset_stream_DOC "patchset_stream($self,output)\n--\n\nSession.patchset_stream(output: SessionStreamOutput) -> None\n\n" \
 "Produces a patchset of the session so far in a stream\n" \
 "\n" \
 "Calls: `sqlite3session_patchset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
 
 #define Session_patchset_stream_KWNAMES "output"
-#define Session_patchset_stream_USAGE "Session.patchset_stream(output: Callable[[memoryview], None]) -> None"
+#define Session_patchset_stream_USAGE "Session.patchset_stream(output: SessionStreamOutput) -> None"
 
 #define Session_patchset_stream_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(output), PyObject *)); \
@@ -3543,9 +3654,7 @@
 "changeset iterator.  It goes out of scope after your conflict handler returns, or the\n" \
 "iterator moves to the next entry.  You will get :exc:`~apsw.InvalidContextError` if\n" \
 "you try to access fields when out of scope.  This means you can't save TableChanges\n" \
-"for later, and need to copy out any information you need.\n" \
-"\n" \
-"Calls: `sqlite3changeset_op <https://sqlite.org/session/sqlite3changeset_op.html>`__\n" 
+"for later, and need to copy out any information you need.\n" 
 
 #define  TableChange_column_count_DOC ":type: int\n" \
 "\n" \
@@ -3597,8 +3706,8 @@
 
 #define  TableChange_opcode_DOC ":type: int\n" \
 "\n" \
-" The operation code - :attr:`apsw.SQLITE_INSERT`,\n" \
-" attr:`apsw.SQLITE_DELETE`, or attr:`apsw.SQLITE_UPDATE`.\n" \
+" The operation code - ``apsw.SQLITE_INSERT``,\n" \
+" ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.\n" \
 " See :attr:`op` for this as a string.\n" 
 
 #define  TableChange_pk_columns_DOC ":type: set[int]\n" \

@@ -729,11 +729,68 @@ class Changeset:
     """Provides changeset (including patchset) related methods."""
 
     @staticmethod
+    def apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0):
+        """Applies a changeset to a database.
+
+        :param source: The changeset either as the bytes, or a stream
+        :param db: The connection to make the change on
+        :param filter: Callback to determine if changes to a table are done
+        :param conflict: Callback to handle a change that cannot be applied
+        :param flags: `v2 API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.
+            If flags are supplied then the experimental v2 API is used, otherwise the original is.
+
+        Filter
+        ------
+
+        Callback called with a table name, once per table that has a change.  It should return ``True``
+        if changes to that table should be applied, or ``False`` to ignore them.  If not supplied then
+        all tables have changes applied.
+
+        Conflict
+        --------
+
+        When a change cannot be applied the conflict handler determines what to do.  It is called with a
+        `conflict reason <https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the first parameter,
+        and a :class:`TableChange` as the second.
+
+        It should return the `action to take <https://www.sqlite.org/session/c_changeset_abort.html>`__.
+
+        If not supplied or on error, ``SQLITE_CHANGESET_ABORT`` is returned.
+
+        Calls:
+          * `sqlite3changeset_apply <https://sqlite.org/session/sqlite3changeset_apply.html>`__
+          * `sqlite3changeset_apply_v2 <https://sqlite.org/session/sqlite3changeset_apply.html>`__
+          * `sqlite3changeset_apply_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
+          * `sqlite3changeset_apply_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
+    @staticmethod
+    def concat(A: bytes, B: bytes) -> bytes:
+        """Returns combined changesets
+
+        Calls: `sqlite3changeset_concat <https://sqlite.org/session/sqlite3changeset_concat.html>`__"""
+        ...
+
+    @staticmethod
+    def concat_stream(A: SessionStreamInput, B: SessionStreamInput, output: SessionStreamOutput) -> None:
+        """Streaming concatenate two changesets
+
+        Calls: `sqlite3changeset_concat_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
+    @staticmethod
     def invert(changeset: bytes) -> bytes:
         """Produces a changeset that reverses the effect of
         the supplied changeset.
 
         Calls: `sqlite3changeset_invert <https://sqlite.org/session/sqlite3changeset_invert.html>`__"""
+        ...
+
+    @staticmethod
+    def invert_stream(changeset: SessionStreamInput, output: SessionStreamOutput) -> None:
+        """Streaming reverses the effect of the supplied changeset.
+
+        Calls: `sqlite3changeset_invert_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
         ...
 
     @staticmethod
@@ -748,6 +805,17 @@ class Changeset:
           * `sqlite3changeset_start_v2 <https://sqlite.org/session/sqlite3changeset_start.html>`__
           * `sqlite3changeset_start_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
           * `sqlite3changeset_start_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
+    @staticmethod
+    def upgrade(db: Connection, schema: str, changeset: bytes) -> bytes:
+        """Upgrade the schema of a changeset
+
+        :param db: Connection to use
+        :param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+        :param changeset: Original changeset
+
+        Calls: `sqlite3changeset_upgrade <https://sqlite.org/session/sqlite3changeset_upgrade.html>`__"""
         ...
 
 class Connection:
@@ -2601,7 +2669,7 @@ class Session:
 
     Calls: `sqlite3session_changeset_size <https://sqlite.org/session/sqlite3session_changeset_size.html>`__"""
 
-    def changeset_stream(self, output: Callable[[memoryview], None]) -> None:
+    def changeset_stream(self, output: SessionStreamOutput) -> None:
         """Produces a changeset of the session so far in a stream
 
         Calls: `sqlite3session_changeset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
@@ -2667,7 +2735,7 @@ class Session:
         Calls: `sqlite3session_patchset <https://sqlite.org/session/sqlite3session_patchset.html>`__"""
         ...
 
-    def patchset_stream(self, output: Callable[[memoryview], None]) -> None:
+    def patchset_stream(self, output: SessionStreamOutput) -> None:
         """Produces a patchset of the session so far in a stream
 
         Calls: `sqlite3session_patchset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
@@ -2695,9 +2763,7 @@ class TableChange:
     changeset iterator.  It goes out of scope after your conflict handler returns, or the
     iterator moves to the next entry.  You will get :exc:`~apsw.InvalidContextError` if
     you try to access fields when out of scope.  This means you can't save TableChanges
-    for later, and need to copy out any information you need.
-
-    Calls: `sqlite3changeset_op <https://sqlite.org/session/sqlite3changeset_op.html>`__"""
+    for later, and need to copy out any information you need."""
 
     column_count: int
     """ Number of columns in the affected table"""
@@ -2740,8 +2806,8 @@ class TableChange:
      for this as a number."""
 
     opcode: int
-    """ The operation code - :attr:`apsw.SQLITE_INSERT`,
-     attr:`apsw.SQLITE_DELETE`, or attr:`apsw.SQLITE_UPDATE`.
+    """ The operation code - ``apsw.SQLITE_INSERT``,
+     ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.
      See :attr:`op` for this as a string."""
 
     pk_columns: set[int]
