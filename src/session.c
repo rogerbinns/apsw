@@ -33,7 +33,7 @@ Notable features include:
   sets, and add changes from an iterator or conflict handler.
 
 * It is efficient only storing enough to make the semantic change.
-  For example if mutiple changes are made to the same row, then
+  For example if multiple changes are made to the same row, then
   they can be accumulated into one change record, not many.
 
 .. important::
@@ -47,7 +47,9 @@ Notable features include:
 
     You can use :meth:`Session.config` with `SQLITE_SESSION_OBJCONFIG_ROWID
     <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__
-    to enable recording of tables without an explicit primary key.
+    to enable recording of tables without an explicit primary key, but
+    it is strongly advised to have deterministic primary keys so that
+    changes made independently can be reconciled.
 
 Availability
 ============
@@ -60,6 +62,43 @@ APSW should end up with it too.
 
 The methods and classes documented here are only present if session
 support was enabled.
+
+Usage Overview
+==============
+
+The session extension does not do table creation (or deletion).  When applying
+a changeset, it will only do so if a same named table exists, with the same number
+of columns, and same primary key.  If no such table exists, the change is silently
+ignored.  (Tip for :ref:`managing your schema <schema_upgrade>`)
+
+To record changes:
+
+* Use a :class:`Session` with the relevant database.  You can
+  have multiple on the same database.
+* Use :meth:`Session.attach` to determine which tables
+  to record
+* You can use :attr:`Session.enabled` to turn recording off or
+  on (it is on by default)
+* Use :meth:`Session.changeset` to get the changeset for later use.
+* If you have two databases, you can use :meth:`Session.diff` to get
+  the changes necessary to turn one into the other without having to
+  record changes as they happen
+
+To see what your changeset contains:
+
+* Use :meth:`Changeset.iter`
+
+To apply a changeset:
+
+* Use :meth:`Changeset.apply`
+
+To manipulate changesets:
+
+* Use :class:`ChangesetBuilder`
+* You can add multiple changesets together
+* You can add :class:`individual changes <TableChange>` from
+  :meth:`Changeset.iter` or from your conflict handler in
+  :meth:`Changeset.apply`
 
 Extension configuration
 =======================
@@ -478,7 +517,7 @@ APSWSession_get_change_patch_set_stream(APSWSession *self, int changeset, PyObje
   Py_RETURN_NONE;
 }
 
-/** .. method:: changeset_stream(output: Callable[[memoryview], None]) -> None
+/** .. method:: changeset_stream(output: SessionStreamOutput) -> None
 
   Produces a changeset of the session so far in a stream
 
@@ -500,7 +539,7 @@ APSWSession_changeset_stream(APSWSession *self, PyObject *const *fast_args, Py_s
   return APSWSession_get_change_patch_set_stream(self, 1, output);
 }
 
-/** .. method:: patchset_stream(output: Callable[[memoryview], None]) -> None
+/** .. method:: patchset_stream(output: SessionStreamOutput) -> None
 
   Produces a patchset of the session so far in a stream
 
@@ -743,7 +782,6 @@ APSWSession_get_changeset_size(APSWSession *self)
   you try to access fields when out of scope.  This means you can't save TableChanges
   for later, and need to copy out any information you need.
 
-  -* sqlite3changeset_op
  */
 
 #define CHECK_TABLE_SCOPE                                                                                              \
@@ -802,8 +840,8 @@ APSWTableChange_column_count(APSWTableChange *self)
 /** .. attribute:: opcode
   :type: int
 
-   The operation code - :attr:`apsw.SQLITE_INSERT`,
-   attr:`apsw.SQLITE_DELETE`, or attr:`apsw.SQLITE_UPDATE`.
+   The operation code - ``apsw.SQLITE_INSERT``,
+   ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.
    See :attr:`op` for this as a string.
 */
 
@@ -1124,6 +1162,124 @@ APSWChangeset_invert(void *Py_UNUSED(static_method), PyObject *const *fast_args,
   return result;
 }
 
+/** .. method:: invert_stream(changeset: SessionStreamInput, output: SessionStreamOutput) -> None
+
+  Streaming reverses the effect of the supplied changeset.
+
+  -* sqlite3changeset_invert_strm
+*/
+static PyObject *
+APSWChangeset_invert_stream(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                            PyObject *fast_kwnames)
+{
+
+  PyObject *changeset = NULL;
+  PyObject *output = NULL;
+
+  {
+    Changeset_invert_stream_CHECK;
+    ARG_PROLOG(2, Changeset_invert_stream_KWNAMES);
+    ARG_MANDATORY ARG_Callable(changeset);
+    ARG_MANDATORY ARG_Callable(output);
+    ARG_EPILOG(NULL, Changeset_invert_stream_USAGE, );
+  }
+
+  int rc = sqlite3changeset_invert_strm(APSWSession_xInput, changeset, APSWSession_xOutput, output);
+  SET_EXC(rc, NULL);
+  if (PyErr_Occurred())
+    return NULL;
+  Py_RETURN_NONE;
+}
+
+/** .. method:: concat(A: bytes, B: bytes) -> bytes
+
+  Returns combined changesets
+
+  -* sqlite3changeset_concat
+*/
+
+static PyObject *
+APSWChangeset_concat(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                     PyObject *fast_kwnames)
+{
+  PyObject *A = NULL;
+  Py_buffer A_buffer;
+  PyObject *B = NULL;
+  Py_buffer B_buffer;
+
+  {
+    Changeset_concat_CHECK;
+    ARG_PROLOG(2, Changeset_concat_KWNAMES);
+    ARG_MANDATORY ARG_py_buffer(A);
+    ARG_MANDATORY ARG_py_buffer(B);
+    ARG_EPILOG(NULL, Changeset_concat_USAGE, );
+  }
+
+  if (0 != PyObject_GetBufferContiguous(A, &A_buffer, PyBUF_SIMPLE))
+  {
+    assert(PyErr_Occurred());
+    return NULL;
+  }
+
+  if (0 != PyObject_GetBufferContiguous(B, &B_buffer, PyBUF_SIMPLE))
+  {
+    assert(PyErr_Occurred());
+    PyBuffer_Release(&A_buffer);
+  }
+
+  PyObject *result = NULL;
+
+  /* ::TODO:: turn this into a function that can be fault injected and used in other places */
+  if (A_buffer.len > 0x7fffffff)
+    SET_EXC(SQLITE_TOOBIG, NULL);
+  else if (B_buffer.len > 0x7fffffff)
+    SET_EXC(SQLITE_TOOBIG, NULL);
+  else
+  {
+    int nOut;
+    void *pOut = NULL;
+
+    int rc = sqlite3changeset_concat(A_buffer.len, A_buffer.buf, B_buffer.len, B_buffer.buf, &nOut, &pOut);
+    if (rc == SQLITE_OK)
+      result = PyBytes_FromStringAndSize((char *)pOut, nOut);
+    sqlite3_free(pOut);
+  }
+  PyBuffer_Release(&A_buffer);
+  PyBuffer_Release(&B_buffer);
+  assert((PyErr_Occurred() && !result) || (result && !PyErr_Occurred()));
+  return result;
+}
+
+/** .. method:: concat_stream(A: SessionStreamInput, B: SessionStreamInput, output: SessionStreamOutput) -> None
+
+  Streaming concatenate two changesets
+
+  -* sqlite3changeset_concat_strm
+*/
+static PyObject *
+APSWChangeset_concat_stream(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                            PyObject *fast_kwnames)
+{
+
+  PyObject *A = NULL, *B = NULL;
+  PyObject *output = NULL;
+
+  {
+    Changeset_concat_stream_CHECK;
+    ARG_PROLOG(3, Changeset_concat_stream_KWNAMES);
+    ARG_MANDATORY ARG_Callable(A);
+    ARG_MANDATORY ARG_Callable(B);
+    ARG_MANDATORY ARG_Callable(output);
+    ARG_EPILOG(NULL, Changeset_concat_stream_USAGE, );
+  }
+
+  int rc = sqlite3changeset_concat_strm(APSWSession_xInput, A, APSWSession_xInput, B, APSWSession_xOutput, output);
+  SET_EXC(rc, NULL);
+  if (PyErr_Occurred())
+    return NULL;
+  Py_RETURN_NONE;
+}
+
 /** .. method:: iter(changeset: ChangesetInput, *, flags: int = 0) -> Iterator[TableChange]
 
    Provides an iterator over a changeset.  You can supply the changeset as
@@ -1157,6 +1313,7 @@ APSWChangeset_iter(void *Py_UNUSED(static_method), PyObject *const *fast_args, P
   iterator->buffer_source = NULL;
   iterator->last_table_change = NULL;
 
+  /* streaming? */
   if (PyCallable_Check(changeset))
   {
     int rc = flags ? sqlite3changeset_start_v2_strm(&iterator->iter, APSWSession_xInput, changeset, flags)
@@ -1196,6 +1353,255 @@ error:
   Py_DECREF(iterator);
   assert(PyErr_Occurred());
   return NULL;
+}
+
+/** .. method:: apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0)
+
+  Applies a changeset to a database.
+
+  :param source: The changeset either as the bytes, or a stream
+  :param db: The connection to make the change on
+  :param filter: Callback to determine if changes to a table are done
+  :param conflict: Callback to handle a change that cannot be applied
+  :param flags: `v2 API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.
+      If flags are supplied then the experimental v2 API is used, otherwise the original is.
+
+  Filter
+  ------
+
+  Callback called with a table name, once per table that has a change.  It should return ``True``
+  if changes to that table should be applied, or ``False`` to ignore them.  If not supplied then
+  all tables have changes applied.
+
+  Conflict
+  --------
+
+  When a change cannot be applied the conflict handler determines what to do.  It is called with a
+  `conflict reason <https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the first parameter,
+  and a :class:`TableChange` as the second.
+
+  It should return the `action to take <https://www.sqlite.org/session/c_changeset_abort.html>`__.
+
+  If not supplied or on error, ``SQLITE_CHANGESET_ABORT`` is returned.
+
+  -* sqlite3changeset_apply sqlite3changeset_apply_v2 sqlite3changeset_apply_strm sqlite3changeset_apply_v2_strm
+
+*/
+
+/* this is needed because xFilter and xCallback share a context */
+struct applyInfoContext
+{
+  PyObject *xFilter;
+  PyObject *xConflict;
+};
+
+static int
+applyFilter(void *pCtx, const char *zTab)
+{
+  /* previous filter could cause this */
+  MakeExistingException();
+
+  if (PyErr_Occurred())
+    return 0;
+
+  struct applyInfoContext *aic = (struct applyInfoContext *)pCtx;
+
+  PyObject *vargs[] = { NULL, PyUnicode_FromString(zTab) };
+  PyObject *result = NULL;
+  if (vargs[1])
+    result = PyObject_Vectorcall(aic->xFilter, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_XDECREF(vargs[1]);
+  if (!result)
+    return 0;
+  int ret = PyObject_IsTrueStrict(result);
+  Py_DECREF(result);
+
+  return PyErr_Occurred() ? 0 : ret;
+}
+
+static int
+applyConflict(void *pCtx, int eConflict, sqlite3_changeset_iter *p)
+{
+  /* previous filter could cause this */
+  MakeExistingException();
+
+  if (PyErr_Occurred())
+    return SQLITE_CHANGESET_ABORT;
+
+  struct applyInfoContext *aic = (struct applyInfoContext *)pCtx;
+
+  int val = SQLITE_CHANGESET_ABORT;
+  PyObject *py_eConflict = NULL, *result = NULL;
+  APSWTableChange *table_change = MakeTableChange(p);
+
+  if (!table_change)
+    goto exit;
+
+  py_eConflict = PyLong_FromLong(eConflict);
+  if (!py_eConflict)
+    goto exit;
+
+  PyObject *vargs[] = { NULL, py_eConflict, (PyObject *)table_change };
+  result = PyObject_Vectorcall(aic->xConflict, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  if (result)
+  {
+
+    val = PyLong_AsInt(result);
+    if (!PyErr_Occurred())
+    {
+      switch (val)
+      {
+      case SQLITE_CHANGESET_OMIT:
+      case SQLITE_CHANGESET_REPLACE:
+      case SQLITE_CHANGESET_ABORT:
+        break;
+      default:
+        PyErr_Format(PyExc_ValueError, "Conflict return %d is not valid SQLITE_CHANGESET_ value", val);
+      }
+    }
+  }
+
+exit:
+  if (PyErr_Occurred())
+    AddTraceBackHere(__FILE__, __LINE__, "session.apply.xConflict", "{s: d, s: O}", "eConflict", eConflict, "return",
+                     OBJ(result));
+
+  Py_XDECREF(py_eConflict);
+  Py_XDECREF(result);
+  if (table_change)
+  {
+    table_change->iter = NULL;
+    Py_DECREF((PyObject *)table_change);
+  }
+
+  return val;
+}
+
+static PyObject *
+APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                    PyObject *fast_kwnames)
+{
+  PyObject *changeset;
+  Connection *db = NULL;
+
+  PyObject *filter = NULL;
+  PyObject *conflict = NULL;
+
+  int flags = 0;
+
+  {
+    Changeset_apply_CHECK;
+    ARG_PROLOG(2, Changeset_apply_KWNAMES);
+    ARG_MANDATORY ARG_ChangesetInput(changeset);
+    ARG_MANDATORY ARG_Connection(db);
+    ARG_OPTIONAL ARG_optional_Callable(filter);
+    ARG_OPTIONAL ARG_optional_Callable(conflict);
+    ARG_OPTIONAL ARG_int(flags);
+    ARG_EPILOG(NULL, Changeset_apply_USAGE, );
+  }
+
+  CHECK_CLOSED(db, NULL);
+
+  /* ::TODO:: GIL release, dbmutex acquire */
+
+  struct applyInfoContext aic = { .xFilter = filter, .xConflict = conflict };
+
+  int res = SQLITE_ERROR;
+
+  /* streaming? */
+  if (PyCallable_Check(changeset))
+  {
+    res = flags ? sqlite3changeset_apply_v2_strm(db->db, APSWSession_xInput, changeset, filter ? applyFilter : NULL,
+                                                 applyConflict, &aic, NULL, NULL, flags)
+                : sqlite3changeset_apply_strm(db->db, APSWSession_xInput, changeset, filter ? applyFilter : NULL,
+                                              applyConflict, &aic);
+  }
+  else
+  {
+    Py_buffer changeset_buffer;
+    if (0 != PyObject_GetBufferContiguous(changeset, &changeset_buffer, PyBUF_SIMPLE))
+      return NULL;
+    if (changeset_buffer.len > 0x7fffffff)
+      res = SQLITE_TOOBIG;
+    else
+      res = flags ? sqlite3changeset_apply_v2(db->db, changeset_buffer.len, changeset_buffer.buf,
+                                              filter ? applyFilter : NULL, applyConflict, &aic, NULL, NULL, flags)
+                  : sqlite3changeset_apply(db->db, changeset_buffer.len, changeset_buffer.buf,
+                                           filter ? applyFilter : NULL, applyConflict, &aic);
+    PyBuffer_Release(&changeset_buffer);
+  }
+
+  if (res != SQLITE_OK)
+  {
+    SET_EXC(res, NULL);
+    return NULL;
+  }
+
+  if (PyErr_Occurred())
+  {
+    if (res == SQLITE_OK)
+      sqlite3_log(SQLITE_ERROR, "An error occurred at the Python level but could not be reported to the session "
+                                "extension, so it considered the session apply successful");
+    return NULL;
+  }
+  Py_RETURN_NONE;
+}
+
+/** .. method:: upgrade(db: Connection, schema: str, changeset: bytes) -> bytes
+
+ Upgrade the schema of a changeset
+
+ :param db: Connection to use
+ :param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+ :param changeset: Original changeset
+
+ -* sqlite3changeset_upgrade
+*/
+static PyObject *
+APSWChangeset_upgrade(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                      PyObject *fast_kwnames)
+{
+  /* https://sqlite.org/forum/forumpost/9cf7d83b53 */
+#if 0
+  Connection *db = NULL;
+  const char *schema = NULL;
+  PyObject *changeset;
+  Py_buffer changeset_buffer;
+  PyObject *result = NULL;
+
+  {
+    Changeset_upgrade_CHECK;
+    ARG_PROLOG(3, Changeset_upgrade_KWNAMES);
+    ARG_MANDATORY ARG_Connection(db);
+    ARG_MANDATORY ARG_str(schema);
+    ARG_MANDATORY ARG_py_buffer(changeset);
+    ARG_EPILOG(NULL, Changeset_upgrade_USAGE, );
+  }
+
+  if (0 != PyObject_GetBufferContiguous(changeset, &changeset_buffer, PyBUF_SIMPLE))
+    return NULL;
+
+  if (changeset_buffer.len > 0x7fffffff)
+    SET_EXC(SQLITE_TOOBIG, NULL);
+  else
+  {
+    int nOut;
+    void *pOut;
+    int rc = sqlite3changeset_upgrade(db->db, schema, changeset_buffer.len, changeset_buffer.buf, &nOut, &pOut);
+    if (rc == SQLITE_OK)
+    {
+      result = PyBytes_FromStringAndSize((char *)pOut, nOut);
+      sqlite3_free(pOut);
+    }
+    else
+      SET_EXC(rc, NULL);
+  }
+  PyBuffer_Release(&changeset_buffer);
+  assert((PyErr_Occurred() && !result) || (result && !PyErr_Occurred()));
+  return result;
+#else
+  return PyErr_Format(PyExc_NotImplementedError, "sqlite3changeset_upgrade is not implemented in SQLite");
+#endif
 }
 
 static PyObject *
@@ -1287,7 +1693,14 @@ static PyTypeObject APSWSessionType = {
 
 static PyMethodDef APSWChangeset_methods[] = {
   { "invert", (PyCFunction)APSWChangeset_invert, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_invert_DOC },
+  { "invert_stream", (PyCFunction)APSWChangeset_invert_stream, METH_STATIC | METH_FASTCALL | METH_KEYWORDS,
+    Changeset_invert_stream_DOC },
+  { "concat", (PyCFunction)APSWChangeset_concat, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_concat_DOC },
+  { "concat_stream", (PyCFunction)APSWChangeset_concat_stream, METH_STATIC | METH_FASTCALL | METH_KEYWORDS,
+    Changeset_concat_stream_DOC },
   { "iter", (PyCFunction)APSWChangeset_iter, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_iter_DOC },
+  { "apply", (PyCFunction)APSWChangeset_apply, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_apply_DOC },
+  { "upgrade", (PyCFunction)APSWChangeset_upgrade, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_upgrade_DOC },
   { 0 },
 };
 
