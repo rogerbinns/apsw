@@ -57,7 +57,7 @@ std_collections_abc = { "Buffer" }
 std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple", "bool", "list", "memoryview"}
 
 # from apsw
-apsw_mod = {"zeroblob", "Cursor", "Connection", "FTS5ExtensionApi"}
+apsw_mod = {"zeroblob", "Cursor", "Connection", "FTS5ExtensionApi", "no_change"}
 
 
 def sub(m: re.Match) -> str:
@@ -77,6 +77,8 @@ def sub(m: re.Match) -> str:
         if text == "None":
             return f":class:`{ text }`{sp}"
         return f":class:`{ text }`{sp}"
+    if text == "no_change":
+        return f":attr:`{ text }`{sp}"
     return f":class:`{ text }`{sp}"
 
 
