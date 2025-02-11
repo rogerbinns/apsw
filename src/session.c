@@ -154,7 +154,7 @@ apsw_session_config(PyObject *Py_UNUSED(self), PyObject *args)
   {                                                                                                                    \
     if (!self->session)                                                                                                \
     {                                                                                                                  \
-      PyErr_Format(ExcSessionClosed, "The session has been closed");                                                   \
+      PyErr_Format(ValueError, "The session has been closed");                                                               \
       return e;                                                                                                        \
     }                                                                                                                  \
   } while (0)

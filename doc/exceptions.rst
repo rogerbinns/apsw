@@ -119,10 +119,6 @@ The following exceptions happen when APSW detects various problems.
 
   You have called :meth:`Cursor.close` and then tried to use the cursor.
 
-.. exception::  SessionClosedError
-
-  You have called :meth:`Session.close` and then tried to use the session.`
-
 .. exception:: BindingsError
 
   There are several causes for this exception.  When using tuples, an incorrect number of bindings where supplied::

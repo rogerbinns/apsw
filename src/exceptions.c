@@ -15,7 +15,6 @@ static PyObject *ExcExtensionLoading;    /* error loading extension */
 static PyObject *ExcConnectionNotClosed; /* connection wasn't closed when destructor called */
 static PyObject *ExcCursorClosed;        /* cursor object was closed when function called */
 static PyObject *ExcConnectionClosed;    /* connection was closed when function called */
-static PyObject *ExcSessionClosed;       /* session was closed when function called */
 static PyObject *ExcVFSNotImplemented;   /* base vfs doesn't implement function */
 static PyObject *ExcVFSFileClosed;       /* attempted operation on closed file */
 static PyObject *ExcForkingViolation;    /* used object across a fork */
@@ -109,7 +108,6 @@ init_exceptions(PyObject *m)
           { &ExcConnectionNotClosed, "ConnectionNotClosedError", ConnectionNotClosedError_exc_DOC },
           { &ExcConnectionClosed, "ConnectionClosedError", ConnectionClosedError_exc_DOC },
           { &ExcCursorClosed, "CursorClosedError", CursorClosedError_exc_DOC },
-          { &ExcSessionClosed, "SessionClosedError", SessionClosedError_exc_DOC },
           { &ExcVFSNotImplemented, "VFSNotImplementedError", VFSNotImplementedError_exc_DOC },
           { &ExcVFSFileClosed, "VFSFileClosedError", VFSFileClosedError_exc_DOC },
           { &ExcForkingViolation, "ForkingViolationError", ForkingViolationError_exc_DOC },
