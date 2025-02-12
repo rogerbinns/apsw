@@ -806,7 +806,7 @@
 
 
 #define  ChangesetBuilder_init_DOC "__init__($self)\n--\n\nChangesetBuilder.__init__()\n\n" \
-"Creates a mew empty builder.\n" \
+"Creates a new empty builder.\n" \
 "\n" \
 "Calls: `sqlite3changegroup_new <https://sqlite.org/session/sqlite3changegroup_new.html>`__\n" 
 
@@ -814,6 +814,48 @@
 #define ChangesetBuilder_init_USAGE "ChangesetBuilder.__init__()"
 
 #define ChangesetBuilder_init_CHECK do { \
+} while(0)
+
+
+#define  ChangesetBuilder_output_DOC "output($self)\n--\n\nChangesetBuilder.output() -> bytes\n\n" \
+"Produces a changeset of what was built so far\n" \
+"\n" \
+"Calls: `sqlite3changegroup_output <https://sqlite.org/session/sqlite3changegroup_output.html>`__\n" 
+
+#define ChangesetBuilder_output_KWNAMES 
+#define ChangesetBuilder_output_USAGE "ChangesetBuilder.output() -> bytes"
+
+#define ChangesetBuilder_output_CHECK do { \
+} while(0)
+
+
+#define  ChangesetBuilder_output_stream_DOC "output_stream($self,output)\n--\n\nChangesetBuilder.output_stream(output: SessionStreamOutput) -> None\n\n" \
+"Produces a streaming changeset of what was built so far\n" \
+"\n" \
+"Calls: `sqlite3changegroup_output_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
+
+#define ChangesetBuilder_output_stream_KWNAMES "output"
+#define ChangesetBuilder_output_stream_USAGE "ChangesetBuilder.output_stream(output: SessionStreamOutput) -> None"
+
+#define ChangesetBuilder_output_stream_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(output), PyObject *)); \
+} while(0)
+
+
+#define  ChangesetBuilder_schema_DOC "schema($self,db,schema)\n--\n\nChangesetBuilder.schema(db: Connection, schema: str) -> None\n\n" \
+"Ensures the changesets comply with the tables in the database\n" \
+"\n" \
+":param db: Connection to consult\n" \
+":param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
+"\n" \
+"Calls: `sqlite3changegroup_schema <https://sqlite.org/session/sqlite3changegroup_schema.html>`__\n" 
+
+#define ChangesetBuilder_schema_KWNAMES "db", "schema"
+#define ChangesetBuilder_schema_USAGE "ChangesetBuilder.schema(db: Connection, schema: str) -> None"
+
+#define ChangesetBuilder_schema_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(db), Connection *)); \
+  assert(__builtin_types_compatible_p(typeof(schema), const char *)); \
 } while(0)
 
 
@@ -944,25 +986,6 @@
   assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(flags), int)); \
   assert(flags == (0)); \
-} while(0)
-
-
-#define  Changeset_upgrade_DOC "upgrade($self,db,schema,changeset)\n--\n\nChangeset.upgrade(db: Connection, schema: str, changeset: bytes) -> bytes\n\n" \
-"Upgrade the schema of a changeset\n" \
-"\n" \
-":param db: Connection to use\n" \
-":param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
-":param changeset: Original changeset\n" \
-"\n" \
-"Calls: `sqlite3changeset_upgrade <https://sqlite.org/session/sqlite3changeset_upgrade.html>`__\n" 
-
-#define Changeset_upgrade_KWNAMES "db", "schema", "changeset"
-#define Changeset_upgrade_USAGE "Changeset.upgrade(db: Connection, schema: str, changeset: bytes) -> bytes"
-
-#define Changeset_upgrade_CHECK do { \
-  assert(__builtin_types_compatible_p(typeof(db), Connection *)); \
-  assert(__builtin_types_compatible_p(typeof(schema), const char *)); \
-  assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
 } while(0)
 
 
@@ -3746,7 +3769,7 @@
 "\n" \
 " Name of the affected table\n" 
 
-#define  TableChange_new_DOC ":type: tuple[SQLiteValue | no_change, ...] | None\n" \
+#define  TableChange_new_DOC ":type: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None\n" \
 "\n" \
 ":class:`None` if not applicable (like a DELETE).  Otherwise a\n" \
 "tuple of the new values for the row, with :attr:`apsw.no_change`\n" \

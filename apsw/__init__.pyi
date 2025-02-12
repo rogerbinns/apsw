@@ -757,9 +757,30 @@ class ChangesetBuilder:
         ...
 
     def __init__(self):
-        """Creates a mew empty builder.
+        """Creates a new empty builder.
 
         Calls: `sqlite3changegroup_new <https://sqlite.org/session/sqlite3changegroup_new.html>`__"""
+        ...
+
+    def output(self) -> bytes:
+        """Produces a changeset of what was built so far
+
+        Calls: `sqlite3changegroup_output <https://sqlite.org/session/sqlite3changegroup_output.html>`__"""
+        ...
+
+    def output_stream(self, output: SessionStreamOutput) -> None:
+        """Produces a streaming changeset of what was built so far
+
+        Calls: `sqlite3changegroup_output_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
+    def schema(self, db: Connection, schema: str) -> None:
+        """Ensures the changesets comply with the tables in the database
+
+        :param db: Connection to consult
+        :param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+
+        Calls: `sqlite3changegroup_schema <https://sqlite.org/session/sqlite3changegroup_schema.html>`__"""
         ...
 
 class Changeset:
@@ -842,17 +863,6 @@ class Changeset:
           * `sqlite3changeset_start_v2 <https://sqlite.org/session/sqlite3changeset_start.html>`__
           * `sqlite3changeset_start_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
           * `sqlite3changeset_start_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
-        ...
-
-    @staticmethod
-    def upgrade(db: Connection, schema: str, changeset: bytes) -> bytes:
-        """Upgrade the schema of a changeset
-
-        :param db: Connection to use
-        :param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
-        :param changeset: Original changeset
-
-        Calls: `sqlite3changeset_upgrade <https://sqlite.org/session/sqlite3changeset_upgrade.html>`__"""
         ...
 
 class Connection:
@@ -2826,7 +2836,7 @@ class TableChange:
     name: str
     """ Name of the affected table"""
 
-    new: tuple[SQLiteValue | no_change, ...] | None
+    new: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None
     """:class:`None` if not applicable (like a DELETE).  Otherwise a
     tuple of the new values for the row, with :attr:`apsw.no_change`
     if no value was provided for that column.
@@ -3854,6 +3864,32 @@ SQLITE_CANTOPEN_NOTEMPDIR: int = 270
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_CANTOPEN_SYMLINK: int = 1550
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
+SQLITE_CHANGESETAPPLY_FKNOACTION: int = 8
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETAPPLY_IGNORENOOP: int = 4
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETAPPLY_INVERT: int = 2
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETAPPLY_NOSAVEPOINT: int = 1
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETSTART_INVERT: int = 2
+"""For `Flags for sqlite3changeset_start_v2 <https://sqlite.org/session/c_changesetstart_invert.html>'__"""
+SQLITE_CHANGESET_ABORT: int = 2
+"""For `Constants Returned By The Conflict Handler <https://sqlite.org/session/c_changeset_abort.html>'__"""
+SQLITE_CHANGESET_CONFLICT: int = 3
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_CONSTRAINT: int = 4
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_DATA: int = 1
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_FOREIGN_KEY: int = 5
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_NOTFOUND: int = 2
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_OMIT: int = 0
+"""For `Constants Returned By The Conflict Handler <https://sqlite.org/session/c_changeset_abort.html>'__"""
+SQLITE_CHANGESET_REPLACE: int = 1
+"""For `Constants Returned By The Conflict Handler <https://sqlite.org/session/c_changeset_abort.html>'__"""
 SQLITE_CHECKPOINT_FULL: int = 1
 """For `Checkpoint Mode Values <https://sqlite.org/c3ref/c_checkpoint_full.html>'__"""
 SQLITE_CHECKPOINT_PASSIVE: int = 0
@@ -4492,6 +4528,12 @@ SQLITE_SELECT: int = 21
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_SELFORDER1: int = 33554432
 """For `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>'__"""
+SQLITE_SESSION_CONFIG_STRMSIZE: int = 1
+"""For `Values for sqlite3session_config <https://sqlite.org/session/c_session_config_strmsize.html>'__"""
+SQLITE_SESSION_OBJCONFIG_ROWID: int = 2
+"""For `Options for sqlite3session_object_config <https://sqlite.org/session/c_session_objconfig_rowid.html>'__"""
+SQLITE_SESSION_OBJCONFIG_SIZE: int = 1
+"""For `Options for sqlite3session_object_config <https://sqlite.org/session/c_session_objconfig_rowid.html>'__"""
 SQLITE_SHM_EXCLUSIVE: int = 8
 """For `Flags for the xShmLock VFS method <https://sqlite.org/c3ref/c_shm_exclusive.html>'__"""
 SQLITE_SHM_LOCK: int = 2
@@ -4813,6 +4855,45 @@ SQLITE_LOCKED SQLITE_MISMATCH SQLITE_MISUSE SQLITE_NOLFS SQLITE_NOMEM
 SQLITE_NOTADB SQLITE_NOTFOUND SQLITE_NOTICE SQLITE_OK SQLITE_PERM
 SQLITE_PROTOCOL SQLITE_RANGE SQLITE_READONLY SQLITE_ROW SQLITE_SCHEMA
 SQLITE_TOOBIG SQLITE_WARNING"""
+
+mapping_session_changeset_apply_v2_flags: dict[str | int, int | str]
+"""Flags for sqlite3changeset_apply_v2 mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changesetapply_fknoaction.html
+
+SQLITE_CHANGESETAPPLY_FKNOACTION SQLITE_CHANGESETAPPLY_IGNORENOOP
+SQLITE_CHANGESETAPPLY_INVERT SQLITE_CHANGESETAPPLY_NOSAVEPOINT"""
+
+mapping_session_changeset_start_v2_flags: dict[str | int, int | str]
+"""Flags for sqlite3changeset_start_v2 mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changesetstart_invert.html
+
+SQLITE_CHANGESETSTART_INVERT"""
+
+mapping_session_config_options: dict[str | int, int | str]
+"""Values for sqlite3session_config mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_session_config_strmsize.html
+
+SQLITE_SESSION_CONFIG_STRMSIZE"""
+
+mapping_session_conflict_handler_conflict: dict[str | int, int | str]
+"""Constants Passed To The Conflict Handler mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changeset_conflict.html
+
+SQLITE_CHANGESET_CONFLICT SQLITE_CHANGESET_CONSTRAINT
+SQLITE_CHANGESET_DATA SQLITE_CHANGESET_FOREIGN_KEY
+SQLITE_CHANGESET_NOTFOUND"""
+
+mapping_session_conflict_handler_response: dict[str | int, int | str]
+"""Constants Returned By The Conflict Handler mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changeset_abort.html
+
+SQLITE_CHANGESET_ABORT SQLITE_CHANGESET_OMIT SQLITE_CHANGESET_REPLACE"""
+
+mapping_session_object_config_options: dict[str | int, int | str]
+"""Options for sqlite3session_object_config mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_session_objconfig_rowid.html
+
+SQLITE_SESSION_OBJCONFIG_ROWID SQLITE_SESSION_OBJCONFIG_SIZE"""
 
 mapping_statement_status: dict[str | int, int | str]
 """Status Parameters for prepared statements mapping names to int and int to names.
