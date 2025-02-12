@@ -181,6 +181,10 @@ typedef struct APSWChangesetBuilder
   PyObject_HEAD
   sqlite3_changegroup *group;
   int init_was_called;
+
+  /* needed by changegroup_schema */
+  Connection *connection;
+  PyObject *weakreflist;
 } APSWChangesetBuilder;
 
 static PyTypeObject APSWChangesetBuilderType;
@@ -894,7 +898,7 @@ APSWTableChange_indirect(APSWTableChange *self)
 }
 
 /** .. attribute:: new
-  :type: tuple[SQLiteValue | no_change, ...] | None
+  :type: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None
 
   :class:`None` if not applicable (like a DELETE).  Otherwise a
   tuple of the new values for the row, with :attr:`apsw.no_change`
@@ -1613,14 +1617,14 @@ APSWChangesetIterator_dealloc(APSWChangesetIterator *self)
   {                                                                                                                    \
     if (!self->group)                                                                                                  \
     {                                                                                                                  \
-      PyErr_Format(PyExc_ValueError, "The ChangesetBuilder has been closed");                                                \
+      PyErr_Format(PyExc_ValueError, "The ChangesetBuilder has been closed");                                          \
       return e;                                                                                                        \
     }                                                                                                                  \
   } while (0)
 
 /** .. method:: __init__()
 
- Creates a mew empty builder.
+ Creates a new empty builder.
 
  -* sqlite3changegroup_new
 
@@ -1648,6 +1652,11 @@ APSWChangesetBuilder_close_internal(APSWChangesetBuilder *self)
   {
     sqlite3changegroup_delete(self->group);
     self->group = NULL;
+  }
+  if (self->connection)
+  {
+    Connection_remove_dependent(self->connection, (PyObject *)self);
+    Py_CLEAR(self->connection);
   }
 }
 
@@ -1760,6 +1769,119 @@ APSWChangesetBuilder_add_change(APSWChangesetBuilder *self, PyObject *const *fas
   Py_RETURN_NONE;
 }
 
+/** .. method:: schema(db: Connection, schema: str) -> None
+
+  Ensures the changesets comply with the tables in the database
+
+  :param db: Connection to consult
+  :param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+
+  -* sqlite3changegroup_schema
+ */
+static PyObject *
+APSWChangesetBuilder_schema(APSWChangesetBuilder *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                            PyObject *fast_kwnames)
+{
+  Connection *db = NULL;
+  const char *schema = NULL;
+
+  {
+    ChangesetBuilder_schema_CHECK;
+    ARG_PROLOG(2, ChangesetBuilder_schema_KWNAMES);
+    ARG_MANDATORY ARG_Connection(db);
+    ARG_MANDATORY ARG_str(schema);
+    ARG_EPILOG(NULL, ChangesetBuilder_schema_USAGE, );
+  }
+
+  CHECK_BUILDER_CLOSED(NULL);
+  CHECK_CLOSED(db, NULL);
+
+  int rc = sqlite3changegroup_schema(self->group, db->db, schema);
+  SET_EXC(rc, NULL);
+  if (PyErr_Occurred())
+    return NULL;
+
+  /* from this point on, the schema has been set, but we could
+     fail at the Python level.  There is nothing we can do about
+     that, and it is unlikely in practise. */
+
+  PyObject *weakref = NULL;
+
+  weakref = PyWeakref_NewRef((PyObject *)self, NULL);
+  if (!weakref)
+    return NULL;
+  int append = PyList_Append(db->dependents, weakref);
+  Py_DECREF(weakref);
+  if (append)
+    return NULL;
+
+  assert(!PyErr_Occurred());
+
+  Py_RETURN_NONE;
+}
+
+/** .. method:: output() -> bytes
+
+  Produces a changeset of what was built so far
+
+  -* sqlite3changegroup_output
+ */
+static PyObject *
+APSWChangesetBuilder_output(APSWChangesetBuilder *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                            PyObject *fast_kwnames)
+{
+
+  {
+    ChangesetBuilder_output_CHECK;
+    ARG_PROLOG(0, ChangesetBuilder_output_KWNAMES);
+    ARG_EPILOG(NULL, ChangesetBuilder_output_USAGE, );
+  }
+
+  CHECK_BUILDER_CLOSED(NULL);
+
+  int nData;
+  void *pData = NULL;
+
+  int rc = sqlite3changegroup_output(self->group, &nData, &pData);
+  PyObject *result = NULL;
+  if (rc != SQLITE_OK)
+    SET_EXC(rc, NULL);
+  else
+    result = PyBytes_FromStringAndSize((const char *)pData, nData);
+  if (pData)
+    sqlite3_free(pData);
+  return result;
+}
+
+/** .. method:: output_stream(output: SessionStreamOutput) -> None
+
+  Produces a streaming changeset of what was built so far
+
+  -* sqlite3changegroup_output_strm
+ */
+static PyObject *
+APSWChangesetBuilder_output_stream(APSWChangesetBuilder *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                   PyObject *fast_kwnames)
+{
+
+  PyObject *output = NULL;
+  {
+    ChangesetBuilder_output_stream_CHECK;
+    ARG_PROLOG(1, ChangesetBuilder_output_stream_KWNAMES);
+    ARG_MANDATORY ARG_Callable(output);
+    ARG_EPILOG(NULL, ChangesetBuilder_output_stream_USAGE, );
+  }
+
+  CHECK_BUILDER_CLOSED(NULL);
+
+  int rc = sqlite3changegroup_output_strm(self->group, APSWSession_xOutput, output);
+  SET_EXC(rc, NULL);
+
+  if (PyErr_Occurred())
+    return NULL;
+  Py_RETURN_NONE;
+}
+
 static PyMethodDef APSWSession_methods[] = {
   { "close", (PyCFunction)APSWSession_close, METH_FASTCALL | METH_KEYWORDS, Session_close_DOC },
   { "attach", (PyCFunction)APSWSession_attach, METH_FASTCALL | METH_KEYWORDS, Session_attach_DOC },
@@ -1824,9 +1946,13 @@ static PyTypeObject APSWChangesetIteratorType = {
 
 static PyMethodDef APSWChangesetBuilder_methods[] = {
   { "close", (PyCFunction)APSWChangesetBuilder_close, METH_FASTCALL | METH_KEYWORDS, ChangesetBuilder_close_DOC },
+  { "output", (PyCFunction)APSWChangesetBuilder_output, METH_FASTCALL | METH_KEYWORDS, ChangesetBuilder_output_DOC },
+  { "output_stream", (PyCFunction)APSWChangesetBuilder_output_stream, METH_FASTCALL | METH_KEYWORDS,
+    ChangesetBuilder_output_stream_DOC },
   { "add", (PyCFunction)APSWChangesetBuilder_add, METH_FASTCALL | METH_KEYWORDS, ChangesetBuilder_add_DOC },
   { "add_change", (PyCFunction)APSWChangesetBuilder_add_change, METH_FASTCALL | METH_KEYWORDS,
     ChangesetBuilder_add_change_DOC },
+  { "schema", (PyCFunction)APSWChangesetBuilder_schema, METH_FASTCALL | METH_KEYWORDS, ChangesetBuilder_schema_DOC },
   { 0 },
 };
 
@@ -1838,6 +1964,7 @@ static PyTypeObject APSWChangesetBuilderType = {
   .tp_init = (initproc)APSWChangesetBuilder_init,
   .tp_dealloc = (destructor)APSWChangesetBuilder_dealloc,
   .tp_doc = ChangesetBuilder_class_DOC,
+  .tp_weaklistoffset = offsetof(APSWChangesetBuilder, weakreflist),
 };
 
 static PyGetSetDef APSWTableChange_getset[] = {
