@@ -293,7 +293,7 @@ and update your schema.  The hard way of doing this is to test for the
 existence of tables and their columns, and doing that maintenance
 programmatically.  The easy way is to use `pragma user_version
 <https://sqlite.org/pragma.html#pragma_user_version>`__ as in this example
-where each number handles the changes needed.:
+where each number handles the changes needed.::
 
   def ensure_schema(db):
     # a new database starts at user_version 0
