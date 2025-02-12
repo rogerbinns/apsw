@@ -756,6 +756,67 @@
 } while(0)
 
 
+#define  ChangesetBuilder_add_DOC "add($self,changeset)\n--\n\nChangesetBuilder.add(changeset: ChangesetInput) -> None\n\n" \
+":param changeset: The changeset as the bytes, or a stream\n" \
+"\n" \
+"Adds the changeset to the builder\n" \
+"\n" \
+"Calls:\n" \
+"  * `sqlite3changegroup_add <https://sqlite.org/session/sqlite3changegroup_add.html>`__\n" \
+"  * `sqlite3changegroup_add_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
+
+#define ChangesetBuilder_add_KWNAMES "changeset"
+#define ChangesetBuilder_add_USAGE "ChangesetBuilder.add(changeset: ChangesetInput) -> None"
+
+#define ChangesetBuilder_add_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
+} while(0)
+
+
+#define  ChangesetBuilder_add_change_DOC "add_change($self,change)\n--\n\nChangesetBuilder.add_change(change: TableChange) -> None\n\n" \
+":param change: An individual change to add.\n" \
+"\n" \
+"You can obtain :class:`TableChange` from :meth:`Changeset.iter` or from the conflict callback\n" \
+"of :meth:`Changeset.apply`.\n" \
+"\n" \
+"Calls: `sqlite3changegroup_add_change <https://sqlite.org/session/sqlite3changegroup_add_change.html>`__\n" 
+
+#define ChangesetBuilder_add_change_KWNAMES "change"
+#define ChangesetBuilder_add_change_USAGE "ChangesetBuilder.add_change(change: TableChange) -> None"
+
+#define ChangesetBuilder_add_change_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(change), APSWTableChange *)); \
+} while(0)
+
+
+#define  ChangesetBuilder_class_DOC "This object wraps a `sqlite3_changegroup <https://sqlite.org/session/changegroup.html>`__\n" \
+"letting you concatenate changesets and individual :class:`TableChange` into one larger\n" \
+"chanegset.\n" 
+
+#define  ChangesetBuilder_close_DOC "close($self)\n--\n\nChangesetBuilder.close() -> None\n\n" \
+"Releases the builder\n" \
+"\n" \
+"Calls: `sqlite3changegroup_delete <https://sqlite.org/session/sqlite3changegroup_delete.html>`__\n" 
+
+#define ChangesetBuilder_close_KWNAMES 
+#define ChangesetBuilder_close_USAGE "ChangesetBuilder.close() -> None"
+
+#define ChangesetBuilder_close_CHECK do { \
+} while(0)
+
+
+#define  ChangesetBuilder_init_DOC "__init__($self)\n--\n\nChangesetBuilder.__init__()\n\n" \
+"Creates a mew empty builder.\n" \
+"\n" \
+"Calls: `sqlite3changegroup_new <https://sqlite.org/session/sqlite3changegroup_new.html>`__\n" 
+
+#define ChangesetBuilder_init_KWNAMES 
+#define ChangesetBuilder_init_USAGE "ChangesetBuilder.__init__()"
+
+#define ChangesetBuilder_init_CHECK do { \
+} while(0)
+
+
 #define  Changeset_apply_DOC "apply($self,changeset,db,*,filter=None,conflict=None,flags=0)\n--\n\nChangeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0)\n\n" \
 "Applies a changeset to a database.\n" \
 "\n" \
@@ -3584,7 +3645,9 @@
 "Starts a new session.\n" \
 "\n" \
 ":param connection: Which database to operate on\n" \
-":param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" 
+":param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
+"\n" \
+"Calls: `sqlite3session_create <https://sqlite.org/session/sqlite3session_create.html>`__\n" 
 
 #define Session_init_KWNAMES "db", "schema"
 #define Session_init_USAGE "Session.__init__(db: Connection, schema: str)"
@@ -4519,8 +4582,6 @@
 "Another or the same :class:`Connection` may change the schema again\n" \
 "before the statement runs.  SQLite will retry before giving up and\n" \
 "returning this error.\n" 
-
-#define  SessionClosedError_exc_DOC "You have called :meth:`Session.close` and then tried to use the session.`\n" 
 
 #define  ThreadingViolationError_exc_DOC "You have used an object concurrently in two threads. For example you\n" \
 "may try to use the same cursor in two different threads at the same\n" \
