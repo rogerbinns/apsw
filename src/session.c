@@ -1550,63 +1550,6 @@ APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, 
   Py_RETURN_NONE;
 }
 
-/** .. method:: upgrade(db: Connection, schema: str, changeset: bytes) -> bytes
-
- Upgrade the schema of a changeset
-
- :param db: Connection to use
- :param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
- :param changeset: Original changeset
-
- -* sqlite3changeset_upgrade
-*/
-static PyObject *
-APSWChangeset_upgrade(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
-                      PyObject *fast_kwnames)
-{
-  /* https://sqlite.org/forum/forumpost/9cf7d83b53 */
-#if 0
-  Connection *db = NULL;
-  const char *schema = NULL;
-  PyObject *changeset;
-  Py_buffer changeset_buffer;
-  PyObject *result = NULL;
-
-  {
-    Changeset_upgrade_CHECK;
-    ARG_PROLOG(3, Changeset_upgrade_KWNAMES);
-    ARG_MANDATORY ARG_Connection(db);
-    ARG_MANDATORY ARG_str(schema);
-    ARG_MANDATORY ARG_py_buffer(changeset);
-    ARG_EPILOG(NULL, Changeset_upgrade_USAGE, );
-  }
-
-  if (0 != PyObject_GetBufferContiguous(changeset, &changeset_buffer, PyBUF_SIMPLE))
-    return NULL;
-
-  if (changeset_buffer.len > 0x7fffffff)
-    SET_EXC(SQLITE_TOOBIG, NULL);
-  else
-  {
-    int nOut;
-    void *pOut;
-    int rc = sqlite3changeset_upgrade(db->db, schema, changeset_buffer.len, changeset_buffer.buf, &nOut, &pOut);
-    if (rc == SQLITE_OK)
-    {
-      result = PyBytes_FromStringAndSize((char *)pOut, nOut);
-      sqlite3_free(pOut);
-    }
-    else
-      SET_EXC(rc, NULL);
-  }
-  PyBuffer_Release(&changeset_buffer);
-  assert((PyErr_Occurred() && !result) || (result && !PyErr_Occurred()));
-  return result;
-#else
-  return PyErr_Format(PyExc_NotImplementedError, "sqlite3changeset_upgrade is not implemented in SQLite");
-#endif
-}
-
 static PyObject *
 APSWChangesetIterator_next(APSWChangesetIterator *self)
 {
@@ -1863,7 +1806,6 @@ static PyMethodDef APSWChangeset_methods[] = {
     Changeset_concat_stream_DOC },
   { "iter", (PyCFunction)APSWChangeset_iter, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_iter_DOC },
   { "apply", (PyCFunction)APSWChangeset_apply, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_apply_DOC },
-  { "upgrade", (PyCFunction)APSWChangeset_upgrade, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Changeset_upgrade_DOC },
   { 0 },
 };
 
