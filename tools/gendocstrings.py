@@ -602,6 +602,12 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
+        elif param["type"] == "TableChange":
+            type = "APSWTableChange *"
+            kind = "TableChange"
+            if param["default"]:
+                breakpoint()
+                pass
         elif param["type"] == "ChangesetInput":
             type = "PyObject *"
             kind = "ChangesetInput"

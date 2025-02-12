@@ -5832,6 +5832,11 @@ class APSW(unittest.TestCase):
                 "req": {"scope": "CHECK_TABLE_SCOPE"},
                 "order": ("scope",),
             },
+            "APSWChangesetBuilder": {
+                "skip": {"dealloc", "close_internal", "close", "init"},
+                "req": {"closed": "CHECK_BUILDER_CLOSED"},
+                "order": ("closed",),
+            },
             "APSWBlob": {
                 "skip": ("dealloc", "init", "close", "close_internal", "tp_str"),
                 "req": {"closed": "CHECK_BLOB_CLOSED"},

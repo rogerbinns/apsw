@@ -376,6 +376,8 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
 
 #define ARG_Connection(varname) ARG_TYPE_CHECK(varname, (PyObject *)&ConnectionType, Connection *)
 
+#define ARG_TableChange(varname) ARG_TYPE_CHECK(varname, (PyObject *)&APSWTableChangeType, APSWTableChange *)
+
 /* PySequence_Check is too strict and rejects things that are
     accepted by PySequence_Fast like sets and generators,
     so everything is accepted */
