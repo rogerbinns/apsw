@@ -560,14 +560,14 @@ def exercise(example_code, expect_exception):
 
     file_cleanup()
 
-    import apsw.tests
+    import apsw.tests.__main__
 
-    apsw.tests.testtimeout = False
-    apsw.tests.vfstestdb(f"{ tmpdir.name }/dbfile-delme-vfswal", "apswfivfs2", mode="wal")
+    apsw.tests.__main__.testtimeout = False
+    apsw.tests.__main__.vfstestdb(f"{ tmpdir.name }/dbfile-delme-vfswal", "apswfivfs2", mode="wal")
 
     file_cleanup()
-    apsw.tests.testtimeout = True
-    apsw.tests.vfstestdb(f"{ tmpdir.name }/dbfile-delme-vfsstd", "apswfivfs")
+    apsw.tests.__main__.testtimeout = True
+    apsw.tests.__main__.vfstestdb(f"{ tmpdir.name }/dbfile-delme-vfsstd", "apswfivfs")
 
     if expect_exception:
         return

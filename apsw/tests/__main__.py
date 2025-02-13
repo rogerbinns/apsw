@@ -11681,7 +11681,7 @@ test_types_vals = (
     False,
 )
 
-from apsw.ftstests import *
+from .ftstests import *
 
 if __name__ == "__main__":
     setup()

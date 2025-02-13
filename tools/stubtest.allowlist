@@ -1,5 +1,4 @@
 apsw.tests.*
-apsw.ftstests.*
 apsw.shell.*
 apsw.__main__
 apsw.speedtest.*

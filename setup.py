@@ -159,10 +159,10 @@ class run_tests(Command):
 
     def run(self):
         import unittest
-        import apsw.tests
+        import apsw.tests.__main__
 
-        apsw.tests.setup()
-        suite = unittest.TestLoader().loadTestsFromModule(apsw.tests)
+        apsw.tests.__main__.setup()
+        suite = unittest.TestLoader().loadTestsFromModule(apsw.tests.__main__)
         # verbosity of zero doesn't print anything, one prints a dot
         # per test and two prints each test name
         result = unittest.TextTestRunner(verbosity=self.show_tests + 1, tb_locals=self.locals).run(suite)

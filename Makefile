@@ -134,14 +134,6 @@ pycoverage:  ## Coverage of all the Python code
 	$(PYTHON) -m coverage html --title "APSW python coverage"
 	$(PYTHON) -m webbrowser -t htmlcov/index.html
 
-ftscoverage: ## Coverage of Python code for FTS support
-	-rm -rf .coverage .coverage.* htmlcov dbfile
-	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.ftstests
-	$(PYTHON) -m coverage combine
-	$(PYTHON) -m coverage report -m
-	$(PYTHON) -m coverage html --title "APSW FTS python coverage"
-	$(PYTHON) -m webbrowser -t htmlcov/index.html
-
 test: build_ext ## Standard testing
 	env $(PYTHON) -m apsw.tests
 	env PYTHONPATH=. $(PYTHON) tools/names.py run-tests
@@ -172,6 +164,7 @@ stubtest: ## Verifies type annotations with mypy
 	-$(PYTHON) -m mypy.stubtest --allowlist tools/stubtest.allowlist apsw
 	-env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/main.py
 	-env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/fts.py
+	-env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/session.py
 
 # set this to a commit id to grab that instead
 FOSSIL_URL="https://www.sqlite.org/src/tarball/sqlite.tar.gz"

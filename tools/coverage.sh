@@ -35,7 +35,7 @@ then
   PROFILE="-O2 --coverage"
 fi
 
-if [ -f sqlite3/sqlite3config.h ]
+if [ -f sqlite3/sqlite_cfg.h ]
 then
     CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CFG_H"
 fi
