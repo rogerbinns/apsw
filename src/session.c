@@ -29,8 +29,15 @@ Notable features include:
 
 * You can iterate over a change set to see what it contains
 
-* Using the change set builder, you can accumulate multiple change
-  sets, and add changes from an iterator or conflict handler.
+* Using the :class:`change set builder <ChangesetBuilder>`, you can
+  accumulate multiple change sets, and add changes from an iterator or
+  conflict handler.
+
+* You are responsible for ref:`managing your schema <schema_upgrade>`
+  - the extension will not create, update, or delete tables for you.
+  When applying changesets, if a corresponding table does not already
+  exist then those changes are ignored.  This means that you do not
+  need all tables present on all databases.
 
 * It is efficient only storing enough to make the semantic change.
   For example if multiple changes are made to the same row, then

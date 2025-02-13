@@ -21,6 +21,10 @@ GENDOCS = \
 	doc/backup.rst \
 	doc/fts.rst
 
+GENEXAMPLES = \
+    doc/example-fts.rst \
+	doc/example-session.rst
+
 .PHONY : help all tagpush clean doc docs build_ext build_ext_debug coverage pycoverage test test_debug fulltest linkcheck unwrapped \
 		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug \
 		 fossil doc-depends dev-depends docs-no-fetch compile-win-one langserver source_check_extracted
@@ -41,7 +45,7 @@ clean: ## Cleans up everything
 	rm -rf dist build work/* megatestresults apsw.egg-info __pycache__ apsw/__pycache__ :memory: .mypy_cache .ropeproject htmlcov "System Volume Information" doc/docdb.json
 	for i in 'vgcore.*' '.coverage*' '*.pyc' '*.pyo' '*~' '*.o' '*.so' '*.dll' '*.pyd' '*.gcov' '*.gcda' '*.gcno' '*.orig' '*.tmp' 'testdb*' 'testextension.sqlext' ; do \
 		find . -type f -name "$$i" -print0 | xargs -0 --no-run-if-empty rm -f ; done
-	rm -f doc/typing.rstgen doc/example.rst doc/example-fts.rst doc/renames.rstgen $(GENDOCS)
+	rm -f doc/typing.rstgen doc/example.rst $(GENEXAMPLES) doc/renames.rstgen $(GENDOCS)
 	rm -f compile_commands.json setup.apsw
 	-rm -rf sqlite3/ work/
 
@@ -49,7 +53,7 @@ doc: docs ## Builds all the doc
 
 docs: build_ext docs-no-fetch
 
-docs-no-fetch: $(GENDOCS) doc/example.rst doc/example-fts.rst doc/.static doc/typing.rstgen doc/renames.rstgen tools/docmissing.py tools/docupdate.py
+docs-no-fetch: $(GENDOCS) doc/example.rst $(GENEXAMPLES) doc/.static doc/typing.rstgen doc/renames.rstgen tools/docmissing.py tools/docupdate.py
 	rm -f testdb
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION) $(RELEASEDATE)
@@ -62,10 +66,10 @@ doc/example.rst: examples/main.py tools/example2rst.py src/apswversion.h
 	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py examples/main.py doc/example.rst
 	rm -f dbfile
 
-doc/example-fts.rst: examples/fts.py tools/example2rst.py src/apswversion.h
+doc/example-%.rst: examples/%.py tools/example2rst.py src/apswversion.h
 	-rm -f recipes.db*
 	cp ../apsw-extended-testing/recipes.db .
-	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py examples/fts.py doc/example-fts.rst
+	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py $< $@
 	rm -f recipes.db*
 
 doc/typing.rstgen: src/apswtypes.py tools/types2rst.py
@@ -272,7 +276,7 @@ pydebug: ## Build a debug python including address sanitizer.  Extensions it bui
 	set -x && cd "$(PYDEBUG_DIR)" && find . -delete && \
 	curl https://www.python.org/ftp/python/`echo $(PYDEBUG_VER) | sed 's/[abr].*//'`/Python-$(PYDEBUG_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYDEBUG_VER) && \
-	./configure --with-address-sanitizer --with-undefined-behavior-sanitizer --without-pymalloc --with-pydebug --prefix="$(PYDEBUG_DIR)" \
+	env CC=clang ./configure --with-address-sanitizer --without-pymalloc --with-pydebug --prefix="$(PYDEBUG_DIR)" \
 	--without-freelists --with-assertions && \
 	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYDEBUG_DIR)/bin/python3
