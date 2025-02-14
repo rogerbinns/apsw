@@ -144,6 +144,20 @@ returns = {
             sqlite3_wal_autocheckpoint sqlite3_wal_checkpoint_v2
 
             sqlite3_prepare
+
+            sqlite3changeset_apply_strm sqlite3changeset_apply_v2_strm sqlite3changeset_concat_strm
+            sqlite3changeset_invert_strm sqlite3changeset_start_strm sqlite3changeset_start_v2_strm
+            sqlite3session_changeset_strm sqlite3session_patchset_strm sqlite3changegroup_add_strm
+            sqlite3changegroup_output_strm sqlite3rebaser_rebase_strm
+
+            sqlite3changegroup_add sqlite3changegroup_add_change sqlite3changegroup_new sqlite3changegroup_output
+            sqlite3changegroup_schema sqlite3changeset_apply sqlite3changeset_apply_v2
+            sqlite3changeset_concat sqlite3changeset_conflict sqlite3changeset_fk_conflicts
+            sqlite3changeset_invert sqlite3changeset_new sqlite3changeset_next sqlite3changeset_old
+            sqlite3changeset_op sqlite3changeset_pk sqlite3changeset_start sqlite3changeset_start_v2
+            sqlite3changeset_upgrade sqlite3session_attach sqlite3session_changeset
+            sqlite3session_config sqlite3session_create sqlite3session_diff
+            sqlite3session_object_config sqlite3session_patchset
             """.split(),
     # py functions that return a number to indicate failure
     "number": """
