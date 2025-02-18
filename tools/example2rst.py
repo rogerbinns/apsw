@@ -79,6 +79,10 @@ header = {
 }[input_name]
 
 
+replacements = {
+    'pathlib.Path("session.sql")': 'pathlib.Path("doc/_static/samples/session.sql")'
+}
+
 def get_output(filename: str):
     code: list[str] = []
     for line in open(filename, "rt"):
@@ -89,6 +93,9 @@ def get_output(filename: str):
         if mo:
             code.append(f"print('{section_marker}{mo.group('section')}')")
             continue
+        for k, v in replacements.items():
+            if k in line:
+                line = line.replace(k, v)
         code.append(line.rstrip().replace("sys.stdout", "my_io"))
 
     output: dict[str, list[str]] = {}
