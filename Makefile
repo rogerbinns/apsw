@@ -66,7 +66,7 @@ doc/example.rst: examples/main.py tools/example2rst.py src/apswversion.h
 	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py examples/main.py doc/example.rst
 	rm -f dbfile
 
-doc/example-%.rst: examples/%.py tools/example2rst.py src/apswversion.h
+doc/example-%.rst: examples/%.py tools/example2rst.py src/apswversion.h apsw/ext.py
 	-rm -f recipes.db*
 	cp ../apsw-extended-testing/recipes.db .
 	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py $< $@
