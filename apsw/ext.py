@@ -91,7 +91,7 @@ class DataClassRowFactory:
                 if n.isidentifier() and not keyword.iskeyword(n) and n not in new_names:
                     new_names.append(n)
                 else:
-                    new_names.append(f"_{ i }")
+                    new_names.append(f"_{i}")
             names = new_names
         types = [self.get_type(d[1]) for d in description]
 
@@ -103,7 +103,7 @@ class DataClassRowFactory:
         # some magic to make the reported classnames different
         suffix = (".%06X" % hash(repr(description)))[:7]
 
-        return make_dataclass(f"{ self.__class__.__name__ }{ suffix }", zip(names, types), **kwargs), tuple(names)
+        return make_dataclass(f"{self.__class__.__name__}{suffix}", zip(names, types), **kwargs), tuple(names)
 
     def get_type(self, t: str | None) -> Any:
         """Returns the :mod:`type hint <typing>` to use in the dataclass based on the type in the :meth:`description <apsw.Cursor.get_description>`
@@ -191,7 +191,7 @@ class TypesConverterCursorFactory:
             return value.to_sqlite_value()
         adapter = self.adapters.get(type(value))
         if not adapter:
-            raise TypeError(f"No adapter registered for type { type(value) }")
+            raise TypeError(f"No adapter registered for type {type(value)}")
         return adapter(value)
 
     def convert_value(self, schematype: str, value: apsw.SQLiteValue) -> Any:
@@ -457,7 +457,7 @@ def index_info_to_dict(
             del aConstraint["iColumn"]
         if aConstraint["op"] >= apsw.SQLITE_INDEX_CONSTRAINT_FUNCTION and aConstraint["op"] <= 255:
             aConstraint["op_str"] = (
-                f"SQLITE_INDEX_CONSTRAINT_FUNCTION+{ aConstraint['op'] - apsw.SQLITE_INDEX_CONSTRAINT_FUNCTION }"
+                f"SQLITE_INDEX_CONSTRAINT_FUNCTION+{aConstraint['op'] - apsw.SQLITE_INDEX_CONSTRAINT_FUNCTION}"
             )
 
     if column_names:
@@ -512,7 +512,7 @@ def dbinfo(
 
     def text_encoding(b: bytes) -> str:
         v = be_int(b)
-        return {0: "(pending)", 1: "UTF-8", 2: "UTF-16le", 3: "UTF-16be"}.get(v, f"<< INVALID VALUE { v } >>")
+        return {0: "(pending)", 1: "UTF-8", 2: "UTF-16le", 3: "UTF-16be"}.get(v, f"<< INVALID VALUE {v} >>")
 
     if ok:
         kw: dict[str, Any] = {"filename": db.filename}
@@ -579,6 +579,124 @@ def dbinfo(
             journalinfo = JournalFileInfo(**kw)
 
     return dbinfo, journalinfo
+
+
+def quote_name(name: str, quote: str = '"') -> str:
+    """Quotes name to ensure it is parsed as a name
+
+    :meta private:
+    """
+    if quote in name:
+        return quote + name.replace(quote, quote * 2) + quote
+    if quote in apsw.keywords:
+        return quote + name + quote
+    return name
+
+
+def find_columns(
+    table_name: str, column_count: int, pk_columns: set[int], *, connection: apsw.Connection, schema: str | None = None
+) -> tuple[str, ...]:
+    """Finds a matching table and returns column names for :func:`changeset_to_sql`.
+
+    Changesets only include column numbers, not column names so this
+    method is used to find those names.  Use it like this::
+
+      changeset_to_sql(changeset, get_columns=functools.partial(apsw.ext.find_columns, connection=db))
+
+    The table name has to match (following SQLite's case insensitivity rules), have the correct number of columns,
+    and corresponding primary key columns.
+
+    :param table_name: Name of the expected table
+    :param column_count: How many columns there are
+    :param pk_columns: Which columns make up the primary key
+    :param connection: The connection to examine
+    :param schema: If ``None`` (default) then the ``main`` and all attached databases are searched,
+         else only the named one.
+
+    """
+    for dbame in connection.db_names() if schema is None else [schema]:
+        columns: list[str] = []
+        pks = set()
+        for column, pk in connection.execute("SELECT name, pk FROM pragma_table_info(?, ?)", (table_name, dbame)):
+            columns.append(column)
+            if pk > 0:
+                pks.add(pk - 1)
+        if not columns or column_count != len(columns) or pks != pk_columns:
+            continue
+        return tuple(columns)
+
+    raise ValueError(f"Can't find {table_name=} in {connection=} with {column_count=} and {pk_columns=}")
+
+
+def changeset_to_sql(
+    changeset: apsw.ChangesetInput, get_columns: Callable[[str, int, set[int]], tuple[str, ...]]
+) -> Iterator[str]:
+    """Produces SQL equivalent to the contents of a changeset
+
+    :param changeset: The changeset either as bytes, or a streaming
+        callable. It is passed to :meth:`apsw.Changeset.iter`.
+    :param get_columns:  Because changesets only have column numbers, this is called with a
+        table name, column count, and primary keys, and should return the corresponding
+        column names to use in the SQL.  See :func:`find_columns`.
+    """
+    # ::TODO:: check this with __ROWID__ tables (no primary keys)
+    tables: dict[str, tuple[str, ...]] = {}
+    for change in apsw.Changeset.iter(changeset):
+        if change.name not in tables:
+            tables[change.name] = tuple(
+                quote_name(c) for c in get_columns(change.name, change.column_count, change.pk_columns)
+            )
+        columns = tables[change.name]
+        sql: list[str] = []
+        if change.indirect:
+            sql.append("/* indirect */ ")
+
+        if change.opcode == apsw.SQLITE_INSERT:
+            sql.append(f"INSERT INTO {quote_name(change.name)}(")
+            cols: list[str] = []
+            values: list[str] = []
+            for i in range(len(change.new)):
+                if change.new[i] is not apsw.no_change:
+                    cols.append(columns[i])
+                    values.append(apsw.format_sql_value(change.new[i]))
+            sql.append(", ".join(cols))
+            sql.append(") VALUES (")
+            sql.append(", ".join(values))
+            sql.append(");")
+            yield "".join(sql)
+            continue
+
+        if change.opcode == apsw.SQLITE_UPDATE:
+            sql.append(f"UPDATE {quote_name(change.name)} SET ")
+            comma = ""
+            for i in range(len(change.new)):
+                if change.new[i] is not apsw.no_change:
+                    sql.append(comma)
+                    comma = ", "
+                    sql.append(f"{columns[i]}=")
+                    sql.append(apsw.format_sql_value(change.new[i]))
+            sql.append(" WHERE ")
+            constraints: list[str] = []
+            for i in sorted(change.pk_columns):
+                constraints.append(f"{columns[i]} = {apsw.format_sql_value(change.old[i])}")
+            for i in range(change.column_count):
+                if i not in change.pk_columns and change.old is not apsw.no_change:
+                    constraints.append(f"{columns[i]} = {apsw.format_sql_value(change.old[i])}")
+            sql.append(" AND ".join(constraints))
+            sql.append(";")
+            yield "".join(sql)
+            continue
+
+        assert change.opcode == apsw.SQLITE_DELETE
+
+        sql.append(f"DELETE FROM {quote_name(change.name)} WHERE ")
+        constraints = []
+        for i in sorted(change.pk_columns):
+            constraints.append(f"{columns[i]} = {apsw.format_sql_value(change.old[i])}")
+        sql.append(" AND ".join(constraints))
+        sql.append(";")
+        yield "".join(sql)
+        continue
 
 
 class Trace:
@@ -837,7 +955,7 @@ class ShowResourceUsage:
         self.db = db
         self.indent = indent
         if scope not in {"thread", "process", None}:
-            raise ValueError(f"scope { scope } not a valid choice")
+            raise ValueError(f"scope {scope} not a valid choice")
         self.scope = file and self._get_resource and scope
 
     try:
@@ -928,9 +1046,9 @@ class ShowResourceUsage:
             max_width = max(len(k) for k in self._descriptions.values())
             for k, v in vals:
                 if isinstance(v, float):
-                    v = f"{ v:.3f}"
+                    v = f"{v:.3f}"
                 else:
-                    v = f"{ v:,}"
+                    v = f"{v:,}"
                 print(self.indent, " " * (max_width - len(k)), k, " ", v, file=self.file, sep="")
 
     _descriptions = {
@@ -1295,7 +1413,7 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
                 res.append(f"""<tspan x="{x}" {vspace}>{len(usage.indices):,} indices</tspan>""")
         if ring >= 0:
             res.append(
-                f"""<tspan x="{x}" {vspace}>{usage.sequential_pages/max(usage.pages_used, 1):.0%} sequential</tspan>"""
+                f"""<tspan x="{x}" {vspace}>{usage.sequential_pages / max(usage.pages_used, 1):.0%} sequential</tspan>"""
             )
             res.append(f"""<tspan x="{x}" {vspace}>{storage(usage.data_stored)} SQL data</tspan>""")
             res.append(f"""<tspan x="{x}" {vspace}>{storage(usage.max_payload)} max payload</tspan>""")
@@ -1324,16 +1442,16 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
         PREFIX = "id"
         hover_response[f"{PREFIX}{id_counter}"] = f"{PREFIX}{id_counter + 1}"
         id_counter += 2
-        return f"{PREFIX}{id_counter-2}", f"{PREFIX}{id_counter-1}"
+        return f"{PREFIX}{id_counter - 2}", f"{PREFIX}{id_counter - 1}"
 
     print(
-        f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="-{round(RADIUS*OVERSCAN)} {-round(RADIUS*OVERSCAN)} {round(RADIUS*OVERSCAN*2)} {round(RADIUS*OVERSCAN*2)}">""",
+        f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="-{round(RADIUS * OVERSCAN)} {-round(RADIUS * OVERSCAN)} {round(RADIUS * OVERSCAN * 2)} {round(RADIUS * OVERSCAN * 2)}">""",
         file=out,
     )
 
     # inner summary circle
     id, resp = next_ids()
-    print(f"""<a href="#" id="{id}"><circle r="{c(.3)}" fill="#777"/></a>""", file=out)
+    print(f"""<a href="#" id="{id}"><circle r="{c(0.3)}" fill="#777"/></a>""", file=out)
     texts.append(text(pos_for_angle(0, 0), resp, os.path.basename(con.db_filename(schema)) or '""', 0, root))
 
     # inner ring
@@ -1550,7 +1668,6 @@ class query_limit:
         return False
 
 
-
 def format_query_table(
     db: apsw.Connection,
     query: str,
@@ -1559,7 +1676,7 @@ def format_query_table(
     colour: bool = False,
     quote: bool = False,
     string_sanitize: Callable[[str], str] | Literal[0] | Literal[1] | Literal[2] = 0,
-    binary: Callable[[bytes], str] = lambda x: f"[ { len(x) } bytes ]",
+    binary: Callable[[bytes], str] = lambda x: f"[ {len(x)} bytes ]",
     null: str = "(null)",
     truncate: int = 4096,
     truncate_val: str = " ...",
@@ -1666,7 +1783,7 @@ def _format_table(
 ) -> str:
     "Internal table formatter"
     if colour:
-        c: Callable[[int], str] = lambda v: f"\x1b[{ v }m"
+        c: Callable[[int], str] = lambda v: f"\x1b[{v}m"
         colours = {
             # inverse
             "header_start": c(7) + c(1),
@@ -1762,7 +1879,7 @@ def _format_table(
                     val = null
                 else:
                     val = str(cell)
-            assert isinstance(val, str), f"expected str not { val!r}"
+            assert isinstance(val, str), f"expected str not {val!r}"
 
             # cleanup lines
             lines: list[str] = []
@@ -1819,7 +1936,7 @@ def _format_table(
     # can't fit
     if total_width() > text_width:
         raise ValueError(
-            f"Results can't be fit in text width { text_width } even with 1 wide columns - at least { total_width() } width is needed"
+            f"Results can't be fit in text width {text_width} even with 1 wide columns - at least {total_width()} width is needed"
         )
 
     # break headers and cells into lines
@@ -1955,8 +2072,8 @@ def get_column_names(row: Any) -> tuple[Sequence[str], VTColumnAccess]:
     if isinstance(row, dict):
         return tuple(row.keys()), VTColumnAccess.By_Name
     if isinstance(row, tuple):
-        return tuple(f"column{ x }" for x in range(len(row))), VTColumnAccess.By_Index
-    raise TypeError(f"Can't figure out columns for { row }")
+        return tuple(f"column{x}" for x in range(len(row))), VTColumnAccess.By_Index
+    raise TypeError(f"Can't figure out columns for {row}")
 
 
 def make_virtual_module(
@@ -2054,7 +2171,7 @@ def make_virtual_module(
             self.columns = columns
             self.callable: Callable = callable
             if not isinstance(column_access, VTColumnAccess):
-                raise ValueError(f"Expected column_access to be { VTColumnAccess } not {column_access!r}")
+                raise ValueError(f"Expected column_access to be {VTColumnAccess} not {column_access!r}")
             self.column_access = column_access
             self.parameters: list[str] = []
             # These are as representable as SQLiteValue and are not used
@@ -2071,30 +2188,30 @@ def make_virtual_module(
 
             both = set(self.columns) & set(self.parameters)
             if both:
-                raise ValueError(f"Same name in columns and in paramters: { both }")
+                raise ValueError(f"Same name in columns and in paramters: {both}")
 
             self.all_columns: tuple[str] = tuple(self.columns) + tuple(self.parameters)  # type: ignore[assignment]
             self.primary_key = primary_key
             if self.primary_key is not None and not (0 <= self.primary_key < len(self.columns)):
-                raise ValueError(f"{self.primary_key!r} should be None or a column number < { len(self.columns) }")
+                raise ValueError(f"{self.primary_key!r} should be None or a column number < {len(self.columns)}")
             self.repr_invalid = repr_invalid
             column_defs = ""
             for i, c in enumerate(self.columns):
                 if column_defs:
                     column_defs += ", "
-                column_defs += f"[{ c }]"
+                column_defs += f"[{c}]"
                 if self.primary_key == i:
                     column_defs += " PRIMARY KEY"
             for p in self.parameters:
-                column_defs += f",[{ p }] HIDDEN"
+                column_defs += f",[{p}] HIDDEN"
 
-            self.schema = f"CREATE TABLE ignored({ column_defs })"
+            self.schema = f"CREATE TABLE ignored({column_defs})"
             if self.primary_key is not None:
                 self.schema += " WITHOUT rowid"
 
         def Create(self, db, modulename, dbname, tablename, *args: apsw.SQLiteValue) -> tuple[str, apsw.VTTable]:
             if len(args) > len(self.parameters):
-                raise ValueError(f"Too many parameters: parameters accepted are { ' '.join(self.parameters) }")
+                raise ValueError(f"Too many parameters: parameters accepted are {' '.join(self.parameters)}")
 
             param_values = dict(zip(self.parameters, args))
 
@@ -2151,7 +2268,7 @@ def make_virtual_module(
                 self.repr_invalid = module.repr_invalid
                 self.num_columns = len(self.columns)
                 self.access = self.module.column_access
-                col_func = f"_Column_{ self.access.name }"
+                col_func = f"_Column_{self.access.name}"
                 f = getattr(self, col_func, self.Column)
                 if self.repr_invalid:
                     setattr(self, "Column", self._Column_repr_invalid)
@@ -2446,7 +2563,7 @@ def query_info(
                     a[fourthname] = fourth
                 break
         else:
-            raise ValueError(f"Unknown authorizer code { code }")
+            raise ValueError(f"Unknown authorizer code {code}")
         actions_taken.append(QueryAction(**a))
         return apsw.SQLITE_OK
 
