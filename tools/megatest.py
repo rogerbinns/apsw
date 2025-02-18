@@ -244,7 +244,7 @@ def cmp(a, b):
 
 # Default versions we support
 PYVERS = (
-    "3.14.0a4",
+    "3.14.0a5",
     "3.13.2",
     "3.12.9",
     "3.11.11",
@@ -253,7 +253,7 @@ PYVERS = (
     "system",
 )
 
-SQLITEVERS = ("3.49.0", )
+SQLITEVERS = ("3.49.0", "3.49.1", )
 
 BITS = (64, 32)
 
