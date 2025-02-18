@@ -10,6 +10,11 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.49.1.0
+========
+
+No APSW changes.
+
 3.49.0.0
 ========
 
