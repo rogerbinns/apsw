@@ -631,13 +631,21 @@ def find_columns(
 def changeset_to_sql(
     changeset: apsw.ChangesetInput, get_columns: Callable[[str, int, set[int]], tuple[str, ...]]
 ) -> Iterator[str]:
-    """Produces SQL equivalent to the contents of a changeset
+    """Produces SQL equivalent to the contents of a changeset (or patchset)
 
     :param changeset: The changeset either as bytes, or a streaming
         callable. It is passed to :meth:`apsw.Changeset.iter`.
-    :param get_columns:  Because changesets only have column numbers, this is called with a
-        table name, column count, and primary keys, and should return the corresponding
-        column names to use in the SQL.  See :func:`find_columns`.
+    :param get_columns:  Because changesets only have column numbers,
+        this is called with a table name, column count, and primary
+        keys, and should return the corresponding column names to use
+        in the SQL.  See :func:`find_columns`.
+
+    SQL statements are provided one at a time, and will directly
+    change one row.  (More than one row can be affected due to foreign
+    keys.)  If a recorded row change was because of an indirect change
+    then the SQL statement begins with the comment ``/* indirect */``.
+
+    See the :ref:`example <example_changesets>`
     """
     # ::TODO:: check this with __ROWID__ tables (no primary keys)
     tables: dict[str, tuple[str, ...]] = {}
@@ -666,6 +674,22 @@ def changeset_to_sql(
             yield "".join(sql)
             continue
 
+        # package up change.old
+        assert change.old is not None
+        constraints : list[str] = []
+        # always do pk columns first, for cosmetic reasons
+        def sort_key(n):
+            # False is sorted before True
+            return (n not in change.pk_columns, n)
+
+        for i in sorted(range(change.column_count), key=sort_key):
+            if change.old[i] is apsw.no_change:
+                continue
+            if change.old[i] is None:
+                constraints.append(f"{columns[i]} IS NULL")
+            else:
+                constraints.append(f"{columns[i]} = {apsw.format_sql_value(change.old[i])}")
+
         if change.opcode == apsw.SQLITE_UPDATE:
             sql.append(f"UPDATE {quote_name(change.name)} SET ")
             comma = ""
@@ -676,12 +700,6 @@ def changeset_to_sql(
                     sql.append(f"{columns[i]}=")
                     sql.append(apsw.format_sql_value(change.new[i]))
             sql.append(" WHERE ")
-            constraints: list[str] = []
-            for i in sorted(change.pk_columns):
-                constraints.append(f"{columns[i]} = {apsw.format_sql_value(change.old[i])}")
-            for i in range(change.column_count):
-                if i not in change.pk_columns and change.old is not apsw.no_change:
-                    constraints.append(f"{columns[i]} = {apsw.format_sql_value(change.old[i])}")
             sql.append(" AND ".join(constraints))
             sql.append(";")
             yield "".join(sql)
@@ -690,9 +708,6 @@ def changeset_to_sql(
         assert change.opcode == apsw.SQLITE_DELETE
 
         sql.append(f"DELETE FROM {quote_name(change.name)} WHERE ")
-        constraints = []
-        for i in sorted(change.pk_columns):
-            constraints.append(f"{columns[i]} = {apsw.format_sql_value(change.old[i])}")
         sql.append(" AND ".join(constraints))
         sql.append(";")
         yield "".join(sql)
