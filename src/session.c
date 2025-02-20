@@ -953,10 +953,11 @@ error:
 }
 
 /** .. attribute:: old
-  :type: tuple[SQLiteValue, ...] | None
+  :type: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None
 
-  :class:`None` if not applicable (like an INSERT).  Otherwise a
-  tuple of the old values for the row before this change
+  :class:`None` if not applicable (like an INSERT).  Otherwise a tuple
+  of the old values for the row before this change, with
+  :attr:`apsw.no_change` if no value was provided for that column,
 
   -* sqlite3changeset_old
  */
@@ -981,10 +982,15 @@ APSWTableChange_old(APSWTableChange *self)
       SET_EXC(res, NULL);
       goto error;
     }
-    PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
-    if (!pyvalue)
-      goto error;
-    PyTuple_SET_ITEM(tuple, i, pyvalue);
+    if (value == NULL)
+      PyTuple_SET_ITEM(tuple, i, Py_NewRef((PyObject *)&apsw_no_change_object));
+    else
+    {
+      PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
+      if (!pyvalue)
+        goto error;
+      PyTuple_SET_ITEM(tuple, i, pyvalue);
+    }
   }
   return tuple;
 
