@@ -57,7 +57,8 @@ docs-no-fetch: $(GENDOCS) doc/example.rst $(GENEXAMPLES) doc/.static doc/typing.
 	rm -f testdb
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION) $(RELEASEDATE)
-	$(MAKE) PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html
+	rm apsw/__init__.pyi
+	$(MAKE) PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html ; rc=$$? ; $(MAKE) apsw/__init__.pyi ; exit $$rc
 	tools/spellcheck.sh
 	rst2html5 --strict --verbose --exit-status 1 README.rst >/dev/null
 
