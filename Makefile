@@ -53,7 +53,7 @@ doc: docs ## Builds all the doc
 
 docs: build_ext docs-no-fetch
 
-docs-no-fetch: $(GENDOCS) doc/example.rst $(GENEXAMPLES) doc/.static doc/typing.rstgen doc/renames.rstgen tools/docmissing.py tools/docupdate.py
+docs-no-fetch: $(GENDOCS) doc/example.rst $(GENEXAMPLES) doc/typing.rstgen doc/renames.rstgen tools/docmissing.py tools/docupdate.py
 	rm -f testdb
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION) $(RELEASEDATE)
@@ -80,9 +80,6 @@ doc/typing.rstgen: src/apswtypes.py tools/types2rst.py
 doc/renames.rstgen: tools/names.py tools/renames.json
 	-rm -f doc/renames.rstgen
 	env PYTHONPATH=. $(PYTHON) tools/names.py rst-gen > doc/renames.rstgen
-
-doc/.static:
-	mkdir -p doc/.static
 
 doc-depends: ## pip installs packages needed to build doc
 	$(PYTHON) -m pip install -U --upgrade-strategy eager sphinx sphinx_rtd_theme
