@@ -8,6 +8,7 @@ import re
 import tempfile
 import shutil
 import io
+import pathlib
 import pprint
 
 import apsw.ext
@@ -85,7 +86,7 @@ replacements = {
 
 def get_output(filename: str):
     code: list[str] = []
-    for line in open(filename, "rt"):
+    for line in pathlib.Path(filename).read_text().splitlines():
         if line.split() == ["from", "pprint", "import", "pprint"]:
             code.append("# " + line)
             continue
