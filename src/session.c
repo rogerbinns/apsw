@@ -817,6 +817,7 @@ MakeTableChange(sqlite3_changeset_iter *iter)
   if (rc != SQLITE_OK)
   {
     Py_DECREF(tc);
+    SET_EXC(rc, NULL);
     return NULL;
   }
 
@@ -918,8 +919,8 @@ APSWTableChange_new(APSWTableChange *self)
 {
   CHECK_TABLE_SCOPE;
 
-  sqlite3_value *value;
-  if (SQLITE_MISUSE == sqlite3changeset_new(self->iter, 0, &value))
+  sqlite3_value *value, *misuse_check;
+  if (SQLITE_MISUSE == sqlite3changeset_new(self->iter, 0, &misuse_check))
     Py_RETURN_NONE;
 
   PyObject *tuple = PyTuple_New(self->table_column_count);
@@ -966,8 +967,8 @@ APSWTableChange_old(APSWTableChange *self)
 {
   CHECK_TABLE_SCOPE;
 
-  sqlite3_value *value;
-  if (SQLITE_MISUSE == sqlite3changeset_old(self->iter, 0, &value))
+  sqlite3_value *value, *misuse_check;
+  if (SQLITE_MISUSE == sqlite3changeset_old(self->iter, 0, &misuse_check))
     Py_RETURN_NONE;
 
   PyObject *tuple = PyTuple_New(self->table_column_count);
@@ -1175,6 +1176,8 @@ APSWChangeset_invert(void *Py_UNUSED(static_method), PyObject *const *fast_args,
     int rc = sqlite3changeset_invert(changeset_buffer.len, changeset_buffer.buf, &nOut, &pOut);
     if (rc == SQLITE_OK)
       result = PyBytes_FromStringAndSize((char *)pOut, nOut);
+    else
+      SET_EXC(rc, NULL);
     sqlite3_free(pOut);
   }
   PyBuffer_Release(&changeset_buffer);
@@ -1396,13 +1399,18 @@ error:
   Conflict
   --------
 
-  When a change cannot be applied the conflict handler determines what to do.  It is called with a
-  `conflict reason <https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the first parameter,
-  and a :class:`TableChange` as the second.
+  When a change cannot be applied the conflict handler determines what
+  to do.  It is called with a `conflict reason
+  <https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the
+  first parameter, and a :class:`TableChange` as the second.  Poossible
+  conflicts are `described here
+  <https://sqlite.org/sessionintro.html#conflicts>`__.
 
   It should return the `action to take <https://www.sqlite.org/session/c_changeset_abort.html>`__.
 
   If not supplied or on error, ``SQLITE_CHANGESET_ABORT`` is returned.
+
+  See the :ref:`example <example-applying>`.
 
   -* sqlite3changeset_apply sqlite3changeset_apply_v2 sqlite3changeset_apply_strm sqlite3changeset_apply_v2_strm
 
@@ -1483,7 +1491,7 @@ applyConflict(void *pCtx, int eConflict, sqlite3_changeset_iter *p)
 
 exit:
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "session.apply.xConflict", "{s: d, s: O}", "eConflict", eConflict, "return",
+    AddTraceBackHere(__FILE__, __LINE__, "session.apply.xConflict", "{s: i, s: O}", "eConflict", eConflict, "return",
                      OBJ(result));
 
   Py_XDECREF(py_eConflict);
@@ -1494,7 +1502,13 @@ exit:
     Py_DECREF((PyObject *)table_change);
   }
 
-  return val;
+  return PyErr_Occurred() ? SQLITE_CHANGESET_ABORT : val;
+}
+
+static int
+conflictReject(void *pCtx, int eConflict, sqlite3_changeset_iter *p)
+{
+  return SQLITE_CHANGESET_ABORT;
 }
 
 static PyObject *
@@ -1532,22 +1546,27 @@ APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, 
   if (PyCallable_Check(changeset))
   {
     res = flags ? sqlite3changeset_apply_v2_strm(db->db, APSWSession_xInput, changeset, filter ? applyFilter : NULL,
-                                                 applyConflict, &aic, NULL, NULL, flags)
+                                                 conflict ? applyConflict : conflictReject, &aic, NULL, NULL, flags)
                 : sqlite3changeset_apply_strm(db->db, APSWSession_xInput, changeset, filter ? applyFilter : NULL,
-                                              applyConflict, &aic);
+                                              conflict ? applyConflict : conflictReject, &aic);
   }
   else
   {
     Py_buffer changeset_buffer;
     if (0 != PyObject_GetBufferContiguous(changeset, &changeset_buffer, PyBUF_SIMPLE))
+    {
+      assert(PyErr_Occurred());
       return NULL;
+    }
     if (changeset_buffer.len > 0x7fffffff)
       res = SQLITE_TOOBIG;
     else
-      res = flags ? sqlite3changeset_apply_v2(db->db, changeset_buffer.len, changeset_buffer.buf,
-                                              filter ? applyFilter : NULL, applyConflict, &aic, NULL, NULL, flags)
-                  : sqlite3changeset_apply(db->db, changeset_buffer.len, changeset_buffer.buf,
-                                           filter ? applyFilter : NULL, applyConflict, &aic);
+      res = flags
+                ? sqlite3changeset_apply_v2(db->db, changeset_buffer.len, changeset_buffer.buf,
+                                            filter ? applyFilter : NULL, conflict ? applyConflict : conflictReject,
+                                            &aic, NULL, NULL, flags)
+                : sqlite3changeset_apply(db->db, changeset_buffer.len, changeset_buffer.buf,
+                                         filter ? applyFilter : NULL, conflict ? applyConflict : conflictReject, &aic);
     PyBuffer_Release(&changeset_buffer);
   }
 
