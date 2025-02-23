@@ -54,8 +54,8 @@ title_to_mapping = {
     "FTS5 Tokenize Reason": "fts5_tokenize_reason",
     "Flags for sqlite3changeset_apply_v2": "session_changeset_apply_v2_flags",
     "Flags for sqlite3changeset_start_v2": "session_changeset_start_v2_flags",
-    "Constants Returned By The Conflict Handler": "session_conflict_handler_response",
-    "Constants Passed To The Conflict Handler": "session_conflict_handler_conflict",
+    "Constants Returned By The Conflict Handler": "session_conflict_response",
+    "Constants Passed To The Conflict Handler": "session_conflict",
     "Values for sqlite3session_config": "session_config_options",
     "Options for sqlite3session_object_config": "session_object_config_options",
 }

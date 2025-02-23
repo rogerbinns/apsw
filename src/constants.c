@@ -194,7 +194,7 @@ add_apsw_constants(PyObject *module)
         assert(PyErr_Occurred());
         return -1;
     }
-    if (PyModule_AddObject(module, "mapping_session_conflict_handler_conflict", the_dict))
+    if (PyModule_AddObject(module, "mapping_session_conflict", the_dict))
     {
         assert(PyErr_Occurred());
         Py_DECREF(the_dict);
@@ -214,7 +214,7 @@ add_apsw_constants(PyObject *module)
         assert(PyErr_Occurred());
         return -1;
     }
-    if (PyModule_AddObject(module, "mapping_session_conflict_handler_response", the_dict))
+    if (PyModule_AddObject(module, "mapping_session_conflict_response", the_dict))
     {
         assert(PyErr_Occurred());
         Py_DECREF(the_dict);
