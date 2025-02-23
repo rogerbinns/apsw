@@ -20,14 +20,14 @@ PRAGMA foreign_keys = ON;
 -- individual tags
 CREATE TABLE tags(
     id PRIMARY KEY DEFAULT (hex(randomblob(3))),
-    label,
+    label UNIQUE,
     cost_centre
 );
 
 -- individual items
 CREATE TABLE items(
     id PRIMARY KEY DEFAULT (hex(randomblob(3))),
-    name,
+    name UNIQUE,
     description
 );
 
@@ -43,15 +43,15 @@ CREATE TABLE item_tag_link(
 );
 
 -- some example content
-INSERT INTO tags(label, cost_centre) VALUES('new', '100');
-INSERT INTO tags(label, cost_centre) VALUES('paint', '110');
-INSERT INTO tags(label, cost_centre) VALUES('electrical', '145');
-INSERT INTO tags(label, cost_centre) VALUES('inspection', '200');
-INSERT INTO tags(label, cost_centre) VALUES('cleaning', '300');
-INSERT INTO tags(label, cost_centre) VALUES('battery', '300');
+INSERT INTO tags(label, cost_centre) VALUES('new', 100);
+INSERT INTO tags(label, cost_centre) VALUES('paint', 110);
+INSERT INTO tags(label, cost_centre) VALUES('electrical', 145);
+INSERT INTO tags(label, cost_centre) VALUES('inspection', 200);
+INSERT INTO tags(label, cost_centre) VALUES('cleaning', 300);
+INSERT INTO tags(label, cost_centre) VALUES('battery', 300);
 
 INSERT INTO items(name) VALUES('bathroom ceiling');
-INSERT INTO items(name, description) VALUES('bathroom lights', "Four fixtures");
+INSERT INTO items(name, description) VALUES('bathroom lights', 'Four fixtures');
 INSERT INTO items(name) VALUES('entrance floor');
 
 -- link items and tags

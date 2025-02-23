@@ -58,17 +58,34 @@ INSERT INTO item_tag_link(item_id, tag_id)  VALUES(
 INSERT INTO items(name) VALUES('microwave');
 
 UPDATE items SET description='high gloss' WHERE name='bathroom ceiling';
-UPDATE tags SET cost_centre='95' WHERE label='new';
+UPDATE tags SET cost_centre=null WHERE label='new';
 
 DELETE FROM tags WHERE label='battery';
 """)
 
-### changesets:  Getting and inspecting the changes
-# :func:`apsw.ext.changeset_to_sql` is useful to see what
-# SQL a changeset is equivalent to.
+### changesets:  Patchsets and Changesets
+# Changesets contain all the before and after values for changed rows,
+# while patchsets only contain the necessary values to make the
+# change.  :func:`apsw.ext.changeset_to_sql` is useful to see what SQL
+# a change or patch set is equivalent to.
 
+patchset = session.patchset()
+print(f"{len(patchset)=}")
+
+print(
+    "\n".join(
+        apsw.ext.changeset_to_sql(
+            patchset,
+            functools.partial(
+                apsw.ext.find_columns, connection=connection
+            ),
+        )
+    )
+)
+
+# Note how the changeset is larger and contains more information
 changeset = session.changeset()
-print(f"{len(changeset)=}")
+print(f"\n\n{len(changeset)=}")
 
 print(
     "\n".join(
@@ -81,9 +98,148 @@ print(
     )
 )
 
+
+### inverting: Inverting - undo, redo
+# We can get the opposite of a changeset which can then form the basis
+# of an undo/redo implementation.  One pattern is to have a table
+# where you store changesets allowing for a later undo or redo.
+
+# Yes, it is this easy
+undo = apsw.Changeset.invert(changeset)
+
+# Compare this to the changeset above, to see how it does the
+# opposite.
+print(
+    "\n".join(
+        apsw.ext.changeset_to_sql(
+            undo,
+            functools.partial(
+                apsw.ext.find_columns, connection=connection
+            ),
+        )
+    )
+)
+
+### applying: Applying changesets
+# We can filter which tables get affected when :meth:`applying a
+# changeset <Changeset.apply>` (default all) and can define a conflict
+# handler (default abort the transaction).  Conflicts are `described
+# here <https://sqlite.org/sessionintro.html#conflicts>`__. We are
+# going to undo our earlier changes.
+
+# However it is going to fail ...
+try:
+    apsw.Changeset.apply(undo, connection)
+except apsw.AbortError as exc:
+    # It will fail, and the database back in the state when we started
+    # the apply
+    print(f"Exception {exc=}")
+
+# The reason it failed is because of the foreign keys automatically
+# removing rows in the link table when members of items and tags got
+# removed.  Lets do it again, but save the failed changes for
+# inspection.
+
+failed = apsw.ChangesetBuilder()
+
+# A conflict handler says what to do
+def conflict_handler(reason: int, change: apsw.TableChange) -> int:
+    # Print the failure reason
+    print(
+        "conflict",
+        apsw.mapping_session_conflict[reason],
+        f"{change.op=}",
+    )
+
+    # save the change
+    failed.add_change(change)
+
+    # proceed ignoring this failed change
+    return apsw.SQLITE_CHANGESET_OMIT
+
+
+# Undo our earlier changes again
+apsw.Changeset.apply(undo, connection, conflict=conflict_handler)
+
+# Now lets see what couldn't apply as SQL
+print("\nFailed items")
+print(
+    "\n".join(
+        apsw.ext.changeset_to_sql(
+            failed.output(),
+            functools.partial(
+                apsw.ext.find_columns, connection=connection
+            ),
+        )
+    )
+)
+
+### syncing: Synchronising changes made by two users
+# Alice and Bob are going to separately work on the same database and
+# we are going to synchronise their changes.
+
+# Start from the same database
+alice_connection = apsw.Connection("alice.db")
+with alice_connection.backup("main", connection, "main") as backup:
+    backup.step()
+
+bob_connection = apsw.Connection("bob.db")
+with bob_connection.backup("main", connection, "main") as backup:
+    backup.step()
+
+# setup sessions
+alice_session = apsw.Session(alice_connection, "main")
+
+bob_session = apsw.Session(bob_connection, "main")
+
+# Each makes changes
+alice_connection.execute("""
+
+                         """)
+
+bob_connection.execute("""
+
+                       """)
+
+# Get the changesets
+alice_changeset = alice_session.changeset()
+
+bob_changeset = bob_session.changeset()
+
+# Apply them to each other's database
+apsw.Changeset.apply(alice_changeset, bob_connection)
+apsw.Changeset.apply(bob_changeset, alice_connection)
+
+
+### builder: ChangesetBuilder
+# The :class:`ChangesetBuilder` can be used to combine multiple
+# changesets and individual :class:`TableChange`.  In this example
+# we'll build up all the changes to the ``items`` table.
+
+items = apsw.ChangesetBuilder()
+
+for change in apsw.Changeset.iter(changeset):
+    if change.name == "items":
+        items.add_change(change)
+
+only_items = items.output()
+
+print(
+    "\n".join(
+        apsw.ext.changeset_to_sql(
+            only_items,
+            functools.partial(
+                apsw.ext.find_columns, connection=connection
+            ),
+        )
+    )
+)
+
+### streaming: Streaming
+# The changesets above were all produced as a single
+
 ### session_end: Cleanup
 # We can now close the connections, but it is optional.  APSW automatically
-# cleans up sessions etc when their corresponding connections are closed.
+# cleans up sessions when their corresponding connections are closed.
 
-if False:
-    connection.close()
+connection.close()
