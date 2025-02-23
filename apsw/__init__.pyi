@@ -807,13 +807,18 @@ class Changeset:
         Conflict
         --------
 
-        When a change cannot be applied the conflict handler determines what to do.  It is called with a
-        `conflict reason <https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the first parameter,
-        and a :class:`TableChange` as the second.
+        When a change cannot be applied the conflict handler determines what
+        to do.  It is called with a `conflict reason
+        <https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the
+        first parameter, and a :class:`TableChange` as the second.  Poossible
+        conflicts are `described here
+        <https://sqlite.org/sessionintro.html#conflicts>`__.
 
         It should return the `action to take <https://www.sqlite.org/session/c_changeset_abort.html>`__.
 
         If not supplied or on error, ``SQLITE_CHANGESET_ABORT`` is returned.
+
+        See the :ref:`example <example-applying>`.
 
         Calls:
           * `sqlite3changeset_apply <https://sqlite.org/session/sqlite3changeset_apply.html>`__
@@ -2843,9 +2848,10 @@ class TableChange:
 
     Calls: `sqlite3changeset_new <https://sqlite.org/session/sqlite3changeset_new.html>`__"""
 
-    old: tuple[SQLiteValue, ...] | None
-    """:class:`None` if not applicable (like an INSERT).  Otherwise a
-    tuple of the old values for the row before this change
+    old: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None
+    """:class:`None` if not applicable (like an INSERT).  Otherwise a tuple
+    of the old values for the row before this change, with
+    :attr:`apsw.no_change` if no value was provided for that column,
 
     Calls: `sqlite3changeset_old <https://sqlite.org/session/sqlite3changeset_old.html>`__"""
 
@@ -4875,7 +4881,7 @@ Doc at https://sqlite.org/session/c_session_config_strmsize.html
 
 SQLITE_SESSION_CONFIG_STRMSIZE"""
 
-mapping_session_conflict_handler_conflict: dict[str | int, int | str]
+mapping_session_conflict: dict[str | int, int | str]
 """Constants Passed To The Conflict Handler mapping names to int and int to names.
 Doc at https://sqlite.org/session/c_changeset_conflict.html
 
@@ -4883,7 +4889,7 @@ SQLITE_CHANGESET_CONFLICT SQLITE_CHANGESET_CONSTRAINT
 SQLITE_CHANGESET_DATA SQLITE_CHANGESET_FOREIGN_KEY
 SQLITE_CHANGESET_NOTFOUND"""
 
-mapping_session_conflict_handler_response: dict[str | int, int | str]
+mapping_session_conflict_response: dict[str | int, int | str]
 """Constants Returned By The Conflict Handler mapping names to int and int to names.
 Doc at https://sqlite.org/session/c_changeset_abort.html
 

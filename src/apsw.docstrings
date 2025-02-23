@@ -879,13 +879,18 @@
 "Conflict\n" \
 "--------\n" \
 "\n" \
-"When a change cannot be applied the conflict handler determines what to do.  It is called with a\n" \
-"`conflict reason <https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the first parameter,\n" \
-"and a :class:`TableChange` as the second.\n" \
+"When a change cannot be applied the conflict handler determines what\n" \
+"to do.  It is called with a `conflict reason\n" \
+"<https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the\n" \
+"first parameter, and a :class:`TableChange` as the second.  Poossible\n" \
+"conflicts are `described here\n" \
+"<https://sqlite.org/sessionintro.html#conflicts>`__.\n" \
 "\n" \
 "It should return the `action to take <https://www.sqlite.org/session/c_changeset_abort.html>`__.\n" \
 "\n" \
 "If not supplied or on error, ``SQLITE_CHANGESET_ABORT`` is returned.\n" \
+"\n" \
+"See the :ref:`example <example-applying>`.\n" \
 "\n" \
 "Calls:\n" \
 "  * `sqlite3changeset_apply <https://sqlite.org/session/sqlite3changeset_apply.html>`__\n" \
@@ -3777,10 +3782,11 @@
 "\n" \
 "Calls: `sqlite3changeset_new <https://sqlite.org/session/sqlite3changeset_new.html>`__\n" 
 
-#define  TableChange_old_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
+#define  TableChange_old_DOC ":type: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None\n" \
 "\n" \
-":class:`None` if not applicable (like an INSERT).  Otherwise a\n" \
-"tuple of the old values for the row before this change\n" \
+":class:`None` if not applicable (like an INSERT).  Otherwise a tuple\n" \
+"of the old values for the row before this change, with\n" \
+":attr:`apsw.no_change` if no value was provided for that column,\n" \
 "\n" \
 "Calls: `sqlite3changeset_old <https://sqlite.org/session/sqlite3changeset_old.html>`__\n" 
 
