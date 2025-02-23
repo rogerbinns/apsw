@@ -246,6 +246,8 @@ Connection_remove_dependent(Connection *self, PyObject *o)
   }
 }
 
+static PyTypeObject APSWSessionType;
+
 /* returns zero on success, non-zero on error */
 static int
 Connection_close_internal(Connection *self, int force)
@@ -270,7 +272,11 @@ Connection_close_internal(Connection *self, int force)
 
     PyObject *vargs[] = { NULL, item, PyBool_FromLong(force) };
     if (vargs[2])
-      closeres = PyObject_VectorcallMethod(apst.close, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    {
+      /* session doesn't have force param */
+      int nargs = PyObject_IsInstance(item, (PyObject *)&APSWSessionType) ? 1 : 2;
+      closeres = PyObject_VectorcallMethod(apst.close, vargs + 1, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    }
     Py_XDECREF(vargs[2]);
     Py_XDECREF(vargs[1]);
     Py_XDECREF(closeres);
