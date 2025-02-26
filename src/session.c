@@ -3,15 +3,16 @@
 Session extension
 *****************
 
-APSW provides access to all stable session functionality.
+APSW provides access to all stable session functionality.  See the
+:doc:`example-session`.
 
 The `session extension <https://www.sqlite.org/sessionintro.html>`__
 allows recording changes to a database, and later replaying them on
 another database, or undoing them.  This allows offline syncing, as
 well as collaboration.  It is also useful for debugging, development,
-and testing.
-
-Notable features include:
+and testing.  Note that it records the added, modified, and deleted
+row values - it does **not** record or replay the queries that
+resulted in those changes.
 
 * You can choose which tables have changes recorded (or all), and
   pause / resume recording at any time
@@ -23,7 +24,7 @@ Notable features include:
   space but have less ability to detect conflicts or be inverted.
 
 * When applying changes you can supply a conflict handler to choose
-  what happens on each conflict, including aborting, skipping,
+  what happens on each conflicting row, including aborting, skipping,
   applying anyway, applying your own change, and can record the
   conflicting operation to another change set for later.
 
@@ -786,15 +787,17 @@ APSWSession_get_changeset_size(APSWSession *self)
 
 /** .. class:: TableChange
 
-  Represents a `change <https://sqlite.org/session/changeset_iter.html>`__.  They come from
-  :meth:`changeset iteration <Changeset.iter>` and from the :meth:`conflict handler in apply
-  <Changeset.apply>`.
+  Represents a `changed row
+  <https://sqlite.org/session/changeset_iter.html>`__.  They come from
+  :meth:`changeset iteration <Changeset.iter>` and from the
+  :meth:`conflict handler in apply <Changeset.apply>`.
 
-  It is only valid when your conflict handler is active, or has just been provided by a
-  changeset iterator.  It goes out of scope after your conflict handler returns, or the
-  iterator moves to the next entry.  You will get :exc:`~apsw.InvalidContextError` if
-  you try to access fields when out of scope.  This means you can't save TableChanges
-  for later, and need to copy out any information you need.
+  A TableChange is only valid when your conflict handler is active, or
+  has just been provided by a changeset iterator.  It goes out of scope
+  after your conflict handler returns, or the iterator moves to the next
+  entry.  You will get :exc:`~apsw.InvalidContextError` if you try to
+  access fields when out of scope.  This means you can't save
+  TableChanges for later, and need to copy out any information you need.
 
  */
 
