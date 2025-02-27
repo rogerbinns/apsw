@@ -41,6 +41,10 @@ connection.execute(pathlib.Path("session.sql").read_text())
 # :meth:`Session.diff` to work out the changes between two tables.
 
 session = apsw.Session(connection, "main")
+
+# We'd like size estimates
+session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, True)
+
 # we now say which tables to monitor - we want all
 session.attach()
 
@@ -65,6 +69,25 @@ UPDATE tags SET cost_centre=null WHERE label='new';
 DELETE FROM tags WHERE label='battery';
 """)
 
+### changeset_sql: SQL equivalent of a changeset
+# We can iterate the contents of a changeset using
+# :func:`apsw.ext.changeset_to_sql`.  It needs to know the column
+# names because changesets only use column numbers, so we use
+# :meth:`apsw.ext.find_columns` giving it the connection to inspect.
+
+
+def show_changeset(title: str, contents: apsw.SessionStreamInput):
+    print(title)
+    for statement in apsw.ext.changeset_to_sql(
+        contents,
+        functools.partial(
+            apsw.ext.find_columns, connection=connection
+        ),
+    ):
+        print(statement)
+    print()
+
+
 ### changesets:  Patchsets and Changesets
 # Changesets contain all the before and after values for changed rows,
 # while patchsets only contain the necessary values to make the
@@ -74,31 +97,13 @@ DELETE FROM tags WHERE label='battery';
 patchset = session.patchset()
 print(f"{len(patchset)=}")
 
-print(
-    "\n".join(
-        apsw.ext.changeset_to_sql(
-            patchset,
-            functools.partial(
-                apsw.ext.find_columns, connection=connection
-            ),
-        )
-    )
-)
+show_changeset("patchset", patchset)
 
 # Note how the changeset is larger and contains more information
 changeset = session.changeset()
-print(f"\n\n{len(changeset)=}")
+print(f"{len(changeset)=}")
 
-print(
-    "\n".join(
-        apsw.ext.changeset_to_sql(
-            changeset,
-            functools.partial(
-                apsw.ext.find_columns, connection=connection
-            ),
-        )
-    )
-)
+show_changeset("changeset", changeset)
 
 
 ### inverting: Inverting - undo, redo
@@ -111,16 +116,7 @@ undo = apsw.Changeset.invert(changeset)
 
 # Compare this to the changeset above, to see how it does the
 # opposite.
-print(
-    "\n".join(
-        apsw.ext.changeset_to_sql(
-            undo,
-            functools.partial(
-                apsw.ext.find_columns, connection=connection
-            ),
-        )
-    )
-)
+show_changeset("undo", undo)
 
 ### applying: Applying changesets
 # We can filter which tables get affected when :meth:`applying a
@@ -165,24 +161,18 @@ def conflict_handler(reason: int, change: apsw.TableChange) -> int:
 apsw.Changeset.apply(undo, connection, conflict=conflict_handler)
 
 # Now lets see what couldn't apply as SQL
-print("\nFailed items")
-print(
-    "\n".join(
-        apsw.ext.changeset_to_sql(
-            failed.output(),
-            functools.partial(
-                apsw.ext.find_columns, connection=connection
-            ),
-        )
-    )
-)
+show_changeset("failed", failed.output())
 
 ### syncing: Synchronising changes made by two users
 # Alice and Bob are going to separately work on the same database and
-# we are going to synchronise their changes.  Our database is a bit
-# more complicated because adding to the items table has a trigger
-# that links the ``new`` tag to that item.  We use
-# :meth:`apsw.ext.XXX` which handles that sort of thing.
+# we are going to synchronise their changes.
+#
+# You will notice that the databases did not end up identical.  This
+# is because foreign keys, triggers, and the changesets are all
+# fighting each other.  You need to be careful when using all of them
+# at the same time.  See :ref:`ChangesetBuilder next
+# <example_changesetbuilder>` where you can make your own changesets
+# for these more complicated situations.
 
 # Start from the same database
 alice_connection = apsw.Connection("alice.db")
@@ -192,8 +182,6 @@ with alice_connection.backup("main", connection, "main") as backup:
 bob_connection = apsw.Connection("bob.db")
 with bob_connection.backup("main", connection, "main") as backup:
     backup.step()
-
-connection.close()
 
 # setup sessions
 alice_session = apsw.Session(alice_connection, "main")
@@ -251,58 +239,84 @@ print(apsw.ext.format_query_table(alice_connection, query))
 print("\nBob's database")
 print(apsw.ext.format_query_table(bob_connection, query))
 
-print("\nAlice changeset")
-print(
-    "\n".join(
-        apsw.ext.changeset_to_sql(
-            alice_changeset,
-            functools.partial(
-                apsw.ext.find_columns, connection=alice_connection
-            ),
-        )
-    )
-)
+show_changeset("Alice changeset", alice_changeset)
 
-print("\nBob changeset")
-print(
-    "\n".join(
-        apsw.ext.changeset_to_sql(
-            bob_changeset,
-            functools.partial(
-                apsw.ext.find_columns, connection=bob_connection
-            ),
-        )
-    )
-)
+show_changeset("Bob changseset", bob_changeset)
 
 
-### builder: ChangesetBuilder
+### changesetbuilder: ChangesetBuilder
 # The :class:`ChangesetBuilder` can be used to combine multiple
 # changesets and individual :class:`TableChange`.  In this example
 # we'll build up all the changes to the ``items`` table.
 
 items = apsw.ChangesetBuilder()
 
-for source in (alice_changeset, bob_changeset):
+for source in (changeset, alice_changeset, bob_changeset):
     for change in apsw.Changeset.iter(source):
         if change.name == "items":
             items.add_change(change)
 
 only_items = items.output()
 
-print(
-    "\n".join(
-        apsw.ext.changeset_to_sql(
-            only_items,
-            functools.partial(
-                apsw.ext.find_columns, connection=alice_connection
-            ),
-        )
-    )
-)
+show_changeset("Only items table changes", only_items)
 
 ### streaming: Streaming
-# The changesets above were all produced as a single
+# The changesets above were all produced as a single bytes in memory
+# all at once.  For larger changesets we can read and write them in
+# chunks, such as with files or network connections.
+
+# Use a positive number to set that size
+chunk_size = apsw.session_config(apsw.SQLITE_SESSION_CONFIG_STRMSIZE, -1)
+print("default chunk size", chunk_size)
+
+# Some changes to make the changeset larger.  The size is an estimate.
+print(f"Before estimate {session.changeset_size=}")
+for i in "abcdefghijklmnopqrstuvwxyz":
+    connection.execute(
+        "INSERT INTO items(name, description) VALUES(?, ?)",
+        (i * 1234, i * 1234),
+    )
+print(f"After estimate {session.changeset_size=}")
+
+# We'll write to a file
+import tempfile
+
+out = tempfile.TemporaryFile("w+b")
+
+num_writes = 0
+
+
+def write(data: memoryview) -> None:
+    global num_writes
+    num_writes += 1
+    res = out.write(data)
+    # The streamer must write all bytes
+    assert res == len(data)
+
+
+session.changeset_stream(write)
+
+print("Output file size is", out.tell())
+print("Number of writes", num_writes)
+
+# Lets read from the same file, using the streaming iterator
+out.seek(0)
+num_reads = 0
+
+
+def read(amount: int) -> bytes:
+    global num_reads
+    num_reads += 1
+    return out.read(amount)
+
+
+num_changes = 0
+for change in apsw.Changeset.iter(read):
+    num_changes += 1
+
+print("Number of reads", num_reads)
+print("Number of changes", num_changes)
+
 
 ### session_end: Cleanup
 # We can now close the connections, but it is optional.  APSW automatically
