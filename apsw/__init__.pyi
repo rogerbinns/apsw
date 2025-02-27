@@ -130,9 +130,9 @@ FTS5QueryPhrase = Callable[[FTS5ExtensionApi, Any], None]
 
 # The Session extension allows streaming of inputs and outputs
 
-SessionStreamInput = Callable[[int], Buffer | None]
+SessionStreamInput = Callable[[int], Buffer ]
 """Streaming input function that is called with a number of bytes requested
-returning data from 1 to that many bytes, or None at end of stream"""
+returning up to that many bytes, and empty for end of file"""
 
 ChangesetInput =  SessionStreamInput | Buffer
 """Changeset input can either be a streaming callback or data"""
@@ -818,7 +818,7 @@ class Changeset:
 
         If not supplied or on error, ``SQLITE_CHANGESET_ABORT`` is returned.
 
-        See the :ref:`example <example-applying>`.
+        See the :ref:`example <example_applying>`.
 
         Calls:
           * `sqlite3changeset_apply <https://sqlite.org/session/sqlite3changeset_apply.html>`__
@@ -2735,7 +2735,7 @@ class Session:
         Calls: `sqlite3session_delete <https://sqlite.org/session/sqlite3session_delete.html>`__"""
         ...
 
-    def config(self, op: int, *args) -> Any:
+    def config(self, op: int, *args: Any) -> Any:
         """Set or get `configuration values <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__
 
         For example :code:`session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1)` tells you
@@ -2809,15 +2809,17 @@ class Session:
 
 @final
 class TableChange:
-    """Represents a `change <https://sqlite.org/session/changeset_iter.html>`__.  They come from
-    :meth:`changeset iteration <Changeset.iter>` and from the :meth:`conflict handler in apply
-    <Changeset.apply>`.
+    """Represents a `changed row
+    <https://sqlite.org/session/changeset_iter.html>`__.  They come from
+    :meth:`changeset iteration <Changeset.iter>` and from the
+    :meth:`conflict handler in apply <Changeset.apply>`.
 
-    It is only valid when your conflict handler is active, or has just been provided by a
-    changeset iterator.  It goes out of scope after your conflict handler returns, or the
-    iterator moves to the next entry.  You will get :exc:`~apsw.InvalidContextError` if
-    you try to access fields when out of scope.  This means you can't save TableChanges
-    for later, and need to copy out any information you need."""
+    A TableChange is only valid when your conflict handler is active, or
+    has just been provided by a changeset iterator.  It goes out of scope
+    after your conflict handler returns, or the iterator moves to the next
+    entry.  You will get :exc:`~apsw.InvalidContextError` if you try to
+    access fields when out of scope.  This means you can't save
+    TableChanges for later, and need to copy out any information you need."""
 
     column_count: int
     """ Number of columns in the affected table"""

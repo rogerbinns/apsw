@@ -890,7 +890,7 @@
 "\n" \
 "If not supplied or on error, ``SQLITE_CHANGESET_ABORT`` is returned.\n" \
 "\n" \
-"See the :ref:`example <example-applying>`.\n" \
+"See the :ref:`example <example_applying>`.\n" \
 "\n" \
 "Calls:\n" \
 "  * `sqlite3changeset_apply <https://sqlite.org/session/sqlite3changeset_apply.html>`__\n" \
@@ -3633,7 +3633,7 @@
 } while(0)
 
 
-#define  Session_config_DOC "config($self,op,*args)\n--\n\nSession.config(op: int, *args) -> Any\n\n" \
+#define  Session_config_DOC "config($self,op,*args)\n--\n\nSession.config(op: int, *args: Any) -> Any\n\n" \
 "Set or get `configuration values <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__\n" \
 "\n" \
 "For example :code:`session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1)` tells you\n" \
@@ -3737,15 +3737,17 @@
 } while(0)
 
 
-#define  TableChange_class_DOC "Represents a `change <https://sqlite.org/session/changeset_iter.html>`__.  They come from\n" \
-":meth:`changeset iteration <Changeset.iter>` and from the :meth:`conflict handler in apply\n" \
-"<Changeset.apply>`.\n" \
+#define  TableChange_class_DOC "Represents a `changed row\n" \
+"<https://sqlite.org/session/changeset_iter.html>`__.  They come from\n" \
+":meth:`changeset iteration <Changeset.iter>` and from the\n" \
+":meth:`conflict handler in apply <Changeset.apply>`.\n" \
 "\n" \
-"It is only valid when your conflict handler is active, or has just been provided by a\n" \
-"changeset iterator.  It goes out of scope after your conflict handler returns, or the\n" \
-"iterator moves to the next entry.  You will get :exc:`~apsw.InvalidContextError` if\n" \
-"you try to access fields when out of scope.  This means you can't save TableChanges\n" \
-"for later, and need to copy out any information you need.\n" 
+"A TableChange is only valid when your conflict handler is active, or\n" \
+"has just been provided by a changeset iterator.  It goes out of scope\n" \
+"after your conflict handler returns, or the iterator moves to the next\n" \
+"entry.  You will get :exc:`~apsw.InvalidContextError` if you try to\n" \
+"access fields when out of scope.  This means you can't save\n" \
+"TableChanges for later, and need to copy out any information you need.\n" 
 
 #define  TableChange_column_count_DOC ":type: int\n" \
 "\n" \

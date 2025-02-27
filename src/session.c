@@ -628,7 +628,7 @@ APSWSession_table_filter(APSWSession *self, PyObject *const *fast_args, Py_ssize
   Py_RETURN_NONE;
 }
 
-/** .. method:: config(op: int, *args) -> Any
+/** .. method:: config(op: int, *args: Any) -> Any
 
   Set or get `configuration values <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__
 
@@ -1409,7 +1409,7 @@ error:
 
   If not supplied or on error, ``SQLITE_CHANGESET_ABORT`` is returned.
 
-  See the :ref:`example <example-applying>`.
+  See the :ref:`example <example_applying>`.
 
   -* sqlite3changeset_apply sqlite3changeset_apply_v2 sqlite3changeset_apply_strm sqlite3changeset_apply_v2_strm
 
