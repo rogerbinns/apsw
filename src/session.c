@@ -490,24 +490,20 @@ APSWSession_xInput(void *pIn, void *pData, int *pnData)
   }
   if (result)
   {
-    if (Py_IsNone(result))
-      *pnData = 0;
-    else
+    Py_buffer result_buffer;
+    if (0 == PyObject_GetBufferContiguous(result, &result_buffer, PyBUF_SIMPLE))
     {
-      Py_buffer result_buffer;
-      if (0 == PyObject_GetBufferContiguous(result, &result_buffer, PyBUF_SIMPLE))
+      /* the length is signed and shouldn't be less than zero but we are paranoid */
+      if (result_buffer.len > *pnData || result_buffer.len < 0)
+        PyErr_Format(PyExc_ValueError, "Stream input data must be at least 0 bytes, and at most %d - got %zd", *pnData,
+                     result_buffer.len);
+      else
       {
-        if (result_buffer.len > *pnData || result_buffer.len < 1)
-          PyErr_Format(PyExc_ValueError, "Stream input data must be at least 1 bytes, and at most %d - got %zd",
-                       *pnData, result_buffer.len);
-        else
-        {
-          memcpy(pData, result_buffer.buf, result_buffer.len);
-          *pnData = (int)result_buffer.len;
-        }
-
-        PyBuffer_Release(&result_buffer);
+        memcpy(pData, result_buffer.buf, result_buffer.len);
+        *pnData = (int)result_buffer.len;
       }
+
+      PyBuffer_Release(&result_buffer);
     }
     Py_DECREF(result);
   }

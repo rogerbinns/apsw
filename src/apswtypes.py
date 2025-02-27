@@ -129,9 +129,9 @@ FTS5QueryPhrase = Callable[[FTS5ExtensionApi, Any], None]
 
 # The Session extension allows streaming of inputs and outputs
 
-SessionStreamInput = Callable[[int], Buffer | None]
+SessionStreamInput = Callable[[int], Buffer ]
 """Streaming input function that is called with a number of bytes requested
-returning data from 1 to that many bytes, or None at end of stream"""
+returning up to that many bytes, and zero length for end of file"""
 
 ChangesetInput =  SessionStreamInput | Buffer
 """Changeset input can either be a streaming callback or data"""
