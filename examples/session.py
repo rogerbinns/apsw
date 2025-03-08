@@ -5,9 +5,9 @@
 # then you must include this future annotations line first.
 from __future__ import annotations
 
-from pprint import pprint
 import functools
 import pathlib
+import tempfile
 
 import apsw
 import apsw.ext
@@ -70,7 +70,7 @@ DELETE FROM tags WHERE label='battery';
 """)
 
 ### changeset_sql: SQL equivalent of a changeset
-# We can iterate the contents of a changeset using
+# We can iterate the contents of a changeset as SQL statements using
 # :func:`apsw.ext.changeset_to_sql`.  It needs to know the column
 # names because changesets only use column numbers, so we use
 # :meth:`apsw.ext.find_columns` giving it the connection to inspect.
@@ -80,7 +80,7 @@ def show_changeset(title: str, contents: apsw.SessionStreamInput):
     print(title)
     for statement in apsw.ext.changeset_to_sql(
         contents,
-        functools.partial(
+        get_columns=functools.partial(
             apsw.ext.find_columns, connection=connection
         ),
     ):
@@ -247,7 +247,8 @@ show_changeset("Bob changseset", bob_changeset)
 ### changesetbuilder: ChangesetBuilder
 # The :class:`ChangesetBuilder` can be used to combine multiple
 # changesets and individual :class:`TableChange`.  In this example
-# we'll build up all the changes to the ``items`` table.
+# we'll build up all the changes to the ``items`` table from
+# multiple changesets.
 
 items = apsw.ChangesetBuilder()
 
@@ -263,7 +264,7 @@ show_changeset("Only items table changes", only_items)
 ### streaming: Streaming
 # The changesets above were all produced as a single bytes in memory
 # all at once.  For larger changesets we can read and write them in
-# chunks, such as with files or network connections.
+# chunks, such as with blobs, files, or network connections.
 
 # Use a positive number to set that size
 chunk_size = apsw.session_config(apsw.SQLITE_SESSION_CONFIG_STRMSIZE, -1)
@@ -279,8 +280,6 @@ for i in "abcdefghijklmnopqrstuvwxyz":
 print(f"After estimate {session.changeset_size=}")
 
 # We'll write to a file
-import tempfile
-
 out = tempfile.TemporaryFile("w+b")
 
 num_writes = 0

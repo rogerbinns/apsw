@@ -3,8 +3,8 @@
 Session extension
 *****************
 
-APSW provides access to all stable session functionality.  See the
-:doc:`example-session`.
+APSW provides access to all session functionality (including
+experimental).  See the :doc:`example-session`.
 
 The `session extension <https://www.sqlite.org/sessionintro.html>`__
 allows recording changes to a database, and later replaying them on
@@ -23,18 +23,15 @@ resulted in those changes.
   change sets) which do not have the before values, consuming less
   space but have less ability to detect conflicts or be inverted.
 
+* The recorded changes includes indirect changes made such as by triggers
+  and foreign keys.
+
 * When applying changes you can supply a conflict handler to choose
   what happens on each conflicting row, including aborting, skipping,
   applying anyway, applying your own change, and can record the
   conflicting operation to another change set for later.
 
-* You can iterate over a change set to see what it contains
-
-* Using the :class:`change set builder <ChangesetBuilder>`, you can
-  accumulate multiple change sets, and add changes from an iterator or
-  conflict handler.
-
-* You are responsible for ref:`managing your schema <schema_upgrade>`
+* You are responsible for :ref:`managing your schema <schema_upgrade>`
   - the extension will not create, update, or delete tables for you.
   When applying changesets, if a corresponding table does not already
   exist then those changes are ignored.  This means that you do not
@@ -43,6 +40,29 @@ resulted in those changes.
 * It is efficient only storing enough to make the semantic change.
   For example if multiple changes are made to the same row, then
   they can be accumulated into one change record, not many.
+
+* You can iterate over a change set to see what it contains
+
+* Changesets do not contain the changes in the order made
+
+* Using the :class:`change set builder <ChangesetBuilder>`, you can
+  accumulate multiple change sets, and add changes from an iterator or
+  conflict handler.
+
+* Using :class:`Rebaser` you can merge conflict resolutions made when
+  applying a changeset into a later changeset, so those conflict
+  resolutions do not have to be redone on each database where they are
+  applied.
+
+* Doing multi-way synchronization across multiple databases changed
+  separately `is hard
+  <https://en.wikipedia.org/wiki/Eventual_consistency>`__.  A common
+  approach to conflicts is to use timestamps with the most recent
+  change "winning".  Changesets do not include timestamps, and are not
+  time ordered.  You should carefully design your schema and
+  synchronization to ensure the needed levels of data integrity,
+  consistency, and meeting user goals up front.  Adding it later is
+  painful.
 
 .. important::
 
@@ -211,6 +231,24 @@ typedef struct APSWTableChange
 } APSWTableChange;
 
 static PyTypeObject APSWTableChangeType;
+
+typedef struct APSWConflictResolutions
+{
+  PyObject_HEAD
+  void *pRebase;
+  int nRebase;
+} APSWConflictResolutions;
+
+static PyTypeObject APSWConflictResolutionsType;
+
+typedef struct APSWRebaser
+{
+  PyObject_HEAD
+  sqlite3_rebaser *rebaser;
+  int init_was_called;
+} APSWRebaser;
+
+static PyTypeObject APSWRebaserType;
 
 /** .. class:: Session
 
@@ -1133,6 +1171,8 @@ APSWTableChange_dealloc(PyObject *self)
 
  Provides changeset (including patchset) related methods.
 */
+
+// ::TODO:: all these bytes as input should be Buffer
 
 /** .. method:: invert(changeset: bytes) -> bytes
 
@@ -2229,6 +2269,7 @@ static PyTypeObject APSWTableChangeType = {
   .tp_dealloc = (destructor)APSWTableChange_dealloc,
   .tp_str = (reprfunc)APSWTableChange_tp_str,
 };
+
 static PyGetSetDef APSWConflictResolutions_getset[] = {
   { "size", (getter)APSWConflictResolutions_get_size, NULL, ConflictResolutions_size_DOC },
   { 0 },
