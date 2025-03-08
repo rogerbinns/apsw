@@ -132,7 +132,7 @@ FTS5QueryPhrase = Callable[[FTS5ExtensionApi, Any], None]
 
 SessionStreamInput = Callable[[int], Buffer ]
 """Streaming input function that is called with a number of bytes requested
-returning up to that many bytes, and empty for end of file"""
+returning up to that many bytes, and zero length for end of file"""
 
 ChangesetInput =  SessionStreamInput | Buffer
 """Changeset input can either be a streaming callback or data"""
@@ -787,7 +787,7 @@ class Changeset:
     """Provides changeset (including patchset) related methods."""
 
     @staticmethod
-    def apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0):
+    def apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0) -> ConflictResolutions:
         """Applies a changeset to a database.
 
         :param source: The changeset either as the bytes, or a stream
@@ -795,7 +795,6 @@ class Changeset:
         :param filter: Callback to determine if changes to a table are done
         :param conflict: Callback to handle a change that cannot be applied
         :param flags: `v2 API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.
-            If flags are supplied then the experimental v2 API is used, otherwise the original is.
 
         Filter
         ------
@@ -810,7 +809,7 @@ class Changeset:
         When a change cannot be applied the conflict handler determines what
         to do.  It is called with a `conflict reason
         <https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the
-        first parameter, and a :class:`TableChange` as the second.  Poossible
+        first parameter, and a :class:`TableChange` as the second.  Possible
         conflicts are `described here
         <https://sqlite.org/sessionintro.html#conflicts>`__.
 
@@ -820,10 +819,14 @@ class Changeset:
 
         See the :ref:`example <example_applying>`.
 
+        Return value
+        ------------
+
+        The :class:`ConflictResolutions` is used with
+        :meth:`Rebaser.configure` and can be ignored if you aren't rebasing.
+
         Calls:
-          * `sqlite3changeset_apply <https://sqlite.org/session/sqlite3changeset_apply.html>`__
           * `sqlite3changeset_apply_v2 <https://sqlite.org/session/sqlite3changeset_apply.html>`__
-          * `sqlite3changeset_apply_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
           * `sqlite3changeset_apply_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
         ...
 
@@ -869,6 +872,15 @@ class Changeset:
           * `sqlite3changeset_start_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
           * `sqlite3changeset_start_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
         ...
+
+@final
+class ConflictResolutions:
+    """This object wraps the conflict resolutions returned by
+    :meth:`Changeset.apply`.  They can be supplied to
+    :meth:`Rebaser.configure`."""
+
+    size: int
+    """How many bytes make up the conflict resolutions."""
 
 class Connection:
     """This object wraps a `sqlite3 pointer
@@ -2691,6 +2703,37 @@ class IndexInfo:
 
     def set_aConstraintUsage_omit(self, which: int, omit: bool) -> None:
         """Sets *omit* for *aConstraintUsage[which]*"""
+        ...
+
+@final
+class Rebaser:
+    """This object wraps a `sqlite3_rebaser
+    <https://www.sqlite.org/session/rebaser.html>`__ object."""
+
+    def configure(self, cr: ConflictResolutions) -> None:
+        """Tells the rebaser about conflict resolutions made in an earlier
+        :meth:`Changeset.apply`.
+
+        Calls: `sqlite3rebaser_configure <https://sqlite.org/session/sqlite3rebaser_configure.html>`__"""
+        ...
+
+    def __init__(self):
+        """Starts a new rebaser.
+
+        Calls: `sqlite3rebaser_create <https://sqlite.org/session/sqlite3rebaser_create.html>`__"""
+        ...
+
+    def rebase(self, changeset: Buffer) -> bytes:
+        """Produces a new changeset rebased according to :meth:`configure` calls made.
+
+        Calls: `sqlite3rebaser_rebase <https://sqlite.org/session/sqlite3rebaser_rebase.html>`__"""
+        ...
+
+    def rebase_stream(self, changeset: SessionStreamInput, output: SessionStreamOutput) -> None:
+        """Produces a new changeset rebased according to :meth:`configure` calls made, using streaming
+        input and output.
+
+        Calls: `sqlite3rebaser_rebase_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
         ...
 
 class Session:

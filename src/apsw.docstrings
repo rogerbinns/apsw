@@ -859,7 +859,7 @@
 } while(0)
 
 
-#define  Changeset_apply_DOC "apply($self,changeset,db,*,filter=None,conflict=None,flags=0)\n--\n\nChangeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0)\n\n" \
+#define  Changeset_apply_DOC "apply($self,changeset,db,*,filter=None,conflict=None,flags=0)\n--\n\nChangeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0) -> ConflictResolutions\n\n" \
 "Applies a changeset to a database.\n" \
 "\n" \
 ":param source: The changeset either as the bytes, or a stream\n" \
@@ -867,7 +867,6 @@
 ":param filter: Callback to determine if changes to a table are done\n" \
 ":param conflict: Callback to handle a change that cannot be applied\n" \
 ":param flags: `v2 API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.\n" \
-"    If flags are supplied then the experimental v2 API is used, otherwise the original is.\n" \
 "\n" \
 "Filter\n" \
 "------\n" \
@@ -882,7 +881,7 @@
 "When a change cannot be applied the conflict handler determines what\n" \
 "to do.  It is called with a `conflict reason\n" \
 "<https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the\n" \
-"first parameter, and a :class:`TableChange` as the second.  Poossible\n" \
+"first parameter, and a :class:`TableChange` as the second.  Possible\n" \
 "conflicts are `described here\n" \
 "<https://sqlite.org/sessionintro.html#conflicts>`__.\n" \
 "\n" \
@@ -892,14 +891,18 @@
 "\n" \
 "See the :ref:`example <example_applying>`.\n" \
 "\n" \
+"Return value\n" \
+"------------\n" \
+"\n" \
+"The :class:`ConflictResolutions` is used with\n" \
+":meth:`Rebaser.configure` and can be ignored if you aren't rebasing.\n" \
+"\n" \
 "Calls:\n" \
-"  * `sqlite3changeset_apply <https://sqlite.org/session/sqlite3changeset_apply.html>`__\n" \
 "  * `sqlite3changeset_apply_v2 <https://sqlite.org/session/sqlite3changeset_apply.html>`__\n" \
-"  * `sqlite3changeset_apply_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" \
 "  * `sqlite3changeset_apply_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
 
 #define Changeset_apply_KWNAMES "changeset", "db", "filter", "conflict", "flags"
-#define Changeset_apply_USAGE "Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0)"
+#define Changeset_apply_USAGE "Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0) -> ConflictResolutions"
 
 #define Changeset_apply_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
@@ -993,6 +996,14 @@
   assert(flags == (0)); \
 } while(0)
 
+
+#define  ConflictResolutions_class_DOC "This object wraps the conflict resolutions returned by\n" \
+":meth:`Changeset.apply`.  They can be supplied to\n" \
+":meth:`Rebaser.configure`.\n" 
+
+#define  ConflictResolutions_size_DOC ":type: int\n" \
+"\n" \
+"How many bytes make up the conflict resolutions.\n" 
 
 #define  Connection_authorizer_DOC ":type: Optional[Authorizer]\n" \
 "\n" \
@@ -3568,6 +3579,63 @@
 #define IndexInfo_set_aConstraintUsage_omit_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(which), int)); \
   assert(__builtin_types_compatible_p(typeof(omit), int)); \
+} while(0)
+
+
+#define  Rebaser_class_DOC "This object wraps a `sqlite3_rebaser\n" \
+"<https://www.sqlite.org/session/rebaser.html>`__ object.\n" 
+
+#define  Rebaser_configure_DOC "configure($self,cr)\n--\n\nRebaser.configure(cr: ConflictResolutions) -> None\n\n" \
+"Tells the rebaser about conflict resolutions made in an earlier\n" \
+":meth:`Changeset.apply`.\n" \
+"\n" \
+"Calls: `sqlite3rebaser_configure <https://sqlite.org/session/sqlite3rebaser_configure.html>`__\n" 
+
+#define Rebaser_configure_KWNAMES "cr"
+#define Rebaser_configure_USAGE "Rebaser.configure(cr: ConflictResolutions) -> None"
+
+#define Rebaser_configure_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(cr), APSWConflictResolutions *)); \
+} while(0)
+
+
+#define  Rebaser_init_DOC "__init__($self)\n--\n\nRebaser.__init__()\n\n" \
+"Starts a new rebaser.\n" \
+"\n" \
+"Calls: `sqlite3rebaser_create <https://sqlite.org/session/sqlite3rebaser_create.html>`__\n" 
+
+#define Rebaser_init_KWNAMES 
+#define Rebaser_init_USAGE "Rebaser.__init__()"
+
+#define Rebaser_init_CHECK do { \
+} while(0)
+
+
+#define  Rebaser_rebase_DOC "rebase($self,changeset)\n--\n\nRebaser.rebase(changeset: Buffer) -> bytes\n\n" \
+"Produces a new changeset rebased according to :meth:`configure` calls made.\n" \
+"\n" \
+"Calls: `sqlite3rebaser_rebase <https://sqlite.org/session/sqlite3rebaser_rebase.html>`__\n" 
+
+#define Rebaser_rebase_KWNAMES "changeset"
+#define Rebaser_rebase_USAGE "Rebaser.rebase(changeset: Buffer) -> bytes"
+
+#define Rebaser_rebase_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
+} while(0)
+
+
+#define  Rebaser_rebase_stream_DOC "rebase_stream($self,changeset,output)\n--\n\nRebaser.rebase_stream(changeset: SessionStreamInput, output: SessionStreamOutput) -> None\n\n" \
+"Produces a new changeset rebased according to :meth:`configure` calls made, using streaming\n" \
+"input and output.\n" \
+"\n" \
+"Calls: `sqlite3rebaser_rebase_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
+
+#define Rebaser_rebase_stream_KWNAMES "changeset", "output"
+#define Rebaser_rebase_stream_USAGE "Rebaser.rebase_stream(changeset: SessionStreamInput, output: SessionStreamOutput) -> None"
+
+#define Rebaser_rebase_stream_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(output), PyObject *)); \
 } while(0)
 
 

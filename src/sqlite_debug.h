@@ -841,5 +841,11 @@
 #undef sqlite3_win32_set_directory8
 #define sqlite3_win32_set_directory8 *not used*
 
+#undef sqlite3changeset_apply
+#define sqlite3changeset_apply *not used*
+
+#undef sqlite3changeset_apply_strm
+#define sqlite3changeset_apply_strm *not used*
+
 
 #endif

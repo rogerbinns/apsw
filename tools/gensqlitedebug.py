@@ -62,6 +62,8 @@ functions_not_used = (
     "sqlite3_prepare(|_v2)",
     "sqlite3_preupdate_.*",
     "sqlite3_(snprintf|vmprintf|vsnprintf)",
+    # v2 should be used
+    "sqlite3changeset_apply(|_strm)",
     # try should be used not enter
     "sqlite3_mutex_(alloc|enter|free|notheld)",
     "sqlite3_next_stmt",
