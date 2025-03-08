@@ -79,7 +79,12 @@ insert into toc values
     ('sqlite3changegroup_new', 'function', 0, 'Create A New Changegroup Object', 'session/sqlite3changegroup_new.html'),
     ('sqlite3changegroup_output', 'function', 0, 'Obtain A Composite Changeset From A Changegroup', 'session/sqlite3changegroup_output.html'),
     ('sqlite3changegroup_output_strm', 'function', 0, 'Streaming Versions of API functions.', 'session/sqlite3changegroup_add_strm.html'),
-    ('sqlite3changegroup_schema', 'function', 0, 'Add a Schema to a Changegroup', 'session/sqlite3changegroup_schema.html')
+    ('sqlite3changegroup_schema', 'function', 0, 'Add a Schema to a Changegroup', 'session/sqlite3changegroup_schema.html'),
+    ('sqlite3rebaser_create', 'function', 1, 'Create a changeset rebaser object.', 'session/sqlite3rebaser_create.html'),
+    ('sqlite3rebaser_delete', 'function', 1, 'Delete a changeset rebaser object.', 'session/sqlite3rebaser_delete.html'),
+    ('sqlite3rebaser_configure', 'function', 1, 'Configure a changeset rebaser object.', 'session/sqlite3rebaser_configure.html'),
+    ('sqlite3rebaser_rebase', 'function', 1, 'Rebase a changeset', 'session/sqlite3rebaser_rebase.html'),
+    ('sqlite3rebaser_rebase_strm', 'function', 0, 'Streaming Versions of API functions.', 'session/sqlite3changegroup_add_strm.html')
 
     ;
 

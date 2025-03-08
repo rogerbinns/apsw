@@ -304,6 +304,18 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     argp_optindex++;                                                                                                   \
   } while (0)
 
+#define ARG_Buffer(varname)                                                                                            \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!PyObject_CheckBuffer(useargs[argp_optindex]))                                                                 \
+    {                                                                                                                  \
+      PyErr_Format(PyExc_TypeError, "Expected Buffer compatible, not %s", Py_TypeName(useargs[argp_optindex]));        \
+      goto param_error;                                                                                                \
+    }                                                                                                                  \
+    varname = useargs[argp_optindex];                                                                                  \
+    argp_optindex++;                                                                                                   \
+  } while (0)
+
 #define ARG_unsigned_long(varname)                                                                                     \
   do                                                                                                                   \
   {                                                                                                                    \
@@ -377,6 +389,9 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
 #define ARG_Connection(varname) ARG_TYPE_CHECK(varname, (PyObject *)&ConnectionType, Connection *)
 
 #define ARG_TableChange(varname) ARG_TYPE_CHECK(varname, (PyObject *)&APSWTableChangeType, APSWTableChange *)
+
+#define ARG_ConflictResolutions(varname)                                                                               \
+  ARG_TYPE_CHECK(varname, (PyObject *)&APSWConflictResolutionsType, APSWConflictResolutions *)
 
 /* PySequence_Check is too strict and rejects things that are
     accepted by PySequence_Fast like sets and generators,

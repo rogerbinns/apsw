@@ -142,6 +142,8 @@ for name, obj in (
                 "Changeset",
                 "ChangesetBuilder",
                 "TableChange",
+                "ConflictResolutions",
+                "Rebaser",
             ):
                 continue
             # ignore mappings !!!
