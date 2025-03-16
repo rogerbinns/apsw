@@ -2450,7 +2450,7 @@ def generate_series(start, stop, step=None):
 
     .. seealso::
 
-        :meth:`generate_series`
+        :meth:`generate_series_sqlite`
 
     """
     if step is None:
