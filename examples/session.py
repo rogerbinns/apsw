@@ -316,9 +316,57 @@ for change in apsw.Changeset.iter(read):
 print("Number of reads", num_reads)
 print("Number of changes", num_changes)
 
+### rebaser: Rebasing
+# You can merge conflict decisions from an earlier changeset into a
+# later changeset so that you don't have to separately transport and
+# store those conflict decisions.  This can be used to take
+# independently made changesets, and turn them into a linear sequence.
+# The `rebaser documentation
+# <https://www.sqlite.org/session/rebaser.html>`__ includes more
+# detail.
+#
+# To do a rebase, you need to take the :class:`ConflictResolutions`
+# from an :meth:`Changeset.apply` to :meth:`Rebaser.configure`, and
+# then :meth:`Rebaser.rebase` a following changeset.
+#
+# We are going to make alice then bob appear to have been done in that
+# order without conflicts.
+
+# Reset back to original data with the base changeset applied
+connection.execute("""
+    DROP TABLE item_tag_link;
+    DROP TABLE items;
+    DROP TABLE tags;
+""")
+
+connection.execute(pathlib.Path("session.sql").read_text())
+
+# The conflict handler we'll use doing latest writer wins - you should
+# be more careful.
+def conflict_handler(reason: int, change: apsw.TableChange) -> int:
+    if reason in (apsw.SQLITE_CHANGESET_DATA, apsw.SQLITE_CHANGESET_CONFLICT):
+        return apsw.SQLITE_CHANGESET_REPLACE
+    return apsw.SQLITE_CHANGESET_OMIT
+
+# apply original changeset that alice was based on
+apsw.Changeset.apply(changeset, connection, conflict=conflict_handler)
+
+# Make a rebaser
+rebaser = apsw.Rebaser()
+
+# save these conflict resolutions
+conflict_resolutions = apsw.Changeset.apply(alice_changeset, connection, conflict=conflict_handler)
+
+rebaser.configure(conflict_resolutions)
+
+# and apply them to bob's
+bob_rebased = rebaser.rebase(bob_changeset)
+
 
 ### session_end: Cleanup
 # We can now close the connections, but it is optional.  APSW automatically
 # cleans up sessions when their corresponding connections are closed.
 
 connection.close()
+alice_connection.close()
+bob_connection.close()
