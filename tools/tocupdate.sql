@@ -84,9 +84,12 @@ insert into toc values
     ('sqlite3rebaser_delete', 'function', 1, 'Delete a changeset rebaser object.', 'session/sqlite3rebaser_delete.html'),
     ('sqlite3rebaser_configure', 'function', 1, 'Configure a changeset rebaser object.', 'session/sqlite3rebaser_configure.html'),
     ('sqlite3rebaser_rebase', 'function', 1, 'Rebase a changeset', 'session/sqlite3rebaser_rebase.html'),
-    ('sqlite3rebaser_rebase_strm', 'function', 0, 'Streaming Versions of API functions.', 'session/sqlite3changegroup_add_strm.html')
+    ('sqlite3rebaser_rebase_strm', 'function', 1, 'Streaming Versions of API functions.', 'session/sqlite3changegroup_add_strm.html')
 
     ;
+
+-- treat rebase as not experimental
+update toc set status = 0 where name like 'sqlite3rebaser_%';
 
 delete from toc where name='SQLITE_TRACE' and title='SQL Trace Event Codes';
 delete from toc where name='SQLITE_CONFIG_ROWID_IN_VIEW';
