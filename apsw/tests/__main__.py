@@ -5772,6 +5772,7 @@ class APSW(unittest.TestCase):
             "APSWFTS5Tokenizer",
             "cursor",
             "APSWChangesetIterator",
+            "APSWConflictResolutions",
         ):
             return
 
@@ -5835,6 +5836,11 @@ class APSW(unittest.TestCase):
             "APSWChangesetBuilder": {
                 "skip": {"dealloc", "close_internal", "close", "init"},
                 "req": {"closed": "CHECK_BUILDER_CLOSED"},
+                "order": ("closed",),
+            },
+            "APSWRebaser": {
+                "skip": {"dealloc", "init"},
+                "req": {"closed": "CHECK_REBASER_CLOSED"},
                 "order": ("closed",),
             },
             "APSWBlob": {
