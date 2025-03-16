@@ -158,6 +158,9 @@ returns = {
             sqlite3changeset_upgrade sqlite3session_attach sqlite3session_changeset
             sqlite3session_config sqlite3session_create sqlite3session_diff
             sqlite3session_object_config sqlite3session_patchset
+            sqlite3rebaser_configure sqlite3rebaser_create
+            sqlite3rebaser_rebase
+
             """.split(),
     # py functions that return a number to indicate failure
     "number": """

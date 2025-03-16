@@ -155,6 +155,7 @@ functions_global = (
     "sqlite3_mutex_(try|leave)",
     # session extension
     "sqlite3change(group|set)_.*",
+    "sqlite3rebaser_.*",
 )
 
 # name pattern, number of args, how to get sqlite3* ideally avoiding

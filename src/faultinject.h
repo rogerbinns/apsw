@@ -186,8 +186,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef sqlite3changegroup_output
 #undef sqlite3changegroup_output_strm
 #undef sqlite3changegroup_schema
-#undef sqlite3changeset_apply
-#undef sqlite3changeset_apply_strm
 #undef sqlite3changeset_apply_v2
 #undef sqlite3changeset_apply_v2_strm
 #undef sqlite3changeset_concat
@@ -206,6 +204,9 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef sqlite3changeset_start_v2
 #undef sqlite3changeset_start_v2_strm
 #undef sqlite3changeset_upgrade
+#undef sqlite3rebaser_configure
+#undef sqlite3rebaser_create
+#undef sqlite3rebaser_rebase
 #undef sqlite3rebaser_rebase_strm
 #undef sqlite3session_attach
 #undef sqlite3session_changeset
@@ -2837,36 +2838,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                                                           \
     _res_sqlite3changegroup_schema;                                                                                                                                             \
 })
-#define sqlite3changeset_apply(...) \
-({                                                                                                                                                                     \
-    __auto_type _res_sqlite3changeset_apply = 0 ? sqlite3changeset_apply(__VA_ARGS__) : 0;                                                                             \
-                                                                                                                                                                       \
-    _res_sqlite3changeset_apply = (typeof (_res_sqlite3changeset_apply))APSW_FaultInjectControl("sqlite3changeset_apply", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                                                       \
-    if ((typeof (_res_sqlite3changeset_apply))0x1FACADE == _res_sqlite3changeset_apply)                                                                                \
-       _res_sqlite3changeset_apply = sqlite3changeset_apply(__VA_ARGS__);                                                                                              \
-    else if ((typeof(_res_sqlite3changeset_apply))0x2FACADE == _res_sqlite3changeset_apply)                                                                            \
-    {                                                                                                                                                                  \
-        sqlite3changeset_apply(__VA_ARGS__);                                                                                                                           \
-        _res_sqlite3changeset_apply = (typeof (_res_sqlite3changeset_apply))18;                                                                                        \
-    }                                                                                                                                                                  \
-    _res_sqlite3changeset_apply;                                                                                                                                       \
-})
-#define sqlite3changeset_apply_strm(...) \
-({                                                                                                                                                                                    \
-    __auto_type _res_sqlite3changeset_apply_strm = 0 ? sqlite3changeset_apply_strm(__VA_ARGS__) : 0;                                                                                  \
-                                                                                                                                                                                      \
-    _res_sqlite3changeset_apply_strm = (typeof (_res_sqlite3changeset_apply_strm))APSW_FaultInjectControl("sqlite3changeset_apply_strm", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                                                                      \
-    if ((typeof (_res_sqlite3changeset_apply_strm))0x1FACADE == _res_sqlite3changeset_apply_strm)                                                                                     \
-       _res_sqlite3changeset_apply_strm = sqlite3changeset_apply_strm(__VA_ARGS__);                                                                                                   \
-    else if ((typeof(_res_sqlite3changeset_apply_strm))0x2FACADE == _res_sqlite3changeset_apply_strm)                                                                                 \
-    {                                                                                                                                                                                 \
-        sqlite3changeset_apply_strm(__VA_ARGS__);                                                                                                                                     \
-        _res_sqlite3changeset_apply_strm = (typeof (_res_sqlite3changeset_apply_strm))18;                                                                                             \
-    }                                                                                                                                                                                 \
-    _res_sqlite3changeset_apply_strm;                                                                                                                                                 \
-})
 #define sqlite3changeset_apply_v2(...) \
 ({                                                                                                                                                                              \
     __auto_type _res_sqlite3changeset_apply_v2 = 0 ? sqlite3changeset_apply_v2(__VA_ARGS__) : 0;                                                                                \
@@ -3136,6 +3107,51 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_sqlite3changeset_upgrade = (typeof (_res_sqlite3changeset_upgrade))18;                                                                                          \
     }                                                                                                                                                                        \
     _res_sqlite3changeset_upgrade;                                                                                                                                           \
+})
+#define sqlite3rebaser_configure(...) \
+({                                                                                                                                                                           \
+    __auto_type _res_sqlite3rebaser_configure = 0 ? sqlite3rebaser_configure(__VA_ARGS__) : 0;                                                                               \
+                                                                                                                                                                             \
+    _res_sqlite3rebaser_configure = (typeof (_res_sqlite3rebaser_configure))APSW_FaultInjectControl("sqlite3rebaser_configure", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                             \
+    if ((typeof (_res_sqlite3rebaser_configure))0x1FACADE == _res_sqlite3rebaser_configure)                                                                                  \
+       _res_sqlite3rebaser_configure = sqlite3rebaser_configure(__VA_ARGS__);                                                                                                \
+    else if ((typeof(_res_sqlite3rebaser_configure))0x2FACADE == _res_sqlite3rebaser_configure)                                                                              \
+    {                                                                                                                                                                        \
+        sqlite3rebaser_configure(__VA_ARGS__);                                                                                                                               \
+        _res_sqlite3rebaser_configure = (typeof (_res_sqlite3rebaser_configure))18;                                                                                          \
+    }                                                                                                                                                                        \
+    _res_sqlite3rebaser_configure;                                                                                                                                           \
+})
+#define sqlite3rebaser_create(...) \
+({                                                                                                                                                                  \
+    __auto_type _res_sqlite3rebaser_create = 0 ? sqlite3rebaser_create(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_sqlite3rebaser_create = (typeof (_res_sqlite3rebaser_create))APSW_FaultInjectControl("sqlite3rebaser_create", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_sqlite3rebaser_create))0x1FACADE == _res_sqlite3rebaser_create)                                                                               \
+       _res_sqlite3rebaser_create = sqlite3rebaser_create(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_sqlite3rebaser_create))0x2FACADE == _res_sqlite3rebaser_create)                                                                           \
+    {                                                                                                                                                               \
+        sqlite3rebaser_create(__VA_ARGS__);                                                                                                                         \
+        _res_sqlite3rebaser_create = (typeof (_res_sqlite3rebaser_create))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_sqlite3rebaser_create;                                                                                                                                     \
+})
+#define sqlite3rebaser_rebase(...) \
+({                                                                                                                                                                  \
+    __auto_type _res_sqlite3rebaser_rebase = 0 ? sqlite3rebaser_rebase(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_sqlite3rebaser_rebase = (typeof (_res_sqlite3rebaser_rebase))APSW_FaultInjectControl("sqlite3rebaser_rebase", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_sqlite3rebaser_rebase))0x1FACADE == _res_sqlite3rebaser_rebase)                                                                               \
+       _res_sqlite3rebaser_rebase = sqlite3rebaser_rebase(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_sqlite3rebaser_rebase))0x2FACADE == _res_sqlite3rebaser_rebase)                                                                           \
+    {                                                                                                                                                               \
+        sqlite3rebaser_rebase(__VA_ARGS__);                                                                                                                         \
+        _res_sqlite3rebaser_rebase = (typeof (_res_sqlite3rebaser_rebase))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_sqlite3rebaser_rebase;                                                                                                                                     \
 })
 #define sqlite3rebaser_rebase_strm(...) \
 ({                                                                                                                                                                                 \
