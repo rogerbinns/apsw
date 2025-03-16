@@ -1172,9 +1172,7 @@ APSWTableChange_dealloc(PyObject *self)
  Provides changeset (including patchset) related methods.
 */
 
-// ::TODO:: all these bytes as input should be Buffer
-
-/** .. method:: invert(changeset: bytes) -> bytes
+/** .. method:: invert(changeset: Buffer) -> bytes
 
   Produces a changeset that reverses the effect of
   the supplied changeset.
@@ -1192,7 +1190,7 @@ APSWChangeset_invert(void *Py_UNUSED(static_method), PyObject *const *fast_args,
   {
     Changeset_invert_CHECK;
     ARG_PROLOG(1, Changeset_invert_KWNAMES);
-    ARG_MANDATORY ARG_py_buffer(changeset);
+    ARG_MANDATORY ARG_Buffer(changeset);
     ARG_EPILOG(NULL, Changeset_invert_USAGE, );
   }
 
@@ -1253,7 +1251,7 @@ APSWChangeset_invert_stream(void *Py_UNUSED(static_method), PyObject *const *fas
   Py_RETURN_NONE;
 }
 
-/** .. method:: concat(A: bytes, B: bytes) -> bytes
+/** .. method:: concat(A: Buffer, B: Buffer) -> bytes
 
   Returns combined changesets
 
@@ -1272,8 +1270,8 @@ APSWChangeset_concat(void *Py_UNUSED(static_method), PyObject *const *fast_args,
   {
     Changeset_concat_CHECK;
     ARG_PROLOG(2, Changeset_concat_KWNAMES);
-    ARG_MANDATORY ARG_py_buffer(A);
-    ARG_MANDATORY ARG_py_buffer(B);
+    ARG_MANDATORY ARG_Buffer(A);
+    ARG_MANDATORY ARG_Buffer(B);
     ARG_EPILOG(NULL, Changeset_concat_USAGE, );
   }
 
@@ -2283,11 +2281,9 @@ static PyTypeObject APSWConflictResolutionsType = {
 };
 
 static PyMethodDef APSWRebaser_methods[] = {
-  { "configure", (PyCFunction)APSWRebaser_configure, METH_STATIC | METH_FASTCALL | METH_KEYWORDS,
-    Rebaser_configure_DOC },
-  { "rebase", (PyCFunction)APSWRebaser_rebase, METH_STATIC | METH_FASTCALL | METH_KEYWORDS, Rebaser_rebase_DOC },
-  { "rebase_stream", (PyCFunction)APSWRebaser_rebase_stream, METH_STATIC | METH_FASTCALL | METH_KEYWORDS,
-    Rebaser_rebase_stream_DOC },
+  { "configure", (PyCFunction)APSWRebaser_configure, METH_FASTCALL | METH_KEYWORDS, Rebaser_configure_DOC },
+  { "rebase", (PyCFunction)APSWRebaser_rebase, METH_FASTCALL | METH_KEYWORDS, Rebaser_rebase_DOC },
+  { "rebase_stream", (PyCFunction)APSWRebaser_rebase_stream, METH_FASTCALL | METH_KEYWORDS, Rebaser_rebase_stream_DOC },
 
   { 0 },
 };
@@ -2296,5 +2292,8 @@ static PyTypeObject APSWRebaserType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Rebaser",
   .tp_basicsize = sizeof(APSWRebaser),
   .tp_doc = Rebaser_class_DOC,
+  .tp_methods = APSWRebaser_methods,
+  .tp_new = PyType_GenericNew,
+  .tp_init = (initproc)APSWRebaser_init,
   .tp_dealloc = (destructor)APSWRebaser_dealloc,
 };
