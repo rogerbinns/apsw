@@ -831,7 +831,7 @@ class Changeset:
         ...
 
     @staticmethod
-    def concat(A: bytes, B: bytes) -> bytes:
+    def concat(A: Buffer, B: Buffer) -> bytes:
         """Returns combined changesets
 
         Calls: `sqlite3changeset_concat <https://sqlite.org/session/sqlite3changeset_concat.html>`__"""
@@ -845,7 +845,7 @@ class Changeset:
         ...
 
     @staticmethod
-    def invert(changeset: bytes) -> bytes:
+    def invert(changeset: Buffer) -> bytes:
         """Produces a changeset that reverses the effect of
         the supplied changeset.
 

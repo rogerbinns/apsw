@@ -918,13 +918,13 @@
 
 #define  Changeset_class_DOC "Provides changeset (including patchset) related methods.\n" 
 
-#define  Changeset_concat_DOC "concat($self,A,B)\n--\n\nChangeset.concat(A: bytes, B: bytes) -> bytes\n\n" \
+#define  Changeset_concat_DOC "concat($self,A,B)\n--\n\nChangeset.concat(A: Buffer, B: Buffer) -> bytes\n\n" \
 "Returns combined changesets\n" \
 "\n" \
 "Calls: `sqlite3changeset_concat <https://sqlite.org/session/sqlite3changeset_concat.html>`__\n" 
 
 #define Changeset_concat_KWNAMES "A", "B"
-#define Changeset_concat_USAGE "Changeset.concat(A: bytes, B: bytes) -> bytes"
+#define Changeset_concat_USAGE "Changeset.concat(A: Buffer, B: Buffer) -> bytes"
 
 #define Changeset_concat_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(A), PyObject *)); \
@@ -947,14 +947,14 @@
 } while(0)
 
 
-#define  Changeset_invert_DOC "invert($self,changeset)\n--\n\nChangeset.invert(changeset: bytes) -> bytes\n\n" \
+#define  Changeset_invert_DOC "invert($self,changeset)\n--\n\nChangeset.invert(changeset: Buffer) -> bytes\n\n" \
 "Produces a changeset that reverses the effect of\n" \
 "the supplied changeset.\n" \
 "\n" \
 "Calls: `sqlite3changeset_invert <https://sqlite.org/session/sqlite3changeset_invert.html>`__\n" 
 
 #define Changeset_invert_KWNAMES "changeset"
-#define Changeset_invert_USAGE "Changeset.invert(changeset: bytes) -> bytes"
+#define Changeset_invert_USAGE "Changeset.invert(changeset: Buffer) -> bytes"
 
 #define Changeset_invert_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
