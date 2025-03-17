@@ -11688,6 +11688,7 @@ test_types_vals = (
 )
 
 from .ftstests import *
+from .sessiontests import *
 
 if __name__ == "__main__":
     setup()
