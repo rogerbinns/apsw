@@ -241,15 +241,6 @@ typedef struct APSWTableChange
 
 static PyTypeObject APSWTableChangeType;
 
-typedef struct APSWConflictResolutions
-{
-  PyObject_HEAD
-  void *pRebase;
-  int nRebase;
-} APSWConflictResolutions;
-
-static PyTypeObject APSWConflictResolutionsType;
-
 typedef struct APSWRebaser
 {
   PyObject_HEAD
@@ -1424,7 +1415,7 @@ error:
   return NULL;
 }
 
-/** .. method:: apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0) -> ConflictResolutions
+/** .. method:: apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None
 
   Applies a changeset to a database.
 
@@ -1433,6 +1424,7 @@ error:
   :param filter: Callback to determine if changes to a table are done
   :param conflict: Callback to handle a change that cannot be applied
   :param flags: `v2 API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.
+  :param rebase: If ``True`` then return :class:`rebase <Rebaser>` information, else :class:`None`.
 
   Filter
   ------
@@ -1456,12 +1448,6 @@ error:
   If not supplied or on error, ``SQLITE_CHANGESET_ABORT`` is returned.
 
   See the :ref:`example <example_applying>`.
-
-  Return value
-  ------------
-
-  The :class:`ConflictResolutions` is used with
-  :meth:`Rebaser.configure` and can be ignored if you aren't rebasing.
 
   -* sqlite3changeset_apply_v2 sqlite3changeset_apply_v2_strm
 
@@ -1530,6 +1516,7 @@ applyConflict(void *pCtx, int eConflict, sqlite3_changeset_iter *p)
     {
       switch (val)
       {
+        /* ::TODO:: only some of these are valid based on eConflict so also detect that here */
       case SQLITE_CHANGESET_OMIT:
       case SQLITE_CHANGESET_REPLACE:
       case SQLITE_CHANGESET_ABORT:
@@ -1573,6 +1560,7 @@ APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, 
   PyObject *conflict = NULL;
 
   int flags = 0;
+  int rebase = 0;
 
   {
     Changeset_apply_CHECK;
@@ -1582,6 +1570,7 @@ APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, 
     ARG_OPTIONAL ARG_optional_Callable(filter);
     ARG_OPTIONAL ARG_optional_Callable(conflict);
     ARG_OPTIONAL ARG_int(flags);
+    ARG_OPTIONAL ARG_bool(rebase);
     ARG_EPILOG(NULL, Changeset_apply_USAGE, );
   }
 
@@ -1600,7 +1589,8 @@ APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, 
   if (PyCallable_Check(changeset))
   {
     res = sqlite3changeset_apply_v2_strm(db->db, APSWSession_xInput, changeset, filter ? applyFilter : NULL,
-                                         conflict ? applyConflict : conflictReject, &aic, &pRebase, &nRebase, flags);
+                                         conflict ? applyConflict : conflictReject, &aic, rebase ? &pRebase : NULL,
+                                         rebase ? &nRebase : NULL, flags);
   }
   else
   {
@@ -1614,7 +1604,8 @@ APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, 
       res = SQLITE_TOOBIG;
     else
       res = sqlite3changeset_apply_v2(db->db, changeset_buffer.len, changeset_buffer.buf, filter ? applyFilter : NULL,
-                                      conflict ? applyConflict : conflictReject, &aic, &pRebase, &nRebase, flags);
+                                      conflict ? applyConflict : conflictReject, &aic, rebase ? &pRebase : NULL,
+                                      rebase ? &nRebase : NULL, flags);
     PyBuffer_Release(&changeset_buffer);
   }
 
@@ -1632,25 +1623,22 @@ APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, 
                                 "extension, so SQLite considered the session apply successful");
   }
 
-  APSWConflictResolutions *conflict_resolutions = NULL;
-
-  if (!PyErr_Occurred())
+  if (rebase)
   {
-    conflict_resolutions = (APSWConflictResolutions *)_PyObject_New(&APSWConflictResolutionsType);
-    if (conflict_resolutions)
+    PyObject *retval = PyBytes_FromStringAndSize(pRebase, nRebase);
+    if (retval)
     {
-      conflict_resolutions->pRebase = pRebase;
-      /* we own it now */
-      pRebase = NULL;
-      conflict_resolutions->nRebase = nRebase;
+      sqlite3_free(pRebase);
+      return retval;
     }
   }
 
-  if (pRebase)
-    sqlite3_free(pRebase);
+  sqlite3_free(pRebase);
 
-  assert((PyErr_Occurred() && !conflict_resolutions) || (!PyErr_Occurred() && conflict_resolutions));
-  return (PyObject *)conflict_resolutions;
+  if (PyErr_Occurred())
+    return NULL;
+
+  Py_RETURN_NONE;
 }
 
 static PyObject *
@@ -1981,35 +1969,6 @@ APSWChangesetBuilder_output_stream(APSWChangesetBuilder *self, PyObject *const *
   Py_RETURN_NONE;
 }
 
-/** .. class:: ConflictResolutions
-
-  This object wraps the conflict resolutions returned by
-  :meth:`Changeset.apply`.  They can be supplied to
-  :meth:`Rebaser.configure`.
-*/
-void
-APSWConflictResolutions_dealloc(APSWConflictResolutions *self)
-{
-  if (self->pRebase)
-  {
-    sqlite3_free(self->pRebase);
-    self->pRebase = NULL;
-  }
-  Py_TpFree((PyObject *)self);
-}
-
-/** .. attribute:: size
-  :type: int
-
-  How many bytes make up the conflict resolutions.
-
-*/
-static PyObject *
-APSWConflictResolutions_get_size(APSWConflictResolutions *self)
-{
-  return PyLong_FromLong(self->nRebase);
-}
-
 /** .. class:: Rebaser
 
   This object wraps a `sqlite3_rebaser
@@ -2055,7 +2014,7 @@ APSWRebaser_init(APSWRebaser *self, PyObject *args, PyObject *kwargs)
   return 0;
 }
 
-/** .. method:: configure(cr: ConflictResolutions) -> None
+/** .. method:: configure(cr: Buffer) -> None
 
   Tells the rebaser about conflict resolutions made in an earlier
   :meth:`Changeset.apply`.
@@ -2066,15 +2025,24 @@ static PyObject *
 APSWRebaser_configure(APSWRebaser *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   CHECK_REBASER_CLOSED(NULL);
-  APSWConflictResolutions *cr = NULL;
+  PyObject *cr = NULL;
   {
     Rebaser_configure_CHECK;
     ARG_PROLOG(1, Rebaser_configure_KWNAMES);
-    ARG_MANDATORY ARG_ConflictResolutions(cr);
+    ARG_MANDATORY ARG_Buffer(cr);
     ARG_EPILOG(NULL, Rebaser_configure_USAGE, );
   }
 
-  int rc = sqlite3rebaser_configure(self->rebaser, cr->nRebase, cr->pRebase);
+  Py_buffer cr_buffer;
+
+  if (0 != PyObject_GetBufferContiguous(cr, &cr_buffer, PyBUF_SIMPLE))
+  {
+    assert(PyErr_Occurred());
+    return NULL;
+  }
+
+  int rc = sqlite3rebaser_configure(self->rebaser, cr_buffer.len, cr_buffer.buf);
+  PyBuffer_Release(&cr_buffer);
   SET_EXC(rc, NULL);
 
   if (PyErr_Occurred())
@@ -2275,18 +2243,6 @@ static PyTypeObject APSWTableChangeType = {
   .tp_doc = TableChange_class_DOC,
   .tp_dealloc = (destructor)APSWTableChange_dealloc,
   .tp_str = (reprfunc)APSWTableChange_tp_str,
-};
-
-static PyGetSetDef APSWConflictResolutions_getset[] = {
-  { "size", (getter)APSWConflictResolutions_get_size, NULL, ConflictResolutions_size_DOC },
-  { 0 },
-};
-
-static PyTypeObject APSWConflictResolutionsType = {
-  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.ConflictResolutions",
-  .tp_basicsize = sizeof(APSWConflictResolutions),
-  .tp_doc = ConflictResolutions_class_DOC,
-  .tp_dealloc = (destructor)APSWConflictResolutions_dealloc,
 };
 
 static PyMethodDef APSWRebaser_methods[] = {
