@@ -64,6 +64,15 @@ resulted in those changes.
   consistency, and meeting user goals up front.  Adding it later is
   painful.
 
+* Most APIs produce and consume changesets as bytes (or :class:`bytes
+  like <collections.abc.Buffer>`. That limits the changeset size to
+  2GB - the limit is in the SQLite code and also the limit for `blobs
+  <https://www.sqlite.org/limits.html>`__.  To produce or consume
+  larger changesets, or to not have an entire changeset in memory,
+  there are streaming versions of most APIs where you need to provide
+  to provide a :class:`block input <SessionStreamInput>` or
+  :class:`block output <SessionStreamOutput>` callback.
+
 .. important::
 
     By default Session can only record and replay changes that have an
