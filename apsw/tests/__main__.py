@@ -5772,7 +5772,6 @@ class APSW(unittest.TestCase):
             "APSWFTS5Tokenizer",
             "cursor",
             "APSWChangesetIterator",
-            "APSWConflictResolutions",
         ):
             return
 

@@ -614,12 +614,6 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
-        elif param["type"] == "ConflictResolutions":
-            type = "APSWConflictResolutions *"
-            kind = "ConflictResolutions"
-            if param["default"]:
-                breakpoint()
-                pass
         elif param["type"] == "Buffer":
             type = "PyObject *"
             kind = "Buffer"

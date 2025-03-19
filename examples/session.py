@@ -326,7 +326,7 @@ print("Number of changes", num_changes)
 # <https://www.sqlite.org/session/rebaser.html>`__ includes more
 # detail.
 #
-# To do a rebase, you need to take the :class:`ConflictResolutions`
+# To do a rebase, you need to take the conflict resolutions
 # from an :meth:`Changeset.apply` to :meth:`Rebaser.configure`, and
 # then :meth:`Rebaser.rebase` a following changeset.
 #
@@ -356,7 +356,7 @@ apsw.Changeset.apply(changeset, connection, conflict=conflict_handler)
 rebaser = apsw.Rebaser()
 
 # save these conflict resolutions
-conflict_resolutions = apsw.Changeset.apply(alice_changeset, connection, conflict=conflict_handler)
+conflict_resolutions = apsw.Changeset.apply(alice_changeset, connection, conflict=conflict_handler, rebase=True)
 
 rebaser.configure(conflict_resolutions)
 
