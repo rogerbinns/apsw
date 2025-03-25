@@ -614,10 +614,10 @@ def find_columns(
          else only the named one.
 
     """
-    for dbame in connection.db_names() if schema is None else [schema]:
+    for dbname in connection.db_names() if schema is None else [schema]:
         columns: list[str] = []
-        pks = set()
-        for column, pk in connection.execute("SELECT name, pk FROM pragma_table_info(?, ?)", (table_name, dbame)):
+        pks: set[int] = set()
+        for column, pk in connection.execute("SELECT name, pk FROM pragma_table_info(?, ?)", (table_name, dbname)):
             columns.append(column)
             if pk > 0:
                 pks.add(pk - 1)
@@ -676,7 +676,8 @@ def changeset_to_sql(
 
         # package up change.old
         assert change.old is not None
-        constraints : list[str] = []
+        constraints: list[str] = []
+
         # always do pk columns first, for cosmetic reasons
         def sort_key(n):
             # False is sorted before True
