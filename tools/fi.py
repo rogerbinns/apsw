@@ -25,18 +25,26 @@ print("tmpdir", tmpdir.name)
 testing_recursion = False
 
 
+def file_cleanup():
+    if "apsw" in sys.modules:
+        for c in sys.modules["apsw"].connections():
+            c.close(True)
+    for f in glob.glob(f"{tmpdir.name}/dbfile*") + glob.glob(f"{tmpdir.name}/myobfudb*"):
+        os.remove(f)
+
+def exercise_examples(example_code, expect_exception):
+    file_cleanup()
+    for code, __ in example_code:
+        exec(code, {"print": lambda *args: None}, None)
+        if expect_exception:
+            return
+
+
 def exercise(example_code, expect_exception):
     "This function exercises the code paths where we have fault injection"
 
     global testing_recursion
     testing_recursion = False
-
-    def file_cleanup():
-        if "apsw" in sys.modules:
-            for c in sys.modules["apsw"].connections():
-                c.close(True)
-        for f in glob.glob(f"{tmpdir.name}/dbfile*") + glob.glob(f"{tmpdir.name}/myobfudb*"):
-            os.remove(f)
 
     file_cleanup()
 
@@ -572,11 +580,7 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
-    file_cleanup()
-    for code, __ in example_code:
-        exec(code, {"print": lambda *args: None}, None)
-        if expect_exception:
-            return
+    exercise_examples(example_code, expect_exception)
 
     if False:
         # This does recursion error, which also causes lots of last chance
