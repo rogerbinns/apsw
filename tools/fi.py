@@ -30,8 +30,9 @@ def file_cleanup():
     if "apsw" in sys.modules:
         for c in sys.modules["apsw"].connections():
             c.close(True)
-    for f in glob.glob(f"{tmpdir.name}/dbfile*") + glob.glob(f"{tmpdir.name}/myobfudb*"):
+    for f in glob.glob(f"{tmpdir.name}/*"):
         os.remove(f)
+
 
 def exercise_examples(example_code, expect_exception):
     file_cleanup()
@@ -643,6 +644,10 @@ class Tester:
             # make it use tmpfs
             '"dbfile"': f'"{tmpdir.name}/dbfile-delme-example"',
             "myobfudb": f"{tmpdir.name}/myobfudb-example",
+            '"alice.db"': f'"{tmpdir.name}/alice.db"',
+            '"bob.db"': f'"{tmpdir.name}/bob.db"',
+            '"diff_demo.db"': f'"{tmpdir.name}/diff_demo.db"',
+            "'other.db'": f"'{tmpdir.name}/other.db'",
             # silence logging
             "apsw.ext.log_sqlite()": "apsw.ext.log_sqlite(level=0)",
             # resource usage is deliberately slow
@@ -653,7 +658,6 @@ class Tester:
             # fix pprint
             "from pprint import pprint": "pprint = print",
         }
-        for example in pathlib.Path().glob("examples/*.py"):
 
         example_files = []
         if not self.example_arg:
