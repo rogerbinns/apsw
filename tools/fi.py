@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import sys
 import gc
 import math
@@ -618,7 +619,7 @@ class Tester:
 
     FAULT = FAULTT, FAULTS
 
-    def __init__(self):
+    def __init__(self, example_arg=[]):
         self.returns = genfaultinject.returns
         self.call_remap = {v: k for k, v in genfaultinject.call_map.items()}
 
@@ -629,6 +630,8 @@ class Tester:
         end = start + len(lines)
         self.start_line = start
         self.end_line = end
+
+        self.example_arg = example_arg
 
         self.example_code = []
         # various transformations with the intention to keep the line numbers the same
@@ -651,6 +654,16 @@ class Tester:
             "from pprint import pprint": "pprint = print",
         }
         for example in pathlib.Path().glob("examples/*.py"):
+
+        example_files = []
+        if not self.example_arg:
+            example_files.extend(list(pathlib.Path().glob("examples/*.py")))
+        else:
+            names = list(pathlib.Path().glob(f"examples/{self.example_arg}.py"))
+            if not names:
+                sys.exit(f"f{pattern=} matched no examples files")
+            example_files.extend(names)
+        for example in example_files:
             code = example.read_text()
             for k, v in replacements.items():
                 code = code.replace(k, v)
@@ -934,7 +947,7 @@ class Tester:
                         # we do this at the very end with shutdown being terminal
                         sys.modules["apsw"].shutdown()
                     else:
-                        exercise(self.example_code, self.expect_exception)
+                        (exercise_examples if self.example_arg else exercise)(self.example_code, self.expect_exception)
                         self.abort = 0
                         if not use_runplan and not self.faulted_this_round:
                             use_runplan = True
@@ -984,5 +997,11 @@ class Tester:
         sys.unraisablehook = sys.__unraisablehook__
 
 
-t = Tester()
+import argparse
+
+p = argparse.ArgumentParser()
+p.add_argument("example", nargs="?", help="If specificed then only run this example")
+args = p.parse_args()
+
+t = Tester(args.example)
 t.run()
