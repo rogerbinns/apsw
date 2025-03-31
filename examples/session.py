@@ -77,7 +77,11 @@ DELETE FROM tags WHERE label='battery';
 # :meth:`apsw.ext.find_columns` giving it the connection to inspect.
 
 
-def show_changeset(title: str, contents: apsw.SessionStreamInput):
+def show_changeset(
+    title: str,
+    contents: apsw.SessionStreamInput,
+    connection: apsw.Connection = connection,
+):
     print(title)
     for statement in apsw.ext.changeset_to_sql(
         contents,
@@ -268,7 +272,9 @@ show_changeset("Only items table changes", only_items)
 # chunks, such as with blobs, files, or network connections.
 
 # Use a positive number to set that size
-chunk_size = apsw.session_config(apsw.SQLITE_SESSION_CONFIG_STRMSIZE, -1)
+chunk_size = apsw.session_config(
+    apsw.SQLITE_SESSION_CONFIG_STRMSIZE, -1
+)
 print("default chunk size", chunk_size)
 
 # Some changes to make the changeset larger.  The size is an estimate.
@@ -342,12 +348,17 @@ connection.execute("""
 
 connection.execute(pathlib.Path("session.sql").read_text())
 
+
 # The conflict handler we'll use doing latest writer wins - you should
 # be more careful.
 def conflict_handler(reason: int, change: apsw.TableChange) -> int:
-    if reason in (apsw.SQLITE_CHANGESET_DATA, apsw.SQLITE_CHANGESET_CONFLICT):
+    if reason in (
+        apsw.SQLITE_CHANGESET_DATA,
+        apsw.SQLITE_CHANGESET_CONFLICT,
+    ):
         return apsw.SQLITE_CHANGESET_REPLACE
     return apsw.SQLITE_CHANGESET_OMIT
+
 
 # apply original changeset that alice was based on
 apsw.Changeset.apply(changeset, connection, conflict=conflict_handler)
@@ -356,13 +367,57 @@ apsw.Changeset.apply(changeset, connection, conflict=conflict_handler)
 rebaser = apsw.Rebaser()
 
 # save these conflict resolutions
-conflict_resolutions = apsw.Changeset.apply(alice_changeset, connection, conflict=conflict_handler, rebase=True)
+conflict_resolutions = apsw.Changeset.apply(
+    alice_changeset,
+    connection,
+    conflict=conflict_handler,
+    rebase=True,
+)
 
 rebaser.configure(conflict_resolutions)
 
 # and apply them to bob's
 bob_rebased = rebaser.rebase(bob_changeset)
 
+### session_diff: Table diff
+# :meth:`Session.diff` can be used to get the difference between a
+# table in another database and this database.  This is useful if the
+# other database was updated without a session being recorded.  Note that
+# the table must have a ``PRIMARY KEY``, or it will be ignored.
+
+diff_demo = apsw.Connection("diff_demo.db")
+
+diff_demo.execute("""
+    -- our session runs on this
+    CREATE TABLE example(x PRIMARY KEY, y, z);
+    INSERT INTO example VALUES
+            (1, 'one', 1.1),
+            (2, 'two', 2.2),
+            (3, 'three', 3.3);
+
+    -- the other database
+    ATTACH 'other.db' AS other;
+    -- the table has to have the same name, primary key, and columns
+    CREATE TABLE other.example(x PRIMARY KEY, y, z);
+    INSERT INTO other.example VALUES
+            -- extra row
+            (0, 'zero', 0.0),
+            -- id 1 deliberately missing
+            (2, 'two', 2.2),
+            -- different values
+            (3, 'trois', 'hello');
+""")
+
+session = apsw.Session(diff_demo, "main")
+
+# You must attach (or filter) to include the table
+session.attach("example")
+
+session.diff("other", "example")
+
+diff = session.changeset()
+
+show_changeset("Table diff", diff, diff_demo)
 
 ### session_end: Cleanup
 # We can now close the connections, but it is optional.  APSW automatically
