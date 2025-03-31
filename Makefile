@@ -68,10 +68,10 @@ doc/example.rst: examples/main.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
 
 doc/example-%.rst: examples/%.py tools/example2rst.py src/apswversion.h apsw/ext.py
-	-rm -f recipes.db*
+	-rm -f recipes.db* other.db* diff_demo.db* alice.db* bob.db*
 	cp ../apsw-extended-testing/recipes.db .
 	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py $< $@
-	rm -f recipes.db*
+	-rm -f recipes.db* other.db* diff_demo.db* alice.db* bob.db*
 
 doc/typing.rstgen: src/apswtypes.py tools/types2rst.py
 	-rm -f doc/typing.rstgen
