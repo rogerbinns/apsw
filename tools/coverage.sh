@@ -53,7 +53,7 @@ set +ex
 echo "Running $PYTHON $args"
 env PYTHONPATH=. $PYTHON $args
 res=$?
-[ $res -eq 0 -a -z "$NO_FI" ] && echo "Running $PYTHON tools/fi.py" && env PYTHONPATH=. $PYTHON tools/fi.py
+[ $res -eq 0 -a -z "$NO_FI" ] && echo "Running $PYTHON tools/fi.py $FI_ARGS" && env PYTHONPATH=. $PYTHON tools/fi.py $FI_ARGS
 $GCOVWRAPPER gcov $GCOVOPTS apsw.gcno unicode.gcno > /dev/null
 mv sqlite3.c.gcov sqlite3/
 rm -f src/*.gcov
