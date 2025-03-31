@@ -137,10 +137,29 @@ To manipulate changesets:
   :meth:`Changeset.iter` or from your conflict handler in
   :meth:`Changeset.apply`
 
+.. tip::
+
+  The session extension rarely raises exceptions, instead just doing
+  nothing.  For example if tables don't exist, don't have a primary key,
+  attached databases don't exist, and similar scenarios where typos
+  could happen, you won't get an error, just no action.
+
 Extension configuration
 =======================
 
  */
+
+/* ::TODO:: GIL/mutexes
+
+  The extension is weird around mutexes.  Eg generating a patch set takes a db
+  mutex after issuing some SQL which is the wrong order.
+
+  We probably want to do what the rest of APSW does which is to mutex_try the
+  database for all calls, and then possibly release the GIL.  This will need
+  some further examination of the session extension code.
+*/
+
+
 
 /** .. method:: session_config(op: int, *args: Any) -> Any
 
@@ -367,6 +386,7 @@ APSWSession_close(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast
   }
 
   APSWSession_close_internal(self);
+  MakeExistingException();
 
   if (PyErr_Occurred())
     return NULL;
@@ -411,6 +431,13 @@ APSWSession_attach(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fas
   ``from_schema`` to match the same named table in the database this session is
   attached to.
 
+  See the :ref:`example <example_session_diff>`.
+
+  .. note::
+
+    You must use :meth:`attach` (or use :meth:`table_filter`) to attach to
+    the table before running this method otherwise nothing is recorded.
+
   -* sqlite3session_diff
 */
 static PyObject *
@@ -431,6 +458,8 @@ APSWSession_diff(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_
   char *pErrMsg = NULL;
   int rc = sqlite3session_diff(self->session, from_schema, table, &pErrMsg);
 
+  MakeExistingException();
+
   /* a vfs could have errored */
   if (PyErr_Occurred())
     return NULL;
@@ -450,8 +479,6 @@ APSWSession_get_change_patch_set(APSWSession *self, int changeset)
 {
   int nChangeset = 0;
   void *pChangeset = NULL;
-
-  /* ::TODO:: release GIL around this call? */
 
   int rc = changeset ? sqlite3session_changeset(self->session, &nChangeset, &pChangeset)
                      : sqlite3session_patchset(self->session, &nChangeset, &pChangeset);
@@ -556,7 +583,6 @@ APSWSession_xInput(void *pIn, void *pData, int *pnData)
 static PyObject *
 APSWSession_get_change_patch_set_stream(APSWSession *self, int changeset, PyObject *xOutput)
 {
-  /* ::TODO:: release GIL around this call? */
   int rc = changeset ? sqlite3session_changeset_strm(self->session, APSWSession_xOutput, xOutput)
                      : sqlite3session_patchset_strm(self->session, APSWSession_xOutput, xOutput);
   SET_EXC(rc, NULL);
@@ -1575,8 +1601,6 @@ APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, 
   }
 
   CHECK_CLOSED(db, NULL);
-
-  /* ::TODO:: GIL release, dbmutex acquire */
 
   struct applyInfoContext aic = { .xFilter = filter, .xConflict = conflict };
 
