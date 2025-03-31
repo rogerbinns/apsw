@@ -3703,6 +3703,13 @@
 "``from_schema`` to match the same named table in the database this session is\n" \
 "attached to.\n" \
 "\n" \
+"See the :ref:`example <example_session_diff>`.\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"  You must use :meth:`attach` (or use :meth:`table_filter`) to attach to\n" \
+"  the table before running this method otherwise nothing is recorded.\n" \
+"\n" \
 "Calls: `sqlite3session_diff <https://sqlite.org/session/sqlite3session_diff.html>`__\n" 
 
 #define Session_diff_KWNAMES "from_schema", "table"

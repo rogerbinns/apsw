@@ -2778,6 +2778,13 @@ class Session:
         ``from_schema`` to match the same named table in the database this session is
         attached to.
 
+        See the :ref:`example <example_session_diff>`.
+
+        .. note::
+
+          You must use :meth:`attach` (or use :meth:`table_filter`) to attach to
+          the table before running this method otherwise nothing is recorded.
+
         Calls: `sqlite3session_diff <https://sqlite.org/session/sqlite3session_diff.html>`__"""
         ...
 
