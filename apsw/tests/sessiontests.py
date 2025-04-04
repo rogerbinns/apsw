@@ -88,14 +88,18 @@ class Session(unittest.TestCase):
             ATTACH '' AS another;
             CREATE TABLE another.t(x PRIMARY KEY, y);
             INSERT INTO another.t VALUES(1,3), (2,3);
+            CREATE TABLE zebra(one PRIMARY KEY, two);
+            INSERT INTO zebra VALUES(1,2);
         """)
 
         session = apsw.Session(self.db, "main")
+
+        # errors
+        session.attach("zebra")
+        self.assertRaises(apsw.SQLError, session.diff, "zebra", "zebra")
+        self.assertRaises(apsw.SchemaChangeError, session.diff, "another", "zebra")
+
         session.attach("t")
-
-        # no error for this
-        session.diff("zebra", "zebra")
-
         self.assertRaisesRegex(apsw.SchemaChangeError, ".*table schemas do not match.*", session.diff, "other", "t")
 
         session.diff("another", "t")
