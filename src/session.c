@@ -159,8 +159,6 @@ Extension configuration
   some further examination of the session extension code.
 */
 
-
-
 /** .. method:: session_config(op: int, *args: Any) -> Any
 
  :param op: One of the `sqlite3session options <https://www.sqlite.org/session/c_session_config_strmsize.html>`__
@@ -457,6 +455,8 @@ APSWSession_diff(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_
 
   char *pErrMsg = NULL;
   int rc = sqlite3session_diff(self->session, from_schema, table, &pErrMsg);
+
+  assert((rc == SQLITE_OK && !pErrMsg) || (rc != SQLITE_OK));
 
   MakeExistingException();
 
