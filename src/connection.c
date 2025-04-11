@@ -1929,7 +1929,7 @@ Connection_set_progress_handler(Connection *self, PyObject *const *fast_args, Py
     }
   }
 
-  int min_steps = INT_MAX;
+  int min_steps = INT32_MAX;
   int active = 0;
   for (unsigned i = 0; i < self->progresshandler_count; i++)
   {
