@@ -165,7 +165,7 @@ stubtest: ## Verifies type annotations with mypy
 	-env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/session.py
 
 # set this to a commit id to grab that instead
-FOSSIL_URL="https://www.sqlite.org/src/tarball/sqlite.tar.gz"
+FOSSIL_URL="https://sqlite.org/src/tarball/sqlite.tar.gz"
 fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in sqlite3 directory
 	-rm -rf sqlite3
 	mkdir sqlite3
