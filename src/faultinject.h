@@ -17,7 +17,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef Connection_fts5_api
 #undef MakeExistingException
 #undef PyBool_FromLong
-#undef PyBuffer_IsContiguous
 #undef PyBytes_FromStringAndSize
 #undef PyCode_NewEmpty
 #undef PyDict_New
@@ -58,6 +57,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyObject_GetAttr
 #undef PyObject_GetBuffer
 #undef PyObject_GetBufferContiguous
+#undef PyObject_GetBufferContiguousBounded
 #undef PyObject_GetIter
 #undef PyObject_IsTrue
 #undef PyObject_IsTrueStrict
@@ -264,21 +264,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyBool_FromLong = (typeof (_res_PyBool_FromLong))18;                                                                                 \
     }                                                                                                                                             \
     _res_PyBool_FromLong;                                                                                                                         \
-})
-#define PyBuffer_IsContiguous(...) \
-({                                                                                                                                                                  \
-    __auto_type _res_PyBuffer_IsContiguous = 0 ? PyBuffer_IsContiguous(__VA_ARGS__) : 0;                                                                            \
-                                                                                                                                                                    \
-    _res_PyBuffer_IsContiguous = (typeof (_res_PyBuffer_IsContiguous))APSW_FaultInjectControl("PyBuffer_IsContiguous", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                                                    \
-    if ((typeof (_res_PyBuffer_IsContiguous))0x1FACADE == _res_PyBuffer_IsContiguous)                                                                               \
-       _res_PyBuffer_IsContiguous = PyBuffer_IsContiguous(__VA_ARGS__);                                                                                             \
-    else if ((typeof(_res_PyBuffer_IsContiguous))0x2FACADE == _res_PyBuffer_IsContiguous)                                                                           \
-    {                                                                                                                                                               \
-        PyBuffer_IsContiguous(__VA_ARGS__);                                                                                                                         \
-        _res_PyBuffer_IsContiguous = (typeof (_res_PyBuffer_IsContiguous))18;                                                                                       \
-    }                                                                                                                                                               \
-    _res_PyBuffer_IsContiguous;                                                                                                                                     \
 })
 #define PyBytes_FromStringAndSize(...) \
 ({                                                                                                                                                                              \
@@ -879,6 +864,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyObject_GetBufferContiguous = (typeof (_res_PyObject_GetBufferContiguous))18;                                                                                              \
     }                                                                                                                                                                                    \
     _res_PyObject_GetBufferContiguous;                                                                                                                                                   \
+})
+#define PyObject_GetBufferContiguousBounded(...) \
+({                                                                                                                                                                                                            \
+    __auto_type _res_PyObject_GetBufferContiguousBounded = 0 ? PyObject_GetBufferContiguousBounded(__VA_ARGS__) : 0;                                                                                          \
+                                                                                                                                                                                                              \
+    _res_PyObject_GetBufferContiguousBounded = (typeof (_res_PyObject_GetBufferContiguousBounded))APSW_FaultInjectControl("PyObject_GetBufferContiguousBounded", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                                              \
+    if ((typeof (_res_PyObject_GetBufferContiguousBounded))0x1FACADE == _res_PyObject_GetBufferContiguousBounded)                                                                                             \
+       _res_PyObject_GetBufferContiguousBounded = PyObject_GetBufferContiguousBounded(__VA_ARGS__);                                                                                                           \
+    else if ((typeof(_res_PyObject_GetBufferContiguousBounded))0x2FACADE == _res_PyObject_GetBufferContiguousBounded)                                                                                         \
+    {                                                                                                                                                                                                         \
+        PyObject_GetBufferContiguousBounded(__VA_ARGS__);                                                                                                                                                     \
+        _res_PyObject_GetBufferContiguousBounded = (typeof (_res_PyObject_GetBufferContiguousBounded))18;                                                                                                     \
+    }                                                                                                                                                                                                         \
+    _res_PyObject_GetBufferContiguousBounded;                                                                                                                                                                 \
 })
 #define PyObject_GetIter(...) \
 ({                                                                                                                                                   \

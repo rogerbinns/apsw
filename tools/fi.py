@@ -758,12 +758,6 @@ class Tester:
                 self.expect_exception.append(OverflowError)
                 return (-1, OverflowError, self.FAULTS)
 
-            if fname == "PyBuffer_IsContiguous":
-                # the PyObject_GetBuffer call fails non-contiguous
-                # anyway, but this is being doubly sure
-                self.expect_exception.append(TypeError)
-                return 0
-
             if fname.startswith("Py") or fname in {"_PyBytes_Resize", "_PyTuple_Resize", "getfunctionargs"}:
                 # for ones returning -1 on error
                 self.expect_exception.append(self.FAULTT)

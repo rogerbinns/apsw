@@ -171,13 +171,11 @@ returns = {
         PyStructSequence_InitType2 PyList_Size PyLong_AsInt
         PyList_SetItem
 
-        PyObject_GetBufferContiguous PyObject_GetBuffer
-        PyBuffer_IsContiguous _PyTuple_Resize
+        PyObject_GetBufferContiguous PyObject_GetBuffer PyObject_GetBufferContiguousBounded
+        _PyTuple_Resize
 
         connection_trace_and_exec getfunctionargs
         """.split(),
-    # PyBuffer_IsContiguous is on an error path although the
-    # function itself can't error
 }
 
 # some calls like Py_BuildValue are #defined to _Py_BuildValue_SizeT
