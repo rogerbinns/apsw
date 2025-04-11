@@ -462,7 +462,10 @@ APSWSession_diff(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_
 
   /* a vfs could have errored */
   if (PyErr_Occurred())
+  {
+    sqlite3_free(pErrMsg);
     return NULL;
+  }
 
   if (rc != SQLITE_OK)
   {
@@ -556,17 +559,10 @@ APSWSession_xInput(void *pIn, void *pData, int *pnData)
   if (result)
   {
     Py_buffer result_buffer;
-    if (0 == PyObject_GetBufferContiguous(result, &result_buffer, PyBUF_SIMPLE))
+    if (0 == PyObject_GetBufferContiguousBounded(result, &result_buffer, PyBUF_SIMPLE, *pnData))
     {
-      /* the length is signed and shouldn't be less than zero but we are paranoid */
-      if (result_buffer.len > *pnData || result_buffer.len < 0)
-        PyErr_Format(PyExc_ValueError, "Stream input data must be at least 0 bytes, and at most %d - got %zd", *pnData,
-                     result_buffer.len);
-      else
-      {
-        memcpy(pData, result_buffer.buf, result_buffer.len);
-        *pnData = (int)result_buffer.len;
-      }
+      memcpy(pData, result_buffer.buf, result_buffer.len);
+      *pnData = (int)result_buffer.len;
 
       PyBuffer_Release(&result_buffer);
     }
@@ -1220,29 +1216,23 @@ APSWChangeset_invert(void *Py_UNUSED(static_method), PyObject *const *fast_args,
     ARG_EPILOG(NULL, Changeset_invert_USAGE, );
   }
 
-  if (0 != PyObject_GetBufferContiguous(changeset, &changeset_buffer, PyBUF_SIMPLE))
+  if (0 != PyObject_GetBufferContiguousBounded(changeset, &changeset_buffer, PyBUF_SIMPLE, INT32_MAX))
   {
     assert(PyErr_Occurred());
     return NULL;
   }
 
   PyObject *result = NULL;
+  int nOut;
+  void *pOut = NULL;
 
-  /* ::TODO:: turn this into a function that can be fault injected and used in other places */
-  if (changeset_buffer.len > 0x7fffffff)
-    SET_EXC(SQLITE_TOOBIG, NULL);
+  int rc = sqlite3changeset_invert(changeset_buffer.len, changeset_buffer.buf, &nOut, &pOut);
+  if (rc == SQLITE_OK)
+    result = PyBytes_FromStringAndSize((char *)pOut, nOut);
   else
-  {
-    int nOut;
-    void *pOut = NULL;
+    SET_EXC(rc, NULL);
+  sqlite3_free(pOut);
 
-    int rc = sqlite3changeset_invert(changeset_buffer.len, changeset_buffer.buf, &nOut, &pOut);
-    if (rc == SQLITE_OK)
-      result = PyBytes_FromStringAndSize((char *)pOut, nOut);
-    else
-      SET_EXC(rc, NULL);
-    sqlite3_free(pOut);
-  }
   PyBuffer_Release(&changeset_buffer);
   assert((PyErr_Occurred() && !result) || (result && !PyErr_Occurred()));
   return result;
@@ -1301,35 +1291,29 @@ APSWChangeset_concat(void *Py_UNUSED(static_method), PyObject *const *fast_args,
     ARG_EPILOG(NULL, Changeset_concat_USAGE, );
   }
 
-  if (0 != PyObject_GetBufferContiguous(A, &A_buffer, PyBUF_SIMPLE))
+  if (0 != PyObject_GetBufferContiguousBounded(A, &A_buffer, PyBUF_SIMPLE, INT32_MAX))
   {
     assert(PyErr_Occurred());
     return NULL;
   }
 
-  if (0 != PyObject_GetBufferContiguous(B, &B_buffer, PyBUF_SIMPLE))
+  if (0 != PyObject_GetBufferContiguousBounded(B, &B_buffer, PyBUF_SIMPLE, INT32_MAX))
   {
     assert(PyErr_Occurred());
     PyBuffer_Release(&A_buffer);
+    return NULL;
   }
 
   PyObject *result = NULL;
 
-  /* ::TODO:: turn this into a function that can be fault injected and used in other places */
-  if (A_buffer.len > 0x7fffffff)
-    SET_EXC(SQLITE_TOOBIG, NULL);
-  else if (B_buffer.len > 0x7fffffff)
-    SET_EXC(SQLITE_TOOBIG, NULL);
-  else
-  {
-    int nOut;
-    void *pOut = NULL;
+  int nOut;
+  void *pOut = NULL;
 
-    int rc = sqlite3changeset_concat(A_buffer.len, A_buffer.buf, B_buffer.len, B_buffer.buf, &nOut, &pOut);
-    if (rc == SQLITE_OK)
-      result = PyBytes_FromStringAndSize((char *)pOut, nOut);
-    sqlite3_free(pOut);
-  }
+  int rc = sqlite3changeset_concat(A_buffer.len, A_buffer.buf, B_buffer.len, B_buffer.buf, &nOut, &pOut);
+  if (rc == SQLITE_OK)
+    result = PyBytes_FromStringAndSize((char *)pOut, nOut);
+  sqlite3_free(pOut);
+
   PyBuffer_Release(&A_buffer);
   PyBuffer_Release(&B_buffer);
   assert((PyErr_Occurred() && !result) || (result && !PyErr_Occurred()));
@@ -1413,15 +1397,10 @@ APSWChangeset_iter(void *Py_UNUSED(static_method), PyObject *const *fast_args, P
   }
   else
   {
-    if (0 != PyObject_GetBufferContiguous(changeset, &iterator->buffer_buffer, PyBUF_SIMPLE))
+    if (0 != PyObject_GetBufferContiguousBounded(changeset, &iterator->buffer_buffer, PyBUF_SIMPLE, INT32_MAX))
       goto error;
     iterator->buffer_source = Py_NewRef(changeset);
 
-    if (iterator->buffer_buffer.len > 0x7fffffff)
-    {
-      SET_EXC(SQLITE_TOOBIG, NULL);
-      goto error;
-    }
     int rc = flags ? sqlite3changeset_start_v2(&iterator->iter, (int)iterator->buffer_buffer.len,
                                                iterator->buffer_buffer.buf, flags)
                    : sqlite3changeset_start(&iterator->iter, (int)iterator->buffer_buffer.len,
@@ -1619,17 +1598,14 @@ APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, 
   else
   {
     Py_buffer changeset_buffer;
-    if (0 != PyObject_GetBufferContiguous(changeset, &changeset_buffer, PyBUF_SIMPLE))
+    if (0 != PyObject_GetBufferContiguousBounded(changeset, &changeset_buffer, PyBUF_SIMPLE, INT32_MAX))
     {
       assert(PyErr_Occurred());
       return NULL;
     }
-    if (changeset_buffer.len > 0x7fffffff)
-      res = SQLITE_TOOBIG;
-    else
-      res = sqlite3changeset_apply_v2(db->db, changeset_buffer.len, changeset_buffer.buf, filter ? applyFilter : NULL,
-                                      conflict ? applyConflict : conflictReject, &aic, rebase ? &pRebase : NULL,
-                                      rebase ? &nRebase : NULL, flags);
+    res = sqlite3changeset_apply_v2(db->db, changeset_buffer.len, changeset_buffer.buf, filter ? applyFilter : NULL,
+                                    conflict ? applyConflict : conflictReject, &aic, rebase ? &pRebase : NULL,
+                                    rebase ? &nRebase : NULL, flags);
     PyBuffer_Release(&changeset_buffer);
   }
 
@@ -1831,12 +1807,9 @@ APSWChangesetBuilder_add(APSWChangesetBuilder *self, PyObject *const *fast_args,
   else
   {
     Py_buffer changeset_buffer;
-    if (0 != PyObject_GetBufferContiguous(changeset, &changeset_buffer, PyBUF_SIMPLE))
+    if (0 != PyObject_GetBufferContiguousBounded(changeset, &changeset_buffer, PyBUF_SIMPLE, INT32_MAX))
       return NULL;
-    if (changeset_buffer.len > 0x7fffffff)
-      res = SQLITE_TOOBIG;
-    else
-      res = sqlite3changegroup_add(self->group, changeset_buffer.len, changeset_buffer.buf);
+    res = sqlite3changegroup_add(self->group, changeset_buffer.len, changeset_buffer.buf);
     PyBuffer_Release(&changeset_buffer);
   }
   SET_EXC(res, NULL);
@@ -2059,7 +2032,7 @@ APSWRebaser_configure(APSWRebaser *self, PyObject *const *fast_args, Py_ssize_t 
 
   Py_buffer cr_buffer;
 
-  if (0 != PyObject_GetBufferContiguous(cr, &cr_buffer, PyBUF_SIMPLE))
+  if (0 != PyObject_GetBufferContiguousBounded(cr, &cr_buffer, PyBUF_SIMPLE, INT32_MAX))
   {
     assert(PyErr_Occurred());
     return NULL;
@@ -2094,7 +2067,7 @@ APSWRebaser_rebase(APSWRebaser *self, PyObject *const *fast_args, Py_ssize_t fas
     ARG_EPILOG(NULL, Rebaser_rebase_USAGE, );
   }
 
-  if (0 != PyObject_GetBufferContiguous(changeset, &changeset_buffer, PyBUF_SIMPLE))
+  if (0 != PyObject_GetBufferContiguousBounded(changeset, &changeset_buffer, PyBUF_SIMPLE, INT32_MAX))
   {
     assert(PyErr_Occurred());
     return NULL;
@@ -2102,21 +2075,16 @@ APSWRebaser_rebase(APSWRebaser *self, PyObject *const *fast_args, Py_ssize_t fas
 
   PyObject *result = NULL;
 
-  /* ::TODO:: turn this into a function that can be fault injected and used in other places */
-  if (changeset_buffer.len > 0x7fffffff)
-    SET_EXC(SQLITE_TOOBIG, NULL);
-  else
-  {
-    int nOut;
-    void *pOut = NULL;
+  int nOut;
+  void *pOut = NULL;
 
-    int rc = sqlite3rebaser_rebase(self->rebaser, changeset_buffer.len, changeset_buffer.buf, &nOut, &pOut);
-    if (rc == SQLITE_OK)
-      result = PyBytes_FromStringAndSize((char *)pOut, nOut);
-    else
-      SET_EXC(rc, NULL);
-    sqlite3_free(pOut);
-  }
+  int rc = sqlite3rebaser_rebase(self->rebaser, changeset_buffer.len, changeset_buffer.buf, &nOut, &pOut);
+  if (rc == SQLITE_OK)
+    result = PyBytes_FromStringAndSize((char *)pOut, nOut);
+  else
+    SET_EXC(rc, NULL);
+  sqlite3_free(pOut);
+
   PyBuffer_Release(&changeset_buffer);
   assert((PyErr_Occurred() && !result) || (result && !PyErr_Occurred()));
   return result;

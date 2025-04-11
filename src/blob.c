@@ -505,15 +505,10 @@ APSWBlob_write(APSWBlob *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
 
   APSW_FAULT(BlobWriteTooBig, , calc_end = (Py_ssize_t)0x7FFFFFFF * (Py_ssize_t)0x1000);
 
-  if ((int)calc_end < 0)
-  {
-    PyErr_Format(PyExc_ValueError, "Data is too large (integer overflow)");
-    goto finally;
-  }
-
   if (calc_end > sqlite3_blob_bytes(self->pBlob))
   {
-    PyErr_Format(PyExc_ValueError, "Data would go beyond end of blob");
+    PyErr_Format(PyExc_ValueError, "Data length %zd would go beyond end of blob %d", calc_end,
+                 sqlite3_blob_bytes(self->pBlob));
     goto finally;
   }
 

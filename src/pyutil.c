@@ -71,19 +71,41 @@ Py_DECREF_ARRAY(PyObject *array[], int argc)
     Py_DECREF(array[i]);
 }
 
-/* ::TODO:: PyBUF_SIMPLE is C contiguous so this is not necessary */
-/* get buffer and check it is contiguous */
+/* get contiguous buffer */
 #undef PyObject_GetBufferContiguous
 static int
 PyObject_GetBufferContiguous(PyObject *source, Py_buffer *buffer, int flags)
 {
 #include "faultinject.h"
+  /* PyBUF_SIMPLE is C contiguous so no extra contiguous check needed. */
+  assert(flags == PyBUF_SIMPLE || flags == (PyBUF_SIMPLE | PyBUF_WRITABLE));
   int res = PyObject_GetBuffer(source, buffer, flags);
-  if (res == 0 && !PyBuffer_IsContiguous(buffer, 'C'))
+
+  /* but check anyway */
+  assert(res != 0 || (res) == 0 && PyBuffer_IsContiguous(buffer, 'C'));
+
+  return res;
+}
+
+
+/* several places require contiguous buffer with limit - eg < 2GB (int size) */
+#undef PyObject_GetBufferContiguousBounded
+static int
+PyObject_GetBufferContiguousBounded(PyObject *source, Py_buffer *buffer, int flags, Py_ssize_t size_limit)
+{
+#include "faultinject.h"
+  int res = PyObject_GetBufferContiguous(source, buffer, flags);
+
+  if (res == 0)
   {
-    PyBuffer_Release(buffer);
-    PyErr_Format(PyExc_TypeError, "Expected a contiguous buffer");
-    res = -1;
+    if (buffer->len > size_limit)
+    {
+      PyErr_Format(PyExc_ValueError, "Object buffer is %zd bytes, but at most %zd can be accepted%s", buffer->len,
+                   size_limit,
+                   (size_limit == INT32_MAX) ? " (32 bit signed integer accepted by SQLite)" : "");
+      PyBuffer_Release(buffer);
+      res = -1;
+    }
   }
   return res;
 }

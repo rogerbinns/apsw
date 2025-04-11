@@ -1490,7 +1490,7 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
     return strres;
   }
   /* Blob */
-  if (PyBytes_Check(value))
+  if (PyBytes_Check(value) || PyObject_CheckBuffer(value))
   {
     int asrb;
     PyObject *strres;
@@ -1501,7 +1501,7 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
     const unsigned char *bufferc;
 
     asrb = PyObject_GetBufferContiguous(value, &buffer, PyBUF_SIMPLE);
-    if (asrb == -1)
+    if (asrb != 0)
       return NULL;
 
     strres = PyUnicode_New(buffer.len * 2 + 3, 127);

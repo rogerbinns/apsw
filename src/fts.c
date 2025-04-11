@@ -261,14 +261,11 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
       && flags != (FTS5_TOKENIZE_QUERY | FTS5_TOKENIZE_PREFIX) && flags != FTS5_TOKENIZE_AUX)
     return PyErr_Format(PyExc_ValueError, "flags is not an allowed value (%d)", flags);
 
-  if (0 != PyObject_GetBufferContiguous(utf8, &utf8_buffer, PyBUF_SIMPLE))
+  if (0 != PyObject_GetBufferContiguousBounded(utf8, &utf8_buffer, PyBUF_SIMPLE, INT32_MAX))
   {
     assert(PyErr_Occurred());
     return NULL;
   }
-
-  if (locale_size >= INT32_MAX)
-    return PyErr_Format(PyExc_ValueError, "locale is too large - limit is 2GB");
 
   TokenizingContext our_context = {
     .the_list = PyList_New(0),
@@ -279,12 +276,6 @@ APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_s
 
   if (!our_context.the_list)
     goto finally;
-
-  if (utf8_buffer.len >= INT_MAX)
-  {
-    PyErr_Format(PyExc_ValueError, "utf8 byres is too large (%zd)", utf8_buffer.len);
-    goto finally;
-  }
 
   rc = self->xTokenize(self->tokenizer_instance, &our_context, flags, utf8_buffer.buf, utf8_buffer.len, locale,
                        (int)locale_size, xTokenizer_Callback);
@@ -461,7 +452,7 @@ get_token_value(PyObject *s, int *size)
   const char *address = PyUnicode_AsUTF8AndSize(s, &ssize);
   if (!address)
     return NULL;
-  if (ssize >= INT_MAX)
+  if (ssize >= INT32_MAX)
   {
     PyErr_Format(PyExc_ValueError, "Token is too long (%zd)", ssize);
     return NULL;
@@ -1248,7 +1239,7 @@ APSWFTS5ExtensionApi_xTokenize(APSWFTS5ExtensionApi *self, PyObject *const *fast
     ARG_EPILOG(NULL, FTS5ExtensionApi_tokenize_USAGE, );
   }
 
-  if (0 != PyObject_GetBufferContiguous(utf8, &utf8_buffer, PyBUF_SIMPLE))
+  if (0 != PyObject_GetBufferContiguousBounded(utf8, &utf8_buffer, PyBUF_SIMPLE, INT32_MAX))
   {
     assert(PyErr_Occurred());
     return NULL;
@@ -1264,13 +1255,7 @@ APSWFTS5ExtensionApi_xTokenize(APSWFTS5ExtensionApi *self, PyObject *const *fast
   if (!our_context.the_list)
     goto finally;
 
-  if (utf8_buffer.len >= INT_MAX)
-  {
-    PyErr_Format(PyExc_ValueError, "utf8 byres is too large (%zd)", utf8_buffer.len);
-    goto finally;
-  }
-
-  if (locale_size >= INT_MAX)
+  if (locale_size >= INT32_MAX)
   {
     PyErr_Format(PyExc_ValueError, "locale too large (%zd)", locale_size);
     goto finally;
