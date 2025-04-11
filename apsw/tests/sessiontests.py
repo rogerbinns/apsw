@@ -94,12 +94,16 @@ class Session(unittest.TestCase):
 
         session = apsw.Session(self.db, "main")
 
+        needs_attach = apsw.SQLITE_VERSION_NUMBER < 3050000
+
         # errors
-        session.attach("zebra")
-        self.assertRaises(apsw.SQLError, session.diff, "zebra", "zebra")
+        if needs_attach:
+            session.attach("zebra")
+        self.assertRaises(apsw.SchemaChangeError, session.diff, "zebra", "zebra")
         self.assertRaises(apsw.SchemaChangeError, session.diff, "another", "zebra")
 
-        session.attach("t")
+        if needs_attach:
+            session.attach("t")
         self.assertRaisesRegex(apsw.SchemaChangeError, ".*table schemas do not match.*", session.diff, "other", "t")
 
         session.diff("another", "t")
