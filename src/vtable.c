@@ -883,14 +883,14 @@ apswvtabCreateOrConnect(sqlite3 *db, void *pAux, int argc, const char *const *ar
     goto pyexception;
   if (!PyUnicode_Check(schema))
   {
-    PyErr_Format(PyExc_TypeError, "Expected string for schema");
+    PyErr_Format(PyExc_TypeError, "Expected string for schema not %s", Py_TypeName(schema));
     goto pyexception;
   }
   {
     const char *utf8schema = PyUnicode_AsUTF8(schema);
     if (!utf8schema)
       goto pyexception;
-    _PYSQLITE_CALL_E(db, res = sqlite3_declare_vtab(db, utf8schema));
+    res = sqlite3_declare_vtab(db, utf8schema);
     if (res != SQLITE_OK)
     {
       SET_EXC(res, db);
@@ -1551,7 +1551,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
     {
       if (!PyLong_Check(idxnum))
       {
-        PyErr_Format(PyExc_TypeError, "idxnum must be an integer");
+        PyErr_Format(PyExc_TypeError, "idxnum must be an integer not %s", Py_TypeName(idxnum));
         AddTraceBackHere(__FILE__, __LINE__, "VirtualTable.xBestIndex.result_indexnum", "{s: O, s: O, s: O}", "self",
                          vtable, "result", OBJ(res), "indexnum", OBJ(idxnum));
         Py_DECREF(idxnum);

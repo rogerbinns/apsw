@@ -17,8 +17,8 @@ import glob
 import inspect
 import io
 import itertools
+import functools
 import json
-import logging
 import math
 import mmap
 import os
@@ -360,15 +360,49 @@ class APSW(unittest.TestCase):
             if name in apsw.vfs_names():
                 apsw.unregister_vfs(name)
 
+    def check_db_mutex(self):
+        # verify a db mutex is not being held by doing work in another
+        # thread
+        try:
+            self.db.readonly("main")
+        except apsw.ConnectionClosedError:
+            return
+
+        self.db.set_progress_handler(None)
+        self.db.exec_trace = None
+        self.db.row_trace = None
+
+        val = Exception("The database mutex is still held and should not be")
+
+        def thread():
+            nonlocal val
+            try:
+                val = self.db.execute("select 3").get
+            except BaseException as exc:
+                val = exc
+
+        t = threading.Thread(target=thread, daemon=True)
+        t.start()
+        t.join(1)
+        if val != 3:
+            raise val
+
     def tearDown(self):
         apsw.config(apsw.SQLITE_CONFIG_LOG, None)
         if self.db is not None:
-            self.db.close(True)
+            try:
+                self.check_db_mutex()
+            finally:
+                self.db.close(True)
         del self.db
         for c in apsw.connections():
             c.close()
         gc.collect()
         deltempfiles()
+        if hasattr(apsw, "leak_check"):
+            # There is a fatal error if called under gdb which sets $_ to /usr/bin/gdb
+            if not os.environ.get("_", "").endswith("gdb"):
+                apsw.leak_check()
         warnings.filters = self.warnings_filters
         getattr(warnings, "_filters_mutated", lambda: True)()
 
@@ -607,6 +641,12 @@ class APSW(unittest.TestCase):
         self.assertEqual(1, self.db.config(apsw.SQLITE_DBCONFIG_REVERSE_SCANORDER, -1))
         self.db.config(apsw.SQLITE_DBCONFIG_REVERSE_SCANORDER, 0)
         self.assertEqual(0, self.db.pragma("reverse_unordered_selects"))
+
+        self.assertEqual(1, self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_COMMENTS, -1))
+        self.db.execute("-- hello")
+        self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_COMMENTS, 0)
+        self.assertRaises(apsw.SQLError, self.db.execute, "-- hello")
+
 
     def testConnectionMetadata(self):
         "Test uses of sqlite3_table_column_metadata"
@@ -942,7 +982,7 @@ class APSW(unittest.TestCase):
 
         # incomplete execution across executemany
         c.executemany("select * from foo; select ?", ((1,), (2,)))  # we don't read
-        self.assertRaises(apsw.IncompleteExecutionError, c.executemany, "begin")
+        self.assertRaises(apsw.IncompleteExecutionError, c.executemany, "begin", (1, 2))
 
         # set type (pysqlite error with this)
         c.execute("create table xxset(x,y,z)")
@@ -2898,7 +2938,7 @@ class APSW(unittest.TestCase):
 
         self.assertRaises(TypeError, self.db.set_progress_handler, 12)  # must be callable
         self.assertRaises(TypeError, self.db.set_progress_handler, ph, "foo")  # second param is steps
-        self.db.set_progress_handler(ph, -17)  # SQLite doesn't complain about negative numbers
+        self.assertRaises(ValueError, self.db.set_progress_handler, ph, -17)  # SQLite doesn't complain about negative numbers but we do
         self.db.set_progress_handler(ph, 20)
         curnext(c.execute("select max(x) from foo"))
 
@@ -2922,6 +2962,79 @@ class APSW(unittest.TestCase):
 
         self.db.set_progress_handler(ph, 1)
         self.assertRaises(ZeroDivisionError, c.execute, "update foo set x=-10")
+        self.db.set_progress_handler(None)
+
+        # new id stuff
+        counter = 0
+
+        def toomany():
+            nonlocal counter
+            while True:
+                self.db.set_progress_handler(ph, id=f"xx{counter}")
+                counter += 1
+
+        with contextlib.suppress(MemoryError):
+            toomany()
+
+        self.assertGreater(counter, 1000)
+        for i in range(counter):
+            self.db.set_progress_handler(None, id=f"xx{i}")
+
+        N = 128
+        ids = [f"xyz{n}" for n in range(N)]
+
+        def ph(n):
+            called[n] = True
+            return False
+
+        for trial in {0, 1, 77, 128}:
+            active = random.sample(range(N), trial)
+            for n in range(N):
+                self.db.set_progress_handler(functools.partial(ph, n) if n in active else None, nsteps=1, id=ids[n])
+            called = [False] * N
+            self.db.execute("select 3").get
+            for n in range(N):
+                if n in active:
+                    self.assertTrue(called[n])
+                else:
+                    self.assertFalse(called[n])
+
+        for id in ids:
+            self.db.set_progress_handler(None, id=id)
+
+        called = [False, False]
+        def phabort():
+            called[0] = True
+            return True
+
+        def phcontinue():
+            called[1] = True
+            return False
+
+        # we depend on them being called in this registration order
+        # which does match the implementation
+        self.db.set_progress_handler(phabort, 1, id=phabort)
+        self.db.set_progress_handler(phcontinue, 1, id=phcontinue)
+
+        with contextlib.suppress(apsw.InterruptError):
+            self.db.execute("select 3").get
+
+        self.assertEqual(called, [True, False])
+
+        called = [False, False]
+        self.db.set_progress_handler(None, 1, id=phabort)
+        self.db.set_progress_handler(None, 1, id=phcontinue)
+        self.db.execute("select 3").get
+
+        # verify nsteps
+        called = [False, False]
+        self.db.set_progress_handler(phcontinue, 1000000)
+        self.db.execute("select 3").get
+        self.assertEqual(called, [False, False])
+        self.db.set_progress_handler(phcontinue, 1)
+        self.db.execute("select 3").get
+        self.assertEqual(called, [False, True])
+
 
     def testChanges(self):
         "Verify reporting of changes"
@@ -3336,7 +3449,7 @@ class APSW(unittest.TestCase):
         "Verify threading behaviour"
         # We used to require all operations on a connection happen in
         # the same thread.  Now they can happen in any thread, so we
-        # ensure that inuse errors are detected by doing a long
+        # ensure that mutex errors are detected by doing a long
         # running operation in one thread.
         c = self.db.cursor()
         c.execute("create table foo(x);begin;")
@@ -4715,7 +4828,7 @@ class APSW(unittest.TestCase):
         "Issue 15: Release GIL during calls to prepare"
         self.db.cursor().execute("create table foo(x)")
         self.db.cursor().execute("begin exclusive")
-        db2 = apsw.Connection(TESTFILEPREFIX + "testdb")
+        db2 = apsw.Connection(self.db.filename)
         db2.set_busy_timeout(30000)
         t = ThreadRunner(db2.cursor().execute, "select * from foo")
         t.start()
@@ -4776,7 +4889,7 @@ class APSW(unittest.TestCase):
 
     def testIssue31(self):
         "Issue 31: GIL & SQLite mutexes with heavy threading, threadsafe errors from SQLite"
-        randomnumbers = [random.randint(0, 10000) for _ in range(10000)]
+        randomnumbers = [random.randint(0, 10000) for _ in range(1000)]
 
         cursor = self.db.cursor()
         cursor.execute("create table foo(x)")
@@ -4787,45 +4900,63 @@ class APSW(unittest.TestCase):
 
         self.db.create_scalar_function("timesten", lambda x: x * 10)
 
-        def dostuff(n):
+        did_work = {}
+        locked = {}
+
+        def dostuff(end):
             # spend n seconds doing stuff to the database
-            c = self.db.cursor()
-            b4 = time.time()
-            while time.time() - b4 < n:
+            myid = threading.get_ident()
+            did_work[myid] = 0
+            locked[myid] = 0
+            while time.time() < end:
                 i = random.choice(randomnumbers)
-                if i % 5 == 0:
-                    sql = "select timesten(x) from foo where x=%d order by x" % (i,)
-                    c.execute(sql)
-                elif i % 5 == 1:
-                    sql = "select timesten(x) from foo where x=? order by x"
-                    called = 0
-                    for row in self.db.cursor().execute(sql, (i,)):
-                        called += 1
-                        self.assertEqual(row[0], 10 * i)
-                    # same value could be present multiple times
-                    self.assertTrue(called >= 1)
-                elif i % 5 == 2:
-                    try:
-                        self.db.cursor().execute("deliberate syntax error")
-                    except apsw.SQLError:
-                        assert "deliberate" in str(sys.exc_info()[1])
-                elif i % 5 == 3:
-                    try:
-                        self.db.cursor().execute("bogus syntax error")
-                    except apsw.SQLError:
-                        assert "bogus" in str(sys.exc_info()[1])
-                else:
-                    sql = "select timesten(x) from foo where x=? order by x"
-                    self.db.cursor().execute(sql, (i,))
+                try:
+                    if i % 5 == 0:
+                        sql = "select timesten(x) from foo where x=%d order by x" % (i,)
+                        self.db.execute(sql)
+                    elif i % 5 == 1:
+                        sql = "select timesten(x) from foo where x=? order by x"
+                        called = 0
+                        for row in self.db.cursor().execute(sql, (i,)):
+                            called += 1
+                            self.assertEqual(row[0], 10 * i)
+                        # same value could be present multiple times
+                        self.assertTrue(called >= 1)
+                    elif i % 5 == 2:
+                        try:
+                            self.db.cursor().execute("deliberate syntax error")
+                        except apsw.SQLError:
+                            assert "deliberate" in str(sys.exc_info()[1])
+                    elif i % 5 == 3:
+                        try:
+                            self.db.cursor().execute("bogus syntax error")
+                        except apsw.SQLError:
+                            assert "bogus" in str(sys.exc_info()[1])
+                    else:
+                        sql = "select timesten(x) from foo where x=? order by x"
+                        self.db.cursor().execute(sql, (i,))
+                except apsw.ThreadingViolationError as exc:
+                    locked[myid] += 1
+                    continue
+                did_work[myid] += 1
+
+                # Release the GIL giving other threads a chace to do work
+                time.sleep(0.01)
 
         runtime = float(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 15
-        threads = [ThreadRunner(dostuff, runtime) for _ in range(20)]
+        end = time.time() + runtime
+        threads = [threading.Thread(target=dostuff, args=(end,)) for _ in range(20)]
         for t in threads:
             t.start()
 
         for t in threads:
-            # if there were any errors then exceptions would be raised here
-            t.go()
+            t.join()
+
+        if runtime > 15:
+            # I can't confidently say that all threads would have got execution time
+            # on all the platforms out there, so check if env var was set
+            self.assertTrue(all(v > 0 for v in did_work.values()), f"{did_work=}")
+            self.assertTrue(all(v > 0 for v in locked.values()), f"{locked=}")
 
     def testIssue50(self):
         "Issue 50: Check Blob.read return value on eof"
@@ -5313,9 +5444,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(OverflowError, apsw.sleep, 2_500_000_000)
         self.assertRaises(TypeError, apsw.sleep, "2_500_000_000")
 
-    def testPysqliteRecursiveIssue(self):
-        "Check an issue that affected pysqlite"
-        # https://code.google.com/p/pysqlite/source/detail?r=260ee266d6686e0f87b0547c36b68a911e6c6cdb
+    def testRecursiveCursor(self):
+        "Check using a cursor recursively"
+
         cur = self.db.cursor()
         cur.execute("create table a(x); create table b(y);")
 
@@ -5324,7 +5455,67 @@ class APSW(unittest.TestCase):
             cur.execute("insert into a values(?)", (1,))
             yield (2,)
 
+        def func(n):
+            nonlocal cur
+            if n == 0:
+                next(cur)
+            elif n == 1:
+                cur.execute("select 3")
+            elif n == 2:
+                cur.executemany("select ?", ((1,), (2,)))
+            elif n == 3:
+                cur.close()
+            elif n == 4:
+                cur.close(True)
+
+            raise Exception("unreachable")
+
+        self.db.create_scalar_function("func", func)
+
+        for i in range(5):
+            self.assertRaises(apsw.ThreadingViolationError, cur.execute, "select func(?)", (i,))
+
         self.assertRaises(apsw.ThreadingViolationError, cur.executemany, "insert into b values(?)", foo())
+
+        for i in range(0, 5):
+
+            def t(n, *args):
+                func(n)
+                1 / 0
+
+            reached = False
+            cur = self.db.cursor()
+            cur.exec_trace = functools.partial(t, i)
+            with contextlib.suppress(apsw.ThreadingViolationError):
+                cur.execute("select 3; select 4").fetchall()
+                reached = True
+            self.assertFalse(reached)
+            cur.exec_trace = None
+
+            cur = self.db.cursor()
+            cur.row_trace = functools.partial(t, i)
+            with contextlib.suppress(apsw.ThreadingViolationError):
+                cur.execute("select 3; select 4").fetchall()
+                reached = True
+            self.assertFalse(reached)
+            cur.row_trace = None
+
+            cur = self.db.cursor()
+            self.db.exec_trace = functools.partial(t, i)
+            with contextlib.suppress(apsw.ThreadingViolationError):
+                cur.execute("select 3;select 4").fetchall()
+                reached = True
+            self.assertFalse(reached)
+            self.db.exec_trace = None
+
+            cur = self.db.cursor()
+            self.db.row_trace = functools.partial(t, i)
+            with contextlib.suppress(apsw.ThreadingViolationError):
+                cur.execute("select 3; select 4").fetchall()
+                reached = True
+            self.assertFalse(reached)
+            self.db.row_trace = None
+
 
     def testWriteUnraisable(self):
         "Verify writeunraisable replacement function"
@@ -5566,45 +5757,7 @@ class APSW(unittest.TestCase):
 
     # calls that need protection
     calls = {
-        "sqlite3api": {  # items of interest - sqlite3 calls
-            "match": re.compile(r"(sqlite3_[A-Za-z0-9_]+)\s*\("),
-            # what must also be on same or preceding line
-            "needs": re.compile("PYSQLITE(_|_BLOB_|_CON_|_CUR_|_SC_|_VOID_|_BACKUP_)CALL"),
-            # except if match.group(1) matches this - these don't
-            # acquire db mutex so no need to wrap (determined by
-            # examining sqlite3.c).  If they acquire non-database
-            # mutexes then that is ok.
-            # In the case of sqlite3_result_*|declare_vtab, the mutex
-            # is already held by enclosing sqlite3_step and the
-            # methods will only be called from that same thread so it
-            # isn't a problem.
-            "skipcalls": re.compile(
-                "^sqlite3_(blob_bytes|column_count|bind_parameter_count|data_count|vfs_.+|changes64|total_changes64"
-                "|bind_parameter_name"
-                "|get_"
-                "autocommit|last_insert_rowid|complete|interrupt|limit|malloc64|free|threadsafe|value_.+"
-                "|libversion|enable_"
-                "shared_cache|initialize|shutdown|config|memory_.+|soft_heap_limit64|hard_heap_limit64"
-                "|randomness|db_readonly|db_filename|release_"
-                "memory|status64|result_.+|user_data|mprintf|aggregate_context"
-                "|declare_vtab|backup_remaining|backup_pagecount|mutex_enter|mutex_leave|sourceid|uri_.+"
-                "|column_name|column_decltype|column_database_name|column_table_name|column_origin_name"
-                "|stmt_isexplain|stmt_readonly|filename_journal|filename_wal|stmt_status|sql|log|vtab_collation"
-                "|vtab_rhs_value|vtab_distinct|vtab_config|vtab_on_conflict|vtab_in_first|vtab_in_next|vtab_in"
-                "|vtab_nochange|is_interrupted|extended_errcode)$"
-            ),
-            # error message
-            "desc": "sqlite3_ calls must wrap with PYSQLITE_CALL",
-        },
-        "inuse": {
-            "match": re.compile(
-                r"(convert_column_to_pyobject|statementcache_prepare|statementcache_finalize|statementcache_next)\s*\("
-            ),
-            "needs": re.compile("INUSE_CALL"),
-            "desc": "call needs INUSE wrapper",
-            "skipfiles": re.compile(r".*[/\\]statementcache.c$"),
-        },
-    }
+     }
 
     def sourceCheckMutexCall(self, filename, name, lines):
         # we check that various calls are wrapped with various macros
@@ -5640,6 +5793,7 @@ class APSW(unittest.TestCase):
             "APSWBuffer",
             "FunctionCBInfo",
             "APSWFTS5Tokenizer",
+            "cursor",
         ):
             return
 
@@ -5662,7 +5816,6 @@ class APSW(unittest.TestCase):
                     "getdescription_dbapi",
                 ),
                 "req": {
-                    "use": "CHECK_USE",
                     "closed": "CHECK_CURSOR_CLOSED",
                 },
                 "order": ("use", "closed"),
@@ -5687,19 +5840,18 @@ class APSW(unittest.TestCase):
                     "tp_str",
                 ),
                 "req": {
-                    "use": "CHECK_USE",
                     "closed": "CHECK_CLOSED",
                 },
                 "order": ("use", "closed"),
             },
             "APSWBlob": {
                 "skip": ("dealloc", "init", "close", "close_internal", "tp_str"),
-                "req": {"use": "CHECK_USE", "closed": "CHECK_BLOB_CLOSED"},
+                "req": {"closed": "CHECK_BLOB_CLOSED"},
                 "order": ("use", "closed"),
             },
             "APSWBackup": {
                 "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count", "tp_str"),
-                "req": {"use": "CHECK_USE", "closed": "CHECK_BACKUP_CLOSED"},
+                "req": {"closed": "CHECK_BACKUP_CLOSED"},
                 "order": ("use", "closed"),
             },
             "apswvfs": {
@@ -5904,8 +6056,8 @@ class APSW(unittest.TestCase):
         for filename in glob.glob("src/*.c"):
             with open(filename, "rt", encoding="utf8") as f:
                 for line in f:
-                    if "APSW_FAULT_INJECT" in line and "#define" not in line:
-                        mo = re.match(r".*APSW_FAULT_INJECT\s*\(\s*(?P<name>\w+)\s*,.*", line)
+                    if "APSW_FAULT" in line and "#" not in line:
+                        mo = re.match(r".*APSW_FAULT\s*\(\s*(?P<name>\w+)\s*,.*", line)
                         assert mo, f"Failed to match line { line }"
                         name = mo.group("name")
                         assert name not in faults, f"fault inject name { name } found multiple times"
@@ -8087,24 +8239,24 @@ class APSW(unittest.TestCase):
         # can't copy self
         self.assertRaises(ValueError, self.db.backup, "main", self.db, "it doesn't care what is here")
 
-        # try and get inuse error
+        # try and get mutex error
         dbt = apsw.Connection(":memory:")
         vals = {"stop": False, "raised": False}
 
         def wt():
-            # worker thread spins grabbing and releasing inuse flag
+            # worker thread spins grabbing and releasing mutex flag
             while not vals["stop"]:
                 try:
                     dbt.set_busy_timeout(100)
                 except apsw.ThreadingViolationError:
-                    # this means main thread grabbed inuse first
+                    # this means main thread grabbed mutex first
                     pass
 
         runtime = float(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 30
         t = ThreadRunner(wt)
         t.start()
         b4 = time.time()
-        # try to get inuse error
+        # try to get concurrency error
         try:
             try:
                 while not vals["stop"] and time.time() - b4 < runtime:
@@ -8153,13 +8305,11 @@ class APSW(unittest.TestCase):
         c.execute("create table x(y); insert into x values(3); select * from x")
         self.db = apsw.Connection(":memory:")
         self.fillWithRandomStuff(self.db)
-        self.assertRaises(apsw.ThreadingViolationError, db2.backup, "main", self.db, "main")
+        self.assertRaisesRegex(apsw.SQLError, "destination database is in use", db2.backup, "main", self.db, "main")
         c.close()
         b = db2.backup("main", self.db, "main")
         # double check cursor really is dead
         self.assertRaises(apsw.CursorClosedError, c.execute, "select 3")
-        # with the backup object existing, all operations on db2 should fail
-        self.assertRaises(apsw.ThreadingViolationError, db2.cursor)
         # finish and then trying to step
         b.finish()
         self.assertRaises(apsw.ConnectionClosedError, b.step)
@@ -10290,6 +10440,125 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertIn("pragma_function_list", outs)
         self.assertIn("CPU consumption", outs)
 
+    def testQueryLimit(self):
+        "apsw.ext.query_limit"
+
+        query_limit = apsw.ext.query_limit
+
+        apsw.ext.make_virtual_module(self.db, "generate_series", apsw.ext.generate_series)
+
+        with query_limit(self.db, row_limit=30):
+            counter = 0
+            for row in self.db.execute("select * from generate_series(0,40)"):
+                counter += 1
+
+        self.assertEqual(counter, 30)
+
+        exc = None
+        try:
+            with query_limit(self.db, row_limit=30, row_exception=ZeroDivisionError):
+                counter = 0
+                for _ in self.db.execute("select * from generate_series(0,40)"):
+                    counter += 1
+        except ZeroDivisionError as e:
+            exc = e
+
+        self.assertEqual(counter, 30)
+        self.assertIsInstance(exc, ZeroDivisionError)
+
+        # make sure vtable behind the scenes is ignored
+        query = "select name from pragma_function_list where name like 'd%' order by name"
+        correct = self.db.execute(query).get
+        with query_limit(self.db, row_limit=len(correct)):
+            limited = self.db.execute(query).get
+
+        self.assertEqual(correct, limited)
+
+        limited2 = None
+        with query_limit(self.db, row_limit=len(correct) - 1):
+            limited2 = self.db.execute(query).get
+
+        self.assertIsNone(limited2)
+
+        # nested
+        limited2 = None
+        with query_limit(self.db, row_limit=len(correct)):
+            with query_limit(self.db, row_limit=100000):
+                # inner should not be affected by outer
+                self.db.execute("select * from pragma_function_list").get
+
+            limited2 = self.db.execute(query).get
+
+        self.assertEqual(limited2, correct)
+
+        # should pass through exception
+        exc = None
+        res = []
+        try:
+            with query_limit(self.db, row_limit=10000):
+                self.db.execute(query).get
+                with query_limit(self.db, row_limit=2, row_exception=ZeroDivisionError):
+                    for (name,) in self.db.execute("select name from pragma_function_list"):
+                        res.append(name)
+        except Exception as e:
+            exc = e
+
+        self.assertIsInstance(exc, ZeroDivisionError)
+        self.assertEqual(len(res), 2)
+
+        # timeouts
+        fractal = """
+            WITH RECURSIVE
+            xaxis(x) AS (VALUES(-2.0) UNION ALL SELECT x+0.05 FROM xaxis WHERE x<1.2),
+            yaxis(y) AS (VALUES(-1.0) UNION ALL SELECT y+0.1 FROM yaxis WHERE y<1.0),
+            m(iter, cx, cy, x, y) AS (
+                SELECT 0, x, y, 0.0, 0.0 FROM xaxis, yaxis
+                UNION ALL
+                SELECT iter+1, cx, cy, x*x-y*y + cx, 2.0*x*y + cy FROM m
+                WHERE (x*x + y*y) < 4.0 AND iter< 800000 -- this should be 28 and controls how much work is done
+            ),
+            m2(iter, cx, cy) AS (
+                SELECT max(iter), cx, cy FROM m GROUP BY cx, cy
+            ),
+            a(t) AS (
+                SELECT group_concat( substr(' .+*#', 1+min(iter/7,4), 1), '')
+                FROM m2 GROUP BY cy
+            )
+            SELECT group_concat(rtrim(t),x'0a') FROM a;"""
+
+        start = time.monotonic()
+        with query_limit(self.db, timeout=0.1):
+            self.db.execute(fractal).get
+
+        self.assertGreaterEqual(time.monotonic() - start, 0.1)
+
+        exc = None
+        res = []
+        try:
+            with query_limit(self.db, row_limit=10000):
+                self.db.execute(query).get
+                with query_limit(self.db, timeout=0, timeout_exception=ZeroDivisionError, timeout_steps=1):
+                    for (name,) in self.db.execute("select name from pragma_function_list order by name"):
+                        res.append(name)
+        except Exception as e:
+            exc = e
+
+        self.assertIsInstance(exc, ZeroDivisionError)
+        self.assertEqual(res, [])
+
+        exc = None
+        try:
+            with query_limit(self.db):
+                self.db.execute(query).get
+                with query_limit(self.db):
+                    for (name,) in self.db.execute("select name from pragma_function_list"):
+                        res.append(name)
+                    1 / 0
+        except Exception as e:
+            exc = e
+
+        self.assertIsInstance(exc, ZeroDivisionError)
+
     def testExtDataClassRowFactory(self) -> None:
         "apsw.ext.DataClassRowFactory"
         dcrf = apsw.ext.DataClassRowFactory()
@@ -10888,6 +11157,7 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
 class ZZFaultInjection(unittest.TestCase):
     setUp = APSW.setUp
     tearDown = APSW.tearDown
+    check_db_mutex = APSW.check_db_mutex
     assertRaisesUnraisable = APSW.assertRaisesUnraisable
     baseAssertRaisesUnraisable = APSW.baseAssertRaisesUnraisable
 
@@ -10896,7 +11166,7 @@ class ZZFaultInjection(unittest.TestCase):
     # testLargeObjects
     def testFaultInjection(self):
         "Deliberately inject faults to exercise all code paths"
-        if not getattr(apsw, "test_fixtures_present", None):
+        if not getattr(apsw, "apsw_fault_inject", None):
             return
 
         apsw.faultdict = dict()
@@ -10921,7 +11191,7 @@ class ZZFaultInjection(unittest.TestCase):
 
         seen = set()
 
-        for macro, faultname in re.findall(r"(APSW_FAULT_INJECT)\s*[(]\s*(?P<fault_name>.*?)\s*,", code):
+        for macro, faultname in re.findall(r"(APSW_FAULT)\s*[(]\s*(?P<fault_name>.*?)\s*,", code):
             if faultname == "faultName":
                 continue
             if faultname not in test_code:
@@ -11137,10 +11407,7 @@ class ZZFaultInjection(unittest.TestCase):
                 blobid = row[0]
             blob = db.blob_open("main", "foo", "x", blobid, 0)
             db2 = apsw.Connection(":memory:")
-            if hasattr(db2, "backup"):
-                backup = db2.backup("main", db, "main")
-            else:
-                backup = None
+            backup = db2.backup("main", db, "main")
             return (db, cur, blob, backup)
 
         # test the objects
@@ -11163,16 +11430,15 @@ class ZZFaultInjection(unittest.TestCase):
 
         def childtest(*args):
             # we can't use unittest methods here since we are in a different process
-            val = args[0]
-            args = args[1:]
+
             # this should work
             teststuff(*getstuff())
 
             # ignore the unraisable stuff sent to sys.excepthook
             def eh(*args):
                 pass
-
             sys.excepthook = eh
+
             # call with each separate item to check
             try:
                 for i in range(len(args)):
@@ -11188,16 +11454,35 @@ class ZZFaultInjection(unittest.TestCase):
                 pass
             # this should work again
             teststuff(*getstuff())
-            val.value = 1
+            os._exit(0)
 
-        import multiprocessing
-
-        val = multiprocessing.Value("i", 0)
-        p = multiprocessing.Process(target=childtest, args=[val] + list(child))
         suppressWarning("DeprecationWarning")  # we are deliberately forking
-        p.start()
-        p.join()
-        self.assertEqual(1, val.value)  # did child complete ok?
+        pid = os.fork()
+
+        if pid == 0:
+            # child
+            counter = 0
+            def ueh(unraisable):
+                if unraisable.exc_type != apsw.ForkingViolationError:
+                    print("\n\nUnraisable exception in child process", unraisable)
+                    return sys.__unraisablehook__(unraisable)
+                nonlocal counter
+                counter += 1
+                if counter > 100:
+                    os._exit(0)
+            sys.unraisablehook = ueh
+            try:
+                childtest(*child)
+            except:
+                print("\n\nThis exception in THE CHILD PROCESS OF FORK CHECKER\n", file=sys.stderr)
+                traceback.print_exc()
+                print("\nEnd CHILD traceback\n\n")
+                os._exit(1)
+            os._exit(0)
+
+        rc = os.waitpid(pid, 0)
+        self.assertEqual(0, os.waitstatus_to_exitcode(rc[1]))
+
         teststuff(*parent)
 
         # we call shutdown to free mutexes used in fork checker,
@@ -11339,8 +11624,12 @@ def setup():
     if sys.version_info < (3, 10):
         del APSW.testIssue425
 
+    # Fork checker is becoming less usefull on newer Pythons because
+    # multiprocessing really doesn't want you to use fork and does
+    # alternate methods instead.  We also run sanitizers on most
+    # recent Python which makes things even more convoluted.
     forkcheck = False
-    if hasattr(apsw, "fork_checker") and hasattr(os, "fork") and platform.python_implementation() != "PyPy":
+    if hasattr(apsw, "fork_checker") and hasattr(os, "fork") and platform.python_implementation() != "PyPy" and sys.version_info < (3, 13):
         try:
             import multiprocessing
 

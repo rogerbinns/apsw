@@ -29,68 +29,12 @@ static void make_exception(int res, sqlite3 *db);
 #define SET_EXC(res, db)                                                                                               \
   do                                                                                                                   \
   {                                                                                                                    \
-    if (res != SQLITE_OK && !PyErr_Occurred())                                                                         \
+    if (db)                                                                                                            \
+      DBMUTEX_ASSERT(db);                                                                                              \
+    assert(PyGILState_Check());                                                                                        \
+    if (res != SQLITE_OK && res != SQLITE_DONE && res != SQLITE_ROW && !PyErr_Occurred())                              \
       make_exception(res, db);                                                                                         \
   } while (0)
-
-/* A dictionary we store the last error from each thread in.  Used
-   thread local storage previously. The key is a PyLong of the thread
-   id and the value is a PyBytes. */
-static PyObject *tls_errmsg;
-
-/* This method is called with the database mutex held but the GIL
-   released.  Previous code used thread local storage which is a bit
-   too OS dependent (eg required a DllMain under Windows) but it
-   didn't need any Python code.  It is safe to acquire the GIL since
-   the db mutex has been acquired first so we are no different than a
-   user defined function. */
-static void
-apsw_set_errmsg(const char *msg)
-{
-  PyObject *key = NULL, *value = NULL;
-
-  PyGILState_STATE gilstate = PyGILState_Ensure();
-  /* dictionary operations whine if there is an outstanding error */
-  PY_ERR_FETCH(exc_save);
-
-  assert(tls_errmsg);
-
-  key = PyLong_FromLong(PyThread_get_thread_ident());
-  if (key)
-    value = PyBytes_FromStringAndSize(msg, strlen(msg));
-
-  if (key && value && 0 == PyDict_SetItem(tls_errmsg, key, value))
-    ;
-  else
-    apsw_write_unraisable(NULL);
-
-  Py_XDECREF(key);
-  Py_XDECREF(value);
-  PY_ERR_RESTORE(exc_save);
-  PyGILState_Release(gilstate);
-}
-
-static const char *
-apsw_get_errmsg(void)
-{
-  const char *retval = NULL;
-  PyObject *key = NULL, *value;
-
-  /* set should always have been called first */
-  assert(tls_errmsg);
-
-  key = PyLong_FromLong(PyThread_get_thread_ident());
-  if (key)
-  {
-    value = PyDict_GetItem(tls_errmsg, key);
-    if (value)
-      retval = PyBytes_AsString(value);
-  }
-
-  Py_XDECREF(key);
-  /* value is borrowed */
-  return retval;
-}
 
 static struct
 {
@@ -226,16 +170,19 @@ get_exception_for_code(int res)
 static void
 make_exception(int res, sqlite3 *db)
 {
+  /* don't overwrite any existing exception */
+  assert(!PyErr_Occurred());
+
   const char *errmsg = NULL;
   int error_offset = -1;
 
   if (db)
-    errmsg = apsw_get_errmsg();
+    errmsg = sqlite3_errmsg(db);
   if (!errmsg)
     errmsg = "error";
 
   if (db)
-    _PYSQLITE_CALL_V(error_offset = sqlite3_error_offset(db));
+    error_offset = sqlite3_error_offset(db);
 
   PyObject *tmp;
   PyErr_Format(get_exception_for_code(res), "%s", errmsg);
@@ -335,4 +282,12 @@ MakeSqliteMsgFromPyException(char **errmsg)
   assert(res != -1);
   assert(res > 0);
   return res;
+}
+
+static void
+make_thread_exception(const char *message)
+{
+  /* avoid overwriting existing */
+  if (!PyErr_Occurred())
+    PyErr_Format(ExcThreadingViolation, message ? message : "Connection is busy in another thread");
 }

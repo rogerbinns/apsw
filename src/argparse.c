@@ -282,7 +282,8 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     }                                                                                                                  \
     else                                                                                                               \
     {                                                                                                                  \
-      PyErr_Format(PyExc_TypeError, "codepoint should be an int or one character str");                                \
+      PyErr_Format(PyExc_TypeError, "codepoint should be an int or one character str not %s",                          \
+                   Py_TypeName(useargs[argp_optindex]));                                                               \
       goto param_error;                                                                                                \
     }                                                                                                                  \
     argp_optindex++;                                                                                                   \

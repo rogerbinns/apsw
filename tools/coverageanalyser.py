@@ -24,7 +24,7 @@ names = glob.glob("src/*.c.gcov")
 names.sort()
 
 for f in names:
-    if f.startswith("sqlite3") or f.endswith("faultinject.c.gcov"):
+    if f.startswith("sqlite3") or f.endswith("faultinject.c.gcov") or f.endswith("_unicodedb.c.gcov"):
         continue
     file_exec = 0
     file_total = 0
@@ -40,7 +40,7 @@ for f in names:
                 if line.startswith("#else") or line.startswith("#endif"):
                     in_test_fixture = False
                 continue
-            if line == "#ifdef APSW_TESTFIXTURES":
+            if line == "#ifdef APSW_FAULT_INJECT":
                 in_test_fixture = True
                 continue
             count = count.strip()

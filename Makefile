@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.48.0
+SQLITEVERSION=3.49.1
 APSWSUFFIX=.0
 
-RELEASEDATE="15 January 2025"
+RELEASEDATE="25 February 2025"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -155,7 +155,7 @@ linkcheck:  ## Checks links from doc
 	env PYTHONPATH="`pwd`" $(MAKE) RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
 
 unwrapped:  ## Find SQLite APIs that are not wrapped by APSW
-	env PYTHONPATH=. $(PYTHON) tools/find_unwrapped_apis.py
+	env PYTHONPATH=. $(PYTHON) tools/gensqlitedebug.py
 
 publish: docs
 	rsync -a --delete --exclude=.git --exclude=.nojekyll doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; git status
@@ -171,12 +171,10 @@ stubtest: ## Verifies type annotations with mypy
 # set this to a commit id to grab that instead
 FOSSIL_URL="https://www.sqlite.org/src/tarball/sqlite.tar.gz"
 fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in sqlite3 directory
-	-mv sqlite3/sqlite3config.h .
 	-rm -rf sqlite3
 	mkdir sqlite3
 	set -e ; cd sqlite3 ; curl --output - $(FOSSIL_URL) | tar xfz - --strip-components=1
 	set -e ; cd sqlite3 ; ./configure --quiet --all --disable-tcl ; $(MAKE) sqlite3.c sqlite3
-	-mv sqlite3config.h sqlite3/
 
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
 showsymbols:  ## Finds any C symbols that aren't static(private)
@@ -262,7 +260,7 @@ src/_unicodedb.c: tools/ucdprops2code.py ## Update generated Unicode database lo
 	$(PYTHON) tools/ucdprops2code.py $@
 
 # building a python debug interpreter
-PYDEBUG_VER=3.13.1
+PYDEBUG_VER=3.13.2
 PYDEBUG_DIR=/space/pydebug
 PYTHREAD_VER=$(PYDEBUG_VER)
 PYTHREAD_DIR=/space/pythread
@@ -294,7 +292,7 @@ megatest-build: ## Builds and updates podman container for running megatest
 
 MEGATEST_ARGS=
 megatest-run: ## Runs megatest in container
-	podman run --pids-limit=-1 -i --tty -v "`pwd`/../apsw-test:/megatest/apsw-test" -v "`pwd`:/megatest/apsw" -v "$$HOME/.ccache:/megatest/ccache" apsw-megatest $(MEGATEST_ARGS)
+	podman run --rm --pids-limit=-1 -i --tty -v "`pwd`/../apsw-test:/megatest/apsw-test" -v "`pwd`:/megatest/apsw" -v "$$HOME/.ccache:/megatest/ccache" apsw-megatest $(MEGATEST_ARGS)
 
 megatest-shell: ## Runs a shell in the megatest container
-	podman run -i --tty -v "`pwd`/../apsw-test:/megatest/apsw-test" -v "`pwd`:/megatest/apsw" -v "$$HOME/.ccache:/megatest/ccache" --entrypoint /bin/bash apsw-megatest
+	podman run --rm -i --tty -v "`pwd`/../apsw-test:/megatest/apsw-test" -v "`pwd`:/megatest/apsw" -v "$$HOME/.ccache:/megatest/ccache" --entrypoint /bin/bash apsw-megatest

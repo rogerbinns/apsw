@@ -13,84 +13,54 @@
 
 #define VLA_PYO(name, size) VLA(name, size, PyObject *)
 
-/* These macros are to address several issues:
-
-  - Prevent simultaneous calls on the same object while the GIL is
-  released in one thread.  For example if a Cursor is executing
-  sqlite3_step with the GIL released, we don't want Cursor_execute
-  called on another thread since that will thrash what the first
-  thread is doing.  We use a member of Connection, Blob and Cursor
-  named 'inuse' to provide the simple exclusion.
-
-  - The GIL has to be released around all SQLite calls that take the
-  database mutex (which is most of them).  If the GIL is kept even for
-  trivial calls then deadlock will arise.  This is because if you have
-  multiple mutexes you must always acquire them in the same order, or
-  never hold more than one at a time.
-
-  - The SQLite error code is not threadsafe.  This is because the
-  error string is per database connection.  The call to sqlite3_errmsg
-  will return a pointer but that can be replaced by any other thread
-  with an error.  Consequently SQLite added sqlite3_db_mutex (see
-  sqlite-dev mailing list for 4 Nov 2008).  A far better workaround
-  would have been to make the SQLite error stuff be per thread just
-  like errno.  Instead I have had to roll my own thread local storage
-  system for storing the error message.
-*/
-
-/* call where no error is returned */
-#define _PYSQLITE_CALL_V(x)                                                                                            \
+/* use this most of the time where an exception is raised if we can't get the db mutex */
+#define DBMUTEX_ENSURE(mutex)                                                                                          \
   do                                                                                                                   \
   {                                                                                                                    \
-    Py_BEGIN_ALLOW_THREADS { x; }                                                                                      \
-    Py_END_ALLOW_THREADS;                                                                                              \
-  } while (0)
-
-/* Calls where error could be set.  We assume that a variable 'res' is set.  Also need the db to take
-   the mutex on */
-#define _PYSQLITE_CALL_E(db, x)                                                                                        \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    Py_BEGIN_ALLOW_THREADS                                                                                             \
+    if (sqlite3_mutex_try(mutex) != SQLITE_OK)                                                                         \
     {                                                                                                                  \
-      sqlite3_mutex_enter(sqlite3_db_mutex(db));                                                                       \
-      x;                                                                                                               \
-      if (res != SQLITE_OK && res != SQLITE_DONE && res != SQLITE_ROW)                                                 \
-        apsw_set_errmsg(sqlite3_errmsg((db)));                                                                         \
-      sqlite3_mutex_leave(sqlite3_db_mutex(db));                                                                       \
+      make_thread_exception(NULL);                                                                                     \
+      return NULL;                                                                                                     \
     }                                                                                                                  \
-    Py_END_ALLOW_THREADS;                                                                                              \
   } while (0)
 
-#define INUSE_CALL(x)                                                                                                  \
+#define DBMUTEXES_ENSURE(mutex1, msg1, mutex2, msg2)                                                                   \
   do                                                                                                                   \
   {                                                                                                                    \
-    assert(self->inuse == 0);                                                                                          \
-    self->inuse = 1;                                                                                                   \
+    if (sqlite3_mutex_try(mutex1) != SQLITE_OK)                                                                        \
     {                                                                                                                  \
-      x;                                                                                                               \
+      make_thread_exception(msg1);                                                                                     \
+      return NULL;                                                                                                     \
     }                                                                                                                  \
-    assert(self->inuse == 1);                                                                                          \
-    self->inuse = 0;                                                                                                   \
+    if (sqlite3_mutex_try(mutex2) != SQLITE_OK)                                                                        \
+    {                                                                                                                  \
+      sqlite3_mutex_leave(mutex1);                                                                                     \
+      make_thread_exception(msg2);                                                                                     \
+      return NULL;                                                                                                     \
+    }                                                                                                                  \
   } while (0)
 
-/* call from blob code */
-#define PYSQLITE_BLOB_CALL(y) INUSE_CALL(_PYSQLITE_CALL_E(self->connection->db, y))
+/* use this when we have to get the dbmutex - eg in dealloc functions
+   - where we busy wait releasing gil until dbmutex is acquired.
 
-/* call from connection code */
-#define PYSQLITE_CON_CALL(y) INUSE_CALL(_PYSQLITE_CALL_E(self->db, y))
+  a different thread could be running a sqlite3_step with the GIL
+  released and holding the mutex.  when it finishes it will want
+  the GIL so it can copy error messages etc, but we are holding the
+  GIL.  only after it has copied data into python will it then
+  release the db mutex.
 
-/* call from cursor code - same as blob */
-#define PYSQLITE_CUR_CALL PYSQLITE_BLOB_CALL
-
-/* from statement cache */
-#define PYSQLITE_SC_CALL(y) _PYSQLITE_CALL_E(sc->db, y)
-
-/* call to sqlite code that doesn't return an error */
-#define PYSQLITE_VOID_CALL(y) INUSE_CALL(_PYSQLITE_CALL_V(y))
-
-/* call from backup code */
-#define PYSQLITE_BACKUP_CALL(y) INUSE_CALL(_PYSQLITE_CALL_E(self->dest->db, y))
+   if the fork checker is in use and this object was allocated in one
+   process and then freed in the next, it will busy loop forever
+   on SQLITE_MISUSE and spamming the unraisable exception hook with
+   forking violation */
+#define DBMUTEX_FORCE(mutex)                                                                                           \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    while (sqlite3_mutex_try(mutex) != SQLITE_OK)                                                                      \
+    {                                                                                                                  \
+      Py_BEGIN_ALLOW_THREADS Py_END_ALLOW_THREADS;                                                                     \
+    }                                                                                                                  \
+  } while (0)
 
 /*
    The default Python PyErr_WriteUnraisable is almost useless, and barely used
@@ -322,32 +292,33 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
 #include "faultinject.h"
   int coltype;
 
-  _PYSQLITE_CALL_V(coltype = sqlite3_column_type(stmt, col));
+  coltype = sqlite3_column_type(stmt, col);
 
   switch (coltype)
   {
   case SQLITE_INTEGER: {
     sqlite3_int64 val;
-    _PYSQLITE_CALL_V(val = sqlite3_column_int64(stmt, col));
+    val = sqlite3_column_int64(stmt, col);
     return PyLong_FromLongLong(val);
   }
 
   case SQLITE_FLOAT: {
     double d;
-    _PYSQLITE_CALL_V(d = sqlite3_column_double(stmt, col));
+    d = sqlite3_column_double(stmt, col);
     return PyFloat_FromDouble(d);
   }
   case SQLITE_TEXT: {
     const char *data;
     size_t len;
-    _PYSQLITE_CALL_V((data = (const char *)sqlite3_column_text(stmt, col), len = sqlite3_column_bytes(stmt, col)));
+    data = (const char *)sqlite3_column_text(stmt, col);
+    len = sqlite3_column_bytes(stmt, col);
     return PyUnicode_FromStringAndSize(data, len);
   }
 
   default:
   case SQLITE_NULL: {
     void *pointer;
-    _PYSQLITE_CALL_V(pointer = sqlite3_value_pointer(sqlite3_column_value(stmt, col), PYOBJECT_BIND_TAG));
+    pointer = sqlite3_value_pointer(sqlite3_column_value(stmt, col), PYOBJECT_BIND_TAG);
     if (pointer)
       return Py_NewRef((PyObject *)pointer);
     Py_RETURN_NONE;
@@ -356,26 +327,14 @@ convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
   case SQLITE_BLOB: {
     const void *data;
     size_t len;
-    _PYSQLITE_CALL_V((data = sqlite3_column_blob(stmt, col), len = sqlite3_column_bytes(stmt, col)));
+    data = sqlite3_column_blob(stmt, col);
+    len = sqlite3_column_bytes(stmt, col);
     return PyBytes_FromStringAndSize(data, len);
   }
   }
 }
 
 /* Some macros used for frequent operations */
-
-/* used by Connection and Cursor */
-#define CHECK_USE(e)                                                                                                   \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    if (self->inuse)                                                                                                   \
-    { /* raise exception if we aren't already in one */                                                                \
-      if (!PyErr_Occurred())                                                                                           \
-        PyErr_Format(ExcThreadingViolation, "You are trying to use the same object concurrently in two threads or "    \
-                                            "re-entrantly within the same thread which is not allowed.");              \
-      return e;                                                                                                        \
-    }                                                                                                                  \
-  } while (0)
 
 /* used by Connection */
 #define CHECK_CLOSED(connection, e)                                                                                    \

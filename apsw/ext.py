@@ -1,32 +1,32 @@
 # Provides various useful routines
 
 from __future__ import annotations
+
+import abc
 import collections
 import collections.abc
-
+import contextvars
 import dataclasses
-from dataclasses import dataclass, make_dataclass, is_dataclass
-
-from typing import Union, Any, Callable, Sequence, Iterable, TextIO, Literal, Iterator, Generator
-import types
-
-import functools
-import time
-import abc
 import enum
+import functools
+import html
 import inspect
 import keyword
-import math
-from fractions import Fraction
 import logging
+import math
 import os
-import html
-import traceback
 import re
 import string
+import sys
+import time
+import traceback
+import types
+from dataclasses import dataclass, is_dataclass, make_dataclass
+from fractions import Fraction
+from typing import Any, Callable, Generator, Iterable, Iterator, Literal, Sequence, TextIO, Union
+
 import apsw
 import apsw.unicode
-import sys
 
 NoneType = types.NoneType if sys.version_info > (3, 10) else type(None)
 
@@ -1169,7 +1169,7 @@ def analyze_pages(con: apsw.Connection, scope: int, schema: str = "main") -> Dat
     return res
 
 
-def storage(v) -> str:
+def storage(v: int) -> str:
     """Converts number to storage size (KB, MB, GB etc)
 
     :meta private:
@@ -1384,6 +1384,171 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
         )
 
     print("</style></svg>", file=out)
+
+
+query_limit_context: contextvars.ContextVar[query_limit.limit] = contextvars.ContextVar("apsw.ext.query_limit_context")
+"""Stores the current query limits
+
+:meta private:
+"""
+
+
+class QueryLimitNoException(Exception):
+    """Indicates that no exception will be raised when a :class:`query_limit` is exceeded"""
+
+    pass
+
+
+class query_limit:
+    """Use as a context manager to limit execution time and rows processed in the block
+
+    When the total number of rows processed hits the row limit, or
+    timeout seconds have elapsed an exception is raised to exit the
+    block.
+
+    .. code-block::
+
+        with query_limit(db, row_limit = 1000, timeout = 2.5):
+            db.execute("...")
+            for row in db.execute("..."):
+                ,,,
+            db.execute("...")
+
+    :param db: Connection to monitor
+    :param row_limit: Maximum number of rows to process, across all
+        queries.  :class:`None` (default) means no limit
+    :param timeout: Maximum elapsed time in seconds.  :class:`None`
+        (default) means no limit
+    :param row_exception: Class of exception to raise when row limit
+        is hit
+    :param timeout_exception: Class of exception to raise when timeout
+        is hit
+    :param timeout_steps: How often the elapsed time is checked in
+        SQLite internal operations (see :meth:`~apsw.Connection.set_progress_handler`)
+
+    If the exception is :class:`QueryLimitNoException` (default) then
+    no exception is passed on when the block exits.
+
+    Row limits are implemented by :meth:`~apsw.Connection.trace_v2` to
+    monitor rows.  Only rows directly in your queries are counted -
+    for example rows used by virual tables like FTS5 in the
+    background, or triggers are not counted.
+
+    Time limits are implemented by
+    :meth:`~apsw.Connection.set_progress_handler` to monitor the
+    elapsed :func:`time <time.monotonic>`.  This means the elapsed
+    time is only checked while running SQLite queries.
+
+    :meth:`~apsw.Connection.trace_v2` and
+    :meth:`~apsw.Connection.set_progress_handler` implement multiple
+    registrations so query_limit will not interfere with any you may
+    have registered.
+
+    If you use nested query_limit blocks then only the limits set by
+    the closest block apply within that block.
+
+    See the :ref:`example <example_query_limit>`
+    """
+
+    @dataclasses.dataclass
+    class limit:
+        """ "Current limit in effect
+
+        :meta private:"""
+
+        rows_remaining: int | None = None
+        "How many more rows can be returned"
+        time_expiry: float | None = None
+        "time.monotic value when we stop"
+        statements: dict[int, bool] = dataclasses.field(default_factory=dict)
+        """key is statement id, value is if its rows count towards rows remaining"""
+
+    def __init__(
+        self,
+        db: apsw.Connection,
+        *,
+        row_limit: int | None = None,
+        timeout: float | None = None,
+        row_exception: type[Exception] = QueryLimitNoException,
+        timeout_exception: type[Exception] = QueryLimitNoException,
+        timeout_steps: int = 100,
+    ):
+        self.db = db
+        self.row_limit = row_limit
+        self.timeout = timeout
+        self.row_exception = row_exception
+        self.timeout_exception = timeout_exception
+        self.timeout_steps = timeout_steps
+
+    def __enter__(self) -> None:
+        "Context manager entry point"
+
+        limit = self.limit()
+
+        if self.row_limit is not None:
+            self.db.trace_v2(
+                apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_ROW | apsw.SQLITE_TRACE_PROFILE, self.trace, id=self
+            )
+            limit.rows_remaining = self.row_limit
+
+        if self.timeout is not None:
+            limit.time_expiry = time.monotonic() + self.timeout
+            self.db.set_progress_handler(self.progress, self.timeout_steps, id=self)
+
+        self.context_token = query_limit_context.set(limit)
+        self.my_limit = limit
+        return None
+
+    def __exit__(self, exc_type, *_):
+        "Context manager exit point"
+
+        self.db.trace_v2(0, None, id=self)
+        self.db.set_progress_handler(None, id=self)
+
+        limit: query_limit.limit = query_limit_context.get()
+        query_limit_context.reset(self.context_token)
+
+        if limit is self.my_limit and exc_type is QueryLimitNoException:
+            return True
+
+        # pass on whatever the exception was
+        return False
+
+    def trace(self, event: dict):
+        """Process statement events to check for row limits
+
+        :meta private:"""
+        limit: query_limit.limit = query_limit_context.get()
+
+        if limit is not self.my_limit:
+            return
+
+        if event["code"] == apsw.SQLITE_TRACE_PROFILE:
+            limit.statements.pop(event["id"], None)
+
+        elif event["code"] == apsw.SQLITE_TRACE_STMT:
+            # trigger is True for both triggers and vtables, and we ignore them
+            limit.statements[event["id"]] = not event["trigger"]
+
+        elif event["code"] == apsw.SQLITE_TRACE_ROW:
+            # we ignore unknown statements
+            if limit.statements.get(event["id"], False):
+                limit.rows_remaining -= 1
+                if limit.rows_remaining < 0:
+                    raise self.row_exception("query row limit hit")
+
+    def progress(self):
+        """Progress handler to check for time expiry
+
+        :meta private:
+        """
+        limit: query_limit.limit = query_limit_context.get()
+
+        if limit is self.my_limit and time.monotonic() >= limit.time_expiry:
+            raise self.timeout_exception("query time limit hit")
+
+        return False
+
 
 
 def format_query_table(

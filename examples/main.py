@@ -619,6 +619,63 @@ print(
     ).get,
 )
 
+### query_limit: Query limiting
+# :meth:`apsw.ext.query_limit` limits rows and time in a block
+# across all the queries within the block
+
+import apsw.ext
+
+# Use this to make many (virtual) rows
+apsw.ext.make_virtual_module(
+    connection, "generate_series", apsw.ext.generate_series
+)
+
+rows = []
+
+with apsw.ext.query_limit(connection, row_limit=20):
+    # 11 rows will come from this
+    for (number,) in connection.execute(
+        "select * from generate_series(0, 10)"
+    ):
+        rows.append(number)
+    # next query would be 1,000 but we will hit
+    # the limit
+    for (number,) in connection.execute(
+        "select * from generate_series(0, 999)"
+    ):
+        rows.append(number)
+
+# lets see what we got
+print(f"{len(rows)=}")
+
+# We can also time limit
+start = time.monotonic()
+with apsw.ext.query_limit(connection, timeout=0.2):
+    for (number,) in connection.execute(
+        "select * from generate_series(0, 1000000000)"
+    ):
+        pass
+
+print(f"After {time.monotonic() - start:.3f} seconds, we hit {number=}")
+
+# We used the default "no exception" exception.  Lets have an explicit exception.
+# with both row and time limits ...
+try:
+    with apsw.ext.query_limit(
+        connection,
+        row_limit=1000,
+        timeout=1000,
+        row_exception=IndexError,
+        timeout_exception=TimeoutError,
+    ):
+        for (number,) in connection.execute(
+            "select * from generate_series(0, 1000000000)"
+        ):
+            pass
+except Exception as exc:
+    print(f"{exc=}")
+
+
 ### query_details: Query details
 # :meth:`apsw.ext.query_info` can provide a lot of information about a
 # query (without running it)

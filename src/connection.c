@@ -20,7 +20,7 @@ processes.
 
 /* CALLBACK INFO */
 
-/* details of a registered function passed as user data to sqlite3_create_function */
+/* details of a registered function passed as user data to sqlite3_create_function_v2 */
 typedef struct
 {
   PyObject_HEAD
@@ -67,14 +67,20 @@ struct tracehook
   PyObject *id;
 };
 
+struct progresshandler
+{
+  int nsteps;
+  PyObject *callback;
+  PyObject *id;
+};
+
 /* CONNECTION TYPE */
 
 struct Connection
 {
   PyObject_HEAD
-  sqlite3 *db;    /* the actual database connection */
-  unsigned inuse; /* track if we are in use preventing concurrent thread mangling */
-
+  sqlite3 *db;                      /* the actual database connection */
+  sqlite3_mutex *dbmutex;           /* what we lock */
   struct StatementCache *stmtcache; /* prepared statement cache */
 
   fts5_api *fts5_api_cached;
@@ -89,7 +95,6 @@ struct Connection
   PyObject *updatehook;
   PyObject *commithook;
   PyObject *walhook;
-  PyObject *progresshandler;
   PyObject *authorizer;
   PyObject *collationneeded;
   PyObject *exectrace;
@@ -98,6 +103,9 @@ struct Connection
      callback. */
   struct tracehook *tracehooks;
   unsigned tracehooks_count;
+
+  struct progresshandler *progresshandler;
+  unsigned progresshandler_count;
 
   /* if we are using one of our VFS since sqlite doesn't reference count them */
   PyObject *vfs;
@@ -181,7 +189,6 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->updatehook);
   Py_CLEAR(self->commithook);
   Py_CLEAR(self->walhook);
-  Py_CLEAR(self->progresshandler);
   Py_CLEAR(self->authorizer);
   Py_CLEAR(self->collationneeded);
   Py_CLEAR(self->exectrace);
@@ -194,9 +201,20 @@ Connection_internal_cleanup(Connection *self)
     Py_CLEAR(self->tracehooks[i].callback);
     Py_CLEAR(self->tracehooks[i].id);
   }
-  PyMem_Del(self->tracehooks);
+  PyMem_Free(self->tracehooks);
+
   self->tracehooks = 0;
   self->tracehooks_count = 0;
+
+  for (unsigned i = 0; i < self->progresshandler_count; i++)
+  {
+    Py_CLEAR(self->progresshandler[i].callback);
+    Py_CLEAR(self->progresshandler[i].id);
+  }
+  PyMem_Free(self->progresshandler);
+
+  self->progresshandler = 0;
+  self->progresshandler_count = 0;
 }
 
 static void
@@ -262,7 +280,10 @@ Connection_close_internal(Connection *self, int force)
       if (force == 2)
         apsw_write_unraisable(NULL);
       else
+      {
+        sqlite3_mutex_leave(self->dbmutex);
         return 1;
+      }
     }
   }
 
@@ -274,9 +295,13 @@ Connection_close_internal(Connection *self, int force)
 
   /* This ensures any SQLITE_TRACE_CLOSE callbacks see a closed
      database */
-  sqlite3 *tmp = self->db;
+  sqlite3 *tmp_db = self->db;
+  sqlite3_mutex *tmp_mutex = self->dbmutex;
   self->db = 0;
-  PYSQLITE_VOID_CALL(res = sqlite3_close(tmp));
+  self->dbmutex = 0;
+  /* caller should have acquired */
+  sqlite3_mutex_leave(tmp_mutex);
+  res = sqlite3_close(tmp_db);
 
   if (res != SQLITE_OK)
   {
@@ -336,8 +361,6 @@ Connection_close(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_n
 {
   int force = 0;
 
-  CHECK_USE(NULL);
-
   assert(!PyErr_Occurred());
   {
     Connection_close_CHECK;
@@ -345,6 +368,8 @@ Connection_close(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_OPTIONAL ARG_bool(force);
     ARG_EPILOG(NULL, Connection_close_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
   if (Connection_close_internal(self, force))
   {
     assert(PyErr_Occurred());
@@ -360,10 +385,11 @@ Connection_dealloc(Connection *self)
   PyObject_GC_UnTrack(self);
   APSW_CLEAR_WEAKREFS;
 
+  DBMUTEX_FORCE(self->dbmutex);
   Connection_close_internal(self, 2);
 
   /* Our dependents all hold a refcount on us, so they must have all
-     released before this destructor could be called */
+      released before this destructor could be called */
   assert(!self->dependents || PyList_GET_SIZE(self->dependents) == 0);
   Py_CLEAR(self->dependents);
 
@@ -379,8 +405,8 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
   if (self != NULL)
   {
     self->db = 0;
+    self->dbmutex = 0;
     self->cursor_factory = Py_NewRef((PyObject *)&APSWCursorType);
-    self->inuse = 0;
     self->dependents = PyList_New(0);
     self->stmtcache = 0;
     self->fts5_api_cached = 0;
@@ -389,7 +415,6 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
     self->updatehook = 0;
     self->commithook = 0;
     self->walhook = 0;
-    self->progresshandler = 0;
     self->authorizer = 0;
     self->collationneeded = 0;
     self->exectrace = 0;
@@ -408,6 +433,8 @@ Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
       self->tracehooks[0].mask = 0;
       self->tracehooks_count = 1;
     }
+    self->progresshandler = 0;
+    self->progresshandler_count = 0;
     CALL_TRACK_INIT(xConnect);
     if (self->dependents && self->tracehooks)
       return (PyObject *)self;
@@ -475,14 +502,40 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
      could be registered between our find and the open starting.
      Don't do that!  We also have to manage the error message thread
      safety manually as self->db is null on entry. */
-  PYSQLITE_VOID_CALL(vfsused = sqlite3_vfs_find(vfs); res = sqlite3_open_v2(filename, &self->db, flags, vfs);
-                     if (res != SQLITE_OK) apsw_set_errmsg(sqlite3_errmsg(self->db)););
-  SET_EXC(res, self->db); /* nb sqlite3_open always allocates the db even on error */
+  vfsused = sqlite3_vfs_find(vfs);
+  Py_BEGIN_ALLOW_THREADS
+  {
+    /* Real SQLite always creates a self->db so you can get the error
+       code etc.  Fault injection leaves it NULL hence the checks for
+       self->db */
+    res = sqlite3_open_v2(filename, &self->db, flags, vfs);
+    /* get detailed error codes */
+    if (self->db)
+      sqlite3_extended_result_codes(self->db, 1);
+  }
+  Py_END_ALLOW_THREADS;
+
+  if (res != SQLITE_OK && !PyErr_Occurred())
+  {
+    if (self->db)
+    {
+      /* we have to hold the dbmutex around this */
+      int acquired = sqlite3_mutex_try(sqlite3_db_mutex(self->db));
+      /* there is no reason it could fail */
+      assert(acquired == SQLITE_OK);
+      (void)acquired;
+    }
+    make_exception(res, self->db);
+    if (self->db)
+      sqlite3_mutex_leave(sqlite3_db_mutex(self->db));
+  }
 
   /* normally sqlite will have an error code but some internal vfs
-     error codes aren't propagated by PyErr_Occurred will be set*/
+     error codes aren't propagated so PyErr_Occurred will be set*/
   if (res != SQLITE_OK || PyErr_Occurred())
     goto pyexception;
+
+  self->dbmutex = sqlite3_db_mutex(self->db);
 
   if (vfsused && is_apsw_vfs(vfsused))
     self->vfs = Py_NewRef((PyObject *)(vfsused->pAppData));
@@ -497,9 +550,6 @@ Connection_init(Connection *self, PyObject *args, PyObject *kwargs)
     if (!self->open_vfs)
       goto pyexception;
   }
-
-  /* get detailed error codes */
-  PYSQLITE_VOID_CALL(sqlite3_extended_result_codes(self->db, 1));
 
   /* call connection hooks */
   hooks = PyObject_GetAttr(apswmodule, apst.connection_hooks);
@@ -538,6 +588,7 @@ pyexception:
   /* clean up db since it is useless - no need for user to call close */
   assert(PyErr_Occurred());
   res = -1;
+  DBMUTEX_FORCE(self->dbmutex);
   Connection_close_internal(self, 2);
   assert(PyErr_Occurred());
 
@@ -549,7 +600,10 @@ finally:
   {
     res = apsw_connection_add(self);
     if (res)
+    {
+      DBMUTEX_FORCE(self->dbmutex);
       Connection_close_internal(self, 2);
+    }
   }
   assert((PyErr_Occurred() && res != 0) || (res == 0 && !PyErr_Occurred()));
   return res;
@@ -583,9 +637,8 @@ Connection_blob_open(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
   long long rowid;
   int writeable = 0;
   int res;
-  PyObject *weakref;
+  PyObject *weakref = NULL;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -598,28 +651,33 @@ Connection_blob_open(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
     ARG_MANDATORY ARG_bool(writeable);
     ARG_EPILOG(NULL, Connection_blob_open_USAGE, );
   }
-  PYSQLITE_CON_CALL(res = sqlite3_blob_open(self->db, database, table, column, rowid, writeable, &blob));
+
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_blob_open(self->db, database, table, column, rowid, writeable, &blob);
 
   SET_EXC(res, self->db);
-  if (res != SQLITE_OK)
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
     return NULL;
 
   apswblob = (struct APSWBlob *)_PyObject_New(&APSWBlobType);
   if (!apswblob)
-  {
-    PYSQLITE_CON_CALL(sqlite3_blob_close(blob));
-    return NULL;
-  }
+    goto error;
 
   APSWBlob_init(apswblob, self, blob);
+  blob = NULL;
   weakref = PyWeakref_NewRef((PyObject *)apswblob, NULL);
   if (!weakref)
-    return NULL;
-  res = PyList_Append(self->dependents, weakref);
-  Py_DECREF(weakref);
-  if (res)
-    return NULL;
-  return (PyObject *)apswblob;
+    goto error;
+  if (0 == PyList_Append(self->dependents, weakref))
+    return (PyObject *)apswblob;
+error:
+  if (blob)
+    sqlite3_blob_close(blob);
+  Py_XDECREF(weakref);
+  Py_XDECREF(apswblob);
+  return NULL;
 }
 
 /** .. method:: backup(databasename: str, sourceconnection: Connection, sourcedatabasename: str)  -> Backup
@@ -645,46 +703,14 @@ Connection_backup(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
 {
   struct APSWBackup *apswbackup = 0;
   sqlite3_backup *backup = 0;
-  int res = -123456; /* stupid compiler */
+  int res = SQLITE_OK;
   PyObject *result = NULL;
   PyObject *weakref = NULL;
   Connection *sourceconnection = NULL;
   const char *databasename = NULL;
   const char *sourcedatabasename = NULL;
-  int isetsourceinuse = 0;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
-
-  /* gc dependents removing dead items */
-  Connection_remove_dependent(self, NULL);
-
-  /* self (destination) can't be used if there are outstanding blobs, cursors or backups */
-  if (PyList_GET_SIZE(self->dependents))
-  {
-    PyObject *args = NULL;
-
-    args = PyTuple_New(2);
-    if (!args)
-      goto thisfinally;
-    PyObject *s = PyUnicode_FromString("The destination database has outstanding objects open on it.  They must all be "
-                                       "closed for the backup to proceed (otherwise corruption would be possible.)");
-    if (!s)
-      goto thisfinally;
-    PyTuple_SET_ITEM(args, 0, s);
-    PyTuple_SET_ITEM(args, 1, Py_NewRef(self->dependents));
-
-    PyErr_SetObject(ExcThreadingViolation, args);
-
-    /* this forces the exception ot have a traceback etc */
-    PY_ERR_FETCH(normalize_exc);
-    PY_ERR_NORMALIZE(normalize_exc);
-    PY_ERR_RESTORE(normalize_exc);
-
-  thisfinally:
-    Py_XDECREF(args);
-    goto finally;
-  }
 
   {
     Connection_backup_CHECK;
@@ -695,27 +721,15 @@ Connection_backup(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Connection_backup_USAGE, );
   }
   if (!sourceconnection->db)
-  {
-    PyErr_Format(PyExc_ValueError, "source connection is closed!");
-    goto finally;
-  }
-
-  if (sourceconnection->inuse)
-  {
-    PyErr_Format(ExcThreadingViolation, "source connection is in concurrent use in another thread");
-    goto finally;
-  }
+    return PyErr_Format(PyExc_ValueError, "source connection is closed!");
 
   if (sourceconnection->db == self->db)
-  {
-    PyErr_Format(PyExc_ValueError, "source and destination are the same which sqlite3_backup doesn't allow");
-    goto finally;
-  }
+    return PyErr_Format(PyExc_ValueError, "source and destination are the same");
 
-  sourceconnection->inuse = 1;
-  isetsourceinuse = 1;
+  DBMUTEXES_ENSURE(sourceconnection->dbmutex, "Backup source Connection is busy in another thread", self->dbmutex,
+                   "Backup destination Connection is busy in another thread");
 
-  PYSQLITE_CON_CALL(backup = sqlite3_backup_init(self->db, databasename, sourceconnection->db, sourcedatabasename));
+  backup = sqlite3_backup_init(self->db, databasename, sourceconnection->db, sourcedatabasename);
 
   if (!backup)
   {
@@ -723,8 +737,10 @@ Connection_backup(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
     if (res == SQLITE_OK) /* this happens when doing fault injection */
       res = SQLITE_ERROR;
     SET_EXC(res, self->db);
-    goto finally;
   }
+
+  if (res != SQLITE_OK)
+    goto finally;
 
   apswbackup = (struct APSWBackup *)_PyObject_New(&APSWBackupType);
   if (!apswbackup)
@@ -759,16 +775,14 @@ finally:
   assert(result ? (PyErr_Occurred() == NULL) : (PyErr_Occurred() != NULL));
   assert(result ? (backup == NULL) : 1);
   if (backup)
-    PYSQLITE_VOID_CALL(sqlite3_backup_finish(backup));
+    sqlite3_backup_finish(backup);
+
+  sqlite3_mutex_leave(sourceconnection->dbmutex);
+  sqlite3_mutex_leave(self->dbmutex);
 
   Py_XDECREF((PyObject *)apswbackup);
   Py_XDECREF(weakref);
 
-  /* if inuse is set then we must be returning result */
-  assert((self->inuse) ? (!!result) : (result == NULL));
-  assert(result ? (self->inuse) : (!self->inuse));
-  if (isetsourceinuse)
-    sourceconnection->inuse = 0;
   return result;
 }
 
@@ -784,7 +798,6 @@ Connection_cursor(Connection *self)
   PyObject *cursor = NULL;
   PyObject *weakref;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   PyObject *vargs[] = { NULL, (PyObject *)self };
@@ -835,7 +848,6 @@ Connection_set_busy_timeout(Connection *self, PyObject *const *fast_args, Py_ssi
   int milliseconds = 0;
   int res;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -844,9 +856,12 @@ Connection_set_busy_timeout(Connection *self, PyObject *const *fast_args, Py_ssi
     ARG_MANDATORY ARG_int(milliseconds);
     ARG_EPILOG(NULL, Connection_set_busy_timeout_USAGE, );
   }
-  PYSQLITE_CON_CALL(res = sqlite3_busy_timeout(self->db, milliseconds));
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_busy_timeout(self->db, milliseconds);
   SET_EXC(res, self->db);
-  if (res != SQLITE_OK)
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
     return NULL;
 
   /* free any explicit busyhandler we may have had */
@@ -867,7 +882,7 @@ Connection_set_busy_timeout(Connection *self, PyObject *const *fast_args, Py_ssi
 static PyObject *
 Connection_changes(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   return PyLong_FromLongLong(sqlite3_changes64(self->db));
@@ -883,7 +898,7 @@ Connection_changes(Connection *self)
 static PyObject *
 Connection_total_changes(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   return PyLong_FromLongLong(sqlite3_total_changes64(self->db));
@@ -898,7 +913,7 @@ Connection_total_changes(Connection *self)
 static PyObject *
 Connection_get_autocommit(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
   if (sqlite3_get_autocommit(self->db))
     Py_RETURN_TRUE;
@@ -919,11 +934,9 @@ Connection_db_names(Connection *self)
   PyObject *res = NULL, *str = NULL;
   int i;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  sqlite3_mutex_enter(sqlite3_db_mutex(self->db));
-
+  DBMUTEX_ENSURE(self->dbmutex);
   res = PyList_New(0);
   if (!res)
     goto error;
@@ -932,7 +945,7 @@ Connection_db_names(Connection *self)
   {
     int appendres;
 
-    const char *s = sqlite3_db_name(self->db, i); /* Doesn't need PYSQLITE_CALL */
+    const char *s = sqlite3_db_name(self->db, i);
     if (!s)
       break;
     str = convertutf8string(s);
@@ -944,10 +957,10 @@ Connection_db_names(Connection *self)
     Py_CLEAR(str);
   }
 
-  sqlite3_mutex_leave(sqlite3_db_mutex(self->db));
+  sqlite3_mutex_leave(self->dbmutex);
   return res;
 error:
-  sqlite3_mutex_leave(sqlite3_db_mutex(self->db));
+  sqlite3_mutex_leave(self->dbmutex);
   assert(PyErr_Occurred());
   Py_XDECREF(res);
   Py_XDECREF(str);
@@ -964,7 +977,7 @@ error:
 static PyObject *
 Connection_last_insert_rowid(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   return PyLong_FromLongLong(sqlite3_last_insert_rowid(self->db));
@@ -982,7 +995,6 @@ Connection_set_last_insert_rowid(Connection *self, PyObject *const *fast_args, P
 {
   sqlite3_int64 rowid;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -992,7 +1004,9 @@ Connection_set_last_insert_rowid(Connection *self, PyObject *const *fast_args, P
     ARG_EPILOG(NULL, Connection_set_last_insert_rowid_USAGE, );
   }
 
-  PYSQLITE_VOID_CALL(sqlite3_set_last_insert_rowid(self->db, rowid));
+  DBMUTEX_ENSURE(self->dbmutex);
+  sqlite3_set_last_insert_rowid(self->db, rowid);
+  sqlite3_mutex_leave(self->dbmutex);
 
   Py_RETURN_NONE;
 }
@@ -1038,7 +1052,7 @@ static PyObject *
 Connection_limit(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int newval = -1, res, id;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
   {
     Connection_limit_CHECK;
@@ -1116,7 +1130,7 @@ Connection_set_update_hook(Connection *self, PyObject *const *fast_args, Py_ssiz
 {
   /* sqlite3_update_hook doesn't return an error code */
   PyObject *callable;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   {
@@ -1125,18 +1139,17 @@ Connection_set_update_hook(Connection *self, PyObject *const *fast_args, Py_ssiz
     ARG_MANDATORY ARG_optional_Callable(callable);
     ARG_EPILOG(NULL, Connection_set_update_hook_USAGE, );
   }
-  if (!callable)
-  {
-    PYSQLITE_VOID_CALL(sqlite3_update_hook(self->db, NULL, NULL));
-  }
-  else
-  {
-    PYSQLITE_VOID_CALL(sqlite3_update_hook(self->db, updatecb, self));
-    Py_INCREF(callable);
-  }
 
-  Py_XDECREF(self->updatehook);
-  self->updatehook = callable;
+  DBMUTEX_ENSURE(self->dbmutex);
+  if (!callable)
+    sqlite3_update_hook(self->db, NULL, NULL);
+  else
+    sqlite3_update_hook(self->db, updatecb, self);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  Py_CLEAR(self->updatehook);
+  if (callable)
+    self->updatehook = Py_NewRef(callable);
 
   Py_RETURN_NONE;
 }
@@ -1186,7 +1199,7 @@ Connection_set_rollback_hook(Connection *self, PyObject *const *fast_args, Py_ss
 {
   /* sqlite3_rollback_hook doesn't return an error code */
   PyObject *callable;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   {
@@ -1196,18 +1209,18 @@ Connection_set_rollback_hook(Connection *self, PyObject *const *fast_args, Py_ss
     ARG_EPILOG(NULL, Connection_set_rollback_hook_USAGE, );
   }
 
-  if (!callable)
-  {
-    PYSQLITE_VOID_CALL(sqlite3_rollback_hook(self->db, NULL, NULL));
-  }
-  else
-  {
-    PYSQLITE_VOID_CALL(sqlite3_rollback_hook(self->db, rollbackhookcb, self));
-    Py_INCREF(callable);
-  }
+  DBMUTEX_ENSURE(self->dbmutex);
 
-  Py_XDECREF(self->rollbackhook);
-  self->rollbackhook = callable;
+  if (!callable)
+    sqlite3_rollback_hook(self->db, NULL, NULL);
+  else
+    sqlite3_rollback_hook(self->db, rollbackhookcb, self);
+
+  sqlite3_mutex_leave(self->dbmutex);
+
+  Py_CLEAR(self->rollbackhook);
+  if (callable)
+    self->rollbackhook = Py_NewRef(callable);
 
   Py_RETURN_NONE;
 }
@@ -1289,8 +1302,6 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
       /* only calculate this if needed */
       if (connection->tracehooks[i].mask & SQLITE_TRACE_PROFILE)
       {
-        /* only SQLITE_STMTSTATUS_MEMUSED actually needs mutex */
-        sqlite3_mutex_enter(sqlite3_db_mutex(connection->db));
         param = Py_BuildValue(
             "{s: i, s: O, s: N, s: s, s: L, s: L, s: {" K K K K K K K K "s: i}}", "code", code, "connection",
             connection, "id", PyLong_FromVoidPtr(one), "sql", sqlite3_sql(stmt), "nanoseconds", *nanoseconds,
@@ -1298,7 +1309,6 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
             V(SQLITE_STMTSTATUS_SORT), V(SQLITE_STMTSTATUS_AUTOINDEX), V(SQLITE_STMTSTATUS_VM_STEP),
             V(SQLITE_STMTSTATUS_REPREPARE), V(SQLITE_STMTSTATUS_RUN), V(SQLITE_STMTSTATUS_FILTER_MISS),
             V(SQLITE_STMTSTATUS_FILTER_HIT), V(SQLITE_STMTSTATUS_MEMUSED));
-        sqlite3_mutex_leave(sqlite3_db_mutex(connection->db));
         break;
       }
     }
@@ -1355,7 +1365,9 @@ finally:
 static PyObject *
 Connection_update_trace_v2(Connection *self)
 {
-  /* Our callers do CHECK_USE and CHECK_CLOSED */
+  /* callers already do this, but what the heck */
+  CHECK_CLOSED(self, NULL);
+
   unsigned mask = 0;
   for (unsigned i = 0; i < self->tracehooks_count; i++)
     mask |= self->tracehooks[i].mask;
@@ -1366,13 +1378,14 @@ Connection_update_trace_v2(Connection *self)
 
   int res;
 
-  PYSQLITE_CON_CALL(res = sqlite3_trace_v2(self->db, mask, mask ? tracehook_cb : NULL, self));
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_trace_v2(self->db, mask, mask ? tracehook_cb : NULL, self);
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
+  if (PyErr_Occurred())
     return NULL;
-  }
+
   Py_RETURN_NONE;
 }
 
@@ -1391,7 +1404,7 @@ static PyObject *
 Connection_set_profile(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   PyObject *callable;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   {
@@ -1496,7 +1509,6 @@ Connection_trace_v2(Connection *self, PyObject *const *fast_args, Py_ssize_t fas
   PyObject *callback = NULL;
   PyObject *id = NULL;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -1643,7 +1655,7 @@ Connection_set_commit_hook(Connection *self, PyObject *const *fast_args, Py_ssiz
 {
   /* sqlite3_commit_hook doesn't return an error code */
   PyObject *callable;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   {
@@ -1652,20 +1664,17 @@ Connection_set_commit_hook(Connection *self, PyObject *const *fast_args, Py_ssiz
     ARG_MANDATORY ARG_optional_Callable(callable);
     ARG_EPILOG(NULL, Connection_set_commit_hook_USAGE, );
   }
-  if (!callable)
-  {
-    PYSQLITE_VOID_CALL(sqlite3_commit_hook(self->db, NULL, NULL));
-    goto finally;
-  }
 
-  PYSQLITE_VOID_CALL(sqlite3_commit_hook(self->db, commithookcb, self));
+  DBMUTEX_ENSURE(self->dbmutex);
+  if (callable)
+    sqlite3_commit_hook(self->db, commithookcb, self);
+  else
+    sqlite3_commit_hook(self->db, NULL, NULL);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  Py_INCREF(callable);
-
-finally:
-
-  Py_XDECREF(self->commithook);
-  self->commithook = callable;
+  Py_CLEAR(self->commithook);
+  if (callable)
+    self->commithook = Py_NewRef(callable);
 
   Py_RETURN_NONE;
 }
@@ -1701,7 +1710,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
   }
   if (!PyLong_Check(retval))
   {
-    PyErr_Format(PyExc_TypeError, "wal hook must return a number");
+    PyErr_Format(PyExc_TypeError, "wal hook must return a number not %s", Py_TypeName(retval));
     AddTraceBackHere(__FILE__, __LINE__, "walhookcallback", "{s: O, s: s, s: i, s: O}", "Connection", self, "dbname",
                      dbname, "npages", npages, "retval", OBJ(retval));
     goto finally;
@@ -1735,7 +1744,6 @@ Connection_set_wal_hook(Connection *self, PyObject *const *fast_args, Py_ssize_t
 {
   PyObject *callable;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -1745,17 +1753,16 @@ Connection_set_wal_hook(Connection *self, PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Connection_set_wal_hook_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   if (!callable)
-  {
-    PYSQLITE_VOID_CALL(sqlite3_wal_hook(self->db, NULL, NULL));
-  }
+    sqlite3_wal_hook(self->db, NULL, NULL);
   else
-  {
-    PYSQLITE_VOID_CALL(sqlite3_wal_hook(self->db, walhookcb, self));
-    Py_INCREF(callable);
-  }
-  Py_XDECREF(self->walhook);
-  self->walhook = callable;
+    sqlite3_wal_hook(self->db, walhookcb, self);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  Py_CLEAR(self->walhook);
+  if (callable)
+    self->walhook = Py_NewRef(callable);
 
   Py_RETURN_NONE;
 }
@@ -1781,20 +1788,32 @@ progresshandlercb(void *context)
   if (PyErr_Occurred())
     goto finally;
 
-  PyObject *vargs[] = { NULL };
-  retval = PyObject_Vectorcall(self->progresshandler, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-
-  if (!retval)
-    goto finally; /* abort due to exception */
-
-  ok = PyObject_IsTrueStrict(retval);
-
-  assert(ok == -1 || ok == 0 || ok == 1);
-  if (ok == -1)
+  for (unsigned i = 0; i < self->progresshandler_count; i++)
   {
-    ok = 1;
-    assert(PyErr_Occurred());
-    goto finally; /* abort due to exception in result */
+    if (!self->progresshandler[i].callback)
+      continue;
+
+    PyObject *vargs[] = { NULL };
+    retval
+        = PyObject_Vectorcall(self->progresshandler[i].callback, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+
+    if (!retval)
+      goto finally; /* abort due to exception */
+
+    ok = PyObject_IsTrueStrict(retval);
+
+    assert(ok == -1 || ok == 0 || ok == 1);
+
+    if (ok == 1)
+      goto finally;
+
+    if (ok == -1)
+    {
+      ok = 1;
+      assert(PyErr_Occurred());
+      goto finally; /* abort due to exception in result */
+    }
+    Py_CLEAR(retval);
   }
 
 finally:
@@ -1804,12 +1823,21 @@ finally:
   return ok;
 }
 
-/** .. method:: set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 20) -> None
+/** .. method:: set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 100, *, id: Optional[Any] = None) -> None
 
-  Sets a callable which is invoked every *nsteps* SQLite
-  inststructions. The callable should return True to abort
-  or False to continue. (If there is an error in your Python *callable*
-  then True/abort will be returned).
+  Sets a callable which is invoked every *nsteps* SQLite inststructions.
+  The callable should return True to abort or False to continue. (If
+  there is an error in your Python *callable* then True/abort will be
+  returned).  SQLite raises :exc:`InterruptError` for aborts.
+
+  Use :class:`None` to cancel the progress handler.  Multiple handlers
+  can be present at once (implemented by APSW). Registered callbacks are
+  distinguished by their ``id`` - an equality test is done to match ids.
+
+  You can use :class:`apsw.ext.Trace` to see how many steps are used for
+  a representative statement, or :class:`apsw.ext.ShowResourceUsage` to
+  see how many are used in a block.  It will generally be several million
+  per second.
 
   .. seealso::
 
@@ -1822,31 +1850,98 @@ static PyObject *
 Connection_set_progress_handler(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                 PyObject *fast_kwnames)
 {
-  /* sqlite3_progress_handler doesn't return an error code */
-  int nsteps = 20;
+  int nsteps = 100;
   PyObject *callable = NULL;
+  PyObject *id = NULL;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
   {
     Connection_set_progress_handler_CHECK;
     ARG_PROLOG(2, Connection_set_progress_handler_KWNAMES);
     ARG_MANDATORY ARG_optional_Callable(callable);
     ARG_OPTIONAL ARG_int(nsteps);
+    ARG_OPTIONAL ARG_pyobject(id);
     ARG_EPILOG(NULL, Connection_set_progress_handler_USAGE, );
   }
-  if (!callable)
+
+  if (callable && nsteps <= 0)
+    return PyErr_Format(PyExc_ValueError, "nsteps must be a positive number");
+
+  /* clear out any matching id */
+  for (unsigned i = 0; i < self->progresshandler_count; i++)
   {
-    PYSQLITE_VOID_CALL(sqlite3_progress_handler(self->db, 0, NULL, NULL));
-  }
-  else
-  {
-    PYSQLITE_VOID_CALL(sqlite3_progress_handler(self->db, nsteps, progresshandlercb, self));
-    Py_INCREF(callable);
+    if (self->progresshandler[i].callback)
+    {
+      int eq;
+      /* handle either side being NULL */
+      if ((!id || !self->progresshandler[i].id) && id != self->progresshandler[i].id)
+        eq = 0;
+      else
+        eq = PyObject_RichCompareBool(id, self->progresshandler[i].id, Py_EQ);
+
+      if (eq == -1)
+        return NULL;
+      if (eq)
+      {
+        Py_CLEAR(self->progresshandler[i].callback);
+        Py_CLEAR(self->progresshandler[i].id);
+      }
+    }
   }
 
-  Py_XDECREF(self->progresshandler);
-  self->progresshandler = callable;
+  if (callable)
+  {
+    /* find an empty slot */
+    int found = 0;
+    for (unsigned i = 0; i < self->progresshandler_count; i++)
+    {
+      if (!self->progresshandler[i].callback)
+      {
+        self->progresshandler[i].nsteps = nsteps;
+        self->progresshandler[i].id = id ? Py_NewRef(id) : NULL;
+        self->progresshandler[i].callback = Py_NewRef(callable);
+        found = 1;
+        break;
+      }
+    }
+    if (!found)
+    {
+      /* increase progresshandler size - we have an arbitrary limit which
+         makes it easier to test exhaustion */
+      struct progresshandler *new_progresshandler
+          = (self->progresshandler_count < 1024)
+                ? PyMem_Realloc(self->progresshandler,
+                                sizeof(struct progresshandler) * (self->progresshandler_count + 1))
+                : NULL;
+      if (!new_progresshandler)
+        return PyErr_NoMemory();
+      self->progresshandler = new_progresshandler;
+      self->progresshandler[self->progresshandler_count].nsteps = nsteps;
+      self->progresshandler[self->progresshandler_count].id = id ? Py_NewRef(id) : NULL;
+      self->progresshandler[self->progresshandler_count].callback = Py_NewRef(callable);
+      self->progresshandler_count++;
+    }
+  }
+
+  int min_steps = INT_MAX;
+  int active = 0;
+  for (unsigned i = 0; i < self->progresshandler_count; i++)
+  {
+    if (self->progresshandler[i].callback)
+    {
+      min_steps = Py_MIN(min_steps, self->progresshandler[i].nsteps);
+      active += 1;
+    }
+  }
+
+  DBMUTEX_ENSURE(self->dbmutex);
+  if (active)
+    sqlite3_progress_handler(self->db, min_steps, progresshandlercb, self);
+  else
+    sqlite3_progress_handler(self->db, 0, NULL, NULL);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  assert(!PyErr_Occurred());
 
   Py_RETURN_NONE;
 }
@@ -1897,7 +1992,7 @@ authorizercb(void *context, int operation, const char *paramone, const char *par
     goto haveval;
   }
 
-  PyErr_Format(PyExc_TypeError, "Authorizer must return a number");
+  PyErr_Format(PyExc_TypeError, "Authorizer must return a number not %s", Py_TypeName(retval));
   AddTraceBackHere(__FILE__, __LINE__, "authorizer callback", "{s: i, s: s:, s: s, s: s}", "operation", operation,
                    "paramone", paramone, "paramtwo", paramtwo, "databasename", databasename, "triggerview",
                    triggerview);
@@ -1913,27 +2008,28 @@ finally:
   return result;
 }
 
-static int
+/* returns NULL on failure and Py_None on success */
+static void *
 Connection_internal_set_authorizer(Connection *self, PyObject *callable)
 {
-  /* CHECK_USE and CHECK_CLOSED not needed because caller does them */
+  CHECK_CLOSED(self, NULL);
+
   int res = SQLITE_OK;
 
   assert(!Py_IsNone(callable));
 
-  PYSQLITE_CON_CALL(res = sqlite3_set_authorizer(self->db, callable ? authorizercb : NULL, callable ? self : NULL));
-
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
-    return -1;
-  }
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_set_authorizer(self->db, callable ? authorizercb : NULL, callable ? self : NULL);
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+  if (PyErr_Occurred())
+    return NULL;
 
   Py_CLEAR(self->authorizer);
   if (callable)
     self->authorizer = Py_NewRef(callable);
 
-  return 0;
+  return Py_None;
 }
 
 /** .. method:: set_authorizer(callable: Optional[Authorizer]) -> None
@@ -1946,7 +2042,6 @@ Connection_set_authorizer(Connection *self, PyObject *const *fast_args, Py_ssize
 {
   PyObject *callable;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -1956,8 +2051,12 @@ Connection_set_authorizer(Connection *self, PyObject *const *fast_args, Py_ssize
     ARG_EPILOG(NULL, Connection_set_authorizer_USAGE, );
   }
 
-  if (Connection_internal_set_authorizer(self, callable))
+  void *res = Connection_internal_set_authorizer(self, callable);
+  if (!res)
+  {
+    assert(PyErr_Occurred());
     return NULL;
+  }
   Py_RETURN_NONE;
 }
 
@@ -2042,7 +2141,7 @@ Connection_autovacuum_pages(Connection *self, PyObject *const *fast_args, Py_ssi
 {
   int res;
   PyObject *callable;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   {
@@ -2051,23 +2150,24 @@ Connection_autovacuum_pages(Connection *self, PyObject *const *fast_args, Py_ssi
     ARG_MANDATORY ARG_optional_Callable(callable);
     ARG_EPILOG(NULL, Connection_autovacuum_pages_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
   if (!callable)
   {
-    PYSQLITE_CON_CALL(res = sqlite3_autovacuum_pages(self->db, NULL, NULL, NULL));
+    res = sqlite3_autovacuum_pages(self->db, NULL, NULL, NULL);
   }
   else
   {
-    PYSQLITE_CON_CALL(res
-                      = sqlite3_autovacuum_pages(self->db, autovacuum_pages_cb, callable, autovacuum_pages_cleanup));
+    res = sqlite3_autovacuum_pages(self->db, autovacuum_pages_cb, callable, autovacuum_pages_cleanup);
     if (res == SQLITE_OK)
       Py_INCREF(callable);
   }
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
+  if (PyErr_Occurred())
     return NULL;
-  }
+
   Py_RETURN_NONE;
 }
 
@@ -2125,7 +2225,6 @@ Connection_collation_needed(Connection *self, PyObject *const *fast_args, Py_ssi
   int res;
   PyObject *callable;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -2135,30 +2234,21 @@ Connection_collation_needed(Connection *self, PyObject *const *fast_args, Py_ssi
     ARG_EPILOG(NULL, Connection_collation_needed_USAGE, );
   }
 
-  if (!callable)
-  {
-    PYSQLITE_CON_CALL(res = sqlite3_collation_needed(self->db, NULL, NULL));
-    if (res != SQLITE_OK)
-    {
-      SET_EXC(res, self->db);
-      return NULL;
-    }
-    callable = NULL;
-    goto finally;
-  }
+  DBMUTEX_ENSURE(self->dbmutex);
+  if (callable)
+    res = sqlite3_collation_needed(self->db, self, collationneeded_cb);
+  else
+    res = sqlite3_collation_needed(self->db, NULL, NULL);
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  PYSQLITE_CON_CALL(res = sqlite3_collation_needed(self->db, self, collationneeded_cb));
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
+  if (PyErr_Occurred())
     return NULL;
-  }
 
-  Py_INCREF(callable);
+  Py_CLEAR(self->collationneeded);
 
-finally:
-  Py_XDECREF(self->collationneeded);
-  self->collationneeded = callable;
+  if (callable)
+    self->collationneeded = Py_NewRef(callable);
 
   Py_RETURN_NONE;
 }
@@ -2230,7 +2320,6 @@ Connection_set_busy_handler(Connection *self, PyObject *const *fast_args, Py_ssi
   int res = SQLITE_OK;
   PyObject *callable;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -2240,29 +2329,23 @@ Connection_set_busy_handler(Connection *self, PyObject *const *fast_args, Py_ssi
     ARG_EPILOG(NULL, Connection_set_busy_handler_USAGE, );
   }
 
-  if (!callable)
-  {
-    PYSQLITE_CON_CALL(res = sqlite3_busy_handler(self->db, NULL, NULL));
-    if (res != SQLITE_OK)
-    {
-      SET_EXC(res, self->db);
-      return NULL;
-    }
-    goto finally;
-  }
+  DBMUTEX_ENSURE(self->dbmutex);
 
-  PYSQLITE_CON_CALL(res = sqlite3_busy_handler(self->db, busyhandlercb, self));
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
+  if (callable)
+    res = sqlite3_busy_handler(self->db, busyhandlercb, self);
+  else
+    res = sqlite3_busy_handler(self->db, NULL, NULL);
+
+  SET_EXC(res, self->db);
+
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
     return NULL;
-  }
 
-  Py_INCREF(callable);
-
-finally:
-  Py_XDECREF(self->busyhandler);
-  self->busyhandler = callable;
+  Py_CLEAR(self->busyhandler);
+  if (callable)
+    self->busyhandler = Py_NewRef(callable);
 
   Py_RETURN_NONE;
 }
@@ -2295,7 +2378,6 @@ Connection_serialize(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
   sqlite3_int64 size = 0;
   unsigned char *serialization = NULL;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -2311,9 +2393,12 @@ Connection_serialize(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
   case so this code can't do anything about errors.  See commit
   history for prior attempt */
 
-  INUSE_CALL(_PYSQLITE_CALL_V(serialization = sqlite3_serialize(self->db, name, &size, 0)));
+  DBMUTEX_ENSURE(self->dbmutex);
+  serialization = sqlite3_serialize(self->db, name, &size, 0);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  if (serialization)
+  /* pyerror could have been raised in a vfs */
+  if (serialization && !PyErr_Occurred())
     pyres = PyBytes_FromStringAndSize((char *)serialization, size);
 
   sqlite3_free(serialization);
@@ -2350,7 +2435,6 @@ Connection_deserialize(Connection *self, PyObject *const *fast_args, Py_ssize_t 
   char *newcontents = NULL;
   int res = SQLITE_OK;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -2380,13 +2464,15 @@ Connection_deserialize(Connection *self, PyObject *const *fast_args, Py_ssize_t 
     PyErr_NoMemory();
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   if (res == SQLITE_OK)
-    PYSQLITE_CON_CALL(res = sqlite3_deserialize(self->db, name, (unsigned char *)newcontents, len, len,
-                                                SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE));
+    res = sqlite3_deserialize(self->db, name, (unsigned char *)newcontents, len, len,
+                              SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE);
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
   /* sqlite frees the buffer on error due to freeonclose flag */
-  if (res != SQLITE_OK)
+  if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
 }
@@ -2414,7 +2500,6 @@ Connection_enable_load_extension(Connection *self, PyObject *const *fast_args, P
 {
   int enable, res;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -2423,14 +2508,15 @@ Connection_enable_load_extension(Connection *self, PyObject *const *fast_args, P
     ARG_MANDATORY ARG_bool(enable);
     ARG_EPILOG(NULL, Connection_enable_load_extension_USAGE, );
   }
-  /* call function */
-  PYSQLITE_CON_CALL(res = sqlite3_enable_load_extension(self->db, enable));
-  SET_EXC(res, self->db);
 
-  /* done */
-  if (res == SQLITE_OK)
-    Py_RETURN_NONE;
-  return NULL;
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_enable_load_extension(self->db, enable);
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
+    return NULL;
+  Py_RETURN_NONE;
 }
 
 /** .. method:: load_extension(filename: str, entrypoint: Optional[str] = None) -> None
@@ -2459,7 +2545,6 @@ Connection_load_extension(Connection *self, PyObject *const *fast_args, Py_ssize
   const char *filename = NULL, *entrypoint = NULL;
   char *errmsg = NULL; /* sqlite doesn't believe in const */
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
   {
     Connection_load_extension_CHECK;
@@ -2468,7 +2553,11 @@ Connection_load_extension(Connection *self, PyObject *const *fast_args, Py_ssize
     ARG_OPTIONAL ARG_optional_str(entrypoint);
     ARG_EPILOG(NULL, Connection_load_extension_USAGE, );
   }
-  PYSQLITE_CON_CALL(res = sqlite3_load_extension(self->db, filename, entrypoint, &errmsg));
+
+  DBMUTEX_ENSURE(self->dbmutex);
+  Py_BEGIN_ALLOW_THREADS res = sqlite3_load_extension(self->db, filename, entrypoint, &errmsg);
+  Py_END_ALLOW_THREADS;
+  sqlite3_mutex_leave(self->dbmutex);
 
   /* load_extension doesn't set the error message on the db so we have to make exception manually */
   if (res != SQLITE_OK)
@@ -2718,7 +2807,7 @@ getaggregatefunctioncontext(sqlite3_context *context)
       goto finally;
     if (!PyCallable_Check(aggfc->stepfunc))
     {
-      PyErr_Format(PyExc_TypeError, "aggregate step function must be callable");
+      PyErr_Format(PyExc_TypeError, "aggregate step function must be callable not %s", Py_TypeName(aggfc->stepfunc));
       goto finally;
     }
     aggfc->finalfunc = PyObject_GetAttr(retval, apst.final);
@@ -2726,7 +2815,7 @@ getaggregatefunctioncontext(sqlite3_context *context)
       goto finally;
     if (!PyCallable_Check(aggfc->finalfunc))
     {
-      PyErr_Format(PyExc_TypeError, "aggregate final function must be callable");
+      PyErr_Format(PyExc_TypeError, "aggregate final function must be callable not %s", Py_TypeName(aggfc->finalfunc));
       goto finally;
     }
     aggfc->state = afcOK;
@@ -3248,7 +3337,6 @@ Connection_create_window_function(Connection *self, PyObject *const *fast_args, 
   PyObject *factory = NULL;
   FunctionCBInfo *cbinfo;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -3271,14 +3359,18 @@ Connection_create_window_function(Connection *self, PyObject *const *fast_args, 
     cbinfo->windowfactory = Py_NewRef(factory);
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_create_window_function(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo,
-                                                         cbinfo ? cbw_step : NULL, cbinfo ? cbw_final : NULL,
-                                                         cbinfo ? cbw_value : NULL, cbinfo ? cbw_inverse : NULL,
-                                                         apsw_free_func));
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_create_window_function(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo, cbinfo ? cbw_step : NULL,
+                                       cbinfo ? cbw_final : NULL, cbinfo ? cbw_value : NULL,
+                                       cbinfo ? cbw_inverse : NULL, apsw_free_func);
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 finally:
   if (PyErr_Occurred())
+  {
+    apsw_free_func(cbinfo);
     return NULL;
+  }
   Py_RETURN_NONE;
 }
 
@@ -3329,7 +3421,6 @@ Connection_create_scalar_function(Connection *self, PyObject *const *fast_args, 
   FunctionCBInfo *cbinfo;
   int res;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -3342,6 +3433,9 @@ Connection_create_scalar_function(Connection *self, PyObject *const *fast_args, 
     ARG_OPTIONAL ARG_int(flags);
     ARG_EPILOG(NULL, Connection_create_scalar_function_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
+
   if (!callable)
   {
     cbinfo = 0;
@@ -3356,16 +3450,13 @@ Connection_create_scalar_function(Connection *self, PyObject *const *fast_args, 
 
   flags |= (deterministic ? SQLITE_DETERMINISTIC : 0);
 
-  PYSQLITE_CON_CALL(res = sqlite3_create_function_v2(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo,
-                                                     cbinfo ? cbdispatch_func : NULL, NULL, NULL, apsw_free_func));
-  if (res)
-  {
-    /* Note: On error sqlite3_create_function_v2 calls the destructor (apsw_free_func)! */
-    SET_EXC(res, self->db);
-    goto finally;
-  }
+  res = sqlite3_create_function_v2(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo,
+                                   cbinfo ? cbdispatch_func : NULL, NULL, NULL, apsw_free_func);
+  /* Note: On error sqlite3_create_function_v2 calls the destructor (apsw_free_func)! */
+  SET_EXC(res, self->db);
 
 finally:
+  sqlite3_mutex_leave(self->dbmutex);
   if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
@@ -3428,7 +3519,6 @@ Connection_create_aggregate_function(Connection *self, PyObject *const *fast_arg
   int res;
   int flags = 0;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -3441,6 +3531,8 @@ Connection_create_aggregate_function(Connection *self, PyObject *const *fast_arg
     ARG_EPILOG(NULL, Connection_create_aggregate_function_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
+
   if (!factory)
     cbinfo = 0;
   else
@@ -3452,19 +3544,15 @@ Connection_create_aggregate_function(Connection *self, PyObject *const *fast_arg
     cbinfo->aggregatefactory = Py_NewRef(factory);
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_create_function_v2(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo, NULL,
-                                                     cbinfo ? cbdispatch_step : NULL, cbinfo ? cbdispatch_final : NULL,
-                                                     apsw_free_func));
+  res = sqlite3_create_function_v2(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo, NULL,
+                                   cbinfo ? cbdispatch_step : NULL, cbinfo ? cbdispatch_final : NULL, apsw_free_func);
 
-  if (res)
-  {
-    /* Note: On error sqlite3_create_function_v2 calls the
-   destructor (apsw_free_func)! */
-    SET_EXC(res, self->db);
-    goto finally;
-  }
+  /* Note: On error sqlite3_create_function_v2 calls the
+     destructor (apsw_free_func)! */
+  SET_EXC(res, self->db);
 
 finally:
+  sqlite3_mutex_leave(self->dbmutex);
   if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
@@ -3511,7 +3599,7 @@ collation_cb(void *context, int stringonelen, const void *stringonedata, int str
     goto haveval;
   }
 
-  PyErr_Format(PyExc_TypeError, "Collation callback must return a number");
+  PyErr_Format(PyExc_TypeError, "Collation callback must return a number not %s", Py_TypeName(retval));
   AddTraceBackHere(__FILE__, __LINE__, "collation callback", "{s: O, s: O}", "stringone", OBJ(pys1), "stringtwo",
                    OBJ(pys2));
 
@@ -3572,7 +3660,6 @@ Connection_create_collation(Connection *self, PyObject *const *fast_args, Py_ssi
   const char *name = 0;
   int res;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -3583,18 +3670,17 @@ Connection_create_collation(Connection *self, PyObject *const *fast_args, Py_ssi
     ARG_EPILOG(NULL, Connection_create_collation_USAGE, );
   }
 
-  PYSQLITE_CON_CALL(res
-                    = sqlite3_create_collation_v2(self->db, name, SQLITE_UTF8, callback ? callback : NULL,
-                                                  callback ? collation_cb : NULL, callback ? collation_destroy : NULL));
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_create_collation_v2(self->db, name, SQLITE_UTF8, callback ? callback : NULL,
+                                    callback ? collation_cb : NULL, callback ? collation_destroy : NULL);
 
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
     return NULL;
-  }
 
-  if (callback)
-    Py_INCREF(callback);
+  Py_XINCREF(callback);
 
   Py_RETURN_NONE;
 }
@@ -3659,7 +3745,6 @@ Connection_file_control(Connection *self, PyObject *const *fast_args, Py_ssize_t
   int res = SQLITE_ERROR, op;
   const char *dbname = NULL;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -3671,10 +3756,12 @@ Connection_file_control(Connection *self, PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Connection_file_control_USAGE, );
   }
 
-  PYSQLITE_VOID_CALL(res = sqlite3_file_control(self->db, dbname, op, pointer));
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_file_control(self->db, dbname, op, pointer);
 
   if (res != SQLITE_OK && res != SQLITE_NOTFOUND)
     SET_EXC(res, NULL);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (PyErr_Occurred())
     return NULL;
@@ -3704,7 +3791,6 @@ Connection_vfsname(Connection *self, PyObject *const *fast_args, Py_ssize_t fast
 
   const char *dbname = NULL;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -3718,8 +3804,9 @@ Connection_vfsname(Connection *self, PyObject *const *fast_args, Py_ssize_t fast
 
   /* because it is diagnostic and we can tell from vfsname changing and
   because SQLite shell itself ignores the return code, we do the same */
-
-  PYSQLITE_VOID_CALL(sqlite3_file_control(self->db, dbname, SQLITE_FCNTL_VFSNAME, &vfsname));
+  DBMUTEX_ENSURE(self->dbmutex);
+  sqlite3_file_control(self->db, dbname, SQLITE_FCNTL_VFSNAME, &vfsname);
+  sqlite3_mutex_leave(self->dbmutex);
 
   PyObject *res = convertutf8string(vfsname);
 
@@ -3747,7 +3834,7 @@ libraries.
 static PyObject *
 Connection_sqlite3_pointer(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   return PyLong_FromVoidPtr(self->db);
@@ -3767,7 +3854,7 @@ Connection_wal_autocheckpoint(Connection *self, PyObject *const *fast_args, Py_s
                               PyObject *fast_kwnames)
 {
   int n, res;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   {
@@ -3777,14 +3864,15 @@ Connection_wal_autocheckpoint(Connection *self, PyObject *const *fast_args, Py_s
     ARG_EPILOG(NULL, Connection_wal_autocheckpoint_USAGE, );
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_wal_autocheckpoint(self->db, n));
-
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_wal_autocheckpoint(self->db, n);
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  /* done */
-  if (res == SQLITE_OK)
-    Py_RETURN_NONE;
-  return NULL;
+  if (PyErr_Occurred())
+    return NULL;
+
+  Py_RETURN_NONE;
 }
 
 /** .. method:: wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]
@@ -3810,7 +3898,6 @@ Connection_wal_checkpoint(Connection *self, PyObject *const *fast_args, Py_ssize
   int mode = SQLITE_CHECKPOINT_PASSIVE;
   int nLog = 0, nCkpt = 0;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -3820,12 +3907,13 @@ Connection_wal_checkpoint(Connection *self, PyObject *const *fast_args, Py_ssize
     ARG_OPTIONAL ARG_int(mode);
     ARG_EPILOG(NULL, Connection_wal_checkpoint_USAGE, );
   }
-  PYSQLITE_CON_CALL(res = sqlite3_wal_checkpoint_v2(self->db, dbname, mode, &nLog, &nCkpt));
 
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_wal_checkpoint_v2(self->db, dbname, mode, &nLog, &nCkpt);
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  /* done */
-  if (res == SQLITE_OK)
+  if (!PyErr_Occurred())
     return Py_BuildValue("ii", nLog, nCkpt);
   return NULL;
 }
@@ -3865,7 +3953,6 @@ Connection_create_module(Connection *self, PyObject *const *fast_args, Py_ssize_
 
   int iVersion = 1, eponymous = 0, eponymous_only = 0, read_only = 0;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -3899,11 +3986,13 @@ Connection_create_module(Connection *self, PyObject *const *fast_args, Py_ssize_
 
   /* SQLite is really finnicky.  Note that it calls the destructor on
      failure  */
-  PYSQLITE_CON_CALL(
-      res = sqlite3_create_module_v2(self->db, name, vti ? vti->sqlite3_module_def : NULL, vti, apswvtabFree));
-  SET_EXC(res, self->db);
 
-  if (res != SQLITE_OK)
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_create_module_v2(self->db, name, vti ? vti->sqlite3_module_def : NULL, vti, apswvtabFree);
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
   {
   error:
     if (vti)
@@ -3926,7 +4015,6 @@ Connection_vtab_config(Connection *self, PyObject *const *fast_args, Py_ssize_t 
 {
   int op, val = 0, res;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -3953,7 +4041,7 @@ Connection_vtab_config(Connection *self, PyObject *const *fast_args, Py_ssize_t 
   }
 
   SET_EXC(res, self->db);
-  if (res)
+  if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
 }
@@ -3969,7 +4057,7 @@ Connection_vtab_config(Connection *self, PyObject *const *fast_args, Py_ssize_t 
 static PyObject *
 Connection_vtab_on_conflict(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   if (!CALL_CHECK(xUpdate))
@@ -3995,7 +4083,6 @@ Connection_overload_function(Connection *self, PyObject *const *fast_args, Py_ss
   const char *name;
   int nargs, res;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
   {
     Connection_overload_function_CHECK;
@@ -4005,10 +4092,12 @@ Connection_overload_function(Connection *self, PyObject *const *fast_args, Py_ss
     ARG_EPILOG(NULL, Connection_overload_function_USAGE, );
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_overload_function(self->db, name, nargs));
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_overload_function(self->db, name, nargs);
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  if (res)
+  if (PyErr_Occurred())
     return NULL;
 
   Py_RETURN_NONE;
@@ -4022,7 +4111,7 @@ static PyObject *
 Connection_set_exec_trace(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   PyObject *callable;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   {
@@ -4049,7 +4138,6 @@ Connection_set_row_trace(Connection *self, PyObject *const *fast_args, Py_ssize_
 {
   PyObject *callable;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -4077,7 +4165,6 @@ Connection_get_exec_trace(Connection *self)
 {
   PyObject *ret;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   ret = (self->exectrace) ? (self->exectrace) : Py_None;
@@ -4095,7 +4182,6 @@ Connection_get_row_trace(Connection *self)
 {
   PyObject *ret;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   ret = (self->rowtrace) ? (self->rowtrace) : Py_None;
@@ -4130,8 +4216,9 @@ Connection_enter(Connection *self)
   char *sql = 0;
   int res;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
+
+  DBMUTEX_ENSURE(self->dbmutex);
 
   sql = sqlite3_mprintf("SAVEPOINT \"_apsw-%ld\"", self->savepointlevel);
   if (!sql)
@@ -4163,9 +4250,11 @@ Connection_enter(Connection *self)
     assert(result == 1);
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_exec(self->db, sql, 0, 0, 0));
+  res = sqlite3_exec(self->db, sql, 0, 0, 0);
   sqlite3_free(sql);
   SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
   /* sqlite3_trace_v2 callback could cause Python level error */
   if (res || PyErr_Occurred())
     return NULL;
@@ -4174,6 +4263,7 @@ Connection_enter(Connection *self)
   return Py_NewRef((PyObject *)self);
 
 error:
+  sqlite3_mutex_leave(self->dbmutex);
   assert(PyErr_Occurred());
   if (sql)
     sqlite3_free(sql);
@@ -4226,7 +4316,7 @@ connection_trace_and_exec(Connection *self, int release, int sp, int continue_on
     }
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_exec(self->db, sql, 0, 0, 0));
+  res = sqlite3_exec(self->db, sql, 0, 0, 0);
   SET_EXC(res, self->db);
   sqlite3_free(sql);
 
@@ -4242,7 +4332,6 @@ Connection_exit(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_na
   int res;
   int return_null = 0;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   /* the builtin python __exit__ implementations don't error if you
@@ -4265,15 +4354,23 @@ Connection_exit(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_EPILOG(NULL, Connection_exit_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
+
   /* try the commit first because it may fail in which case we'll need
      to roll it back - see issue 98 */
   if (Py_IsNone(etype) && Py_IsNone(evalue) && Py_IsNone(etraceback))
   {
     res = connection_trace_and_exec(self, 1, sp, 0);
     if (res == -1)
+    {
+      sqlite3_mutex_leave(self->dbmutex);
       return NULL;
+    }
     if (res == 1)
+    {
+      sqlite3_mutex_leave(self->dbmutex);
       Py_RETURN_FALSE;
+    }
     assert(res == 0);
     assert(PyErr_Occurred());
     return_null = 1;
@@ -4281,10 +4378,14 @@ Connection_exit(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_na
 
   res = connection_trace_and_exec(self, 0, sp, 1);
   if (res == -1)
+  {
+    sqlite3_mutex_leave(self->dbmutex);
     return NULL;
+  }
   return_null = return_null || res == 0;
   /* we have rolled back, but still need to release the savepoint */
   res = connection_trace_and_exec(self, 1, sp, 1);
+  sqlite3_mutex_leave(self->dbmutex);
   return_null = return_null || res == 0 || res == -1;
 
   if (return_null)
@@ -4317,7 +4418,6 @@ Connection_config(Connection *self, PyObject *args)
   int opt;
   int res;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   if (PyTuple_GET_SIZE(args) < 1 || !PyLong_Check(PyTuple_GET_ITEM(args, 0)))
@@ -4345,18 +4445,22 @@ Connection_config(Connection *self, PyObject *args)
   case SQLITE_DBCONFIG_TRIGGER_EQP:
   case SQLITE_DBCONFIG_LEGACY_FILE_FORMAT:
   case SQLITE_DBCONFIG_TRUSTED_SCHEMA:
-  case SQLITE_DBCONFIG_REVERSE_SCANORDER: {
+  case SQLITE_DBCONFIG_REVERSE_SCANORDER:
+  case SQLITE_DBCONFIG_ENABLE_ATTACH_CREATE:
+  case SQLITE_DBCONFIG_ENABLE_ATTACH_WRITE:
+  case SQLITE_DBCONFIG_ENABLE_COMMENTS: {
     int opdup, val, current;
     if (!PyArg_ParseTuple(args, "ii", &opdup, &val))
       return NULL;
 
-    PYSQLITE_CON_CALL(res = sqlite3_db_config(self->db, opdup, val, &current));
+    DBMUTEX_ENSURE(self->dbmutex);
+    res = sqlite3_db_config(self->db, opdup, val, &current);
+    SET_EXC(res, self->db);
+    sqlite3_mutex_leave(self->dbmutex);
 
-    if (res != SQLITE_OK)
-    {
-      SET_EXC(res, self->db);
+    if (PyErr_Occurred())
       return NULL;
-    }
+
     return PyLong_FromLong(current);
   }
   default:
@@ -4384,7 +4488,7 @@ static PyObject *
 Connection_status(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   int res, op, current = 0, highwater = 0, reset = 0;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   {
@@ -4395,10 +4499,12 @@ Connection_status(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Connection_status_USAGE, );
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_db_status(self->db, op, &current, &highwater, reset));
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_db_status(self->db, op, &current, &highwater, reset);
   SET_EXC(res, NULL);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  if (res != SQLITE_OK)
+  if (PyErr_Occurred())
     return NULL;
 
   return Py_BuildValue("(ii)", current, highwater);
@@ -4428,14 +4534,17 @@ Connection_readonly(Connection *self, PyObject *const *fast_args, Py_ssize_t fas
     ARG_MANDATORY ARG_str(name);
     ARG_EPILOG(NULL, Connection_readonly_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_db_readonly(self->db, name);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (res == 1)
     Py_RETURN_TRUE;
   if (res == 0)
     Py_RETURN_FALSE;
 
-  return PyErr_Format(exc_descriptors[0].cls, "Unknown database name");
+  return PyErr_Format(exc_descriptors[0].cls, "Unknown database name \"%s\"", name);
 }
 
 /** .. method:: db_filename(name: str) -> str
@@ -4450,6 +4559,7 @@ Connection_db_filename(Connection *self, PyObject *const *fast_args, Py_ssize_t 
 {
   const char *res;
   const char *name;
+  PyObject *retval = NULL;
   CHECK_CLOSED(self, NULL);
 
   {
@@ -4459,9 +4569,12 @@ Connection_db_filename(Connection *self, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Connection_db_filename_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   res = sqlite3_db_filename(self->db, name);
+  retval = convertutf8string(res);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  return convertutf8string(res);
+  return retval;
 }
 
 /** .. method:: txn_state(schema: Optional[str] = None) -> int
@@ -4477,7 +4590,7 @@ Connection_txn_state(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
 {
   const char *schema = NULL;
   int res;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   {
@@ -4486,12 +4599,15 @@ Connection_txn_state(Connection *self, PyObject *const *fast_args, Py_ssize_t fa
     ARG_OPTIONAL ARG_optional_str(schema);
     ARG_EPILOG(NULL, Connection_txn_state_USAGE, );
   }
-  PYSQLITE_CON_CALL(res = sqlite3_txn_state(self->db, schema));
+
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_txn_state(self->db, schema);
+  sqlite3_mutex_leave(self->dbmutex);
 
   if (res >= 0)
     return PyLong_FromLong(res);
 
-  return PyErr_Format(PyExc_ValueError, "unknown schema");
+  return PyErr_Format(PyExc_ValueError, "unknown schema %s", schema);
 }
 
 /** .. method:: execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
@@ -4509,7 +4625,7 @@ static PyObject *
 Connection_execute(Connection *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
 {
   PyObject *cursor = NULL, *method = NULL, *res = NULL;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   PyObject *vargs[] = { NULL, (PyObject *)self };
@@ -4546,7 +4662,7 @@ static PyObject *
 Connection_executemany(Connection *self, PyObject *const *args, Py_ssize_t nargs, PyObject *kwnames)
 {
   PyObject *cursor = NULL, *method = NULL, *res = NULL;
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   PyObject *vargs[] = { NULL, (PyObject *)self };
@@ -4599,7 +4715,6 @@ Connection_pragma(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_
   PyObject *value = NULL;
   const char *schema = NULL;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -4736,7 +4851,6 @@ Connection_cache_stats(Connection *self, PyObject *const *fast_args, Py_ssize_t 
 {
   int include_entries = 0;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -4764,7 +4878,6 @@ Connection_table_exists(Connection *self, PyObject *const *fast_args, Py_ssize_t
   const char *dbname = NULL, *table_name = NULL;
   int res;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -4775,16 +4888,19 @@ Connection_table_exists(Connection *self, PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Connection_table_exists_USAGE, );
   }
 
-  PYSQLITE_VOID_CALL(res
-                     = sqlite3_table_column_metadata(self->db, dbname, table_name, NULL, NULL, NULL, NULL, NULL, NULL));
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_table_column_metadata(self->db, dbname, table_name, NULL, NULL, NULL, NULL, NULL, NULL);
+  if (res != SQLITE_OK && res != SQLITE_ERROR)
+    SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
+    return NULL;
 
   if (res == SQLITE_OK)
     Py_RETURN_TRUE;
-  if (res == SQLITE_ERROR)
-    Py_RETURN_FALSE;
-
-  SET_EXC(res, self->db);
-  return NULL;
+  assert(res == SQLITE_ERROR);
+  Py_RETURN_FALSE;
 }
 
 /** .. method:: column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]
@@ -4815,7 +4931,6 @@ Connection_column_metadata(Connection *self, PyObject *const *fast_args, Py_ssiz
   const char *datatype = NULL, *collseq = NULL;
   int notnull = 0, primarykey = 0, autoinc = 0;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -4827,17 +4942,16 @@ Connection_column_metadata(Connection *self, PyObject *const *fast_args, Py_ssiz
     ARG_EPILOG(NULL, Connection_column_metadata_USAGE, );
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_table_column_metadata(self->db, dbname, table_name, column_name, &datatype, &collseq,
-                                                        &notnull, &primarykey, &autoinc));
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_table_column_metadata(self->db, dbname, table_name, column_name, &datatype, &collseq, &notnull,
+                                      &primarykey, &autoinc);
 
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
-    return NULL;
-  }
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
 
-  return Py_BuildValue("(ssOOO)", datatype, collseq, notnull ? Py_True : Py_False, primarykey ? Py_True : Py_False,
-                       autoinc ? Py_True : Py_False);
+  return PyErr_Occurred() ? NULL
+                          : Py_BuildValue("(ssOOO)", datatype, collseq, notnull ? Py_True : Py_False,
+                                          primarykey ? Py_True : Py_False, autoinc ? Py_True : Py_False);
 }
 
 /** .. method:: cache_flush() -> None
@@ -4851,15 +4965,15 @@ Connection_cache_flush(Connection *self)
 {
   int res;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  PYSQLITE_VOID_CALL(res = sqlite3_db_cacheflush(self->db));
-  if (res)
-  {
-    SET_EXC(res, self->db);
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_db_cacheflush(self->db);
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
     return NULL;
-  }
 
   Py_RETURN_NONE;
 }
@@ -4875,15 +4989,15 @@ Connection_release_memory(Connection *self)
 {
   int res;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
-  PYSQLITE_CON_CALL(res = sqlite3_db_release_memory(self->db));
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, self->db);
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_db_release_memory(self->db);
+  SET_EXC(res, self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
     return NULL;
-  }
 
   Py_RETURN_NONE;
 }
@@ -4905,7 +5019,6 @@ Connection_drop_modules(Connection *self, PyObject *const *fast_args, Py_ssize_t
   const char **array = NULL;
   Py_ssize_t nitems = 0, i;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -4914,6 +5027,8 @@ Connection_drop_modules(Connection *self, PyObject *const *fast_args, Py_ssize_t
     ARG_MANDATORY ARG_pyobject(keep);
     ARG_EPILOG(NULL, Connection_drop_modules_USAGE, );
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
 
   if (keep != Py_None)
   {
@@ -4957,10 +5072,11 @@ Connection_drop_modules(Connection *self, PyObject *const *fast_args, Py_ssize_t
     }
   }
 
-  PYSQLITE_CON_CALL(res = sqlite3_drop_modules(self->db, array));
+  res = sqlite3_drop_modules(self->db, array);
   SET_EXC(res, self->db);
 
 finally:
+  sqlite3_mutex_leave(self->dbmutex);
   Py_CLEAR(sequence);
   PyMem_Free(strings);
   PyMem_Free((void *)array);
@@ -5002,7 +5118,6 @@ Connection_read(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_na
   sqlite3_file *fp = NULL;
   PyObject *bytes = NULL;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -5035,29 +5150,35 @@ Connection_read(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_na
 
   bytes = PyBytes_FromStringAndSize(NULL, amount);
   if (!bytes)
-    goto error;
+    return NULL;
 
-  PYSQLITE_VOID_CALL(res = sqlite3_file_control(self->db, schema, opcode, &fp));
+  DBMUTEX_ENSURE(self->dbmutex);
+  res = sqlite3_file_control(self->db, schema, opcode, &fp);
   if (res != SQLITE_OK || !fp || !fp->pMethods || !fp->pMethods->xRead)
   {
-    SET_EXC(res ? res : SQLITE_ERROR, NULL); /* errmsg is not set by file control */
-    goto error;
+    if (res == SQLITE_OK)
+      res = SQLITE_ERROR;
   }
-  PYSQLITE_VOID_CALL(res = fp->pMethods->xRead(fp, PyBytes_AS_STRING(bytes), amount, offset));
-  APSW_FAULT_INJECT(ConnectionReadError, , res = SQLITE_IOERR_CORRUPTFS);
-  if (res != SQLITE_OK && res != SQLITE_IOERR_SHORT_READ)
+  if (res == SQLITE_OK)
   {
-    SET_EXC(res, NULL);
-    goto error;
+    res = fp->pMethods->xRead(fp, PyBytes_AS_STRING(bytes), amount, offset);
+    APSW_FAULT(ConnectionReadError, , res = SQLITE_IOERR_CORRUPTFS);
   }
+  if (res != SQLITE_OK && res != SQLITE_IOERR_SHORT_READ)
+    SET_EXC(res, NULL);
 
-  PyObject *retval = Py_BuildValue("ON", (res == SQLITE_OK) ? Py_True : Py_False, bytes);
-  if (!retval)
-    Py_DECREF(bytes);
-  return retval;
+  sqlite3_mutex_leave(self->dbmutex);
 
-error:
-  Py_XDECREF(bytes);
+  PyObject *retval = NULL;
+
+  if (!PyErr_Occurred())
+    retval = Py_BuildValue("ON", (res == SQLITE_OK) ? Py_True : Py_False, bytes);
+
+  if (retval)
+    return retval;
+
+  Py_DECREF(bytes);
+
   return NULL;
 }
 
@@ -5072,9 +5193,12 @@ error:
 static PyObject *
 Connection_getmainfilename(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
-  return convertutf8string(sqlite3_db_filename(self->db, "main"));
+  DBMUTEX_ENSURE(self->dbmutex);
+  PyObject *res = convertutf8string(sqlite3_db_filename(self->db, "main"));
+  sqlite3_mutex_leave(self->dbmutex);
+  return res;
 }
 
 /** .. attribute:: filename_journal
@@ -5087,9 +5211,12 @@ Connection_getmainfilename(Connection *self)
 static PyObject *
 Connection_getjournalfilename(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
-  return convertutf8string(sqlite3_filename_journal(sqlite3_db_filename(self->db, "main")));
+  DBMUTEX_ENSURE(self->dbmutex);
+  PyObject *res = convertutf8string(sqlite3_filename_journal(sqlite3_db_filename(self->db, "main")));
+  sqlite3_mutex_leave(self->dbmutex);
+  return res;
 }
 
 /** .. attribute:: filename_wal
@@ -5102,9 +5229,12 @@ Connection_getjournalfilename(Connection *self)
 static PyObject *
 Connection_getwalfilename(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
-  return convertutf8string(sqlite3_filename_wal(sqlite3_db_filename(self->db, "main")));
+  DBMUTEX_ENSURE(self->dbmutex);
+  PyObject *res = convertutf8string(sqlite3_filename_wal(sqlite3_db_filename(self->db, "main")));
+  sqlite3_mutex_leave(self->dbmutex);
+  return res;
 }
 
 /** .. attribute:: cursor_factory
@@ -5138,7 +5268,7 @@ Connection_set_cursor_factory(Connection *self, PyObject *value)
 {
   if (!PyCallable_Check(value))
   {
-    PyErr_Format(PyExc_TypeError, "cursor_factory expected a Callable");
+    PyErr_Format(PyExc_TypeError, "cursor_factory expected a Callable not %s", Py_TypeName(value));
     return -1;
   }
   Py_CLEAR(self->cursor_factory);
@@ -5156,7 +5286,7 @@ Connection_set_cursor_factory(Connection *self, PyObject *value)
 static PyObject *
 Connection_get_in_transaction(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
   if (!sqlite3_get_autocommit(self->db))
     Py_RETURN_TRUE;
@@ -5185,7 +5315,7 @@ Connection_get_in_transaction(Connection *self)
 static PyObject *
 Connection_get_exec_trace_attr(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   return Py_NewRef(self->exectrace ? self->exectrace : Py_None);
@@ -5194,12 +5324,11 @@ Connection_get_exec_trace_attr(Connection *self)
 static int
 Connection_set_exec_trace_attr(Connection *self, PyObject *value)
 {
-  CHECK_USE(-1);
   CHECK_CLOSED(self, -1);
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
-    PyErr_Format(PyExc_TypeError, "exec_trace expected a Callable");
+    PyErr_Format(PyExc_TypeError, "exec_trace expected a Callable not %s", Py_TypeName(value));
     return -1;
   }
   Py_CLEAR(self->exectrace);
@@ -5229,7 +5358,7 @@ Connection_set_exec_trace_attr(Connection *self, PyObject *value)
 static PyObject *
 Connection_get_row_trace_attr(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   if (self->rowtrace)
@@ -5240,12 +5369,11 @@ Connection_get_row_trace_attr(Connection *self)
 static int
 Connection_set_row_trace_attr(Connection *self, PyObject *value)
 {
-  CHECK_USE(-1);
   CHECK_CLOSED(self, -1);
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
-    PyErr_Format(PyExc_TypeError, "row trace expected a Callable");
+    PyErr_Format(PyExc_TypeError, "row trace expected a Callable not %s", Py_TypeName(value));
     return -1;
   }
   Py_CLEAR(self->rowtrace);
@@ -5288,7 +5416,7 @@ Connection_set_row_trace_attr(Connection *self, PyObject *value)
 static PyObject *
 Connection_get_authorizer_attr(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   if (self->authorizer)
@@ -5299,15 +5427,18 @@ Connection_get_authorizer_attr(Connection *self)
 static int
 Connection_set_authorizer_attr(Connection *self, PyObject *value)
 {
-  CHECK_USE(-1);
   CHECK_CLOSED(self, -1);
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
   {
-    PyErr_Format(PyExc_TypeError, "authorizer expected a Callable or None");
+    PyErr_Format(PyExc_TypeError, "authorizer expected a Callable or None not %s", Py_TypeName(value));
     return -1;
   }
-  return Connection_internal_set_authorizer(self, (!Py_IsNone(value)) ? value : NULL);
+  void *res = Connection_internal_set_authorizer(self, (!Py_IsNone(value)) ? value : NULL);
+  if (res)
+    return 0;
+  assert(PyErr_Occurred());
+  return -1;
 }
 
 /** .. attribute:: system_errno
@@ -5320,10 +5451,10 @@ Connection_set_authorizer_attr(Connection *self, PyObject *value)
 static PyObject *
 Connection_get_system_errno(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
-  return PyLong_FromLong(sqlite3_system_errno(self->db)); /* PYSQLITE_CON_CALL not needed - no mutex taken */
+  return PyLong_FromLong(sqlite3_system_errno(self->db));
 }
 
 /** .. attribute:: is_interrupted
@@ -5336,7 +5467,7 @@ Connection_get_system_errno(Connection *self)
 static PyObject *
 Connection_is_interrupted(Connection *self)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   return Py_NewRef(sqlite3_is_interrupted(self->db) ? Py_True : Py_False);
@@ -5356,7 +5487,7 @@ Connection_is_interrupted(Connection *self)
 static PyObject *
 Connection_data_version(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   const char *schema = NULL;
@@ -5367,17 +5498,12 @@ Connection_data_version(Connection *self, PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Connection_data_version_USAGE, );
   }
   int res, data_version = -1;
-  PYSQLITE_VOID_CALL(
-      res = sqlite3_file_control(self->db, schema ? schema : "main", SQLITE_FCNTL_DATA_VERSION, &data_version));
+  res = sqlite3_file_control(self->db, schema ? schema : "main", SQLITE_FCNTL_DATA_VERSION, &data_version);
 
-  if (res != SQLITE_OK)
-  {
-    /* errmsg is not set on failure */
-    SET_EXC(res, NULL);
-    return NULL;
-  }
+  /* errmsg is not set on failure */
+  SET_EXC(res, NULL);
 
-  return PyLong_FromLong(data_version);
+  return PyErr_Occurred() ? NULL : PyLong_FromLong(data_version);
 }
 
 /* done this way here to keep doc generation simple */
@@ -5397,9 +5523,9 @@ static PyObject *
 Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   const char *name = NULL;
+  const char *name_dup = NULL;
   PyObject *args = NULL, *args_as_tuple = NULL, *tmptuple = NULL;
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   {
@@ -5419,10 +5545,6 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
       return NULL;
   }
 
-  fts5_api *api = Connection_fts5_api(self);
-  if (!api)
-    return NULL;
-
   Py_ssize_t argc = args ? PyList_GET_SIZE(args) : 0;
   /* arbitrary but reasonable maximum consuming 1kb of stack */
   if (argc > 128)
@@ -5430,6 +5552,8 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
     PyErr_Format(PyExc_ValueError, "Too many args (%zd)", argc);
     return NULL;
   }
+
+  DBMUTEX_ENSURE(self->dbmutex);
 
   /* vla can't be size zero */
   VLA(argv, argc + 1, const char *);
@@ -5446,6 +5570,10 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   if (!args_as_tuple)
     goto error;
 
+  fts5_api *api = Connection_fts5_api(self);
+  if (!api)
+    goto error;
+
   void *userdata = NULL;
   fts5_tokenizer_v2 *tokenizer_class = NULL;
 
@@ -5458,7 +5586,7 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   }
 
   /* no objects/memory has been allocated yet */
-  const char *name_dup = apsw_strdup(name);
+  name_dup = apsw_strdup(name);
   if (!name_dup)
     goto error;
 
@@ -5468,8 +5596,9 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
 
   /* fill in fields */
   pytok->db = self;
-  Py_INCREF(pytok->db);
+  Py_INCREF(self);
   pytok->name = name_dup;
+  name_dup = NULL;
   pytok->args = Py_NewRef(args_as_tuple);
   pytok->xDelete = tokenizer_class->xDelete;
   pytok->xTokenize = tokenizer_class->xTokenize;
@@ -5487,10 +5616,13 @@ Connection_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize
   }
   Py_XDECREF(tmptuple);
   Py_DECREF(args_as_tuple);
+  sqlite3_mutex_leave(self->dbmutex);
   return (PyObject *)pytok;
 error:
   Py_XDECREF(tmptuple);
   Py_XDECREF(args_as_tuple);
+  PyMem_Free((void *)name_dup);
+  sqlite3_mutex_leave(self->dbmutex);
   return NULL;
 }
 
@@ -5509,7 +5641,7 @@ static PyObject *
 Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                    PyObject *fast_kwnames)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
   const char *name;
   int rc = SQLITE_NOMEM;
@@ -5523,7 +5655,9 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
     ARG_EPILOG(NULL, Connection_register_fts5_tokenizer_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   fts5_api *api = Connection_fts5_api(self);
+  sqlite3_mutex_leave(self->dbmutex);
   if (!api)
     return NULL;
 
@@ -5533,10 +5667,9 @@ Connection_register_fts5_tokenizer(Connection *self, PyObject *const *fast_args,
   tfd->factory_func = Py_NewRef(tokenizer_factory);
   tfd->connection = Py_NewRef((PyObject *)self);
 
-  APSW_FAULT_INJECT(FTS5TokenizerRegister,
-                    rc
-                    = api->xCreateTokenizer_v2(api, name, tfd, &APSWPythonTokenizer, APSWPythonTokenizerFactoryDelete),
-                    rc = SQLITE_NOMEM);
+  APSW_FAULT(FTS5TokenizerRegister,
+             rc = api->xCreateTokenizer_v2(api, name, tfd, &APSWPythonTokenizer, APSWPythonTokenizerFactoryDelete),
+             rc = SQLITE_NOMEM);
 
 finally:
   if (rc != SQLITE_OK)
@@ -5563,9 +5696,9 @@ static PyObject *
 Connection_fts5_tokenizer_available(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                     PyObject *fast_kwnames)
 {
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
   const char *name;
+  int rc = -1;
 
   {
     Connection_fts5_tokenizer_available_CHECK;
@@ -5574,14 +5707,22 @@ Connection_fts5_tokenizer_available(Connection *self, PyObject *const *fast_args
     ARG_EPILOG(NULL, Connection_fts5_tokenizer_available_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   fts5_api *api = Connection_fts5_api(self);
+
+  if (api)
+  {
+    void *user_data = NULL;
+    fts5_tokenizer_v2 *tokenizer_class = NULL;
+
+    rc = api->xFindTokenizer_v2(api, name, &user_data, &tokenizer_class);
+  }
+  sqlite3_mutex_leave(self->dbmutex);
   if (!api)
+  {
+    assert(PyErr_Occurred());
     return NULL;
-
-  void *user_data = NULL;
-  fts5_tokenizer_v2 *tokenizer_class = NULL;
-
-  int rc = api->xFindTokenizer_v2(api, name, &user_data, &tokenizer_class);
+  }
   if (rc == SQLITE_OK)
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
@@ -5599,7 +5740,7 @@ static PyObject *
 Connection_register_fts5_function(Connection *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                   PyObject *fast_kwnames)
 {
-  CHECK_USE(NULL);
+
   CHECK_CLOSED(self, NULL);
 
   const char *name;
@@ -5612,33 +5753,39 @@ Connection_register_fts5_function(Connection *self, PyObject *const *fast_args, 
     ARG_EPILOG(NULL, Connection_register_fts5_function_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   fts5_api *api = Connection_fts5_api(self);
-  if (!api)
-    return NULL;
 
-  struct fts5aux_cbinfo *cbinfo = PyMem_Calloc(1, sizeof(struct fts5aux_cbinfo));
-  if (!cbinfo)
-    return NULL;
-  cbinfo->callback = Py_NewRef(function);
-  cbinfo->name = apsw_strdup(name);
+  if (api)
+  {
+    struct fts5aux_cbinfo *cbinfo = PyMem_Calloc(1, sizeof(struct fts5aux_cbinfo));
+    if (!cbinfo)
+      goto finally;
+    cbinfo->callback = Py_NewRef(function);
+    cbinfo->name = apsw_strdup(name);
 
-  int rc = SQLITE_NOMEM;
-  if (cbinfo->name)
-  {
-    APSW_FAULT_INJECT(FTS5FunctionRegister,
-                      rc = api->xCreateFunction(api, name, cbinfo, apsw_fts5_extension_function,
-                                                apsw_fts5_extension_function_destroy),
-                      rc = SQLITE_BUSY);
+    int rc = SQLITE_NOMEM;
+    if (cbinfo->name)
+    {
+      APSW_FAULT(FTS5FunctionRegister,
+                 rc = api->xCreateFunction(api, name, cbinfo, apsw_fts5_extension_function,
+                                           apsw_fts5_extension_function_destroy),
+                 rc = SQLITE_BUSY);
+    }
+    if (rc != SQLITE_OK)
+    {
+      if (!PyErr_Occurred())
+        PyErr_Format(get_exception_for_code(rc), "Registering function named \"%s\"", name);
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xCreateFunction", "{s:s,s:O}", "name", name, "function",
+                       function);
+      apsw_fts5_extension_function_destroy(cbinfo);
+    }
   }
-  if (rc != SQLITE_OK)
-  {
-    if (!PyErr_Occurred())
-      PyErr_Format(get_exception_for_code(rc), "Registering function named \"%s\"", name);
-    AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_api.xCreateFunction", "{s:s,s:O}", "name", name, "function",
-                     function);
-    apsw_fts5_extension_function_destroy(cbinfo);
+finally:
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (PyErr_Occurred())
     return NULL;
-  }
 
   Py_RETURN_NONE;
 }
@@ -5689,7 +5836,6 @@ Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
   Py_VISIT(self->updatehook);
   Py_VISIT(self->commithook);
   Py_VISIT(self->walhook);
-  Py_VISIT(self->progresshandler);
   Py_VISIT(self->authorizer);
   Py_VISIT(self->collationneeded);
   Py_VISIT(self->exectrace);
@@ -5702,14 +5848,26 @@ Connection_tp_traverse(Connection *self, visitproc visit, void *arg)
     Py_VISIT(self->tracehooks[i].callback);
     Py_VISIT(self->tracehooks[i].id);
   }
+  for (unsigned i = 0; i < self->progresshandler_count; i++)
+  {
+    Py_VISIT(self->progresshandler[i].callback);
+    Py_VISIT(self->progresshandler[i].id);
+  }
   return 0;
 }
 
 static PyObject *
 Connection_tp_str(Connection *self)
 {
-  return PyUnicode_FromFormat("<apsw.Connection object %s%s%s at %p>", self->db ? "\"" : "(",
-                              self->db ? sqlite3_db_filename(self->db, "main") : "closed", self->db ? "\"" : ")", self);
+  if (self->dbmutex)
+  {
+    DBMUTEX_ENSURE(self->dbmutex);
+    PyObject *res
+        = PyUnicode_FromFormat("<apsw.Connection object \"%s\" at %p>", sqlite3_db_filename(self->db, "main"), self);
+    sqlite3_mutex_leave(self->dbmutex);
+    return res;
+  }
+  return PyUnicode_FromFormat("<apsw.Connection object (closed) at %p>", self);
 }
 
 static PyMemberDef Connection_members[] = {

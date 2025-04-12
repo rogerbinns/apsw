@@ -1085,7 +1085,7 @@ class FTS(unittest.TestCase):
     def testzzFaultInjection(self):
         "Deliberately inject faults to exercise all code paths"
         ### Copied from main tests
-        if not getattr(apsw, "test_fixtures_present", None):
+        if not getattr(apsw, "apsw_fault_inject", None):
             return
 
         apsw.faultdict = dict()

@@ -6,7 +6,6 @@ Connection_fts5_api(Connection *self)
 {
 #include "faultinject.h"
 
-  CHECK_USE(NULL);
   CHECK_CLOSED(self, NULL);
 
   if (self->fts5_api_cached)
@@ -17,23 +16,17 @@ Connection_fts5_api(Connection *self)
 
   fts5_api *api = NULL;
 
-  /* this prevents any other thread from messing with our work.  The
-     PYSQLITE_CALL are to let the source checker know those calls are ok */
-  INUSE_CALL({
-    Py_BEGIN_ALLOW_THREADS;
-    res = sqlite3_prepare(self->db, "select fts5(?1)", -1, &stmt, NULL); /* PYSQLITE_CALL */
-    if (res == SQLITE_OK)
-      res = sqlite3_bind_pointer(stmt, 1, &api, "fts5_api_ptr", NULL); /* PYSQLITE_CALL */
-    if (res == SQLITE_OK)
-    {
-      res = sqlite3_step(stmt); /* PYSQLITE_CALL */
-      if (res == SQLITE_ROW)
-        res = SQLITE_OK;
-    }
-    if (stmt)
-      sqlite3_finalize(stmt); /* PYSQLITE_CALL */
-    Py_END_ALLOW_THREADS;
-  });
+  res = sqlite3_prepare_v3(self->db, "select fts5(?1)", -1, 0, &stmt, NULL);
+  if (res == SQLITE_OK)
+    res = sqlite3_bind_pointer(stmt, 1, &api, "fts5_api_ptr", NULL);
+  if (res == SQLITE_OK)
+  {
+    res = sqlite3_step(stmt);
+    if (res == SQLITE_ROW)
+      res = SQLITE_OK;
+  }
+  if (stmt)
+    sqlite3_finalize(stmt);
 
   if (res == SQLITE_OK)
   {
@@ -46,6 +39,7 @@ Connection_fts5_api(Connection *self)
     return api;
   }
 
+  /* this overwrites any existing exception but is ok because it is a more helpful message */
   PyErr_Format(ExcNoFTS5, "Getting the FTS5 API failed.  Is the extension included in SQLite?");
   return NULL;
 }
@@ -99,7 +93,7 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
   PyObject *token = NULL;
   PyObject *start = NULL, *end = NULL;
 
-  APSW_FAULT_INJECT(xTokenCBFlagsBad, , iflags = 77);
+  APSW_FAULT(xTokenCBFlagsBad, , iflags = 77);
 
   if (iflags != 0 && iflags != FTS5_TOKEN_COLOCATED)
   {
@@ -107,7 +101,7 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
     goto error;
   }
 
-  APSW_FAULT_INJECT(xTokenCBOffsetsBad, , iEnd = 9999999);
+  APSW_FAULT(xTokenCBOffsetsBad, , iEnd = 9999999);
   if (iStart < 0 || iEnd > our_context->buffer_len)
   {
     PyErr_Format(PyExc_ValueError, "Invalid start (%d) or end of token (%d) for input buffer size (%d)", iStart, iEnd,
@@ -123,7 +117,7 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
   if (!token)
     goto error;
 
-  APSW_FAULT_INJECT(xTokenCBColocatedBad, , iflags = FTS5_TOKEN_COLOCATED);
+  APSW_FAULT(xTokenCBColocatedBad, , iflags = FTS5_TOKEN_COLOCATED);
 
   if (iflags == FTS5_TOKEN_COLOCATED)
   {
@@ -513,6 +507,8 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context, int
 
   while (rc == SQLITE_OK && (item = PyIter_Next(iterator)))
   {
+    assert(!PyErr_Occurred());
+
     /* single string */
     if (PyUnicode_Check(item))
     {
@@ -521,7 +517,7 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context, int
       if (!addr)
         goto finally;
       rc = xToken(their_context, 0, addr, size, 0, 0);
-      APSW_FAULT_INJECT(TokenizeRC, , rc = SQLITE_NOMEM);
+      APSW_FAULT(TokenizeRC, , rc = SQLITE_NOMEM);
       Py_CLEAR(item);
       if (rc != SQLITE_OK)
         goto finally;
@@ -585,7 +581,7 @@ APSWPythonTokenizerTokenize(Fts5Tokenizer *our_context, void *their_context, int
       if (!str_addr)
         goto finally;
       rc = xToken(their_context, first ? 0 : FTS5_TOKEN_COLOCATED, str_addr, str_size, iStart, iEnd);
-      APSW_FAULT_INJECT(TokenizeRC2, , rc = SQLITE_NOMEM);
+      APSW_FAULT(TokenizeRC2, , rc = SQLITE_NOMEM);
       if (rc != SQLITE_OK)
       {
         if (!PyErr_Occurred())
@@ -729,7 +725,7 @@ APSWFTS5ExtensionApi_xRowCount(APSWFTS5ExtensionApi *self)
   FTSEXT_CHECK(NULL);
   sqlite3_int64 row_count;
   int rc = self->pApi->xRowCount(self->pFts, &row_count);
-  APSW_FAULT_INJECT(xRowCountErr, , rc = SQLITE_NOMEM);
+  APSW_FAULT(xRowCountErr, , rc = SQLITE_NOMEM);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -786,8 +782,7 @@ APSWFTS5ExtensionApi_xSetAuxdata(APSWFTS5ExtensionApi *self, PyObject *value)
   FTSEXT_CHECK(-1);
 
   int rc;
-  APSW_FAULT_INJECT(xSetAuxDataErr, rc = self->pApi->xSetAuxdata(self->pFts, value, auxdata_xdelete),
-                    rc = SQLITE_NOMEM);
+  APSW_FAULT(xSetAuxDataErr, rc = self->pApi->xSetAuxdata(self->pFts, value, auxdata_xdelete), rc = SQLITE_NOMEM);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -832,7 +827,7 @@ APSWFTS5ExtensionApi_phrases(APSWFTS5ExtensionApi *self)
       if (self->pApi->iVersion >= 3)
       {
         int rc = self->pApi->xQueryToken(self->pFts, phrase_num, token_num, &pToken, &nToken);
-        APSW_FAULT_INJECT(xQueryTokenErr, , rc = SQLITE_NOMEM);
+        APSW_FAULT(xQueryTokenErr, , rc = SQLITE_NOMEM);
         if (rc != SQLITE_OK)
         {
           SET_EXC(rc, NULL);
@@ -872,7 +867,7 @@ APSWFTS5ExtensionApi_xInstCount(APSWFTS5ExtensionApi *self)
   FTSEXT_CHECK(NULL);
   int inst_count;
   int rc = self->pApi->xInstCount(self->pFts, &inst_count);
-  APSW_FAULT_INJECT(xInstCountErr, , rc = SQLITE_NOMEM);
+  APSW_FAULT(xInstCountErr, , rc = SQLITE_NOMEM);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -1283,7 +1278,7 @@ APSWFTS5ExtensionApi_xTokenize(APSWFTS5ExtensionApi *self, PyObject *const *fast
 
   rc = self->pApi->xTokenize_v2(self->pFts, utf8_buffer.buf, utf8_buffer.len, locale, locale_size, &our_context,
                                 xTokenizer_Callback);
-  APSW_FAULT_INJECT(xTokenizeErr, , rc = SQLITE_NOMEM);
+  APSW_FAULT(xTokenizeErr, , rc = SQLITE_NOMEM);
   if (rc != SQLITE_OK)
   {
     if (!PyErr_Occurred())
@@ -1497,14 +1492,23 @@ apsw_fts5_extension_function(const Fts5ExtensionApi *pApi, /* API offered by cur
   PyGILState_STATE gilstate = PyGILState_Ensure();
   PyObject *retval = NULL;
 
+  MakeExistingException();
+
   VLA_PYO(vargs, 2 + nVal);
 
-  APSWFTS5ExtensionApi *extapi = fts5extensionapi_acquire();
+  APSWFTS5ExtensionApi *extapi = NULL;
+
+  if (PyErr_Occurred())
+    goto finally;
+
+  extapi = fts5extensionapi_acquire();
   if (!extapi)
   {
     sqlite3_result_error_nomem(pCtx);
     goto finally;
   }
+
+  assert(!PyErr_Occurred());
 
   struct fts5aux_cbinfo *cbinfo = (struct fts5aux_cbinfo *)pApi->xUserData(pFts);
 

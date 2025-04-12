@@ -3132,6 +3132,12 @@ if __name__ == "__main__":
         "For example to run the trigram tokenizer on unicode61 keeping diacritics use: trigram unicode61 remove_diacritics 0",
     )
     options = parser.parse_args()
+
+    # systrem python on macos gives text based output when - is used even though binary was requested
+    if hasattr(options.output, "encoding"):
+        # so use raw underlying binary
+        options.output = options.output.buffer
+
     if options.output.isatty():
         parser.error("Refusing to spew HTML to your terminal.  Redirect/pipe output or use the --output option")
 

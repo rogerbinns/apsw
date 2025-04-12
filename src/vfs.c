@@ -454,7 +454,7 @@ apswvfs_xAccess(sqlite3_vfs *vfs, const char *zName, int flags, int *pResOut)
   if (PyLong_Check(pyresult))
     *pResOut = !!PyLong_AsInt(pyresult);
   else
-    PyErr_Format(PyExc_TypeError, "xAccess should return a number");
+    PyErr_Format(PyExc_TypeError, "xAccess should return a number not %s", Py_TypeName(pyresult));
 
 finally:
   if (PyErr_Occurred())
@@ -522,7 +522,7 @@ apswvfs_xFullPathname(sqlite3_vfs *vfs, const char *zName, int nOut, char *zOut)
   if (!pyresult || !PyUnicode_Check(pyresult))
   {
     if (pyresult)
-      PyErr_Format(PyExc_TypeError, "Expected a string");
+      PyErr_Format(PyExc_TypeError, "Expected a string not %s", Py_TypeName(pyresult));
     result = MakeSqliteMsgFromPyException(NULL);
     AddTraceBackHere(__FILE__, __LINE__, "vfs.xFullPathname", "{s: s, s: i}", "zName", zName, "nOut", nOut);
   }
@@ -722,7 +722,7 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
   sqlite3_file *file = NULL;
   int flagsout = 0;
   int flagsin = 0;
-  int res;
+  int res = SQLITE_ERROR;
 
   PyObject *name = NULL, *flags = NULL, *result = NULL;
   APSWVFSFile *apswfile = NULL;
@@ -772,13 +772,10 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
 
   MakeExistingException();
 
+  SET_EXC(res, NULL);
+
   if (PyErr_Occurred())
     goto finally;
-  if (res != SQLITE_OK)
-  {
-    SET_EXC(res, NULL);
-    goto finally;
-  }
 
   PyList_SetItem(flags, 1, PyLong_FromLong(flagsout));
   if (PyErr_Occurred())
@@ -795,6 +792,8 @@ apswvfspy_xOpen(APSWVFS *self, PyObject *const *fast_args, Py_ssize_t fast_nargs
   result = (PyObject *)apswfile;
 
 finally:
+  if (res == SQLITE_OK && file)
+    file->pMethods->xClose(file);
   if (file)
     PyMem_Free(file);
   if (free_filename)
@@ -1828,7 +1827,7 @@ APSWVFS_init(APSWVFS *self, PyObject *args, PyObject *kwargs)
       goto error;
     }
     baseversion = self->basevfs->iVersion;
-    APSW_FAULT_INJECT(APSWVFSBadVersion, , baseversion = -789426);
+    APSW_FAULT(APSWVFSBadVersion, , baseversion = -789426);
     if (baseversion < 1 || baseversion > 3)
     {
       PyErr_Format(PyExc_ValueError,
@@ -2125,11 +2124,10 @@ APSWVFSFile_init(APSWVFSFile *self, PyObject *args, PyObject *kwargs)
   if (!pyflagsout)
     goto finally;
 
-  if (-1 == PyList_SetItem(flags, 1, pyflagsout))
-  {
-    Py_DECREF(pyflagsout);
+  if (0 != PyList_SetItem(flags, 1, pyflagsout))
     goto finally;
-  }
+
+  pyflagsout = NULL;
 
   if (PyErr_Occurred())
     goto finally;
@@ -2149,6 +2147,8 @@ finally:
 
     PyMem_Free(file);
   }
+
+  Py_CLEAR(pyflagsout);
 
   assert((res == 0 && !PyErr_Occurred()) || (res != 0 && PyErr_Occurred()));
   return res;
@@ -2259,7 +2259,10 @@ apswvfsfilepy_xRead(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fa
     while (amount && PyBytes_AS_STRING(buffy)[amount - 1] == 0)
       amount--;
     if (_PyBytes_Resize(&buffy, amount))
+    {
+      Py_DECREF(buffy);
       return NULL;
+    }
 
     return buffy;
   }
@@ -2393,7 +2396,7 @@ apswvfsfilepy_xUnlock(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t 
   }
   res = self->base->pMethods->xUnlock(self->base, level);
 
-  APSW_FAULT_INJECT(xUnlockFails, , res = SQLITE_IOERR);
+  APSW_FAULT(xUnlockFails, , res = SQLITE_IOERR);
 
   if (res == SQLITE_OK)
     Py_RETURN_NONE;
@@ -2558,7 +2561,7 @@ apswvfsfilepy_xSync(APSWVFSFile *self, PyObject *const *fast_args, Py_ssize_t fa
   }
   res = self->base->pMethods->xSync(self->base, flags);
 
-  APSW_FAULT_INJECT(xSyncFails, , res = SQLITE_IOERR);
+  APSW_FAULT(xSyncFails, , res = SQLITE_IOERR);
 
   if (res == SQLITE_OK)
     Py_RETURN_NONE;
@@ -2716,7 +2719,7 @@ apswvfsfilepy_xFileSize(APSWVFSFile *self)
   VFSFILENOTIMPLEMENTED(xFileSize, 1);
   res = self->base->pMethods->xFileSize(self->base, &size);
 
-  APSW_FAULT_INJECT(xFileSizeFails, , res = SQLITE_IOERR);
+  APSW_FAULT(xFileSizeFails, , res = SQLITE_IOERR);
 
   if (res != SQLITE_OK)
   {
@@ -2770,7 +2773,7 @@ apswvfsfilepy_xCheckReservedLock(APSWVFSFile *self)
 
   res = self->base->pMethods->xCheckReservedLock(self->base, &islocked);
 
-  APSW_FAULT_INJECT(xCheckReservedLockFails, , res = SQLITE_IOERR);
+  APSW_FAULT(xCheckReservedLockFails, , res = SQLITE_IOERR);
 
   if (res != SQLITE_OK)
   {
@@ -2778,7 +2781,7 @@ apswvfsfilepy_xCheckReservedLock(APSWVFSFile *self)
     return NULL;
   }
 
-  APSW_FAULT_INJECT(xCheckReservedLockIsTrue, , islocked = 1);
+  APSW_FAULT(xCheckReservedLockIsTrue, , islocked = 1);
 
   if (islocked)
     Py_RETURN_TRUE;
@@ -2976,7 +2979,7 @@ apswvfsfilepy_xClose(APSWVFSFile *self)
 
   res = self->base->pMethods->xClose(self->base);
 
-  APSW_FAULT_INJECT(xCloseFails, , res = SQLITE_IOERR);
+  APSW_FAULT(xCloseFails, , res = SQLITE_IOERR);
 
   /* we set pMethods to NULL after xClose callback so xClose can call other operations
      such as read or write during close */
