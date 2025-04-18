@@ -91,8 +91,8 @@ class Session(unittest.TestCase):
         apsw.Changeset.apply(changeset, self.db)
         self.assertEqual(20, self.db.execute("select count(*) from foo").get)
 
-    def testSessionConfig(self):
-        "session config api"
+    def testConfig(self):
+        "extension config api"
         self.assertRaises(TypeError, apsw.session_config, "hello")
         self.assertRaises(ValueError, apsw.session_config, 3, "hello")
         self.assertRaises(OverflowError, apsw.session_config, 3_000_000_0000, 1)
@@ -103,6 +103,23 @@ class Session(unittest.TestCase):
         val = apsw.session_config(apsw.SQLITE_SESSION_CONFIG_STRMSIZE, -1)
         apsw.session_config(apsw.SQLITE_SESSION_CONFIG_STRMSIZE, val + 1)
         self.assertEqual(val + 1, apsw.session_config(apsw.SQLITE_SESSION_CONFIG_STRMSIZE, -1))
+
+    def testSessionConfig(self):
+        "session config api"
+        session = apsw.Session(self.db, "main")
+
+        self.assertRaises(TypeError, session.config)
+        self.assertRaises(TypeError, session.config, "hello")
+
+        self.assertRaises(OverflowError, session.config, 2**40)
+
+        self.assertRaises(OverflowError, session.config, apsw.SQLITE_SESSION_OBJCONFIG_SIZE, 2**40)
+
+        self.assertRaises(ValueError, session.config, -63)
+
+        v = session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1)
+        session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, not v)
+        self.assertEqual(not v, session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1))
 
     def testSessionDiff(self):
         "diff"
@@ -217,6 +234,141 @@ class Session(unittest.TestCase):
                 sorted(db1.execute(f'select * from "{name}"')),
                 sorted(db2.execute(f'select * from "{name}"')),
             )
+
+    def testAttach(self):
+        "attaching to tables"
+        for i in range(20):
+            self.db.execute(f'create table "{i}"(x PRIMARY KEY)')
+
+        session = apsw.Session(self.db, "main")
+
+        def tables():
+            return  set(tc.name for tc in apsw.Changeset.iter(session.changeset()))
+
+        def change(num):
+            self.db.execute(f'insert into "{num}" values({num})')
+
+        self.assertEqual(tables(), set())
+
+        # should have no effect
+        change(0)
+        self.assertEqual(tables(), set())
+
+        # simple case
+        session.attach("1")
+        change(1)
+        self.assertEqual(tables(), {"1"})
+
+        def table_filter(name):
+            # should only be called for number tables
+            assert 0 <= int(name) < 20
+
+            if name == "2":
+                1/0
+            if name == "3":
+                return False
+            if name == "4":
+                return 4+5j
+            if name == "5":
+                return None
+            if name == "8":
+                return False
+
+            return True
+
+        session.table_filter(table_filter)
+        # no pk - table filter is called anyway failing the assertion
+        self.assertRaises(ValueError, self.db.execute, "create table dummy(one); insert into dummy values(1)")
+
+        self.assertRaises(ZeroDivisionError, change, 2)
+        self.assertNotIn("2", tables()) # should not be recorded
+
+        change(3)
+        self.assertNotIn("3", tables())
+
+        self.assertRaises(TypeError, change, 4)
+        self.assertNotIn("4", tables())
+
+        self.assertRaises(TypeError, change, 5)
+        self.assertNotIn("5", tables())
+
+        change(6)
+        self.assertIn("6", tables())
+
+        self.assertRaises(TypeError, session.table_filter, None)
+
+        session.attach(None)
+        change(7)
+        self.assertIn("7", tables())
+
+        session.attach()
+        change(8)
+        self.assertNotIn("8", tables())
+
+    def testClosingChecks(self):
+        "closed objects"
+        db = apsw.Connection("")
+        db.close()
+        self.assertRaises(apsw.ConnectionClosedError, apsw.Session, db, "main")
+
+        self.assertRaises(apsw.ConnectionClosedError, apsw.Changeset.apply, b"", db)
+
+        db = apsw.Connection("")
+        session = apsw.Session(db, "main")
+        # this should close the session
+        db.close()
+        tested = []
+        for attr in [x for x in dir(session) if not x.startswith("__") and not x in ("close",)]:
+            tested.append(attr)
+            try:
+                f = getattr(session, attr)
+            except ValueError as e:
+                if "The session has been closed" in str(e):
+                    continue
+                raise
+            args = [1, 2, 3, 4][: 0]
+            self.assertRaisesRegex(ValueError, ".*The session has been closed.*", f, *args)
+        self.assertEqual(len(tested), 13)
+        # should be harmless
+        session.close()
+
+        db=apsw.Connection("")
+        db.execute("create table x(y PRIMARY KEY)")
+        session = apsw.Session(db, "main")
+        session.attach()
+        db.execute("insert into x VALUES(3), (4)")
+        changeset = session.changeset()
+        db.close()
+        self.assertGreater(len(changeset), 1)
+        for table_change in apsw.Changeset.iter(changeset):
+            self.assertIn("column_count", str(table_change))
+        self.assertIsNotNone(table_change)
+        self.assertIn("out of scope", str(table_change))
+
+        for attr in [x for x in dir(table_change) if not x.startswith("__")]:
+            self.assertRaises(apsw.InvalidContextError, getattr, table_change, attr)
+
+        self.assertRaises(apsw.ConnectionClosedError, apsw.Changeset.apply, changeset, db)
+
+        builder = apsw.ChangesetBuilder()
+        self.assertRaises(apsw.ConnectionClosedError, builder.schema, db, "main")
+        builder.close()
+        builder.close()
+
+        self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.add, changeset)
+        for table_change in apsw.Changeset.iter(changeset):
+            self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.add_change, table_change)
+            break
+
+        self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.output)
+        self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.output_stream, StreamOutput())
+
+
+    def testCorrupt(self):
+        "corrupt changesets"
+        # apply
+        # changesetbuilder
+        print("::TODO:: implement testCorrupt")
 
 
 class StreamOutput:
