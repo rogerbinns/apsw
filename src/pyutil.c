@@ -82,7 +82,7 @@ PyObject_GetBufferContiguous(PyObject *source, Py_buffer *buffer, int flags)
   int res = PyObject_GetBuffer(source, buffer, flags);
 
   /* but check anyway */
-  assert(res != 0 || (res) == 0 && PyBuffer_IsContiguous(buffer, 'C'));
+  assert(res != 0 || (res == 0 && PyBuffer_IsContiguous(buffer, 'C')));
 
   return res;
 }
