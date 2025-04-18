@@ -36,7 +36,7 @@ for pragma in all_pragmas:
     if pragma in exclude_pragmas or pragma.startswith("vdbe_"):
         continue
     check = (pragma, f"{pragma}=", f"{pragma}(", f"{pragma};")
-    assert any(c in apsw.shell.Shell._pragmas for c in check), f"pragma { pragma } not in apsw.shell.Shell._pragmas"
+    assert any(c in apsw.shell.Shell._pragmas for c in check), f"pragma {pragma} not in apsw.shell.Shell._pragmas"
 
 # check all pragmas are known to sqlite
 for pragma in apsw.shell.Shell._pragmas:
@@ -81,7 +81,7 @@ session = apsw.Session(con, "main")
 # virtual tables aren't real - just check their size hasn't changed
 for n, e in (("VTModule", 3), ("VTTable", 17), ("VTCursor", 7)):
     if len(classes[n]) != e:
-        sys.exit(f"Expexted len({ n }) to be { e } not { len(classes[n]) }")
+        sys.exit(f"Expexted len({n}) to be {e} not {len(classes[n])}")
     del classes[n]
 
 for name, obj in (
