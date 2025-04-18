@@ -1,6 +1,7 @@
 [project]
 name = "apsw"
-dynamic = ["version", "urls", "classifiers", "keywords", "authors", "license", "requires-python", "readme", "description"]
+dynamic = ["version", "urls", "classifiers", "keywords", "authors",  "requires-python", "readme", "description"]
+license = "any-OSI"
 
 [build-system]
 requires = ["setuptools"]
