@@ -570,7 +570,8 @@ APSWSession_xInput(void *pIn, void *pData, int *pnData)
   }
   if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "SessionStreamInput", "{s: O, s: d}", "xInput", OBJ(pIn), "amount", *pnData);
+    AddTraceBackHere(__FILE__, __LINE__, "SessionStreamInput", "{s: O, s: d}", "xInput", OBJ(pIn), "amount_requested",
+                     *pnData, "provided", OBJ(result));
     return MakeSqliteMsgFromPyException(NULL);
   }
   return SQLITE_OK;
@@ -659,6 +660,9 @@ session_table_filter_cb(void *pCtx, const char *name)
       PyObject *retval = PyObject_Vectorcall(pCtx, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       if (retval)
         result = PyObject_IsTrueStrict(retval);
+      if(PyErr_Occurred())
+        AddTraceBackHere(__FILE__, __LINE__, "session.table_filter.callback", "{s: s, s: O}", "name", name, "returned", OBJ(retval));
+      Py_XDECREF(retval);
     }
     Py_XDECREF(vargs[1]);
   }
