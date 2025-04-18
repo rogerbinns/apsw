@@ -45,9 +45,16 @@ session = apsw.Session(connection, "main")
 # We'd like size estimates
 session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, True)
 
-# we now say which tables to monitor - we want all.  Tables that do
-# not have PRIMARY KEY in their declaration will be ignored.
-session.attach()
+# we now say which tables to monitor - no tables are monitored by default.
+# The tables must have PRIMARY KEY in their declaration otherwise
+# nothjng is recorded.
+def table_filter(name: str) -> bool:
+    print(f"table_filter {name=}")
+    # We want them all
+    return True
+
+# We could also have done session.attach() to get all tables
+session.table_filter(table_filter)
 
 # And now make some changes.  We do every kind of change here -
 # INSERT, UPDATE, and DELETE.
