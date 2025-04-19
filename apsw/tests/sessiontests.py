@@ -166,6 +166,54 @@ class Session(unittest.TestCase):
             ),
         )
 
+    def testSessionAttributes(self):
+        "session attributes"
+        session = apsw.Session(self.db, "main")
+
+        self.assertEqual(True, session.enabled)
+        self.assertEqual(True, session.is_empty)
+        self.assertEqual(False, session.indirect)
+        self.assertEqual(0, session.memory_used)
+
+        self.assertRaises(TypeError, setattr, session, "enabled", 3+4j)
+        self.assertRaises(TypeError, setattr, session, "indirect", 3+4j)
+
+        session.indirect = True
+        session.attach("one")
+
+        self.db.execute(self.base_sql)
+
+        self.assertEqual(False, session.is_empty)
+        self.assertNotEqual(0, session.memory_used)
+        self.assertEqual(True, session.indirect)
+
+        for table_change in apsw.Changeset.iter(session.changeset()):
+            self.assertEqual(table_change.indirect, True)
+
+        session.indirect = False
+
+        self.db.execute(self.update_sql)
+        direct = 0
+
+        changeset = session.changeset()
+        for table_change in apsw.Changeset.iter(changeset):
+            direct += not table_change.indirect
+
+        self.assertNotEqual(0, direct)
+
+        session.enabled = False
+        print("ENABLED IS NOW FALSE")
+        self.assertEqual(changeset, session.changeset())
+        self.assertEqual(False, session.enabled)
+
+        self.db.execute("DELETE FROM two ; DELETE FROM one")
+
+        if False:
+            # https://sqlite.org/forum/forumpost/c175372e9a
+            self.assertEqual(changeset, session.changeset())
+
+        self.assertEqual(False, session.enabled)
+
     def testStream(self):
         "various streaming methods"
 
