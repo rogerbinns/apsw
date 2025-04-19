@@ -42,16 +42,24 @@ connection.execute(pathlib.Path("session.sql").read_text())
 
 session = apsw.Session(connection, "main")
 
+# enabled by default.  You can set it to False while making
+# changes you do not want recorded.  There is an indirect flag
+# you can adjust if you want changes recorded as indirect like
+# those made by triggers and foreign keys.
+print(f"{session.enabled=}")
+
 # We'd like size estimates
 session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, True)
 
+
 # we now say which tables to monitor - no tables are monitored by default.
 # The tables must have PRIMARY KEY in their declaration otherwise
-# nothjng is recorded.
+# nothing is recorded.
 def table_filter(name: str) -> bool:
     print(f"table_filter {name=}")
     # We want them all
     return True
+
 
 # We could also have done session.attach() to get all tables
 session.table_filter(table_filter)
@@ -76,6 +84,9 @@ UPDATE tags SET cost_centre=null WHERE label='new';
 
 DELETE FROM tags WHERE label='battery';
 """)
+
+# How much memory is the session using?
+print(f"{session.memory_used=}")
 
 ### changeset_sql: SQL equivalent of a changeset
 # We can iterate the contents of a changeset as SQL statements using
@@ -105,6 +116,7 @@ def show_changeset(
 # while patchsets only contain the necessary values to make the
 # change.  :func:`apsw.ext.changeset_to_sql` is useful to see what SQL
 # a change or patch set is equivalent to.
+
 
 patchset = session.patchset()
 print(f"{len(patchset)=}")
