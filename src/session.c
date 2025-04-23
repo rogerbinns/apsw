@@ -1086,7 +1086,7 @@ APSWTableChange_conflict(APSWTableChange *self)
 
   for (int i = 0; i < self->table_column_count; i++)
   {
-    int res = sqlite3changeset_conflict(self->iter, 0, &value);
+    int res = sqlite3changeset_conflict(self->iter, i, &value);
     if (res != SQLITE_OK)
     {
       SET_EXC(res, NULL);
