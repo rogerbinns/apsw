@@ -1320,8 +1320,12 @@ APSWChangeset_concat(void *Py_UNUSED(static_method), PyObject *const *fast_args,
   void *pOut = NULL;
 
   int rc = sqlite3changeset_concat(A_buffer.len, A_buffer.buf, B_buffer.len, B_buffer.buf, &nOut, &pOut);
+
   if (rc == SQLITE_OK)
     result = PyBytes_FromStringAndSize((char *)pOut, nOut);
+  else
+    SET_EXC(rc, NULL);
+
   sqlite3_free(pOut);
 
   PyBuffer_Release(&A_buffer);
