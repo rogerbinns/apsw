@@ -25,7 +25,7 @@ class Session(unittest.TestCase):
         for c in apsw.connections():
             c.close()
 
-    # two SQL chunks to setup tables, and a second making a variety of changes
+    # SQL chunks to setup tables, a second making a variety of changes, and a third of extra changes
     base_sql = """
     DROP TABLE IF EXISTS two;
     DROP TABLE IF EXISTS three;
@@ -46,6 +46,12 @@ class Session(unittest.TestCase):
     UPDATE two SET x=77 WHERE x=3 AND z=3;
     CREATE TABLE three(a PRIMARY KEY);
     INSERT INTO three VALUES (1), (2);
+"""
+
+    bonus_sql = """
+    INSERT INTO three VALUES(-1), (1.001), (2.002);
+    DELETE FROM two WHERE z = 1;
+    UPDATE two SET z = zeroblob(16385) WHERE z = 1;
 """
 
     def testSanity(self):
@@ -175,8 +181,8 @@ class Session(unittest.TestCase):
         self.assertEqual(False, session.indirect)
         self.assertEqual(0, session.memory_used)
 
-        self.assertRaises(TypeError, setattr, session, "enabled", 3+4j)
-        self.assertRaises(TypeError, setattr, session, "indirect", 3+4j)
+        self.assertRaises(TypeError, setattr, session, "enabled", 3 + 4j)
+        self.assertRaises(TypeError, setattr, session, "indirect", 3 + 4j)
 
         session.indirect = True
         session.attach("one")
@@ -202,7 +208,6 @@ class Session(unittest.TestCase):
         self.assertNotEqual(0, direct)
 
         session.enabled = False
-        print("ENABLED IS NOW FALSE")
         self.assertEqual(changeset, session.changeset())
         self.assertEqual(False, session.enabled)
 
@@ -266,9 +271,51 @@ class Session(unittest.TestCase):
             self.assertRaises(ZeroDivisionError, apsw.Changeset.apply, si, db2)
             self.checkDbIdentical(db1, db2)
 
-        # error output should leak anything
+        # error output should not leak anything
         for kind in s.patchset_stream, s.changeset_stream:
             self.assertRaises(ZeroDivisionError, kind, ErrorStreamOutput(1))
+
+        # concat, invert etc
+        changeset = s.changeset()
+        patchset = s.patchset()
+        s2 = apsw.Session(self.db, "main")
+        s2.attach()
+        self.db.execute(self.bonus_sql)
+
+        changeset2 = s2.changeset()
+        patchset2 = s2.patchset()
+
+        concat = apsw.Changeset.concat(changeset, changeset2)
+        pconcat = apsw.Changeset.concat(patchset, patchset2)
+
+        # can't mix change and patchsets
+        self.assertRaises(apsw.SQLError, apsw.Changeset.concat, changeset, patchset2)
+        self.assertRaises(apsw.SQLError, apsw.Changeset.concat, patchset, changeset2)
+
+        # check they work
+        so = StreamOutput()
+        apsw.Changeset.concat_stream(StreamInput(changeset), StreamInput(changeset2), so)
+        self.assertEqual(concat, so.value)
+
+        so = StreamOutput()
+        apsw.Changeset.concat_stream(StreamInput(patchset), StreamInput(patchset2), so)
+        self.assertEqual(pconcat, so.value)
+
+        invert = apsw.Changeset.invert(changeset)
+        # can't invert a patchset
+        self.assertRaises(apsw.CorruptError, apsw.Changeset.invert, patchset)
+
+        so = StreamOutput()
+        apsw.Changeset.invert_stream(StreamInput(changeset), so)
+        self.assertEqual(invert, so.value)
+
+        so = StreamOutput()
+        self.assertRaises(apsw.CorruptError, apsw.Changeset.invert_stream, StreamInput(patchset), so)
+        self.assertEqual(b"", so.value)
+
+        # error conditions
+        self.assertRaises(ZeroDivisionError, apsw.Changeset.invert_stream, ErrorStreamInput(changeset, 4), so)
+        self.assertRaises(ZeroDivisionError, apsw.Changeset.invert_stream, StreamInput(changeset), ErrorStreamOutput(2))
 
     def checkDbIdentical(self, db1, db2):
         # easy - check the table names etc are the same
@@ -291,7 +338,7 @@ class Session(unittest.TestCase):
         session = apsw.Session(self.db, "main")
 
         def tables():
-            return  set(tc.name for tc in apsw.Changeset.iter(session.changeset()))
+            return set(tc.name for tc in apsw.Changeset.iter(session.changeset()))
 
         def change(num):
             self.db.execute(f'insert into "{num}" values({num})')
@@ -312,11 +359,11 @@ class Session(unittest.TestCase):
             assert 0 <= int(name) < 20
 
             if name == "2":
-                1/0
+                1 / 0
             if name == "3":
                 return False
             if name == "4":
-                return 4+5j
+                return 4 + 5j
             if name == "5":
                 return None
             if name == "8":
@@ -329,7 +376,7 @@ class Session(unittest.TestCase):
         self.assertRaises(ValueError, self.db.execute, "create table dummy(one); insert into dummy values(1)")
 
         self.assertRaises(ZeroDivisionError, change, 2)
-        self.assertNotIn("2", tables()) # should not be recorded
+        self.assertNotIn("2", tables())  # should not be recorded
 
         change(3)
         self.assertNotIn("3", tables())
@@ -374,13 +421,13 @@ class Session(unittest.TestCase):
                 if "The session has been closed" in str(e):
                     continue
                 raise
-            args = [1, 2, 3, 4][: 0]
+            args = [1, 2, 3, 4][:0]
             self.assertRaisesRegex(ValueError, ".*The session has been closed.*", f, *args)
         self.assertEqual(len(tested), 13)
         # should be harmless
         session.close()
 
-        db=apsw.Connection("")
+        db = apsw.Connection("")
         db.execute("create table x(y PRIMARY KEY)")
         session = apsw.Session(db, "main")
         session.attach()
@@ -410,7 +457,6 @@ class Session(unittest.TestCase):
 
         self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.output)
         self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.output_stream, StreamOutput())
-
 
     def testCorrupt(self):
         "corrupt changesets"
