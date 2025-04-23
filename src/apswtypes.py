@@ -1,9 +1,15 @@
 import sys
 
 from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
-from collections.abc import Mapping, Buffer
+import collections.abc
 import array
 import types
+
+# Anything that resembles a dictionary
+Mapping: TypeAlias = collections.abc.Mapping
+
+# Anything that resembles a sequence of bytes
+Buffer: TypeAlias = collections.abc.Buffer
 
 SQLiteValue = None | int | float | bytes | str
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
@@ -77,13 +83,13 @@ WindowT = Any
 WindowStep = Callable[[WindowT, *SQLiteValues], None]
 """Window function step takes zero or more SQLiteValues"""
 
-WindowFinal =    Callable[[WindowT, *SQLiteValues], SQLiteValue]
+WindowFinal = Callable[[WindowT, *SQLiteValues], SQLiteValue]
 """Window function final takes zero or more SQLiteValues, and returns a SQLiteValue"""
 
 WindowValue = Callable[[WindowT], SQLiteValue]
 """Window function value returns the current  SQLiteValue"""
 
-WindowInverse =  Callable[[WindowT, *SQLiteValues], None]
+WindowInverse = Callable[[WindowT, *SQLiteValues], None]
 """Window function inverse takes zero or more SQLiteValues"""
 
 WindowFactory = Callable[[], WindowClass | tuple[WindowT, WindowStep, WindowFinal, WindowValue, WindowInverse]]
@@ -129,13 +135,12 @@ FTS5QueryPhrase = Callable[[FTS5ExtensionApi, Any], None]
 
 # The Session extension allows streaming of inputs and outputs
 
-SessionStreamInput = Callable[[int], Buffer ]
+SessionStreamInput = Callable[[int], Buffer]
 """Streaming input function that is called with a number of bytes requested
 returning up to that many bytes, and zero length for end of file"""
 
-ChangesetInput =  SessionStreamInput | Buffer
+ChangesetInput = SessionStreamInput | Buffer
 """Changeset input can either be a streaming callback or data"""
 
-SessionStreamOutput  = Callable[[memoryview], None]
+SessionStreamOutput = Callable[[memoryview], None]
 """Streaming output callable is called with each block of streaming data"""
-
