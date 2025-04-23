@@ -21,7 +21,7 @@ resulted in those changes.
   change.  This allows comprehensive conflict detection, and inverting
   (undoing the change),  Optionally you can use patch sets (a subset of
   change sets) which do not have the before values, consuming less
-  space but have less ability to detect conflicts or be inverted.
+  space but have less ability to detect conflicts, or be inverted.
 
 * The recorded changes includes indirect changes made such as by triggers
   and foreign keys.
@@ -660,8 +660,9 @@ session_table_filter_cb(void *pCtx, const char *name)
       PyObject *retval = PyObject_Vectorcall(pCtx, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       if (retval)
         result = PyObject_IsTrueStrict(retval);
-      if(PyErr_Occurred())
-        AddTraceBackHere(__FILE__, __LINE__, "session.table_filter.callback", "{s: s, s: O}", "name", name, "returned", OBJ(retval));
+      if (PyErr_Occurred())
+        AddTraceBackHere(__FILE__, __LINE__, "session.table_filter.callback", "{s: s, s: O}", "name", name, "returned",
+                         OBJ(retval));
       Py_XDECREF(retval);
     }
     Py_XDECREF(vargs[1]);
@@ -735,7 +736,8 @@ APSWSession_config(APSWSession *self, PyObject *args)
 /** .. attribute:: enabled
     :type: bool
 
-    Get or change if this session is recording changes.
+    Get or change if this session is recording changes.  Disabling only
+    stops recording rows not already part of the changeset.
 
     -* sqlite3session_enable
 */
@@ -1201,7 +1203,17 @@ APSWTableChange_dealloc(PyObject *self)
 
 /** .. class:: Changeset
 
- Provides changeset (including patchset) related methods.
+  Provides changeset (including patchset) related methods.  Note that
+  all methods are static (belong to the class).  There is no Changeset
+  object.   On input Changesets can be a :class:`collections.abc.Buffer`
+  (anything that resembles a sequence of bytes), or
+  :class:`SessionStreamInput` which provides the bytes in chunks from a
+  callback.
+
+  Output is bytes, or :class:`SessionStreamOutput` (chunks in a callback).
+
+  The streaming versions are useful when you are concerned about memory
+  usage, or where changesets are larger than 2GB (the SQLite limit).
 */
 
 /** .. method:: invert(changeset: Buffer) -> bytes
