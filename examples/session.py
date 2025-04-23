@@ -43,9 +43,8 @@ connection.execute(pathlib.Path("session.sql").read_text())
 session = apsw.Session(connection, "main")
 
 # enabled by default.  You can set it to False while making
-# changes you do not want recorded.  There is an indirect flag
-# you can adjust if you want changes recorded as indirect like
-# those made by triggers and foreign keys.
+# changes you do not want recorded. It only stops recording
+# changes to rows not already part of the changeset.
 print(f"{session.enabled=}")
 
 # We'd like size estimates
@@ -62,6 +61,7 @@ def table_filter(name: str) -> bool:
 
 
 # We could also have done session.attach() to get all tables
+# or attach with named tables of interest.
 session.table_filter(table_filter)
 
 # And now make some changes.  We do every kind of change here -
@@ -164,17 +164,40 @@ except apsw.AbortError as exc:
 
 failed = apsw.ChangesetBuilder()
 
+# And make some deliberate conflicts
+connection.execute("""
+    UPDATE items SET description = 'Orange flavour' WHERE name = 'bathroom ceiling';
+    -- Refuse deletes to make constraint failure on delete
+    CREATE TRIGGER prevent_microwave_deletion
+    BEFORE DELETE ON items
+        FOR EACH ROW
+        WHEN OLD.name = 'microwave'
+        BEGIN
+            SELECT RAISE(ABORT, 'Cannot delete items with name "microwave"');
+        END;
+""")
+
 
 # A conflict handler says what to do
 def conflict_handler(reason: int, change: apsw.TableChange) -> int:
-    # Print the failure reason
+    # Print the failure information
     print(
         "conflict",
         apsw.mapping_session_conflict[reason],
-        f"{change.op=}",
+        f"{change.op=} {change.opcode=}",
+        "\n",
+        f"{change.conflict=}",
+        "\n",
+        f"{change.name=} {change.column_count=}",
+        "\n",
+        f"{change.fk_conflicts=}",
+        f"{change.indirect=}",
+        "\n",
+        f"{change.old=}\n",
+        f"{change.new=}\n",
     )
 
-    # save the change
+    # save the change for later
     failed.add_change(change)
 
     # proceed ignoring this failed change
