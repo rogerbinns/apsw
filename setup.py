@@ -863,7 +863,7 @@ if __name__ == "__main__":
             "Topic :: Database :: Front-Ends",
         ],
         keywords=["database", "sqlite"],
-        license="OSI Approved",
+        license="any-OSI",
         platforms="any",
         ext_modules=[
             Extension(
