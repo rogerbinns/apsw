@@ -464,6 +464,31 @@ class Session(unittest.TestCase):
         # changesetbuilder
         print("::TODO:: implement testCorrupt")
 
+    def testGccWarning(self):
+        "prove gcc warning is nonsense"
+        # gcc warns for functions with no keyword arguments that the
+        # zero length list of keywords is accessed.  I have been
+        # unable to suppress the warning with code changes, so this
+        # code when run under a sanitizer proves the warning is
+        # nonsense.
+
+        # verifies the function takes no parameters and we get keyword error
+        regex = r".*invalid keyword argument for.*\.([a-z_]+[(][)] -> .*|__init__[(][)])"
+
+        for meth in (
+            apsw.ChangesetBuilder().output,
+            apsw.Rebaser,
+            apsw.ChangesetBuilder,
+            apsw.ChangesetBuilder().close,
+            apsw.Session(self.db, "main").close,
+        ):
+            self.assertRaisesRegex(TypeError, regex, meth, **{"": 3})
+            self.assertRaisesRegex(TypeError, regex, meth, **{"hello": 3})
+            self.assertRaisesRegex(TypeError, regex, meth, **{"one": 3, "two": 2})
+
+            # no args works
+            meth()
+
 
 class StreamOutput:
     def __init__(self):
