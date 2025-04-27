@@ -267,7 +267,7 @@ pydebug: ## Build a debug python including address sanitizer.  Extensions it bui
 	set -x && cd "$(PYDEBUG_DIR)" && find . -delete && \
 	curl https://www.python.org/ftp/python/`echo $(PYDEBUG_VER) | sed 's/[abr].*//'`/Python-$(PYDEBUG_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYDEBUG_VER) && \
-	env CC=clang ./configure --with-address-sanitizer --without-pymalloc --with-pydebug --prefix="$(PYDEBUG_DIR)" \
+	./configure --with-address-sanitizer --without-pymalloc --with-pydebug --prefix="$(PYDEBUG_DIR)" \
 	--without-freelists --with-assertions && \
 	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYDEBUG_DIR)/bin/python3
