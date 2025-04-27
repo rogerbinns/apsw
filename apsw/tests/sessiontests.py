@@ -460,9 +460,51 @@ class Session(unittest.TestCase):
 
     def testCorrupt(self):
         "corrupt changesets"
+        session = apsw.Session(self.db, "main")
+        session.attach()
+        self.db.execute(self.base_sql)
+        self.db.execute(self.update_sql)
+        self.db.execute(self.bonus_sql)
+
+        changeset = session.changeset()
+
+        corrupted = bytearray(changeset)
+
+        # we leave first 75% alone so it smells like a changeset and
+        # then corrupt the rest
+        for i in range(int(len(corrupted) * 0.75), len(corrupted)):
+            corrupted[i] ^= i & 0xFF
+
+        # changesetbuilder should enter a corrupted state
+        cb = apsw.ChangesetBuilder()
+
+        self.assertRaises(apsw.CorruptError, cb.add, corrupted)
+        # I had expected a persistent error state, but it doesn't so
+        # these all succeed
+        cb.add(changeset)
+        cb.output()
+        cb.output_stream(StreamOutput())
+
         # apply
-        # changesetbuilder
-        print("::TODO:: implement testCorrupt")
+        db2 = apsw.Connection("")
+        db2.execute(self.base_sql)
+        db2.execute(self.update_sql)
+        db2.execute(self.bonus_sql)
+
+        self.checkDbIdentical(self.db, db2)
+
+        def handler(*args):
+            return apsw.SQLITE_CHANGESET_OMIT
+
+        self.assertRaises(
+            apsw.CorruptError,
+            apsw.Changeset.apply,
+            corrupted,
+            db2,
+            flags=apsw.SQLITE_CHANGESETAPPLY_INVERT,
+            conflict=handler,
+        )
+        self.checkDbIdentical(self.db, db2)
 
     def testGccWarning(self):
         "prove gcc warning is nonsense"
