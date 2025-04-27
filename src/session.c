@@ -1082,13 +1082,16 @@ APSWTableChange_conflict(APSWTableChange *self)
   int res = sqlite3changeset_conflict(self->iter, 0, &value);
   if (res == SQLITE_MISUSE)
     Py_RETURN_NONE;
+
+  PyObject *tuple = NULL;
+
   if (res != SQLITE_OK)
   {
     SET_EXC(res, NULL);
     goto error;
   }
 
-  PyObject *tuple = PyTuple_New(self->table_column_count);
+  tuple = PyTuple_New(self->table_column_count);
   if (!tuple)
     goto error;
 
