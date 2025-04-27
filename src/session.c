@@ -1889,6 +1889,9 @@ APSWChangesetBuilder_add_change(APSWChangesetBuilder *self, PyObject *const *fas
   :param db: Connection to consult
   :param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
+  You will get :exc:`MisuseError` if changes have already been added, or this method has
+  already been called.
+
   -* sqlite3changegroup_schema
  */
 static PyObject *
