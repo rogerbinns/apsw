@@ -586,9 +586,9 @@ def quote_name(name: str, quote: str = '"') -> str:
 
     :meta private:
     """
-    if quote in name:
+    if quote in name or re.search(r"[^\w]", name, re.ASCII):
         return quote + name.replace(quote, quote * 2) + quote
-    if quote in apsw.keywords:
+    if name.upper() in apsw.keywords:
         return quote + name + quote
     return name
 
