@@ -617,10 +617,12 @@ def find_columns(
     for dbname in connection.db_names() if schema is None else [schema]:
         columns: list[str] = []
         pks: set[int] = set()
-        for column, pk in connection.execute("SELECT name, pk FROM pragma_table_info(?, ?)", (table_name, dbname)):
+        for i, (column, pk) in enumerate(
+            connection.execute("SELECT name, pk FROM pragma_table_info(?, ?)", (table_name, dbname))
+        ):
             columns.append(column)
             if pk > 0:
-                pks.add(pk - 1)
+                pks.add(i)
         if not columns or column_count != len(columns) or pks != pk_columns:
             continue
         return tuple(columns)
