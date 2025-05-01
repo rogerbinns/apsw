@@ -6,6 +6,7 @@
 
 import unittest
 import functools
+import sys
 
 import apsw
 import apsw.ext
@@ -530,6 +531,128 @@ class Session(unittest.TestCase):
 
             # no args works
             meth()
+
+    def testConflicts(self):
+        "conflict handling"
+        # change types
+        # delete insert update
+        # conflict types
+        # data notfound conflict constraint foreignkey
+        setup_sql = """
+            pragma foreign_keys=off;
+            drop table if exists [insert];
+            drop table if exists [delete];
+            drop table if exists [update];
+            create table [insert](one, two, three, PRIMARY KEY(one, two));
+            create table [delete](one, two, three PRIMARY KEY);
+            insert into [delete] VALUES('one', 2, 3);
+            create table [update](one, two PRIMARY KEY, three);
+            insert into [update] VALUES('A', 2, 3);
+            insert into [update] VALUES('one', 22, 3);
+            pragma foreign_keys=on;
+        """
+
+        self.db.execute(setup_sql)
+
+        session = apsw.Session(self.db, "main")
+        session.attach()
+
+        # each type of change
+        self.db.execute("""
+            insert into [insert] VALUES('ONE', 'TWO', 'THREE');
+            delete from [delete] where two=2;
+            update [update] set one='a' where two=2;
+            update [update] set two=33 where two=22;
+        """)
+
+        changeset = session.changeset()
+
+        # filter check
+        for kind in "insert", "delete", "update":
+            self.db.execute(setup_sql)
+
+            def tf(name):
+                return name == kind
+
+            counter = self.db.total_changes()
+            apsw.Changeset.apply(changeset, self.db, filter=tf)
+            self.assertEqual(
+                self.db.total_changes() - counter,
+                {
+                    "insert": 1,
+                    "delete": 1,
+                    "update": 3,
+                }[kind],
+            )
+
+        # invert above
+
+
+        # filter error, check no changesS
+
+    def testNoPrimaryKey(self):
+        "check when tables have no primary key"
+        self.db.execute("""
+            create table [insert](one);
+            create table [delete](one);
+            insert into [delete] values('one');
+            create table [update](hello, rowid, oid);
+            insert into [update] values('one', 'two', 'three');
+            """)
+        session = apsw.Session(self.db, "main")
+        session.config(apsw.SQLITE_SESSION_OBJCONFIG_ROWID, True)
+        session.attach()
+
+        self.db.execute("""
+            insert into [insert] values(1);
+            delete from [delete] where one='one';
+            update [update] set hello='xxx' where oid='three';
+
+        """)
+
+        changeset = session.changeset()
+
+        seen = {"INSERT": 0, "DELETE": 0, "UPDATE": 0}
+        for change in apsw.Changeset.iter(changeset):
+            seen[change.op] += 1
+
+        self.assertEqual(seen, {"INSERT": 1, "DELETE": 1, "UPDATE": 1})
+
+        self.assertEqual(
+            sorted(
+                apsw.ext.changeset_to_sql(
+                    changeset,
+                    get_columns=functools.partial(
+                        apsw.ext.find_columns,
+                        connection=self.db,
+                    ),
+                )
+            ),
+            sorted(
+                [
+                    'INSERT INTO "insert"(_rowid_, one) VALUES (1, 1);',
+                    """DELETE FROM "delete" WHERE _rowid_ = 1 AND one = 'one';""",
+                    """UPDATE "update" SET hello='xxx' WHERE _rowid_ = 1 AND hello = 'one';""",
+                ]
+            ),
+        )
+
+
+# handy debugging function
+def changeset_to_sql(title, changeset, db):
+    print("-" * len(title))
+    print(title)
+    print(f"{len(changeset)=}")
+    print()
+    for line in apsw.ext.changeset_to_sql(
+        changeset,
+        get_columns=functools.partial(
+            apsw.ext.find_columns,
+            connection=db,
+        ),
+    ):
+        print(line)
+    print()
 
 
 class StreamOutput:
