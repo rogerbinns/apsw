@@ -86,7 +86,9 @@ resulted in those changes.
     <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__
     to enable recording of tables without an explicit primary key, but
     it is strongly advised to have deterministic primary keys so that
-    changes made independently can be reconciled.
+    changes made independently can be reconciled.  The changesets will
+    also contain wrong operations if the table has a column named
+    `_rowid_`.
 
 Availability
 ============
