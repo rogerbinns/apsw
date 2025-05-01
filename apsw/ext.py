@@ -613,7 +613,13 @@ def find_columns(
     :param schema: If ``None`` (default) then the ``main`` and all attached databases are searched,
          else only the named one.
 
+    :raises ValueError: If no corresponding table with matching column count and primary key
+         columns can be found.
+
     """
+
+    rowid_found = []
+
     for dbname in connection.db_names() if schema is None else [schema]:
         columns: list[str] = []
         pks: set[int] = set()
@@ -623,9 +629,24 @@ def find_columns(
             columns.append(column)
             if pk > 0:
                 pks.add(i)
+
+        # if no primary keys then SQLITE_SESSION_OBJCONFIG_ROWID
+        # applies but we only try them after exhausting all primary
+        # key tables across all searched schemas
+        if not pks and pk_columns == {0} and len(columns) + 1 == column_count:
+            rowid_found.append(columns)
+
         if not columns or column_count != len(columns) or pks != pk_columns:
             continue
+
         return tuple(columns)
+
+    if len(rowid_found) == 1:
+        columns = rowid_found[0]
+        # OBJCONFIG_ROWID only does _rowid_ and produces wrong changeset
+        # operations of that is the name of a regular column.  This code
+        # originally tried all the aliases
+        return ("_rowid_", *columns)
 
     raise ValueError(f"Can't find {table_name=} in {connection=} with {column_count=} and {pk_columns=}")
 
@@ -649,7 +670,6 @@ def changeset_to_sql(
 
     See the :ref:`example <example_changesets>`
     """
-    # ::TODO:: check this with __ROWID__ tables (no primary keys)
     tables: dict[str, tuple[str, ...]] = {}
     for change in apsw.Changeset.iter(changeset):
         if change.name not in tables:
