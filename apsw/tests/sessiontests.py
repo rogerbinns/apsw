@@ -637,6 +637,50 @@ class Session(unittest.TestCase):
             ),
         )
 
+    def testColumnTypes(self):
+        "exotic column types"
+        self.db.execute("""
+            create table foo(__hidden__one, two DEFAULT 4, three GENERATED ALWAYS AS (2+length(two)), four INT PRIMARY KEY);
+            insert into foo(__hidden__one, two, four) values (1,2,3), (11,22,33), (111,222,333);
+        """)
+
+        session = apsw.Session(self.db, "main")
+
+        session.attach("foo")
+
+        self.db.execute("""
+            insert into foo(four) values(444);
+            update foo set two = 2.2 where four=333;
+            delete from foo where __hidden__one=1;
+        """)
+
+        self.assertEqual(
+            sorted(
+                apsw.ext.changeset_to_sql(
+                    session.changeset(),
+                    get_columns=functools.partial(
+                        apsw.ext.find_columns,
+                        connection=self.db,
+                    ),
+                )
+            ),
+            sorted(
+                [
+                    "INSERT INTO foo(two, four) VALUES (4, 444);",
+                    "DELETE FROM foo WHERE four = 3 AND two = 2;",
+                    "UPDATE foo SET two=2.2 WHERE four = 333 AND two = 222;",
+                ]
+            )
+            if "ENABLE_HIDDEN_COLUMNS" in apsw.compile_options
+            else sorted(
+                [
+                    "INSERT INTO foo(__hidden__one, two, four) VALUES (NULL, 4, 444);",
+                    "DELETE FROM foo WHERE four = 3 AND __hidden__one = 1 AND two = 2;",
+                    "UPDATE foo SET two=2.2 WHERE four = 333 AND two = 222;",
+                ]
+            ),
+        )
+
 
 # handy debugging function
 def changeset_to_sql(title, changeset, db):

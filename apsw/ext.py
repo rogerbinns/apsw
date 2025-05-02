@@ -623,12 +623,15 @@ def find_columns(
     for dbname in connection.db_names() if schema is None else [schema]:
         columns: list[str] = []
         pks: set[int] = set()
-        for i, (column, pk) in enumerate(
-            connection.execute("SELECT name, pk FROM pragma_table_info(?, ?)", (table_name, dbname))
+
+        for column, pk, hidden in connection.execute(
+            "SELECT name, pk, hidden FROM pragma_table_xinfo(?, ?)", (table_name, dbname)
         ):
-            columns.append(column)
+            if hidden:
+                continue
             if pk > 0:
-                pks.add(i)
+                pks.add(len(columns))
+            columns.append(column)
 
         # if no primary keys then SQLITE_SESSION_OBJCONFIG_ROWID
         # applies but we only try them after exhausting all primary
