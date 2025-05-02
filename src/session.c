@@ -1193,11 +1193,40 @@ static PyObject *
 APSWTableChange_tp_str(APSWTableChange *self)
 {
   if (!self->iter)
-    return PyUnicode_FromFormat("<apsw.TableChange out of scope at %p>", self);
+    return PyUnicode_FromFormat("<apsw.TableChange out of scope, at %p>", self);
 
-  return PyUnicode_FromFormat("<apsw.TableChange name \"%s\" column_count %d operation %d indirect %S at %p>",
-                              self->table_name, self->table_column_count, self->operation,
-                              (self->indirect) ? Py_True : Py_False, self);
+  PyObject *op = NULL, *old = NULL, *new_vals = NULL, *conflict = NULL, *pk_columns = NULL, *fk_conflicts = NULL;
+
+  PyObject *selfo = (PyObject *)self;
+
+  op = APSWTableChange_op(selfo);
+  if (op)
+    old = APSWTableChange_old(selfo);
+  if (old)
+    new_vals = APSWTableChange_new(selfo);
+  if (new_vals)
+    conflict = APSWTableChange_conflict(selfo);
+  if (conflict)
+    pk_columns = APSWTableChange_pk_columns(selfo);
+  if (pk_columns)
+    fk_conflicts = APSWTableChange_fk_conflicts(selfo);
+
+  PyObject *res = NULL;
+
+  if (fk_conflicts)
+    res = PyUnicode_FromFormat("<apsw.TableChange name=\"%s\", column_count=%d, pk_columns=%S, operation=%U, "
+                               "indirect=%S, old=%S, new=%S, conflict=%S, fk_conflicts=%S, at %p>",
+                               self->table_name, self->table_column_count, pk_columns, op,
+                               (self->indirect) ? Py_True : Py_False, old, new_vals, conflict, fk_conflicts, self);
+
+  Py_XDECREF(op);
+  Py_XDECREF(old);
+  Py_XDECREF(new_vals);
+  Py_XDECREF(conflict);
+  Py_XDECREF(pk_columns);
+  Py_XDECREF(fk_conflicts);
+
+  return res;
 }
 
 static void
