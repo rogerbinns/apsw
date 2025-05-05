@@ -864,6 +864,7 @@ if __name__ == "__main__":
         ],
         keywords=["database", "sqlite"],
         license="any-OSI",
+        license_files=["LICENSE"],
         platforms="any",
         ext_modules=[
             Extension(
