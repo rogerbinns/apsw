@@ -120,13 +120,14 @@ coverage:  src/faultinject.h ## Coverage of the C code
 	tools/coverage.sh ; rc=$$?; rm -f recipes.db* ; exit $$?
 
 PYCOVERAGEOPTS=--source apsw -p
+PYCOVERAGEPREFIX=env COVERAGE_CORE=sysmon
 
 pycoverage:  ## Coverage of all the Python code
 	-rm -rf .coverage .coverage.* htmlcov dbfile
-	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.tests
-	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw ":memory:" .exit
-	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.speedtest --iterations 2 --scale 2 --unicode 25 --apsw --sqlite3
-	$(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.trace -o /dev/null --sql --rows --timestamps --thread examples/main.py >/dev/null
+	$(PYCOVERAGEPREFIX) $(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.tests
+	$(PYCOVERAGEPREFIX) $(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw ":memory:" .exit
+	$(PYCOVERAGEPREFIX) $(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.speedtest --iterations 2 --scale 2 --unicode 25 --apsw --sqlite3
+	$(PYCOVERAGEPREFIX) $(PYTHON) -m coverage run $(PYCOVERAGEOPTS) -m apsw.trace -o /dev/null --sql --rows --timestamps --thread examples/main.py >/dev/null
 	$(PYTHON) -m coverage combine
 	$(PYTHON) -m coverage report -m
 	$(PYTHON) -m coverage html --title "APSW python coverage"
