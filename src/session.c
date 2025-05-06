@@ -485,6 +485,10 @@ APSWSession_get_change_patch_set(APSWSession *self, int changeset)
   int nChangeset = 0;
   void *pChangeset = NULL;
 
+  // ::TODO:: session takes a database mutex to generate the changeset, so
+  // we need to do the mutex try thing here.  also check the session code
+  // for other locations it does mutex operations
+
   int rc = changeset ? sqlite3session_changeset(self->session, &nChangeset, &pChangeset)
                      : sqlite3session_patchset(self->session, &nChangeset, &pChangeset);
 
@@ -951,9 +955,10 @@ APSWTableChange_op(APSWTableChange *self)
     return Py_NewRef(apst.INSERT);
   if (self->operation == SQLITE_DELETE)
     return Py_NewRef(apst.DELETE);
-
-  assert(self->operation == SQLITE_UPDATE);
-  return Py_NewRef(apst.UPDATE);
+  if (self->operation == SQLITE_UPDATE)
+    return Py_NewRef(apst.UPDATE);
+  // https://sqlite.org/forum/forumpost/09c94dfb08
+  return PyUnicode_FromFormat("Undocumented op %d", self->operation);
 }
 
 /** .. attribute:: indirect
@@ -1159,6 +1164,7 @@ APSWTableChange_pk_columns(APSWTableChange *self)
   int nCol;
 
   int res = sqlite3changeset_pk(self->iter, &abPK, &nCol);
+
   if (res != SQLITE_OK)
   {
     SET_EXC(res, NULL);
@@ -1168,7 +1174,8 @@ APSWTableChange_pk_columns(APSWTableChange *self)
   PyObject *value = NULL, *set = PySet_New(NULL);
   if (!set)
     goto error;
-  for (int i = 0; i < nCol; i++)
+  // the abPK test is because of https://sqlite.org/forum/forumpost/09c94dfb08
+  for (int i = 0; i < nCol && abPK; i++)
   {
     if (abPK[i])
     {
@@ -1197,26 +1204,24 @@ APSWTableChange_tp_str(APSWTableChange *self)
 
   PyObject *op = NULL, *old = NULL, *new_vals = NULL, *conflict = NULL, *pk_columns = NULL, *fk_conflicts = NULL;
 
-  PyObject *selfo = (PyObject *)self;
-
-  op = APSWTableChange_op(selfo);
+  op = APSWTableChange_op(self);
   if (op)
-    old = APSWTableChange_old(selfo);
+    old = APSWTableChange_old(self);
   if (old)
-    new_vals = APSWTableChange_new(selfo);
+    new_vals = APSWTableChange_new(self);
   if (new_vals)
-    conflict = APSWTableChange_conflict(selfo);
+    conflict = APSWTableChange_conflict(self);
   if (conflict)
-    pk_columns = APSWTableChange_pk_columns(selfo);
+    pk_columns = APSWTableChange_pk_columns(self);
   if (pk_columns)
-    fk_conflicts = APSWTableChange_fk_conflicts(selfo);
+    fk_conflicts = APSWTableChange_fk_conflicts(self);
 
   PyObject *res = NULL;
 
   if (fk_conflicts)
     res = PyUnicode_FromFormat("<apsw.TableChange name=\"%s\", column_count=%d, pk_columns=%S, operation=%U, "
                                "indirect=%S, old=%S, new=%S, conflict=%S, fk_conflicts=%S, at %p>",
-                               self->table_name, self->table_column_count, pk_columns, op,
+                               self->table_name ? self->table_name : "(NULL)", self->table_column_count, pk_columns, op,
                                (self->indirect) ? Py_True : Py_False, old, new_vals, conflict, fk_conflicts, self);
 
   Py_XDECREF(op);
@@ -1581,7 +1586,6 @@ applyConflict(void *pCtx, int eConflict, sqlite3_changeset_iter *p)
     {
       switch (val)
       {
-        /* ::TODO:: only some of these are valid based on eConflict so also detect that here */
       case SQLITE_CHANGESET_OMIT:
       case SQLITE_CHANGESET_REPLACE:
       case SQLITE_CHANGESET_ABORT:
