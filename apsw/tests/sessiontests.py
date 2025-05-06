@@ -324,8 +324,11 @@ class Session(unittest.TestCase):
             sorted(db1.execute("select name,type,ncol,wr,strict from pragma_table_list where schema='main'")),
             sorted(db2.execute("select name,type,ncol,wr,strict from pragma_table_list where schema='main'")),
         )
-        # brute force - check contents
-        for (name,) in db1.execute("select name from pragma_table_list where schema='main'"):
+        # brute force - check contents.  sqlite_schema contents will
+        # differ due to the presence of indexes etc
+        for (name,) in db1.execute(
+            "select name from pragma_table_list where schema='main' and name != 'sqlite_schema'"
+        ):
             self.assertEqual(
                 sorted(db1.execute(f'select * from "{name}"')),
                 sorted(db2.execute(f'select * from "{name}"')),
@@ -533,7 +536,7 @@ class Session(unittest.TestCase):
             meth()
 
     def testConflicts(self):
-        "conflict handling"
+        "apply and conflict handling"
         # change types
         # delete insert update
         # conflict types
@@ -586,9 +589,86 @@ class Session(unittest.TestCase):
             )
 
         # invert above
+        apsw.Changeset.apply(
+            changeset,
+            self.db,
+            flags=apsw.SQLITE_CHANGESETAPPLY_INVERT,
+            conflict=lambda *args: apsw.SQLITE_CHANGESET_OMIT,
+        )
+
+        db2 = apsw.Connection("")
+        db2.execute(setup_sql)
+        self.checkDbIdentical(self.db, db2)
+
+        # filter error - we can't report them to SQLite but the filter should
+        # have returned false and no changes made
+        for tf in (lambda x, y, z: True, lambda x: 1 / 0):
+            self.assertRaises((TypeError, ZeroDivisionError), apsw.Changeset.apply, changeset, self.db, filter=tf)
+            # no changes should have happened because we returned
+            # false in the filter due to the error
+            self.checkDbIdentical(self.db, db2)
+
+        def handler(*args):
+            nonlocal handler_return
+
+            return handler_return
+
+        self.db.execute("update [delete] set two = 77")
+
+        for handler_return in (None, 3.4, 1 + 5j, "hello", sys.maxsize * 1024):
+            self.assertRaises(
+                (TypeError, OverflowError),
+                apsw.Changeset.apply,
+                changeset,
+                self.db,
+                filter=lambda n: n == "delete",
+                conflict=handler,
+            )
+
+        handler_return = 77
+        self.assertRaisesRegex(
+            ValueError,
+            ".*is not valid SQLITE_CHANGESET_ value.*",
+            apsw.Changeset.apply,
+            changeset,
+            self.db,
+            filter=lambda n: n == "delete",
+            conflict=handler,
+        )
 
 
-        # filter error, check no changesS
+        # exercise some of the conflicts
+        self.db.execute(setup_sql)
+
+        self.db.execute("insert into [insert] values('ONE', 'TWO', 7)")
+
+        def handler(reason, tc):
+            self.assertEqual(reason, apsw.SQLITE_CHANGESET_CONFLICT)
+            self.assertEqual(tc.op, "INSERT")
+            self.assertEqual(tc.old, None)
+            self.assertEqual(tc.new, ("ONE", "TWO", "THREE"))
+            self.assertEqual(tc.conflict, ("ONE", "TWO", 7))
+            return apsw.SQLITE_CHANGESET_REPLACE
+
+        apsw.Changeset.apply(changeset, self.db, filter=lambda n: n == "insert", conflict=handler)
+
+        self.assertEqual(self.db.execute("select * from [insert]").get, ("ONE", "TWO", "THREE"))
+
+        self.db.execute("""
+            create table deliberate(one, two,
+                FOREIGN KEY (one) REFERENCES [delete](three));
+            insert into deliberate values(3, 3)""")
+
+        def handler(reason, tc):
+            self.assertEqual(reason, apsw.SQLITE_CHANGESET_FOREIGN_KEY)
+            self.assertEqual(tc.op, "Undocumented op 0")
+            self.assertEqual(tc.fk_conflicts, 1)
+            return apsw.SQLITE_CHANGESET_OMIT
+
+        apsw.Changeset.apply(changeset, self.db, filter=lambda n: n == "delete", conflict=handler)
+
+        print(f"{self.db.execute('select * from [delete]').get=}")
+
 
     def testNoPrimaryKey(self):
         "check when tables have no primary key"
@@ -682,7 +762,7 @@ class Session(unittest.TestCase):
         )
 
 
-# handy debugging function
+# handy debugging functions
 def changeset_to_sql(title, changeset, db):
     print("-" * len(title))
     print(title)
@@ -697,6 +777,11 @@ def changeset_to_sql(title, changeset, db):
     ):
         print(line)
     print()
+
+
+def show_conflict(reason, change):
+    print(apsw.mapping_session_conflict[reason], change)
+    return apsw.SQLITE_CHANGESET_OMIT
 
 
 class StreamOutput:
