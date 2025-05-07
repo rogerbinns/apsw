@@ -848,6 +848,9 @@
 ":param db: Connection to consult\n" \
 ":param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
 "\n" \
+"You will get :exc:`MisuseError` if changes have already been added, or this method has\n" \
+"already been called.\n" \
+"\n" \
 "Calls: `sqlite3changegroup_schema <https://sqlite.org/session/sqlite3changegroup_schema.html>`__\n" 
 
 #define ChangesetBuilder_schema_KWNAMES "db", "schema"
@@ -913,7 +916,17 @@
 } while(0)
 
 
-#define  Changeset_class_DOC "Provides changeset (including patchset) related methods.\n" 
+#define  Changeset_class_DOC "Provides changeset (including patchset) related methods.  Note that\n" \
+"all methods are static (belong to the class).  There is no Changeset\n" \
+"object.   On input Changesets can be a :class:`collections.abc.Buffer`\n" \
+"(anything that resembles a sequence of bytes), or\n" \
+":class:`SessionStreamInput` which provides the bytes in chunks from a\n" \
+"callback.\n" \
+"\n" \
+"Output is bytes, or :class:`SessionStreamOutput` (chunks in a callback).\n" \
+"\n" \
+"The streaming versions are useful when you are concerned about memory\n" \
+"usage, or where changesets are larger than 2GB (the SQLite limit).\n" 
 
 #define  Changeset_concat_DOC "concat($self,A,B)\n--\n\nChangeset.concat(A: Buffer, B: Buffer) -> bytes\n\n" \
 "Returns combined changesets\n" \
@@ -3723,7 +3736,8 @@
 
 #define  Session_enabled_DOC ":type: bool\n" \
 "\n" \
-"Get or change if this session is recording changes.\n" \
+"Get or change if this session is recording changes.  Disabling only\n" \
+"stops recording rows not already part of the changeset.\n" \
 "\n" \
 "Calls: `sqlite3session_enable <https://sqlite.org/session/sqlite3session_enable.html>`__\n" 
 

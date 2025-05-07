@@ -2,9 +2,15 @@
 import sys
 
 from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
-from collections.abc import Mapping, Buffer
+import collections.abc
 import array
 import types
+
+# Anything that resembles a dictionary
+Mapping: TypeAlias = collections.abc.Mapping
+
+# Anything that resembles a sequence of bytes
+Buffer: TypeAlias = collections.abc.Buffer
 
 SQLiteValue = None | int | float | bytes | str
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
@@ -78,13 +84,13 @@ WindowT = Any
 WindowStep = Callable[[WindowT, *SQLiteValues], None]
 """Window function step takes zero or more SQLiteValues"""
 
-WindowFinal =    Callable[[WindowT, *SQLiteValues], SQLiteValue]
+WindowFinal = Callable[[WindowT, *SQLiteValues], SQLiteValue]
 """Window function final takes zero or more SQLiteValues, and returns a SQLiteValue"""
 
 WindowValue = Callable[[WindowT], SQLiteValue]
 """Window function value returns the current  SQLiteValue"""
 
-WindowInverse =  Callable[[WindowT, *SQLiteValues], None]
+WindowInverse = Callable[[WindowT, *SQLiteValues], None]
 """Window function inverse takes zero or more SQLiteValues"""
 
 WindowFactory = Callable[[], WindowClass | tuple[WindowT, WindowStep, WindowFinal, WindowValue, WindowInverse]]
@@ -130,16 +136,15 @@ FTS5QueryPhrase = Callable[[FTS5ExtensionApi, Any], None]
 
 # The Session extension allows streaming of inputs and outputs
 
-SessionStreamInput = Callable[[int], Buffer ]
+SessionStreamInput = Callable[[int], Buffer]
 """Streaming input function that is called with a number of bytes requested
 returning up to that many bytes, and zero length for end of file"""
 
-ChangesetInput =  SessionStreamInput | Buffer
+ChangesetInput = SessionStreamInput | Buffer
 """Changeset input can either be a streaming callback or data"""
 
-SessionStreamOutput  = Callable[[memoryview], None]
+SessionStreamOutput = Callable[[memoryview], None]
 """Streaming output callable is called with each block of streaming data"""
-
 
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
@@ -780,11 +785,24 @@ class ChangesetBuilder:
         :param db: Connection to consult
         :param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
+        You will get :exc:`MisuseError` if changes have already been added, or this method has
+        already been called.
+
         Calls: `sqlite3changegroup_schema <https://sqlite.org/session/sqlite3changegroup_schema.html>`__"""
         ...
 
 class Changeset:
-    """Provides changeset (including patchset) related methods."""
+    """Provides changeset (including patchset) related methods.  Note that
+    all methods are static (belong to the class).  There is no Changeset
+    object.   On input Changesets can be a :class:`collections.abc.Buffer`
+    (anything that resembles a sequence of bytes), or
+    :class:`SessionStreamInput` which provides the bytes in chunks from a
+    callback.
+
+    Output is bytes, or :class:`SessionStreamOutput` (chunks in a callback).
+
+    The streaming versions are useful when you are concerned about memory
+    usage, or where changesets are larger than 2GB (the SQLite limit)."""
 
     @staticmethod
     def apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None:
@@ -2789,7 +2807,8 @@ class Session:
         ...
 
     enabled: bool
-    """Get or change if this session is recording changes.
+    """Get or change if this session is recording changes.  Disabling only
+    stops recording rows not already part of the changeset.
 
     Calls: `sqlite3session_enable <https://sqlite.org/session/sqlite3session_enable.html>`__"""
 
