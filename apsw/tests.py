@@ -647,7 +647,6 @@ class APSW(unittest.TestCase):
         self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_COMMENTS, 0)
         self.assertRaises(apsw.SQLError, self.db.execute, "-- hello")
 
-
     def testConnectionMetadata(self):
         "Test uses of sqlite3_table_column_metadata"
         self.db.create_collation("BreadFruit", lambda x, y: 1)
@@ -682,13 +681,13 @@ class APSW(unittest.TestCase):
         expected = ["main", "temp"]
         self.assertEqual(expected, self.db.db_names())
         for t in "", APSW.wikipedia_text:
-            self.db.cursor().execute(f"attach '{ self.db.db_filename('main') }' as '{ t }'")
+            self.db.cursor().execute(f"attach '{self.db.db_filename('main')}' as '{t}'")
             expected.append(t)
         self.assertEqual(expected, self.db.db_names())
         while True:
-            t = f"{ expected[-1] }-{ len(expected) }"
+            t = f"{expected[-1]}-{len(expected)}"
             try:
-                self.db.cursor().execute(f"attach '{ self.db.db_filename('main') }' as '{ t }'")
+                self.db.cursor().execute(f"attach '{self.db.db_filename('main')}' as '{t}'")
             except apsw.SQLError:
                 # SQLError: too many attached databases - max ....
                 break
@@ -696,7 +695,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(expected, self.db.db_names())
         while len(expected) > 2:
             i = random.randint(2, len(expected) - 1)
-            self.db.cursor().execute(f"detach '{ expected[i] }'")
+            self.db.cursor().execute(f"detach '{expected[i]}'")
             del expected[i]
             self.assertEqual(expected, self.db.db_names())
 
@@ -1160,7 +1159,7 @@ class APSW(unittest.TestCase):
         ran = False
         for row in c.execute("select ?,?", (biggy, biggy)):
             ran = True
-            self.assertEqual(f"select '{ biggy }','{ biggy }'", c.expanded_sql)
+            self.assertEqual(f"select '{biggy}','{biggy}'", c.expanded_sql)
             existing = self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 25 * 1024)
             self.assertRaises(MemoryError, getattr, c, "expanded_sql")
             self.db.limit(apsw.SQLITE_LIMIT_LENGTH, existing)
@@ -1424,7 +1423,7 @@ class APSW(unittest.TestCase):
     def testVTableStuff(self):
         "Test new stuff added for Virtual tables"
 
-        columns = [f"c{ n }" for n in range(30)]
+        columns = [f"c{n}" for n in range(30)]
 
         class Source:
             indexinfo_saved = None
@@ -1434,7 +1433,7 @@ class APSW(unittest.TestCase):
 
             sn_called = set()
 
-            schema = f"create table ignored({ ','.join(columns) })"
+            schema = f"create table ignored({','.join(columns)})"
 
             def Create(self, *args):
                 Source.create_callback()
@@ -1589,7 +1588,7 @@ class APSW(unittest.TestCase):
                         if i % 2:
                             o.idxStr = None
                             self.assertIsNone(o.idxStr)
-                        t = f"stuff { i }"
+                        t = f"stuff {i}"
                         o.idxStr = t
                         self.assertEqual(o.idxStr, t)
                 elif n == "estimatedRows":
@@ -1600,7 +1599,7 @@ class APSW(unittest.TestCase):
                         setattr(o, n, newval)
                         self.assertEqual(newval, getattr(o, n))
                 else:
-                    raise Exception(f"untested attribute { n }")
+                    raise Exception(f"untested attribute {n}")
 
         Source.bio_callback = basic
 
@@ -1696,8 +1695,8 @@ class APSW(unittest.TestCase):
         self.db.execute(self.index_info_test_patterns[1][0])
 
         # More than 63 columns affects colUsed
-        manycol_names = [f"c{ n }" for n in range(100)]
-        Source.schema = f"create table ignored({ ','.join(manycol_names) })"
+        manycol_names = [f"c{n}" for n in range(100)]
+        Source.schema = f"create table ignored({','.join(manycol_names)})"
         self.db.execute("create virtual table manycol using foo()")
 
         def check(o):
@@ -1767,7 +1766,7 @@ class APSW(unittest.TestCase):
         Source.Cursor.max_row = 1
         for mode in ("ROLLBACK", "FAIL", "ABORT", "IGNORE", "REPLACE"):
             Source.expected_conflict = "SQLITE_" + mode
-            self.db.execute(f"update or { mode } vtab_on_conflict set c0=7 where rowid=0")
+            self.db.execute(f"update or {mode} vtab_on_conflict set c0=7 where rowid=0")
         self.assertRaises(apsw.InvalidContextError, self.db.vtab_on_conflict)
 
         # savepoints
@@ -1820,7 +1819,7 @@ class APSW(unittest.TestCase):
         self.assertEqual(len(Source.sn_called), 0)
 
         def make_shadow(bn):
-            self.db.execute(f"create table { bn }_foo(x); create table { bn }_bar(x)")
+            self.db.execute(f"create table {bn}_foo(x); create table {bn}_bar(x)")
 
         make_shadow("sptest")
         self.assertEqual(len(Source.sn_called), 2)
@@ -1842,7 +1841,7 @@ class APSW(unittest.TestCase):
         clear_all()
         for i in range(2000):
             try:
-                self.db.create_module(f"sptest{ i }", Source(), use_bestindex_object=True, iVersion=3)
+                self.db.create_module(f"sptest{i}", Source(), use_bestindex_object=True, iVersion=3)
             except Exception as e:
                 limit = i
                 self.assertIn("No xShadowName slots are available", str(e))
@@ -1855,13 +1854,13 @@ class APSW(unittest.TestCase):
         for i in range(limit * 20):
             if len(registered) == limit:
                 victim = random.choice(list(registered))
-                self.db.execute(f"drop table v{ victim }")
+                self.db.execute(f"drop table v{victim}")
                 self.db.create_module(victim, None)
                 registered.remove(victim)
-            name = f"sptest{ i }"
-            self.db.create_module(f"sptest{ i }", Source(), use_bestindex_object=False, iVersion=3)
-            self.db.execute(f"create virtual table v{ name } using { name }")
-            make_shadow(f"v{ name }")
+            name = f"sptest{i}"
+            self.db.create_module(f"sptest{i}", Source(), use_bestindex_object=False, iVersion=3)
+            self.db.execute(f"create virtual table v{name} using {name}")
+            make_shadow(f"v{name}")
             registered.add(name)
 
     index_info_test_patterns = (
@@ -2938,7 +2937,9 @@ class APSW(unittest.TestCase):
 
         self.assertRaises(TypeError, self.db.set_progress_handler, 12)  # must be callable
         self.assertRaises(TypeError, self.db.set_progress_handler, ph, "foo")  # second param is steps
-        self.assertRaises(ValueError, self.db.set_progress_handler, ph, -17)  # SQLite doesn't complain about negative numbers but we do
+        self.assertRaises(
+            ValueError, self.db.set_progress_handler, ph, -17
+        )  # SQLite doesn't complain about negative numbers but we do
         self.db.set_progress_handler(ph, 20)
         curnext(c.execute("select max(x) from foo"))
 
@@ -3003,6 +3004,7 @@ class APSW(unittest.TestCase):
             self.db.set_progress_handler(None, id=id)
 
         called = [False, False]
+
         def phabort():
             called[0] = True
             return True
@@ -3035,7 +3037,6 @@ class APSW(unittest.TestCase):
         self.db.execute("select 3").get
         self.assertEqual(called, [False, True])
 
-
     def testChanges(self):
         "Verify reporting of changes"
         c = self.db.cursor()
@@ -3051,7 +3052,7 @@ class APSW(unittest.TestCase):
 
         # for coverage
         self.db.cache_flush()
-        getattr(self.db, "release_" "memory")()  # avoids old name testing false positive
+        getattr(self.db, "release_memory")()  # avoids old name testing false positive
 
         c.execute("commit")
         self.assertEqual(300, self.db.total_changes())
@@ -3180,7 +3181,7 @@ class APSW(unittest.TestCase):
         # this sometimes fails in virtualized environments due to time
         # going backwards or not going forwards consistently.
         if took + 1 < TIMEOUT:
-            print(f"Timeout was { TIMEOUT } seconds but only { took } seconds elapsed!")
+            print(f"Timeout was {TIMEOUT} seconds but only {took} seconds elapsed!")
             self.assertTrue(took >= TIMEOUT)
 
         # check clearing of handler
@@ -4641,7 +4642,7 @@ class APSW(unittest.TestCase):
             args = ("one", "two", "three")[: nargs.get(func, 0)]
             try:
                 getattr(blob, func)(*args)
-                self.fail(f"blob method/attribute { func } didn't notice that the connection is closed")
+                self.fail(f"blob method/attribute {func} didn't notice that the connection is closed")
             except ValueError:  # we issue ValueError to be consistent with file objects
                 pass
 
@@ -4657,7 +4658,7 @@ class APSW(unittest.TestCase):
                 func = getattr(self.db, func)
                 if func:
                     func(*args)
-                    self.fail(f"connection method/attribute { func } didn't notice that the connection is closed")
+                    self.fail(f"connection method/attribute {func} didn't notice that the connection is closed")
             except apsw.ConnectionClosedError:
                 pass
         self.assertTrue(tested > len(nargs))
@@ -4670,7 +4671,7 @@ class APSW(unittest.TestCase):
             args = ("one", "two", "three")[: nargs.get(func, 0)]
             try:
                 getattr(cur, func)(*args)
-                self.fail(f"cursor method/attribute { func } didn't notice that the connection is closed")
+                self.fail(f"cursor method/attribute {func} didn't notice that the connection is closed")
             except apsw.CursorClosedError:
                 pass
         self.assertTrue(tested >= len(nargs))
@@ -5548,7 +5549,6 @@ class APSW(unittest.TestCase):
             self.assertFalse(reached)
             self.db.row_trace = None
 
-
     def testWriteUnraisable(self):
         "Verify writeunraisable replacement function"
 
@@ -5788,8 +5788,7 @@ class APSW(unittest.TestCase):
             db.close()
 
     # calls that need protection
-    calls = {
-     }
+    calls = {}
 
     def sourceCheckMutexCall(self, filename, name, lines):
         # we check that various calls are wrapped with various macros
@@ -5815,7 +5814,7 @@ class APSW(unittest.TestCase):
         if any("PyGILState_Ensure" in line for line in lines):
             if not any("MakeExistingException" in line for line in lines):
                 self.fail(
-                    f"file { filename } function { name } calls PyGILState_Ensure but does not have MakeExistingException"
+                    f"file {filename} function {name} calls PyGILState_Ensure but does not have MakeExistingException"
                 )
         # not further checked
         if name.split("_")[0] in (
@@ -6005,7 +6004,7 @@ class APSW(unittest.TestCase):
 
             # not allowed PyObject_New because we can't faultinject it
             if re.search(r"\bPyObject_New\b", code):
-                self.fail(f"In { filename } you must use _PyObject_New (leading underscore)")
+                self.fail(f"In {filename} you must use _PyObject_New (leading underscore)")
 
             # check check funcs
             funcpat1 = re.compile(r"^(\w+_\w+)\s*\(\s*\w+\s*\*\s*self")
@@ -6090,9 +6089,9 @@ class APSW(unittest.TestCase):
                 for line in f:
                     if "APSW_FAULT" in line and "#" not in line:
                         mo = re.match(r".*APSW_FAULT\s*\(\s*(?P<name>\w+)\s*,.*", line)
-                        assert mo, f"Failed to match line { line }"
+                        assert mo, f"Failed to match line {line}"
                         name = mo.group("name")
-                        assert name not in faults, f"fault inject name { name } found multiple times"
+                        assert name not in faults, f"fault inject name {name} found multiple times"
                         faults.add(name)
 
         testcode = pathlib.Path(__file__).read_text(encoding="utf8") + pathlib.Path(__file__).with_name(
@@ -6100,7 +6099,7 @@ class APSW(unittest.TestCase):
         ).read_text(encoding="utf8")
 
         for name in sorted(faults):
-            self.assertTrue(re.search(f"\\b{ name }\\b", testcode), f"Couldn't find test for fault '{ name }'")
+            self.assertTrue(re.search(f"\\b{name}\\b", testcode), f"Couldn't find test for fault '{name}'")
 
     def testMemory(self):
         "Verify memory tracking functions"
@@ -6295,13 +6294,13 @@ class APSW(unittest.TestCase):
             no_table = False
 
             try:
-                self.db.execute(f"create virtual table ex{ counter } using { name }()")
+                self.db.execute(f"create virtual table ex{counter} using {name}()")
             except apsw.SQLError as e:
-                no_module = f"no such module: { name }" in str(e)
+                no_module = f"no such module: {name}" in str(e)
             try:
-                self.db.execute(f"select * from  { name }()")
+                self.db.execute(f"select * from  {name}()")
             except apsw.SQLError as e:
-                no_table = f"no such table: { name }" in str(e)
+                no_table = f"no such table: {name}" in str(e)
             if shouldfail:
                 self.assertTrue(no_module and no_table)
             else:
@@ -6890,7 +6889,7 @@ class APSW(unittest.TestCase):
         # versioning and excludes
         meth_names = {}
         for ver in (1, 2, 3):
-            name = f"foo{ ver }"
+            name = f"foo{ver}"
             v = apsw.VFS(name, iVersion=ver)
             registered = [vfs for vfs in apsw.vfs_details() if vfs["zName"] == name][0]
             assert registered["iVersion"] == ver
@@ -6899,7 +6898,7 @@ class APSW(unittest.TestCase):
                     meth_names[k] = ver
 
         for ver in (1, 2, 3):
-            name = f"bar{ ver }"
+            name = f"bar{ver}"
             exclude = set(random.sample(list(meth_names.keys()), 3))
             v = apsw.VFS(name, iVersion=ver, exclude=exclude)
             registered = [vfs for vfs in apsw.vfs_details() if vfs["zName"] == name][0]
@@ -8714,10 +8713,10 @@ class APSW(unittest.TestCase):
 
         ref = vfstest()
         reset()
-        cmd(f".open --vfs { N } { fn }\n.connection\n.close")
+        cmd(f".open --vfs {N} {fn}\n.connection\n.close")
         s.cmdloop()
         isempty(fh[2])
-        self.assertIn(f"({ N })", get(fh[1]))
+        self.assertIn(f"({N})", get(fh[1]))
         del ref
 
         ###
@@ -8884,8 +8883,8 @@ class APSW(unittest.TestCase):
         # a regular table
         reset()
         cmd(f"""create table jsontest([int], [float], [string], [null], [blob]);
-                insert into jsontest values({ all });
-                insert into jsontest values({ all });
+                insert into jsontest values({all});
+                insert into jsontest values({all});
                 select * from jsontest;""")
         s.cmdloop()
         isempty(fh[2])
@@ -9012,7 +9011,7 @@ class APSW(unittest.TestCase):
             self.assertRaises(apsw.shell.Shell.Error, s.cmdloop)
             for mode in "box", "qbox", "table":
                 reset()
-                cmd(f".mode { mode } --no-unicode --width 65")
+                cmd(f".mode {mode} --no-unicode --width 65")
                 s.cmdloop()
                 isempty(fh[1])
                 isempty(fh[2])
@@ -9263,7 +9262,7 @@ class APSW(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="apsw-shell-test-") as tmpd1:
             with chdir("."):
                 reset()
-                cmd(f".cd { shlex.quote( tmpd1 )}")
+                cmd(f".cd {shlex.quote(tmpd1)}")
                 s.cmdloop()
                 isempty(fh[1])
                 isempty(fh[2])
@@ -9272,13 +9271,13 @@ class APSW(unittest.TestCase):
             with chdir(tmpd1):
                 reset()
                 V = "sentinel-jhdgfsfjdskh-1"
-                cmd(f".open { shlex.quote(V) }\ncreate table foo(x);\n.open { shlex.quote(V) }")
+                cmd(f".open {shlex.quote(V)}\ncreate table foo(x);\n.open {shlex.quote(V)}")
                 s.cmdloop()
                 isempty(fh[1])
                 isempty(fh[2])
                 self.assertEqual(2, in_open_dbs(V))
                 reset()
-                cmd(f".open --wipe { shlex.quote(V) }")
+                cmd(f".open --wipe {shlex.quote(V)}")
                 s.cmdloop()
                 isempty(fh[1])
                 isempty(fh[2])
@@ -9340,7 +9339,7 @@ class APSW(unittest.TestCase):
         if hasattr(s, "command_dbinfo"):
             with tempfile.TemporaryDirectory(prefix="apsw-test-shell-dbinfo-") as tmpd:
                 reset()
-                cmd(f".open { shlex.quote(tmpd) }/newdb")
+                cmd(f".open {shlex.quote(tmpd)}/newdb")
                 s.cmdloop()
                 isempty(fh[2])
                 reset()
@@ -9616,7 +9615,7 @@ insert into xxblah values(3);
         # differs from utf8
         us = "unitestdata \xaa\x89 34"
         write_whole_file(
-            TESTFILEPREFIX + "test-shell-1", "w", f"insert into enctest values('{ us }');\n", encoding="iso8859-1"
+            TESTFILEPREFIX + "test-shell-1", "w", f"insert into enctest values('{us}');\n", encoding="iso8859-1"
         )
         gc.collect()
         reset()
@@ -9663,9 +9662,7 @@ insert into xxblah values(3);
         # check replace works
         reset()
         us = "\N{BLACK STAR}8\N{WHITE STAR}"
-        write_whole_file(
-            TESTFILEPREFIX + "test-shell-1", "w", f"insert into enctest values('{ us }');", encoding="utf8"
-        )
+        write_whole_file(TESTFILEPREFIX + "test-shell-1", "w", f"insert into enctest values('{us}');", encoding="utf8")
         cmd(
             ".encoding utf8\n.read %stest-shell-1\n.encoding cp437:replace\n.output %stest-shell-1\nselect * from enctest;\n.encoding utf8\n.output stdout"
             % (TESTFILEPREFIX, TESTFILEPREFIX)
@@ -10081,7 +10078,7 @@ insert into xxblah values(3);
         self.assertIn("No binding present for 'foo' -", get(fh[2]))
         for val in ("orange", "banana"):
             reset()
-            cmd(f".parameter set foo '{ val }'\nselect $foo;")
+            cmd(f".parameter set foo '{val}'\nselect $foo;")
             s.cmdloop()
             isempty(fh[2])
             self.assertIn(val, get(fh[1]))
@@ -10642,7 +10639,7 @@ shell.write(shell.stdout, "hello world\\n")
             def to_sqlite_value(self):
                 return 3
 
-        tccf.register_adapter(complex, lambda c: f"{ c.real };{ c.imag }")
+        tccf.register_adapter(complex, lambda c: f"{c.real};{c.imag}")
         tccf.register_converter("COMPLEX", lambda v: complex(*(float(part) for part in v.split(";"))))
         self.db.cursor_factory = tccf
         self.db.execute("create table foo(a POINT, b COMPLEX)")
@@ -10720,7 +10717,7 @@ shell.write(shell.stdout, "hello world\\n")
                     " cc": b"aabbccddeeff",
                     "dd": None,
                     # the chr gives a codepoint that has no name in unicodedata
-                    "eeeeeeeeeeeeeeeeeeee": f"\\\n\f\v\t\n\0{ i }" + chr(0x10FFFF) + "\r \n\r\\ \nr\r \n\r \n\n",
+                    "eeeeeeeeeeeeeeeeeeee": f"\\\n\f\v\t\n\0{i}" + chr(0x10FFFF) + "\r \n\r\\ \nr\r \n\r \n\n",
                     "f": APSW.wikipedia_text,
                 }
 
@@ -10896,7 +10893,7 @@ shell.write(shell.stdout, "hello world\\n")
         self.assertRaises(ValueError, self.db.execute, "create virtual table fail using messy(1,2,3,4,5)")
         for query in (
             "select * from messy where arg1>3",
-            "select * from messy(1,2) where arg2=7" "select * from messy(1,2) where arg2=7 and arg2=8",
+            "select * from messy(1,2) where arg2=7select * from messy(1,2) where arg2=7 and arg2=8",
             "select * from messy where arg1 in (1,2) and arg1=6",
         ):
             self.assertRaises(apsw.SQLError, self.db.execute, query)
@@ -11086,9 +11083,9 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
 
         for (k, v), r in test_pragmas.items():
             seen_unraiseable = res = exc = None
-            sql = f"pragma { k }"
+            sql = f"pragma {k}"
             if v:
-                sql += f"({ v })"
+                sql += f"({v})"
             try:
                 res = con.execute(sql).get
             except apsw.Error as e:
@@ -11227,9 +11224,9 @@ class ZZFaultInjection(unittest.TestCase):
             if faultname == "faultName":
                 continue
             if faultname not in test_code:
-                raise Exception(f"Fault injected { faultname } not found in tests.py")
+                raise Exception(f"Fault injected {faultname} not found in tests.py")
             if faultname in seen:
-                raise Exception(f"Fault { faultname } seen multiple times")
+                raise Exception(f"Fault {faultname} seen multiple times")
             seen.add(faultname)
 
         def dummy(*args):
@@ -11415,7 +11412,7 @@ class ZZFaultInjection(unittest.TestCase):
         self.assertRaises(ValueError, blob.write, b"1234")
 
         for k, v in apsw.faultdict.items():
-            assert v is False, f"faultdict { k } never fired"
+            assert v is False, f"faultdict {k} never fired"
 
     # This test is run last by deliberate name choice.  If it did
     # uncover any bugs there isn't much that can be done to turn the
@@ -11469,6 +11466,7 @@ class ZZFaultInjection(unittest.TestCase):
             # ignore the unraisable stuff sent to sys.excepthook
             def eh(*args):
                 pass
+
             sys.excepthook = eh
 
             # call with each separate item to check
@@ -11494,6 +11492,7 @@ class ZZFaultInjection(unittest.TestCase):
         if pid == 0:
             # child
             counter = 0
+
             def ueh(unraisable):
                 if unraisable.exc_type != apsw.ForkingViolationError:
                     print("\n\nUnraisable exception in child process", unraisable)
@@ -11502,6 +11501,7 @@ class ZZFaultInjection(unittest.TestCase):
                 counter += 1
                 if counter > 100:
                     os._exit(0)
+
             sys.unraisablehook = ueh
             try:
                 childtest(*child)
@@ -11661,7 +11661,12 @@ def setup():
     # alternate methods instead.  We also run sanitizers on most
     # recent Python which makes things even more convoluted.
     forkcheck = False
-    if hasattr(apsw, "fork_checker") and hasattr(os, "fork") and platform.python_implementation() != "PyPy" and sys.version_info < (3, 13):
+    if (
+        hasattr(apsw, "fork_checker")
+        and hasattr(os, "fork")
+        and platform.python_implementation() != "PyPy"
+        and sys.version_info < (3, 13)
+    ):
         try:
             import multiprocessing
 
@@ -11748,7 +11753,7 @@ if __name__ == "__main__":
         PROFILESTEPS = 1000
         v = int(v)
         for i in range(v):
-            print(f"Iteration { i + 1 }  of { v }")
+            print(f"Iteration {i + 1}  of {v}")
             try:
                 runtests()
             except SystemExit:
