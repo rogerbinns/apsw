@@ -13,7 +13,7 @@ APSW changes by version
 3.49.2.0
 ========
 
-No APSW changes.
+Shell dump command handles generated columns correctly. (:issue:`556`)
 
 3.49.1.0
 ========

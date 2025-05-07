@@ -5383,6 +5383,38 @@ class APSW(unittest.TestCase):
         except ZeroDivisionError:
             pass
 
+    def testIssue556(self):
+        "shell dump with generated columns"
+        self.db.execute("""
+           create table t(one, two GENERATED ALWAYS AS (one + 2), three, four GENERATED ALWAYS AS (three + 4));
+           insert into t values(1, 1), (2, 2), (3, 4);
+        """)
+
+        output = io.StringIO()
+        apsw.Shell(db=self.db, stdout=output).process_command(".dump")
+        dump = output.getvalue()
+
+        self.assertIn("GENERATED ALWAYS", dump)
+
+        self.db.execute("drop table t")
+        self.db.execute(dump)
+
+        # make sure the table defition survived
+        self.assertEqual(
+            self.db.execute("select * from pragma_table_xinfo('t')").get,
+            [
+                (0, "one", "", 0, None, 0, 0),
+                (1, "two", "", 0, None, 0, 2),
+                (2, "three", "", 0, None, 0, 0),
+                (3, "four", "", 0, None, 0, 2),
+            ],
+        )
+
+        # and the contents
+        self.assertEqual(
+            self.db.execute("select * from t order by one").get, [(1, 3, 1, 5), (2, 4, 2, 6), (3, 5, 4, 8)]
+        )
+
     def testCursorGet(self):
         "Cursor.get"
         for query, expected in (

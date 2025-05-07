@@ -1491,7 +1491,13 @@ Enter ".help" for instructions
                             self.write(self.stdout, "DROP TABLE IF EXISTS " + self._fmt_sql_identifier(table) + ";\n")
                             self.write(self.stdout, sqldef(sql[0]))
                             self._output_table = self._fmt_sql_identifier(table)
-                            self.process_sql("select * from " + self._fmt_sql_identifier(table), internal=True)
+                            columns = ",".join(
+                                self._fmt_sql_identifier(column)
+                                for (column,) in self.db.execute(
+                                    "select name from pragma_table_xinfo(?) where hidden=0", (table,)
+                                )
+                            )
+                            self.process_sql(f"select {columns} from " + self._fmt_sql_identifier(table), internal=True)
                         # Now any indices or triggers
                         first = True
                         for name, sql in self.db.execute(
