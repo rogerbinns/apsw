@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.49.1.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.49.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=15a4c64e"></script>
+      <script src="_static/documentation_options.js?v=87db18a5"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -193,10 +193,10 @@ and attribute documentation.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   Using amalgamation&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">using_amalgamation</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.49.1.0</span>
-<span class="go">SQLite header version 3049001</span>
-<span class="go">   SQLite lib version 3.49.1</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-313-x86_64-linux-gnu.so</span>
+<span class="go">         APSW version 3.49.2.0</span>
+<span class="go">SQLite header version 3049002</span>
+<span class="go">   SQLite lib version 3.49.2</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -830,11 +830,11 @@ conversion, both for types you define and for other types.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 2, 18, 7, 32, 56, 377644))</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 5, 7, 9, 23, 41, 439311))</span>
 <span class="go">querying data</span>
 <span class="go">column 0 = Point(5.2, 7.6)</span>
 <span class="go">column 1 = (3+4j)</span>
-<span class="go">column 2 = datetime.datetime(2025, 2, 18, 15, 32, 56, 377644, tzinfo=datetime.timezone.utc)</span>
+<span class="go">column 2 = datetime.datetime(2025, 5, 7, 16, 23, 41, 439311, tzinfo=datetime.timezone.utc)</span>
 </pre></div>
 </div>
 </section>
@@ -894,7 +894,7 @@ runtime.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Bad binding argument type supplied - argument #1: type set</span>
-<span class="go">select ? {1, 2, &#39;three&#39;, (4+5j), &lt;_io.StringIO object at 0x7452b51977c0&gt;}</span>
+<span class="go">select ? {1, 2, &#39;three&#39;, (4+5j), &lt;_io.StringIO object at 0x7cb437cb2380&gt;}</span>
 <span class="go">select typeof(?) null</span>
 <span class="go">make_set got ((3+4j), &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, &#39;hello&#39;)</span>
 <span class="go">select make_set(?, ?, ?) {&#39;hello&#39;, &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, (3+4j)}</span>
@@ -959,7 +959,7 @@ across all the queries within the block</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">len(rows)=20</span>
-<span class="go">After 0.200 seconds, we hit number=232929</span>
+<span class="go">After 0.200 seconds, we hit number=328229</span>
 <span class="go">exc=IndexError(&#39;query row limit hit&#39;)</span>
 </pre></div>
 </div>
@@ -1324,7 +1324,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9901161753,)</span>
+<span class="go">(9898978521,)</span>
 </pre></div>
 </div>
 </section>
@@ -1420,8 +1420,7 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.set_co
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">in commit hook</span>
-<span class="go">no commits out of hours</span>
-<span class="go">commit was not allowed</span>
+<span class="go">commits okay at this time</span>
 </pre></div>
 </div>
 </section>
@@ -1646,7 +1645,7 @@ useful instead.</p>
 <span class="go">│ count(*) │ category │</span>
 <span class="go">│ 65       │ Cc       │</span>
 <span class="go">│ 43       │ Cf       │</span>
-<span class="go">│ 1454     │ Cn       │</span>
+<span class="go">│ 1449     │ Cn       │</span>
 <span class="go">│ 6400     │ Co       │</span>
 <span class="go">│ 2048     │ Cs       │</span>
 <span class="go">│ 1445     │ Ll       │</span>
@@ -1659,48 +1658,48 @@ useful instead.</p>
 <span class="go">┌─────────┬──────────────────────────────────────────┬─────────────────────────┐</span>
 <span class="go">│ st_size │                directory                 │          name           │</span>
 <span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
-<span class="go">│ 815083  │ /usr/lib/python3.12/pydoc_data           │ topics.py               │</span>
-<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
-<span class="go">│ 509199  │ /usr/lib/python3.12/pydoc_data/          │ topics.cpython-312.pyc  │</span>
+<span class="go">│ 527465  │ /usr/lib/python3.13/pydoc_data/          │ topics.cpython-313.pyc  │</span>
 <span class="go">│         │ __pycache__                              │                         │</span>
 <span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
-<span class="go">│ 245940  │ /usr/lib/python3.12/tkinter/__pycache__  │ __init__.cpython-312.p- │</span>
+<span class="go">│ 526924  │ /usr/lib/python3.13/pydoc_data           │ topics.py               │</span>
+<span class="go">├─────────┼──────────────────────────────────────────┼─────────────────────────┤</span>
+<span class="go">│ 256658  │ /usr/lib/python3.13/tkinter/__pycache__  │ __init__.cpython-313.p- │</span>
 <span class="go">│         │                                          │ yc                      │</span>
 <span class="go">└─────────┴──────────────────────────────────────────┴─────────────────────────┘</span>
 
 <span class="go">┌────────────┬────────────────────────────────┬───────────────┐</span>
 <span class="go">│    date    │           directory            │     name      │</span>
-<span class="go">│ 2025-01-21 │ /usr/lib/python3.12/pydoc_data │ topics.py     │</span>
-<span class="go">│ 2025-01-21 │ /usr/lib/python3.12            │ _pydecimal.py │</span>
-<span class="go">│ 2025-01-21 │ /usr/lib/python3.12/tkinter    │ __init__.py   │</span>
+<span class="go">│ 2025-04-16 │ /usr/lib/python3.13/pydoc_data │ topics.py     │</span>
+<span class="go">│ 2025-04-16 │ /usr/lib/python3.13            │ _pydecimal.py │</span>
+<span class="go">│ 2025-04-16 │ /usr/lib/python3.13/tkinter    │ __init__.py   │</span>
 <span class="go">└────────────┴────────────────────────────────┴───────────────┘</span>
 
 <span class="go">┌────────────┬────────────┐</span>
 <span class="go">│ extension  │ total_size │</span>
-<span class="go">│            │ 436917     │</span>
-<span class="go">│ .a         │ 97345022   │</span>
+<span class="go">│            │ 483963     │</span>
+<span class="go">│ .a         │ 96508548   │</span>
 <span class="go">│ .allowlist │ 72         │</span>
-<span class="go">│ .bootstrap │ 1804       │</span>
-<span class="go">│ .c         │ 10948      │</span>
+<span class="go">│ .bootstrap │ 1908       │</span>
+<span class="go">│ .c         │ 11288      │</span>
 <span class="go">│ .cfg       │ 341        │</span>
-<span class="go">│ .csh       │ 934        │</span>
+<span class="go">│ .csh       │ 937        │</span>
 <span class="go">│ .css       │ 1325       │</span>
-<span class="go">│ .fish      │ 2209       │</span>
-<span class="go">│ .in        │ 3504       │</span>
-<span class="go">│ .ini       │ 997        │</span>
+<span class="go">│ .fish      │ 2208       │</span>
+<span class="go">│ .in        │ 3502       │</span>
+<span class="go">│ .ini       │ 1670       │</span>
 <span class="go">│ .json      │ 2162       │</span>
-<span class="go">│ .local     │ 2136       │</span>
-<span class="go">│ .o         │ 9360       │</span>
-<span class="go">│ .ps1       │ 9033       │</span>
-<span class="go">│ .py        │ 11265551   │</span>
-<span class="go">│ .pyc       │ 11429603   │</span>
+<span class="go">│ .local     │ 2128       │</span>
+<span class="go">│ .o         │ 15480      │</span>
+<span class="go">│ .ps1       │ 9031       │</span>
+<span class="go">│ .py        │ 11161988   │</span>
+<span class="go">│ .pyc       │ 11778201   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
 <span class="go">│ .sh        │ 2643       │</span>
-<span class="go">│ .so        │ 26583424   │</span>
+<span class="go">│ .so        │ 29494736   │</span>
 <span class="go">│ .sql       │ 1001       │</span>
-<span class="go">│ .stdlib    │ 12562      │</span>
+<span class="go">│ .stdlib    │ 13486      │</span>
 <span class="go">│ .supp      │ 70         │</span>
-<span class="go">│ .txt       │ 13936      │</span>
+<span class="go">│ .txt       │ 13809      │</span>
 <span class="go">└────────────┴────────────┘</span>
 </pre></div>
 </div>
@@ -1939,9 +1938,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.49.1.0)</span>
-<span class="go">-- SQLite version 3.49.1</span>
-<span class="go">-- Date: Tue Feb 18 07:32:57 2025</span>
+<span class="go">-- SQLite dump (by APSW 3.49.2.0)</span>
+<span class="go">-- SQLite version 3.49.2</span>
+<span class="go">-- Date: Wed May  7 09:23:42 2025</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1981,8 +1980,8 @@ for per connection statistics.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 507888 max 2498888</span>
-<span class="go">5768 bytes used to store schema for this connection</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 512776 max 2503872</span>
+<span class="go">6304 bytes used to store schema for this connection</span>
 </pre></div>
 </div>
 </section>
@@ -2038,18 +2037,18 @@ for per connection statistics.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">code is  SQLITE_TRACE_STMT</span>
-<span class="go">{&#39;code&#39;: 1, &#39;id&#39;: 706049952, &#39;total_changes&#39;: 146, &#39;trigger&#39;: False}</span>
+<span class="go">{&#39;code&#39;: 1, &#39;id&#39;: 20655840, &#39;total_changes&#39;: 146, &#39;trigger&#39;: False}</span>
 <span class="go">code is  SQLITE_TRACE_ROW</span>
-<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 706049952}</span>
+<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 20655840}</span>
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;id&#39;: 706049952,</span>
-<span class="go"> &#39;nanoseconds&#39;: 18000000,</span>
+<span class="go"> &#39;id&#39;: 20655840,</span>
+<span class="go"> &#39;nanoseconds&#39;: 16000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FULLSCAN_STEP&#39;: 1365,</span>
-<span class="go">                 &#39;SQLITE_STMTSTATUS_MEMUSED&#39;: 15880,</span>
+<span class="go">                 &#39;SQLITE_STMTSTATUS_MEMUSED&#39;: 15896,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_REPREPARE&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_RUN&#39;: 1,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_SORT&#39;: 2,</span>
@@ -2077,13 +2076,15 @@ block of code does.  We use the same query from above.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.021</span>
-<span class="go">                       Wall clock 1.322</span>
-<span class="go">           Block input operations 384</span>
-<span class="go">        Maximum resident set size 208</span>
-<span class="go">             Page faults - no I/O 70</span>
-<span class="go">     Involuntary context switches 7</span>
-<span class="go">       Voluntary context switches 5</span>
-<span class="go">                Time in user mode 0.021</span>
+<span class="go">                       Wall clock 1.325</span>
+<span class="go">           Block input operations 72</span>
+<span class="go">             Page faults with I/O 1</span>
+<span class="go">        Maximum resident set size 192</span>
+<span class="go">             Page faults - no I/O 82</span>
+<span class="go">     Involuntary context switches 36</span>
+<span class="go">       Voluntary context switches 4</span>
+<span class="go">              Time in system mode 0.002</span>
+<span class="go">                Time in user mode 0.019</span>
 <span class="go">           SQLite full table scan 1,365</span>
 <span class="go">           SQLite sort operations 2</span>
 <span class="go">             SQLite vm operations 1,015,351</span>
@@ -2138,11 +2139,11 @@ code.  This also shows behind the scenes SQL.</p>
 <span class="go">    Time: 0.000  Changes: 4</span>
 <span class="go">&gt; select count(*) from pragma_function_list</span>
 <span class="go">V PRAGMA function_list</span>
-<span class="go">    Time: 0.000  Rows: 209  VmStep: 1,467  Mem: 79.7KB</span>
+<span class="go">    Time: 0.000  Rows: 209  VmStep: 1,467  Mem: 80.0KB</span>
 <span class="go">&lt; select count(*) from pragma_function_list</span>
 <span class="go">    Time: 0.000  Rows: 1  VmStep: 429</span>
 <span class="go">&gt; RELEASE SAVEPOINT &quot;_apsw-0&quot;</span>
-<span class="go">    Time: 0.007</span>
+<span class="go">    Time: 0.008</span>
 </pre></div>
 </div>
 </section>
@@ -2263,7 +2264,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Feb 18, 2025.
+      <span class="lastupdated">Last updated on May 07, 2025.
       </span></p>
   </div>
 

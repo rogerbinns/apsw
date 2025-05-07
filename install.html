@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation and customization &mdash; APSW 3.49.1.0 documentation</title>
+  <title>Installation and customization &mdash; APSW 3.49.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=15a4c64e"></script>
+      <script src="_static/documentation_options.js?v=87db18a5"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -198,13 +198,13 @@ are currently on.</p>
 source from <a class="reference external" href="https://pypi.org/project/apsw/">PyPi</a> then ensure you
 edit the <code class="file docutils literal notranslate"><span class="pre">setup.apsw</span></code> file inside.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.49.1.0/apsw-3.49.1.0.zip">apsw-3.49.1.0.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.49.2.0/apsw-3.49.2.0.zip">apsw-3.49.2.0.zip</a>
 (Source as zip, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.49.1.0/apsw-3.49.1.0.tar.gz">apsw-3.49.1.0.tar.gz</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.49.2.0/apsw-3.49.2.0.tar.gz">apsw-3.49.2.0.tar.gz</a>
 (Source as tar.gz, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.49.1.0/apsw-3.49.1.0.zip.cosign-bundle">apsw-3.49.1.0.zip.cosign-bundle</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.49.2.0/apsw-3.49.2.0.zip.cosign-bundle">apsw-3.49.2.0.zip.cosign-bundle</a>
 cosign signature for zip source</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.49.1.0/apsw-3.49.1.0.tar.gz.cosign-bundle">apsw-3.49.1.0.tar.gz.cosign-bundle</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.49.2.0/apsw-3.49.2.0.tar.gz.cosign-bundle">apsw-3.49.2.0.tar.gz.cosign-bundle</a>
 cosign signature for tar.gz source</p></li>
 </ul>
 <section id="verifying-your-download">
@@ -221,18 +221,18 @@ recommended), and the <a class="reference external" href="https://pypi.org/proje
 cosign bundle, the maintainer id, and issuer.  The command is all
 one line shown here across multiple lines for clarity, along with
 the expected successful output.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.49.1.0.zip<span class="w">                        </span><span class="se">\</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.49.2.0.zip<span class="w">                        </span><span class="se">\</span>
 <span class="w">    </span>--new-bundle-format<span class="w">                                       </span><span class="se">\</span>
-<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.49.1.0.zip.cosign-bundle<span class="w">                  </span><span class="se">\</span>
+<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.49.2.0.zip.cosign-bundle<span class="w">                  </span><span class="se">\</span>
 <span class="w">    </span>--certificate-identity<span class="o">=</span>rogerb@rogerbinns.com<span class="w">              </span><span class="se">\</span>
 <span class="w">    </span>--certificate-oidc-issuer<span class="o">=</span>https://github.com/login/oauth
 <span class="go">Verified OK</span>
 
-<span class="gp">$ </span>python3<span class="w"> </span>-m<span class="w"> </span>sigstore<span class="w"> </span>verify<span class="w"> </span>identity<span class="w"> </span>apsw-3.49.1.0.zip<span class="w">       </span><span class="se">\</span>
-<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.49.1.0.zip.cosign-bundle<span class="w">                  </span><span class="se">\</span>
+<span class="gp">$ </span>python3<span class="w"> </span>-m<span class="w"> </span>sigstore<span class="w"> </span>verify<span class="w"> </span>identity<span class="w"> </span>apsw-3.49.2.0.zip<span class="w">       </span><span class="se">\</span>
+<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.49.2.0.zip.cosign-bundle<span class="w">                  </span><span class="se">\</span>
 <span class="w">    </span>--cert-identity<span class="o">=</span>rogerb@rogerbinns.com<span class="w">                     </span><span class="se">\</span>
 <span class="w">    </span>--cert-oidc-issuer<span class="o">=</span>https://github.com/login/oauth
-<span class="go">OK: apsw-3.49.1.0.zip</span>
+<span class="go">OK: apsw-3.49.2.0.zip</span>
 </pre></div>
 </div>
 <p>Check for a success exit code, and verified message.</p>
@@ -507,7 +507,7 @@ supported versions running the tests.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Feb 18, 2025.
+      <span class="lastupdated">Last updated on May 07, 2025.
       </span></p>
   </div>
 

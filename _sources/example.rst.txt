@@ -67,10 +67,10 @@ Checking APSW and SQLite versions
 
 .. code-block:: output
 
-          Using APSW file /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so
-             APSW version 3.49.1.0
-    SQLite header version 3049001
-       SQLite lib version 3.49.1
+          Using APSW file /space/apsw/apsw/__init__.cpython-313-x86_64-linux-gnu.so
+             APSW version 3.49.2.0
+    SQLite header version 3049002
+       SQLite lib version 3.49.2
        Using amalgamation True
 
 
@@ -875,11 +875,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 2, 18, 7, 32, 56, 377644))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 5, 7, 9, 23, 41, 439311))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2025, 2, 18, 15, 32, 56, 377644, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2025, 5, 7, 16, 23, 41, 439311, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Runtime Python objects (example code)
@@ -949,7 +949,7 @@ runtime.
 .. code-block:: output
 
     Bad binding argument type supplied - argument #1: type set
-    select ? {1, 2, 'three', (4+5j), <_io.StringIO object at 0x7452b51977c0>}
+    select ? {1, 2, 'three', (4+5j), <_io.StringIO object at 0x7cb437cb2380>}
     select typeof(?) null
     make_set got ((3+4j), <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello')
     select make_set(?, ?, ?) {'hello', <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, (3+4j)}
@@ -1025,7 +1025,7 @@ across all the queries within the block
 .. code-block:: output
 
     len(rows)=20
-    After 0.200 seconds, we hit number=232929
+    After 0.200 seconds, we hit number=328229
     exc=IndexError('query row limit hit')
 
 
@@ -1439,7 +1439,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9901161753,)
+    (9898978521,)
 
 
 .. index:: File Control (example code)
@@ -1558,8 +1558,7 @@ with  :meth:`Connection.set_commit_hook`.
 .. code-block:: output
 
     in commit hook
-    no commits out of hours
-    commit was not allowed
+    commits okay at this time
 
 
 .. index:: Update hook (example code)
@@ -1809,7 +1808,7 @@ useful instead.
     │ count(*) │ category │
     │ 65       │ Cc       │
     │ 43       │ Cf       │
-    │ 1454     │ Cn       │
+    │ 1449     │ Cn       │
     │ 6400     │ Co       │
     │ 2048     │ Cs       │
     │ 1445     │ Ll       │
@@ -1822,48 +1821,48 @@ useful instead.
     ┌─────────┬──────────────────────────────────────────┬─────────────────────────┐
     │ st_size │                directory                 │          name           │
     ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 815083  │ /usr/lib/python3.12/pydoc_data           │ topics.py               │
-    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 509199  │ /usr/lib/python3.12/pydoc_data/          │ topics.cpython-312.pyc  │
+    │ 527465  │ /usr/lib/python3.13/pydoc_data/          │ topics.cpython-313.pyc  │
     │         │ __pycache__                              │                         │
     ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 245940  │ /usr/lib/python3.12/tkinter/__pycache__  │ __init__.cpython-312.p- │
+    │ 526924  │ /usr/lib/python3.13/pydoc_data           │ topics.py               │
+    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
+    │ 256658  │ /usr/lib/python3.13/tkinter/__pycache__  │ __init__.cpython-313.p- │
     │         │                                          │ yc                      │
     └─────────┴──────────────────────────────────────────┴─────────────────────────┘
     
     ┌────────────┬────────────────────────────────┬───────────────┐
     │    date    │           directory            │     name      │
-    │ 2025-01-21 │ /usr/lib/python3.12/pydoc_data │ topics.py     │
-    │ 2025-01-21 │ /usr/lib/python3.12            │ _pydecimal.py │
-    │ 2025-01-21 │ /usr/lib/python3.12/tkinter    │ __init__.py   │
+    │ 2025-04-16 │ /usr/lib/python3.13/pydoc_data │ topics.py     │
+    │ 2025-04-16 │ /usr/lib/python3.13            │ _pydecimal.py │
+    │ 2025-04-16 │ /usr/lib/python3.13/tkinter    │ __init__.py   │
     └────────────┴────────────────────────────────┴───────────────┘
     
     ┌────────────┬────────────┐
     │ extension  │ total_size │
-    │            │ 436917     │
-    │ .a         │ 97345022   │
+    │            │ 483963     │
+    │ .a         │ 96508548   │
     │ .allowlist │ 72         │
-    │ .bootstrap │ 1804       │
-    │ .c         │ 10948      │
+    │ .bootstrap │ 1908       │
+    │ .c         │ 11288      │
     │ .cfg       │ 341        │
-    │ .csh       │ 934        │
+    │ .csh       │ 937        │
     │ .css       │ 1325       │
-    │ .fish      │ 2209       │
-    │ .in        │ 3504       │
-    │ .ini       │ 997        │
+    │ .fish      │ 2208       │
+    │ .in        │ 3502       │
+    │ .ini       │ 1670       │
     │ .json      │ 2162       │
-    │ .local     │ 2136       │
-    │ .o         │ 9360       │
-    │ .ps1       │ 9033       │
-    │ .py        │ 11265551   │
-    │ .pyc       │ 11429603   │
+    │ .local     │ 2128       │
+    │ .o         │ 15480      │
+    │ .ps1       │ 9031       │
+    │ .py        │ 11161988   │
+    │ .pyc       │ 11778201   │
     │ .rst       │ 9561       │
     │ .sh        │ 2643       │
-    │ .so        │ 26583424   │
+    │ .so        │ 29494736   │
     │ .sql       │ 1001       │
-    │ .stdlib    │ 12562      │
+    │ .stdlib    │ 13486      │
     │ .supp      │ 70         │
-    │ .txt       │ 13936      │
+    │ .txt       │ 13809      │
     └────────────┴────────────┘
     
 
@@ -2135,9 +2134,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.49.1.0)
-    -- SQLite version 3.49.1
-    -- Date: Tue Feb 18 07:32:57 2025
+    -- SQLite dump (by APSW 3.49.2.0)
+    -- SQLite version 3.49.2
+    -- Date: Wed May  7 09:23:42 2025
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2188,8 +2187,8 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 507888 max 2498888
-    5768 bytes used to store schema for this connection
+    SQLite memory usage 512776 max 2503872
+    6304 bytes used to store schema for this connection
 
 
 .. index:: Tracing (example code)
@@ -2255,18 +2254,18 @@ This shows using :meth:`Connection.trace_v2`
 .. code-block:: output
 
     code is  SQLITE_TRACE_STMT
-    {'code': 1, 'id': 706049952, 'total_changes': 146, 'trigger': False}
+    {'code': 1, 'id': 20655840, 'total_changes': 146, 'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 706049952}
+    {'code': 4, 'id': 20655840}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 706049952,
-     'nanoseconds': 18000000,
+     'id': 20655840,
+     'nanoseconds': 16000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
                      'SQLITE_STMTSTATUS_FULLSCAN_STEP': 1365,
-                     'SQLITE_STMTSTATUS_MEMUSED': 15880,
+                     'SQLITE_STMTSTATUS_MEMUSED': 15896,
                      'SQLITE_STMTSTATUS_REPREPARE': 0,
                      'SQLITE_STMTSTATUS_RUN': 1,
                      'SQLITE_STMTSTATUS_SORT': 2,
@@ -2305,13 +2304,15 @@ Only statistics that have changed are shown in the summary. There are
 .. code-block:: output
 
                            Total CPU consumption 0.021
-                                      Wall clock 1.322
-                          Block input operations 384
-                       Maximum resident set size 208
-                            Page faults - no I/O 70
-                    Involuntary context switches 7
-                      Voluntary context switches 5
-                               Time in user mode 0.021
+                                      Wall clock 1.325
+                          Block input operations 72
+                            Page faults with I/O 1
+                       Maximum resident set size 192
+                            Page faults - no I/O 82
+                    Involuntary context switches 36
+                      Voluntary context switches 4
+                             Time in system mode 0.002
+                               Time in user mode 0.019
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,351
@@ -2377,11 +2378,11 @@ code.  This also shows behind the scenes SQL.
          Time: 0.000  Changes: 4
      > select count(*) from pragma_function_list
      V PRAGMA function_list
-         Time: 0.000  Rows: 209  VmStep: 1,467  Mem: 79.7KB
+         Time: 0.000  Rows: 209  VmStep: 1,467  Mem: 80.0KB
      < select count(*) from pragma_function_list
          Time: 0.000  Rows: 1  VmStep: 429
      > RELEASE SAVEPOINT "_apsw-0"
-         Time: 0.007
+         Time: 0.008
     
 
 

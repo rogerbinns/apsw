@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.fts5 &mdash; APSW 3.49.1.0 documentation</title>
+  <title>apsw.fts5 &mdash; APSW 3.49.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=15a4c64e"></script>
+      <script src="../../_static/documentation_options.js?v=87db18a5"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -1440,12 +1440,17 @@
 
     <span class="n">change_cookie</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_get_change_cookie</span><span class="p">)</span>
 
+<div class="viewcode-block" id="Table.columns">
+<a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.columns">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">columns</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
         <span class="s2">&quot;All columns of this table, including unindexed ones.  Unindexed columns are ignored in queries.&quot;</span>
 
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pragma </span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_qschema</span><span class="w"> </span><span class="si">}</span><span class="s2">.table_info(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_qname</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pragma </span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_qschema</span><span class="w"> </span><span class="si">}</span><span class="s2">.table_info(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_qname</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">))</span></div>
 
+
+<div class="viewcode-block" id="Table.columns_indexed">
+<a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.columns_indexed">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">columns_indexed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
         <span class="s2">&quot;All columns of this table, excluding unindexed ones&quot;</span>
@@ -1453,7 +1458,8 @@
             <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pragma </span><span class="si">{</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">_qschema</span><span class="w"> </span><span class="si">}</span><span class="s2">.table_info(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_qname</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">unindexed</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="Table.column_named">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.column_named">[docs]</a>
@@ -1469,6 +1475,8 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
+<div class="viewcode-block" id="Table.structure">
+<a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.structure">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">structure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FTS5TableStructure</span><span class="p">:</span>
         <span class="s2">&quot;Structure of the table from the declared SQL&quot;</span>
@@ -1480,8 +1488,11 @@
             <span class="p">)</span>
         <span class="p">)</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">found</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
-        <span class="k">return</span> <span class="n">_fts5_vtable_parse</span><span class="p">(</span><span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">_fts5_vtable_parse</span><span class="p">(</span><span class="n">found</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
 
+
+<div class="viewcode-block" id="Table.quoted_table_name">
+<a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.quoted_table_name">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">quoted_table_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;Provides the full table name for composing your own queries</span>
@@ -1497,7 +1508,8 @@
 <span class="sd">           sql = f&quot;&quot;&quot;SELECT ... FROM { my_table.quoted_table_name }</span>
 <span class="sd">                        WHERE ....&quot;&quot;&quot;</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_qschema</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_qname</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_qschema</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_qname</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
 
 <div class="viewcode-block" id="Table.search">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.search">[docs]</a>
@@ -1956,10 +1968,13 @@
         <span class="p">)</span><span class="o">.</span><span class="n">get</span></div>
 
 
+<div class="viewcode-block" id="Table.tokenizer">
+<a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.tokenizer">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">tokenizer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5Tokenizer</span><span class="p">:</span>
         <span class="s2">&quot;Tokenizer instance as used by this table&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">fts5_tokenizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">tokenize</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">tokenize</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">fts5_tokenizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">tokenize</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">tokenize</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span></div>
+
 
 <div class="viewcode-block" id="Table.tokenize">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.tokenize">[docs]</a>
@@ -1977,6 +1992,8 @@
         <span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="Table.supports_query_tokens">
+<a class="viewcode-back" href="../../textsearch.html#apsw.fts5.Table.supports_query_tokens">[docs]</a>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">supports_query_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="s2">&quot;`True` if you can use :class:`apsw.fts5query.QueryTokens` with this table&quot;</span>
@@ -1990,7 +2007,8 @@
             <span class="kc">None</span><span class="p">,</span>
             <span class="n">include_offsets</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">include_colocated</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_cache_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="s2">&quot;Ensure cached information is up to date&quot;</span>
@@ -3505,7 +3523,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Feb 18, 2025.
+      <span class="lastupdated">Last updated on May 07, 2025.
       </span></p>
   </div>
 

@@ -10,6 +10,11 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.49.2.0
+========
+
+Shell dump command handles generated columns correctly. (:issue:`556`)
+
 3.49.1.0
 ========
 
