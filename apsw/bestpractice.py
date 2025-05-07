@@ -102,8 +102,8 @@ def library_logging() -> None:
 
 
 recommended: tuple[Callable, ...] = (
-    connection_wal,
     connection_busy_timeout,
+    connection_wal,
     connection_enable_foreign_keys,
     connection_dqs,
     connection_optimize,

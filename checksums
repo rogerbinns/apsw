@@ -8,6 +8,7 @@
 # more peace of mind because the SQLite releases are not signed in any
 # way.
 
+https://sqlite.org/2025/sqlite-autoconf-3490200.tar.gz 3230309 5c6d8697e8a32a1512a9be5ad2b2e7a891241c334f56f8b0fb4fc6051e1652e8 6527dce15f55cd51af22190c866f28801505ce7faa536893fdc87d9108c1fb1e
 https://sqlite.org/2025/sqlite-autoconf-3490100.tar.gz 3226385 106642d8ccb36c5f7323b64e4152e9b719f7c0215acf5bfeac3d5e7f97b59254 6cc831c9f588b637e5bd48d9fbf28e58737e08daf825c81085fb8e0a0b8ad14c
 https://sqlite.org/2025/sqlite-autoconf-3490000.tar.gz 3222148 4d8bfa0b55e36951f6e5a9fb8c99f3b58990ab785c57b4f84f37d163a0672759 df4fe162b8b73e8a9ba9f362280f0758dbf67e77de59d3d65dcbf8f6abc25706
 

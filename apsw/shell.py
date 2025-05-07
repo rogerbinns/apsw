@@ -338,7 +338,7 @@ class Shell:
         invoke = "apsw" if sys.argv[0].endswith("apsw") else "python3 -m apsw"
 
         msg = f"""
-Usage: { invoke } [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
+Usage: {invoke} [OPTIONS] FILENAME [SQL|CMD] [SQL|CMD]...
 
 FILENAME is the name of a SQLite database. A new database is
 created if the file does not exist. If omitted or an empty
@@ -748,7 +748,7 @@ OPTIONS include:
         """
         if intro is None:
             intro = f"""
-SQLite version { apsw.sqlite_lib_version() } (APSW { apsw.apsw_version() })
+SQLite version {apsw.sqlite_lib_version()} (APSW {apsw.apsw_version()})
 Enter ".help" for instructions
 """
             intro = intro.lstrip()
@@ -901,7 +901,7 @@ Enter ".help" for instructions
             return Shell._qd(
                 None,
                 None,
-                f"No binding present for '{ var }' - use .parameter set { var } VALUE to provide one",
+                f"No binding present for '{var}' - use .parameter set {var} VALUE to provide one",
                 -1,
                 e,
                 explain,
@@ -947,7 +947,7 @@ Enter ".help" for instructions
                 if self.echo:
                     self.write_error(fmt_sql(qd.query) + "\n")
             if qd.error_text:
-                self.write_error(f"{ qd.error_text }\n")
+                self.write_error(f"{qd.error_text}\n")
                 if qd.error_offset >= 0:
                     offset = qd.error_offset
                     query = qd.query.encode("utf8")
@@ -1119,7 +1119,7 @@ Enter ".help" for instructions
             raise self.Error("Too many directories")
         d = cmd and cmd[0] or os.path.expanduser("~")
         if not os.path.isdir(d):
-            raise self.Error(f"'{ d }' is not a directory")
+            raise self.Error(f"'{d}' is not a directory")
         os.chdir(d)
 
     def command_changes(self, cmd):
@@ -1163,7 +1163,7 @@ Enter ".help" for instructions
                 sel = "*" if self.db is c else " "
                 self.write(
                     self.stdout,
-                    f'{ co.bold}{ sel }{ co.bold_} { co.vnumber }{ i: 2}{ co.vnumber_ } - ({ c.open_vfs }) "{ co.vstring }{ c.filename }{ co.vstring_ }"\n',
+                    f'{co.bold}{sel}{co.bold_} {co.vnumber}{i: 2}{co.vnumber_} - ({c.open_vfs}) "{co.vstring}{c.filename}{co.vstring_}"\n',
                 )
         elif len(cmd) == 1:
             c = dbs[int(cmd[0])]
@@ -1238,7 +1238,7 @@ Enter ".help" for instructions
             raise self.Error("Expected zero or two parameters")
         key = "SQLITE_DBCONFIG_" + cmd[0].upper()
         if key not in apsw.mapping_db_config:
-            raise self.Error(f"Unknown config option { key }")
+            raise self.Error(f"Unknown config option {key}")
         v = self.db.config(getattr(apsw, key), int(cmd[1]))
         self.write(self.stdout, cmd[0].lower() + ": ")
         self.write_value(v)
@@ -1257,14 +1257,14 @@ Enter ".help" for instructions
         schema = cmd[0] if cmd else "main"
 
         def total(t):
-            return self.db.execute(f"select count(*) from [{ schema }].sqlite_schema where type='{ t }'").get
+            return self.db.execute(f"select count(*) from [{schema}].sqlite_schema where type='{t}'").get
 
         outputs = [
             ("number of tables", total("table")),
             ("number of indexes", total("index")),
             ("number of triggers", total("trigger")),
             ("number of views", total("view")),
-            ("schema size", int(self.db.execute(f"select total(length(sql)) from [{ schema }].sqlite_schema").get)),
+            ("schema size", int(self.db.execute(f"select total(length(sql)) from [{schema}].sqlite_schema").get)),
         ]
         for i, info in enumerate(apsw.ext.dbinfo(self.db, schema)):
             if i == 1:
@@ -1491,7 +1491,13 @@ Enter ".help" for instructions
                             self.write(self.stdout, "DROP TABLE IF EXISTS " + self._fmt_sql_identifier(table) + ";\n")
                             self.write(self.stdout, sqldef(sql[0]))
                             self._output_table = self._fmt_sql_identifier(table)
-                            self.process_sql("select * from " + self._fmt_sql_identifier(table), internal=True)
+                            columns = ",".join(
+                                self._fmt_sql_identifier(column)
+                                for (column,) in self.db.execute(
+                                    "select name from pragma_table_xinfo(?) where hidden=0", (table,)
+                                )
+                            )
+                            self.process_sql(f"select {columns} from " + self._fmt_sql_identifier(table), internal=True)
                         # Now any indices or triggers
                         first = True
                         for name, sql in self.db.execute(
@@ -1532,7 +1538,7 @@ Enter ".help" for instructions
                             assert len(v) == 1
                             if first:
                                 comment(
-                                    "For primary key autoincrements the next id " "to use is stored in sqlite_sequence"
+                                    "For primary key autoincrements the next id to use is stored in sqlite_sequence"
                                 )
                                 first = False
                             self.write(
@@ -1663,7 +1669,7 @@ Enter ".help" for instructions
         try:
             c = 0 if not cmd else int(cmd[0])
         except ValueError:
-            raise self.Error(f"{ cmd[0] } isn't an exit code")
+            raise self.Error(f"{cmd[0]} isn't an exit code")
         sys.exit(c)
 
     def command_find(self, cmd):
@@ -1726,7 +1732,7 @@ Enter ".help" for instructions
         """
         if len(cmd) != 2:
             raise self.Error("Expected a table name and a query")
-        query = f"select rowid, snippet({ cmd[0] }, -1, '<<', '>>', '...', 10) as 'snippet' from { cmd[0] }(?) order by rank limit 20"
+        query = f"select rowid, snippet({cmd[0]}, -1, '<<', '>>', '...', 10) as 'snippet' from {cmd[0]}(?) order by rank limit 20"
         self.process_sql(query, (cmd[1],))
 
     def command_header(self, cmd):
@@ -1915,7 +1921,7 @@ Enter ".help" for instructions
                 try:
                     cur.execute(sql, line)
                 except Exception:
-                    self.write_error(f"Error inserting row { row }")
+                    self.write_error(f"Error inserting row {row}")
                     raise
                 row += 1
             self.db.execute("COMMIT")
@@ -2211,7 +2217,7 @@ Enter ".help" for instructions
 
     def log_handler(self, code, message):
         "Called with SQLite log messages when logging is ON"
-        code = f"( { code } - { apsw.ext.result_string(code) } ) "
+        code = f"( {code} - {apsw.ext.result_string(code)} ) "
         self.write_error(code + message + "\n")
 
     def command_log(self, cmd):
@@ -2268,7 +2274,7 @@ Enter ".help" for instructions
 
         # argparse unfortunately tries to do too much and really is about program arguments,
         # but it isn't worthwhile re-implementing this
-        p = argparse.ArgumentParser(allow_abbrev=False, usage=f".mode { w } [options]", prog="")
+        p = argparse.ArgumentParser(allow_abbrev=False, usage=f".mode {w} [options]", prog="")
         if hasattr(p, "exit_on_error"):
             p.exit_on_error = False
         p.set_defaults(**defaults)
@@ -2456,12 +2462,12 @@ Enter ".help" for instructions
         elif name in {"page_size", "data_stored", "max_payload"}:
             self.write(self.stdout, self.colour.colour_value(value, storage(value)))
         elif name in {"pages_used", "pages_total", "max_page_count", "pages_freelist"}:
-            self.write(self.stdout, self.colour.colour_value(value, f"{value:,} ({storage(value*usage.page_size)})"))
+            self.write(self.stdout, self.colour.colour_value(value, f"{value:,} ({storage(value * usage.page_size)})"))
             if name == "max_page_count" and value == 4_294_967_294:
                 self.write(self.stdout, " (default)")
         elif name in {"sequential_pages"}:
             self.write(
-                self.stdout, self.colour.colour_value(value, f"{value:,} ({value/max(usage.pages_used, 1):.0%})")
+                self.stdout, self.colour.colour_value(value, f"{value:,} ({value / max(usage.pages_used, 1):.0%})")
             )
         elif name in {"cells"}:
             self.write(self.stdout, self.colour.colour_value(value, f"{value:,}"))
@@ -2565,12 +2571,12 @@ Enter ".help" for instructions
                     del self.bindings[cmd[1]]
                     return
                 except KeyError:
-                    raise self.Error(f"'{ cmd[1] }' is not in parameters")
+                    raise self.Error(f"'{cmd[1]}' is not in parameters")
             if len(cmd) == 3 and cmd[0] == "set":
                 try:
-                    v = self.db.execute(f"select ({ cmd[2] })").get
+                    v = self.db.execute(f"select ({cmd[2]})").get
                 except Exception:
-                    raise self.Error(f"Does not appear to be a valid SQLite value: { cmd[2] }")
+                    raise self.Error(f"Does not appear to be a valid SQLite value: {cmd[2]}")
                 self.bindings[cmd[1]] = v
                 return
         raise self.Error(".parameter command not understood.  Use .help parameter to get usage")
@@ -2770,7 +2776,7 @@ Enter ".help" for instructions
         assert len(cmd) == 1
         res = os.system(cmd[0])
         if res != 0:
-            self.write_error(f"Exit code { res }\n")
+            self.write_error(f"Exit code {res}\n")
 
     def command_show(self, cmd):
         """show: Show the current values for various settings."""
@@ -2890,15 +2896,15 @@ Enter ".help" for instructions
         if cmd:
             raise self.Error("No parameters taken")
         versions = {
-            "SQLite": f"{ apsw.sqlite_lib_version() } { apsw.sqlite3_sourceid() }",
-            "Python": f"{ sys.version } - { sys.executable }",
+            "SQLite": f"{apsw.sqlite_lib_version()} {apsw.sqlite3_sourceid()}",
+            "Python": f"{sys.version} - {sys.executable}",
             "APSW": apsw.apsw_version(),
             "APSW file": apsw.__file__,
             "Amalgamation": apsw.using_amalgamation,
         }
         maxw = max(len(k) for k in versions)
         for k, v in versions.items():
-            self.write(self.stdout, " " * (maxw - len(k)) + f"{ k }  { v}\n")
+            self.write(self.stdout, " " * (maxw - len(k)) + f"{k}  {v}\n")
 
     def command_vfsname(self, cmd):
         "vfsname: VFS name for database, or attached names"

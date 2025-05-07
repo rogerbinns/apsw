@@ -9,14 +9,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-       os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+       os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-13, macos-14]
        pyver: [cp39, cp310, cp311, cp312, cp313]
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22
+      - name: Build ${{ matrix.os }} ${{ matrix.pyver }}
+        uses: pypa/cibuildwheel@v2.23
         env:
           CIBW_BUILD: ${{ matrix.pyver }}-*
           CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
@@ -27,40 +27,6 @@ jobs:
         with:
           name: dist-${{ matrix.os }}-${{ matrix.pyver }}
           path: ./wheelhouse/*.whl
-
-
-  build_binary_qemu:
-      runs-on: ubuntu-latest
-      strategy:
-        fail-fast: false
-        matrix:
-          arch: [aarch64]
-          pyver: [cp39, cp310, cp311, cp312, cp313]
-          libc: [manylinux, musllinux]
-
-      steps:
-        - uses: actions/checkout@v4
-
-        - name: Set up QEMU
-          uses: docker/setup-qemu-action@v3
-          with:
-            image: tonistiigi/binfmt:qemu-v8.1.5
-            platforms: all
-
-        - name: Build wheels
-          uses: pypa/cibuildwheel@v2.22
-          env:
-            CIBW_BUILD: ${{ matrix.pyver }}-${{ matrix.libc }}*
-            CIBW_ARCHS_LINUX: ${{ matrix.arch }}
-            CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
-            CIBW_TEST_COMMAND: python -m apsw.tests -v
-            APSW_HEAVY_DURATION: 2
-
-        - uses: actions/upload-artifact@v4
-          with:
-            name: dist-qemu-${{ matrix.arch }}-${{ matrix.pyver }}-${{ matrix.libc }}
-            path: ./wheelhouse/*.whl
-
 
   build_source:
     runs-on: ubuntu-latest
@@ -77,7 +43,7 @@ jobs:
         path: ./dist/*
 
   pypi_publish:
-    needs: [build_source, build_binary_native, build_binary_qemu]
+    needs: [build_source, build_binary_native]
     runs-on: ubuntu-latest
     permissions:
         id-token: write
