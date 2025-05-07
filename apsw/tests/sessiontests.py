@@ -667,8 +667,19 @@ class Session(unittest.TestCase):
 
         apsw.Changeset.apply(changeset, self.db, filter=lambda n: n == "delete", conflict=handler)
 
-        print(f"{self.db.execute('select * from [delete]').get=}")
+        self.db.execute("drop table deliberate; " + setup_sql + """
+            delete from [update] where two=22
+        """)
 
+        def handler(reason, tc):
+            self.assertEqual(reason, apsw.SQLITE_CHANGESET_NOTFOUND)
+            self.assertEqual(tc.op, "DELETE")
+            self.assertEqual(tc.old, ('one', 22, 3))
+            self.assertEqual(tc.new, None)
+            self.assertEqual(tc.conflict, None)
+            return apsw.SQLITE_CHANGESET_REPLACE
+
+        apsw.Changeset.apply(changeset, self.db, filter=lambda n: n == "update", conflict=handler)
 
     def testNoPrimaryKey(self):
         "check when tables have no primary key"
