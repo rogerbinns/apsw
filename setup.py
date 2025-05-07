@@ -856,13 +856,13 @@ if __name__ == "__main__":
         classifiers=[
             "Development Status :: 5 - Production/Stable",
             "Intended Audience :: Developers",
-            "License :: OSI Approved",
             "Programming Language :: C",
             "Programming Language :: Python :: 3",
             "Topic :: Database :: Front-Ends",
         ],
         keywords=["database", "sqlite"],
-        license="OSI Approved",
+        license="any-OSI",
+        license_files=["LICENSE"],
         platforms="any",
         ext_modules=[
             Extension(
