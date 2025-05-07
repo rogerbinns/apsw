@@ -130,3 +130,8 @@ def setup(app):
 
 
 nitpicky = True
+
+# autosummary etc fail to import modules even though python import
+# works just fine, so we cheat by importing them here
+
+import apsw
