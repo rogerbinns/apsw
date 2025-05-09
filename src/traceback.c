@@ -36,6 +36,8 @@ AddTraceBackHere(const char *filename, int lineno, const char *functionname, con
     goto end;
 
   assert(!localsformat || localsformat[0] == '{');
+  /* i needs to be used for int, d is floating point! */
+  assert(!localsformat || NULL == strchr(localsformat, 'd'));
   localargs = localsformat ? (Py_VaBuildValue((char *)localsformat, localargsva)) : NULL;
   /* this will typically happen due to error in Py_BuildValue, usually
      because NULL was passed to O (PyObject*) format */
