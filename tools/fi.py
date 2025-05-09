@@ -119,6 +119,33 @@ def exercise(example_code, expect_exception):
     apsw.connections()
     con.wal_autocheckpoint(1)
 
+    # this needs to be early to exercise the chain of faults in TableChange.tp_str
+    con.execute("create table one(two, three, four, PRIMARY KEY(two, three, four)); insert into one values(2,3,4)")
+    session = apsw.Session(con, "main")
+    session.attach()
+    con.execute("update one set two=7, four=77")
+
+    for table_change in apsw.Changeset.iter(session.changeset()):
+        str(table_change)
+
+    cb = apsw.ChangesetBuilder()
+    cb.add(session.changeset())
+
+    class StreamInput:
+        def __init__(self, source):
+            self.source = source
+            self.offset = 0
+            self.sizes = []
+
+        def __call__(self, amount: int):
+            self.sizes.append(amount)
+            amount = min(len(self.sizes), amount)
+            res = self.source[self.offset : self.offset + amount]
+            self.offset += len(res)
+            return res
+
+    cb.add(StreamInput(session.changeset()))
+
     extfname = "./testextension.sqlext"
     if os.path.exists(extfname):
         con.enable_load_extension(True)
@@ -268,6 +295,36 @@ def exercise(example_code, expect_exception):
     con.register_fts5_function("identity", identity)
 
     con.execute("select identity(testfts,a) from testfts('e OR 5')").get
+
+    session = apsw.Session(con, "main")
+    session.attach()
+    con.execute("""create table s1(one PRIMARY KEY, two); insert into s1 values(3, 4);""")
+    changeset = session.changeset()
+    session2 = apsw.Session(con, "main")
+    session2.attach()
+    con.execute("update s1 set one = 77")
+    changeset2 = session2.changeset()
+
+    apsw.Changeset.concat(changeset, changeset2)
+
+    class StreamInput:
+        def __init__(self, source):
+            self.source = source
+            self.offset = 0
+            self.sizes = []
+
+        def __call__(self, amount: int):
+            self.sizes.append(amount)
+            amount = min(len(self.sizes), amount)
+            res = self.source[self.offset : self.offset + amount]
+            self.offset += len(res)
+            return res
+
+    class StreamOutput:
+        def __call__(self, data):
+            pass
+
+    apsw.Changeset.concat_stream(StreamInput(changeset), StreamInput(changeset2), StreamOutput())
 
     class Source:
         def Connect(self, *args):

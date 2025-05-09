@@ -214,10 +214,6 @@ class Session(unittest.TestCase):
 
         self.db.execute("DELETE FROM two ; DELETE FROM one")
 
-        if False:
-            # https://sqlite.org/forum/forumpost/c175372e9a
-            self.assertEqual(changeset, session.changeset())
-
         self.assertEqual(False, session.enabled)
 
     def testStream(self):
@@ -317,6 +313,36 @@ class Session(unittest.TestCase):
         # error conditions
         self.assertRaises(ZeroDivisionError, apsw.Changeset.invert_stream, ErrorStreamInput(changeset, 4), so)
         self.assertRaises(ZeroDivisionError, apsw.Changeset.invert_stream, StreamInput(changeset), ErrorStreamOutput(2))
+        so = StreamOutput()
+        self.assertRaises(
+            ZeroDivisionError, apsw.Changeset.concat_stream, ErrorStreamInput(patchset, 3), StreamInput(patchset2), so
+        )
+        self.assertRaises(
+            ZeroDivisionError, apsw.Changeset.concat_stream, StreamInput(patchset), ErrorStreamInput(patchset2, 3), so
+        )
+        self.assertRaises(
+            ZeroDivisionError,
+            apsw.Changeset.concat_stream,
+            StreamInput(patchset),
+            StreamInput(patchset2),
+            ErrorStreamOutput(1),
+        )
+
+        def handler(reason: int, change: apsw.TableChange):
+            if reason in (
+                apsw.SQLITE_CHANGESET_DATA,
+                apsw.SQLITE_CHANGESET_CONFLICT,
+            ):
+                return apsw.SQLITE_CHANGESET_REPLACE
+            return apsw.SQLITE_CHANGESET_OMIT
+
+        conflict_resolutions = apsw.Changeset.apply(changeset, self.db, rebase=True, conflict=handler)
+
+        rb = apsw.Rebaser()
+        rb.configure(conflict_resolutions)
+        self.assertRaises(ZeroDivisionError, rb.rebase_stream, ErrorStreamInput(changeset, 2), StreamOutput())
+        self.assertRaises(ZeroDivisionError, rb.rebase_stream, StreamInput(changeset2), ErrorStreamOutput(0))
+        rb.rebase_stream(StreamInput(changeset2), StreamOutput())
 
     def checkDbIdentical(self, db1, db2):
         # easy - check the table names etc are the same
@@ -451,6 +477,9 @@ class Session(unittest.TestCase):
 
         builder = apsw.ChangesetBuilder()
         self.assertRaises(apsw.ConnectionClosedError, builder.schema, db, "main")
+        for tc in apsw.Changeset.iter(changeset):
+            pass
+        self.assertRaises(apsw.InvalidContextError, builder.add_change, tc)
         builder.close()
         builder.close()
 
@@ -461,6 +490,23 @@ class Session(unittest.TestCase):
 
         self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.output)
         self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.output_stream, StreamOutput())
+
+    def testIter(self):
+        "iteration"
+        # the other test cases pretty cover everything - this is just for coverage
+        self.db.execute(self.base_sql)
+        session = apsw.Session(self.db, "main")
+        session.attach()
+
+        self.db.execute(self.update_sql)
+
+        changeset = session.changeset()
+
+        self.assertRaises(TypeError, apsw.Changeset.iter, changeset, 1 + 4j)
+
+        # can't add these to a changegroup so can't check further
+        for tc in apsw.Changeset.iter(changeset, flags=apsw.SQLITE_CHANGESETSTART_INVERT):
+            str(tc)
 
     def testCorrupt(self):
         "corrupt changesets"
@@ -636,7 +682,6 @@ class Session(unittest.TestCase):
             conflict=handler,
         )
 
-
         # exercise some of the conflicts
         self.db.execute(setup_sql)
 
@@ -667,19 +712,71 @@ class Session(unittest.TestCase):
 
         apsw.Changeset.apply(changeset, self.db, filter=lambda n: n == "delete", conflict=handler)
 
-        self.db.execute("drop table deliberate; " + setup_sql + """
+        self.db.execute(
+            "drop table deliberate; "
+            + setup_sql
+            + """
             delete from [update] where two=22
-        """)
+        """
+        )
 
         def handler(reason, tc):
             self.assertEqual(reason, apsw.SQLITE_CHANGESET_NOTFOUND)
             self.assertEqual(tc.op, "DELETE")
-            self.assertEqual(tc.old, ('one', 22, 3))
+            self.assertEqual(tc.old, ("one", 22, 3))
             self.assertEqual(tc.new, None)
             self.assertEqual(tc.conflict, None)
-            return apsw.SQLITE_CHANGESET_REPLACE
+            return handler_return
 
+        handler_return = apsw.SQLITE_CHANGESET_REPLACE
+        self.assertRaises(
+            apsw.MisuseError, apsw.Changeset.apply, changeset, self.db, filter=lambda n: n == "update", conflict=handler
+        )
+        handler_return = apsw.SQLITE_CHANGESET_OMIT
         apsw.Changeset.apply(changeset, self.db, filter=lambda n: n == "update", conflict=handler)
+
+        self.db.execute(
+            "drop table [insert]; create table [insert](one TEXT CHECK (one != 'ONE'), two, three, PRIMARY KEY(one, two))"
+        )
+
+        def handler(reason, tc):
+            self.assertEqual(reason, apsw.SQLITE_CHANGESET_CONSTRAINT)
+            self.assertEqual(tc.op, "INSERT")
+            self.assertEqual(tc.old, None)
+            self.assertEqual(tc.new, ("ONE", "TWO", "THREE"))
+            self.assertEqual(tc.conflict, None)
+            return handler_return
+
+        handler_return = apsw.SQLITE_CHANGESET_REPLACE
+        self.assertRaises(
+            apsw.MisuseError, apsw.Changeset.apply, changeset, self.db, filter=lambda n: n == "insert", conflict=handler
+        )
+
+        handler_return = apsw.SQLITE_CHANGESET_OMIT
+        apsw.Changeset.apply(changeset, self.db, filter=lambda n: n == "insert", conflict=handler)
+
+        handler_return = apsw.SQLITE_CHANGESET_ABORT
+        self.assertRaises(
+            apsw.AbortError, apsw.Changeset.apply, changeset, self.db, filter=lambda n: n == "insert", conflict=handler
+        )
+
+        self.db.execute("update [delete] set two=77")
+
+        def handler(reason, tc):
+            self.assertEqual(reason, apsw.SQLITE_CHANGESET_DATA)
+            self.assertEqual(tc.op, "DELETE")
+            self.assertEqual(tc.old, ("one", 2, 3))
+            self.assertEqual(tc.new, None)
+            self.assertEqual(tc.conflict, ("one", 77, 3))
+            return handler_return
+
+        handler_return = apsw.SQLITE_CHANGESET_OMIT
+        apsw.Changeset.apply(changeset, self.db, filter=lambda n: n == "delete", conflict=handler)
+        self.assertEqual(1, self.db.execute("select count(*) from [delete]").get)
+
+        handler_return = apsw.SQLITE_CHANGESET_REPLACE
+        apsw.Changeset.apply(changeset, self.db, filter=lambda n: n == "delete", conflict=handler)
+        self.assertEqual(0, self.db.execute("select count(*) from [delete]").get)
 
     def testNoPrimaryKey(self):
         "check when tables have no primary key"
@@ -826,7 +923,7 @@ class StreamInput:
         self.sizes.append(amount)
         amount = min(len(self.sizes), amount)
         res = self.source[self.offset : self.offset + amount]
-        self.offset += amount
+        self.offset += len(res)
         return res
 
 

@@ -485,9 +485,9 @@ APSWSession_get_change_patch_set(APSWSession *self, int changeset)
   int nChangeset = 0;
   void *pChangeset = NULL;
 
-  // ::TODO:: session takes a database mutex to generate the changeset, so
-  // we need to do the mutex try thing here.  also check the session code
-  // for other locations it does mutex operations
+  /* ::TODO:: session takes a database mutex to generate the changeset, so
+   we need to do the mutex try thing here.  also check the session code
+   for other locations it does mutex operations */
 
   int rc = changeset ? sqlite3session_changeset(self->session, &nChangeset, &pChangeset)
                      : sqlite3session_patchset(self->session, &nChangeset, &pChangeset);
@@ -572,14 +572,16 @@ APSWSession_xInput(void *pIn, void *pData, int *pnData)
 
       PyBuffer_Release(&result_buffer);
     }
-    Py_DECREF(result);
   }
   if (PyErr_Occurred())
   {
-    AddTraceBackHere(__FILE__, __LINE__, "SessionStreamInput", "{s: O, s: d}", "xInput", OBJ(pIn), "amount_requested",
-                     *pnData, "provided", OBJ(result));
+    AddTraceBackHere(__FILE__, __LINE__, "SessionStreamInput", "{s: O, s: O, s: i}", "xInput", OBJ(pIn), "provided",
+                     OBJ(result), "amount_requested", *pnData);
+    Py_XDECREF(result);
     return MakeSqliteMsgFromPyException(NULL);
   }
+  Py_XDECREF(result);
+
   return SQLITE_OK;
 }
 
@@ -960,7 +962,7 @@ APSWTableChange_op(APSWTableChange *self)
     return Py_NewRef(apst.DELETE);
   if (self->operation == SQLITE_UPDATE)
     return Py_NewRef(apst.UPDATE);
-  // https://sqlite.org/forum/forumpost/09c94dfb08
+  /* https://sqlite.org/forum/forumpost/09c94dfb08 */
   return PyUnicode_FromFormat("Undocumented op %d", self->operation);
 }
 
@@ -1177,7 +1179,7 @@ APSWTableChange_pk_columns(APSWTableChange *self)
   PyObject *value = NULL, *set = PySet_New(NULL);
   if (!set)
     goto error;
-  // the abPK test is because of https://sqlite.org/forum/forumpost/09c94dfb08
+  /* ::TODO::  the abPK test is because of https://sqlite.org/forum/forumpost/09c94dfb08 */
   for (int i = 0; i < nCol && abPK; i++)
   {
     if (abPK[i])
