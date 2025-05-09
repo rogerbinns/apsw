@@ -56,7 +56,7 @@ res=$?
 [ $res -eq 0 -a -z "$NO_FI" ] && echo "Running $PYTHON tools/fi.py $FI_ARGS" && env PYTHONPATH=. $PYTHON tools/fi.py $FI_ARGS
 $GCOVWRAPPER gcov $GCOVOPTS apsw.gcno unicode.gcno > /dev/null
 mv sqlite3.c.gcov sqlite3/
-rm -f src/*.gcov
+rm -f src/*.gcov .coverage*
 mv *.gcov src/
 $PYTHON tools/coverageanalyser.py
 exit $res
