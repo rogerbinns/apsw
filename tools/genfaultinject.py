@@ -85,6 +85,7 @@ returns = {
     "pointer": """
             convert_value_to_pyobject convert_column_to_pyobject  allocfunccbinfo
             apsw_strdup convertutf8string MakeExistingException get_window_function_context
+            MakeTableChange
 
             PyModule_Create2 PyErr_NewExceptionWithDoc PySet_New
             PyUnicode_New  PyUnicode_AsUTF8 PyObject_GetAttr _PyObject_New PyUnicode_FromString

@@ -16,6 +16,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 
 #undef Connection_fts5_api
 #undef MakeExistingException
+#undef MakeTableChange
 #undef PyBool_FromLong
 #undef PyBytes_FromStringAndSize
 #undef PyCode_NewEmpty
@@ -249,6 +250,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_MakeExistingException = (typeof (_res_MakeExistingException))18;                                                                                       \
     }                                                                                                                                                               \
     _res_MakeExistingException;                                                                                                                                     \
+})
+#define MakeTableChange(...) \
+({                                                                                                                                                \
+    __auto_type _res_MakeTableChange = 0 ? MakeTableChange(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_MakeTableChange = (typeof (_res_MakeTableChange))APSW_FaultInjectControl("MakeTableChange", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_MakeTableChange))0x1FACADE == _res_MakeTableChange)                                                                         \
+       _res_MakeTableChange = MakeTableChange(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_MakeTableChange))0x2FACADE == _res_MakeTableChange)                                                                     \
+    {                                                                                                                                             \
+        MakeTableChange(__VA_ARGS__);                                                                                                             \
+        _res_MakeTableChange = (typeof (_res_MakeTableChange))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_MakeTableChange;                                                                                                                         \
 })
 #define PyBool_FromLong(...) \
 ({                                                                                                                                                \

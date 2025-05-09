@@ -876,9 +876,12 @@ APSWSession_get_changeset_size(APSWSession *self)
       return PyErr_Format(ExcInvalidContext, "The table change has gone out of scope");                                \
   } while (0)
 
+#undef MakeTableChange
 static APSWTableChange *
 MakeTableChange(sqlite3_changeset_iter *iter)
 {
+#include "faultinject.h"
+
   APSWTableChange *tc = (APSWTableChange *)_PyObject_New(&APSWTableChangeType);
   if (!tc)
     return NULL;
