@@ -328,6 +328,11 @@ class Session(unittest.TestCase):
             ErrorStreamOutput(1),
         )
 
+        cb = apsw.ChangesetBuilder()
+        cb.add(changeset)
+        cb.output_stream(StreamOutput())
+        self.assertRaises(ZeroDivisionError, cb.output_stream, ErrorStreamOutput(1))
+
         def handler(reason: int, change: apsw.TableChange):
             if reason in (
                 apsw.SQLITE_CHANGESET_DATA,
@@ -482,6 +487,20 @@ class Session(unittest.TestCase):
         self.assertRaises(apsw.InvalidContextError, builder.add_change, tc)
         builder.close()
         builder.close()
+
+        self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.add, changeset)
+        for table_change in apsw.Changeset.iter(changeset):
+            self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.add_change, table_change)
+            break
+
+        self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.output)
+        self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.output_stream, StreamOutput())
+
+        builder = apsw.ChangesetBuilder()
+        db2 = apsw.Connection("")
+        builder.schema(db2, "main")
+        # this should close the builder
+        db2.close()
 
         self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.add, changeset)
         for table_change in apsw.Changeset.iter(changeset):

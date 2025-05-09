@@ -295,9 +295,13 @@ show_changeset("Bob changseset", bob_changeset)
 # The :class:`ChangesetBuilder` can be used to combine multiple
 # changesets and individual :class:`TableChange`.  In this example
 # we'll build up all the changes to the ``items`` table from
-# multiple changesets.
+# multiple changesets.  :meth:`ChangesetBuilder.schema` is used
+# to ensure the changes map to the expected database table
+# structure (names, primary keys, number of columns).
 
 items = apsw.ChangesetBuilder()
+
+items.schema(connection, "main")
 
 for source in (changeset, alice_changeset, bob_changeset):
     for change in apsw.Changeset.iter(source):

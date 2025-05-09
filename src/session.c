@@ -1764,7 +1764,7 @@ APSWChangesetIterator_dealloc(APSWChangesetIterator *self)
 
   This object wraps a `sqlite3_changegroup <https://sqlite.org/session/changegroup.html>`__
   letting you concatenate changesets and individual :class:`TableChange` into one larger
-  chanegset.
+  changeset.
 
  */
 
@@ -1840,6 +1840,7 @@ APSWChangesetBuilder_close(APSWChangesetBuilder *self, PyObject *const *fast_arg
   }
 
   APSWChangesetBuilder_close_internal(self);
+  MakeExistingException();
 
   if (PyErr_Occurred())
     return NULL;
@@ -1960,6 +1961,9 @@ APSWChangesetBuilder_schema(APSWChangesetBuilder *self, PyObject *const *fast_ar
   /* from this point on, the schema has been set, but we could
      fail at the Python level.  There is nothing we can do about
      that, and it is unlikely in practise. */
+
+  self->connection = db;
+  Py_INCREF(self->connection);
 
   PyObject *weakref = NULL;
 
