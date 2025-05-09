@@ -6010,7 +6010,8 @@ class APSW(unittest.TestCase):
             # check not using C++ style comments
             code = read_whole_file(filename, "rt").replace("http://", "http:__").replace("https://", "https:__")
             if "//" in code:
-                self.fail("// style comment in " + filename)
+                lines = [linenum for linenum, line in enumerate(code.splitlines(), 1) if "//" in line]
+                self.fail(f"// style comment in {filename} lines {lines}")
 
             if filename.replace("\\", "/") != "src/pyutil.c":
                 for n in self.should_use_compat:
