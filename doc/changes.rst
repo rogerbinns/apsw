@@ -4,7 +4,7 @@ Change History
 .. currentmodule:: apsw
 
 You may also be interested in the `SQLite release history
-<https://www.sqlite.org/chronology.html>`__ and `Python release
+<https://www.sqlite.org/changes.html>`__ and `Python release
 history <https://devguide.python.org/versions/>`__.
 
 APSW changes by version
