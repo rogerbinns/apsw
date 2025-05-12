@@ -151,16 +151,6 @@ Extension configuration
 
  */
 
-/* ::TODO:: GIL/mutexes
-
-  The extension is weird around mutexes.  Eg generating a patch set takes a db
-  mutex after issuing some SQL which is the wrong order.
-
-  We probably want to do what the rest of APSW does which is to mutex_try the
-  database for all calls, and then possibly release the GIL.  This will need
-  some further examination of the session extension code.
-*/
-
 /** .. method:: session_config(op: int, *args: Any) -> Any
 
  :param op: One of the `sqlite3session options <https://www.sqlite.org/session/c_session_config_strmsize.html>`__
@@ -484,10 +474,6 @@ APSWSession_get_change_patch_set(APSWSession *self, int changeset)
 {
   int nChangeset = 0;
   void *pChangeset = NULL;
-
-  /* ::TODO:: session takes a database mutex to generate the changeset, so
-   we need to do the mutex try thing here.  also check the session code
-   for other locations it does mutex operations */
 
   int rc = changeset ? sqlite3session_changeset(self->session, &nChangeset, &pChangeset)
                      : sqlite3session_patchset(self->session, &nChangeset, &pChangeset);
@@ -1179,7 +1165,7 @@ APSWTableChange_pk_columns(APSWTableChange *self)
   PyObject *value = NULL, *set = PySet_New(NULL);
   if (!set)
     goto error;
-  /* ::TODO::  the abPK test is because of https://sqlite.org/forum/forumpost/09c94dfb08 */
+  /*  the abPK test is because of https://sqlite.org/forum/forumpost/09c94dfb08 */
   for (int i = 0; i < nCol && abPK; i++)
   {
     if (abPK[i])
