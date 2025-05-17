@@ -54,7 +54,9 @@ echo "Running $PYTHON $args"
 env PYTHONPATH=. $PYTHON $args
 res=$?
 [ $res -eq 0 -a -z "$NO_FI" ] && echo "Running $PYTHON tools/fi.py $FI_ARGS" && env PYTHONPATH=. $PYTHON tools/fi.py $FI_ARGS
-$GCOVWRAPPER gcov $GCOVOPTS apsw.gcno unicode.gcno > /dev/null
+$GCOVWRAPPER gcov $GCOVOPTS *.gcno > /dev/null
+
+echo ; echo
 mv sqlite3.c.gcov sqlite3/
 rm -f src/*.gcov .coverage*
 mv *.gcov src/

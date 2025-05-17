@@ -4,6 +4,7 @@
 #
 # Work out how much coverage we actually have across the various source files
 
+from filecmp import cmp
 import glob
 import os
 
@@ -17,15 +18,29 @@ def output(filename: str, executed: int, total: int) -> None:
     print("".join(op))
 
 
-lines_executed = 0
-lines_total = 0
+# we want sqlite3 first, then unicodedb, then unicode, then the rest
+def priority(n):
+    if "/sqlite3.c" in n:
+        return 1
+    if "/_unicodedb.c" in n:
+        return 2
+    if "/unicode.c" in n:
+        return 3
+    return 4
 
-names = glob.glob("src/*.c.gcov")
-names.sort()
+
+names = [fn for fn in glob.glob("src/*.c.gcov") if "faultinject.c" not in fn] + ["sqlite3/sqlite3.c.gcov"]
+names.sort(key=lambda x: (priority(x), x))
+
+
+lines_executed = lines_total = 0
+
+lastp = None
 
 for f in names:
-    if f.startswith("sqlite3") or f.endswith("faultinject.c.gcov") or f.endswith("_unicodedb.c.gcov"):
-        continue
+    p = priority(f)
+    if p == 4 and lastp == 3:
+        lines_executed = lines_total = 0
     file_exec = 0
     file_total = 0
 
@@ -52,7 +67,12 @@ for f in names:
             lines_total += 1
             file_total += 1
     n = os.path.splitext(f)[0]
+    if lastp == 3:
+        print("-" * 30 + "\n")
     output(n, file_exec, file_total)
+    if p < 4:
+        print()
+    lastp = p
 
 print("\n")
 output("Total", lines_executed, lines_total)
