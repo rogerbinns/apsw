@@ -151,6 +151,22 @@ Extension configuration
 
  */
 
+/*
+Notes on releasing the GIL
+
+This code currently doesn't release the GIL anywhere.  The various
+objects are not thread safe nor re-entrant in the SQLite code, so that
+would have to be added.  Some of them lock the database mutex which is
+a suitable alternative but there are still race conditions with close
+being called in a different thread being an easy way to crash things.
+
+The apply and changeset generate methods are the best candidates for
+GIL release, so we'll wait until someone requests it to have a nice
+test case.  I believe that most of the time the data will be so small
+that it won't have any benefit.
+
+*/
+
 /** .. method:: session_config(op: int, *args: Any) -> Any
 
  :param op: One of the `sqlite3session options <https://www.sqlite.org/session/c_session_config_strmsize.html>`__
