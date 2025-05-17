@@ -734,7 +734,7 @@ class Blob:
 class ChangesetBuilder:
     """This object wraps a `sqlite3_changegroup <https://sqlite.org/session/changegroup.html>`__
     letting you concatenate changesets and individual :class:`TableChange` into one larger
-    chanegset."""
+    changeset."""
 
     def add(self, changeset: ChangesetInput) -> None:
         """:param changeset: The changeset as the bytes, or a stream

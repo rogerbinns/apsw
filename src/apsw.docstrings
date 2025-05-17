@@ -791,7 +791,7 @@
 
 #define  ChangesetBuilder_class_DOC "This object wraps a `sqlite3_changegroup <https://sqlite.org/session/changegroup.html>`__\n" \
 "letting you concatenate changesets and individual :class:`TableChange` into one larger\n" \
-"chanegset.\n" 
+"changeset.\n" 
 
 #define  ChangesetBuilder_close_DOC "close($self)\n--\n\nChangesetBuilder.close() -> None\n\n" \
 "Releases the builder\n" \
