@@ -10,6 +10,11 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.50.0.0
+========
+
+Full support for the :doc:`session`
+
 3.49.2.0
 ========
 

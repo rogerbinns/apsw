@@ -27,8 +27,9 @@ developer experience.  See more about the :doc:`differences between
 APSW and sqlite3 <pysqlite>`.
 
 Because of the complete integration with SQLite, APSW offers useful
-additional functionality such as :doc:`these <ext>` and comprehensive
-:doc:`full text search support <textsearch>`.
+additional functionality such as :doc:`these <ext>`, comprehensive
+:doc:`full text search support <textsearch>` (including Unicode), and
+the :doc:`session`.
 
 Dependencies
 ------------
