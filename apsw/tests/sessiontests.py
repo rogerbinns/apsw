@@ -523,9 +523,14 @@ class Session(unittest.TestCase):
 
         self.assertRaises(TypeError, apsw.Changeset.iter, changeset, 1 + 4j)
 
-        # can't add these to a changegroup so can't check further
-        for tc in apsw.Changeset.iter(changeset, flags=apsw.SQLITE_CHANGESETSTART_INVERT):
-            str(tc)
+        self.assertNotEqual(apsw.SQLITE_CHANGESETSTART_INVERT, 0)
+
+        # streaming and non-streaming should give identical content
+        # but we have to filter out the address
+        non = [str(tc).split(", at 0x")[0] for tc in apsw.Changeset.iter(changeset, flags=apsw.SQLITE_CHANGESETSTART_INVERT)]
+        streamed  = [str(tc).split(", at 0x")[0] for tc in apsw.Changeset.iter(StreamInput(changeset), flags=apsw.SQLITE_CHANGESETSTART_INVERT)]
+        self.assertEqual(non, streamed)
+
 
     def testCorrupt(self):
         "corrupt changesets"
