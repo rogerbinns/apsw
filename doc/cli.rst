@@ -373,6 +373,9 @@ List connections, or switch active connection
 This covers all connections, not just those started in this shell.  Closed
 connections are not shown.
 
+For each connection, its index for switching active connection, (VFS used),
+"filename", and open flags are shown.
+
 
 .databases
 ----------
@@ -630,11 +633,14 @@ Opens a database connection
 
 Options are:
 
---wipe     Closes any existing connections in this process referring to
-           the same file  and deletes the database file, journals etc
-           before opening
+--wipe         Closes any existing connections in this process referring to
+               the same file and deletes the database file, journals etc
+               before opening
 
---vfs VFS  Which vfs to use when opening
+--vfs VFS      Which vfs to use when opening
+
+--flags FLAGS  Open flags to use, in lower or upper case.  Use | to
+               combine. Default is  READWRITE|CREATE|URI
 
 If ``FILE`` is omitted then a memory database is opened
 
