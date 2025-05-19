@@ -166,19 +166,25 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
 static Py_hash_t
 apsw_hash_bytes(void *data, Py_ssize_t nbytes)
 {
-  /* This is the same algorithm as fts3StrHash from the SQLite source
-     so it is battle tested.  There is also strhash in SQLite showing
-     an algorithm from Knuth but that one has the problem of being
-     32 bit specific and we do 64 bit mostly. */
+  /* This is the DJB2 hash algorithm which is effective, simple, and
+     works particularly well on ascii text which most SQL is.
+
+     Previously a similar algorithm from SQLite was used which is a shift
+     and two xors.  djb2 has fewer collisions so speedtest with
+     larger cache sizes performs a few percent better.
+
+     I did experiment with just using the length as the hash
+     but it was not a good discriminator.
+  */
 
   const unsigned char *cdata = (const unsigned char *)data;
 
-  /* unsigned must be used because signed overflow is undefined behaviour*/
-  Py_uhash_t hash = 0;
+  /* unsigned must be used because signed overflow is undefined behaviour */
+  Py_uhash_t hash = 5381;
 
   while (nbytes > 0)
   {
-    hash = (hash << 3) ^ hash ^ *cdata;
+    hash = (hash * 33) ^ *cdata;
     cdata++;
     nbytes--;
   }
