@@ -356,7 +356,7 @@ distributions, who want APSW to use the system shared SQLite library.
 
 * Use the source file from `github releases
   <https://github.com/rogerbinns/apsw/releases>`__.  Note you should
-  use the zip file including the version number, not the github
+  use the zip or tar.gz file including the version number, not the github
   repository copy at the end.  The file is signed and :ref:`can be
   verified <verifydownload>`.
 
