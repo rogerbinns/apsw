@@ -405,19 +405,22 @@ dedicated to testing than makes up the actual database functionality.
 APSW includes tests which use the standard Python testing modules to
 verify correct operation. New code is developed alongside the tests.
 Reported issues also have test cases to ensure the issue doesn't
-happen or doesn't happen again.:
+happen or doesn't happen again.  Use ``python3 -m apsw.tests`` to
+run all the tests.  You can provide a ``-v`` option to see each test
+as it is run.
 
 .. code-block:: output
 
-                  Python  /usr/bin/python3 sys.version_info(major=3, minor=12, micro=7, releaselevel='final', serial=0) 64bit ELF
-  Testing with APSW file  /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so
-            APSW version  3.47.0.0
-      SQLite lib version  3.47.0
-  SQLite headers version  3047000
+  $ python3 -m apsw.tests
+                  Python  /space/apsw/.venv/bin/python3 sys.version_info(major=3, minor=13, micro=3, releaselevel='final', serial=0) 64bit ELF
+  Testing with APSW file  /space/apsw/apsw/__init__.cpython-313-x86_64-linux-gnu.so
+            APSW version  3.50.0.0
+      SQLite lib version  3.50.0
+  SQLite headers version  3050000
       Using amalgamation  True
-  .....................................................................................................................................................................
+  ......................................................................................................................................................................................
   ----------------------------------------------------------------------
-  Ran 165 tests in 29.844s
+  Ran 182 tests in 57.382s
 
   OK
 
