@@ -1145,6 +1145,9 @@ Enter ".help" for instructions
 
         This covers all connections, not just those started in this
         shell.  Closed connections are not shown.
+
+        For each connection, its index for switching active connection,
+        (VFS used), "filename", and open flags are shown.
         """
         self.db_references.add(self.db)
         dbs = []
@@ -1161,9 +1164,14 @@ Enter ".help" for instructions
                 self.write(self.stdout, co.bold + "(Current connection is closed)" + co.bold_ + "\n")
             for i, c in enumerate(dbs):
                 sel = "*" if self.db is c else " "
+                flags = []
+                # lower values are more meaningful
+                for value, name in sorted((k, v) for k,v in apsw.mapping_open_flags.items() if isinstance(k, int)):
+                    if c.open_flags & value:
+                        flags.append(name[len("SQLITE_OPEN_"):])
                 self.write(
                     self.stdout,
-                    f'{co.bold}{sel}{co.bold_} {co.vnumber}{i: 2}{co.vnumber_} - ({c.open_vfs}) "{co.vstring}{c.filename}{co.vstring_}"\n',
+                    f'{co.bold}{sel}{co.bold_} {co.vnumber}{i: 2}{co.vnumber_} - ({c.open_vfs}) "{co.vstring}{c.filename}{co.vstring_}"    ({'|'.join(flags)})\n',
                 )
         elif len(cmd) == 1:
             c = dbs[int(cmd[0])]
@@ -2354,17 +2362,21 @@ Enter ".help" for instructions
 
         Options are:
 
-        --wipe     Closes any existing connections in this process referring to
-                   the same file  and deletes the database file, journals etc
-                   before opening
+        --wipe         Closes any existing connections in this process referring to
+                       the same file and deletes the database file, journals etc
+                       before opening
 
-        --vfs VFS  Which vfs to use when opening
+        --vfs VFS      Which vfs to use when opening
+
+        --flags FLAGS  Open flags to use, in lower or upper case.  Use | to
+                       combine. Default is  READWRITE|CREATE|URI
 
         If FILE is omitted then a memory database is opened
         """
         wipe = False
         vfs = None
         dbname = None
+        flags = apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE | apsw.SQLITE_OPEN_URI
         c = cmd
         while c:
             p = c.pop(0)
@@ -2374,6 +2386,16 @@ Enter ".help" for instructions
                     continue
                 if p == "--vfs":
                     vfs = c.pop(0)
+                    continue
+                if p == "--flags":
+                    flag_names = c.pop(0)
+                    flags = 0
+                    for flag in flag_names.split("|"):
+                        flag = flag.strip().upper()
+                        name = f"SQLITE_OPEN_{ flag }" if not flag.startswith("SQLITE_OPEN") else flag
+                        if name not in apsw.mapping_open_flags:
+                            raise self.Error(f"'{name}' is not a known open flag")
+                        flags |= apsw.mapping_open_flags[name]
                     continue
                 raise self.Error("Unknown open param: " + p)
             if dbname is not None:
@@ -2397,7 +2419,7 @@ Enter ".help" for instructions
         self.db_references.add(self.db)
         self.dbfilename = dbname if dbname is not None else ""
         self._db = apsw.Connection(
-            self.dbfilename, vfs=vfs, flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE
+            self.dbfilename, vfs=vfs, flags=flags
         )
         self._apply_fts()
 

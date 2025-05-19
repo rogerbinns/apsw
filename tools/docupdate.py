@@ -157,7 +157,7 @@ shell.command_help([])
 
 def backtickify(s):
     s = s.group(0)
-    if s in {"A", "I", "O", "SQL", "APSW", "TCL", "C", "HTML", "JSON", "CSV", "TSV", "US", "VFS"}:
+    if s in {"A", "I", "O", "SQL", "APSW", "TCL", "C", "HTML", "JSON", "CSV", "TSV", "US", "VFS", "FLAGS"}:
         return s
     if s == "'3'":  # example in command_parameter
         return "``'3'``"

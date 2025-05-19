@@ -8734,6 +8734,21 @@ class APSW(unittest.TestCase):
         self.assertIn(f"({N})", get(fh[1]))
         del ref
 
+        reset()
+        cmd(f".open {fn}\n.connection")
+        s.cmdloop()
+        # uri should be on by default
+        self.assertIn("URI", get(fh[1]).splitlines()[-1])
+        reset()
+        cmd(f".open --flags READWRITE|CREATE {fn}\n.connection")
+        s.cmdloop()
+        self.assertNotIn("URI", get(fh[1]).splitlines()[-1])
+        reset()
+        cmd(f".open --flags readwrite|orange {fn}")
+        s.cmdloop()
+        isnotempty(fh[2])
+        self.assertIn("'SQLITE_OPEN_ORANGE' is not a known open flag", get(fh[2]))
+
         ###
         ### Some test data
         ###
