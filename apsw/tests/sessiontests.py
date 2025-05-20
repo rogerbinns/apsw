@@ -685,7 +685,7 @@ class Session(unittest.TestCase):
 
         self.db.execute("update [delete] set two = 77")
 
-        for handler_return in (None, 3.4, 1 + 5j, "hello", sys.maxsize * 1024):
+        for handler_return in (None, apsw, 1 + 5j, "hello", sys.maxsize * 1024):
             self.assertRaises(
                 (TypeError, OverflowError),
                 apsw.Changeset.apply,
