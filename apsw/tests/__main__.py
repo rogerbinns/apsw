@@ -5061,13 +5061,12 @@ class APSW(unittest.TestCase):
         self.assertTrue("rollback" in traces)
 
     def testIssue142(self):
-        "Issue 142: bytes from system during dump"
-        orig_strftime = time.strftime
-        orig_getuser = getpass.getuser
+        # not really relevant any more.  python 2 getpass and strftime could
+        # return bytes not str.  they are used in a fstring now so it doesn't
+        # matter, and python 3 only does str.  in strict checking mode there
+        # would be a warning about str of bytes.
         fh = []
         try:
-            time.strftime = lambda arg: b"gjkTIMEJUNKhgjhg\xfe\xdf"
-            getpass.getuser = lambda: b"\x81\x82\x83gjkhgUSERJUNKjhg\xfe\xdf"
             fh = [open(TESTFILEPREFIX + "test-shell-" + t, "w+", encoding="utf8") for t in ("in", "out", "err")]
             kwargs = {"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}
 
@@ -5083,14 +5082,9 @@ class APSW(unittest.TestCase):
             for row in rows:
                 self.assertTrue(row[0] in out)
 
-            self.assertTrue("TIMEJUNK" in out)
-            self.assertTrue("USERJUNK" in out)
-
         finally:
             for f in fh:
                 f.close()
-            time.strftime = orig_strftime
-            getpass.getuser = orig_getuser
 
     def testIssue186(self):
         "Issue 186: desription cache between statements"
