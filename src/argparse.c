@@ -23,7 +23,7 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
   size_t cmp;
   int res = -1;
   if (n)
-    for (cmp = 0; cmp < n_kwlist; cmp++)
+    for (cmp = 0; cmp < n_kwlist && kwlist[cmp]; cmp++)
     {
       if (0 == strcmp(n, kwlist[cmp]))
       {

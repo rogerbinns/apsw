@@ -798,7 +798,7 @@
 "\n" \
 "Calls: `sqlite3changegroup_delete <https://sqlite.org/session/sqlite3changegroup_delete.html>`__\n" 
 
-#define ChangesetBuilder_close_KWNAMES 
+#define ChangesetBuilder_close_KWNAMES NULL
 #define ChangesetBuilder_close_USAGE "ChangesetBuilder.close() -> None"
 
 #define ChangesetBuilder_close_CHECK do { \
@@ -810,7 +810,7 @@
 "\n" \
 "Calls: `sqlite3changegroup_new <https://sqlite.org/session/sqlite3changegroup_new.html>`__\n" 
 
-#define ChangesetBuilder_init_KWNAMES 
+#define ChangesetBuilder_init_KWNAMES NULL
 #define ChangesetBuilder_init_USAGE "ChangesetBuilder.__init__()"
 
 #define ChangesetBuilder_init_CHECK do { \
@@ -822,7 +822,7 @@
 "\n" \
 "Calls: `sqlite3changegroup_output <https://sqlite.org/session/sqlite3changegroup_output.html>`__\n" 
 
-#define ChangesetBuilder_output_KWNAMES 
+#define ChangesetBuilder_output_KWNAMES NULL
 #define ChangesetBuilder_output_USAGE "ChangesetBuilder.output() -> bytes"
 
 #define ChangesetBuilder_output_CHECK do { \
@@ -3606,7 +3606,7 @@
 "\n" \
 "Calls: `sqlite3rebaser_create <https://sqlite.org/session/sqlite3rebaser_create.html>`__\n" 
 
-#define Rebaser_init_KWNAMES 
+#define Rebaser_init_KWNAMES NULL
 #define Rebaser_init_USAGE "Rebaser.__init__()"
 
 #define Rebaser_init_CHECK do { \
@@ -3696,7 +3696,7 @@
 "\n" \
 "Calls: `sqlite3session_delete <https://sqlite.org/session/sqlite3session_delete.html>`__\n" 
 
-#define Session_close_KWNAMES 
+#define Session_close_KWNAMES NULL
 #define Session_close_USAGE "Session.close() -> None"
 
 #define Session_close_CHECK do { \

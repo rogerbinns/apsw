@@ -676,7 +676,8 @@ def do_argparse(item):
     code = "\n".join(line for line in code.split("\n") if line.strip())
 
     res.insert(0, f"""#define { item['symbol'] }_USAGE "{ get_usage(item) }"\n""")
-    n = ", ".join(f'"{ a }"' for a in kwlist)
+    n = ", ".join(f'"{ a }"' for a in kwlist) if kwlist else "NULL"
+
     res.insert(0, f"""#define { item['symbol'] }_KWNAMES { n }""")
 
     check_and_update(f"{ item['symbol'] }_CHECK", code)
