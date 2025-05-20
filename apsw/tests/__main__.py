@@ -10647,7 +10647,11 @@ shell.write(shell.stdout, "hello world\\n")
         )
         self.assertEqual(dcrf.get_type("an integer"), int)
         for row in self.db.execute("select * from foo"):
-            a = row.__annotations__
+            self.assertTrue(dataclasses.is_dataclass(row))
+            if hasattr(inspect, "get_annotations"):
+                a= inspect.get_annotations(row.__class__)
+            else:
+                a = row.__class__.__annotations__
             self.assertEqual(a["one"], typing.Any)
             self.assertEqual(a["two"], int)
             self.assertEqual(a["three"], str)
