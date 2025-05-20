@@ -257,7 +257,7 @@ src/_unicodedb.c: tools/ucdprops2code.py ## Update generated Unicode database lo
 	$(PYTHON) tools/ucdprops2code.py $@
 
 # building a python debug interpreter
-PYDEBUG_VER=3.13.3
+PYDEBUG_VER=3.14.0b1
 PYDEBUG_DIR=/space/pydebug
 PYTHREAD_VER=$(PYDEBUG_VER)
 PYTHREAD_DIR=/space/pythread
@@ -268,7 +268,7 @@ pydebug: ## Build a debug python including address sanitizer.  Extensions it bui
 	set -x && cd "$(PYDEBUG_DIR)" && find . -delete && \
 	curl https://www.python.org/ftp/python/`echo $(PYDEBUG_VER) | sed 's/[abr].*//'`/Python-$(PYDEBUG_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYDEBUG_VER) && \
-	./configure --with-address-sanitizer --without-pymalloc --with-pydebug --prefix="$(PYDEBUG_DIR)" \
+	./configure --with-address-sanitizer --with-undefined-behavior-sanitizer --without-pymalloc --with-pydebug --prefix="$(PYDEBUG_DIR)" \
 	--without-freelists --with-assertions && \
 	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYDEBUG_DIR)/bin/python3
