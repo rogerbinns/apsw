@@ -3666,6 +3666,13 @@
 "\n" \
 "Calls: `sqlite3session_changeset <https://sqlite.org/session/sqlite3session_changeset.html>`__\n" 
 
+#define Session_changeset_KWNAMES NULL
+#define Session_changeset_USAGE "Session.changeset() -> bytes"
+
+#define Session_changeset_CHECK do { \
+} while(0)
+
+
 #define  Session_changeset_size_DOC ":type: int\n" \
 "\n" \
 "Returns upper limit on changeset size, but only if :meth:`Session.config`\n" \
@@ -3782,6 +3789,13 @@
 "conflicts.\n" \
 "\n" \
 "Calls: `sqlite3session_patchset <https://sqlite.org/session/sqlite3session_patchset.html>`__\n" 
+
+#define Session_patchset_KWNAMES NULL
+#define Session_patchset_USAGE "Session.patchset() -> bytes"
+
+#define Session_patchset_CHECK do { \
+} while(0)
+
 
 #define  Session_patchset_stream_DOC "patchset_stream($self,output)\n--\n\nSession.patchset_stream(output: SessionStreamOutput) -> None\n\n" \
 "Produces a patchset of the session so far in a stream\n" \

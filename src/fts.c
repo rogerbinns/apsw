@@ -236,15 +236,17 @@ error:
 
 */
 static PyObject *
-APSWFTS5Tokenizer_call(APSWFTS5Tokenizer *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
-                       PyObject *fast_kwnames)
+APSWFTS5Tokenizer_call(PyObject *self_, PyObject *const *fast_args, size_t nargsf, PyObject *fast_kwnames)
 {
+  APSWFTS5Tokenizer *self = (APSWFTS5Tokenizer *)self_;
   Py_buffer utf8_buffer;
   PyObject *utf8;
   const char *locale = NULL;
   Py_ssize_t locale_size = 0;
   int include_offsets = 1, include_colocated = 1, flags;
   int rc = SQLITE_OK;
+
+  Py_ssize_t fast_nargs = PyVectorcall_NARGS(nargsf);
 
   {
     FTS5Tokenizer_call_CHECK;
@@ -310,8 +312,9 @@ finally:
   The :class:`Connection` this tokenizer is registered with.
 */
 static PyObject *
-APSWFTS5Tokenizer_connection(APSWFTS5Tokenizer *self)
+APSWFTS5Tokenizer_connection(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWFTS5Tokenizer *self = (APSWFTS5Tokenizer *)self_;
   return Py_NewRef((PyObject *)self->db);
 }
 
@@ -321,8 +324,9 @@ APSWFTS5Tokenizer_connection(APSWFTS5Tokenizer *self)
   The arguments the tokenizer was created with.
 */
 static PyObject *
-APSWFTS5Tokenizer_args(APSWFTS5Tokenizer *self)
+APSWFTS5Tokenizer_args(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWFTS5Tokenizer *self = (APSWFTS5Tokenizer *)self_;
   return Py_NewRef(self->args);
 }
 
@@ -332,20 +336,23 @@ APSWFTS5Tokenizer_args(APSWFTS5Tokenizer *self)
   Tokenizer name
 */
 static PyObject *
-APSWFTS5Tokenizer_name(APSWFTS5Tokenizer *self)
+APSWFTS5Tokenizer_name(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWFTS5Tokenizer *self = (APSWFTS5Tokenizer *)self_;
   return PyUnicode_FromString(self->name);
 }
 
 static PyObject *
-APSWFTS5Tokenizer_tp_str(APSWFTS5Tokenizer *self)
+APSWFTS5Tokenizer_tp_str(PyObject *self_)
 {
+  APSWFTS5Tokenizer *self = (APSWFTS5Tokenizer *)self_;
   return PyUnicode_FromFormat("<apsw.FTS5Tokenizer object \"%s\" args %S at %p>", self->name, self->args, self);
 }
 
 static void
-APSWFTS5Tokenizer_dealloc(APSWFTS5Tokenizer *self)
+APSWFTS5Tokenizer_dealloc(PyObject *self_)
 {
+  APSWFTS5Tokenizer *self = (APSWFTS5Tokenizer *)self_;
   Py_XDECREF(self->db);
   Py_XDECREF(self->args);
   PyMem_Free((void *)self->name);
@@ -668,10 +675,17 @@ fts5extensionapi_release(APSWFTS5ExtensionApi *extapi)
   }
 }
 
+/* it would be preferable to do this as a single variadic macro to
+   call a provided method and parameters.  sadly msvc can't be relied
+   upon to get them correct so we use these two */
+#define EXTAPI (((APSWFTS5ExtensionApi *)self)->pApi)
+
+#define EXTFTS (((APSWFTS5ExtensionApi *)self)->pFts)
+
 #define FTSEXT_CHECK(v)                                                                                                \
   do                                                                                                                   \
   {                                                                                                                    \
-    if (!self->pApi)                                                                                                   \
+    if (!EXTAPI)                                                                                                       \
     {                                                                                                                  \
       PyErr_Format(ExcInvalidContext, "apsw.FTS5ExtensionApi is being used outside of the callback it was valid in");  \
       return v;                                                                                                        \
@@ -685,10 +699,10 @@ fts5extensionapi_release(APSWFTS5ExtensionApi *extapi)
   <https://www.sqlite.org/fts5.html#xPhraseCount>`__
 */
 static PyObject *
-APSWFTS5ExtensionApi_xPhraseCount(APSWFTS5ExtensionApi *self)
+APSWFTS5ExtensionApi_xPhraseCount(PyObject *self, void *Py_UNUSED(unused))
 {
   FTSEXT_CHECK(NULL);
-  return PyLong_FromLong(self->pApi->xPhraseCount(self->pFts));
+  return PyLong_FromLong(EXTAPI->xPhraseCount(EXTFTS));
 }
 
 /** .. attribute:: column_count
@@ -698,10 +712,10 @@ APSWFTS5ExtensionApi_xPhraseCount(APSWFTS5ExtensionApi *self)
   <https://www.sqlite.org/fts5.html#xColumnCount>`__
 */
 static PyObject *
-APSWFTS5ExtensionApi_xColumnCount(APSWFTS5ExtensionApi *self)
+APSWFTS5ExtensionApi_xColumnCount(PyObject *self, void *Py_UNUSED(unused))
 {
   FTSEXT_CHECK(NULL);
-  return PyLong_FromLong(self->pApi->xColumnCount(self->pFts));
+  return PyLong_FromLong(EXTAPI->xColumnCount(EXTFTS));
 }
 
 /** .. attribute:: row_count
@@ -711,11 +725,11 @@ APSWFTS5ExtensionApi_xColumnCount(APSWFTS5ExtensionApi *self)
   <https://www.sqlite.org/fts5.html#xRowCount>`__
 */
 static PyObject *
-APSWFTS5ExtensionApi_xRowCount(APSWFTS5ExtensionApi *self)
+APSWFTS5ExtensionApi_xRowCount(PyObject *self, void *Py_UNUSED(unused))
 {
   FTSEXT_CHECK(NULL);
   sqlite3_int64 row_count;
-  int rc = self->pApi->xRowCount(self->pFts, &row_count);
+  int rc = EXTAPI->xRowCount(EXTFTS, &row_count);
   APSW_FAULT(xRowCountErr, , rc = SQLITE_NOMEM);
   if (rc != SQLITE_OK)
   {
@@ -731,10 +745,10 @@ APSWFTS5ExtensionApi_xRowCount(APSWFTS5ExtensionApi *self)
   Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__
 */
 static PyObject *
-APSWFTS5ExtensionApi_xRowid(APSWFTS5ExtensionApi *self)
+APSWFTS5ExtensionApi_xRowid(PyObject *self, void *Py_UNUSED(unused))
 {
   FTSEXT_CHECK(NULL);
-  return PyLong_FromLongLong(self->pApi->xRowid(self->pFts));
+  return PyLong_FromLongLong(EXTAPI->xRowid(EXTFTS));
 }
 
 /** .. attribute:: aux_data
@@ -757,23 +771,23 @@ auxdata_xdelete(void *auxdata)
 }
 
 static PyObject *
-APSWFTS5ExtensionApi_xGetAuxdata(APSWFTS5ExtensionApi *self)
+APSWFTS5ExtensionApi_xGetAuxdata(PyObject *self, void *Py_UNUSED(unused))
 {
   FTSEXT_CHECK(NULL);
 
-  PyObject *data = self->pApi->xGetAuxdata(self->pFts, 0);
+  PyObject *data = EXTAPI->xGetAuxdata(EXTFTS, 0);
   if (!data)
     data = Py_None;
   return Py_NewRef(data);
 }
 
 static int
-APSWFTS5ExtensionApi_xSetAuxdata(APSWFTS5ExtensionApi *self, PyObject *value)
+APSWFTS5ExtensionApi_xSetAuxdata(PyObject *self, PyObject *value, void *Py_UNUSED(unused))
 {
   FTSEXT_CHECK(-1);
 
   int rc;
-  APSW_FAULT(xSetAuxDataErr, rc = self->pApi->xSetAuxdata(self->pFts, value, auxdata_xdelete), rc = SQLITE_NOMEM);
+  APSW_FAULT(xSetAuxDataErr, rc = EXTAPI->xSetAuxdata(EXTFTS, value, auxdata_xdelete), rc = SQLITE_NOMEM);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -794,20 +808,20 @@ APSWFTS5ExtensionApi_xSetAuxdata(APSWFTS5ExtensionApi *self, PyObject *value)
   `xQueryToken <https://www.sqlite.org/fts5.html#xQueryToken>`__
 */
 static PyObject *
-APSWFTS5ExtensionApi_phrases(APSWFTS5ExtensionApi *self)
+APSWFTS5ExtensionApi_phrases(PyObject *self, void *Py_UNUSED(unused))
 {
   FTSEXT_CHECK(NULL);
   PyObject *outside = NULL, *phrase = NULL;
   int phrase_num, token_num;
 
-  int nphrases = self->pApi->xPhraseCount(self->pFts);
+  int nphrases = EXTAPI->xPhraseCount(EXTFTS);
 
   outside = PyTuple_New(nphrases);
   if (!outside)
     goto error;
   for (phrase_num = 0; phrase_num < nphrases; phrase_num++)
   {
-    int ntokens = self->pApi->xPhraseSize(self->pFts, phrase_num);
+    int ntokens = EXTAPI->xPhraseSize(EXTFTS, phrase_num);
     phrase = PyTuple_New(ntokens);
     if (!phrase)
       goto error;
@@ -815,9 +829,9 @@ APSWFTS5ExtensionApi_phrases(APSWFTS5ExtensionApi *self)
     {
       const char *pToken = NULL;
       int nToken = 0;
-      if (self->pApi->iVersion >= 3)
+      if (EXTAPI->iVersion >= 3)
       {
-        int rc = self->pApi->xQueryToken(self->pFts, phrase_num, token_num, &pToken, &nToken);
+        int rc = EXTAPI->xQueryToken(EXTFTS, phrase_num, token_num, &pToken, &nToken);
         APSW_FAULT(xQueryTokenErr, , rc = SQLITE_NOMEM);
         if (rc != SQLITE_OK)
         {
@@ -853,11 +867,11 @@ error:
   <https://www.sqlite.org/fts5.html#xInstCount>`__
 */
 static PyObject *
-APSWFTS5ExtensionApi_xInstCount(APSWFTS5ExtensionApi *self)
+APSWFTS5ExtensionApi_xInstCount(PyObject *self, void *Py_UNUSED(unused))
 {
   FTSEXT_CHECK(NULL);
   int inst_count;
-  int rc = self->pApi->xInstCount(self->pFts, &inst_count);
+  int rc = EXTAPI->xInstCount(EXTFTS, &inst_count);
   APSW_FAULT(xInstCountErr, , rc = SQLITE_NOMEM);
   if (rc != SQLITE_OK)
   {
@@ -873,7 +887,7 @@ APSWFTS5ExtensionApi_xInstCount(APSWFTS5ExtensionApi *self)
   None is returned if the call is not supported.
 */
 static PyObject *
-APSWFTS5ExtensionApi_xInstToken(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWFTS5ExtensionApi_xInstToken(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                 PyObject *fast_kwnames)
 {
   FTSEXT_CHECK(NULL);
@@ -894,7 +908,7 @@ APSWFTS5ExtensionApi_xInstToken(APSWFTS5ExtensionApi *self, PyObject *const *fas
     const char *bytes = NULL;
     int size = 0, rc = SQLITE_OK;
 
-    rc = self->pApi->xInstToken(self->pFts, inst, token, &bytes, &size);
+    rc = EXTAPI->xInstToken(EXTFTS, inst, token, &bytes, &size);
     if (rc == SQLITE_RANGE && retval)
       break;
     if (rc != SQLITE_OK)
@@ -928,7 +942,7 @@ error:
  Returns `which columns the phrase number occurs in <https://www.sqlite.org/fts5.html#xPhraseFirstColumn>`__
 */
 static PyObject *
-APSWFTS5ExtensionApi_phrase_columns(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWFTS5ExtensionApi_phrase_columns(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                     PyObject *fast_kwnames)
 {
 
@@ -947,7 +961,7 @@ APSWFTS5ExtensionApi_phrase_columns(APSWFTS5ExtensionApi *self, PyObject *const 
   int iCol = -1;
 
   /* the loop is done differently than the doc so we can check this return */
-  int rc = self->pApi->xPhraseFirstColumn(self->pFts, phrase, &iter, &iCol);
+  int rc = EXTAPI->xPhraseFirstColumn(EXTFTS, phrase, &iter, &iCol);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -965,7 +979,7 @@ APSWFTS5ExtensionApi_phrase_columns(APSWFTS5ExtensionApi *self, PyObject *const 
     if (!tmp)
       goto error;
     PyTuple_SET_ITEM(retval, PyTuple_GET_SIZE(retval) - 1, tmp);
-    self->pApi->xPhraseNextColumn(self->pFts, &iter, &iCol);
+    EXTAPI->xPhraseNextColumn(EXTFTS, &iter, &iCol);
   }
 
   return retval;
@@ -984,7 +998,7 @@ error:
  if the phrase is not in that column.
 */
 static PyObject *
-APSWFTS5ExtensionApi_phrase_locations(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWFTS5ExtensionApi_phrase_locations(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                       PyObject *fast_kwnames)
 {
 
@@ -1003,14 +1017,14 @@ APSWFTS5ExtensionApi_phrase_locations(APSWFTS5ExtensionApi *self, PyObject *cons
   int iCol = -1, iOff = -1;
 
   /* the loop is done differently than the doc so we can check this return */
-  int rc = self->pApi->xPhraseFirst(self->pFts, phrase, &iter, &iCol, &iOff);
+  int rc = EXTAPI->xPhraseFirst(EXTFTS, phrase, &iter, &iCol, &iOff);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
     return NULL;
   }
 
-  int ncols = self->pApi->xColumnCount(self->pFts);
+  int ncols = EXTAPI->xColumnCount(EXTFTS);
 
   PyObject *retval = PyList_New(ncols);
   if (!retval)
@@ -1035,7 +1049,7 @@ APSWFTS5ExtensionApi_phrase_locations(APSWFTS5ExtensionApi *self, PyObject *cons
       goto error;
     }
     Py_DECREF(tmp);
-    self->pApi->xPhraseNext(self->pFts, &iter, &iCol, &iOff);
+    EXTAPI->xPhraseNext(EXTFTS, &iter, &iCol, &iOff);
   }
 
   return retval;
@@ -1052,8 +1066,8 @@ error:
 
 */
 static PyObject *
-APSWFTS5ExtensionApi_phrase_column_offsets(APSWFTS5ExtensionApi *self, PyObject *const *fast_args,
-                                           Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWFTS5ExtensionApi_phrase_column_offsets(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+                                           PyObject *fast_kwnames)
 {
 
   FTSEXT_CHECK(NULL);
@@ -1073,14 +1087,14 @@ APSWFTS5ExtensionApi_phrase_column_offsets(APSWFTS5ExtensionApi *self, PyObject 
   int iCol = -1, iOff = -1;
 
   /* the loop is done differently than the doc so we can check this return */
-  int rc = self->pApi->xPhraseFirst(self->pFts, phrase, &iter, &iCol, &iOff);
+  int rc = EXTAPI->xPhraseFirst(EXTFTS, phrase, &iter, &iCol, &iOff);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
     return NULL;
   }
 
-  int ncols = self->pApi->xColumnCount(self->pFts);
+  int ncols = EXTAPI->xColumnCount(EXTFTS);
   if (column < 0 || column >= ncols)
   {
     SET_EXC(SQLITE_RANGE, NULL);
@@ -1107,7 +1121,7 @@ APSWFTS5ExtensionApi_phrase_column_offsets(APSWFTS5ExtensionApi *self, PyObject 
     }
     Py_DECREF(tmp);
   next:
-    self->pApi->xPhraseNext(self->pFts, &iter, &iCol, &iOff);
+    EXTAPI->xPhraseNext(EXTFTS, &iter, &iCol, &iOff);
   }
 
   return retval;
@@ -1123,7 +1137,7 @@ error:
   column, or if ``col`` is negative then for all columns.
 */
 static PyObject *
-APSWFTS5ExtensionApi_xColumnTotalSize(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWFTS5ExtensionApi_xColumnTotalSize(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                       PyObject *fast_kwnames)
 {
   FTSEXT_CHECK(NULL);
@@ -1137,7 +1151,7 @@ APSWFTS5ExtensionApi_xColumnTotalSize(APSWFTS5ExtensionApi *self, PyObject *cons
     ARG_EPILOG(NULL, FTS5ExtensionApi_column_total_size_USAGE, );
   }
   sqlite3_int64 nToken;
-  int rc = self->pApi->xColumnTotalSize(self->pFts, col, &nToken);
+  int rc = EXTAPI->xColumnTotalSize(EXTFTS, col, &nToken);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -1153,7 +1167,7 @@ APSWFTS5ExtensionApi_xColumnTotalSize(APSWFTS5ExtensionApi *self, PyObject *cons
   column, or if ``col`` is negative then for all columns.
 */
 static PyObject *
-APSWFTS5ExtensionApi_xColumnSize(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWFTS5ExtensionApi_xColumnSize(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                  PyObject *fast_kwnames)
 {
   FTSEXT_CHECK(NULL);
@@ -1167,7 +1181,7 @@ APSWFTS5ExtensionApi_xColumnSize(APSWFTS5ExtensionApi *self, PyObject *const *fa
     ARG_EPILOG(NULL, FTS5ExtensionApi_column_size_USAGE, );
   }
   int nToken;
-  int rc = self->pApi->xColumnSize(self->pFts, col, &nToken);
+  int rc = EXTAPI->xColumnSize(EXTFTS, col, &nToken);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -1182,7 +1196,7 @@ APSWFTS5ExtensionApi_xColumnSize(APSWFTS5ExtensionApi *self, PyObject *const *fa
 
 */
 static PyObject *
-APSWFTS5ExtensionApi_xColumnText(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWFTS5ExtensionApi_xColumnText(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                  PyObject *fast_kwnames)
 {
   FTSEXT_CHECK(NULL);
@@ -1199,7 +1213,7 @@ APSWFTS5ExtensionApi_xColumnText(APSWFTS5ExtensionApi *self, PyObject *const *fa
   const char *bytes = NULL;
   int size = 0;
 
-  int rc = self->pApi->xColumnText(self->pFts, col, &bytes, &size);
+  int rc = EXTAPI->xColumnText(EXTFTS, col, &bytes, &size);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -1216,7 +1230,7 @@ APSWFTS5ExtensionApi_xColumnText(APSWFTS5ExtensionApi *self, PyObject *const *fa
 
 */
 static PyObject *
-APSWFTS5ExtensionApi_xTokenize(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWFTS5ExtensionApi_xTokenize(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                PyObject *fast_kwnames)
 {
   FTSEXT_CHECK(NULL);
@@ -1261,8 +1275,8 @@ APSWFTS5ExtensionApi_xTokenize(APSWFTS5ExtensionApi *self, PyObject *const *fast
     goto finally;
   }
 
-  rc = self->pApi->xTokenize_v2(self->pFts, utf8_buffer.buf, utf8_buffer.len, locale, locale_size, &our_context,
-                                xTokenizer_Callback);
+  rc = EXTAPI->xTokenize_v2(EXTFTS, utf8_buffer.buf, utf8_buffer.len, locale, locale_size, &our_context,
+                            xTokenizer_Callback);
   APSW_FAULT(xTokenizeErr, , rc = SQLITE_NOMEM);
   if (rc != SQLITE_OK)
   {
@@ -1296,7 +1310,7 @@ finally:
 
 */
 static PyObject *
-APSWFTS5ExtensionApi_xColumnLocale(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWFTS5ExtensionApi_xColumnLocale(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                    PyObject *fast_kwnames)
 {
   FTSEXT_CHECK(NULL);
@@ -1313,7 +1327,7 @@ APSWFTS5ExtensionApi_xColumnLocale(APSWFTS5ExtensionApi *self, PyObject *const *
   const char *pLocale = NULL;
   int nLocale = 0;
 
-  int rc = self->pApi->xColumnLocale(self->pFts, column, &pLocale, &nLocale);
+  int rc = EXTAPI->xColumnLocale(EXTFTS, column, &pLocale, &nLocale);
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
@@ -1359,7 +1373,7 @@ apsw_fts_query_phrase_callback(const Fts5ExtensionApi *pApi, Fts5Context *pFts, 
   is shown in :ref:`the example <example_fts5_auxfunc>`.
 */
 static PyObject *
-APSWFTS5ExtensionApi_xQueryPhrase(APSWFTS5ExtensionApi *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWFTS5ExtensionApi_xQueryPhrase(PyObject *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                   PyObject *fast_kwnames)
 {
   FTSEXT_CHECK(NULL);
@@ -1386,7 +1400,7 @@ APSWFTS5ExtensionApi_xQueryPhrase(APSWFTS5ExtensionApi *self, PyObject *const *f
     .closure = Py_NewRef(closure),
   };
 
-  int rc = self->pApi->xQueryPhrase(self->pFts, phrase, &context, apsw_fts_query_phrase_callback);
+  int rc = EXTAPI->xQueryPhrase(EXTFTS, phrase, &context, apsw_fts_query_phrase_callback);
   fts5extensionapi_release(context.extapi);
   Py_DECREF(context.callable);
   Py_DECREF(context.closure);
@@ -1400,6 +1414,9 @@ APSWFTS5ExtensionApi_xQueryPhrase(APSWFTS5ExtensionApi *self, PyObject *const *f
   }
   Py_RETURN_NONE;
 }
+
+#undef EXTAPI
+#undef EXTFTS
 
 static PyGetSetDef APSWFTS5ExtensionApi_getset[] = {
   { "phrase_count", (getter)APSWFTS5ExtensionApi_xPhraseCount, NULL, FTS5ExtensionApi_phrase_count_DOC },

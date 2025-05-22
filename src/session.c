@@ -302,8 +302,9 @@ static PyTypeObject APSWRebaserType;
   -* sqlite3session_create
 */
 static int
-APSWSession_init(APSWSession *self, PyObject *args, PyObject *kwargs)
+APSWSession_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
+  APSWSession *self = (APSWSession *)self_;
   Connection *db = NULL;
   const char *schema = NULL;
 
@@ -368,10 +369,11 @@ APSWSession_close_internal(APSWSession *self)
 }
 
 static void
-APSWSession_dealloc(APSWSession *self)
+APSWSession_dealloc(PyObject *self_)
 {
+  APSWSession *self = (APSWSession *)self_;
   APSWSession_close_internal(self);
-  Py_TpFree((PyObject *)self);
+  Py_TpFree(self_);
 }
 
 /** .. method:: close() -> None
@@ -383,8 +385,9 @@ APSWSession_dealloc(APSWSession *self)
   -* sqlite3session_delete
 */
 static PyObject *
-APSWSession_close(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWSession_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWSession *self = (APSWSession *)self_;
   {
     Session_close_CHECK;
     ARG_PROLOG(0, Session_close_KWNAMES);
@@ -413,8 +416,9 @@ APSWSession_close(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast
  -* sqlite3session_attach
 */
 static PyObject *
-APSWSession_attach(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWSession_attach(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWSession *self = (APSWSession *)self_;
   const char *name = NULL;
   CHECK_SESSION_CLOSED(NULL);
   {
@@ -447,8 +451,9 @@ APSWSession_attach(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fas
   -* sqlite3session_diff
 */
 static PyObject *
-APSWSession_diff(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWSession_diff(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
   const char *from_schema = NULL;
   const char *table = NULL;
@@ -511,9 +516,16 @@ APSWSession_get_change_patch_set(APSWSession *self, int changeset)
   -* sqlite3session_changeset
 */
 static PyObject *
-APSWSession_changeset(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWSession_changeset(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
+
+  {
+    Session_changeset_CHECK;
+    ARG_PROLOG(0, Session_changeset_KWNAMES);
+    ARG_EPILOG(NULL, Session_changeset_USAGE, );
+  }
 
   return APSWSession_get_change_patch_set(self, 1);
 }
@@ -527,9 +539,16 @@ APSWSession_changeset(APSWSession *self, PyObject *const *fast_args, Py_ssize_t 
   -* sqlite3session_patchset
 */
 static PyObject *
-APSWSession_patchset(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWSession_patchset(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
+
+  {
+    Session_patchset_CHECK;
+    ARG_PROLOG(0, Session_patchset_KWNAMES);
+    ARG_EPILOG(NULL, Session_patchset_USAGE, );
+  }
 
   return APSWSession_get_change_patch_set(self, 0);
 }
@@ -606,9 +625,9 @@ APSWSession_get_change_patch_set_stream(APSWSession *self, int changeset, PyObje
   -* sqlite3session_changeset_strm
 */
 static PyObject *
-APSWSession_changeset_stream(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
-                             PyObject *fast_kwnames)
+APSWSession_changeset_stream(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
   PyObject *output;
   {
@@ -628,9 +647,9 @@ APSWSession_changeset_stream(APSWSession *self, PyObject *const *fast_args, Py_s
   -* sqlite3session_patchset_strm
 */
 static PyObject *
-APSWSession_patchset_stream(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
-                            PyObject *fast_kwnames)
+APSWSession_patchset_stream(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
   PyObject *output;
   {
@@ -685,8 +704,9 @@ session_table_filter_cb(void *pCtx, const char *name)
 }
 
 static PyObject *
-APSWSession_table_filter(APSWSession *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWSession_table_filter(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWSession *self = (APSWSession *)self_;
   PyObject *callback = NULL;
   CHECK_SESSION_CLOSED(NULL);
   {
@@ -714,8 +734,9 @@ APSWSession_table_filter(APSWSession *self, PyObject *const *fast_args, Py_ssize
 */
 
 static PyObject *
-APSWSession_config(APSWSession *self, PyObject *args)
+APSWSession_config(PyObject *self_, PyObject *args)
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
   if (PyTuple_GET_SIZE(args) < 1 || !PyLong_Check(PyTuple_GET_ITEM(args, 0)))
     return PyErr_Format(PyExc_TypeError, "There should be at least one argument with the first being a number");
@@ -752,8 +773,9 @@ APSWSession_config(APSWSession *self, PyObject *args)
     -* sqlite3session_enable
 */
 static PyObject *
-APSWSession_get_enabled(APSWSession *self)
+APSWSession_get_enabled(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
 
   int res = sqlite3session_enable(self->session, -1);
@@ -763,8 +785,9 @@ APSWSession_get_enabled(APSWSession *self)
 }
 
 static int
-APSWSession_set_enabled(APSWSession *self, PyObject *value)
+APSWSession_set_enabled(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(-1);
 
   int enabled = PyObject_IsTrueStrict(value);
@@ -782,8 +805,9 @@ APSWSession_set_enabled(APSWSession *self, PyObject *value)
     -* sqlite3session_indirect
 */
 static PyObject *
-APSWSession_get_indirect(APSWSession *self)
+APSWSession_get_indirect(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
 
   int res = sqlite3session_indirect(self->session, -1);
@@ -793,8 +817,9 @@ APSWSession_get_indirect(APSWSession *self)
 }
 
 static int
-APSWSession_set_indirect(APSWSession *self, PyObject *value)
+APSWSession_set_indirect(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(-1);
 
   int enabled = PyObject_IsTrueStrict(value);
@@ -812,8 +837,9 @@ APSWSession_set_indirect(APSWSession *self, PyObject *value)
     -* sqlite3session_isempty
 */
 static PyObject *
-APSWSession_get_empty(APSWSession *self)
+APSWSession_get_empty(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
 
   int res = sqlite3session_isempty(self->session);
@@ -830,8 +856,9 @@ APSWSession_get_empty(APSWSession *self)
     -* sqlite3session_memory_used
 */
 static PyObject *
-APSWSession_get_memory_used(APSWSession *self)
+APSWSession_get_memory_used(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
 
   sqlite3_int64 res = sqlite3session_memory_used(self->session);
@@ -848,8 +875,9 @@ APSWSession_get_memory_used(APSWSession *self)
     -* sqlite3session_changeset_size
 */
 static PyObject *
-APSWSession_get_changeset_size(APSWSession *self)
+APSWSession_get_changeset_size(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
 
   sqlite3_int64 res = sqlite3session_changeset_size(self->session);
@@ -910,8 +938,9 @@ MakeTableChange(sqlite3_changeset_iter *iter)
    Name of the affected table
 */
 static PyObject *
-APSWTableChange_name(APSWTableChange *self)
+APSWTableChange_name(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
   return PyUnicode_FromString(self->table_name);
@@ -923,8 +952,9 @@ APSWTableChange_name(APSWTableChange *self)
    Number of columns in the affected table
 */
 static PyObject *
-APSWTableChange_column_count(APSWTableChange *self)
+APSWTableChange_column_count(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
   return PyLong_FromLong(self->table_column_count);
@@ -939,8 +969,9 @@ APSWTableChange_column_count(APSWTableChange *self)
 */
 
 static PyObject *
-APSWTableChange_opcode(APSWTableChange *self)
+APSWTableChange_opcode(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
   return PyLong_FromLong(self->operation);
@@ -954,8 +985,9 @@ APSWTableChange_opcode(APSWTableChange *self)
    for this as a number.
 */
 static PyObject *
-APSWTableChange_op(APSWTableChange *self)
+APSWTableChange_op(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
   if (self->operation == SQLITE_INSERT)
@@ -975,8 +1007,9 @@ APSWTableChange_op(APSWTableChange *self)
   change - for example made by triggers or foreign keys.
 */
 static PyObject *
-APSWTableChange_indirect(APSWTableChange *self)
+APSWTableChange_indirect(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
   if (self->indirect)
     Py_RETURN_TRUE;
@@ -994,8 +1027,9 @@ APSWTableChange_indirect(APSWTableChange *self)
   -* sqlite3changeset_new
  */
 static PyObject *
-APSWTableChange_new(APSWTableChange *self)
+APSWTableChange_new(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
   sqlite3_value *value, *misuse_check;
@@ -1042,8 +1076,9 @@ error:
   -* sqlite3changeset_old
  */
 static PyObject *
-APSWTableChange_old(APSWTableChange *self)
+APSWTableChange_old(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
   sqlite3_value *value, *misuse_check;
@@ -1089,8 +1124,9 @@ error:
   -* sqlite3changeset_conflict
  */
 static PyObject *
-APSWTableChange_conflict(APSWTableChange *self)
+APSWTableChange_conflict(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
   sqlite3_value *value;
   int res = sqlite3changeset_conflict(self->iter, 0, &value);
@@ -1140,8 +1176,9 @@ error:
 */
 
 static PyObject *
-APSWTableChange_fk_conflicts(APSWTableChange *self)
+APSWTableChange_fk_conflicts(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
   int nOut;
@@ -1163,8 +1200,9 @@ APSWTableChange_fk_conflicts(APSWTableChange *self)
   -* sqlite3changeset_pk
 */
 static PyObject *
-APSWTableChange_pk_columns(APSWTableChange *self)
+APSWTableChange_pk_columns(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
   unsigned char *abPK;
@@ -1204,24 +1242,25 @@ error:
 }
 
 static PyObject *
-APSWTableChange_tp_str(APSWTableChange *self)
+APSWTableChange_tp_str(PyObject *self_)
 {
+  APSWTableChange *self = (APSWTableChange *)self_;
   if (!self->iter)
     return PyUnicode_FromFormat("<apsw.TableChange out of scope, at %p>", self);
 
   PyObject *op = NULL, *old = NULL, *new_vals = NULL, *conflict = NULL, *pk_columns = NULL, *fk_conflicts = NULL;
 
-  op = APSWTableChange_op(self);
+  op = APSWTableChange_op(self_, NULL);
   if (op)
-    old = APSWTableChange_old(self);
+    old = APSWTableChange_old(self_, NULL);
   if (old)
-    new_vals = APSWTableChange_new(self);
+    new_vals = APSWTableChange_new(self_, NULL);
   if (new_vals)
-    conflict = APSWTableChange_conflict(self);
+    conflict = APSWTableChange_conflict(self_, NULL);
   if (conflict)
-    pk_columns = APSWTableChange_pk_columns(self);
+    pk_columns = APSWTableChange_pk_columns(self_, NULL);
   if (pk_columns)
-    fk_conflicts = APSWTableChange_fk_conflicts(self);
+    fk_conflicts = APSWTableChange_fk_conflicts(self_, NULL);
 
   PyObject *res = NULL;
 
@@ -1271,7 +1310,7 @@ APSWTableChange_dealloc(PyObject *self)
 */
 
 static PyObject *
-APSWChangeset_invert(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWChangeset_invert(PyObject *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
                      PyObject *fast_kwnames)
 {
   PyObject *changeset;
@@ -1313,7 +1352,7 @@ APSWChangeset_invert(void *Py_UNUSED(static_method), PyObject *const *fast_args,
   -* sqlite3changeset_invert_strm
 */
 static PyObject *
-APSWChangeset_invert_stream(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWChangeset_invert_stream(PyObject *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
                             PyObject *fast_kwnames)
 {
 
@@ -1343,7 +1382,7 @@ APSWChangeset_invert_stream(void *Py_UNUSED(static_method), PyObject *const *fas
 */
 
 static PyObject *
-APSWChangeset_concat(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWChangeset_concat(PyObject *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
                      PyObject *fast_kwnames)
 {
   PyObject *A = NULL;
@@ -1399,7 +1438,7 @@ APSWChangeset_concat(void *Py_UNUSED(static_method), PyObject *const *fast_args,
   -* sqlite3changeset_concat_strm
 */
 static PyObject *
-APSWChangeset_concat_stream(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWChangeset_concat_stream(PyObject *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
                             PyObject *fast_kwnames)
 {
 
@@ -1433,7 +1472,7 @@ APSWChangeset_concat_stream(void *Py_UNUSED(static_method), PyObject *const *fas
 */
 
 static PyObject *
-APSWChangeset_iter(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWChangeset_iter(PyObject *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
                    PyObject *fast_kwnames)
 {
   PyObject *changeset = NULL;
@@ -1626,7 +1665,7 @@ conflictReject(void *pCtx, int eConflict, sqlite3_changeset_iter *p)
 }
 
 static PyObject *
-APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWChangeset_apply(PyObject *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
                     PyObject *fast_kwnames)
 {
   PyObject *changeset;
@@ -1713,8 +1752,9 @@ APSWChangeset_apply(void *Py_UNUSED(static_method), PyObject *const *fast_args, 
 }
 
 static PyObject *
-APSWChangesetIterator_next(APSWChangesetIterator *self)
+APSWChangesetIterator_next(PyObject *self_)
 {
+  APSWChangesetIterator *self = (APSWChangesetIterator *)self_;
   /* invalidate what we previous made */
   if (self->last_table_change)
   {
@@ -1746,8 +1786,9 @@ APSWChangesetIterator_iter(PyObject *self)
 }
 
 static void
-APSWChangesetIterator_dealloc(APSWChangesetIterator *self)
+APSWChangesetIterator_dealloc(PyObject *self_)
 {
+  APSWChangesetIterator *self = (APSWChangesetIterator *)self_;
   if (self->iter)
   {
     sqlite3changeset_finalize(self->iter);
@@ -1788,8 +1829,9 @@ APSWChangesetIterator_dealloc(APSWChangesetIterator *self)
 
  */
 static int
-APSWChangesetBuilder_init(APSWChangesetBuilder *self, PyObject *args, PyObject *kwargs)
+APSWChangesetBuilder_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
+  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
   {
     ChangesetBuilder_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
@@ -1819,10 +1861,11 @@ APSWChangesetBuilder_close_internal(APSWChangesetBuilder *self)
 }
 
 static void
-APSWChangesetBuilder_dealloc(APSWChangesetBuilder *self)
+APSWChangesetBuilder_dealloc(PyObject *self_)
 {
+  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
   APSWChangesetBuilder_close_internal(self);
-  Py_TpFree((PyObject *)self);
+  Py_TpFree(self_);
 }
 
 /** .. method:: close() -> None
@@ -1832,9 +1875,9 @@ APSWChangesetBuilder_dealloc(APSWChangesetBuilder *self)
   -* sqlite3changegroup_delete
 */
 static PyObject *
-APSWChangesetBuilder_close(APSWChangesetBuilder *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
-                           PyObject *fast_kwnames)
+APSWChangesetBuilder_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
   {
     ChangesetBuilder_close_CHECK;
     ARG_PROLOG(0, ChangesetBuilder_close_KWNAMES);
@@ -1859,9 +1902,9 @@ APSWChangesetBuilder_close(APSWChangesetBuilder *self, PyObject *const *fast_arg
   -* sqlite3changegroup_add sqlite3changegroup_add_strm
  */
 static PyObject *
-APSWChangesetBuilder_add(APSWChangesetBuilder *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
-                         PyObject *fast_kwnames)
+APSWChangesetBuilder_add(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
   PyObject *changeset = NULL;
   {
     ChangesetBuilder_add_CHECK;
@@ -1900,9 +1943,10 @@ APSWChangesetBuilder_add(APSWChangesetBuilder *self, PyObject *const *fast_args,
   -* sqlite3changegroup_add_change
  */
 static PyObject *
-APSWChangesetBuilder_add_change(APSWChangesetBuilder *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWChangesetBuilder_add_change(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                 PyObject *fast_kwnames)
 {
+  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
   APSWTableChange *change = NULL;
 
   {
@@ -1938,9 +1982,9 @@ APSWChangesetBuilder_add_change(APSWChangesetBuilder *self, PyObject *const *fas
   -* sqlite3changegroup_schema
  */
 static PyObject *
-APSWChangesetBuilder_schema(APSWChangesetBuilder *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
-                            PyObject *fast_kwnames)
+APSWChangesetBuilder_schema(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
   Connection *db = NULL;
   const char *schema = NULL;
 
@@ -1989,10 +2033,9 @@ APSWChangesetBuilder_schema(APSWChangesetBuilder *self, PyObject *const *fast_ar
   -* sqlite3changegroup_output
  */
 static PyObject *
-APSWChangesetBuilder_output(APSWChangesetBuilder *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
-                            PyObject *fast_kwnames)
+APSWChangesetBuilder_output(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
-
+  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
   {
     ChangesetBuilder_output_CHECK;
     ARG_PROLOG(0, ChangesetBuilder_output_KWNAMES);
@@ -2022,10 +2065,10 @@ APSWChangesetBuilder_output(APSWChangesetBuilder *self, PyObject *const *fast_ar
   -* sqlite3changegroup_output_strm
  */
 static PyObject *
-APSWChangesetBuilder_output_stream(APSWChangesetBuilder *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWChangesetBuilder_output_stream(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                                    PyObject *fast_kwnames)
 {
-
+  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
   PyObject *output = NULL;
   {
     ChangesetBuilder_output_stream_CHECK;
@@ -2068,8 +2111,9 @@ APSWChangesetBuilder_output_stream(APSWChangesetBuilder *self, PyObject *const *
   -* sqlite3rebaser_create
  */
 static int
-APSWRebaser_init(APSWRebaser *self, PyObject *args, PyObject *kwargs)
+APSWRebaser_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
+  APSWRebaser *self = (APSWRebaser *)self_;
   {
     Rebaser_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
@@ -2097,8 +2141,9 @@ APSWRebaser_init(APSWRebaser *self, PyObject *args, PyObject *kwargs)
   -* sqlite3rebaser_configure
  */
 static PyObject *
-APSWRebaser_configure(APSWRebaser *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWRebaser_configure(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWRebaser *self = (APSWRebaser *)self_;
   CHECK_REBASER_CLOSED(NULL);
   PyObject *cr = NULL;
   {
@@ -2132,8 +2177,9 @@ APSWRebaser_configure(APSWRebaser *self, PyObject *const *fast_args, Py_ssize_t 
   -* sqlite3rebaser_rebase
  */
 static PyObject *
-APSWRebaser_rebase(APSWRebaser *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWRebaser_rebase(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWRebaser *self = (APSWRebaser *)self_;
   CHECK_REBASER_CLOSED(NULL);
 
   PyObject *changeset = NULL;
@@ -2176,8 +2222,9 @@ APSWRebaser_rebase(APSWRebaser *self, PyObject *const *fast_args, Py_ssize_t fas
   -* sqlite3rebaser_rebase_strm
  */
 static PyObject *
-APSWRebaser_rebase_stream(APSWRebaser *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWRebaser_rebase_stream(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWRebaser *self = (APSWRebaser *)self_;
   CHECK_REBASER_CLOSED(NULL);
   PyObject *changeset = NULL;
   PyObject *output = NULL;
@@ -2197,8 +2244,9 @@ APSWRebaser_rebase_stream(APSWRebaser *self, PyObject *const *fast_args, Py_ssiz
 }
 
 static void
-APSWRebaser_dealloc(APSWRebaser *self)
+APSWRebaser_dealloc(PyObject *self_)
 {
+  APSWRebaser *self = (APSWRebaser *)self_;
   if (self->rebaser)
   {
     sqlite3rebaser_delete(self->rebaser);

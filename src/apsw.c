@@ -273,7 +273,7 @@ static int allow_missing_dict_bindings = 0;
 */
 
 static PyObject *
-get_sqlite_version(void)
+get_sqlite_version(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   return PyUnicode_FromString(sqlite3_libversion());
 }
@@ -287,7 +287,7 @@ get_sqlite_version(void)
 */
 
 static PyObject *
-get_sqlite3_sourceid(void)
+get_sqlite3_sourceid(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   return PyUnicode_FromString(sqlite3_sourceid());
 }
@@ -297,7 +297,7 @@ get_sqlite3_sourceid(void)
   Returns the APSW version.
 */
 static PyObject *
-get_apsw_version(void)
+get_apsw_version(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   return PyUnicode_FromString(APSW_VERSION);
 }
@@ -340,7 +340,7 @@ enable_shared_cache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
 */
 static PyObject *the_connections;
 static PyObject *
-apsw_connections(PyObject *Py_UNUSED(self))
+apsw_connections(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   Py_ssize_t i;
   PyObject *res = PyList_New(0), *item = NULL;
@@ -408,7 +408,7 @@ apsw_connection_add(Connection *con)
 */
 
 static PyObject *
-initialize(void)
+initialize(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   int res;
 
@@ -435,7 +435,7 @@ static void free_fork_checker(void);
 #endif
 
 static PyObject *
-sqliteshutdown(void)
+sqliteshutdown(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused2))
 {
   int res;
 
@@ -623,7 +623,7 @@ apsw_config(PyObject *Py_UNUSED(self), PyObject *args)
   -* sqlite3_memory_used
 */
 static PyObject *
-memory_used(void)
+memory_used(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused2))
 {
   return PyLong_FromLongLong(sqlite3_memory_used());
 }
@@ -805,7 +805,7 @@ status(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_na
   -* sqlite3_vfs_find
 */
 static PyObject *
-vfs_names(PyObject *Py_UNUSED(self))
+vfs_names(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   PyObject *result = NULL, *str = NULL;
   int res;
@@ -866,7 +866,7 @@ Pointers are converted using :c:func:`PyLong_FromVoidPtr`.
 -* sqlite3_vfs_find
 */
 static PyObject *
-vfs_details(PyObject *Py_UNUSED(self))
+vfs_details(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   PyObject *result, *dict;
   sqlite3_vfs *vfs = sqlite3_vfs_find(0);
@@ -1008,7 +1008,7 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
 
 #if defined(APSW_DEBUG) || defined(APSW_FAULT_INJECT)
 static PyObject *
-apsw_fini(PyObject *Py_UNUSED(self))
+apsw_fini(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   fini_apsw_strings();
   Py_RETURN_NONE;
@@ -1811,13 +1811,13 @@ apsw_getattr(PyObject *Py_UNUSED(module), PyObject *name)
 
 static PyMethodDef module_methods[] = {
   { "sqlite3_sourceid", (PyCFunction)get_sqlite3_sourceid, METH_NOARGS, Apsw_sqlite3_sourceid_DOC },
-  { "sqlite_lib_version", (PyCFunction)get_sqlite_version, METH_NOARGS, Apsw_sqlite_lib_version_DOC },
-  { "apsw_version", (PyCFunction)get_apsw_version, METH_NOARGS, Apsw_apsw_version_DOC },
+  { "sqlite_lib_version", get_sqlite_version, METH_NOARGS, Apsw_sqlite_lib_version_DOC },
+  { "apsw_version", get_apsw_version, METH_NOARGS, Apsw_apsw_version_DOC },
   { "vfs_names", (PyCFunction)vfs_names, METH_NOARGS, Apsw_vfs_names_DOC },
   { "vfs_details", (PyCFunction)vfs_details, METH_NOARGS, Apsw_vfs_details_DOC },
   { "enable_shared_cache", (PyCFunction)enable_shared_cache, METH_FASTCALL | METH_KEYWORDS,
     Apsw_enable_shared_cache_DOC },
-  { "initialize", (PyCFunction)initialize, METH_NOARGS, Apsw_initialize_DOC },
+  { "initialize", initialize, METH_NOARGS, Apsw_initialize_DOC },
   { "shutdown", (PyCFunction)sqliteshutdown, METH_NOARGS, Apsw_shutdown_DOC },
   { "format_sql_value", (PyCFunction)formatsqlvalue, METH_O, Apsw_format_sql_value_DOC },
   { "config", (PyCFunction)apsw_config, METH_VARARGS, Apsw_config_DOC },
@@ -1900,11 +1900,11 @@ PyInit_apsw(void)
       || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0
       || PyType_Ready(&PyObjectBindType) < 0
 #ifdef SQLITE_ENABLE_SESSION
-      || PyType_Ready(&APSWSessionType) <0  || PyType_Ready(&APSWTableChangeType) <0
-      || PyType_Ready(&APSWChangesetType) <0 || PyType_Ready(&APSWChangesetBuilderType) <0
-      || PyType_Ready(&APSWChangesetIteratorType) <0  || PyType_Ready(&APSWRebaserType) <0
+      || PyType_Ready(&APSWSessionType) < 0 || PyType_Ready(&APSWTableChangeType) < 0
+      || PyType_Ready(&APSWChangesetType) < 0 || PyType_Ready(&APSWChangesetBuilderType) < 0
+      || PyType_Ready(&APSWChangesetIteratorType) < 0 || PyType_Ready(&APSWRebaserType) < 0
 #endif
-      )
+  )
     goto fail;
 
   /* PyStructSequence_NewType is broken in some Pythons

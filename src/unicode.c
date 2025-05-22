@@ -2057,8 +2057,9 @@ typedef struct
 } ToUtf8PositionMapper;
 
 static void
-ToUtf8PositionMapper_finalize(ToUtf8PositionMapper *self)
+ToUtf8PositionMapper_finalize(PyObject *self_)
 {
+  ToUtf8PositionMapper *self = (ToUtf8PositionMapper *)self_;
   /* this is intentionally implemented to be safe to call multiple times */
   if (self->buffer.obj)
   {
@@ -2070,10 +2071,13 @@ ToUtf8PositionMapper_finalize(ToUtf8PositionMapper *self)
 }
 
 static PyObject *
-ToUtf8PositionMapper_call(ToUtf8PositionMapper *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
-                          PyObject *fast_kwnames)
+ToUtf8PositionMapper_call(PyObject *self_, PyObject *const *fast_args, size_t nargsf, PyObject *fast_kwnames)
 {
+  ToUtf8PositionMapper *self = (ToUtf8PositionMapper *)self_;
   Py_ssize_t pos;
+
+  Py_ssize_t fast_nargs = PyVectorcall_NARGS(nargsf);
+
   ARG_PROLOG(1, "pos");
   ARG_MANDATORY ARG_Py_ssize_t(pos);
   ARG_EPILOG(NULL, "to_utf8_position_mapper.__call__(pos: int)", );
@@ -2124,9 +2128,9 @@ ToUtf8PositionMapper_call(ToUtf8PositionMapper *self, PyObject *const *fast_args
 }
 
 static int
-ToUtf8PositionMapper_init(ToUtf8PositionMapper *self, PyObject *args, PyObject *kwargs)
+ToUtf8PositionMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
-
+  ToUtf8PositionMapper *self = (ToUtf8PositionMapper *)self_;
   ARG_CONVERT_VARARGS_TO_FASTCALL
 
   PyObject *utf8 = NULL;
@@ -2141,7 +2145,7 @@ ToUtf8PositionMapper_init(ToUtf8PositionMapper *self, PyObject *args, PyObject *
   self->str = PyUnicode_DecodeUTF8(self->buffer.buf, self->buffer.len, "strict");
   if (!self->str)
   {
-    ToUtf8PositionMapper_finalize(self);
+    ToUtf8PositionMapper_finalize(self_);
     return -1;
   }
 
@@ -2196,18 +2200,21 @@ typedef struct
 } FromUtf8PositionMapper;
 
 static void
-FromUtf8PositionMapper_finalize(FromUtf8PositionMapper *self)
+FromUtf8PositionMapper_finalize(PyObject *self_)
 {
+  FromUtf8PositionMapper *self = (FromUtf8PositionMapper *)self_;
   /* this is intentionally implemented to be safe to call multiple times */
   Py_CLEAR(self->bytes_object);
   self->bytes = NULL;
 }
 
 static PyObject *
-FromUtf8PositionMapper_call(FromUtf8PositionMapper *self, PyObject *const *fast_args, Py_ssize_t fast_nargs,
-                            PyObject *fast_kwnames)
+FromUtf8PositionMapper_call(PyObject *self_, PyObject *const *fast_args, size_t nargsf, PyObject *fast_kwnames)
 {
+  FromUtf8PositionMapper *self = (FromUtf8PositionMapper *)self_;
   Py_ssize_t pos;
+  Py_ssize_t fast_nargs = PyVectorcall_NARGS(nargsf);
+
   ARG_PROLOG(1, "pos");
   ARG_MANDATORY ARG_Py_ssize_t(pos);
   ARG_EPILOG(NULL, "from_utf8_position_mapper.__call__(pos: int)", );
@@ -2272,9 +2279,9 @@ FromUtf8PositionMapper_call(FromUtf8PositionMapper *self, PyObject *const *fast_
 }
 
 static int
-FromUtf8PositionMapper_init(FromUtf8PositionMapper *self, PyObject *args, PyObject *kwargs)
+FromUtf8PositionMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
-
+  FromUtf8PositionMapper *self = (FromUtf8PositionMapper *)self_;
   ARG_CONVERT_VARARGS_TO_FASTCALL
 
   PyObject *string = NULL;
@@ -2348,8 +2355,9 @@ typedef struct
 } OffsetMapper;
 
 static PyObject *
-OffsetMapper_add(OffsetMapper *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+OffsetMapper_add(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  OffsetMapper *self = (OffsetMapper *)self_;
   if (!self->accumulate)
     return PyErr_Format(PyExc_Exception, "Text has been materialized - you cannot add more segments");
 
@@ -2395,9 +2403,10 @@ OffsetMapper_add(OffsetMapper *self, PyObject *const *fast_args, Py_ssize_t fast
 }
 
 static PyObject *
-OffsetMapper_separate(OffsetMapper *self, PyTypeObject *defining_class, PyObject *const *args, Py_ssize_t nargs,
+OffsetMapper_separate(PyObject *self_, PyTypeObject *defining_class, PyObject *const *args, Py_ssize_t nargs,
                       PyObject *kwnames)
 {
+  OffsetMapper *self = (OffsetMapper *)self_;
   if (nargs || kwnames)
     return PyErr_Format(PyExc_TypeError, "OffsetMapper.separate takes no arguments");
   if (!self->accumulate)
@@ -2414,8 +2423,9 @@ OffsetMapper_separate(OffsetMapper *self, PyTypeObject *defining_class, PyObject
 }
 
 static PyObject *
-OffsetMapper_text(OffsetMapper *self, void *Py_UNUSED(closure))
+OffsetMapper_text(PyObject *self_, void *Py_UNUSED(closure))
 {
+  OffsetMapper *self = (OffsetMapper *)self_;
   if (self->text)
     return Py_NewRef(self->text);
 
@@ -2436,16 +2446,19 @@ OffsetMapper_text(OffsetMapper *self, void *Py_UNUSED(closure))
 }
 
 static PyObject *
-OffsetMapper_call(OffsetMapper *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+OffsetMapper_call(PyObject *self_, PyObject *const *fast_args, size_t nargsf, PyObject *fast_kwnames)
 {
+  OffsetMapper *self = (OffsetMapper *)self_;
   if (!self->text)
     return PyErr_Format(PyExc_Exception, "Text has not been materialized - you cannot get offsets until getting text");
 
   Py_ssize_t location;
 
+  Py_ssize_t fast_nargs = PyVectorcall_NARGS(nargsf);
+
   ARG_PROLOG(1, "location");
   ARG_MANDATORY ARG_Py_ssize_t(location);
-  ARG_EPILOG(NULL, "OffsetMapper.__call__(offset: int", );
+  ARG_EPILOG(NULL, "OffsetMapper.__call__(offset: int)", );
 
   if (location < self->last_location)
   {
@@ -2467,8 +2480,9 @@ OffsetMapper_call(OffsetMapper *self, PyObject *const *fast_args, Py_ssize_t fas
 }
 
 static void
-OffsetMapper_finalize(OffsetMapper *self)
+OffsetMapper_finalize(PyObject *self_)
 {
+  OffsetMapper *self = (OffsetMapper *)self_;
   Py_CLEAR(self->accumulate);
   Py_CLEAR(self->text);
   PyMem_Free(self->offset_map);
@@ -2476,8 +2490,9 @@ OffsetMapper_finalize(OffsetMapper *self)
 }
 
 static int
-OffsetMapper_init(OffsetMapper *self, PyObject *args, PyObject *kwargs)
+OffsetMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
+  OffsetMapper *self = (OffsetMapper *)self_;
   if (PyTuple_GET_SIZE(args) || kwargs)
   {
     PyErr_Format(PyExc_TypeError, "OffsetMapper.__init__ takes no arguments");
@@ -2485,7 +2500,7 @@ OffsetMapper_init(OffsetMapper *self, PyObject *args, PyObject *kwargs)
   }
   self->vectorcall = (vectorcallfunc)OffsetMapper_call;
   /* cleanup in case init is called multiple times */
-  OffsetMapper_finalize(self);
+  OffsetMapper_finalize(self_);
   self->accumulate = PyList_New(0);
   self->offset_map = PyMem_Calloc(1, sizeof(struct MapperEntry));
   self->num_offsets = 1;
@@ -2495,7 +2510,7 @@ OffsetMapper_init(OffsetMapper *self, PyObject *args, PyObject *kwargs)
   self->last_is_separator = 0;
   if (!self->accumulate || !self->offset_map)
   {
-    OffsetMapper_finalize(self);
+    OffsetMapper_finalize(self_);
     return -1;
   }
   return 0;

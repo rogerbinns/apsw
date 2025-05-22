@@ -242,8 +242,9 @@ APSWCursor_close_internal(APSWCursor *self, int force)
 }
 
 static void
-APSWCursor_dealloc(APSWCursor *self)
+APSWCursor_dealloc(PyObject *self_)
 {
+  APSWCursor *self = (APSWCursor *)self_;
   /* dealloc is not allowed to return an exception or
      clear the current exception */
   PY_ERR_FETCH(exc_save);
@@ -299,8 +300,9 @@ APSWCursor_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSE
 */
 
 static int
-APSWCursor_init(APSWCursor *self, PyObject *args, PyObject *kwargs)
+APSWCursor_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
+  APSWCursor *self = (APSWCursor *)self_;
   Connection *connection = NULL;
 
   {
@@ -318,8 +320,9 @@ APSWCursor_init(APSWCursor *self, PyObject *args, PyObject *kwargs)
 }
 
 static int
-APSWCursor_tp_traverse(APSWCursor *self, visitproc visit, void *arg)
+APSWCursor_tp_traverse(PyObject *self_, visitproc visit, void *arg)
 {
+  APSWCursor *self = (APSWCursor *)self_;
   Py_VISIT(self->connection);
   Py_VISIT(self->exectrace);
   Py_VISIT(self->rowtrace);
@@ -422,9 +425,9 @@ error:
 
 */
 static PyObject *
-APSWCursor_get_description(APSWCursor *self)
+APSWCursor_get_description(PyObject *self, PyObject *Py_UNUSED(unused))
 {
-  return APSWCursor_internal_get_description(self, 0);
+  return APSWCursor_internal_get_description((APSWCursor *)self, 0);
 }
 
 /** .. attribute:: description
@@ -437,9 +440,9 @@ APSWCursor_get_description(APSWCursor *self)
 */
 
 static PyObject *
-APSWCursor_getdescription_dbapi(APSWCursor *self)
+APSWCursor_getdescription_dbapi(PyObject *self, void *Py_UNUSED(unused))
 {
-  return APSWCursor_internal_get_description(self, 1);
+  return APSWCursor_internal_get_description((APSWCursor *)self, 1);
 }
 
 /** .. attribute:: description_full
@@ -457,9 +460,9 @@ name, table name, and origin name.
 */
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
 static PyObject *
-APSWCursor_get_description_full(APSWCursor *self)
+APSWCursor_get_description_full(PyObject *self)
 {
-  return APSWCursor_internal_get_description(self, 2);
+  return APSWCursor_internal_get_description((APSWCursor *)self, 2);
 }
 #endif
 
@@ -1027,8 +1030,9 @@ APSWCursor_step(APSWCursor *self)
 
 */
 static PyObject *
-APSWCursor_execute(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWCursor *self = (APSWCursor *)self_;
   int res;
   int savedbindingsoffset = -1;
   int prepare_flags = 0;
@@ -1135,8 +1139,9 @@ error_out:
 */
 
 static PyObject *
-APSWCursor_executemany(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWCursor_executemany(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWCursor *self = (APSWCursor *)self_;
   int res;
   PyObject *retval = NULL;
   PyObject *sequenceofbindings = NULL;
@@ -1264,8 +1269,9 @@ error_out:
 */
 
 static PyObject *
-APSWCursor_close(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWCursor *self = (APSWCursor *)self_;
   int force = 0;
 
   if (!self->connection)
@@ -1292,8 +1298,9 @@ APSWCursor_close(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_n
     Cursors are iterators
 */
 static PyObject *
-APSWCursor_next(APSWCursor *self)
+APSWCursor_next(PyObject *self_)
 {
+  APSWCursor *self = (APSWCursor *)self_;
   PyObject *retval = NULL;
   PyObject *item;
   int numcols = -1;
@@ -1369,12 +1376,12 @@ error:
 */
 
 static PyObject *
-APSWCursor_iter(APSWCursor *self)
+APSWCursor_iter(PyObject *self_)
 {
-
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
-  return Py_NewRef((PyObject *)self);
+  return Py_NewRef(self_);
 }
 
 /** .. method:: set_exec_trace(callable: Optional[ExecTracer]) -> None
@@ -1382,8 +1389,9 @@ APSWCursor_iter(APSWCursor *self)
   Sets the :attr:`execution tracer <Cursor.exec_trace>`
 */
 static PyObject *
-APSWCursor_set_exec_trace(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWCursor_set_exec_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWCursor *self = (APSWCursor *)self_;
   PyObject *callable = NULL;
 
   CHECK_CURSOR_CLOSED(NULL);
@@ -1408,8 +1416,9 @@ APSWCursor_set_exec_trace(APSWCursor *self, PyObject *const *fast_args, Py_ssize
 */
 
 static PyObject *
-APSWCursor_set_row_trace(APSWCursor *self, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWCursor_set_row_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
+  APSWCursor *self = (APSWCursor *)self_;
   PyObject *callable = NULL;
 
   CHECK_CURSOR_CLOSED(NULL);
@@ -1438,8 +1447,9 @@ APSWCursor_set_row_trace(APSWCursor *self, PyObject *const *fast_args, Py_ssize_
     * :ref:`tracing`
 */
 static PyObject *
-APSWCursor_get_exec_trace(APSWCursor *self)
+APSWCursor_get_exec_trace(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
+  APSWCursor *self = (APSWCursor *)self_;
   PyObject *ret;
 
   CHECK_CURSOR_CLOSED(NULL);
@@ -1458,8 +1468,9 @@ APSWCursor_get_exec_trace(APSWCursor *self)
     * :ref:`tracing`
 */
 static PyObject *
-APSWCursor_get_row_trace(APSWCursor *self)
+APSWCursor_get_row_trace(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
+  APSWCursor *self = (APSWCursor *)self_;
   PyObject *ret;
 
   CHECK_CURSOR_CLOSED(NULL);
@@ -1473,9 +1484,9 @@ APSWCursor_get_row_trace(APSWCursor *self)
 */
 
 static PyObject *
-APSWCursor_get_connection(APSWCursor *self)
+APSWCursor_get_connection(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
-
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
   return Py_NewRef((PyObject *)self->connection);
@@ -1488,9 +1499,9 @@ APSWCursor_get_connection(APSWCursor *self)
   amount of structure to unpack.
 */
 static PyObject *
-APSWCursor_fetchall(APSWCursor *self)
+APSWCursor_fetchall(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
-
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
   return PySequence_List((PyObject *)self);
@@ -1502,13 +1513,14 @@ APSWCursor_fetchall(APSWCursor *self)
 */
 
 static PyObject *
-APSWCursor_fetchone(APSWCursor *self)
+APSWCursor_fetchone(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   PyObject *res;
+  APSWCursor *self = (APSWCursor *)self_;
 
   CHECK_CURSOR_CLOSED(NULL);
 
-  res = APSWCursor_next(self);
+  res = APSWCursor_next(self_);
 
   if (res == NULL && !PyErr_Occurred())
     Py_RETURN_NONE;
@@ -1534,9 +1546,9 @@ APSWCursor_fetchone(APSWCursor *self)
 
 */
 static PyObject *
-APSWCursor_get_exec_trace_attr(APSWCursor *self)
+APSWCursor_get_exec_trace_attr(PyObject *self_, void *Py_UNUSED(unused))
 {
-
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
   if (self->exectrace)
@@ -1545,8 +1557,9 @@ APSWCursor_get_exec_trace_attr(APSWCursor *self)
 }
 
 static int
-APSWCursor_set_exec_trace_attr(APSWCursor *self, PyObject *value)
+APSWCursor_set_exec_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(-1);
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
@@ -1578,9 +1591,9 @@ APSWCursor_set_exec_trace_attr(APSWCursor *self, PyObject *value)
 
 */
 static PyObject *
-APSWCursor_get_row_trace_attr(APSWCursor *self)
+APSWCursor_get_row_trace_attr(PyObject *self_, void *Py_UNUSED(unused))
 {
-
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
   if (self->rowtrace)
@@ -1589,8 +1602,9 @@ APSWCursor_get_row_trace_attr(APSWCursor *self)
 }
 
 static int
-APSWCursor_set_row_trace_attr(APSWCursor *self, PyObject *value)
+APSWCursor_set_row_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(-1);
 
   if (!Py_IsNone(value) && !PyCallable_Check(value))
@@ -1610,9 +1624,9 @@ APSWCursor_set_row_trace_attr(APSWCursor *self, PyObject *value)
   :class:`Connection` this cursor is using
 */
 static PyObject *
-APSWCursor_get_connection_attr(APSWCursor *self)
+APSWCursor_get_connection_attr(PyObject *self_, void *Py_UNUSED(unused))
 {
-
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
   return Py_NewRef((PyObject *)self->connection);
@@ -1628,9 +1642,9 @@ APSWCursor_get_connection_attr(APSWCursor *self)
   -* sqlite3_bind_parameter_count
 */
 static PyObject *
-APSWCursor_bindings_count(APSWCursor *self)
+APSWCursor_bindings_count(PyObject *self_, void *Py_UNUSED(unused))
 {
-
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
   return PyLong_FromLong((self->statement) ? sqlite3_bind_parameter_count(self->statement->vdbestatement) : 0);
@@ -1650,9 +1664,9 @@ APSWCursor_bindings_count(APSWCursor *self)
   -* sqlite3_bind_parameter_name
 */
 static PyObject *
-APSWCursor_bindings_names(APSWCursor *self)
+APSWCursor_bindings_names(PyObject *self_, void *Py_UNUSED(unused))
 {
-
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
   int count = (self->statement) ? sqlite3_bind_parameter_count(self->statement->vdbestatement) : 0;
@@ -1686,9 +1700,9 @@ error:
   -* sqlite3_stmt_isexplain
 */
 static PyObject *
-APSWCursor_is_explain(APSWCursor *self)
+APSWCursor_is_explain(PyObject *self_, void *Py_UNUSED(unused))
 {
-
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
   return PyLong_FromLong((self->statement) ? sqlite3_stmt_isexplain(self->statement->vdbestatement) : 0);
@@ -1704,9 +1718,9 @@ APSWCursor_is_explain(APSWCursor *self)
   -* sqlite3_stmt_readonly
 */
 static PyObject *
-APSWCursor_is_readonly(APSWCursor *self)
+APSWCursor_is_readonly(PyObject *self_, void *Py_UNUSED(unused))
 {
-
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
   if (!self->statement || sqlite3_stmt_readonly(self->statement->vdbestatement))
@@ -1721,9 +1735,9 @@ APSWCursor_is_readonly(APSWCursor *self)
   evaluate, and so are ``False``.
 */
 static PyObject *
-APSWCursor_has_vdbe(APSWCursor *self)
+APSWCursor_has_vdbe(PyObject *self_, void *Py_UNUSED(unused))
 {
-
+  APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
   return Py_NewRef((self->statement && self->statement->vdbestatement) ? Py_True : Py_False);
@@ -1750,8 +1764,9 @@ APSWCursor_has_vdbe(APSWCursor *self)
   -* sqlite3_expanded_sql
 */
 static PyObject *
-APSWCursor_expanded_sql(APSWCursor *self)
+APSWCursor_expanded_sql(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWCursor *self = (APSWCursor *)self_;
   PyObject *res;
   const char *es;
 
@@ -1801,8 +1816,9 @@ APSWCursor_expanded_sql(APSWCursor *self)
 */
 
 static PyObject *
-APSWCursor_get(APSWCursor *self)
+APSWCursor_get(PyObject *self_, void *Py_UNUSED(unused))
 {
+  APSWCursor *self = (APSWCursor *)self_;
   PyObject *the_list = NULL, *the_row = NULL;
   PyObject *step, *item;
   int numcols, i;
@@ -1876,8 +1892,9 @@ error:
 }
 
 static PyObject *
-APSWCursor_tp_str(APSWCursor *self)
+APSWCursor_tp_str(PyObject *self_)
 {
+  APSWCursor *self = (APSWCursor *)self_;
   return PyUnicode_FromFormat("<apsw.Cursor object from %S at %p>",
                               self->connection ? (PyObject *)self->connection : apst.closed, self);
 }
@@ -1950,8 +1967,9 @@ static PyTypeObject APSWCursorType = {
 };
 
 static int
-PyObjectBind_init(PyObjectBind *self, PyObject *args, PyObject *kwargs)
+PyObjectBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
+  PyObjectBind *self = (PyObjectBind *)self_;
   if (!args || kwargs || PyTuple_GET_SIZE(args) != 1)
   {
     PyErr_Format(PyExc_TypeError, "apsw.pyobject takes exactly one value");
@@ -1964,9 +1982,9 @@ PyObjectBind_init(PyObjectBind *self, PyObject *args, PyObject *kwargs)
 }
 
 static void
-PyObjectBind_finalize(PyObjectBind *self)
+PyObjectBind_finalize(PyObject *self)
 {
-  Py_CLEAR(self->object);
+  Py_CLEAR(((PyObjectBind *)self)->object);
 }
 
 static PyTypeObject PyObjectBindType = {
