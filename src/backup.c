@@ -373,10 +373,10 @@ static PyMemberDef backup_members[] = {
 
 static PyGetSetDef backup_getset[] = {
   /* name getter setter doc closure */
-  { "remaining", (getter)APSWBackup_get_remaining, NULL, Backup_remaining_DOC, NULL },
-  { "page_count", (getter)APSWBackup_get_page_count, NULL, Backup_page_count_DOC, NULL },
+  { "remaining", APSWBackup_get_remaining, NULL, Backup_remaining_DOC, NULL },
+  { "page_count", APSWBackup_get_page_count, NULL, Backup_page_count_DOC, NULL },
 #ifndef APSW_OMIT_OLD_NAMES
-  { Backup_page_count_OLDNAME, (getter)APSWBackup_get_page_count, NULL, Backup_page_count_OLDDOC, NULL },
+  { Backup_page_count_OLDNAME, APSWBackup_get_page_count, NULL, Backup_page_count_OLDDOC, NULL },
 #endif
   { 0, 0, 0, 0, 0 }
 };
@@ -392,7 +392,7 @@ static PyMethodDef backup_methods[]
 static PyTypeObject APSWBackupType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Backup",
   .tp_basicsize = sizeof(APSWBackup),
-  .tp_dealloc = (destructor)APSWBackup_dealloc,
+  .tp_dealloc = APSWBackup_dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_doc = Backup_class_DOC,
   .tp_weaklistoffset = offsetof(APSWBackup, weakreflist),

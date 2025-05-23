@@ -362,9 +362,9 @@ APSWFTS5Tokenizer_dealloc(PyObject *self_)
 }
 
 static PyGetSetDef APSWFTS5Tokenizer_getset[] = {
-  { "connection", (getter)APSWFTS5Tokenizer_connection, NULL, FTS5Tokenizer_connection_DOC },
-  { "args", (getter)APSWFTS5Tokenizer_args, NULL, FTS5Tokenizer_args_DOC },
-  { "name", (getter)APSWFTS5Tokenizer_name, NULL, FTS5Tokenizer_name_DOC },
+  { "connection", APSWFTS5Tokenizer_connection, NULL, FTS5Tokenizer_connection_DOC },
+  { "args", APSWFTS5Tokenizer_args, NULL, FTS5Tokenizer_args_DOC },
+  { "name", APSWFTS5Tokenizer_name, NULL, FTS5Tokenizer_name_DOC },
   { 0 },
 };
 
@@ -376,7 +376,7 @@ static PyTypeObject APSWFTS5TokenizerType = {
   .tp_doc = FTS5Tokenizer_class_DOC,
   .tp_basicsize = sizeof(APSWFTS5Tokenizer),
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_VECTORCALL,
-  .tp_dealloc = (destructor)APSWFTS5Tokenizer_dealloc,
+  .tp_dealloc = APSWFTS5Tokenizer_dealloc,
   .tp_call = PyVectorcall_Call,
   .tp_vectorcall_offset = offsetof(APSWFTS5Tokenizer, vectorcall),
   .tp_getset = APSWFTS5Tokenizer_getset,
@@ -1419,14 +1419,14 @@ APSWFTS5ExtensionApi_xQueryPhrase(PyObject *self, PyObject *const *fast_args, Py
 #undef EXTFTS
 
 static PyGetSetDef APSWFTS5ExtensionApi_getset[] = {
-  { "phrase_count", (getter)APSWFTS5ExtensionApi_xPhraseCount, NULL, FTS5ExtensionApi_phrase_count_DOC },
-  { "column_count", (getter)APSWFTS5ExtensionApi_xColumnCount, NULL, FTS5ExtensionApi_column_count_DOC },
-  { "row_count", (getter)APSWFTS5ExtensionApi_xRowCount, NULL, FTS5ExtensionApi_row_count_DOC },
-  { "aux_data", (getter)APSWFTS5ExtensionApi_xGetAuxdata, (setter)APSWFTS5ExtensionApi_xSetAuxdata,
+  { "phrase_count", APSWFTS5ExtensionApi_xPhraseCount, NULL, FTS5ExtensionApi_phrase_count_DOC },
+  { "column_count", APSWFTS5ExtensionApi_xColumnCount, NULL, FTS5ExtensionApi_column_count_DOC },
+  { "row_count", APSWFTS5ExtensionApi_xRowCount, NULL, FTS5ExtensionApi_row_count_DOC },
+  { "aux_data", APSWFTS5ExtensionApi_xGetAuxdata, APSWFTS5ExtensionApi_xSetAuxdata,
     FTS5ExtensionApi_aux_data_DOC },
-  { "rowid", (getter)APSWFTS5ExtensionApi_xRowid, NULL, FTS5ExtensionApi_rowid_DOC },
-  { "phrases", (getter)APSWFTS5ExtensionApi_phrases, NULL, FTS5ExtensionApi_phrases_DOC },
-  { "inst_count", (getter)APSWFTS5ExtensionApi_xInstCount, NULL, FTS5ExtensionApi_inst_count_DOC },
+  { "rowid", APSWFTS5ExtensionApi_xRowid, NULL, FTS5ExtensionApi_rowid_DOC },
+  { "phrases", APSWFTS5ExtensionApi_phrases, NULL, FTS5ExtensionApi_phrases_DOC },
+  { "inst_count", APSWFTS5ExtensionApi_xInstCount, NULL, FTS5ExtensionApi_inst_count_DOC },
   { 0 },
 };
 

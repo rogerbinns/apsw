@@ -2271,11 +2271,11 @@ static PyMethodDef APSWSession_methods[] = {
 };
 
 static PyGetSetDef APSWSession_getset[] = {
-  { "enabled", (getter)APSWSession_get_enabled, (setter)APSWSession_set_enabled, Session_enabled_DOC },
-  { "indirect", (getter)APSWSession_get_indirect, (setter)APSWSession_set_indirect, Session_indirect_DOC },
-  { "is_empty", (getter)APSWSession_get_empty, NULL, Session_is_empty_DOC },
-  { "memory_used", (getter)APSWSession_get_memory_used, NULL, Session_memory_used_DOC },
-  { "changeset_size", (getter)APSWSession_get_changeset_size, NULL, Session_changeset_size_DOC },
+  { "enabled", APSWSession_get_enabled, APSWSession_set_enabled, Session_enabled_DOC },
+  { "indirect", APSWSession_get_indirect, APSWSession_set_indirect, Session_indirect_DOC },
+  { "is_empty", APSWSession_get_empty, NULL, Session_is_empty_DOC },
+  { "memory_used", APSWSession_get_memory_used, NULL, Session_memory_used_DOC },
+  { "changeset_size", APSWSession_get_changeset_size, NULL, Session_changeset_size_DOC },
   { 0 },
 };
 
@@ -2285,7 +2285,7 @@ static PyTypeObject APSWSessionType = {
   .tp_doc = Session_class_DOC,
   .tp_new = PyType_GenericNew,
   .tp_init = (initproc)APSWSession_init,
-  .tp_dealloc = (destructor)APSWSession_dealloc,
+  .tp_dealloc = APSWSession_dealloc,
   .tp_methods = APSWSession_methods,
   .tp_getset = APSWSession_getset,
   .tp_flags = Py_TPFLAGS_BASETYPE | Py_TPFLAGS_DEFAULT,
@@ -2314,7 +2314,7 @@ static PyTypeObject APSWChangesetType = {
 static PyTypeObject APSWChangesetIteratorType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.ChangesetIterator", .tp_basicsize = sizeof(APSWChangesetIterator),
   .tp_iternext = (iternextfunc)APSWChangesetIterator_next,           .tp_iter = APSWChangesetIterator_iter,
-  .tp_dealloc = (destructor)APSWChangesetIterator_dealloc,
+  .tp_dealloc = APSWChangesetIterator_dealloc,
 };
 
 static PyMethodDef APSWChangesetBuilder_methods[] = {
@@ -2335,22 +2335,22 @@ static PyTypeObject APSWChangesetBuilderType = {
   .tp_methods = APSWChangesetBuilder_methods,
   .tp_new = PyType_GenericNew,
   .tp_init = (initproc)APSWChangesetBuilder_init,
-  .tp_dealloc = (destructor)APSWChangesetBuilder_dealloc,
+  .tp_dealloc = APSWChangesetBuilder_dealloc,
   .tp_doc = ChangesetBuilder_class_DOC,
   .tp_weaklistoffset = offsetof(APSWChangesetBuilder, weakreflist),
 };
 
 static PyGetSetDef APSWTableChange_getset[] = {
-  { "name", (getter)APSWTableChange_name, NULL, TableChange_name_DOC },
-  { "column_count", (getter)APSWTableChange_column_count, NULL, TableChange_column_count_DOC },
-  { "op", (getter)APSWTableChange_op, NULL, TableChange_op_DOC },
-  { "opcode", (getter)APSWTableChange_opcode, NULL, TableChange_opcode_DOC },
-  { "indirect", (getter)APSWTableChange_indirect, NULL, TableChange_indirect_DOC },
-  { "old", (getter)APSWTableChange_old, NULL, TableChange_old_DOC },
-  { "new", (getter)APSWTableChange_new, NULL, TableChange_new_DOC },
-  { "conflict", (getter)APSWTableChange_conflict, NULL, TableChange_conflict_DOC },
-  { "fk_conflicts", (getter)APSWTableChange_fk_conflicts, NULL, TableChange_fk_conflicts_DOC },
-  { "pk_columns", (getter)APSWTableChange_pk_columns, NULL, TableChange_pk_columns_DOC },
+  { "name", APSWTableChange_name, NULL, TableChange_name_DOC },
+  { "column_count", APSWTableChange_column_count, NULL, TableChange_column_count_DOC },
+  { "op", APSWTableChange_op, NULL, TableChange_op_DOC },
+  { "opcode", APSWTableChange_opcode, NULL, TableChange_opcode_DOC },
+  { "indirect", APSWTableChange_indirect, NULL, TableChange_indirect_DOC },
+  { "old", APSWTableChange_old, NULL, TableChange_old_DOC },
+  { "new", APSWTableChange_new, NULL, TableChange_new_DOC },
+  { "conflict", APSWTableChange_conflict, NULL, TableChange_conflict_DOC },
+  { "fk_conflicts", APSWTableChange_fk_conflicts, NULL, TableChange_fk_conflicts_DOC },
+  { "pk_columns", APSWTableChange_pk_columns, NULL, TableChange_pk_columns_DOC },
   { 0 },
 };
 
@@ -2359,7 +2359,7 @@ static PyTypeObject APSWTableChangeType = {
   .tp_basicsize = sizeof(APSWTableChange),
   .tp_getset = APSWTableChange_getset,
   .tp_doc = TableChange_class_DOC,
-  .tp_dealloc = (destructor)APSWTableChange_dealloc,
+  .tp_dealloc = APSWTableChange_dealloc,
   .tp_str = (reprfunc)APSWTableChange_tp_str,
 };
 
@@ -2378,5 +2378,5 @@ static PyTypeObject APSWRebaserType = {
   .tp_methods = APSWRebaser_methods,
   .tp_new = PyType_GenericNew,
   .tp_init = (initproc)APSWRebaser_init,
-  .tp_dealloc = (destructor)APSWRebaser_dealloc,
+  .tp_dealloc = APSWRebaser_dealloc,
 };

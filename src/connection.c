@@ -2614,7 +2614,7 @@ Connection_load_extension(PyObject *self_, PyObject *const *fast_args, Py_ssize_
 static PyTypeObject FunctionCBInfoType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.FunctionCBInfo",
   .tp_basicsize = sizeof(FunctionCBInfo),
-  .tp_dealloc = (destructor)FunctionCBInfo_dealloc,
+  .tp_dealloc = FunctionCBInfo_dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
   .tp_doc = "FunctionCBInfo object",
 };
@@ -5865,24 +5865,24 @@ finally:
 
 static PyGetSetDef Connection_getseters[] = {
   /* name getter setter doc closure */
-  { "filename", (getter)Connection_getmainfilename, NULL, Connection_filename_DOC, NULL },
-  { "filename_journal", (getter)Connection_getjournalfilename, NULL, Connection_filename_journal_DOC, NULL },
-  { "filename_wal", (getter)Connection_getwalfilename, NULL, Connection_filename_wal_DOC, NULL },
-  { "cursor_factory", (getter)Connection_get_cursor_factory, (setter)Connection_set_cursor_factory,
+  { "filename", Connection_getmainfilename, NULL, Connection_filename_DOC, NULL },
+  { "filename_journal", Connection_getjournalfilename, NULL, Connection_filename_journal_DOC, NULL },
+  { "filename_wal", Connection_getwalfilename, NULL, Connection_filename_wal_DOC, NULL },
+  { "cursor_factory", Connection_get_cursor_factory, Connection_set_cursor_factory,
     Connection_cursor_factory_DOC, NULL },
-  { "in_transaction", (getter)Connection_get_in_transaction, NULL, Connection_in_transaction_DOC },
-  { "exec_trace", (getter)Connection_get_exec_trace_attr, (setter)Connection_set_exec_trace_attr,
+  { "in_transaction", Connection_get_in_transaction, NULL, Connection_in_transaction_DOC },
+  { "exec_trace", Connection_get_exec_trace_attr, Connection_set_exec_trace_attr,
     Connection_exec_trace_DOC },
-  { "row_trace", (getter)Connection_get_row_trace_attr, (setter)Connection_set_row_trace_attr,
+  { "row_trace", Connection_get_row_trace_attr, Connection_set_row_trace_attr,
     Connection_row_trace_DOC },
-  { "authorizer", (getter)Connection_get_authorizer_attr, (setter)Connection_set_authorizer_attr,
+  { "authorizer", Connection_get_authorizer_attr, Connection_set_authorizer_attr,
     Connection_authorizer_DOC },
-  { "system_errno", (getter)Connection_get_system_errno, NULL, Connection_system_errno_DOC },
-  { "is_interrupted", (getter)Connection_is_interrupted, NULL, Connection_is_interrupted_DOC },
+  { "system_errno", Connection_get_system_errno, NULL, Connection_system_errno_DOC },
+  { "is_interrupted", Connection_is_interrupted, NULL, Connection_is_interrupted_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
-  { Connection_exec_trace_OLDNAME, (getter)Connection_get_exec_trace_attr, (setter)Connection_set_exec_trace_attr,
+  { Connection_exec_trace_OLDNAME, Connection_get_exec_trace_attr, Connection_set_exec_trace_attr,
     Connection_exec_trace_OLDDOC },
-  { Connection_row_trace_OLDNAME, (getter)Connection_get_row_trace_attr, (setter)Connection_set_row_trace_attr,
+  { Connection_row_trace_OLDNAME, Connection_get_row_trace_attr, Connection_set_row_trace_attr,
     Connection_row_trace_OLDDOC },
 #endif
   /* Sentinel */

@@ -723,20 +723,20 @@ SqliteIndexInfo_get_distinct(PyObject *self, void *Py_UNUSED(unused))
 }
 
 static PyGetSetDef SqliteIndexInfo_getsetters[]
-    = { { "nConstraint", (getter)SqliteIndexInfo_get_nConstraint, NULL, IndexInfo_nConstraint_DOC },
-        { "nOrderBy", (getter)SqliteIndexInfo_get_nOrderBy, NULL, IndexInfo_nOrderBy_DOC },
-        { "idxNum", (getter)SqliteIndexInfo_get_idxNum, (setter)SqliteIndexInfo_set_idxNum, IndexInfo_idxNum_DOC },
-        { "idxStr", (getter)SqliteIndexInfo_get_idxStr, (setter)SqliteIndexInfo_set_idxStr, IndexInfo_idxStr_DOC },
-        { "orderByConsumed", (getter)SqliteIndexInfo_get_orderByConsumed, (setter)SqliteIndexInfo_set_OrderByConsumed,
+    = { { "nConstraint", SqliteIndexInfo_get_nConstraint, NULL, IndexInfo_nConstraint_DOC },
+        { "nOrderBy", SqliteIndexInfo_get_nOrderBy, NULL, IndexInfo_nOrderBy_DOC },
+        { "idxNum", SqliteIndexInfo_get_idxNum, SqliteIndexInfo_set_idxNum, IndexInfo_idxNum_DOC },
+        { "idxStr", SqliteIndexInfo_get_idxStr, SqliteIndexInfo_set_idxStr, IndexInfo_idxStr_DOC },
+        { "orderByConsumed", SqliteIndexInfo_get_orderByConsumed, SqliteIndexInfo_set_OrderByConsumed,
           IndexInfo_orderByConsumed_DOC },
-        { "estimatedCost", (getter)SqliteIndexInfo_get_estimatedCost, (setter)SqliteIndexInfo_set_estimatedCost,
+        { "estimatedCost", SqliteIndexInfo_get_estimatedCost, SqliteIndexInfo_set_estimatedCost,
           IndexInfo_estimatedCost_DOC },
-        { "estimatedRows", (getter)SqliteIndexInfo_get_estimatedRows, (setter)SqliteIndexInfo_set_estimatedRows,
+        { "estimatedRows", SqliteIndexInfo_get_estimatedRows, SqliteIndexInfo_set_estimatedRows,
           IndexInfo_estimatedRows_DOC },
-        { "idxFlags", (getter)SqliteIndexInfo_get_idxFlags, (setter)SqliteIndexInfo_set_idxFlags,
+        { "idxFlags", SqliteIndexInfo_get_idxFlags, SqliteIndexInfo_set_idxFlags,
           IndexInfo_idxFlags_DOC },
-        { "colUsed", (getter)SqliteIndexInfo_get_colUsed, NULL, IndexInfo_colUsed_DOC },
-        { "distinct", (getter)SqliteIndexInfo_get_distinct, NULL, IndexInfo_distinct_DOC },
+        { "colUsed", SqliteIndexInfo_get_colUsed, NULL, IndexInfo_colUsed_DOC },
+        { "distinct", SqliteIndexInfo_get_distinct, NULL, IndexInfo_distinct_DOC },
         /* sentinel */
         { NULL, NULL, NULL, NULL } };
 

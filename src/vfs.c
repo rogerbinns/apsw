@@ -182,10 +182,10 @@ apswfcntl_pragma_get_value(PyObject *self, void *Py_UNUSED(unused))
 }
 
 static PyGetSetDef apswfcntl_pragma_getsetters[]
-    = { { "result", (getter)apswfcntl_pragma_get_result, (setter)apswfcntl_pragma_set_result,
+    = { { "result", apswfcntl_pragma_get_result, apswfcntl_pragma_set_result,
           VFSFcntlPragma_result_DOC },
-        { "name", (getter)apswfcntl_pragma_get_name, NULL, VFSFcntlPragma_name_DOC },
-        { "value", (getter)apswfcntl_pragma_get_value, NULL, VFSFcntlPragma_value_DOC },
+        { "name", apswfcntl_pragma_get_name, NULL, VFSFcntlPragma_name_DOC },
+        { "value", apswfcntl_pragma_get_value, NULL, VFSFcntlPragma_value_DOC },
         /* sentinel */
         { NULL, NULL, NULL, NULL } };
 
@@ -1963,7 +1963,7 @@ static PyMethodDef APSWVFS_methods[] = {
 static PyTypeObject APSWVFSType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.VFS",
   .tp_basicsize = sizeof(APSWVFS),
-  .tp_dealloc = (destructor)APSWVFS_dealloc,
+  .tp_dealloc = APSWVFS_dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
   .tp_doc = VFS_class_DOC,
   .tp_methods = APSWVFS_methods,
@@ -3135,7 +3135,7 @@ static PyMethodDef APSWVFSFile_methods[] = {
 static PyTypeObject APSWVFSFileType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.VFSFile",
   .tp_basicsize = sizeof(APSWVFSFile),
-  .tp_dealloc = (destructor)APSWVFSFile_dealloc,
+  .tp_dealloc = APSWVFSFile_dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
   .tp_doc = VFSFile_class_DOC,
   .tp_methods = APSWVFSFile_methods,
@@ -3318,7 +3318,7 @@ static PyMethodDef APSWURIFilenameMethods[]
         { 0, 0, 0, 0 } };
 
 static PyGetSetDef APSWURIFilename_getset[] = {
-  { "parameters", (getter)apswurifilename_parameters, NULL, URIFilename_parameters_DOC },
+  { "parameters", apswurifilename_parameters, NULL, URIFilename_parameters_DOC },
   { 0, 0, 0, 0 },
 };
 

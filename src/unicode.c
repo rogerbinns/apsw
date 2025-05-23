@@ -2528,7 +2528,7 @@ static PyMethodDef OffsetMapper_methods[] = {
 };
 
 static PyGetSetDef OffsetMapper_getset[] = {
-  { "text", (getter)OffsetMapper_text, NULL, "resulting text" },
+  { "text", OffsetMapper_text, NULL, "resulting text" },
   { NULL },
 };
 

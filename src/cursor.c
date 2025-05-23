@@ -1927,32 +1927,32 @@ static PyMethodDef APSWCursor_methods[] = {
 };
 
 static PyGetSetDef APSWCursor_getset[]
-    = { { "description", (getter)APSWCursor_getdescription_dbapi, NULL, Cursor_description_DOC, NULL },
+    = { { "description", APSWCursor_getdescription_dbapi, NULL, Cursor_description_DOC, NULL },
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
-        { "description_full", (getter)APSWCursor_get_description_full, NULL, Cursor_description_full_DOC, NULL },
+        { "description_full", APSWCursor_get_description_full, NULL, Cursor_description_full_DOC, NULL },
 #endif
-        { "is_explain", (getter)APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL },
-        { "is_readonly", (getter)APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL },
-        { "has_vdbe", (getter)APSWCursor_has_vdbe, NULL, Cursor_has_vdbe_DOC, NULL },
-        { "bindings_count", (getter)APSWCursor_bindings_count, NULL, Cursor_bindings_count_DOC, NULL },
-        { "bindings_names", (getter)APSWCursor_bindings_names, NULL, Cursor_bindings_names_DOC, NULL },
-        { "expanded_sql", (getter)APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL },
-        { "exec_trace", (getter)APSWCursor_get_exec_trace_attr, (setter)APSWCursor_set_exec_trace_attr,
+        { "is_explain", APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL },
+        { "is_readonly", APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL },
+        { "has_vdbe", APSWCursor_has_vdbe, NULL, Cursor_has_vdbe_DOC, NULL },
+        { "bindings_count", APSWCursor_bindings_count, NULL, Cursor_bindings_count_DOC, NULL },
+        { "bindings_names", APSWCursor_bindings_names, NULL, Cursor_bindings_names_DOC, NULL },
+        { "expanded_sql", APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL },
+        { "exec_trace", APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr,
           Cursor_exec_trace_DOC },
-        { Cursor_exec_trace_OLDNAME, (getter)APSWCursor_get_exec_trace_attr, (setter)APSWCursor_set_exec_trace_attr,
+        { Cursor_exec_trace_OLDNAME, APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr,
           Cursor_exec_trace_OLDDOC },
-        { "row_trace", (getter)APSWCursor_get_row_trace_attr, (setter)APSWCursor_set_row_trace_attr,
+        { "row_trace", APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr,
           Cursor_row_trace_DOC },
-        { Cursor_row_trace_OLDNAME, (getter)APSWCursor_get_row_trace_attr, (setter)APSWCursor_set_row_trace_attr,
+        { Cursor_row_trace_OLDNAME, APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr,
           Cursor_row_trace_OLDDOC },
-        { "connection", (getter)APSWCursor_get_connection_attr, NULL, Cursor_connection_DOC },
-        { "get", (getter)APSWCursor_get, NULL, Cursor_get_DOC },
+        { "connection", APSWCursor_get_connection_attr, NULL, Cursor_connection_DOC },
+        { "get", APSWCursor_get, NULL, Cursor_get_DOC },
         { NULL, NULL, NULL, NULL, NULL } };
 
 static PyTypeObject APSWCursorType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Cursor",
   .tp_basicsize = sizeof(APSWCursor),
-  .tp_dealloc = (destructor)APSWCursor_dealloc,
+  .tp_dealloc = APSWCursor_dealloc,
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
   .tp_doc = Cursor_class_DOC,
   .tp_traverse = (traverseproc)APSWCursor_tp_traverse,
@@ -1992,7 +1992,7 @@ static PyTypeObject PyObjectBindType = {
   .tp_basicsize = sizeof(PyObjectBind),
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
   .tp_init = (initproc)PyObjectBind_init,
-  .tp_finalize = (destructor)PyObjectBind_finalize,
+  .tp_finalize = PyObjectBind_finalize,
   .tp_new = PyType_GenericNew,
   .tp_doc = Apsw_pyobject_DOC,
 };
