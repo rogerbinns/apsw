@@ -1800,7 +1800,7 @@ APSWChangesetIterator_dealloc(PyObject *self_)
     PyBuffer_Release(&self->buffer_buffer);
     Py_CLEAR(self->buffer_source);
   }
-  Py_TpFree((PyObject *)self);
+  Py_TpFree(self_);
 }
 
 /** .. class:: ChangesetBuilder
@@ -2252,7 +2252,7 @@ APSWRebaser_dealloc(PyObject *self_)
     sqlite3rebaser_delete(self->rebaser);
     self->rebaser = NULL;
   }
-  Py_TpFree((PyObject *)self);
+  Py_TpFree(self_);
 }
 
 static PyMethodDef APSWSession_methods[] = {

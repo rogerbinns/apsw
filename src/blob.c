@@ -217,7 +217,7 @@ APSWBlob_dealloc(PyObject *self_)
     DBMUTEX_FORCE(self->connection->dbmutex);
   APSWBlob_close_internal(self, 2);
 
-  Py_TpFree((PyObject *)self);
+  Py_TpFree(self_);
 }
 
 /* If the blob is closed, we return the same error as normal python files */

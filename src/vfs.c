@@ -1762,7 +1762,7 @@ APSWVFS_dealloc(PyObject *self_)
 
   self->basevfs = self->containingvfs = NULL;
 
-  Py_TpFree((PyObject *)self);
+  Py_TpFree(self_);
 }
 
 static PyObject *
@@ -2022,7 +2022,7 @@ APSWVFSFile_dealloc(PyObject *self_)
     AddTraceBackHere(__FILE__, __LINE__, "APSWVFS File destructor", NULL);
     apsw_write_unraisable(NULL);
   }
-  Py_TpFree((PyObject *)self);
+  Py_TpFree(self_);
 
   PY_ERR_RESTORE(exc_save);
 }

@@ -262,7 +262,7 @@ APSWCursor_dealloc(PyObject *self_)
     apsw_write_unraisable(NULL);
 
   PY_ERR_RESTORE(exc_save);
-  Py_TpFree((PyObject *)self);
+  Py_TpFree(self_);
 }
 
 static PyObject *

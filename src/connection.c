@@ -169,7 +169,7 @@ FunctionCBInfo_dealloc(PyObject *self_)
   Py_CLEAR(self->scalarfunc);
   Py_CLEAR(self->aggregatefactory);
   Py_CLEAR(self->windowfactory);
-  Py_TpFree((PyObject *)self);
+  Py_TpFree(self_);
 }
 
 /** .. class:: Connection

@@ -358,7 +358,7 @@ APSWFTS5Tokenizer_dealloc(PyObject *self_)
   PyMem_Free((void *)self->name);
   if (self->tokenizer_instance)
     self->xDelete(self->tokenizer_instance);
-  Py_TpFree((PyObject *)self);
+  Py_TpFree(self_);
 }
 
 static PyGetSetDef APSWFTS5Tokenizer_getset[] = {

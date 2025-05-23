@@ -132,7 +132,7 @@ APSWBackup_dealloc(PyObject *self_)
   }
   Py_CLEAR(self->done);
 
-  Py_TpFree((PyObject *)self);
+  Py_TpFree(self_);
 }
 
 /** .. method:: step(npages: int = -1) -> bool
