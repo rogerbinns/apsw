@@ -399,5 +399,5 @@ static PyTypeObject APSWBackupType = {
   .tp_methods = backup_methods,
   .tp_members = backup_members,
   .tp_getset = backup_getset,
-  .tp_str = (reprfunc)APSWBackup_tp_str,
+  .tp_str = APSWBackup_tp_str,
 };

@@ -380,7 +380,7 @@ static PyTypeObject APSWFTS5TokenizerType = {
   .tp_call = PyVectorcall_Call,
   .tp_vectorcall_offset = offsetof(APSWFTS5Tokenizer, vectorcall),
   .tp_getset = APSWFTS5Tokenizer_getset,
-  .tp_str = (reprfunc)APSWFTS5Tokenizer_tp_str,
+  .tp_str = APSWFTS5Tokenizer_tp_str,
 };
 
 typedef struct

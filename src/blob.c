@@ -42,19 +42,6 @@ There are `benchmarks <https://www.sqlite.org/fasterthanfs.html>`__.
 
 /* ZeroBlobBind is defined in apsw.c because of forward references */
 
-static PyObject *
-ZeroBlobBind_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwargs))
-{
-  ZeroBlobBind *self;
-  self = (ZeroBlobBind *)type->tp_alloc(type, 0);
-  if (self)
-  {
-    self->blobsize = 0;
-    self->init_was_called = 0;
-  }
-  return (PyObject *)self;
-}
-
 /** .. method:: __init__(size: int)
 
   :param size: Number of zeroed bytes to create
@@ -110,9 +97,9 @@ static PyTypeObject ZeroBlobBindType = {
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
   .tp_doc = Zeroblob_class_DOC,
   .tp_methods = ZeroBlobBind_methods,
-  .tp_init = (initproc)ZeroBlobBind_init,
-  .tp_new = ZeroBlobBind_new,
-  .tp_str = (reprfunc)ZeroBlobBind_tp_str,
+  .tp_init = ZeroBlobBind_init,
+  .tp_new = PyType_GenericNew,
+  .tp_str = ZeroBlobBind_tp_str,
 };
 
 /* BLOB TYPE */
@@ -707,5 +694,5 @@ static PyTypeObject APSWBlobType = {
   .tp_doc = Blob_class_DOC,
   .tp_weaklistoffset = offsetof(APSWBlob, weakreflist),
   .tp_methods = APSWBlob_methods,
-  .tp_str = (reprfunc)APSWBlob_tp_str,
+  .tp_str = APSWBlob_tp_str,
 };

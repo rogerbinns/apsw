@@ -84,18 +84,6 @@ typedef struct apswfcntl_pragma
   int init_was_called;
 } apswfcntl_pragma;
 
-static PyObject *
-apswfcntl_pragma_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwds))
-{
-  apswfcntl_pragma *self = (apswfcntl_pragma *)type->tp_alloc(type, 0);
-  if (self != NULL)
-  {
-    self->strings = NULL;
-    self->init_was_called = 0;
-  }
-  return (PyObject *)self;
-}
-
 /** .. method:: __init__(pointer: int)
 
 The pointer must be what your xFileControl method received.
@@ -195,8 +183,8 @@ static PyTypeObject apswfcntl_pragma_Type = {
   .tp_basicsize = sizeof(apswfcntl_pragma),
   .tp_itemsize = 0,
   .tp_flags = Py_TPFLAGS_DEFAULT,
-  .tp_new = apswfcntl_pragma_new,
-  .tp_init = (initproc)apswfcntl_pragma_init,
+  .tp_new = PyType_GenericNew,
+  .tp_init = apswfcntl_pragma_init,
   .tp_getset = apswfcntl_pragma_getsetters,
 };
 
@@ -1765,20 +1753,6 @@ APSWVFS_dealloc(PyObject *self_)
   Py_TpFree(self_);
 }
 
-static PyObject *
-APSWVFS_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwds))
-{
-  APSWVFS *self;
-  self = (APSWVFS *)type->tp_alloc(type, 0);
-  if (self)
-  {
-    self->basevfs = NULL;
-    self->containingvfs = NULL;
-    self->registered = 0;
-  }
-  return (PyObject *)self;
-}
-
 /** .. method:: __init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)
 
     :param name: The name to register this vfs under.  If the name
@@ -1967,9 +1941,9 @@ static PyTypeObject APSWVFSType = {
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
   .tp_doc = VFS_class_DOC,
   .tp_methods = APSWVFS_methods,
-  .tp_init = (initproc)APSWVFS_init,
-  .tp_new = APSWVFS_new,
-  .tp_str = (reprfunc)APSWVFS_tp_str,
+  .tp_init = APSWVFS_init,
+  .tp_new = PyType_GenericNew,
+  .tp_str = APSWVFS_tp_str,
 };
 
 static int
@@ -2025,21 +1999,6 @@ APSWVFSFile_dealloc(PyObject *self_)
   Py_TpFree(self_);
 
   PY_ERR_RESTORE(exc_save);
-}
-
-static PyObject *
-APSWVFSFile_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwds))
-{
-  APSWVFSFile *self;
-  self = (APSWVFSFile *)type->tp_alloc(type, 0);
-  if (self)
-  {
-    self->base = NULL;
-    self->filename = NULL;
-    self->free_filename = 1;
-  }
-
-  return (PyObject *)self;
 }
 
 /** .. method:: __init__(vfs: str, filename: str | URIFilename | None, flags: list[int,int])
@@ -2099,6 +2058,7 @@ APSWVFSFile_init(PyObject *self_, PyObject *args, PyObject *kwargs)
     self->filename = apsw_strdup(text);
     if (!self->filename)
       return -1;
+    self->free_filename = 1;
   }
   else if (Py_IsNone(filename))
   {
@@ -3139,9 +3099,9 @@ static PyTypeObject APSWVFSFileType = {
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
   .tp_doc = VFSFile_class_DOC,
   .tp_methods = APSWVFSFile_methods,
-  .tp_init = (initproc)APSWVFSFile_init,
-  .tp_new = APSWVFSFile_new,
-  .tp_str = (reprfunc)APSWVFSFile_tp_str,
+  .tp_init = APSWVFSFile_init,
+  .tp_new = PyType_GenericNew,
+  .tp_str = APSWVFSFile_tp_str,
 };
 
 /** .. class:: URIFilename
@@ -3328,7 +3288,7 @@ static PyTypeObject APSWURIFilenameType = {
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
   .tp_doc = URIFilename_class_DOC,
   .tp_methods = APSWURIFilenameMethods,
-  .tp_str = (reprfunc)apswurifilename_tp_str,
+  .tp_str = apswurifilename_tp_str,
   .tp_getset = APSWURIFilename_getset,
 };
 

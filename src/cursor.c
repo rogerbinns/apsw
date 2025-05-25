@@ -87,9 +87,9 @@ struct APSWCursor
   /* what state we are in */
   enum
   {
+    C_DONE = 0,
     C_BEGIN,
     C_ROW,
-    C_DONE
   } status;
 };
 
@@ -263,34 +263,6 @@ APSWCursor_dealloc(PyObject *self_)
 
   PY_ERR_RESTORE(exc_save);
   Py_TpFree(self_);
-}
-
-static PyObject *
-APSWCursor_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwds))
-{
-  APSWCursor *self;
-
-  self = (APSWCursor *)type->tp_alloc(type, 0);
-  if (self != NULL)
-  {
-    self->connection = NULL;
-    self->statement = 0;
-    self->status = C_DONE;
-    self->bindings = 0;
-    self->bindingsoffset = 0;
-    self->emiter = 0;
-    self->emoriginalquery = 0;
-    self->exectrace = 0;
-    self->rowtrace = 0;
-    self->weakreflist = NULL;
-    self->description_cache[0] = 0;
-    self->description_cache[1] = 0;
-    self->description_cache[2] = 0;
-    self->init_was_called = 0;
-    self->in_query = 0;
-  }
-
-  return (PyObject *)self;
 }
 
 /** .. method:: __init__(connection: Connection)
@@ -1961,9 +1933,9 @@ static PyTypeObject APSWCursorType = {
   .tp_iternext = (iternextfunc)APSWCursor_next,
   .tp_methods = APSWCursor_methods,
   .tp_getset = APSWCursor_getset,
-  .tp_init = (initproc)APSWCursor_init,
-  .tp_new = APSWCursor_new,
-  .tp_str = (reprfunc)APSWCursor_tp_str,
+  .tp_init = APSWCursor_init,
+  .tp_new = PyType_GenericNew,
+  .tp_str = APSWCursor_tp_str,
 };
 
 static int
@@ -1991,7 +1963,7 @@ static PyTypeObject PyObjectBindType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.pyobject",
   .tp_basicsize = sizeof(PyObjectBind),
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-  .tp_init = (initproc)PyObjectBind_init,
+  .tp_init = PyObjectBind_init,
   .tp_finalize = PyObjectBind_finalize,
   .tp_new = PyType_GenericNew,
   .tp_doc = Apsw_pyobject_DOC,

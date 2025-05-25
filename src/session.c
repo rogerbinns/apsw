@@ -2284,7 +2284,7 @@ static PyTypeObject APSWSessionType = {
   .tp_basicsize = sizeof(APSWSession),
   .tp_doc = Session_class_DOC,
   .tp_new = PyType_GenericNew,
-  .tp_init = (initproc)APSWSession_init,
+  .tp_init = APSWSession_init,
   .tp_dealloc = APSWSession_dealloc,
   .tp_methods = APSWSession_methods,
   .tp_getset = APSWSession_getset,
@@ -2334,7 +2334,7 @@ static PyTypeObject APSWChangesetBuilderType = {
   .tp_basicsize = sizeof(APSWChangesetBuilder),
   .tp_methods = APSWChangesetBuilder_methods,
   .tp_new = PyType_GenericNew,
-  .tp_init = (initproc)APSWChangesetBuilder_init,
+  .tp_init = APSWChangesetBuilder_init,
   .tp_dealloc = APSWChangesetBuilder_dealloc,
   .tp_doc = ChangesetBuilder_class_DOC,
   .tp_weaklistoffset = offsetof(APSWChangesetBuilder, weakreflist),
@@ -2360,7 +2360,7 @@ static PyTypeObject APSWTableChangeType = {
   .tp_getset = APSWTableChange_getset,
   .tp_doc = TableChange_class_DOC,
   .tp_dealloc = APSWTableChange_dealloc,
-  .tp_str = (reprfunc)APSWTableChange_tp_str,
+  .tp_str = APSWTableChange_tp_str,
 };
 
 static PyMethodDef APSWRebaser_methods[] = {
@@ -2377,6 +2377,6 @@ static PyTypeObject APSWRebaserType = {
   .tp_doc = Rebaser_class_DOC,
   .tp_methods = APSWRebaser_methods,
   .tp_new = PyType_GenericNew,
-  .tp_init = (initproc)APSWRebaser_init,
+  .tp_init = APSWRebaser_init,
   .tp_dealloc = APSWRebaser_dealloc,
 };

@@ -409,53 +409,6 @@ Connection_dealloc(PyObject *self_)
   Py_TpFree(self_);
 }
 
-static PyObject *
-Connection_new(PyTypeObject *type, PyObject *Py_UNUSED(args), PyObject *Py_UNUSED(kwds))
-{
-  Connection *self;
-
-  self = (Connection *)type->tp_alloc(type, 0);
-  if (self != NULL)
-  {
-    self->db = 0;
-    self->dbmutex = 0;
-    self->cursor_factory = Py_NewRef((PyObject *)&APSWCursorType);
-    self->dependents = PyList_New(0);
-    self->stmtcache = 0;
-    self->fts5_api_cached = 0;
-    self->busyhandler = 0;
-    self->rollbackhook = 0;
-    self->updatehook = 0;
-    self->commithook = 0;
-    self->walhook = 0;
-    self->authorizer = 0;
-    self->collationneeded = 0;
-    self->exectrace = 0;
-    self->rowtrace = 0;
-    self->vfs = 0;
-    self->savepointlevel = 0;
-    self->open_flags = 0;
-    self->open_vfs = 0;
-    self->weakreflist = 0;
-    self->tracehooks = PyMem_Malloc(sizeof(struct tracehook) * 1);
-    self->tracehooks_count = 0;
-    if (self->tracehooks)
-    {
-      self->tracehooks[0].callback = 0;
-      self->tracehooks[0].id = 0;
-      self->tracehooks[0].mask = 0;
-      self->tracehooks_count = 1;
-    }
-    self->progresshandler = 0;
-    self->progresshandler_count = 0;
-    CALL_TRACK_INIT(xConnect);
-    if (self->dependents && self->tracehooks)
-      return (PyObject *)self;
-  }
-
-  return NULL;
-}
-
 /** .. method:: __init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)
 
   Opens the named database.  You can use ``:memory:`` to get a private temporary
@@ -505,6 +458,21 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
     ARG_EPILOG(-1, Connection_init_USAGE, Py_XDECREF(fast_kwnames));
   }
   flags |= SQLITE_OPEN_EXRESCODE;
+
+  self->cursor_factory = Py_NewRef((PyObject *)&APSWCursorType);
+  self->tracehooks = PyMem_Malloc(sizeof(struct tracehook) * 1);
+  if (!self->tracehooks)
+    return -1;
+  self->tracehooks[0].callback = 0;
+  self->tracehooks[0].id = 0;
+  self->tracehooks[0].mask = 0;
+  self->tracehooks_count = 1;
+
+  self->dependents = PyList_New(0);
+  if (!self->dependents)
+    return -1;
+
+  CALL_TRACK_INIT(xConnect);
 
   /* clamp cache size */
   if (statementcachesize < 0)
@@ -5868,15 +5836,12 @@ static PyGetSetDef Connection_getseters[] = {
   { "filename", Connection_getmainfilename, NULL, Connection_filename_DOC, NULL },
   { "filename_journal", Connection_getjournalfilename, NULL, Connection_filename_journal_DOC, NULL },
   { "filename_wal", Connection_getwalfilename, NULL, Connection_filename_wal_DOC, NULL },
-  { "cursor_factory", Connection_get_cursor_factory, Connection_set_cursor_factory,
-    Connection_cursor_factory_DOC, NULL },
+  { "cursor_factory", Connection_get_cursor_factory, Connection_set_cursor_factory, Connection_cursor_factory_DOC,
+    NULL },
   { "in_transaction", Connection_get_in_transaction, NULL, Connection_in_transaction_DOC },
-  { "exec_trace", Connection_get_exec_trace_attr, Connection_set_exec_trace_attr,
-    Connection_exec_trace_DOC },
-  { "row_trace", Connection_get_row_trace_attr, Connection_set_row_trace_attr,
-    Connection_row_trace_DOC },
-  { "authorizer", Connection_get_authorizer_attr, Connection_set_authorizer_attr,
-    Connection_authorizer_DOC },
+  { "exec_trace", Connection_get_exec_trace_attr, Connection_set_exec_trace_attr, Connection_exec_trace_DOC },
+  { "row_trace", Connection_get_row_trace_attr, Connection_set_row_trace_attr, Connection_row_trace_DOC },
+  { "authorizer", Connection_get_authorizer_attr, Connection_set_authorizer_attr, Connection_authorizer_DOC },
   { "system_errno", Connection_get_system_errno, NULL, Connection_system_errno_DOC },
   { "is_interrupted", Connection_is_interrupted, NULL, Connection_is_interrupted_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
@@ -6120,7 +6085,7 @@ static PyTypeObject ConnectionType = {
   .tp_methods = Connection_methods,
   .tp_members = Connection_members,
   .tp_getset = Connection_getseters,
-  .tp_init = (initproc)Connection_init,
-  .tp_new = Connection_new,
-  .tp_str = (reprfunc)Connection_tp_str,
+  .tp_init = Connection_init,
+  .tp_new = PyType_GenericNew,
+  .tp_str = Connection_tp_str,
 };
