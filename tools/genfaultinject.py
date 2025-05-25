@@ -101,7 +101,7 @@ returns = {
             PyObject_VectorcallMethod PyObject_Vectorcall PyWeakref_GetObject PyUnicode_DecodeUTF8
             PyLong_FromSsize_t PyLong_FromUnsignedLongLong PyLong_FromSize_t
             PyFrozenSet_New PyType_FromModuleAndSpec PyModule_AddStringConstant
-            PyMemoryView_FromMemory PyObject_CallMethodNoArgs
+            PyMemoryView_FromMemory PyObject_CallMethodNoArgs PyType_GenericNew
 
             Connection_fts5_api get_token_value fts5extensionapi_acquire
 

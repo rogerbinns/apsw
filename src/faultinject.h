@@ -81,6 +81,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyTuple_New
 #undef PyTuple_Pack
 #undef PyType_FromModuleAndSpec
+#undef PyType_GenericNew
 #undef PyType_Ready
 #undef PyUnicode_AsUTF8
 #undef PyUnicode_AsUTF8AndSize
@@ -1225,6 +1226,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyType_FromModuleAndSpec = (typeof (_res_PyType_FromModuleAndSpec))18;                                                                                          \
     }                                                                                                                                                                        \
     _res_PyType_FromModuleAndSpec;                                                                                                                                           \
+})
+#define PyType_GenericNew(...) \
+({                                                                                                                                                      \
+    __auto_type _res_PyType_GenericNew = 0 ? PyType_GenericNew(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_PyType_GenericNew = (typeof (_res_PyType_GenericNew))APSW_FaultInjectControl("PyType_GenericNew", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_PyType_GenericNew))0x1FACADE == _res_PyType_GenericNew)                                                                           \
+       _res_PyType_GenericNew = PyType_GenericNew(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_PyType_GenericNew))0x2FACADE == _res_PyType_GenericNew)                                                                       \
+    {                                                                                                                                                   \
+        PyType_GenericNew(__VA_ARGS__);                                                                                                                 \
+        _res_PyType_GenericNew = (typeof (_res_PyType_GenericNew))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_PyType_GenericNew;                                                                                                                             \
 })
 #define PyType_Ready(...) \
 ({                                                                                                                                       \
