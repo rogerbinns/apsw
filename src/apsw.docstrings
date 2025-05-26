@@ -3868,7 +3868,7 @@
 "\n" \
 " Name of the affected table\n" 
 
-#define  TableChange_new_DOC ":type: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None\n" \
+#define  TableChange_new_DOC ":type: tuple[SQLiteValue | Literal[no_change], ...] | None\n" \
 "\n" \
 ":class:`None` if not applicable (like a DELETE).  Otherwise a\n" \
 "tuple of the new values for the row, with :attr:`apsw.no_change`\n" \
@@ -3876,7 +3876,7 @@
 "\n" \
 "Calls: `sqlite3changeset_new <https://sqlite.org/session/sqlite3changeset_new.html>`__\n" 
 
-#define  TableChange_old_DOC ":type: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None\n" \
+#define  TableChange_old_DOC ":type: tuple[SQLiteValue | Literal[no_change], ...] | None\n" \
 "\n" \
 ":class:`None` if not applicable (like an INSERT).  Otherwise a tuple\n" \
 "of the old values for the row before this change, with\n" \

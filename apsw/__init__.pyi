@@ -2898,14 +2898,14 @@ class TableChange:
     name: str
     """ Name of the affected table"""
 
-    new: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None
+    new: tuple[SQLiteValue | Literal[no_change], ...] | None
     """:class:`None` if not applicable (like a DELETE).  Otherwise a
     tuple of the new values for the row, with :attr:`apsw.no_change`
     if no value was provided for that column.
 
     Calls: `sqlite3changeset_new <https://sqlite.org/session/sqlite3changeset_new.html>`__"""
 
-    old: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None
+    old: tuple[SQLiteValue | Literal[no_change], ...] | None
     """:class:`None` if not applicable (like an INSERT).  Otherwise a tuple
     of the old values for the row before this change, with
     :attr:`apsw.no_change` if no value was provided for that column,
