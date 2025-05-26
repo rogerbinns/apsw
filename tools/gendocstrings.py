@@ -3,8 +3,6 @@
 This implements functionality similar to Argument Clinic.
 
 * Docstrings are available as C symbols, and then used
-* The syntax for __text_signature is used to give a partial type
-  signature
 * Argument parsing is automated
 * Type stubs are generated
 
