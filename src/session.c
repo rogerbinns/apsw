@@ -1018,7 +1018,7 @@ APSWTableChange_indirect(PyObject *self_, void *Py_UNUSED(unused))
 }
 
 /** .. attribute:: new
-  :type: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None
+  :type: tuple[SQLiteValue | Literal[no_change], ...] | None
 
   :class:`None` if not applicable (like a DELETE).  Otherwise a
   tuple of the new values for the row, with :attr:`apsw.no_change`
@@ -1067,7 +1067,7 @@ error:
 }
 
 /** .. attribute:: old
-  :type: tuple[SQLiteValue | typing.Literal[apsw.no_change], ...] | None
+  :type: tuple[SQLiteValue | Literal[no_change], ...] | None
 
   :class:`None` if not applicable (like an INSERT).  Otherwise a tuple
   of the old values for the row before this change, with

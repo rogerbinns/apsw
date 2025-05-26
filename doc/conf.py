@@ -25,6 +25,11 @@ extensions = [
     "sphinx.ext.autosummary",
 ]
 
+# this shows shorter names like Buffer instead of collections.abc.Buffer
+python_use_unqualified_type_names = True
+# less verbose Literal [ "one", "two"] -> "one" : "two"
+python_display_short_literal_types = True
+
 autodoc_preserve_defaults = True
 
 extlinks = {
