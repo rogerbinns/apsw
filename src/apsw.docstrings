@@ -734,10 +734,10 @@
 #define  Blob_tell_DOC "Blob.tell() -> int\n\n" \
 "Returns the current offset.\n" 
 
-#define  Blob_write_DOC "Blob.write(data: bytes) -> None\n\n" \
+#define  Blob_write_DOC "Blob.write(data: Buffer) -> None\n\n" \
 "Writes the data to the blob.\n" \
 "\n" \
-":param data: bytes to write\n" \
+":param data: Buffer to write\n" \
 "\n" \
 ":raises TypeError: Wrong data type\n" \
 "\n" \
@@ -749,7 +749,7 @@
 "Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__\n" 
 
 #define Blob_write_KWNAMES "data"
-#define Blob_write_USAGE "Blob.write(data: bytes) -> None"
+#define Blob_write_USAGE "Blob.write(data: Buffer) -> None"
 
 #define Blob_write_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(data), PyObject *)); \
@@ -1615,7 +1615,7 @@
 "\n" \
 "Calls: `sqlite3_db_name <https://sqlite.org/c3ref/db_name.html>`__\n" 
 
-#define  Connection_deserialize_DOC "Connection.deserialize(name: str, contents: bytes) -> None\n\n" \
+#define  Connection_deserialize_DOC "Connection.deserialize(name: str, contents: Buffer) -> None\n\n" \
 "Replaces the named database with an in-memory copy of *contents*.\n" \
 "*name* is `main`, `temp`, the name in `ATTACH\n" \
 "<https://sqlite.org/lang_attach.html>`__\n" \
@@ -1630,7 +1630,7 @@
 "Calls: `sqlite3_deserialize <https://sqlite.org/c3ref/deserialize.html>`__\n" 
 
 #define Connection_deserialize_KWNAMES "name", "contents"
-#define Connection_deserialize_USAGE "Connection.deserialize(name: str, contents: bytes) -> None"
+#define Connection_deserialize_USAGE "Connection.deserialize(name: str, contents: Buffer) -> None"
 
 #define Connection_deserialize_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -3270,12 +3270,12 @@
 "\n" \
 "Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__\n" 
 
-#define  FTS5ExtensionApi_tokenize_DOC "FTS5ExtensionApi.tokenize(utf8: bytes, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list\n\n" \
+#define  FTS5ExtensionApi_tokenize_DOC "FTS5ExtensionApi.tokenize(utf8: Buffer, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list\n\n" \
 "`Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize_v2>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.\n" \
 "See :meth:`apsw.FTS5Tokenizer.__call__` for details.\n" 
 
 #define FTS5ExtensionApi_tokenize_KWNAMES "utf8", "locale", "include_offsets", "include_colocated"
-#define FTS5ExtensionApi_tokenize_USAGE "FTS5ExtensionApi.tokenize(utf8: bytes, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list"
+#define FTS5ExtensionApi_tokenize_USAGE "FTS5ExtensionApi.tokenize(utf8: Buffer, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list"
 
 #define FTS5ExtensionApi_tokenize_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(utf8), PyObject *)); \
@@ -3293,12 +3293,12 @@
 "\n" \
 "The arguments the tokenizer was created with.\n" 
 
-#define  FTS5Tokenizer_call_DOC "FTS5Tokenizer.__call__(utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult\n\n" \
+#define  FTS5Tokenizer_call_DOC "FTS5Tokenizer.__call__(utf8: Buffer, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult\n\n" \
 "Does a tokenization, returning a list of the results.  If you have no\n" \
 "interest in token offsets or colocated tokens then they can be omitted from\n" \
 "the results.\n" \
 "\n" \
-":param utf8: Input bytes\n" \
+":param utf8: Input buffer\n" \
 ":param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag\n" \
 ":param include_offsets: Returned list includes offsets into utf8 for each token\n" \
 ":param include_colocated: Returned list can include colocated tokens\n" \
@@ -3346,7 +3346,7 @@
 "        ]\n" 
 
 #define FTS5Tokenizer_call_KWNAMES "utf8", "flags", "locale", "include_offsets", "include_colocated"
-#define FTS5Tokenizer_call_USAGE "FTS5Tokenizer.__call__(utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult"
+#define FTS5Tokenizer_call_USAGE "FTS5Tokenizer.__call__(utf8: Buffer, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult"
 
 #define FTS5Tokenizer_call_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(utf8), PyObject *)); \
@@ -4183,7 +4183,7 @@
 } while(0)
 
 
-#define  VFSFile_xWrite_DOC "VFSFile.xWrite(data: bytes, offset: int) -> None\n\n" \
+#define  VFSFile_xWrite_DOC "VFSFile.xWrite(data: Buffer, offset: int) -> None\n\n" \
 "Write the *data* starting at absolute *offset*. You must write all the data\n" \
 "requested, or return an error. If you have the file open for\n" \
 "non-blocking I/O or if signals happen then it is possible for the\n" \
@@ -4193,7 +4193,7 @@
 ":param offset: Where to start writing.\n" 
 
 #define VFSFile_xWrite_KWNAMES "data", "offset"
-#define VFSFile_xWrite_USAGE "VFSFile.xWrite(data: bytes, offset: int) -> None"
+#define VFSFile_xWrite_USAGE "VFSFile.xWrite(data: Buffer, offset: int) -> None"
 
 #define VFSFile_xWrite_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(data), PyObject *)); \

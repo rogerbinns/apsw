@@ -458,11 +458,11 @@ APSWBlob_tell(PyObject *self_, PyObject *Py_UNUSED(unused))
   return PyLong_FromLong(self->curoffset);
 }
 
-/** .. method:: write(data: bytes) -> None
+/** .. method:: write(data: Buffer) -> None
 
   Writes the data to the blob.
 
-  :param data: bytes to write
+  :param data: Buffer to write
 
   :raises TypeError: Wrong data type
 
@@ -486,7 +486,7 @@ APSWBlob_write(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
   {
     Blob_write_CHECK;
     ARG_PROLOG(1, Blob_write_KWNAMES);
-    ARG_MANDATORY ARG_py_buffer(data);
+    ARG_MANDATORY ARG_Buffer(data);
     ARG_EPILOG(NULL, Blob_write_USAGE, );
   }
 

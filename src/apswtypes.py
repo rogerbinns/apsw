@@ -9,7 +9,10 @@ import types
 Mapping: TypeAlias = collections.abc.Mapping
 
 # Anything that resembles a sequence of bytes
-Buffer: TypeAlias = collections.abc.Buffer
+if sys.version_info >= (3, 12):
+    Buffer: TypeAlias = collections.abc.Buffer
+else:
+    Buffer: TypeAlias = bytes
 
 SQLiteValue = None | int | float | bytes | str
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit

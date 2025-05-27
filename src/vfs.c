@@ -2289,7 +2289,7 @@ apswvfsfile_xWrite(sqlite3_file *file, const void *buffer, int amount, sqlite3_i
   return result;
 }
 
-/** .. method:: xWrite(data: bytes, offset: int) -> None
+/** .. method:: xWrite(data: Buffer, offset: int) -> None
 
   Write the *data* starting at absolute *offset*. You must write all the data
   requested, or return an error. If you have the file open for
@@ -2315,7 +2315,7 @@ apswvfsfilepy_xWrite(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
   {
     VFSFile_xWrite_CHECK;
     ARG_PROLOG(2, VFSFile_xWrite_KWNAMES);
-    ARG_MANDATORY ARG_py_buffer(data);
+    ARG_MANDATORY ARG_Buffer(data);
     ARG_MANDATORY ARG_int64(offset);
     ARG_EPILOG(NULL, VFSFile_xWrite_USAGE, );
   }

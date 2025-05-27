@@ -19,6 +19,11 @@ Shell :ref:`open command <shell-cmd-open>` allows specifying flags to
 open a connection, and :ref:`connection command
 <shell-cmd-connection>` shows flags used for each open. (:issue:`557`)
 
+Type stubs updated to :class:`collections.abc.Buffer` (Python 3.12+)
+wherever some bytes are taken.  `Buffers
+<https://docs.python.org/3/c-api/buffer.html>`__ have always been
+used, but Python 3.12 added typing.
+
 3.49.2.0
 ========
 

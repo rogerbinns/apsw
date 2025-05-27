@@ -2135,7 +2135,7 @@ ToUtf8PositionMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
   PyObject *utf8 = NULL;
   ARG_PROLOG(1, "utf8");
-  ARG_MANDATORY ARG_py_buffer(utf8);
+  ARG_MANDATORY ARG_Buffer(utf8);
   ARG_EPILOG(-1, "to_utf8_position_mapper.__init__(utf8: bytes)", );
 
   int res = PyObject_GetBuffer(utf8, &self->buffer, PyBUF_SIMPLE);

@@ -2410,7 +2410,7 @@ Connection_serialize(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
   Py_RETURN_NONE;
 }
 
-/** .. method:: deserialize(name: str, contents: bytes) -> None
+/** .. method:: deserialize(name: str, contents: Buffer) -> None
 
    Replaces the named database with an in-memory copy of *contents*.
    *name* is `main`, `temp`, the name in `ATTACH
@@ -2443,7 +2443,7 @@ Connection_deserialize(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     Connection_deserialize_CHECK;
     ARG_PROLOG(2, Connection_deserialize_KWNAMES);
     ARG_MANDATORY ARG_str(name);
-    ARG_MANDATORY ARG_py_buffer(contents);
+    ARG_MANDATORY ARG_Buffer(contents);
     ARG_EPILOG(NULL, Connection_deserialize_USAGE, );
   }
 

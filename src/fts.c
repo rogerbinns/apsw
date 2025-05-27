@@ -181,13 +181,13 @@ error:
   return SQLITE_ERROR;
 }
 
-/** .. method:: __call__(utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult
+/** .. method:: __call__(utf8: Buffer, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult
 
   Does a tokenization, returning a list of the results.  If you have no
   interest in token offsets or colocated tokens then they can be omitted from
   the results.
 
-  :param utf8: Input bytes
+  :param utf8: Input buffer
   :param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag
   :param include_offsets: Returned list includes offsets into utf8 for each token
   :param include_colocated: Returned list can include colocated tokens
@@ -251,7 +251,7 @@ APSWFTS5Tokenizer_call(PyObject *self_, PyObject *const *fast_args, size_t nargs
   {
     FTS5Tokenizer_call_CHECK;
     ARG_PROLOG(3, FTS5Tokenizer_call_KWNAMES);
-    ARG_MANDATORY ARG_py_buffer(utf8);
+    ARG_MANDATORY ARG_Buffer(utf8);
     ARG_MANDATORY ARG_int(flags);
     ARG_MANDATORY ARG_optional_UTF8AndSize(locale);
     ARG_OPTIONAL ARG_bool(include_offsets);
@@ -1223,7 +1223,7 @@ APSWFTS5ExtensionApi_xColumnText(PyObject *self, PyObject *const *fast_args, Py_
   return PyBytes_FromStringAndSize(bytes, size);
 }
 
-/** .. method:: tokenize(utf8: bytes, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list
+/** .. method:: tokenize(utf8: Buffer, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list
 
   `Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize_v2>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.
   See :meth:`apsw.FTS5Tokenizer.__call__` for details.
@@ -1246,7 +1246,7 @@ APSWFTS5ExtensionApi_xTokenize(PyObject *self, PyObject *const *fast_args, Py_ss
   {
     FTS5ExtensionApi_tokenize_CHECK;
     ARG_PROLOG(2, FTS5ExtensionApi_tokenize_KWNAMES);
-    ARG_MANDATORY ARG_py_buffer(utf8);
+    ARG_MANDATORY ARG_Buffer(utf8);
     ARG_MANDATORY ARG_optional_UTF8AndSize(locale);
     ARG_OPTIONAL ARG_bool(include_offsets);
     ARG_OPTIONAL ARG_bool(include_colocated);

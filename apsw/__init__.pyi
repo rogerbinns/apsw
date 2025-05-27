@@ -10,7 +10,10 @@ import types
 Mapping: TypeAlias = collections.abc.Mapping
 
 # Anything that resembles a sequence of bytes
-Buffer: TypeAlias = collections.abc.Buffer
+if sys.version_info >= (3, 12):
+    Buffer: TypeAlias = collections.abc.Buffer
+else:
+    Buffer: TypeAlias = bytes
 
 SQLiteValue = None | int | float | bytes | str
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
@@ -715,10 +718,10 @@ class Blob:
         """Returns the current offset."""
         ...
 
-    def write(self, data: bytes) -> None:
+    def write(self, data: Buffer) -> None:
         """Writes the data to the blob.
 
-        :param data: bytes to write
+        :param data: Buffer to write
 
         :raises TypeError: Wrong data type
 
@@ -1350,7 +1353,7 @@ class Connection:
         Calls: `sqlite3_db_name <https://sqlite.org/c3ref/db_name.html>`__"""
         ...
 
-    def deserialize(self, name: str, contents: bytes) -> None:
+    def deserialize(self, name: str, contents: Buffer) -> None:
         """Replaces the named database with an in-memory copy of *contents*.
         *name* is `main`, `temp`, the name in `ATTACH
         <https://sqlite.org/lang_attach.html>`__
@@ -2527,7 +2530,7 @@ class FTS5ExtensionApi:
     rowid: int
     """Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__"""
 
-    def tokenize(self, utf8: bytes, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list:
+    def tokenize(self, utf8: Buffer, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list:
         """`Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize_v2>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.
         See :meth:`apsw.FTS5Tokenizer.__call__` for details."""
         ...
@@ -2539,12 +2542,12 @@ class FTS5Tokenizer:
     args: tuple[str]
     """The arguments the tokenizer was created with."""
 
-    def __call__(self, utf8: bytes, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult:
+    def __call__(self, utf8: Buffer, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult:
         """Does a tokenization, returning a list of the results.  If you have no
         interest in token offsets or colocated tokens then they can be omitted from
         the results.
 
-        :param utf8: Input bytes
+        :param utf8: Input buffer
         :param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag
         :param include_offsets: Returned list includes offsets into utf8 for each token
         :param include_colocated: Returned list can include colocated tokens
@@ -3133,7 +3136,7 @@ class VFSFile:
         family of constants."""
         ...
 
-    def xWrite(self, data: bytes, offset: int) -> None:
+    def xWrite(self, data: Buffer, offset: int) -> None:
         """Write the *data* starting at absolute *offset*. You must write all the data
         requested, or return an error. If you have the file open for
         non-blocking I/O or if signals happen then it is possible for the
