@@ -461,19 +461,6 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     argp_optindex++;                                                                                                   \
   } while (0)
 
-#define ARG_py_buffer(varname)                                                                                         \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    if (!PyObject_CheckBuffer(useargs[argp_optindex]))                                                                 \
-    {                                                                                                                  \
-      PyErr_Format(PyExc_TypeError, "Expected bytes or similar type that supports buffer protocol, not %s",            \
-                   Py_TypeName(useargs[argp_optindex]));                                                               \
-      goto param_error;                                                                                                \
-    }                                                                                                                  \
-    varname = useargs[argp_optindex];                                                                                  \
-    argp_optindex++;                                                                                                   \
-  } while (0)
-
 #define ARG_optional_UTF8AndSize(varname)                                                                              \
   do                                                                                                                   \
   {                                                                                                                    \

@@ -514,12 +514,6 @@ def do_argparse(item):
                 if param["default"] != "None":
                     breakpoint()
                 default_check = f"{ pname } == NULL"
-        elif param["type"] == "bytes":
-            type = "PyObject *"
-            kind = "py_buffer"
-            if param["default"]:
-                breakpoint()
-                pass
         elif param["type"] == "list[str] | None":
             type = "PyObject *"
             kind = "optional_list_str"
