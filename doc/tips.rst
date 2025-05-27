@@ -43,7 +43,9 @@ SQLite has `5 storage types
   * - Float (`IEEE754 64 bit <https://en.wikipedia.org/wiki/Double-precision_floating-point_format>`__)
     - :class:`float`
   * - `BLOB <https://en.wikipedia.org/wiki/Binary_large_object>`__ (binary data, limit 1GB)
-    - :class:`bytes` and similar such as :class:`bytearray` and :class:`array.array`
+    - :class:`bytes` and similar such as :class:`bytearray` and :class:`array.array`.  Anything
+      that implements the `buffer protocol <https://docs.python.org/3/c-api/buffer.html>`__ is
+      accepted.
 
 :index:`Dates and times` do not have a dedicated storage type, but do
 have a `variety of functions
