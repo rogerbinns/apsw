@@ -2332,7 +2332,7 @@ static PyTypeObject APSWChangesetType = {
 
 static PyTypeObject APSWChangesetIteratorType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.ChangesetIterator", .tp_basicsize = sizeof(APSWChangesetIterator),
-  .tp_iternext = (iternextfunc)APSWChangesetIterator_next,           .tp_iter = APSWChangesetIterator_iter,
+  .tp_iternext = APSWChangesetIterator_next,           .tp_iter = APSWChangesetIterator_iter,
   .tp_dealloc = APSWChangesetIterator_dealloc,
 };
 
