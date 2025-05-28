@@ -5862,6 +5862,7 @@ class APSW(unittest.TestCase):
                     "get_change_patch_set",
                     "get_change_patch_set_stream",
                     "dealloc",
+                    "tp_traverse",
                 },
                 "req": {"closed": "CHECK_SESSION_CLOSED"},
                 "order": ("closed",),
@@ -5875,7 +5876,7 @@ class APSW(unittest.TestCase):
                 "order": ("scope",),
             },
             "APSWChangesetBuilder": {
-                "skip": {"dealloc", "close_internal", "close", "init"},
+                "skip": {"dealloc", "close_internal", "close", "init", "tp_traverse"},
                 "req": {"closed": "CHECK_BUILDER_CLOSED"},
                 "order": ("closed",),
             },

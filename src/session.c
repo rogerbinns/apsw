@@ -885,6 +885,15 @@ APSWSession_get_changeset_size(PyObject *self_, void *Py_UNUSED(unused))
   return PyLong_FromLongLong(res);
 }
 
+static int
+APSWSession_tp_traverse(PyObject *self_, visitproc visit, void *arg)
+{
+  APSWSession *self = (APSWSession *)self_;
+  Py_VISIT(self->connection);
+  Py_VISIT(self->table_filter);
+  return 0;
+}
+
 /** .. class:: TableChange
 
   Represents a `changed row
@@ -2087,6 +2096,15 @@ APSWChangesetBuilder_output_stream(PyObject *self_, PyObject *const *fast_args, 
   Py_RETURN_NONE;
 }
 
+static int
+APSWChangesetBuilder_tp_traverse(PyObject *self_, visitproc visit, void *arg)
+{
+  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
+  Py_VISIT(self->connection);
+  return 0;
+}
+
+
 /** .. class:: Rebaser
 
   This object wraps a `sqlite3_rebaser
@@ -2290,6 +2308,7 @@ static PyTypeObject APSWSessionType = {
   .tp_getset = APSWSession_getset,
   .tp_flags = Py_TPFLAGS_BASETYPE | Py_TPFLAGS_DEFAULT,
   .tp_weaklistoffset = offsetof(APSWSession, weakreflist),
+  .tp_traverse = APSWSession_tp_traverse,
 };
 
 static PyMethodDef APSWChangeset_methods[] = {
@@ -2338,6 +2357,7 @@ static PyTypeObject APSWChangesetBuilderType = {
   .tp_dealloc = APSWChangesetBuilder_dealloc,
   .tp_doc = ChangesetBuilder_class_DOC,
   .tp_weaklistoffset = offsetof(APSWChangesetBuilder, weakreflist),
+  .tp_traverse = APSWChangesetBuilder_tp_traverse,
 };
 
 static PyGetSetDef APSWTableChange_getset[] = {
