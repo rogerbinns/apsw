@@ -432,7 +432,7 @@ name, table name, and origin name.
 */
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
 static PyObject *
-APSWCursor_get_description_full(PyObject *self)
+APSWCursor_get_description_full(PyObject *self, void *Py_UNUSED(unused))
 {
   return APSWCursor_internal_get_description((APSWCursor *)self, 2);
 }
