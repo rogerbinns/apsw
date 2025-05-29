@@ -476,6 +476,22 @@ add_apsw_constants(PyObject *module)
         return -1;
     }
 
+    /* Flags for sqlite3_setlk_timeout() */
+    the_dict = Py_BuildValue(
+        "{siis}",
+        "SQLITE_SETLK_BLOCK_ON_CONNECT", SQLITE_SETLK_BLOCK_ON_CONNECT, SQLITE_SETLK_BLOCK_ON_CONNECT, "SQLITE_SETLK_BLOCK_ON_CONNECT");
+    if (!the_dict)
+    {
+        assert(PyErr_Occurred());
+        return -1;
+    }
+    if (PyModule_AddObject(module, "mapping_setlk_timeout_flags", the_dict))
+    {
+        assert(PyErr_Occurred());
+        Py_DECREF(the_dict);
+        return -1;
+    }
+
 #ifdef SQLITE_ENABLE_SESSION
     /* Flags for sqlite3changeset_apply_v2 */
     the_dict = Py_BuildValue(
@@ -705,8 +721,9 @@ add_apsw_constants(PyObject *module)
 
     /* Standard File Control Opcodes */
     the_dict = Py_BuildValue(
-        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
+        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
         "SQLITE_FCNTL_BEGIN_ATOMIC_WRITE", SQLITE_FCNTL_BEGIN_ATOMIC_WRITE, SQLITE_FCNTL_BEGIN_ATOMIC_WRITE, "SQLITE_FCNTL_BEGIN_ATOMIC_WRITE",
+        "SQLITE_FCNTL_BLOCK_ON_CONNECT", SQLITE_FCNTL_BLOCK_ON_CONNECT, SQLITE_FCNTL_BLOCK_ON_CONNECT, "SQLITE_FCNTL_BLOCK_ON_CONNECT",
         "SQLITE_FCNTL_BUSYHANDLER", SQLITE_FCNTL_BUSYHANDLER, SQLITE_FCNTL_BUSYHANDLER, "SQLITE_FCNTL_BUSYHANDLER",
         "SQLITE_FCNTL_CHUNK_SIZE", SQLITE_FCNTL_CHUNK_SIZE, SQLITE_FCNTL_CHUNK_SIZE, "SQLITE_FCNTL_CHUNK_SIZE",
         "SQLITE_FCNTL_CKPT_DONE", SQLITE_FCNTL_CKPT_DONE, SQLITE_FCNTL_CKPT_DONE, "SQLITE_FCNTL_CKPT_DONE",
@@ -1088,6 +1105,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_ERROR_SNAPSHOT", SQLITE_ERROR_SNAPSHOT)
         || PyModule_AddIntConstant(module, "SQLITE_FAIL", SQLITE_FAIL)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_BEGIN_ATOMIC_WRITE", SQLITE_FCNTL_BEGIN_ATOMIC_WRITE)
+        || PyModule_AddIntConstant(module, "SQLITE_FCNTL_BLOCK_ON_CONNECT", SQLITE_FCNTL_BLOCK_ON_CONNECT)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_BUSYHANDLER", SQLITE_FCNTL_BUSYHANDLER)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_CHUNK_SIZE", SQLITE_FCNTL_CHUNK_SIZE)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_CKPT_DONE", SQLITE_FCNTL_CKPT_DONE)
@@ -1288,6 +1306,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_SCHEMA", SQLITE_SCHEMA)
         || PyModule_AddIntConstant(module, "SQLITE_SELECT", SQLITE_SELECT)
         || PyModule_AddIntConstant(module, "SQLITE_SELFORDER1", SQLITE_SELFORDER1)
+        || PyModule_AddIntConstant(module, "SQLITE_SETLK_BLOCK_ON_CONNECT", SQLITE_SETLK_BLOCK_ON_CONNECT)
         || PyModule_AddIntConstant(module, "SQLITE_SHM_EXCLUSIVE", SQLITE_SHM_EXCLUSIVE)
         || PyModule_AddIntConstant(module, "SQLITE_SHM_LOCK", SQLITE_SHM_LOCK)
         || PyModule_AddIntConstant(module, "SQLITE_SHM_SHARED", SQLITE_SHM_SHARED)

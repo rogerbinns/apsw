@@ -1426,6 +1426,16 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.format_sql_value, apsw)
         self.assertRaises(TypeError, apsw.format_sql_value)
 
+    def testSetlkTimeout(self):
+        "sqlite3_setlk_timeout"
+        self.assertRaises(OverflowError, self.db.setlk_timeout, sys.maxsize * 64, apsw.SQLITE_SETLK_BLOCK_ON_CONNECT)
+        # it current gives range for values less than -1
+        self.assertRaises(apsw.RangeError, self.db.setlk_timeout, -2, apsw.SQLITE_SETLK_BLOCK_ON_CONNECT)
+
+        # no error is given for unknown flags so we don't test them
+        self.db.setlk_timeout(1000, apsw.SQLITE_SETLK_BLOCK_ON_CONNECT)
+
+
     def testVTableStuff(self):
         "Test new stuff added for Virtual tables"
 

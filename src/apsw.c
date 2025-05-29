@@ -81,6 +81,10 @@ API Reference
 #define SQLITE_MAX_MMAP_SIZE 0x1000000000000LL
 #endif
 
+#ifndef SQLITE_ENABLE_SETLK_TIMEOUT
+#define SQLITE_ENABLE_SETLK_TIMEOUT 1
+#endif
+
 #ifndef SQLITE_DEBUG
 #define SQLITE_API static
 #define SQLITE_EXTERN static

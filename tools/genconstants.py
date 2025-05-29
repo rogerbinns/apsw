@@ -27,6 +27,7 @@ title_to_mapping = {
     "Flags For File Open Operations": "open_flags",
     "Flags for sqlite3_deserialize()": None,
     "Flags for sqlite3_serialize": None,
+    "Flags for sqlite3_setlk_timeout()": "setlk_timeout_flags",
     "Flags for the xAccess VFS method": "access",
     "Flags for the xShmLock VFS method": "xshmlock_flags",
     "Function Flags": "function_flags",

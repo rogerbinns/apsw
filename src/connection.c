@@ -5545,6 +5545,35 @@ Connection_data_version(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
   return PyErr_Occurred() ? NULL : PyLong_FromLong(data_version);
 }
 
+/** .. method:: setlk_timeout(ms: int, flags: int) -> None
+
+  Sets a VFS level timeout.
+
+  -* sqlite3_setlk_timeout
+
+*/
+static PyObject *
+Connection_setlk_timeout(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  Connection *self = (Connection *)self_;
+  CHECK_CLOSED(self, NULL);
+
+  int ms, flags;
+  {
+    Connection_setlk_timeout_CHECK;
+    ARG_PROLOG(2, Connection_setlk_timeout_KWNAMES);
+    ARG_MANDATORY ARG_int(ms);
+    ARG_MANDATORY ARG_int(flags);
+    ARG_EPILOG(NULL, Connection_setlk_timeout_USAGE, );
+  }
+
+  int res = sqlite3_setlk_timeout(self->db, ms, flags);
+  SET_EXC(res, NULL);
+  if(PyErr_Occurred())
+    return NULL;
+  Py_RETURN_NONE;
+}
+
 /* done this way here to keep doc generation simple */
 #include "fts.c"
 
@@ -6014,6 +6043,7 @@ static PyMethodDef Connection_methods[] = {
   { "register_fts5_function", (PyCFunction)Connection_register_fts5_function, METH_FASTCALL | METH_KEYWORDS,
     Connection_register_fts5_function_DOC },
   { "data_version", (PyCFunction)Connection_data_version, METH_FASTCALL | METH_KEYWORDS, Connection_data_version_DOC },
+  { "setlk_timeout", (PyCFunction)Connection_setlk_timeout, METH_FASTCALL | METH_KEYWORDS, Connection_setlk_timeout_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
   { Connection_set_busy_timeout_OLDNAME, (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
     Connection_set_busy_timeout_OLDDOC },

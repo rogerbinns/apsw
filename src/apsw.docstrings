@@ -2476,6 +2476,20 @@
 #define Connection_set_wal_hook_OLDNAME "setwalhook"
 #define Connection_set_wal_hook_OLDDOC Connection_set_wal_hook_USAGE "\n(Old less clear name setwalhook)"
 
+#define  Connection_setlk_timeout_DOC "Connection.setlk_timeout(ms: int, flags: int) -> None\n\n" \
+"Sets a VFS level timeout.\n" \
+"\n" \
+"Calls: `sqlite3_setlk_timeout <https://sqlite.org/c3ref/setlk_timeout.html>`__\n" 
+
+#define Connection_setlk_timeout_KWNAMES "ms", "flags"
+#define Connection_setlk_timeout_USAGE "Connection.setlk_timeout(ms: int, flags: int) -> None"
+
+#define Connection_setlk_timeout_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(ms), int)); \
+  assert(__builtin_types_compatible_p(typeof(flags), int)); \
+} while(0)
+
+
 #define  Connection_sqlite3_pointer_DOC "Connection.sqlite3_pointer() -> int\n\n" \
 "Returns the underlying `sqlite3 *\n" \
 "<https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This\n" \

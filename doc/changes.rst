@@ -15,6 +15,10 @@ APSW changes by version
 
 Full support for the :doc:`session`
 
+Added :meth:`Connection.setlk_timeout`,
+:attr:`apsw.mapping_setlk_timeout_flags`, and enabled the timeout for
+amalgamation builds such as PyPI.
+
 Shell :ref:`open command <shell-cmd-open>` allows specifying flags to
 open a connection, and :ref:`connection command
 <shell-cmd-connection>` shows flags used for each open. (:issue:`557`)
