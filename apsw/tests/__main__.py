@@ -1305,11 +1305,11 @@ class APSW(unittest.TestCase):
         self.assertRaises(RecursionError, apsw.Connection, "testdb", vfs="vfsa")
         sys.setrecursionlimit(1000)
 
-        def handler():  # incorrect number of arguments on purpose
+        def handler_with_deliberate_wrong_args():  # incorrect number of arguments on purpose
             pass
 
         try:
-            apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
+            apsw.config(apsw.SQLITE_CONFIG_LOG, handler_with_deliberate_wrong_args)
             self.assertRaisesUnraisable(TypeError, apsw.log, 11, "recursion error forced")
         finally:
             apsw.config(apsw.SQLITE_CONFIG_LOG, None)
