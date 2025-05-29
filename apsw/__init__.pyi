@@ -1955,6 +1955,12 @@ class Connection:
 
     setwalhook = set_wal_hook ## OLD-NAME
 
+    def setlk_timeout(self, ms: int, flags: int) -> None:
+        """Sets a VFS level timeout.
+
+        Calls: `sqlite3_setlk_timeout <https://sqlite.org/c3ref/setlk_timeout.html>`__"""
+        ...
+
     def sqlite3_pointer(self) -> int:
         """Returns the underlying `sqlite3 *
         <https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
@@ -4194,6 +4200,8 @@ SQLITE_FAIL: int = 3
 """For `Conflict resolution modes <https://sqlite.org/c3ref/c_fail.html>'__"""
 SQLITE_FCNTL_BEGIN_ATOMIC_WRITE: int = 31
 """For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
+SQLITE_FCNTL_BLOCK_ON_CONNECT: int = 44
+"""For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
 SQLITE_FCNTL_BUSYHANDLER: int = 15
 """For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
 SQLITE_FCNTL_CHUNK_SIZE: int = 6
@@ -4600,6 +4608,8 @@ SQLITE_SESSION_OBJCONFIG_ROWID: int = 2
 """For `Options for sqlite3session_object_config <https://sqlite.org/session/c_session_objconfig_rowid.html>'__"""
 SQLITE_SESSION_OBJCONFIG_SIZE: int = 1
 """For `Options for sqlite3session_object_config <https://sqlite.org/session/c_session_objconfig_rowid.html>'__"""
+SQLITE_SETLK_BLOCK_ON_CONNECT: int = 1
+"""For `Flags for sqlite3_setlk_timeout() <https://sqlite.org/c3ref/c_setlk_block_on_connect.html>'__"""
 SQLITE_SHM_EXCLUSIVE: int = 8
 """For `Flags for the xShmLock VFS method <https://sqlite.org/c3ref/c_shm_exclusive.html>'__"""
 SQLITE_SHM_LOCK: int = 2
@@ -4834,16 +4844,16 @@ mapping_file_control: dict[str | int, int | str]
 """Standard File Control Opcodes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html
 
-SQLITE_FCNTL_BEGIN_ATOMIC_WRITE SQLITE_FCNTL_BUSYHANDLER
-SQLITE_FCNTL_CHUNK_SIZE SQLITE_FCNTL_CKPT_DONE SQLITE_FCNTL_CKPT_START
-SQLITE_FCNTL_CKSM_FILE SQLITE_FCNTL_COMMIT_ATOMIC_WRITE
-SQLITE_FCNTL_COMMIT_PHASETWO SQLITE_FCNTL_DATA_VERSION
-SQLITE_FCNTL_EXTERNAL_READER SQLITE_FCNTL_FILE_POINTER
-SQLITE_FCNTL_GET_LOCKPROXYFILE SQLITE_FCNTL_HAS_MOVED
-SQLITE_FCNTL_JOURNAL_POINTER SQLITE_FCNTL_LAST_ERRNO
-SQLITE_FCNTL_LOCKSTATE SQLITE_FCNTL_LOCK_TIMEOUT
-SQLITE_FCNTL_MMAP_SIZE SQLITE_FCNTL_NULL_IO SQLITE_FCNTL_OVERWRITE
-SQLITE_FCNTL_PDB SQLITE_FCNTL_PERSIST_WAL
+SQLITE_FCNTL_BEGIN_ATOMIC_WRITE SQLITE_FCNTL_BLOCK_ON_CONNECT
+SQLITE_FCNTL_BUSYHANDLER SQLITE_FCNTL_CHUNK_SIZE
+SQLITE_FCNTL_CKPT_DONE SQLITE_FCNTL_CKPT_START SQLITE_FCNTL_CKSM_FILE
+SQLITE_FCNTL_COMMIT_ATOMIC_WRITE SQLITE_FCNTL_COMMIT_PHASETWO
+SQLITE_FCNTL_DATA_VERSION SQLITE_FCNTL_EXTERNAL_READER
+SQLITE_FCNTL_FILE_POINTER SQLITE_FCNTL_GET_LOCKPROXYFILE
+SQLITE_FCNTL_HAS_MOVED SQLITE_FCNTL_JOURNAL_POINTER
+SQLITE_FCNTL_LAST_ERRNO SQLITE_FCNTL_LOCKSTATE
+SQLITE_FCNTL_LOCK_TIMEOUT SQLITE_FCNTL_MMAP_SIZE SQLITE_FCNTL_NULL_IO
+SQLITE_FCNTL_OVERWRITE SQLITE_FCNTL_PDB SQLITE_FCNTL_PERSIST_WAL
 SQLITE_FCNTL_POWERSAFE_OVERWRITE SQLITE_FCNTL_PRAGMA SQLITE_FCNTL_RBU
 SQLITE_FCNTL_RESERVE_BYTES SQLITE_FCNTL_RESET_CACHE
 SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE SQLITE_FCNTL_SET_LOCKPROXYFILE
@@ -4960,6 +4970,12 @@ mapping_session_object_config_options: dict[str | int, int | str]
 Doc at https://sqlite.org/session/c_session_objconfig_rowid.html
 
 SQLITE_SESSION_OBJCONFIG_ROWID SQLITE_SESSION_OBJCONFIG_SIZE"""
+
+mapping_setlk_timeout_flags: dict[str | int, int | str]
+"""Flags for sqlite3_setlk_timeout() mapping names to int and int to names.
+Doc at https://sqlite.org/c3ref/c_setlk_block_on_connect.html
+
+SQLITE_SETLK_BLOCK_ON_CONNECT"""
 
 mapping_statement_status: dict[str | int, int | str]
 """Status Parameters for prepared statements mapping names to int and int to names.
