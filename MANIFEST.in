@@ -7,11 +7,6 @@ include src/apsw.docstrings
 # other files
 include apsw/__init__.pyi
 include apsw/py.typed
-include apsw/shell.py
-include apsw/speedtest.py
-include apsw/trace.py
-include apsw/tests/*.py
-include apsw/ext.py
 
 # data
 include apsw/fts_test_strings
