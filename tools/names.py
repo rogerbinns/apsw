@@ -22,7 +22,7 @@ def check_old():
         f":!{n}"
         for n in (
             "tools/renames.json",
-            "apsw/tests.py",
+            "apsw/tests/__main__.py",
             "apsw/__init__.pyi",
             "Makefile",
             "MANIFEST.in",
@@ -64,7 +64,7 @@ def rst_gen():
 
 
 def run_tests():
-    test_file_name = pathlib.Path("apsw/tests.py")
+    test_file_name = pathlib.Path("apsw/tests/__main__.py")
     source = test_file_name.read_text()
 
     subs = {}
@@ -80,10 +80,16 @@ def run_tests():
 
     old_source = re.sub("\\b(" + "|".join(subs.keys()) + ")\\b", repl, source)
 
+    for sub, repl in (
+        ("from .ftstests import *", "from apsw.tests.ftstests import *"),
+        ("from .sessiontests import *", "from apsw.tests.sessiontests import *"),
+    ):
+        old_source = old_source.replace(sub, repl)
+
     module = types.ModuleType("tests")
     vars(module)["__file__"] = str(test_file_name)
 
-    exec(compile(old_source, "apsw/tests.py", "exec"), vars(module))
+    exec(compile(old_source, "apsw/tests/__main__.py", "exec"), vars(module))
 
     module.setup()
 
