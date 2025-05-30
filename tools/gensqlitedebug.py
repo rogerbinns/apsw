@@ -115,6 +115,7 @@ functions_global = (
     "sqlite3_open_v2",
     "sqlite3_randomness",
     "sqlite3_release_memory",
+    "sqlite3_setlk_timeout", # operates on db, but does not take a mutex
     "sqlite3_shutdown",
     "sqlite3_sleep",
     "sqlite3_soft_heap_limit64",
