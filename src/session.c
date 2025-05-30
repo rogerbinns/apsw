@@ -45,9 +45,8 @@ resulted in those changes.
 
 * Changesets do not contain the changes in the order made
 
-* Using the :class:`change set builder <ChangesetBuilder>`, you can
-  accumulate multiple change sets, and add changes from an iterator or
-  conflict handler.
+* Using :class:`ChangesetBuilder`, you can accumulate multiple change
+  sets, and add changes from an iterator or conflict handler.
 
 * Using :class:`Rebaser` you can merge conflict resolutions made when
   applying a changeset into a later changeset, so those conflict
@@ -65,7 +64,7 @@ resulted in those changes.
   painful.
 
 * Most APIs produce and consume changesets as bytes (or :class:`bytes
-  like <collections.abc.Buffer>`. That limits the changeset size to
+  like <collections.abc.Buffer>`). That limits the changeset size to
   2GB - the limit is in the SQLite code and also the limit for `blobs
   <https://www.sqlite.org/limits.html>`__.  To produce or consume
   larger changesets, or to not have an entire changeset in memory,
@@ -138,6 +137,8 @@ To manipulate changesets:
 * You can add :class:`individual changes <TableChange>` from
   :meth:`Changeset.iter` or from your conflict handler in
   :meth:`Changeset.apply`
+* Use :class:`Rebaser` to incorporate conflict resolutions into a
+  changeset
 
 .. tip::
 
