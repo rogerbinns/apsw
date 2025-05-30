@@ -1,0 +1,832 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session extension &mdash; APSW 3.50.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8006c4ff"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="Virtual Tables" href="vtable.html" />
+    <link rel="prev" title="Session Example/Tour" href="example-session.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            APSW
+              <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Session extension</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#availability">Availability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage-overview">Usage Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#extension-configuration">Extension configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.session_config"><code class="docutils literal notranslate"><span class="pre">session_config()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#session-class">Session class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session"><code class="docutils literal notranslate"><span class="pre">Session</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.attach"><code class="docutils literal notranslate"><span class="pre">Session.attach()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.changeset"><code class="docutils literal notranslate"><span class="pre">Session.changeset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.changeset_size"><code class="docutils literal notranslate"><span class="pre">Session.changeset_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.changeset_stream"><code class="docutils literal notranslate"><span class="pre">Session.changeset_stream()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.close"><code class="docutils literal notranslate"><span class="pre">Session.close()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.config"><code class="docutils literal notranslate"><span class="pre">Session.config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.diff"><code class="docutils literal notranslate"><span class="pre">Session.diff()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.enabled"><code class="docutils literal notranslate"><span class="pre">Session.enabled</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.indirect"><code class="docutils literal notranslate"><span class="pre">Session.indirect</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.is_empty"><code class="docutils literal notranslate"><span class="pre">Session.is_empty</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.memory_used"><code class="docutils literal notranslate"><span class="pre">Session.memory_used</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.patchset"><code class="docutils literal notranslate"><span class="pre">Session.patchset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.patchset_stream"><code class="docutils literal notranslate"><span class="pre">Session.patchset_stream()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Session.table_filter"><code class="docutils literal notranslate"><span class="pre">Session.table_filter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#tablechange-class">TableChange class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.TableChange"><code class="docutils literal notranslate"><span class="pre">TableChange</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.TableChange.column_count"><code class="docutils literal notranslate"><span class="pre">TableChange.column_count</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.TableChange.conflict"><code class="docutils literal notranslate"><span class="pre">TableChange.conflict</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.TableChange.fk_conflicts"><code class="docutils literal notranslate"><span class="pre">TableChange.fk_conflicts</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.TableChange.indirect"><code class="docutils literal notranslate"><span class="pre">TableChange.indirect</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.TableChange.name"><code class="docutils literal notranslate"><span class="pre">TableChange.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.TableChange.new"><code class="docutils literal notranslate"><span class="pre">TableChange.new</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.TableChange.old"><code class="docutils literal notranslate"><span class="pre">TableChange.old</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.TableChange.op"><code class="docutils literal notranslate"><span class="pre">TableChange.op</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.TableChange.opcode"><code class="docutils literal notranslate"><span class="pre">TableChange.opcode</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.TableChange.pk_columns"><code class="docutils literal notranslate"><span class="pre">TableChange.pk_columns</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#changeset-class">Changeset class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Changeset"><code class="docutils literal notranslate"><span class="pre">Changeset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Changeset.apply"><code class="docutils literal notranslate"><span class="pre">Changeset.apply()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Changeset.concat"><code class="docutils literal notranslate"><span class="pre">Changeset.concat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Changeset.concat_stream"><code class="docutils literal notranslate"><span class="pre">Changeset.concat_stream()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Changeset.invert"><code class="docutils literal notranslate"><span class="pre">Changeset.invert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Changeset.invert_stream"><code class="docutils literal notranslate"><span class="pre">Changeset.invert_stream()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Changeset.iter"><code class="docutils literal notranslate"><span class="pre">Changeset.iter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#changesetbuilder-class">ChangesetBuilder class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.add"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.add_change"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.add_change()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.close"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.close()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.output"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.output()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.output_stream"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.output_stream()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.schema"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.schema()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rebaser-class">Rebaser class</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Rebaser"><code class="docutils literal notranslate"><span class="pre">Rebaser</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Rebaser.configure"><code class="docutils literal notranslate"><span class="pre">Rebaser.configure()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Rebaser.rebase"><code class="docutils literal notranslate"><span class="pre">Rebaser.rebase()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Rebaser.rebase_stream"><code class="docutils literal notranslate"><span class="pre">Rebaser.rebase_stream()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Session extension</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/session.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="example-session.html" class="btn btn-neutral float-left" title="Session Example/Tour" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="vtable.html" class="btn btn-neutral float-right" title="Virtual Tables" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="session-extension">
+<h1>Session extension<a class="headerlink" href="#session-extension" title="Link to this heading"></a></h1>
+<p>APSW provides access to all session functionality (including
+experimental).  See the <a class="reference internal" href="example-session.html"><span class="doc">Session Example/Tour</span></a>.</p>
+<p>The <a class="reference external" href="https://www.sqlite.org/sessionintro.html">session extension</a>
+allows recording changes to a database, and later replaying them on
+another database, or undoing them.  This allows offline syncing, as
+well as collaboration.  It is also useful for debugging, development,
+and testing.  Note that it records the added, modified, and deleted
+row values - it does <strong>not</strong> record or replay the queries that
+resulted in those changes.</p>
+<ul class="simple">
+<li><p>You can choose which tables have changes recorded (or all), and
+pause / resume recording at any time</p></li>
+<li><p>The recorded change set includes the row values before and after a
+change.  This allows comprehensive conflict detection, and inverting
+(undoing the change),  Optionally you can use patch sets (a subset of
+change sets) which do not have the before values, consuming less
+space but have less ability to detect conflicts, or be inverted.</p></li>
+<li><p>The recorded changes includes indirect changes made such as by triggers
+and foreign keys.</p></li>
+<li><p>When applying changes you can supply a conflict handler to choose
+what happens on each conflicting row, including aborting, skipping,
+applying anyway, applying your own change, and can record the
+conflicting operation to another change set for later.</p></li>
+<li><p>You are responsible for <a class="reference internal" href="tips.html#schema-upgrade"><span class="std std-ref">managing your schema</span></a>
+- the extension will not create, update, or delete tables for you.
+When applying changesets, if a corresponding table does not already
+exist then those changes are ignored.  This means that you do not
+need all tables present on all databases.</p></li>
+<li><p>It is efficient only storing enough to make the semantic change.
+For example if multiple changes are made to the same row, then
+they can be accumulated into one change record, not many.</p></li>
+<li><p>You can iterate over a change set to see what it contains</p></li>
+<li><p>Changesets do not contain the changes in the order made</p></li>
+<li><p>Using <a class="reference internal" href="#apsw.ChangesetBuilder" title="apsw.ChangesetBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChangesetBuilder</span></code></a>, you can accumulate multiple change
+sets, and add changes from an iterator or conflict handler.</p></li>
+<li><p>Using <a class="reference internal" href="#apsw.Rebaser" title="apsw.Rebaser"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rebaser</span></code></a> you can merge conflict resolutions made when
+applying a changeset into a later changeset, so those conflict
+resolutions do not have to be redone on each database where they are
+applied.</p></li>
+<li><p>Doing multi-way synchronization across multiple databases changed
+separately <a class="reference external" href="https://en.wikipedia.org/wiki/Eventual_consistency">is hard</a>.  A common
+approach to conflicts is to use timestamps with the most recent
+change “winning”.  Changesets do not include timestamps, and are not
+time ordered.  You should carefully design your schema and
+synchronization to ensure the needed levels of data integrity,
+consistency, and meeting user goals up front.  Adding it later is
+painful.</p></li>
+<li><p>Most APIs produce and consume changesets as bytes (or <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span>
+<span class="pre">like</span></code></a>). That limits the changeset size to
+2GB - the limit is in the SQLite code and also the limit for <a class="reference external" href="https://www.sqlite.org/limits.html">blobs</a>.  To produce or consume
+larger changesets, or to not have an entire changeset in memory,
+there are streaming versions of most APIs where you need to provide
+to provide a <a class="reference internal" href="apsw.html#apsw.SessionStreamInput" title="apsw.SessionStreamInput"><code class="xref py py-class docutils literal notranslate"><span class="pre">block</span> <span class="pre">input</span></code></a> or
+<a class="reference internal" href="apsw.html#apsw.SessionStreamOutput" title="apsw.SessionStreamOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">block</span> <span class="pre">output</span></code></a> callback.</p></li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>By default Session can only record and replay changes that have an
+explicit <a class="reference external" href="https://www.sqlite.org/lang_createtable.html#the_primary_key">primary key</a>
+defined (ie <code class="docutils literal notranslate"><span class="pre">PRIMARY</span> <span class="pre">KEY</span></code> must be present in the table definition).
+It doesn’t matter what type or how many columns make up the primary key.
+This provides a stable way to identify rows for insertion, changes, and
+deletion.</p>
+<p>You can use <a class="reference internal" href="#apsw.Session.config" title="apsw.Session.config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Session.config()</span></code></a> with <a class="reference external" href="https://www.sqlite.org/session/c_session_objconfig_rowid.html">SQLITE_SESSION_OBJCONFIG_ROWID</a>
+to enable recording of tables without an explicit primary key, but
+it is strongly advised to have deterministic primary keys so that
+changes made independently can be reconciled.  The changesets will
+also contain wrong operations if the table has a column named
+<cite>_rowid_</cite>.</p>
+</div>
+<section id="availability">
+<h2>Availability<a class="headerlink" href="#availability" title="Link to this heading"></a></h2>
+<p>The session extension and APSW support for it have to be enabled at
+compile time for each.  APSW builds from PyPI include session support.</p>
+<p>Most platform provided SQLite are configured with session support, and
+APSW should end up with it too.</p>
+<p>The methods and classes documented here are only present if session
+support was enabled.</p>
+</section>
+<section id="usage-overview">
+<h2>Usage Overview<a class="headerlink" href="#usage-overview" title="Link to this heading"></a></h2>
+<p>The session extension does not do table creation (or deletion).  When applying
+a changeset, it will only do so if a same named table exists, with the same number
+of columns, and same primary key.  If no such table exists, the change is silently
+ignored.  (Tip for <a class="reference internal" href="tips.html#schema-upgrade"><span class="std std-ref">managing your schema</span></a>)</p>
+<p>To record changes:</p>
+<ul class="simple">
+<li><p>Use a <a class="reference internal" href="#apsw.Session" title="apsw.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a> with the relevant database.  You can
+have multiple on the same database.</p></li>
+<li><p>Use <a class="reference internal" href="#apsw.Session.attach" title="apsw.Session.attach"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Session.attach()</span></code></a> to determine which tables
+to record</p></li>
+<li><p>You can use <a class="reference internal" href="#apsw.Session.enabled" title="apsw.Session.enabled"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Session.enabled</span></code></a> to turn recording off or
+on (it is on by default)</p></li>
+<li><p>Use <a class="reference internal" href="#apsw.Session.changeset" title="apsw.Session.changeset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Session.changeset()</span></code></a> to get the changeset for later use.</p></li>
+<li><p>If you have two databases, you can use <a class="reference internal" href="#apsw.Session.diff" title="apsw.Session.diff"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Session.diff()</span></code></a> to get
+the changes necessary to turn one into the other without having to
+record changes as they happen</p></li>
+</ul>
+<p>To see what your changeset contains:</p>
+<ul class="simple">
+<li><p>Use <a class="reference internal" href="#apsw.Changeset.iter" title="apsw.Changeset.iter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Changeset.iter()</span></code></a></p></li>
+</ul>
+<p>To apply a changeset:</p>
+<ul class="simple">
+<li><p>Use <a class="reference internal" href="#apsw.Changeset.apply" title="apsw.Changeset.apply"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Changeset.apply()</span></code></a></p></li>
+</ul>
+<p>To manipulate changesets:</p>
+<ul class="simple">
+<li><p>Use <a class="reference internal" href="#apsw.ChangesetBuilder" title="apsw.ChangesetBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChangesetBuilder</span></code></a></p></li>
+<li><p>You can add multiple changesets together</p></li>
+<li><p>You can add <a class="reference internal" href="#apsw.TableChange" title="apsw.TableChange"><code class="xref py py-class docutils literal notranslate"><span class="pre">individual</span> <span class="pre">changes</span></code></a> from
+<a class="reference internal" href="#apsw.Changeset.iter" title="apsw.Changeset.iter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Changeset.iter()</span></code></a> or from your conflict handler in
+<a class="reference internal" href="#apsw.Changeset.apply" title="apsw.Changeset.apply"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Changeset.apply()</span></code></a></p></li>
+<li><p>Use <a class="reference internal" href="#apsw.Rebaser" title="apsw.Rebaser"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rebaser</span></code></a> to incorporate conflict resolutions into a
+changeset</p></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The session extension rarely raises exceptions, instead just doing
+nothing.  For example if tables don’t exist, don’t have a primary key,
+attached databases don’t exist, and similar scenarios where typos
+could happen, you won’t get an error, just no action.</p>
+</div>
+</section>
+<section id="extension-configuration">
+<h2>Extension configuration<a class="headerlink" href="#extension-configuration" title="Link to this heading"></a></h2>
+<dl class="py method" id="index-0">
+<dt class="sig sig-object py" id="apsw.session_config">
+<span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">session_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#apsw.session_config" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>op</strong> – One of the <a class="reference external" href="https://www.sqlite.org/session/c_session_config_strmsize.html">sqlite3session options</a></p></li>
+<li><p><strong>args</strong> – Zero or more arguments as appropriate for <em>op</em></p></li>
+</ul>
+</dd>
+</dl>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_config.html">sqlite3session_config</a></p>
+</dd></dl>
+
+</section>
+<section id="session-class">
+<h2>Session class<a class="headerlink" href="#session-class" title="Link to this heading"></a></h2>
+<dl class="py class" id="index-1">
+<dt class="sig sig-object py" id="apsw.Session">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">Session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apsw.Session" title="Link to this definition"></a></dt>
+<dd><p>This object wraps a <a class="reference external" href="https://www.sqlite.org/session/session.html">sqlite3_session</a> object.</p>
+<p>Starts a new session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>connection</strong> – Which database to operate on</p></li>
+<li><p><strong>schema</strong> – <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p></li>
+</ul>
+</dd>
+</dl>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_create.html">sqlite3session_create</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-2">
+<dt class="sig sig-object py" id="apsw.Session.attach">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">attach</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Session.attach" title="Link to this definition"></a></dt>
+<dd><p>Attach to a specific table, or all tables if no name is provided.  The
+table does not need to exist at the time of the call.  You can call
+this multiple times.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#apsw.Session.table_filter" title="apsw.Session.table_filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">table_filter()</span></code></a></p>
+</div>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_attach.html">sqlite3session_attach</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-3">
+<dt class="sig sig-object py" id="apsw.Session.changeset">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">changeset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.Session.changeset" title="Link to this definition"></a></dt>
+<dd><p>Produces a changeset of the session so far.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_changeset.html">sqlite3session_changeset</a></p>
+</dd></dl>
+
+<dl class="py attribute" id="index-4">
+<dt class="sig sig-object py" id="apsw.Session.changeset_size">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">changeset_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.Session.changeset_size" title="Link to this definition"></a></dt>
+<dd><p>Returns upper limit on changeset size, but only if <a class="reference internal" href="#apsw.Session.config" title="apsw.Session.config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Session.config()</span></code></a>
+was used to enable it.  Otherwise it will be zero.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_changeset_size.html">sqlite3session_changeset_size</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-5">
+<dt class="sig sig-object py" id="apsw.Session.changeset_stream">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">changeset_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamOutput" title="apsw.SessionStreamOutput"><span class="pre">SessionStreamOutput</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Session.changeset_stream" title="Link to this definition"></a></dt>
+<dd><p>Produces a changeset of the session so far in a stream</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_strm.html">sqlite3session_changeset_strm</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-6">
+<dt class="sig sig-object py" id="apsw.Session.close">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Session.close" title="Link to this definition"></a></dt>
+<dd><p>Ends the session object.  APSW ensures that all
+Session objects are closed before the database is closed
+so there is no need to manually call this.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_delete.html">sqlite3session_delete</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-7">
+<dt class="sig sig-object py" id="apsw.Session.config">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#apsw.Session.config" title="Link to this definition"></a></dt>
+<dd><p>Set or get <a class="reference external" href="https://www.sqlite.org/session/c_session_objconfig_rowid.html">configuration values</a></p>
+<p>For example <code class="code docutils literal notranslate"><span class="pre">session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE,</span> <span class="pre">-1)</span></code> tells you
+if size information is enabled.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_object_config.html">sqlite3session_object_config</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-8">
+<dt class="sig sig-object py" id="apsw.Session.diff">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">from_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Session.diff" title="Link to this definition"></a></dt>
+<dd><p>Loads the changes necessary to update the named <code class="docutils literal notranslate"><span class="pre">table</span></code> in the attached database
+<code class="docutils literal notranslate"><span class="pre">from_schema</span></code> to match the same named table in the database this session is
+attached to.</p>
+<p>See the <a class="reference internal" href="example-session.html#example-session-diff"><span class="std std-ref">example</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You must use <a class="reference internal" href="#apsw.Session.attach" title="apsw.Session.attach"><code class="xref py py-meth docutils literal notranslate"><span class="pre">attach()</span></code></a> (or use <a class="reference internal" href="#apsw.Session.table_filter" title="apsw.Session.table_filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">table_filter()</span></code></a>) to attach to
+the table before running this method otherwise nothing is recorded.</p>
+</div>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_diff.html">sqlite3session_diff</a></p>
+</dd></dl>
+
+<dl class="py attribute" id="index-9">
+<dt class="sig sig-object py" id="apsw.Session.enabled">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">enabled</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.Session.enabled" title="Link to this definition"></a></dt>
+<dd><p>Get or change if this session is recording changes.  Disabling only
+stops recording rows not already part of the changeset.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_enable.html">sqlite3session_enable</a></p>
+</dd></dl>
+
+<dl class="py attribute" id="index-10">
+<dt class="sig sig-object py" id="apsw.Session.indirect">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">indirect</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.Session.indirect" title="Link to this definition"></a></dt>
+<dd><p>Get or change if this session is in indirect mode</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_indirect.html">sqlite3session_indirect</a></p>
+</dd></dl>
+
+<dl class="py attribute" id="index-11">
+<dt class="sig sig-object py" id="apsw.Session.is_empty">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">is_empty</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.Session.is_empty" title="Link to this definition"></a></dt>
+<dd><p>True if no changes have been recorded.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_isempty.html">sqlite3session_isempty</a></p>
+</dd></dl>
+
+<dl class="py attribute" id="index-12">
+<dt class="sig sig-object py" id="apsw.Session.memory_used">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">memory_used</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.Session.memory_used" title="Link to this definition"></a></dt>
+<dd><p>How many bytes of memory have been used to record session changes.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_memory_used.html">sqlite3session_memory_used</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-13">
+<dt class="sig sig-object py" id="apsw.Session.patchset">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">patchset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.Session.patchset" title="Link to this definition"></a></dt>
+<dd><p>Produces a patchset of the session so far.  Patchsets do not include
+before values of changes, making them smaller, but also harder to detect
+conflicts.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_patchset.html">sqlite3session_patchset</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-14">
+<dt class="sig sig-object py" id="apsw.Session.patchset_stream">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">patchset_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamOutput" title="apsw.SessionStreamOutput"><span class="pre">SessionStreamOutput</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Session.patchset_stream" title="Link to this definition"></a></dt>
+<dd><p>Produces a patchset of the session so far in a stream</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_strm.html">sqlite3session_patchset_strm</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-15">
+<dt class="sig sig-object py" id="apsw.Session.table_filter">
+<span class="sig-prename descclassname"><span class="pre">Session.</span></span><span class="sig-name descname"><span class="pre">table_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Session.table_filter" title="Link to this definition"></a></dt>
+<dd><p>Register a callback that says if changes to the named table should be
+recorded.  If your callback has an exception then <code class="docutils literal notranslate"><span class="pre">False</span></code> is
+returned.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#apsw.Session.attach" title="apsw.Session.attach"><code class="xref py py-meth docutils literal notranslate"><span class="pre">attach()</span></code></a></p>
+</div>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3session_table_filter.html">sqlite3session_table_filter</a></p>
+</dd></dl>
+
+</section>
+<section id="tablechange-class">
+<h2>TableChange class<a class="headerlink" href="#tablechange-class" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.TableChange">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">TableChange</span></span><a class="headerlink" href="#apsw.TableChange" title="Link to this definition"></a></dt>
+<dd><p>Represents a <a class="reference external" href="https://sqlite.org/session/changeset_iter.html">changed row</a>.  They come from
+<a class="reference internal" href="#apsw.Changeset.iter" title="apsw.Changeset.iter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">changeset</span> <span class="pre">iteration</span></code></a> and from the
+<a class="reference internal" href="#apsw.Changeset.apply" title="apsw.Changeset.apply"><code class="xref py py-meth docutils literal notranslate"><span class="pre">conflict</span> <span class="pre">handler</span> <span class="pre">in</span> <span class="pre">apply</span></code></a>.</p>
+<p>A TableChange is only valid when your conflict handler is active, or
+has just been provided by a changeset iterator.  It goes out of scope
+after your conflict handler returns, or the iterator moves to the next
+entry.  You will get <a class="reference internal" href="exceptions.html#apsw.InvalidContextError" title="apsw.InvalidContextError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidContextError</span></code></a> if you try to
+access fields when out of scope.  This means you can’t save
+TableChanges for later, and need to copy out any information you need.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.TableChange.column_count">
+<span class="sig-prename descclassname"><span class="pre">TableChange.</span></span><span class="sig-name descname"><span class="pre">column_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.TableChange.column_count" title="Link to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Number of columns in the affected table</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py attribute" id="index-16">
+<dt class="sig sig-object py" id="apsw.TableChange.conflict">
+<span class="sig-prename descclassname"><span class="pre">TableChange.</span></span><span class="sig-name descname"><span class="pre">conflict</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#apsw.TableChange.conflict" title="Link to this definition"></a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code> if not applicable (not in a conflict).  Otherwise a
+tuple of values for the conflicting row.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changeset_conflict.html">sqlite3changeset_conflict</a></p>
+</dd></dl>
+
+<dl class="py attribute" id="index-17">
+<dt class="sig sig-object py" id="apsw.TableChange.fk_conflicts">
+<span class="sig-prename descclassname"><span class="pre">TableChange.</span></span><span class="sig-name descname"><span class="pre">fk_conflicts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#apsw.TableChange.fk_conflicts" title="Link to this definition"></a></dt>
+<dd><p>The number of known foreign key conflicts, or <code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code> if not in a
+conflict handler.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changeset_fk_conflicts.html">sqlite3changeset_fk_conflicts</a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.TableChange.indirect">
+<span class="sig-prename descclassname"><span class="pre">TableChange.</span></span><span class="sig-name descname"><span class="pre">indirect</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.TableChange.indirect" title="Link to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if this is an <a class="reference external" href="https://sqlite.org/session/sqlite3session_indirect.html">indirect</a>
+change - for example made by triggers or foreign keys.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.TableChange.name">
+<span class="sig-prename descclassname"><span class="pre">TableChange.</span></span><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#apsw.TableChange.name" title="Link to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Name of the affected table</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py attribute" id="index-18">
+<dt class="sig sig-object py" id="apsw.TableChange.new">
+<span class="sig-prename descclassname"><span class="pre">TableChange.</span></span><span class="sig-name descname"><span class="pre">new</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">no_change</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#apsw.TableChange.new" title="Link to this definition"></a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code> if not applicable (like a DELETE).  Otherwise a
+tuple of the new values for the row, with <a class="reference internal" href="apsw.html#apsw.no_change" title="apsw.no_change"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.no_change</span></code></a>
+if no value was provided for that column.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changeset_new.html">sqlite3changeset_new</a></p>
+</dd></dl>
+
+<dl class="py attribute" id="index-19">
+<dt class="sig sig-object py" id="apsw.TableChange.old">
+<span class="sig-prename descclassname"><span class="pre">TableChange.</span></span><span class="sig-name descname"><span class="pre">old</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">no_change</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#apsw.TableChange.old" title="Link to this definition"></a></dt>
+<dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code> if not applicable (like an INSERT).  Otherwise a tuple
+of the old values for the row before this change, with
+<a class="reference internal" href="apsw.html#apsw.no_change" title="apsw.no_change"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.no_change</span></code></a> if no value was provided for that column,</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changeset_old.html">sqlite3changeset_old</a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.TableChange.op">
+<span class="sig-prename descclassname"><span class="pre">TableChange.</span></span><span class="sig-name descname"><span class="pre">op</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#apsw.TableChange.op" title="Link to this definition"></a></dt>
+<dd><blockquote>
+<div><p>The operation code as a string  <code class="docutils literal notranslate"><span class="pre">INSERT</span></code>,
+<code class="docutils literal notranslate"><span class="pre">DELETE</span></code>, or <code class="docutils literal notranslate"><span class="pre">UPDATE</span></code>.  See <a class="reference internal" href="#apsw.TableChange.opcode" title="apsw.TableChange.opcode"><code class="xref py py-attr docutils literal notranslate"><span class="pre">opcode</span></code></a>
+for this as a number.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.TableChange.opcode">
+<span class="sig-prename descclassname"><span class="pre">TableChange.</span></span><span class="sig-name descname"><span class="pre">opcode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.TableChange.opcode" title="Link to this definition"></a></dt>
+<dd><blockquote>
+<div><p>The operation code - <code class="docutils literal notranslate"><span class="pre">apsw.SQLITE_INSERT</span></code>,
+<code class="docutils literal notranslate"><span class="pre">apsw.SQLITE_DELETE</span></code>, or <code class="docutils literal notranslate"><span class="pre">apsw.SQLITE_UPDATE</span></code>.
+See <a class="reference internal" href="#apsw.TableChange.op" title="apsw.TableChange.op"><code class="xref py py-attr docutils literal notranslate"><span class="pre">op</span></code></a> for this as a string.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py attribute" id="index-20">
+<dt class="sig sig-object py" id="apsw.TableChange.pk_columns">
+<span class="sig-prename descclassname"><span class="pre">TableChange.</span></span><span class="sig-name descname"><span class="pre">pk_columns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.13)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.TableChange.pk_columns" title="Link to this definition"></a></dt>
+<dd><p>Which columns make up the primary key for this table</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changeset_pk.html">sqlite3changeset_pk</a></p>
+</dd></dl>
+
+</section>
+<section id="changeset-class">
+<h2>Changeset class<a class="headerlink" href="#changeset-class" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.Changeset">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">Changeset</span></span><a class="headerlink" href="#apsw.Changeset" title="Link to this definition"></a></dt>
+<dd><p>Provides changeset (including patchset) related methods.  Note that
+all methods are static (belong to the class).  There is no Changeset
+object.   On input Changesets can be a <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.Buffer</span></code></a>
+(anything that resembles a sequence of bytes), or
+<a class="reference internal" href="apsw.html#apsw.SessionStreamInput" title="apsw.SessionStreamInput"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionStreamInput</span></code></a> which provides the bytes in chunks from a
+callback.</p>
+<p>Output is bytes, or <a class="reference internal" href="apsw.html#apsw.SessionStreamOutput" title="apsw.SessionStreamOutput"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionStreamOutput</span></code></a> (chunks in a callback).</p>
+<p>The streaming versions are useful when you are concerned about memory
+usage, or where changesets are larger than 2GB (the SQLite limit).</p>
+</dd></dl>
+
+<dl class="py method" id="index-21">
+<dt class="sig sig-object py" id="apsw.Changeset.apply">
+<span class="sig-prename descclassname"><span class="pre">Changeset.</span></span><span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">changeset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.ChangesetInput" title="apsw.ChangesetInput"><span class="pre">ChangesetInput</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conflict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#apsw.TableChange" title="apsw.TableChange"><span class="pre">TableChange</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rebase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Changeset.apply" title="Link to this definition"></a></dt>
+<dd><p>Applies a changeset to a database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> – The changeset either as the bytes, or a stream</p></li>
+<li><p><strong>db</strong> – The connection to make the change on</p></li>
+<li><p><strong>filter</strong> – Callback to determine if changes to a table are done</p></li>
+<li><p><strong>conflict</strong> – Callback to handle a change that cannot be applied</p></li>
+<li><p><strong>flags</strong> – <a class="reference external" href="https://www.sqlite.org/session/c_changesetapply_fknoaction.html">v2 API flags</a>.</p></li>
+<li><p><strong>rebase</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> then return <a class="reference internal" href="#apsw.Rebaser" title="apsw.Rebaser"><code class="xref py py-class docutils literal notranslate"><span class="pre">rebase</span></code></a> information, else <code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<section id="filter">
+<h3>Filter<a class="headerlink" href="#filter" title="Link to this heading"></a></h3>
+<p>Callback called with a table name, once per table that has a change.  It should return <code class="docutils literal notranslate"><span class="pre">True</span></code>
+if changes to that table should be applied, or <code class="docutils literal notranslate"><span class="pre">False</span></code> to ignore them.  If not supplied then
+all tables have changes applied.</p>
+</section>
+<section id="conflict">
+<h3>Conflict<a class="headerlink" href="#conflict" title="Link to this heading"></a></h3>
+<p>When a change cannot be applied the conflict handler determines what
+to do.  It is called with a <a class="reference external" href="https://www.sqlite.org/session/c_changeset_conflict.html">conflict reason</a> as the
+first parameter, and a <a class="reference internal" href="#apsw.TableChange" title="apsw.TableChange"><code class="xref py py-class docutils literal notranslate"><span class="pre">TableChange</span></code></a> as the second.  Possible
+conflicts are <a class="reference external" href="https://sqlite.org/sessionintro.html#conflicts">described here</a>.</p>
+<p>It should return the <a class="reference external" href="https://www.sqlite.org/session/c_changeset_abort.html">action to take</a>.</p>
+<p>If not supplied or on error, <code class="docutils literal notranslate"><span class="pre">SQLITE_CHANGESET_ABORT</span></code> is returned.</p>
+<p>See the <a class="reference internal" href="example-session.html#example-applying"><span class="std std-ref">example</span></a>.</p>
+<dl class="simple">
+<dt>Calls:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://sqlite.org/session/sqlite3changeset_apply.html">sqlite3changeset_apply_v2</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_strm.html">sqlite3changeset_apply_v2_strm</a></p></li>
+</ul>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method" id="index-22">
+<dt class="sig sig-object py" id="apsw.Changeset.concat">
+<span class="sig-prename descclassname"><span class="pre">Changeset.</span></span><span class="sig-name descname"><span class="pre">concat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.13)"><span class="pre">Buffer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.13)"><span class="pre">Buffer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.Changeset.concat" title="Link to this definition"></a></dt>
+<dd><p>Returns combined changesets</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changeset_concat.html">sqlite3changeset_concat</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-23">
+<dt class="sig sig-object py" id="apsw.Changeset.concat_stream">
+<span class="sig-prename descclassname"><span class="pre">Changeset.</span></span><span class="sig-name descname"><span class="pre">concat_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamInput" title="apsw.SessionStreamInput"><span class="pre">SessionStreamInput</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamInput" title="apsw.SessionStreamInput"><span class="pre">SessionStreamInput</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamOutput" title="apsw.SessionStreamOutput"><span class="pre">SessionStreamOutput</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Changeset.concat_stream" title="Link to this definition"></a></dt>
+<dd><p>Streaming concatenate two changesets</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_strm.html">sqlite3changeset_concat_strm</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-24">
+<dt class="sig sig-object py" id="apsw.Changeset.invert">
+<span class="sig-prename descclassname"><span class="pre">Changeset.</span></span><span class="sig-name descname"><span class="pre">invert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">changeset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.13)"><span class="pre">Buffer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.Changeset.invert" title="Link to this definition"></a></dt>
+<dd><p>Produces a changeset that reverses the effect of
+the supplied changeset.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changeset_invert.html">sqlite3changeset_invert</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-25">
+<dt class="sig sig-object py" id="apsw.Changeset.invert_stream">
+<span class="sig-prename descclassname"><span class="pre">Changeset.</span></span><span class="sig-name descname"><span class="pre">invert_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">changeset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamInput" title="apsw.SessionStreamInput"><span class="pre">SessionStreamInput</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamOutput" title="apsw.SessionStreamOutput"><span class="pre">SessionStreamOutput</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Changeset.invert_stream" title="Link to this definition"></a></dt>
+<dd><p>Streaming reverses the effect of the supplied changeset.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_strm.html">sqlite3changeset_invert_strm</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-26">
+<dt class="sig sig-object py" id="apsw.Changeset.iter">
+<span class="sig-prename descclassname"><span class="pre">Changeset.</span></span><span class="sig-name descname"><span class="pre">iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">changeset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.ChangesetInput" title="apsw.ChangesetInput"><span class="pre">ChangesetInput</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#apsw.TableChange" title="apsw.TableChange"><span class="pre">TableChange</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.Changeset.iter" title="Link to this definition"></a></dt>
+<dd><p>Provides an iterator over a changeset.  You can supply the changeset as
+the bytes, or streamed via a callable.</p>
+<p>If flags is non-zero them the <code class="docutils literal notranslate"><span class="pre">v2</span></code> API is used (marked as experimental)</p>
+<dl class="simple">
+<dt>Calls:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://sqlite.org/session/sqlite3changeset_start.html">sqlite3changeset_start</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/session/sqlite3changeset_start.html">sqlite3changeset_start_v2</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_strm.html">sqlite3changeset_start_strm</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_strm.html">sqlite3changeset_start_v2_strm</a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="changesetbuilder-class">
+<h2>ChangesetBuilder class<a class="headerlink" href="#changesetbuilder-class" title="Link to this heading"></a></h2>
+<dl class="py class" id="index-27">
+<dt class="sig sig-object py" id="apsw.ChangesetBuilder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ChangesetBuilder</span></span><a class="headerlink" href="#apsw.ChangesetBuilder" title="Link to this definition"></a></dt>
+<dd><blockquote>
+<div><p>This object wraps a <a class="reference external" href="https://sqlite.org/session/changegroup.html">sqlite3_changegroup</a>
+letting you concatenate changesets and individual <a class="reference internal" href="#apsw.TableChange" title="apsw.TableChange"><code class="xref py py-class docutils literal notranslate"><span class="pre">TableChange</span></code></a> into one larger
+changeset.</p>
+</div></blockquote>
+<p>Creates a new empty builder.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_new.html">sqlite3changegroup_new</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-28">
+<dt class="sig sig-object py" id="apsw.ChangesetBuilder.add">
+<span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">changeset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.ChangesetInput" title="apsw.ChangesetInput"><span class="pre">ChangesetInput</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.add" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>changeset</strong> – The changeset as the bytes, or a stream</p>
+</dd>
+</dl>
+<p>Adds the changeset to the builder</p>
+<dl class="simple">
+<dt>Calls:</dt><dd><ul class="simple">
+<li><p><a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add.html">sqlite3changegroup_add</a></p></li>
+<li><p><a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_strm.html">sqlite3changegroup_add_strm</a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method" id="index-29">
+<dt class="sig sig-object py" id="apsw.ChangesetBuilder.add_change">
+<span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">add_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">change</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apsw.TableChange" title="apsw.TableChange"><span class="pre">TableChange</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.add_change" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>change</strong> – An individual change to add.</p>
+</dd>
+</dl>
+<p>You can obtain <a class="reference internal" href="#apsw.TableChange" title="apsw.TableChange"><code class="xref py py-class docutils literal notranslate"><span class="pre">TableChange</span></code></a> from <a class="reference internal" href="#apsw.Changeset.iter" title="apsw.Changeset.iter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Changeset.iter()</span></code></a> or from the conflict callback
+of <a class="reference internal" href="#apsw.Changeset.apply" title="apsw.Changeset.apply"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Changeset.apply()</span></code></a>.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_change.html">sqlite3changegroup_add_change</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-30">
+<dt class="sig sig-object py" id="apsw.ChangesetBuilder.close">
+<span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.close" title="Link to this definition"></a></dt>
+<dd><p>Releases the builder</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_delete.html">sqlite3changegroup_delete</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-31">
+<dt class="sig sig-object py" id="apsw.ChangesetBuilder.output">
+<span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">output</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.output" title="Link to this definition"></a></dt>
+<dd><p>Produces a changeset of what was built so far</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_output.html">sqlite3changegroup_output</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-32">
+<dt class="sig sig-object py" id="apsw.ChangesetBuilder.output_stream">
+<span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">output_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamOutput" title="apsw.SessionStreamOutput"><span class="pre">SessionStreamOutput</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.output_stream" title="Link to this definition"></a></dt>
+<dd><p>Produces a streaming changeset of what was built so far</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_strm.html">sqlite3changegroup_output_strm</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-33">
+<dt class="sig sig-object py" id="apsw.ChangesetBuilder.schema">
+<span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.schema" title="Link to this definition"></a></dt>
+<dd><p>Ensures the changesets comply with the tables in the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> – Connection to consult</p></li>
+<li><p><strong>schema</strong> – <cite>main</cite>, <cite>temp</cite>, the name in <a class="reference external" href="https://sqlite.org/lang_attach.html">ATTACH</a></p></li>
+</ul>
+</dd>
+</dl>
+<p>You will get <a class="reference internal" href="exceptions.html#apsw.MisuseError" title="apsw.MisuseError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">MisuseError</span></code></a> if changes have already been added, or this method has
+already been called.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_schema.html">sqlite3changegroup_schema</a></p>
+</dd></dl>
+
+</section>
+<section id="rebaser-class">
+<h2>Rebaser class<a class="headerlink" href="#rebaser-class" title="Link to this heading"></a></h2>
+<dl class="py class" id="index-34">
+<dt class="sig sig-object py" id="apsw.Rebaser">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">Rebaser</span></span><a class="headerlink" href="#apsw.Rebaser" title="Link to this definition"></a></dt>
+<dd><p>This object wraps a <a class="reference external" href="https://www.sqlite.org/session/rebaser.html">sqlite3_rebaser</a> object.</p>
+<p>Starts a new rebaser.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3rebaser_create.html">sqlite3rebaser_create</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-35">
+<dt class="sig sig-object py" id="apsw.Rebaser.configure">
+<span class="sig-prename descclassname"><span class="pre">Rebaser.</span></span><span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.13)"><span class="pre">Buffer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Rebaser.configure" title="Link to this definition"></a></dt>
+<dd><p>Tells the rebaser about conflict resolutions made in an earlier
+<a class="reference internal" href="#apsw.Changeset.apply" title="apsw.Changeset.apply"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Changeset.apply()</span></code></a>.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3rebaser_configure.html">sqlite3rebaser_configure</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-36">
+<dt class="sig sig-object py" id="apsw.Rebaser.rebase">
+<span class="sig-prename descclassname"><span class="pre">Rebaser.</span></span><span class="sig-name descname"><span class="pre">rebase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">changeset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.13)"><span class="pre">Buffer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.Rebaser.rebase" title="Link to this definition"></a></dt>
+<dd><p>Produces a new changeset rebased according to <a class="reference internal" href="#apsw.Rebaser.configure" title="apsw.Rebaser.configure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">configure()</span></code></a> calls made.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3rebaser_rebase.html">sqlite3rebaser_rebase</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-37">
+<dt class="sig sig-object py" id="apsw.Rebaser.rebase_stream">
+<span class="sig-prename descclassname"><span class="pre">Rebaser.</span></span><span class="sig-name descname"><span class="pre">rebase_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">changeset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamInput" title="apsw.SessionStreamInput"><span class="pre">SessionStreamInput</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamOutput" title="apsw.SessionStreamOutput"><span class="pre">SessionStreamOutput</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Rebaser.rebase_stream" title="Link to this definition"></a></dt>
+<dd><p>Produces a new changeset rebased according to <a class="reference internal" href="#apsw.Rebaser.configure" title="apsw.Rebaser.configure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">configure()</span></code></a> calls made, using streaming
+input and output.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_strm.html">sqlite3rebaser_rebase_strm</a></p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="example-session.html" class="btn btn-neutral float-left" title="Session Example/Tour" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="vtable.html" class="btn btn-neutral float-right" title="Virtual Tables" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on May 30, 2025.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-2NR9GDCQLT', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

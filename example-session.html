@@ -1,0 +1,821 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session Example/Tour &mdash; APSW 3.50.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8006c4ff"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="Session extension" href="session.html" />
+    <link rel="prev" title="Full text search" href="textsearch.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            APSW
+              <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Session Example/Tour</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#is-session-available">Is Session available?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#initial-database-setup">Initial database setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#monitoring-changes">Monitoring changes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sql-equivalent-of-a-changeset">SQL equivalent of a changeset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#patchsets-and-changesets">Patchsets and Changesets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inverting-undo-redo">Inverting - undo, redo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#applying-changesets">Applying changesets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#synchronising-changes-made-by-two-users">Synchronising changes made by two users</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#changesetbuilder">ChangesetBuilder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#streaming">Streaming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rebasing">Rebasing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#table-diff">Table diff</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cleanup">Cleanup</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Session Example/Tour</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/example-session.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="textsearch.html" class="btn btn-neutral float-left" title="Full text search" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="session.html" class="btn btn-neutral float-right" title="Session extension" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="session-example-tour">
+<h1>Session Example/Tour<a class="headerlink" href="#session-example-tour" title="Link to this heading"></a></h1>
+<p>This example shows using APSW to create and use the <a class="reference external" href="https://www.sqlite.org/sessionintro.html">Session extension</a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="c1"># This code uses Python&#39;s optional typing annotations.  You can</span>
+<span class="c1"># ignore them and do not need to use them.  If you do use them</span>
+<span class="c1"># then you must include this future annotations line first.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw.ext</span>
+</pre></div>
+</div>
+<section id="is-session-available">
+<span id="example-session-check"></span><span id="index-0"></span><h2>Is Session available?<a class="headerlink" href="#is-session-available" title="Link to this heading"></a></h2>
+<p>Session must be enabled in SQLite at compile time, and in APSW
+at its compile time.  (PyPI builds always have both enabled)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Session in SQLite:&quot;</span><span class="p">,</span> <span class="s2">&quot;ENABLE_SESSION&quot;</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">compile_options</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Session in APSW:&quot;</span><span class="p">,</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="s2">&quot;Session&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Session in SQLite: True</span>
+<span class="go">  Session in APSW: True</span>
+</pre></div>
+</div>
+</section>
+<section id="initial-database-setup">
+<span id="example-setup"></span><span id="index-1"></span><h2>Initial database setup<a class="headerlink" href="#initial-database-setup" title="Link to this heading"></a></h2>
+<p>The database is populated with an items table, a tags table, and a
+link table allowing multiple tags per item.  It has foreign keys and
+a trigger which cause changes beyond the supplied SQL so we can see
+how session handles that.  See the <a class="reference external" href="_static/samples/session.sql">full SQL</a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;session.sql&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="monitoring-changes">
+<span id="example-adding-session"></span><span id="index-2"></span><h2>Monitoring changes<a class="headerlink" href="#monitoring-changes" title="Link to this heading"></a></h2>
+<p>You can have multiple <a class="reference internal" href="session.html#apsw.Session" title="apsw.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a> monitoring changes on a
+session.  You need to call <a class="reference internal" href="session.html#apsw.Session.attach" title="apsw.Session.attach"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Session.attach()</span></code></a> to say which
+tables to monitor, or use <a class="reference internal" href="session.html#apsw.Session.table_filter" title="apsw.Session.table_filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Session.table_filter()</span></code></a> to get a
+callback.  You can pause and resume monitoring with
+<a class="reference internal" href="session.html#apsw.Session.enabled" title="apsw.Session.enabled"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Session.enabled</span></code></a>.  For unmonitored changes you can use
+<a class="reference internal" href="session.html#apsw.Session.diff" title="apsw.Session.diff"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Session.diff()</span></code></a> to work out the changes between two tables.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+
+<span class="c1"># enabled by default.  You can set it to False while making</span>
+<span class="c1"># changes you do not want recorded. It only stops recording</span>
+<span class="c1"># changes to rows not already part of the changeset.</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">enabled</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># We&#39;d like size estimates</span>
+<span class="n">session</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_SESSION_OBJCONFIG_SIZE</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+
+<span class="c1"># we now say which tables to monitor - no tables are monitored by default.</span>
+<span class="c1"># The tables must have PRIMARY KEY in their declaration otherwise</span>
+<span class="c1"># nothing is recorded.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">table_filter</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;table_filter </span><span class="si">{</span><span class="n">name</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># We want them all</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="c1"># We could also have done session.attach() to get all tables</span>
+<span class="c1"># or attach with named tables of interest.</span>
+<span class="n">session</span><span class="o">.</span><span class="n">table_filter</span><span class="p">(</span><span class="n">table_filter</span><span class="p">)</span>
+
+<span class="c1"># And now make some changes.  We do every kind of change here -</span>
+<span class="c1"># INSERT, UPDATE, and DELETE.</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">INSERT INTO items(name) VALUES(&#39;kitchen walls&#39;);</span>
+<span class="s2">INSERT INTO item_tag_link(item_id, tag_id)  VALUES(</span>
+<span class="s2">    (SELECT id FROM items WHERE name=&#39;kitchen walls&#39;),</span>
+<span class="s2">    (SELECT id FROM tags WHERE label=&#39;paint&#39;)</span>
+<span class="s2">);</span>
+<span class="s2">INSERT INTO item_tag_link(item_id, tag_id)  VALUES(</span>
+<span class="s2">    (SELECT id FROM items WHERE name=&#39;kitchen walls&#39;),</span>
+<span class="s2">    (SELECT id FROM tags WHERE label=&#39;cleaning&#39;)</span>
+<span class="s2">);</span>
+
+<span class="s2">INSERT INTO items(name) VALUES(&#39;microwave&#39;);</span>
+
+<span class="s2">UPDATE items SET description=&#39;high gloss&#39; WHERE name=&#39;bathroom ceiling&#39;;</span>
+<span class="s2">UPDATE tags SET cost_centre=null WHERE label=&#39;new&#39;;</span>
+
+<span class="s2">DELETE FROM tags WHERE label=&#39;battery&#39;;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># How much memory is the session using?</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">memory_used</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">session.enabled=True</span>
+<span class="go">table_filter name=&#39;items&#39;</span>
+<span class="go">table_filter name=&#39;item_tag_link&#39;</span>
+<span class="go">table_filter name=&#39;tags&#39;</span>
+<span class="go">session.memory_used=7352</span>
+</pre></div>
+</div>
+</section>
+<section id="sql-equivalent-of-a-changeset">
+<span id="example-changeset-sql"></span><span id="index-3"></span><h2>SQL equivalent of a changeset<a class="headerlink" href="#sql-equivalent-of-a-changeset" title="Link to this heading"></a></h2>
+<p>We can iterate the contents of a changeset as SQL statements using
+<a class="reference internal" href="ext.html#apsw.ext.changeset_to_sql" title="apsw.ext.changeset_to_sql"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.ext.changeset_to_sql()</span></code></a>.  It needs to know the column
+names because changesets only use column numbers, so we use
+<a class="reference internal" href="ext.html#apsw.ext.find_columns" title="apsw.ext.find_columns"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.find_columns()</span></code></a> giving it the connection to inspect.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">show_changeset</span><span class="p">(</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">contents</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SessionStreamInput</span><span class="p">,</span>
+    <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span> <span class="o">=</span> <span class="n">connection</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">statement</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">changeset_to_sql</span><span class="p">(</span>
+        <span class="n">contents</span><span class="p">,</span>
+        <span class="n">get_columns</span><span class="o">=</span><span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+            <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">find_columns</span><span class="p">,</span> <span class="n">connection</span><span class="o">=</span><span class="n">connection</span>
+        <span class="p">),</span>
+    <span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">statement</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="patchsets-and-changesets">
+<span id="example-changesets"></span><span id="index-4"></span><h2>Patchsets and Changesets<a class="headerlink" href="#patchsets-and-changesets" title="Link to this heading"></a></h2>
+<p>Changesets contain all the before and after values for changed rows,
+while patchsets only contain the necessary values to make the
+change.  <a class="reference internal" href="ext.html#apsw.ext.changeset_to_sql" title="apsw.ext.changeset_to_sql"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.ext.changeset_to_sql()</span></code></a> is useful to see what SQL
+a change or patch set is equivalent to.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">patchset</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">patchset</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">patchset</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;patchset&quot;</span><span class="p">,</span> <span class="n">patchset</span><span class="p">)</span>
+
+<span class="c1"># Note how the changeset is larger and contains more information</span>
+<span class="n">changeset</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">changeset</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">changeset</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;changeset&quot;</span><span class="p">,</span> <span class="n">changeset</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">len(patchset)=241</span>
+<span class="go">patchset</span>
+<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;F9B19B&#39;;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;3E3865&#39;, &#39;kitchen walls&#39;, NULL);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;B9B16B&#39;, &#39;microwave&#39;, NULL);</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;4579B7&#39; AND tag_id = &#39;00BF23&#39;;</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;3E3865&#39;, &#39;3E8EC2&#39;, NULL);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;3E3865&#39;, &#39;A0339B&#39;, NULL);</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;3E3865&#39;, &#39;BF1D0D&#39;, &#39;system&#39;);</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;B9B16B&#39;, &#39;BF1D0D&#39;, &#39;system&#39;);</span>
+<span class="go">UPDATE tags SET cost_centre=NULL WHERE id = &#39;BF1D0D&#39;;</span>
+<span class="go">DELETE FROM tags WHERE id = &#39;00BF23&#39;;</span>
+
+<span class="go">len(changeset)=274</span>
+<span class="go">changeset</span>
+<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;F9B19B&#39; AND description IS NULL;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;3E3865&#39;, &#39;kitchen walls&#39;, NULL);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;B9B16B&#39;, &#39;microwave&#39;, NULL);</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;4579B7&#39; AND tag_id = &#39;00BF23&#39; AND reason IS NULL;</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;3E3865&#39;, &#39;3E8EC2&#39;, NULL);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;3E3865&#39;, &#39;A0339B&#39;, NULL);</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;3E3865&#39;, &#39;BF1D0D&#39;, &#39;system&#39;);</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;B9B16B&#39;, &#39;BF1D0D&#39;, &#39;system&#39;);</span>
+<span class="go">UPDATE tags SET cost_centre=NULL WHERE id = &#39;BF1D0D&#39; AND cost_centre = 100;</span>
+<span class="go">DELETE FROM tags WHERE id = &#39;00BF23&#39; AND label = &#39;battery&#39; AND cost_centre = 300;</span>
+</pre></div>
+</div>
+</section>
+<section id="inverting-undo-redo">
+<span id="example-inverting"></span><span id="index-5"></span><h2>Inverting - undo, redo<a class="headerlink" href="#inverting-undo-redo" title="Link to this heading"></a></h2>
+<p>We can get the opposite of a changeset which can then form the basis
+of an undo/redo implementation.  One pattern is to have a table
+where you store changesets allowing for a later undo or redo.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Yes, it is this easy</span>
+<span class="n">undo</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">changeset</span><span class="p">)</span>
+
+<span class="c1"># Compare this to the changeset above, to see how it does the</span>
+<span class="c1"># opposite.</span>
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;undo&quot;</span><span class="p">,</span> <span class="n">undo</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">undo</span>
+<span class="go">UPDATE items SET description=NULL WHERE id = &#39;F9B19B&#39; AND description = &#39;high gloss&#39;;</span>
+<span class="go">DELETE FROM items WHERE id = &#39;3E3865&#39; AND name = &#39;kitchen walls&#39; AND description IS NULL;</span>
+<span class="go">DELETE FROM items WHERE id = &#39;B9B16B&#39; AND name = &#39;microwave&#39; AND description IS NULL;</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;4579B7&#39;, &#39;00BF23&#39;, NULL);</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;3E3865&#39; AND tag_id = &#39;3E8EC2&#39; AND reason IS NULL;</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;3E3865&#39; AND tag_id = &#39;A0339B&#39; AND reason IS NULL;</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;3E3865&#39; AND tag_id = &#39;BF1D0D&#39; AND reason = &#39;system&#39;;</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;B9B16B&#39; AND tag_id = &#39;BF1D0D&#39; AND reason = &#39;system&#39;;</span>
+<span class="go">UPDATE tags SET cost_centre=100 WHERE id = &#39;BF1D0D&#39; AND cost_centre IS NULL;</span>
+<span class="go">INSERT INTO tags(id, label, cost_centre) VALUES (&#39;00BF23&#39;, &#39;battery&#39;, 300);</span>
+</pre></div>
+</div>
+</section>
+<section id="applying-changesets">
+<span id="example-applying"></span><span id="index-6"></span><h2>Applying changesets<a class="headerlink" href="#applying-changesets" title="Link to this heading"></a></h2>
+<p>We can filter which tables get affected when <a class="reference internal" href="session.html#apsw.Changeset.apply" title="apsw.Changeset.apply"><code class="xref py py-meth docutils literal notranslate"><span class="pre">applying</span> <span class="pre">a</span>
+<span class="pre">changeset</span></code></a> (default all) and can define a conflict
+handler (default abort the transaction).  Conflicts are <a class="reference external" href="https://sqlite.org/sessionintro.html#conflicts">described
+here</a>. We are
+going to undo our earlier changes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># However it is going to fail ...</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">undo</span><span class="p">,</span> <span class="n">connection</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">AbortError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="c1"># It will fail, and the database back in the state when we started</span>
+    <span class="c1"># the apply.</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exception </span><span class="si">{</span><span class="n">exc</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># The reason it failed is because of the foreign keys automatically</span>
+<span class="c1"># removing rows in the link table when members of items and tags got</span>
+<span class="c1"># removed.  Lets do it again, but save the failed changes for</span>
+<span class="c1"># inspection.</span>
+
+<span class="n">failed</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ChangesetBuilder</span><span class="p">()</span>
+
+<span class="c1"># And make some deliberate conflicts</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    UPDATE items SET description = &#39;Orange flavour&#39; WHERE name = &#39;bathroom ceiling&#39;;</span>
+<span class="s2">    -- Refuse deletes to make constraint failure on delete</span>
+<span class="s2">    CREATE TRIGGER prevent_microwave_deletion</span>
+<span class="s2">    BEFORE DELETE ON items</span>
+<span class="s2">        FOR EACH ROW</span>
+<span class="s2">        WHEN OLD.name = &#39;microwave&#39;</span>
+<span class="s2">        BEGIN</span>
+<span class="s2">            SELECT RAISE(ABORT, &#39;Cannot delete items with name &quot;microwave&quot;&#39;);</span>
+<span class="s2">        END;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># A conflict handler says what to do</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">conflict_handler</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">change</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">TableChange</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="c1"># Print the failure information</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;conflict&quot;</span><span class="p">,</span>
+        <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_session_conflict</span><span class="p">[</span><span class="n">reason</span><span class="p">],</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">op</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">opcode</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">conflict</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">name</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">column_count</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">fk_conflicts</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">indirect</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">old</span><span class="si">=}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">new</span><span class="si">=}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># save the change for later</span>
+    <span class="n">failed</span><span class="o">.</span><span class="n">add_change</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+    <span class="c1"># proceed ignoring this failed change</span>
+    <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CHANGESET_OMIT</span>
+
+
+<span class="c1"># Undo our earlier changes again</span>
+<span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">undo</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">conflict</span><span class="o">=</span><span class="n">conflict_handler</span><span class="p">)</span>
+
+<span class="c1"># Now lets see what couldn&#39;t apply as SQL</span>
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;failed&quot;</span><span class="p">,</span> <span class="n">failed</span><span class="o">.</span><span class="n">output</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Exception exc=AbortError(&#39;query aborted&#39;)</span>
+<span class="go">conflict SQLITE_CHANGESET_DATA change.op=&#39;UPDATE&#39; change.opcode=23</span>
+<span class="go"> change.conflict=(&#39;F9B19B&#39;, &#39;bathroom ceiling&#39;, &#39;Orange flavour&#39;)</span>
+<span class="go"> change.name=&#39;items&#39; change.column_count=3</span>
+<span class="go"> change.fk_conflicts=None change.indirect=False</span>
+<span class="go"> change.old=(&#39;F9B19B&#39;, &lt;class &#39;apsw.no_change&#39;&gt;, &#39;high gloss&#39;)</span>
+<span class="go"> change.new=(&lt;class &#39;apsw.no_change&#39;&gt;, &lt;class &#39;apsw.no_change&#39;&gt;, None)</span>
+
+<span class="go">conflict SQLITE_CHANGESET_CONSTRAINT change.op=&#39;DELETE&#39; change.opcode=9</span>
+<span class="go"> change.conflict=None</span>
+<span class="go"> change.name=&#39;items&#39; change.column_count=3</span>
+<span class="go"> change.fk_conflicts=None change.indirect=False</span>
+<span class="go"> change.old=(&#39;B9B16B&#39;, &#39;microwave&#39;, None)</span>
+<span class="go"> change.new=None</span>
+
+<span class="go">conflict SQLITE_CHANGESET_NOTFOUND change.op=&#39;DELETE&#39; change.opcode=9</span>
+<span class="go"> change.conflict=None</span>
+<span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
+<span class="go"> change.fk_conflicts=None change.indirect=False</span>
+<span class="go"> change.old=(&#39;3E3865&#39;, &#39;3E8EC2&#39;, None)</span>
+<span class="go"> change.new=None</span>
+
+<span class="go">conflict SQLITE_CHANGESET_NOTFOUND change.op=&#39;DELETE&#39; change.opcode=9</span>
+<span class="go"> change.conflict=None</span>
+<span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
+<span class="go"> change.fk_conflicts=None change.indirect=False</span>
+<span class="go"> change.old=(&#39;3E3865&#39;, &#39;A0339B&#39;, None)</span>
+<span class="go"> change.new=None</span>
+
+<span class="go">conflict SQLITE_CHANGESET_NOTFOUND change.op=&#39;DELETE&#39; change.opcode=9</span>
+<span class="go"> change.conflict=None</span>
+<span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
+<span class="go"> change.fk_conflicts=None change.indirect=True</span>
+<span class="go"> change.old=(&#39;3E3865&#39;, &#39;BF1D0D&#39;, &#39;system&#39;)</span>
+<span class="go"> change.new=None</span>
+
+<span class="go">failed</span>
+<span class="go">UPDATE items SET description=NULL WHERE id = &#39;F9B19B&#39; AND description = &#39;high gloss&#39;;</span>
+<span class="go">DELETE FROM items WHERE id = &#39;B9B16B&#39; AND name = &#39;microwave&#39; AND description IS NULL;</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;3E3865&#39; AND tag_id = &#39;3E8EC2&#39; AND reason IS NULL;</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;3E3865&#39; AND tag_id = &#39;A0339B&#39; AND reason IS NULL;</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;3E3865&#39; AND tag_id = &#39;BF1D0D&#39; AND reason = &#39;system&#39;;</span>
+</pre></div>
+</div>
+</section>
+<section id="synchronising-changes-made-by-two-users">
+<span id="example-syncing"></span><span id="index-7"></span><h2>Synchronising changes made by two users<a class="headerlink" href="#synchronising-changes-made-by-two-users" title="Link to this heading"></a></h2>
+<p>Alice and Bob are going to separately work on the same database and
+we are going to synchronise their changes.</p>
+<p>You will notice that the databases did not end up identical.  This
+is because foreign keys, triggers, and the changesets are all
+fighting each other.  You need to be careful when using all of them
+at the same time.  See <a class="reference internal" href="#example-changesetbuilder"><span class="std std-ref">ChangesetBuilder next</span></a> where you can make your own changesets
+for these more complicated situations.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start from the same database</span>
+<span class="n">alice_connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;alice.db&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">alice_connection</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
+    <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+<span class="n">bob_connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;bob.db&quot;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">bob_connection</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
+    <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+<span class="c1"># setup sessions</span>
+<span class="n">alice_session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">alice_connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="n">alice_session</span><span class="o">.</span><span class="n">attach</span><span class="p">()</span>
+
+<span class="n">bob_session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">bob_connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="n">bob_session</span><span class="o">.</span><span class="n">attach</span><span class="p">()</span>
+
+<span class="c1"># Each makes changes</span>
+<span class="n">alice_connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    UPDATE tags SET label=&#39;painting&#39; WHERE label=&#39;paint&#39;;</span>
+<span class="s2">    INSERT INTO items(name, description) VALUES(&#39;storage closet&#39;, &#39;main storage space&#39;);</span>
+<span class="s2">    INSERT INTO tags(label) VALUES(&#39;approval needed&#39;);</span>
+<span class="s2">    -- remove new tag</span>
+<span class="s2">    DELETE FROM item_tag_link WHERE item_id=(SELECT id FROM items WHERE name=&#39;storage closet&#39;);</span>
+<span class="s2">    -- add approval needed</span>
+<span class="s2">    INSERT INTO item_tag_link(item_id, tag_id)  VALUES(</span>
+<span class="s2">        (SELECT id FROM items WHERE name=&#39;storage closet&#39;),</span>
+<span class="s2">        (SELECT id FROM tags WHERE label=&#39;approval needed&#39;)</span>
+<span class="s2">    );</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">bob_connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    UPDATE tags SET cost_centre = &#39;150&#39; WHERE label=&#39;electrical&#39;;</span>
+<span class="s2">    INSERT INTO items(name) VALUES(&#39;storage B&#39;);</span>
+<span class="s2">    -- remove new tag</span>
+<span class="s2">    DELETE FROM item_tag_link WHERE item_id=(SELECT id FROM items WHERE name=&#39;storage B&#39;);</span>
+<span class="s2">    -- add electrical</span>
+<span class="s2">    INSERT INTO item_tag_link(item_id, tag_id)  VALUES(</span>
+<span class="s2">        (SELECT id FROM items WHERE name=&#39;storage B&#39;),</span>
+<span class="s2">        (SELECT id FROM tags WHERE label=&#39;electrical&#39;)</span>
+<span class="s2">    );</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get the changesets</span>
+<span class="n">alice_changeset</span> <span class="o">=</span> <span class="n">alice_session</span><span class="o">.</span><span class="n">changeset</span><span class="p">()</span>
+
+<span class="n">bob_changeset</span> <span class="o">=</span> <span class="n">bob_session</span><span class="o">.</span><span class="n">changeset</span><span class="p">()</span>
+
+<span class="c1"># Apply them to each other&#39;s database</span>
+<span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">alice_changeset</span><span class="p">,</span> <span class="n">bob_connection</span><span class="p">)</span>
+<span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">bob_changeset</span><span class="p">,</span> <span class="n">alice_connection</span><span class="p">)</span>
+
+
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">SELECT items.name AS name, tags.label AS tag, tags.cost_centre AS cost_centre</span>
+<span class="s2">   FROM tags, items, item_tag_link</span>
+<span class="s2">   WHERE items.id = item_tag_link.item_id AND tags.id = item_tag_link.tag_id</span>
+<span class="s2">   ORDER BY items.name, tags.label</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Alice&#39;s database&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">alice_connection</span><span class="p">,</span> <span class="n">query</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Bob&#39;s database&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">bob_connection</span><span class="p">,</span> <span class="n">query</span><span class="p">))</span>
+
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;Alice changeset&quot;</span><span class="p">,</span> <span class="n">alice_changeset</span><span class="p">)</span>
+
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;Bob changseset&quot;</span><span class="p">,</span> <span class="n">bob_changeset</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Alice&#39;s database</span>
+<span class="go">┌──────────────────┬─────────────────┬─────────────┐</span>
+<span class="go">│       name       │       tag       │ cost_centre │</span>
+<span class="go">│ bathroom ceiling │ painting        │ 110         │</span>
+<span class="go">│ bathroom lights  │ electrical      │ 150         │</span>
+<span class="go">│ bathroom lights  │ inspection      │ 200         │</span>
+<span class="go">│ entrance fan     │ new             │ 100         │</span>
+<span class="go">│ entrance floor   │ battery         │ 300         │</span>
+<span class="go">│ entrance floor   │ cleaning        │ 300         │</span>
+<span class="go">│ storage B        │ electrical      │ 150         │</span>
+<span class="go">│ storage B        │ new             │ 100         │</span>
+<span class="go">│ storage closet   │ approval needed │ (null)      │</span>
+<span class="go">└──────────────────┴─────────────────┴─────────────┘</span>
+
+
+<span class="go">Bob&#39;s database</span>
+<span class="go">┌──────────────────┬─────────────────┬─────────────┐</span>
+<span class="go">│       name       │       tag       │ cost_centre │</span>
+<span class="go">│ bathroom ceiling │ painting        │ 110         │</span>
+<span class="go">│ bathroom lights  │ electrical      │ 150         │</span>
+<span class="go">│ bathroom lights  │ inspection      │ 200         │</span>
+<span class="go">│ entrance fan     │ new             │ 100         │</span>
+<span class="go">│ entrance floor   │ battery         │ 300         │</span>
+<span class="go">│ entrance floor   │ cleaning        │ 300         │</span>
+<span class="go">│ storage B        │ electrical      │ 150         │</span>
+<span class="go">│ storage closet   │ approval needed │ (null)      │</span>
+<span class="go">│ storage closet   │ new             │ 100         │</span>
+<span class="go">└──────────────────┴─────────────────┴─────────────┘</span>
+
+<span class="go">Alice changeset</span>
+<span class="go">UPDATE tags SET label=&#39;painting&#39; WHERE id = &#39;3E8EC2&#39; AND label = &#39;paint&#39;;</span>
+<span class="go">INSERT INTO tags(id, label, cost_centre) VALUES (&#39;309392&#39;, &#39;approval needed&#39;, NULL);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;B89998&#39;, &#39;storage closet&#39;, &#39;main storage space&#39;);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;B89998&#39;, &#39;309392&#39;, NULL);</span>
+
+<span class="go">Bob changseset</span>
+<span class="go">UPDATE tags SET cost_centre=&#39;150&#39; WHERE id = &#39;318E65&#39; AND cost_centre = 145;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;7A3024&#39;, &#39;storage B&#39;, NULL);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;7A3024&#39;, &#39;318E65&#39;, NULL);</span>
+</pre></div>
+</div>
+</section>
+<section id="changesetbuilder">
+<span id="example-changesetbuilder"></span><span id="index-8"></span><h2>ChangesetBuilder<a class="headerlink" href="#changesetbuilder" title="Link to this heading"></a></h2>
+<p>The <a class="reference internal" href="session.html#apsw.ChangesetBuilder" title="apsw.ChangesetBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">ChangesetBuilder</span></code></a> can be used to combine multiple
+changesets and individual <a class="reference internal" href="session.html#apsw.TableChange" title="apsw.TableChange"><code class="xref py py-class docutils literal notranslate"><span class="pre">TableChange</span></code></a>.  In this example
+we’ll build up all the changes to the <code class="docutils literal notranslate"><span class="pre">items</span></code> table from
+multiple changesets.  <a class="reference internal" href="session.html#apsw.ChangesetBuilder.schema" title="apsw.ChangesetBuilder.schema"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ChangesetBuilder.schema()</span></code></a> is used
+to ensure the changes map to the expected database table
+structure (names, primary keys, number of columns).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">items</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ChangesetBuilder</span><span class="p">()</span>
+
+<span class="n">items</span><span class="o">.</span><span class="n">schema</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="p">(</span><span class="n">changeset</span><span class="p">,</span> <span class="n">alice_changeset</span><span class="p">,</span> <span class="n">bob_changeset</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">change</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">change</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;items&quot;</span><span class="p">:</span>
+            <span class="n">items</span><span class="o">.</span><span class="n">add_change</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
+
+<span class="n">only_items</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">output</span><span class="p">()</span>
+
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;Only items table changes&quot;</span><span class="p">,</span> <span class="n">only_items</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Only items table changes</span>
+<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;F9B19B&#39; AND description IS NULL;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;B89998&#39;, &#39;storage closet&#39;, &#39;main storage space&#39;);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;7A3024&#39;, &#39;storage B&#39;, NULL);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;3E3865&#39;, &#39;kitchen walls&#39;, NULL);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;B9B16B&#39;, &#39;microwave&#39;, NULL);</span>
+</pre></div>
+</div>
+</section>
+<section id="streaming">
+<span id="example-streaming"></span><span id="index-9"></span><h2>Streaming<a class="headerlink" href="#streaming" title="Link to this heading"></a></h2>
+<p>The changesets above were all produced as a single bytes in memory
+all at once.  For larger changesets we can read and write them in
+chunks, such as with blobs, files, or network connections.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use a positive number to set that size</span>
+<span class="n">chunk_size</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">session_config</span><span class="p">(</span>
+    <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_SESSION_CONFIG_STRMSIZE</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;default chunk size&quot;</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)</span>
+
+<span class="c1"># Some changes to make the changeset larger.  The size is an estimate.</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Before estimate </span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">changeset_size</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="s2">&quot;abcdefghijklmnopqrstuvwxyz&quot;</span><span class="p">:</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+        <span class="s2">&quot;INSERT INTO items(name, description) VALUES(?, ?)&quot;</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">1234</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">1234</span><span class="p">),</span>
+    <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;After estimate </span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">changeset_size</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># We&#39;ll write to a file</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryFile</span><span class="p">(</span><span class="s2">&quot;w+b&quot;</span><span class="p">)</span>
+
+<span class="n">num_writes</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">memoryview</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">global</span> <span class="n">num_writes</span>
+    <span class="n">num_writes</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="c1"># The streamer must write all bytes</span>
+    <span class="k">assert</span> <span class="n">res</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+
+<span class="n">session</span><span class="o">.</span><span class="n">changeset_stream</span><span class="p">(</span><span class="n">write</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output file size is&quot;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">tell</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of writes&quot;</span><span class="p">,</span> <span class="n">num_writes</span><span class="p">)</span>
+
+<span class="c1"># Lets read from the same file, using the streaming iterator</span>
+<span class="n">out</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">num_reads</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="n">amount</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="k">global</span> <span class="n">num_reads</span>
+    <span class="n">num_reads</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">amount</span><span class="p">)</span>
+
+
+<span class="n">num_changes</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">change</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="n">read</span><span class="p">):</span>
+    <span class="n">num_changes</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of reads&quot;</span><span class="p">,</span> <span class="n">num_reads</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of changes&quot;</span><span class="p">,</span> <span class="n">num_changes</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">default chunk size 1024</span>
+<span class="go">Before estimate session.changeset_size=281</span>
+<span class="go">After estimate session.changeset_size=65541</span>
+<span class="go">Output file size is 65342</span>
+<span class="go">Number of writes 27</span>
+<span class="go">Number of reads 65</span>
+<span class="go">Number of changes 54</span>
+</pre></div>
+</div>
+</section>
+<section id="rebasing">
+<span id="example-rebaser"></span><span id="index-10"></span><h2>Rebasing<a class="headerlink" href="#rebasing" title="Link to this heading"></a></h2>
+<p>You can merge conflict decisions from an earlier changeset into a
+later changeset so that you don’t have to separately transport and
+store those conflict decisions.  This can be used to take
+independently made changesets, and turn them into a linear sequence.
+The <a class="reference external" href="https://www.sqlite.org/session/rebaser.html">rebaser documentation</a> includes more
+detail.</p>
+<p>To do a rebase, you need to take the conflict resolutions
+from an <a class="reference internal" href="session.html#apsw.Changeset.apply" title="apsw.Changeset.apply"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Changeset.apply()</span></code></a> to <a class="reference internal" href="session.html#apsw.Rebaser.configure" title="apsw.Rebaser.configure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Rebaser.configure()</span></code></a>, and
+then <a class="reference internal" href="session.html#apsw.Rebaser.rebase" title="apsw.Rebaser.rebase"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Rebaser.rebase()</span></code></a> a following changeset.</p>
+<p>We are going to make alice then bob appear to have been done in that
+order without conflicts.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reset back to original data with the base changeset applied</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    DROP TABLE item_tag_link;</span>
+<span class="s2">    DROP TABLE items;</span>
+<span class="s2">    DROP TABLE tags;</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;session.sql&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+
+
+<span class="c1"># The conflict handler we&#39;ll use doing latest writer wins - you should</span>
+<span class="c1"># be more careful.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">conflict_handler</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">change</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">TableChange</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">reason</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CHANGESET_DATA</span><span class="p">,</span>
+        <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CHANGESET_CONFLICT</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CHANGESET_REPLACE</span>
+    <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CHANGESET_OMIT</span>
+
+
+<span class="c1"># apply original changeset that alice was based on</span>
+<span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">changeset</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">conflict</span><span class="o">=</span><span class="n">conflict_handler</span><span class="p">)</span>
+
+<span class="c1"># Make a rebaser</span>
+<span class="n">rebaser</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Rebaser</span><span class="p">()</span>
+
+<span class="c1"># save these conflict resolutions</span>
+<span class="n">conflict_resolutions</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+    <span class="n">alice_changeset</span><span class="p">,</span>
+    <span class="n">connection</span><span class="p">,</span>
+    <span class="n">conflict</span><span class="o">=</span><span class="n">conflict_handler</span><span class="p">,</span>
+    <span class="n">rebase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">rebaser</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">conflict_resolutions</span><span class="p">)</span>
+
+<span class="c1"># and apply them to bob&#39;s</span>
+<span class="n">bob_rebased</span> <span class="o">=</span> <span class="n">rebaser</span><span class="o">.</span><span class="n">rebase</span><span class="p">(</span><span class="n">bob_changeset</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="table-diff">
+<span id="example-session-diff"></span><span id="index-11"></span><h2>Table diff<a class="headerlink" href="#table-diff" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="session.html#apsw.Session.diff" title="apsw.Session.diff"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Session.diff()</span></code></a> can be used to get the difference between a
+table in another database and this database.  This is useful if the
+other database was updated without a session being recorded.  Note that
+the table must have a <code class="docutils literal notranslate"><span class="pre">PRIMARY</span> <span class="pre">KEY</span></code>, or it will be ignored.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">diff_demo</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;diff_demo.db&quot;</span><span class="p">)</span>
+
+<span class="n">diff_demo</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    -- our session runs on this</span>
+<span class="s2">    CREATE TABLE example(x PRIMARY KEY, y, z);</span>
+<span class="s2">    INSERT INTO example VALUES</span>
+<span class="s2">            (1, &#39;one&#39;, 1.1),</span>
+<span class="s2">            (2, &#39;two&#39;, 2.2),</span>
+<span class="s2">            (3, &#39;three&#39;, 3.3);</span>
+
+<span class="s2">    -- the other database</span>
+<span class="s2">    ATTACH &#39;other.db&#39; AS other;</span>
+<span class="s2">    -- the table has to have the same name, primary key, and columns</span>
+<span class="s2">    CREATE TABLE other.example(x PRIMARY KEY, y, z);</span>
+<span class="s2">    INSERT INTO other.example VALUES</span>
+<span class="s2">            -- extra row</span>
+<span class="s2">            (0, &#39;zero&#39;, 0.0),</span>
+<span class="s2">            -- id 1 deliberately missing</span>
+<span class="s2">            (2, &#39;two&#39;, 2.2),</span>
+<span class="s2">            -- different values</span>
+<span class="s2">            (3, &#39;trois&#39;, &#39;hello&#39;);</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">diff_demo</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+
+<span class="c1"># You must attach (or filter) to include the table</span>
+<span class="n">session</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="s2">&quot;example&quot;</span><span class="p">)</span>
+
+<span class="n">session</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="s2">&quot;other&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">)</span>
+
+<span class="n">diff</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">changeset</span><span class="p">()</span>
+
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;Table diff&quot;</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">diff_demo</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Table diff</span>
+<span class="go">DELETE FROM example WHERE x = 0 AND y = &#39;zero&#39; AND z = 0.0;</span>
+<span class="go">INSERT INTO example(x, y, z) VALUES (1, &#39;one&#39;, 1.1);</span>
+<span class="go">UPDATE example SET y=&#39;three&#39;, z=3.3 WHERE x = 3 AND y = &#39;trois&#39; AND z = &#39;hello&#39;;</span>
+</pre></div>
+</div>
+</section>
+<section id="cleanup">
+<span id="example-session-end"></span><span id="index-12"></span><h2>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading"></a></h2>
+<p>We can now close the connections, but it is optional.  APSW automatically
+cleans up sessions when their corresponding connections are closed.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="n">alice_connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="n">bob_connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="textsearch.html" class="btn btn-neutral float-left" title="Full text search" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="session.html" class="btn btn-neutral float-right" title="Session extension" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on May 30, 2025.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-2NR9GDCQLT', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
