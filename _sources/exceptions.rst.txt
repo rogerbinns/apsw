@@ -162,11 +162,15 @@ The following exceptions happen when APSW detects various problems.
 
 .. exception:: InvalidContextError
 
-  Context is no longer valid.  Examples include using an
-  :class:`IndexInfo` outside of the :meth:`VTTable.BestIndexObject`
-  method, a registered :class:`FTS5Tokenizer` when the underlying
-  tokenizer has been deleted/replaced, or :meth:`Connection.vtab_config`
-  when not inside :meth:`VTModule.Create`.
+  Context is no longer valid.  Examples include:
+
+  * Using an :class:`IndexInfo` outside of the :meth:`VTTable.BestIndexObject`
+    method
+  * Using a registered :class:`FTS5Tokenizer` when the underlying
+    tokenizer has been deleted/replaced
+  * Using :meth:`Connection.vtab_config` when not inside :meth:`VTModule.Create`
+  * Using a :class:`TableChange` outside of a :meth:`~Changeset.apply` conflict
+    handler, or when no longer the current :meth:`Changeset.iter` item
 
 SQLite Exceptions
 =================

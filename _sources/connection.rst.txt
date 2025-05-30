@@ -559,7 +559,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_deserialize
 
-.. method:: Connection.deserialize(name: str, contents: bytes) -> None
+.. method:: Connection.deserialize(name: str, contents: collections.abc.Buffer) -> None
 
    Replaces the named database with an in-memory copy of *contents*.
    *name* is `main`, `temp`, the name in `ATTACH
@@ -1139,6 +1139,14 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
  You can pass in None in order to unregister an existing hook.
 
  Calls: `sqlite3_wal_hook <https://sqlite.org/c3ref/wal_hook.html>`__
+
+.. index:: sqlite3_setlk_timeout
+
+.. method:: Connection.setlk_timeout(ms: int, flags: int) -> None
+
+  Sets a VFS level timeout.
+
+  Calls: `sqlite3_setlk_timeout <https://sqlite.org/c3ref/setlk_timeout.html>`__
 
 .. method:: Connection.sqlite3_pointer() -> int
 

@@ -16,9 +16,9 @@ Type Annotations
 ================
 
 Comprehensive :mod:`type annotations <typing>` :source:`are included
-<apsw/__init__.pyi>`, and your code can be checked using tools like
-`mypy <https://mypy-lang.org/>`__.  You can refer to the types below
-for your annotations (eg as :class:`apsw.SQLiteValue`)
+<apsw/__init__.pyi>`, and your code can be checked by your editor or
+tools like `mypy <https://mypy-lang.org/>`__.  You can refer to the
+types below for your annotations (eg as :class:`apsw.SQLiteValue`)
 
 Your source files should include::
 
@@ -275,8 +275,8 @@ API Reference
     :type: object
 
     A sentinel value used to indicate no change in a value when
-    used with :meth:`VTCursor.ColumnNoChange` and
-    :meth:`VTTable.UpdateChangeRow`
+    used with :meth:`VTCursor.ColumnNoChange`,
+    :meth:`VTTable.UpdateChangeRow`, and :attr:`TableChange.new`.
 
 .. method:: pyobject(object: Any)
 
@@ -554,7 +554,7 @@ modules etc. For example::
 
     `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__ constants
 
-    `SQLITE_FCNTL_BEGIN_ATOMIC_WRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlbeginatomicwrite>`__, `SQLITE_FCNTL_BUSYHANDLER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlbusyhandler>`__, `SQLITE_FCNTL_CHUNK_SIZE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlchunksize>`__, `SQLITE_FCNTL_CKPT_DONE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlckptdone>`__, `SQLITE_FCNTL_CKPT_START <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlckptstart>`__, `SQLITE_FCNTL_CKSM_FILE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcksmfile>`__, `SQLITE_FCNTL_COMMIT_ATOMIC_WRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcommitatomicwrite>`__, `SQLITE_FCNTL_COMMIT_PHASETWO <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcommitphasetwo>`__, `SQLITE_FCNTL_DATA_VERSION <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__, `SQLITE_FCNTL_EXTERNAL_READER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlexternalreader>`__, `SQLITE_FCNTL_FILE_POINTER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlfilepointer>`__, `SQLITE_FCNTL_GET_LOCKPROXYFILE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_HAS_MOVED <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlhasmoved>`__, `SQLITE_FCNTL_JOURNAL_POINTER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntljournalpointer>`__, `SQLITE_FCNTL_LAST_ERRNO <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_LOCKSTATE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntllockstate>`__, `SQLITE_FCNTL_LOCK_TIMEOUT <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntllocktimeout>`__, `SQLITE_FCNTL_MMAP_SIZE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlmmapsize>`__, `SQLITE_FCNTL_NULL_IO <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlnullio>`__, `SQLITE_FCNTL_OVERWRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntloverwrite>`__, `SQLITE_FCNTL_PDB <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_PERSIST_WAL <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpersistwal>`__, `SQLITE_FCNTL_POWERSAFE_OVERWRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpowersafeoverwrite>`__, `SQLITE_FCNTL_PRAGMA <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpragma>`__, `SQLITE_FCNTL_RBU <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlrbu>`__, `SQLITE_FCNTL_RESERVE_BYTES <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_RESET_CACHE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlresetcache>`__, `SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlrollbackatomicwrite>`__, `SQLITE_FCNTL_SET_LOCKPROXYFILE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_SIZE_HINT <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsizehint>`__, `SQLITE_FCNTL_SIZE_LIMIT <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsizelimit>`__, `SQLITE_FCNTL_SYNC <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsync>`__, `SQLITE_FCNTL_SYNC_OMITTED <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsyncomitted>`__, `SQLITE_FCNTL_TEMPFILENAME <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntltempfilename>`__, `SQLITE_FCNTL_TRACE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntltrace>`__, `SQLITE_FCNTL_VFSNAME <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__, `SQLITE_FCNTL_VFS_POINTER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfspointer>`__, `SQLITE_FCNTL_WAL_BLOCK <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwalblock>`__, `SQLITE_FCNTL_WIN32_AV_RETRY <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32avretry>`__, `SQLITE_FCNTL_WIN32_GET_HANDLE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32gethandle>`__, `SQLITE_FCNTL_WIN32_SET_HANDLE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32sethandle>`__, `SQLITE_FCNTL_ZIPVFS <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlzipvfs>`__
+    `SQLITE_FCNTL_BEGIN_ATOMIC_WRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlbeginatomicwrite>`__, `SQLITE_FCNTL_BLOCK_ON_CONNECT <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlblockonconnect>`__, `SQLITE_FCNTL_BUSYHANDLER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlbusyhandler>`__, `SQLITE_FCNTL_CHUNK_SIZE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlchunksize>`__, `SQLITE_FCNTL_CKPT_DONE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlckptdone>`__, `SQLITE_FCNTL_CKPT_START <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlckptstart>`__, `SQLITE_FCNTL_CKSM_FILE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcksmfile>`__, `SQLITE_FCNTL_COMMIT_ATOMIC_WRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcommitatomicwrite>`__, `SQLITE_FCNTL_COMMIT_PHASETWO <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlcommitphasetwo>`__, `SQLITE_FCNTL_DATA_VERSION <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__, `SQLITE_FCNTL_EXTERNAL_READER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlexternalreader>`__, `SQLITE_FCNTL_FILE_POINTER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlfilepointer>`__, `SQLITE_FCNTL_GET_LOCKPROXYFILE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_HAS_MOVED <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlhasmoved>`__, `SQLITE_FCNTL_JOURNAL_POINTER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntljournalpointer>`__, `SQLITE_FCNTL_LAST_ERRNO <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_LOCKSTATE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntllockstate>`__, `SQLITE_FCNTL_LOCK_TIMEOUT <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntllocktimeout>`__, `SQLITE_FCNTL_MMAP_SIZE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlmmapsize>`__, `SQLITE_FCNTL_NULL_IO <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlnullio>`__, `SQLITE_FCNTL_OVERWRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntloverwrite>`__, `SQLITE_FCNTL_PDB <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_PERSIST_WAL <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpersistwal>`__, `SQLITE_FCNTL_POWERSAFE_OVERWRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpowersafeoverwrite>`__, `SQLITE_FCNTL_PRAGMA <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpragma>`__, `SQLITE_FCNTL_RBU <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlrbu>`__, `SQLITE_FCNTL_RESERVE_BYTES <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_RESET_CACHE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlresetcache>`__, `SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlrollbackatomicwrite>`__, `SQLITE_FCNTL_SET_LOCKPROXYFILE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__, `SQLITE_FCNTL_SIZE_HINT <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsizehint>`__, `SQLITE_FCNTL_SIZE_LIMIT <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsizelimit>`__, `SQLITE_FCNTL_SYNC <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsync>`__, `SQLITE_FCNTL_SYNC_OMITTED <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlsyncomitted>`__, `SQLITE_FCNTL_TEMPFILENAME <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntltempfilename>`__, `SQLITE_FCNTL_TRACE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntltrace>`__, `SQLITE_FCNTL_VFSNAME <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__, `SQLITE_FCNTL_VFS_POINTER <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfspointer>`__, `SQLITE_FCNTL_WAL_BLOCK <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwalblock>`__, `SQLITE_FCNTL_WIN32_AV_RETRY <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32avretry>`__, `SQLITE_FCNTL_WIN32_GET_HANDLE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32gethandle>`__, `SQLITE_FCNTL_WIN32_SET_HANDLE <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlwin32sethandle>`__, `SQLITE_FCNTL_ZIPVFS <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlzipvfs>`__
 
 .. data:: mapping_fts5_token_flags
     :type: dict[str | int, int | str]
@@ -611,6 +611,67 @@ modules etc. For example::
     `Result Codes <https://sqlite.org/rescode.html>`__ constants
 
     `SQLITE_ABORT <https://sqlite.org/c3ref/c_fail.html>`__, `SQLITE_AUTH <https://sqlite.org/rescode.html#auth>`__, `SQLITE_BUSY <https://sqlite.org/rescode.html#busy>`__, `SQLITE_CANTOPEN <https://sqlite.org/rescode.html#cantopen>`__, `SQLITE_CONSTRAINT <https://sqlite.org/rescode.html#constraint>`__, `SQLITE_CORRUPT <https://sqlite.org/rescode.html#corrupt>`__, `SQLITE_DONE <https://sqlite.org/rescode.html#done>`__, `SQLITE_EMPTY <https://sqlite.org/rescode.html#empty>`__, `SQLITE_ERROR <https://sqlite.org/rescode.html#error>`__, `SQLITE_FORMAT <https://sqlite.org/rescode.html#format>`__, `SQLITE_FULL <https://sqlite.org/rescode.html#full>`__, `SQLITE_INTERNAL <https://sqlite.org/rescode.html#internal>`__, `SQLITE_INTERRUPT <https://sqlite.org/rescode.html#interrupt>`__, `SQLITE_IOERR <https://sqlite.org/rescode.html#ioerr>`__, `SQLITE_LOCKED <https://sqlite.org/rescode.html#locked>`__, `SQLITE_MISMATCH <https://sqlite.org/rescode.html#mismatch>`__, `SQLITE_MISUSE <https://sqlite.org/rescode.html#misuse>`__, `SQLITE_NOLFS <https://sqlite.org/rescode.html#nolfs>`__, `SQLITE_NOMEM <https://sqlite.org/rescode.html#nomem>`__, `SQLITE_NOTADB <https://sqlite.org/rescode.html#notadb>`__, `SQLITE_NOTFOUND <https://sqlite.org/rescode.html#notfound>`__, `SQLITE_NOTICE <https://sqlite.org/rescode.html#notice>`__, `SQLITE_OK <https://sqlite.org/c3ref/c_deny.html>`__, `SQLITE_PERM <https://sqlite.org/rescode.html#perm>`__, `SQLITE_PROTOCOL <https://sqlite.org/rescode.html#protocol>`__, `SQLITE_RANGE <https://sqlite.org/rescode.html#range>`__, `SQLITE_READONLY <https://sqlite.org/rescode.html#readonly>`__, `SQLITE_ROW <https://sqlite.org/rescode.html#row>`__, `SQLITE_SCHEMA <https://sqlite.org/rescode.html#schema>`__, `SQLITE_TOOBIG <https://sqlite.org/rescode.html#toobig>`__, `SQLITE_WARNING <https://sqlite.org/rescode.html#warning>`__
+
+.. data:: mapping_session_changeset_apply_v2_flags
+    :type: dict[str | int, int | str]
+
+    `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__ constants
+
+    (Only present when :doc:`session extension <session>` is enabled)
+
+    `SQLITE_CHANGESETAPPLY_FKNOACTION <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__, `SQLITE_CHANGESETAPPLY_IGNORENOOP <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__, `SQLITE_CHANGESETAPPLY_INVERT <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__, `SQLITE_CHANGESETAPPLY_NOSAVEPOINT <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__
+
+.. data:: mapping_session_changeset_start_v2_flags
+    :type: dict[str | int, int | str]
+
+    `Flags for sqlite3changeset_start_v2 <https://sqlite.org/session/c_changesetstart_invert.html>`__ constants
+
+    (Only present when :doc:`session extension <session>` is enabled)
+
+    `SQLITE_CHANGESETSTART_INVERT <https://sqlite.org/session/c_changesetstart_invert.html>`__
+
+.. data:: mapping_session_config_options
+    :type: dict[str | int, int | str]
+
+    `Values for sqlite3session_config <https://sqlite.org/session/c_session_config_strmsize.html>`__ constants
+
+    (Only present when :doc:`session extension <session>` is enabled)
+
+    `SQLITE_SESSION_CONFIG_STRMSIZE <https://sqlite.org/session/c_session_config_strmsize.html>`__
+
+.. data:: mapping_session_conflict
+    :type: dict[str | int, int | str]
+
+    `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>`__ constants
+
+    (Only present when :doc:`session extension <session>` is enabled)
+
+    `SQLITE_CHANGESET_CONFLICT <https://sqlite.org/session/c_changeset_conflict.html>`__, `SQLITE_CHANGESET_CONSTRAINT <https://sqlite.org/session/c_changeset_conflict.html>`__, `SQLITE_CHANGESET_DATA <https://sqlite.org/session/c_changeset_conflict.html>`__, `SQLITE_CHANGESET_FOREIGN_KEY <https://sqlite.org/session/c_changeset_conflict.html>`__, `SQLITE_CHANGESET_NOTFOUND <https://sqlite.org/session/c_changeset_conflict.html>`__
+
+.. data:: mapping_session_conflict_response
+    :type: dict[str | int, int | str]
+
+    `Constants Returned By The Conflict Handler <https://sqlite.org/session/c_changeset_abort.html>`__ constants
+
+    (Only present when :doc:`session extension <session>` is enabled)
+
+    `SQLITE_CHANGESET_ABORT <https://sqlite.org/session/c_changeset_abort.html>`__, `SQLITE_CHANGESET_OMIT <https://sqlite.org/session/c_changeset_abort.html>`__, `SQLITE_CHANGESET_REPLACE <https://sqlite.org/session/c_changeset_abort.html>`__
+
+.. data:: mapping_session_object_config_options
+    :type: dict[str | int, int | str]
+
+    `Options for sqlite3session_object_config <https://sqlite.org/session/c_session_objconfig_rowid.html>`__ constants
+
+    (Only present when :doc:`session extension <session>` is enabled)
+
+    `SQLITE_SESSION_OBJCONFIG_ROWID <https://sqlite.org/session/c_session_objconfig_rowid.html>`__, `SQLITE_SESSION_OBJCONFIG_SIZE <https://sqlite.org/session/c_session_objconfig_rowid.html>`__
+
+.. data:: mapping_setlk_timeout_flags
+    :type: dict[str | int, int | str]
+
+    `Flags for sqlite3_setlk_timeout() <https://sqlite.org/c3ref/c_setlk_block_on_connect.html>`__ constants
+
+    `SQLITE_SETLK_BLOCK_ON_CONNECT <https://sqlite.org/c3ref/c_setlk_block_on_connect.html>`__
 
 .. data:: mapping_statement_status
     :type: dict[str | int, int | str]

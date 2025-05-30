@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tips &mdash; APSW 3.49.2.0 documentation</title>
+  <title>Tips &mdash; APSW 3.50.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=87db18a5"></script>
+      <script src="_static/documentation_options.js?v=8006c4ff"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -85,6 +85,8 @@
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
@@ -165,7 +167,9 @@ best performance and avoid common mistakes.</p>
 <td><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference external" href="https://en.wikipedia.org/wiki/Binary_large_object">BLOB</a> (binary data, limit 1GB)</p></td>
-<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a> and similar such as <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytearray" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytearray</span></code></a> and <a class="reference external" href="https://docs.python.org/3/library/array.html#array.array" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">array.array</span></code></a></p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a> and similar such as <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytearray" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytearray</span></code></a> and <a class="reference external" href="https://docs.python.org/3/library/array.html#array.array" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">array.array</span></code></a>.  Anything
+that implements the <a class="reference external" href="https://docs.python.org/3/c-api/buffer.html">buffer protocol</a> is
+accepted.</p></td>
 </tr>
 </tbody>
 </table>
@@ -361,11 +365,12 @@ APSW/SQLite was operating on.</p>
 forward SQLite log messages to Python’s <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a>.</p>
 </section>
 <section id="managing-and-updating-your-schema">
-<h2>Managing and updating your schema<a class="headerlink" href="#managing-and-updating-your-schema" title="Link to this heading"></a></h2>
+<span id="schema-upgrade"></span><h2>Managing and updating your schema<a class="headerlink" href="#managing-and-updating-your-schema" title="Link to this heading"></a></h2>
 <p>If your program uses SQLite for <a class="reference external" href="https://sqlite.org/appfileformat.html">data</a> then you’ll need to manage
 and update your schema.  The hard way of doing this is to test for the
 existence of tables and their columns, and doing that maintenance
-programmatically.  The easy way is to use <a class="reference external" href="https://sqlite.org/pragma.html#pragma_user_version">pragma user_version</a> as in this example:</p>
+programmatically.  The easy way is to use <a class="reference external" href="https://sqlite.org/pragma.html#pragma_user_version">pragma user_version</a> as in this example
+where each number handles the changes needed.:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">ensure_schema</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
   <span class="c1"># a new database starts at user_version 0</span>
   <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -523,7 +528,7 @@ private to the connection.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 07, 2025.
+      <span class="lastupdated">Last updated on May 30, 2025.
       </span></p>
   </div>
 

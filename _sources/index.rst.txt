@@ -21,6 +21,8 @@ APSW |version| documentation
    backup
    example-fts
    textsearch
+   example-session
+   session
    vtable
    vfs
    shell

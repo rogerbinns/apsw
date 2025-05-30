@@ -450,7 +450,7 @@ VFSFile class
     `SQLITE_LOCK <https://sqlite.org/c3ref/c_lock_exclusive.html>`_
     family of constants.
 
-.. method:: VFSFile.xWrite(data: bytes, offset: int) -> None
+.. method:: VFSFile.xWrite(data: collections.abc.Buffer, offset: int) -> None
 
   Write the *data* starting at absolute *offset*. You must write all the data
   requested, or return an error. If you have the file open for

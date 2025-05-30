@@ -99,7 +99,7 @@ manipulating dates and time which are stored as strings or
 `Julian days <https://en.wikipedia.org/wiki/Julian_day>`_ (floating
 point number).
 
-Use the standard bytes type for blobs.
+Use any :class:`~collections.abc.Buffer` type (eg bytes) for blobs.
 
 :doc:`ext` provides functionality to convert and adapt types to those
 supported by SQLite.

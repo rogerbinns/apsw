@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shell &mdash; APSW 3.49.2.0 documentation</title>
+  <title>Shell &mdash; APSW 3.50.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=87db18a5"></script>
+      <script src="_static/documentation_options.js?v=8006c4ff"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -61,6 +61,8 @@
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Shell</a><ul>
@@ -399,6 +401,8 @@ or <code class="docutils literal notranslate"><span class="pre">default</span></
 <p><em>List connections, or switch active connection</em></p>
 <p>This covers all connections, not just those started in this shell.  Closed
 connections are not shown.</p>
+<p>For each connection, its index for switching active connection, (VFS used),
+“filename”, and open flags are shown.</p>
 </section>
 <section id="databases">
 <span id="index-8"></span><span id="shell-cmd-databases"></span><h3>databases<a class="headerlink" href="#databases" title="Link to this heading"></a></h3>
@@ -591,11 +595,15 @@ length string.  For example:</p>
 <dl class="option-list">
 <dt><kbd><span class="option">--wipe</span></kbd></dt>
 <dd><p>Closes any existing connections in this process referring to
-the same file  and deletes the database file, journals etc
+the same file and deletes the database file, journals etc
 before opening</p>
 </dd>
 <dt><kbd><span class="option">--vfs <var>VFS</var></span></kbd></dt>
 <dd><p>Which vfs to use when opening</p>
+</dd>
+<dt><kbd><span class="option">--flags <var>FLAGS</var></span></kbd></dt>
+<dd><p>Open flags to use, in lower or upper case.  Use | to
+combine. Default is  READWRITE|CREATE|URI</p>
 </dd>
 </dl>
 <p>If <code class="docutils literal notranslate"><span class="pre">FILE</span></code> is omitted then a memory database is opened</p>
@@ -779,7 +787,7 @@ the shell as needed.</p>
 <li><p><strong>stderr</strong> – Where to send errors (default sys.stderr)</p></li>
 <li><p><strong>encoding</strong> – Default encoding for files opened/created by the
 Shell.  If you want stdin/out/err to use a particular encoding
-then you need to provide them <a class="reference external" href="https://docs.python.org/3/library/codecs.html#codecs.open" title="(in Python v3.13)"><code class="xref py py-func docutils literal notranslate"><span class="pre">already</span> <span class="pre">configured</span></code></a> that way.</p></li>
+then you need to provide them already configured that way.</p></li>
 <li><p><strong>args</strong> – This should be program arguments only (ie if
 passing in sys.argv do not include sys.argv[0] which is the
 program name.  You can also pass in None and then call
@@ -820,7 +828,7 @@ types of errors doesn’t matter.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.shell.Shell.Row">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">is_first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_last</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SQLiteValues" title="apsw.SQLiteValues"><span class="pre">apsw.SQLiteValues</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.Row"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.Row" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">is_first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_last</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SQLiteValues" title="apsw.SQLiteValues"><span class="pre">SQLiteValues</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/shell.html#Shell.Row"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.shell.Shell.Row" title="Link to this definition"></a></dt>
 <dd><p>Returned by <a class="reference internal" href="#apsw.shell.Shell.PositionRow" title="apsw.shell.Shell.PositionRow"><code class="xref py py-class docutils literal notranslate"><span class="pre">Shell.PositionRow</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.shell.Shell.Row.columns">
@@ -839,7 +847,7 @@ types of errors doesn’t matter.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.shell.Shell.Row.row">
-<span class="sig-name descname"><span class="pre">row</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.SQLiteValues" title="apsw.SQLiteValues"><span class="pre">apsw.SQLiteValues</span></a></em><a class="headerlink" href="#apsw.shell.Shell.Row.row" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">row</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.SQLiteValues" title="apsw.SQLiteValues"><span class="pre">SQLiteValues</span></a></em><a class="headerlink" href="#apsw.shell.Shell.Row.row" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1142,7 +1150,7 @@ automatically passes in sys.argv[1:] and exits Python when done.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 07, 2025.
+      <span class="lastupdated">Last updated on May 30, 2025.
       </span></p>
   </div>
 

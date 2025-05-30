@@ -6,7 +6,10 @@ About
 Use with `SQLite <https://sqlite.org/>`__ 3.49.0 or later, `Python
 <https://www.python.org/downloads/>`__ 3.9 and later.
 
-APSW has been under continuous development since 2004.
+APSW has been under continuous development since 2004, and is in the
+top `1% of monthly downloads at the Python Package Index
+<https://clickpy.clickhouse.com/dashboard/apsw>`__.
+
 
 What APSW does
 --------------
@@ -27,8 +30,9 @@ developer experience.  See more about the :doc:`differences between
 APSW and sqlite3 <pysqlite>`.
 
 Because of the complete integration with SQLite, APSW offers useful
-additional functionality such as :doc:`these <ext>` and comprehensive
-:doc:`full text search support <textsearch>`.
+additional functionality such as :doc:`these <ext>`, comprehensive
+:doc:`full text search support <textsearch>` (including Unicode), and
+the :doc:`session`.
 
 Dependencies
 ------------

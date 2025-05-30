@@ -82,20 +82,20 @@ edit the :file:`setup.apsw` file inside.
 
 .. downloads-begin
 
-* `apsw-3.49.2.0.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.49.2.0/apsw-3.49.2.0.zip>`__
+* `apsw-3.50.0.0.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.50.0.0/apsw-3.50.0.0.zip>`__
   (Source as zip, includes this HTML Help)
 
-* `apsw-3.49.2.0.tar.gz
-  <https://github.com/rogerbinns/apsw/releases/download/3.49.2.0/apsw-3.49.2.0.tar.gz>`__
+* `apsw-3.50.0.0.tar.gz
+  <https://github.com/rogerbinns/apsw/releases/download/3.50.0.0/apsw-3.50.0.0.tar.gz>`__
   (Source as tar.gz, includes this HTML Help)
 
-* `apsw-3.49.2.0.zip.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.49.2.0/apsw-3.49.2.0.zip.cosign-bundle>`__
+* `apsw-3.50.0.0.zip.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.50.0.0/apsw-3.50.0.0.zip.cosign-bundle>`__
   cosign signature for zip source
 
-* `apsw-3.49.2.0.tar.gz.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.49.2.0/apsw-3.49.2.0.tar.gz.cosign-bundle>`__
+* `apsw-3.50.0.0.tar.gz.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.50.0.0/apsw-3.50.0.0.tar.gz.cosign-bundle>`__
   cosign signature for tar.gz source
 
 .. downloads-end
@@ -127,18 +127,18 @@ Verify
 
   .. code-block:: console
 
-    $ cosign verify-blob apsw-3.49.2.0.zip                        \
+    $ cosign verify-blob apsw-3.50.0.0.zip                        \
         --new-bundle-format                                       \
-        --bundle apsw-3.49.2.0.zip.cosign-bundle                  \
+        --bundle apsw-3.50.0.0.zip.cosign-bundle                  \
         --certificate-identity=rogerb@rogerbinns.com              \
         --certificate-oidc-issuer=https://github.com/login/oauth
     Verified OK
 
-    $ python3 -m sigstore verify identity apsw-3.49.2.0.zip       \
-        --bundle apsw-3.49.2.0.zip.cosign-bundle                  \
+    $ python3 -m sigstore verify identity apsw-3.50.0.0.zip       \
+        --bundle apsw-3.50.0.0.zip.cosign-bundle                  \
         --cert-identity=rogerb@rogerbinns.com                     \
         --cert-oidc-issuer=https://github.com/login/oauth
-    OK: apsw-3.49.2.0.zip
+    OK: apsw-3.50.0.0.zip
 
   .. verify-end
 
@@ -356,7 +356,7 @@ distributions, who want APSW to use the system shared SQLite library.
 
 * Use the source file from `github releases
   <https://github.com/rogerbinns/apsw/releases>`__.  Note you should
-  use the zip file including the version number, not the github
+  use the zip or tar.gz file including the version number, not the github
   repository copy at the end.  The file is signed and :ref:`can be
   verified <verifydownload>`.
 
@@ -405,19 +405,22 @@ dedicated to testing than makes up the actual database functionality.
 APSW includes tests which use the standard Python testing modules to
 verify correct operation. New code is developed alongside the tests.
 Reported issues also have test cases to ensure the issue doesn't
-happen or doesn't happen again.:
+happen or doesn't happen again.  Use ``python3 -m apsw.tests`` to
+run all the tests.  You can provide a ``-v`` option to see each test
+as it is run.
 
 .. code-block:: output
 
-                  Python  /usr/bin/python3 sys.version_info(major=3, minor=12, micro=7, releaselevel='final', serial=0) 64bit ELF
-  Testing with APSW file  /space/apsw/apsw/__init__.cpython-312-x86_64-linux-gnu.so
-            APSW version  3.47.0.0
-      SQLite lib version  3.47.0
-  SQLite headers version  3047000
+  $ python3 -m apsw.tests
+                  Python  /space/apsw/.venv/bin/python3 sys.version_info(major=3, minor=13, micro=3, releaselevel='final', serial=0) 64bit ELF
+  Testing with APSW file  /space/apsw/apsw/__init__.cpython-313-x86_64-linux-gnu.so
+            APSW version  3.50.0.0
+      SQLite lib version  3.50.0
+  SQLite headers version  3050000
       Using amalgamation  True
-  .....................................................................................................................................................................
+  ......................................................................................................................................................................................
   ----------------------------------------------------------------------
-  Ran 165 tests in 29.844s
+  Ran 182 tests in 57.382s
 
   OK
 

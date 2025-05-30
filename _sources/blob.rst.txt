@@ -171,11 +171,11 @@ Blob class
 
 .. index:: sqlite3_blob_write
 
-.. method:: Blob.write(data: bytes) -> None
+.. method:: Blob.write(data: collections.abc.Buffer) -> None
 
   Writes the data to the blob.
 
-  :param data: bytes to write
+  :param data: Buffer to write
 
   :raises TypeError: Wrong data type
 

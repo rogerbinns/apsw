@@ -4,11 +4,29 @@ Change History
 .. currentmodule:: apsw
 
 You may also be interested in the `SQLite release history
-<https://www.sqlite.org/chronology.html>`__ and `Python release
+<https://www.sqlite.org/changes.html>`__ and `Python release
 history <https://devguide.python.org/versions/>`__.
 
 APSW changes by version
 -----------------------
+
+3.50.0.0
+========
+
+Full support for the :doc:`session`
+
+Added :meth:`Connection.setlk_timeout`,
+:attr:`apsw.mapping_setlk_timeout_flags`, and enabled the timeout for
+amalgamation builds such as PyPI.
+
+Shell :ref:`open command <shell-cmd-open>` allows specifying flags to
+open a connection, and :ref:`connection command
+<shell-cmd-connection>` shows flags used for each open. (:issue:`557`)
+
+Type stubs updated to :class:`collections.abc.Buffer` (Python 3.12+)
+wherever some bytes are taken.  `Buffers
+<https://docs.python.org/3/c-api/buffer.html>`__ have always been
+used, but Python 3.12 added typing.
 
 3.49.2.0
 ========
