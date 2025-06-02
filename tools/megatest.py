@@ -20,9 +20,6 @@ import time
 import concurrent.futures
 import random
 
-if os.path.isdir("/usr/lib/ccache"):
-    os.putenv("PATH", "/usr/lib/ccache:" + os.environ["PATH"])
-    print(f"{os.environ.get('CCACHE_DIR')=}")
 
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -258,6 +255,9 @@ SQLITEVERS = ("3.50.0", )
 BITS = (64, 32)
 
 if __name__ == "__main__":
+    if os.path.isdir("/usr/lib/ccache"):
+        os.putenv("PATH", "/usr/lib/ccache:" + os.environ["PATH"])
+        print(f"{os.environ.get('CCACHE_DIR')=}")
     nprocs = 0
     try:
         # try and work out how many processors there are - this works on linux
