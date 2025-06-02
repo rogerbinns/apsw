@@ -146,8 +146,7 @@ class Session(unittest.TestCase):
         session = apsw.Session(self.db, "main")
         session.attach("zebra")
 
-        # 3.49 gives sqlerror, 3.50 gives schema
-        self.assertRaises((apsw.SQLError, apsw.SchemaChangeError), session.diff, "zebra", "zebra")
+        self.assertRaises(apsw.SchemaChangeError, session.diff, "zebra", "zebra")
         self.assertRaises(apsw.SchemaChangeError, session.diff, "another", "zebra")
 
         session.attach("t")
