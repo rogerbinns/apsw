@@ -27,13 +27,13 @@ GENEXAMPLES = \
 
 .PHONY : help all tagpush clean doc docs build_ext build_ext_debug coverage pycoverage test test_debug fulltest linkcheck unwrapped \
 		 publish stubtest showsymbols compile-win setup-wheel source_nocheck source release pydebug \
-		 fossil doc-depends dev-depends docs-no-fetch compile-win-one langserver source_check_extracted
+		 fossil doc-depends dev-depends docs-no-fetch compile-win-one langserver source_check_extracted checkversion
 
 help: ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | sort | \
 	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-all: src/apswversion.h src/apsw.docstrings apsw/__init__.pyi src/constants.c src/stringconstants.c  test docs ## Update generated files, build, test, make doc
+all: src/apswversion.h src/apsw.docstrings apsw/__init__.pyi src/constants.c src/stringconstants.c  test docs  checkversion ## Update generated files, build, test, make doc
 
 tagpush: ## Tag with version and push
 	test "`git branch --show-current`" = master
@@ -49,11 +49,14 @@ clean: ## Cleans up everything
 	rm -f compile_commands.json setup.apsw
 	-rm -rf sqlite3/ work/
 
+checkversion:
+	$(PYTHON) tools/checkversion.py
+
 doc: docs ## Builds all the doc
 
 docs: build_ext docs-no-fetch
 
-docs-no-fetch: $(GENDOCS) doc/example.rst $(GENEXAMPLES) doc/typing.rstgen doc/renames.rstgen tools/docmissing.py tools/docupdate.py
+docs-no-fetch: $(GENDOCS) doc/example.rst $(GENEXAMPLES) doc/typing.rstgen doc/renames.rstgen tools/docmissing.py tools/docupdate.py checkversion
 	rm -f testdb
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION) $(RELEASEDATE)
@@ -153,7 +156,7 @@ linkcheck:  ## Checks links from doc
 unwrapped:  ## Find SQLite APIs that are not wrapped by APSW
 	env PYTHONPATH=. $(PYTHON) tools/gensqlitedebug.py
 
-publish: docs
+publish:  checkversion docs
 	rsync -a --delete --exclude=.git --exclude=.nojekyll doc/build/html/ ../apsw-publish/ ;  cd ../apsw-publish ; git status
 
 src/apswversion.h: Makefile
@@ -222,7 +225,7 @@ compile-win-one:  ## Does one Windows build - set PYTHON variable
 # We ensure that only master can be made source, and that the
 # myriad caches everywhere are removed (they end up in the examples
 # doc)
-source_nocheck: src/apswversion.h
+source_nocheck: src/apswversion.h checkversion
 	test "`git branch --show-current`" = master
 	find . -depth -name '.*cache' -type d -exec rm -r "{}" \;
 	env APSW_NO_GA=t $(MAKE) doc
