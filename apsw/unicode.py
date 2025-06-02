@@ -1662,30 +1662,39 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
             print("),")
 
     elif options.function == "widthcheck":
-        import atexit
 
-        import ctypes, ctypes.util
+        if sys.platform != "win32":
+            import atexit
 
-        libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
-        libc.wcswidth.argtypes = [ctypes.c_wchar_p, ctypes.c_size_t]
-        libc.wcswidth.restype = ctypes.c_int
+            import ctypes, ctypes.util
 
-        import wcwidth
+            libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
+            libc.wcswidth.argtypes = [ctypes.c_wchar_p, ctypes.c_size_t]
+            libc.wcswidth.restype = ctypes.c_int
 
-        tty_in = open("/dev/tty", "r")
-        tty_out = open("/dev/tty", "w")
-        import tty
-        import termios
+            import wcwidth
 
-        term_mode = termios.tcgetattr(tty_in)
+            tty_in = open("/dev/tty", "r")
+            tty_out = open("/dev/tty", "w")
+            import tty
+            import termios
 
-        def finish():
-            termios.tcsetattr(tty_in, termios.TCSAFLUSH, term_mode)
-            print("", flush=True, file=tty_out)
+            term_mode = termios.tcgetattr(tty_in)
 
-        atexit.register(finish)
+            def finish():
+                termios.tcsetattr(tty_in, termios.TCSAFLUSH, term_mode)
+                print("", flush=True, file=tty_out)
 
-        tty.setraw(tty_in)
+            atexit.register(finish)
+
+            tty.setraw(tty_in)
+        else:
+            tty_in = os.open("CONIN$", os.O_RDONLY)
+            tty_out = os.open("CONOUT$", os.WRONLY)
+            class dummy:
+                def wcswidth(*args):
+                    return 1
+            libc = wcwidth = dummy()
 
         def get_pos():
             print("\x1b[6n", flush=True, file=tty_out, end="")
