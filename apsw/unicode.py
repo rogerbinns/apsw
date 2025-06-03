@@ -1689,8 +1689,37 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
 
             tty.setraw(tty_in)
         else:
-            tty_in = os.open("CONIN$", os.O_RDONLY)
-            tty_out = os.open("CONOUT$", os.WRONLY)
+
+            import ctypes, msvcrt
+
+            kernel32 = ctypes.windll.kernel32
+
+            os_tty_out = kernel32.GetStdHandle(-11)
+
+            # enable ansi processing
+            res = kernel32.SetConsoleMode(os_tty_out, 7)
+            assert res # zero means failure
+
+            # make i/o interface
+            class tty_out:
+                def write(data):
+                    kernel32.WriteConsoleW(os_tty_out, data, len(data), None, None)
+
+                def flush():
+                    pass
+
+            class tty_in:
+                def read(howmuch):
+                    # it took several attempts to get this to work.
+                    # if I used any other api to read from the console
+                    # then it just blocked and the ansi position
+                    # response was rendered on the screen
+                    res = ""
+                    while len(res) < howmuch:
+                        res += msvcrt.getwch()
+                    return res
+
+            # fake out wcwidth
             class dummy:
                 def wcswidth(*args):
                     return 1
