@@ -875,11 +875,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 5, 30, 6, 54, 17, 985356))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 6, 2, 8, 56, 55, 115140))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2025, 5, 30, 13, 54, 17, 985356, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2025, 6, 2, 15, 56, 55, 115140, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Runtime Python objects (example code)
@@ -949,10 +949,10 @@ runtime.
 .. code-block:: output
 
     Bad binding argument type supplied - argument #1: type set
-    select ? {<_io.StringIO object at 0x7abe2255a800>, 1, 2, (4+5j), 'three'}
+    select ? {<_io.StringIO object at 0x7b5c55b5e800>, 1, 2, (4+5j), 'three'}
     select typeof(?) null
     make_set got ((3+4j), <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello')
-    select make_set(?, ?, ?) {'hello', <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, (3+4j)}
+    select make_set(?, ?, ?) {<_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello', (3+4j)}
 
 
 .. index:: Query limiting (example code)
@@ -1025,7 +1025,7 @@ across all the queries within the block
 .. code-block:: output
 
     len(rows)=20
-    After 0.200 seconds, we hit number=284462
+    After 0.200 seconds, we hit number=297996
     exc=IndexError('query row limit hit')
 
 
@@ -1444,7 +1444,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9922502235,)
+    (9995563667,)
 
 
 .. index:: File Control (example code)
@@ -1563,8 +1563,7 @@ with  :meth:`Connection.set_commit_hook`.
 .. code-block:: output
 
     in commit hook
-    no commits out of hours
-    commit was not allowed
+    commits okay at this time
 
 
 .. index:: Update hook (example code)
@@ -1860,8 +1859,8 @@ useful instead.
     │ .local     │ 2128       │
     │ .o         │ 15480      │
     │ .ps1       │ 9031       │
-    │ .py        │ 11169861   │
-    │ .pyc       │ 11791055   │
+    │ .py        │ 11171393   │
+    │ .pyc       │ 11805156   │
     │ .rst       │ 9561       │
     │ .sh        │ 2729       │
     │ .so        │ 29494736   │
@@ -2142,7 +2141,7 @@ Python.
     
     -- SQLite dump (by APSW 3.50.0.0)
     -- SQLite version 3.50.0
-    -- Date: Fri May 30 06:54:18 2025
+    -- Date: Mon Jun  2 08:56:55 2025
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2193,8 +2192,8 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 517896 max 2494968
-    5048 bytes used to store schema for this connection
+    SQLite memory usage 522560 max 2499672
+    5360 bytes used to store schema for this connection
 
 
 .. index:: Tracing (example code)
@@ -2260,13 +2259,13 @@ This shows using :meth:`Connection.trace_v2`
 .. code-block:: output
 
     code is  SQLITE_TRACE_STMT
-    {'code': 1, 'id': 596840232, 'total_changes': 146, 'trigger': False}
+    {'code': 1, 'id': 795573016, 'total_changes': 146, 'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 596840232}
+    {'code': 4, 'id': 795573016}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 596840232,
-     'nanoseconds': 18000000,
+     'id': 795573016,
+     'nanoseconds': 20000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
@@ -2309,15 +2308,16 @@ Only statistics that have changed are shown in the summary. There are
 
 .. code-block:: output
 
-                           Total CPU consumption 0.023
-                                      Wall clock 1.328
-                          Block input operations 232
-                       Maximum resident set size 772
+                           Total CPU consumption 0.025
+                                      Wall clock 1.330
+                          Block input operations 400
+                            Page faults with I/O 1
+                       Maximum resident set size 384
                             Page faults - no I/O 145
-                    Involuntary context switches 6
-                      Voluntary context switches 5
+                    Involuntary context switches 211
+                      Voluntary context switches 11
                              Time in system mode 0.002
-                               Time in user mode 0.021
+                               Time in user mode 0.023
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,351
@@ -2383,11 +2383,11 @@ code.  This also shows behind the scenes SQL.
          Time: 0.000  Changes: 4
      > select count(*) from pragma_function_list
      V PRAGMA function_list
-         Time: 0.001  Rows: 211  VmStep: 1,481  Mem: 70.8KB
+         Time: 0.000  Rows: 211  VmStep: 1,481  Mem: 70.8KB
      < select count(*) from pragma_function_list
-         Time: 0.001  Rows: 1  VmStep: 433
+         Time: 0.000  Rows: 1  VmStep: 433
      > RELEASE SAVEPOINT "_apsw-0"
-         Time: 0.006
+         Time: 0.007
     
 
 

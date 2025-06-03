@@ -1870,30 +1870,39 @@
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;),&quot;</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">function</span> <span class="o">==</span> <span class="s2">&quot;widthcheck&quot;</span><span class="p">:</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">atexit</span>
 
-        <span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span><span class="o">,</span><span class="w"> </span><span class="nn">ctypes.util</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">!=</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">atexit</span>
 
-        <span class="n">libc</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">cdll</span><span class="o">.</span><span class="n">LoadLibrary</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_library</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">))</span>
-        <span class="n">libc</span><span class="o">.</span><span class="n">wcswidth</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_wchar_p</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_size_t</span><span class="p">]</span>
-        <span class="n">libc</span><span class="o">.</span><span class="n">wcswidth</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span><span class="o">,</span><span class="w"> </span><span class="nn">ctypes.util</span>
 
-        <span class="kn">import</span><span class="w"> </span><span class="nn">wcwidth</span>
+            <span class="n">libc</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">cdll</span><span class="o">.</span><span class="n">LoadLibrary</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_library</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">))</span>
+            <span class="n">libc</span><span class="o">.</span><span class="n">wcswidth</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_wchar_p</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_size_t</span><span class="p">]</span>
+            <span class="n">libc</span><span class="o">.</span><span class="n">wcswidth</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
 
-        <span class="n">tty_in</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/dev/tty&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
-        <span class="n">tty_out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/dev/tty&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">tty</span>
-        <span class="kn">import</span><span class="w"> </span><span class="nn">termios</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">wcwidth</span>
 
-        <span class="n">term_mode</span> <span class="o">=</span> <span class="n">termios</span><span class="o">.</span><span class="n">tcgetattr</span><span class="p">(</span><span class="n">tty_in</span><span class="p">)</span>
+            <span class="n">tty_in</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/dev/tty&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+            <span class="n">tty_out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/dev/tty&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">tty</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">termios</span>
 
-        <span class="k">def</span><span class="w"> </span><span class="nf">finish</span><span class="p">():</span>
-            <span class="n">termios</span><span class="o">.</span><span class="n">tcsetattr</span><span class="p">(</span><span class="n">tty_in</span><span class="p">,</span> <span class="n">termios</span><span class="o">.</span><span class="n">TCSAFLUSH</span><span class="p">,</span> <span class="n">term_mode</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">tty_out</span><span class="p">)</span>
+            <span class="n">term_mode</span> <span class="o">=</span> <span class="n">termios</span><span class="o">.</span><span class="n">tcgetattr</span><span class="p">(</span><span class="n">tty_in</span><span class="p">)</span>
 
-        <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">finish</span><span class="p">)</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">finish</span><span class="p">():</span>
+                <span class="n">termios</span><span class="o">.</span><span class="n">tcsetattr</span><span class="p">(</span><span class="n">tty_in</span><span class="p">,</span> <span class="n">termios</span><span class="o">.</span><span class="n">TCSAFLUSH</span><span class="p">,</span> <span class="n">term_mode</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">tty_out</span><span class="p">)</span>
 
-        <span class="n">tty</span><span class="o">.</span><span class="n">setraw</span><span class="p">(</span><span class="n">tty_in</span><span class="p">)</span>
+            <span class="n">atexit</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">finish</span><span class="p">)</span>
+
+            <span class="n">tty</span><span class="o">.</span><span class="n">setraw</span><span class="p">(</span><span class="n">tty_in</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tty_in</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;CONIN$&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">O_RDONLY</span><span class="p">)</span>
+            <span class="n">tty_out</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;CONOUT$&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">WRONLY</span><span class="p">)</span>
+            <span class="k">class</span><span class="w"> </span><span class="nc">dummy</span><span class="p">:</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">wcswidth</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="mi">1</span>
+            <span class="n">libc</span> <span class="o">=</span> <span class="n">wcwidth</span> <span class="o">=</span> <span class="n">dummy</span><span class="p">()</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">get_pos</span><span class="p">():</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\x1b</span><span class="s2">[6n&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">tty_out</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1979,7 +1988,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 30, 2025.
+      <span class="lastupdated">Last updated on Jun 03, 2025.
       </span></p>
   </div>
 
