@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.unicode &mdash; APSW 3.50.0.0 documentation</title>
+  <title>apsw.unicode &mdash; APSW 3.50.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=8006c4ff"></script>
+      <script src="../../_static/documentation_options.js?v=f1d38ea6"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -1871,6 +1871,8 @@
 
     <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">function</span> <span class="o">==</span> <span class="s2">&quot;widthcheck&quot;</span><span class="p">:</span>
 
+        <span class="kn">import</span><span class="w"> </span><span class="nn">wcwidth</span> <span class="c1"># pip install wcwidth</span>
+
         <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">!=</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">atexit</span>
 
@@ -1879,8 +1881,6 @@
             <span class="n">libc</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">cdll</span><span class="o">.</span><span class="n">LoadLibrary</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_library</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">))</span>
             <span class="n">libc</span><span class="o">.</span><span class="n">wcswidth</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_wchar_p</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_size_t</span><span class="p">]</span>
             <span class="n">libc</span><span class="o">.</span><span class="n">wcswidth</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span>
-
-            <span class="kn">import</span><span class="w"> </span><span class="nn">wcwidth</span>
 
             <span class="n">tty_in</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/dev/tty&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
             <span class="n">tty_out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;/dev/tty&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
@@ -1897,12 +1897,54 @@
 
             <span class="n">tty</span><span class="o">.</span><span class="n">setraw</span><span class="p">(</span><span class="n">tty_in</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">tty_in</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;CONIN$&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">O_RDONLY</span><span class="p">)</span>
-            <span class="n">tty_out</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;CONOUT$&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">WRONLY</span><span class="p">)</span>
-            <span class="k">class</span><span class="w"> </span><span class="nc">dummy</span><span class="p">:</span>
-                <span class="k">def</span><span class="w"> </span><span class="nf">wcswidth</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="mi">1</span>
-            <span class="n">libc</span> <span class="o">=</span> <span class="n">wcwidth</span> <span class="o">=</span> <span class="n">dummy</span><span class="p">()</span>
+
+            <span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span><span class="o">,</span><span class="w"> </span><span class="nn">msvcrt</span>
+
+            <span class="n">kernel32</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">windll</span><span class="o">.</span><span class="n">kernel32</span>
+
+            <span class="c1"># we need console handle (stdout is often redirected)</span>
+            <span class="n">h_tty_out</span> <span class="o">=</span> <span class="n">kernel32</span><span class="o">.</span><span class="n">CreateFileW</span><span class="p">(</span><span class="s2">&quot;CONOUT$&quot;</span><span class="p">,</span> <span class="mh">0x80000000</span> <span class="o">|</span> <span class="mh">0x40000000</span><span class="p">,</span> <span class="mh">0x00000001</span><span class="o">|</span><span class="mh">0x00000002</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">h_tty_out</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span>
+
+            <span class="c1"># Convince it raw bytes are utf8</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">kernel32</span><span class="o">.</span><span class="n">SetConsoleCP</span><span class="p">(</span><span class="mi">65001</span><span class="p">)</span> <span class="c1"># CP_UTF8</span>
+            <span class="k">assert</span> <span class="n">res</span> <span class="c1"># zero means failure</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">kernel32</span><span class="o">.</span><span class="n">SetConsoleOutputCP</span><span class="p">(</span><span class="mi">65001</span><span class="p">)</span> <span class="c1"># CP_UTF8</span>
+            <span class="k">assert</span> <span class="n">res</span> <span class="c1"># zero means failure</span>
+
+            <span class="c1"># enable ansi processing</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">kernel32</span><span class="o">.</span><span class="n">SetConsoleMode</span><span class="p">(</span><span class="n">h_tty_out</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">res</span> <span class="c1"># zero means failure</span>
+
+            <span class="c1"># fake i/o interfaces using classes as namespace, not instances</span>
+            <span class="k">class</span><span class="w"> </span><span class="nc">tty_out</span><span class="p">:</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span>
+                    <span class="n">res</span> <span class="o">=</span> <span class="n">kernel32</span><span class="o">.</span><span class="n">WriteFile</span><span class="p">(</span><span class="n">h_tty_out</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="k">assert</span> <span class="n">res</span> <span class="c1"># zero means failure</span>
+
+                <span class="k">def</span><span class="w"> </span><span class="nf">flush</span><span class="p">():</span>
+                    <span class="c1"># we do no buffering so flush is a no-op</span>
+                    <span class="k">pass</span>
+
+            <span class="k">class</span><span class="w"> </span><span class="nc">tty_in</span><span class="p">:</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="n">how_much</span><span class="p">):</span>
+                    <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">how_much</span><span class="p">:</span>
+                        <span class="n">res</span> <span class="o">+=</span> <span class="n">msvcrt</span><span class="o">.</span><span class="n">getwch</span><span class="p">()</span>
+                    <span class="k">return</span> <span class="n">res</span>
+
+
+            <span class="c1"># fake out wcwidth C API</span>
+            <span class="k">class</span><span class="w"> </span><span class="nc">libc</span><span class="p">:</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">wcswidth</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+                    <span class="c1"># give same value as apsw.unicode</span>
+                    <span class="k">return</span> <span class="n">text_width</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">finish</span><span class="p">():</span>
+                <span class="c1"># utf8 etc above are process local so we don&#39;t need to</span>
+                <span class="c1"># reset the terminal</span>
+                <span class="k">pass</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">get_pos</span><span class="p">():</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\x1b</span><span class="s2">[6n&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">tty_out</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1988,7 +2030,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jun 03, 2025.
+      <span class="lastupdated">Last updated on Jun 06, 2025.
       </span></p>
   </div>
 
