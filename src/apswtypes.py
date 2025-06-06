@@ -116,6 +116,9 @@ CommitHook = Callable[[], bool]
 """Commit hook is called with no arguments and should return True to abort the commit and False
 to let it continue"""
 
+PreupdateHook = Callable[[UpdateContext], None]
+"""The hook is called with information about the update, and has no return value"""
+
 TokenizerResult = Iterable[str | tuple[str, ...] | tuple[int, int, *tuple[str, ...]]]
 """The return from a tokenizer is based on the include_offsets and
 include_colocated parameters you provided, both defaulting to

@@ -531,6 +531,7 @@ def do_argparse(item):
             "Optional[CommitHook]",
             "Optional[WindowFactory]",
             "Optional[FTS5TokenizerFactory]",
+            "Optional[PreupdateHook]",
         }:
             # the above are all callables and we don't check beyond that
             type = "PyObject *"

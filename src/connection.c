@@ -107,6 +107,9 @@ struct Connection
   struct progresshandler *progresshandler;
   unsigned progresshandler_count;
 
+  PyObject **preupdate_hooks;
+  unsigned preupdate_hooks_count;
+
   /* if we are using one of our VFS since sqlite doesn't reference count them */
   PyObject *vfs;
 
@@ -296,6 +299,16 @@ Connection_close_internal(Connection *self, int force)
         return 1;
       }
     }
+  }
+
+  if (self->preupdate_hooks)
+  {
+    for (unsigned i = 0; i < self->preupdate_hooks_count; i++)
+    {
+      Py_CLEAR(self->preupdate_hooks[i]);
+    }
+    Py_Free(self->preupdate_hooks);
+    self->preupdate_hooks = NULL;
   }
 
   if (self->stmtcache)
@@ -5569,7 +5582,7 @@ Connection_setlk_timeout(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
 
   int res = sqlite3_setlk_timeout(self->db, ms, flags);
   SET_EXC(res, NULL);
-  if(PyErr_Occurred())
+  if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
 }
@@ -5859,6 +5872,55 @@ finally:
 
   Py_RETURN_NONE;
 }
+
+#ifdef SQLITE_ENABLE_PREUPDATE_HOOK
+
+/** .. method:: preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None
+
+ A callback as a database row is being updated.  You can have multiple hooks at once
+ (managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for
+ ``callback`` will remove it.
+
+ SQLite provides no way to report errors from the callback.  The SQLite level update
+ will always succeed, with Python exceptions reported when control returns to Python
+ code.
+
+ .. important::
+
+    The :doc:`session` extension uses the preupdate hook, and will **CRASH
+    THE PROCESS** if you register a hook via this method, and then create
+    a :class:`Session`.
+
+ SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known
+ to APSW at compile time.  If not, this API and :class:`UpdateContext` will not be present.
+
+ -* sqlite3_preupdate_hook
+ */
+
+static PyObject *
+Connection_preupdate_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  Connection *self = (Connection *)self_;
+
+  CHECK_CLOSED(self, NULL);
+
+  PyObject *callback = NULL;
+  PyObject *id = NULL;
+
+  {
+    Connection_preupdate_hook_CHECK;
+    ARG_PROLOG(1, Connection_preupdate_hook_KWNAMES);
+    ARG_MANDATORY ARG_optional_Callable(callback);
+    ARG_OPTIONAL ARG_pyobject(id);
+    ARG_EPILOG(NULL, Connection_preupdate_hook_USAGE, );
+  }
+
+
+
+  Py_RETURN_NONE;
+}
+
+#endif /* SQLITE_ENABLE_PREUPDATE_HOOK */
 
 static PyGetSetDef Connection_getseters[] = {
   /* name getter setter doc closure */
