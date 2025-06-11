@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build ${{ matrix.os }} ${{ matrix.pyver }}
-        uses: pypa/cibuildwheel@v2.23
+        uses: pypa/cibuildwheel@v3.0
         env:
           CIBW_BUILD: ${{ matrix.pyver }}-*
           CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
