@@ -5567,7 +5567,10 @@ Connection_setlk_timeout(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Connection_setlk_timeout_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
   int res = sqlite3_setlk_timeout(self->db, ms, flags);
+  sqlite3_mutex_leave(self->dbmutex);
+
   SET_EXC(res, NULL);
   if(PyErr_Occurred())
     return NULL;

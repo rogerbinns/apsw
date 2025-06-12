@@ -115,7 +115,6 @@ functions_global = (
     "sqlite3_open_v2",
     "sqlite3_randomness",
     "sqlite3_release_memory",
-    "sqlite3_setlk_timeout", # operates on db, but does not take a mutex
     "sqlite3_shutdown",
     "sqlite3_sleep",
     "sqlite3_soft_heap_limit64",
@@ -225,6 +224,7 @@ functions_arg_one = {
         "sqlite3_update_hook",
         "sqlite3_vtab_config",
         "sqlite3_wal_hook",
+        "sqlite3_setlk_timeout",
     ),
     4: (
         "sqlite3_autovacuum_pages",
