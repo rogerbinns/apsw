@@ -117,6 +117,9 @@ CommitHook = Callable[[], bool]
 """Commit hook is called with no arguments and should return True to abort the commit and False
 to let it continue"""
 
+PreupdateHook = Callable[[PreUpdateContext], None]
+"""The hook is called with information about the update, and has no return value"""
+
 TokenizerResult = Iterable[str | tuple[str, ...] | tuple[int, int, *tuple[str, ...]]]
 """The return from a tokenizer is based on the include_offsets and
 include_colocated parameters you provided, both defaulting to
@@ -1689,6 +1692,27 @@ class Connection:
         * :ref:`Example <example_pragma>`"""
         ...
 
+    def preupdate_hook(self, callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None:
+        """A callback as a database row is being updated.  You can have multiple hooks at once
+        (managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for
+        ``callback`` will remove it.
+
+        SQLite provides no way to report errors from the callback.  The SQLite level update
+        will always succeed, with Python exceptions reported when control returns to Python
+        code.
+
+        .. important::
+
+           The :doc:`session` extension uses the preupdate hook, and will **CRASH
+           THE PROCESS** if you register a hook via this method, and then create
+           a :class:`Session`.
+
+        SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known
+        to APSW at compile time.  If not, this API and :class:`PreUpdateContext` will not be present.
+
+        Calls: `sqlite3_preupdate_hook <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
+        ...
+
     def read(self, schema: str, which: int, offset: int, amount: int) -> tuple[bool, bytes]:
         """Invokes the underlying VFS method to read data from the database.  It
         is strongly recommended to read aligned complete pages, since that is
@@ -2717,6 +2741,27 @@ class IndexInfo:
     def set_aConstraintUsage_omit(self, which: int, omit: bool) -> None:
         """Sets *omit* for *aConstraintUsage[which]*"""
         ...
+
+@final
+class PreUpdateContext:
+    """Provides the details of one update to the
+    :meth:`Connection.preupdate_hook` callback.
+
+    .. note::
+
+       The object is only valid inside a the callback.
+       Using it outside the hook gives :exc:`InvalidContextError`.
+       You should copy all desired information in the callback."""
+
+    op: str
+    """ The operation code as a string  ``INSERT``,
+     ``DELETE``, or ``UPDATE``.  See :attr:`opcode`
+     for this as a number."""
+
+    opcode: int
+    """ The operation code - ``apsw.SQLITE_INSERT``,
+     ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.
+     See :attr:`op` for this as a string."""
 
 @final
 class Rebaser:

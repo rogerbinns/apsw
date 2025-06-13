@@ -491,24 +491,6 @@
     sqlite3_prepare_v3((one), (two), (three), (four), (five), (six));  \
 })
 
-#undef sqlite3_preupdate_blobwrite
-#define sqlite3_preupdate_blobwrite *not used*
-
-#undef sqlite3_preupdate_count
-#define sqlite3_preupdate_count *not used*
-
-#undef sqlite3_preupdate_depth
-#define sqlite3_preupdate_depth *not used*
-
-#undef sqlite3_preupdate_hook
-#define sqlite3_preupdate_hook *not used*
-
-#undef sqlite3_preupdate_new
-#define sqlite3_preupdate_new *not used*
-
-#undef sqlite3_preupdate_old
-#define sqlite3_preupdate_old *not used*
-
 #define sqlite3_progress_handler(one, two, three, four) ({    \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));       \
     sqlite3_progress_handler((one), (two), (three), (four));  \
