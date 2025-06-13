@@ -2753,15 +2753,43 @@ class PreUpdateContext:
        Using it outside the hook gives :exc:`InvalidContextError`.
        You should copy all desired information in the callback."""
 
+    depth: int
+    """0 for direct SQL, 1 for triggers, 2 and so on for triggers
+    firing by a higher level trigger.
+
+    Calls: `sqlite3_preupdate_depth <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
+
+    new: tuple[SQLiteValue, ...] | None
+    """:class:`None` if not applicable (like a DELETE).  Otherwise a
+    tuple of the values for the row after the update.
+
+    Calls: `sqlite3_preupdate_new <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
+
+    old: tuple[SQLiteValue, ...] | None
+    """:class:`None` if not applicable (like INSERT).  Otherwise a
+    tuple of the values for the row before the change.
+
+    Calls: `sqlite3_preupdate_old <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
+
     op: str
-    """ The operation code as a string  ``INSERT``,
-     ``DELETE``, or ``UPDATE``.  See :attr:`opcode`
-     for this as a number."""
+    """The operation code as a string  ``INSERT``,
+    ``DELETE``, or ``UPDATE``.  See :attr:`opcode`
+    for this as a number.
+
+    Calls: `sqlite3_preupdate_count <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
 
     opcode: int
-    """ The operation code - ``apsw.SQLITE_INSERT``,
-     ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.
-     See :attr:`op` for this as a string."""
+    """The operation code - ``apsw.SQLITE_INSERT``,
+    ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.
+    See :attr:`op` for this as a string.
+
+    Calls: `sqlite3_preupdate_count <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
+
+    rowid: int
+    """The affected rowid."""
+
+    rowid_new: int
+    """New rowid if changed via rowid UPDATE."""
 
 @final
 class Rebaser:
