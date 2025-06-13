@@ -6383,9 +6383,11 @@ end:
 /** .. attribute:: op
   :type: str
 
-   The operation code as a string  ``INSERT``,
-   ``DELETE``, or ``UPDATE``.  See :attr:`opcode`
-   for this as a number.
+  The operation code as a string  ``INSERT``,
+  ``DELETE``, or ``UPDATE``.  See :attr:`opcode`
+  for this as a number.
+
+  -* sqlite3_preupdate_count
 */
 static PyObject *
 PreUpdateContext_op(PyObject *self_, void *Py_UNUSED(unused))
@@ -6400,12 +6402,15 @@ PreUpdateContext_op(PyObject *self_, void *Py_UNUSED(unused))
   assert(self->op == SQLITE_UPDATE);
   return Py_NewRef(apst.UPDATE);
 }
+
 /** .. attribute:: opcode
   :type: int
 
-   The operation code - ``apsw.SQLITE_INSERT``,
-   ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.
-   See :attr:`op` for this as a string.
+  The operation code - ``apsw.SQLITE_INSERT``,
+  ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.
+  See :attr:`op` for this as a string.
+
+  -* sqlite3_preupdate_count
 */
 static PyObject *
 PreUpdateContext_opcode(PyObject *self_, void *Py_UNUSED(unused))
@@ -6414,6 +6419,149 @@ PreUpdateContext_opcode(PyObject *self_, void *Py_UNUSED(unused))
   CHECK_PREUPDATE_SCOPE;
 
   return PyLong_FromLong(self->op);
+}
+
+/** .. attribute:: rowid
+  :type: int
+
+  The affected rowid.
+*/
+static PyObject *
+PreUpdateContext_rowid(PyObject *self_, void *Py_UNUSED(unused))
+{
+  PreUpdateContext *self = (PreUpdateContext *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyLong_FromLong(self->iKey1);
+}
+
+/** .. attribute:: rowid_new
+  :type: int
+
+  New rowid if changed via rowid UPDATE.
+*/
+static PyObject *
+PreUpdateContext_rowid_new(PyObject *self_, void *Py_UNUSED(unused))
+{
+  PreUpdateContext *self = (PreUpdateContext *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyLong_FromLong(self->iKey2);
+}
+
+/** .. attribute:: depth
+  :type: int
+
+  0 for direct SQL, 1 for triggers, 2 and so on for triggers
+  firing by a higher level trigger.
+
+  -* sqlite3_preupdate_depth
+*/
+static PyObject *
+PreUpdateContext_depth(PyObject *self_, void *Py_UNUSED(unused))
+{
+  PreUpdateContext *self = (PreUpdateContext *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyLong_FromLong(sqlite3_preupdate_depth(self->db->db));
+}
+
+/** .. attribute:: new
+  :type: tuple[SQLiteValue, ...] | None
+
+  :class:`None` if not applicable (like a DELETE).  Otherwise a
+  tuple of the values for the row after the update.
+
+  -* sqlite3_preupdate_new
+*/
+static PyObject *
+PreUpdateContext_new(PyObject *self_, void *Py_UNUSED(unused))
+{
+  PreUpdateContext *self = (PreUpdateContext *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  if (self->op == SQLITE_DELETE)
+    Py_RETURN_NONE;
+
+  PyObject *tuple = PyTuple_New(self->column_count);
+  if (!tuple)
+    goto error;
+
+  for (int i = 0; i < self->column_count; i++)
+  {
+    sqlite3_value *value = NULL;
+    int res = sqlite3_preupdate_new(self->db->db, i, &value);
+    if (res)
+    {
+      SET_EXC(res, self->db->db);
+      goto error;
+    }
+    if (value == NULL)
+      PyTuple_SET_ITEM(tuple, i, Py_NewRef((PyObject *)&apsw_no_change_object));
+    else
+    {
+      PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
+      if (!pyvalue)
+        goto error;
+      PyTuple_SET_ITEM(tuple, i, pyvalue);
+    }
+  }
+
+  return tuple;
+
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(tuple);
+  return NULL;
+}
+
+/** .. attribute:: old
+  :type: tuple[SQLiteValue, ...] | None
+
+  :class:`None` if not applicable (like INSERT).  Otherwise a
+  tuple of the values for the row before the change.
+
+  -* sqlite3_preupdate_old
+*/
+static PyObject *
+PreUpdateContext_old(PyObject *self_, void *Py_UNUSED(unused))
+{
+  PreUpdateContext *self = (PreUpdateContext *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  if (self->op == SQLITE_INSERT)
+    Py_RETURN_NONE;
+
+  PyObject *tuple = PyTuple_New(self->column_count);
+  if (!tuple)
+    goto error;
+
+  for (int i = 0; i < self->column_count; i++)
+  {
+    sqlite3_value *value = NULL;
+    int res = sqlite3_preupdate_old(self->db->db, i, &value);
+    if (res)
+    {
+      SET_EXC(res, self->db->db);
+      goto error;
+    }
+    if (value == NULL)
+      PyTuple_SET_ITEM(tuple, i, Py_NewRef((PyObject *)&apsw_no_change_object));
+    else
+    {
+      PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
+      if (!pyvalue)
+        goto error;
+      PyTuple_SET_ITEM(tuple, i, pyvalue);
+    }
+  }
+
+  return tuple;
+
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(tuple);
+  return NULL;
 }
 
 static void
@@ -6430,18 +6578,28 @@ PreUpdateContext_tp_str(PyObject *self_)
   if (!self->db)
     return PyUnicode_FromFormat("<apsw.PreUpdateContext out of scope, at %p>", self);
 
-  PyObject *op = NULL;
+  PyObject *op = NULL, *depth = NULL, *old_vals = NULL, *new_vals = NULL;
 
   op = PreUpdateContext_op(self_, NULL);
+  if (op)
+    depth = PreUpdateContext_depth(self_, NULL);
+  if (depth)
+    old_vals = PreUpdateContext_old(self_, NULL);
+  if (old_vals)
+    new_vals = PreUpdateContext_new(self_, NULL);
 
   PyObject *res = NULL;
 
-  if (op)
-    res = PyUnicode_FromFormat("<apsw.PreUpdateContext op=%U, database=\"%s\", table=\"%s\", column_count=%d "
+  if (new_vals)
+    res = PyUnicode_FromFormat("<apsw.PreUpdateContext op=%U, database=\"%s\", table=\"%s\", depth=%S, "
+                               "column_count=%d, rowid=%lld, rowid_new=%lld, old=%S, new=%S "
                                "at %p>",
-                               op, self->zDb, self->zName, self->column_count);
+                               op, self->zDb, self->zName, depth, self->column_count, self->iKey1, self->iKey2,
+                               old_vals, new_vals, self);
 
   Py_XDECREF(op);
+  Py_XDECREF(depth);
+  Py_XDECREF(new_vals);
 
   return res;
 }
@@ -6449,6 +6607,11 @@ PreUpdateContext_tp_str(PyObject *self_)
 static PyGetSetDef PreUpdateContext_getset[] = {
   { "op", PreUpdateContext_op, NULL, PreUpdateContext_op_DOC },
   { "opcode", PreUpdateContext_opcode, NULL, PreUpdateContext_opcode_DOC },
+  { "rowid", PreUpdateContext_rowid, NULL, PreUpdateContext_rowid_DOC },
+  { "rowid_new", PreUpdateContext_rowid_new, NULL, PreUpdateContext_rowid_new_DOC },
+  { "depth", PreUpdateContext_depth, NULL, PreUpdateContext_depth_DOC },
+  { "old", PreUpdateContext_old, NULL, PreUpdateContext_old_DOC },
+  { "new", PreUpdateContext_new, NULL, PreUpdateContext_new_DOC },
   { 0 },
 };
 
