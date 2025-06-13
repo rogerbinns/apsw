@@ -60,14 +60,14 @@ typedef struct
   PyObject *inversefunc; /* inverse function */
 } windowfunctioncontext;
 
-struct tracehook
+struct tracehook_entry
 {
   unsigned mask;
   PyObject *callback;
   PyObject *id;
 };
 
-struct progresshandler
+struct progresshandler_entry
 {
   int nsteps;
   PyObject *callback;
@@ -101,10 +101,10 @@ struct Connection
   PyObject *rowtrace;
   /* Array of tracehook.  Entry 0 is reserved for the set_profile
      callback. */
-  struct tracehook *tracehooks;
+  struct tracehook_entry *tracehooks;
   unsigned tracehooks_count;
 
-  struct progresshandler *progresshandler;
+  struct progresshandler_entry *progresshandler;
   unsigned progresshandler_count;
 
   PyObject **preupdate_hooks;
@@ -473,7 +473,7 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   flags |= SQLITE_OPEN_EXRESCODE;
 
   self->cursor_factory = Py_NewRef((PyObject *)&APSWCursorType);
-  self->tracehooks = PyMem_Malloc(sizeof(struct tracehook) * 1);
+  self->tracehooks = PyMem_Malloc(sizeof(struct tracehook_entry) * 1);
   if (!self->tracehooks)
     return -1;
   self->tracehooks[0].callback = 0;
@@ -1577,9 +1577,9 @@ Connection_trace_v2(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
     {
       /* increase tracehooks size - we have an arbitrary limit which
          makes it easier to test exhaustion */
-      struct tracehook *new_tracehooks
+      struct tracehook_entry *new_tracehooks
           = (self->tracehooks_count < 1024)
-                ? PyMem_Realloc(self->tracehooks, sizeof(struct tracehook) * (self->tracehooks_count + 1))
+                ? PyMem_Realloc(self->tracehooks, sizeof(struct tracehook_entry) * (self->tracehooks_count + 1))
                 : NULL;
       if (!new_tracehooks)
       {
@@ -1917,10 +1917,10 @@ Connection_set_progress_handler(PyObject *self_, PyObject *const *fast_args, Py_
     {
       /* increase progresshandler size - we have an arbitrary limit which
          makes it easier to test exhaustion */
-      struct progresshandler *new_progresshandler
+      struct progresshandler_entry *new_progresshandler
           = (self->progresshandler_count < 1024)
                 ? PyMem_Realloc(self->progresshandler,
-                                sizeof(struct progresshandler) * (self->progresshandler_count + 1))
+                                sizeof(struct progresshandler_entry) * (self->progresshandler_count + 1))
                 : NULL;
       if (!new_progresshandler)
         return PyErr_NoMemory();
