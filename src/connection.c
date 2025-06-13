@@ -1359,7 +1359,7 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
     /* Checking the refcount is subtle but important.  If the
        Connection is being closed because there are no more references to it
        then the ref count is zero when the callback fires and adding a
-       reference ressurects a mostly destroyed object which then hits zero
+       reference resurrects a mostly destroyed object which then hits zero
        again and gets destroyed a second time.  Too difficult to handle. */
     param = Py_BuildValue("{s: i, s: O}", "code", code, "connection",
                           Py_REFCNT(connection) ? (PyObject *)connection : Py_None);
