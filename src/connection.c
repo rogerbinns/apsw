@@ -74,6 +74,12 @@ struct progresshandler_entry
   PyObject *id;
 };
 
+struct generichook_entry
+{
+  PyObject *callback;
+  PyObject *id;
+};
+
 /* CONNECTION TYPE */
 
 struct Connection
@@ -107,7 +113,7 @@ struct Connection
   struct progresshandler_entry *progresshandler;
   unsigned progresshandler_count;
 
-  PyObject **preupdate_hooks;
+  struct generichook_entry *preupdate_hooks;
   unsigned preupdate_hooks_count;
 
   /* if we are using one of our VFS since sqlite doesn't reference count them */
@@ -173,6 +179,70 @@ FunctionCBInfo_dealloc(PyObject *self_)
   Py_CLEAR(self->aggregatefactory);
   Py_CLEAR(self->windowfactory);
   Py_TpFree(self_);
+}
+
+static unsigned
+generic_hooks_active(struct generichook_entry *hooks, unsigned hooks_count)
+{
+  unsigned total = 0;
+  for (unsigned i = 0; i < hooks_count; i++)
+  {
+    if (hooks[i].callback)
+      total += 1;
+  }
+  return total;
+}
+
+static void
+generic_hooks_update(struct generichook_entry **hooks, unsigned *hooks_count, PyObject *callback, PyObject *id)
+{
+  /* clear out any matching id */
+  for (unsigned i = 0; i < *hooks_count; i++)
+  {
+    if ((*hooks)[i].callback)
+    {
+      int eq;
+      /* handle either side being NULL */
+      if ((!id || !(*hooks)[i].id) && id != (*hooks)[i].id)
+        eq = 0;
+      else
+        eq = PyObject_RichCompareBool(id, (*hooks)[i].id, Py_EQ);
+
+      if (eq == -1)
+        return;
+      if (eq)
+      {
+        Py_CLEAR((*hooks)[i].callback);
+        Py_CLEAR((*hooks)[i].id);
+      }
+    }
+  }
+  if (!callback)
+    return;
+
+  /* find an empty slot */
+  for (unsigned i = 0; i < *hooks_count; i++)
+  {
+    if (!(*hooks)[i].callback)
+    {
+      (*hooks)[i].callback = Py_NewRef(callback);
+      (*hooks)[i].id = id ? Py_NewRef(id) : NULL;
+      return;
+    }
+  }
+
+  /* embiggen */
+  struct generichook_entry *new_hooks = PyMem_Realloc(*hooks, sizeof(struct generichook_entry) * (*hooks_count + 1));
+  if (!new_hooks)
+  {
+    assert(PyErr_Occurred());
+    return;
+  }
+
+  *hooks = new_hooks;
+  (*hooks)[*hooks_count].callback = Py_NewRef(callback);
+  (*hooks)[*hooks_count].id = id ? Py_NewRef(id) : NULL;
+  (*hooks_count)++;
 }
 
 /** .. class:: Connection
@@ -305,9 +375,10 @@ Connection_close_internal(Connection *self, int force)
   {
     for (unsigned i = 0; i < self->preupdate_hooks_count; i++)
     {
-      Py_CLEAR(self->preupdate_hooks[i]);
+      Py_CLEAR(self->preupdate_hooks[i].callback);
+      Py_CLEAR(self->preupdate_hooks[i].id);
     }
-    Py_Free(self->preupdate_hooks);
+    PyMem_Free(self->preupdate_hooks);
     self->preupdate_hooks = NULL;
   }
 
@@ -5875,6 +5946,9 @@ finally:
 
 #ifdef SQLITE_ENABLE_PREUPDATE_HOOK
 
+static void APSWPreUpdateHook_cb(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName,
+                                 sqlite3_int64 iKey1, sqlite3_int64 iKey2);
+
 /** .. method:: preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None
 
  A callback as a database row is being updated.  You can have multiple hooks at once
@@ -5892,7 +5966,7 @@ finally:
     a :class:`Session`.
 
  SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known
- to APSW at compile time.  If not, this API and :class:`UpdateContext` will not be present.
+ to APSW at compile time.  If not, this API and :class:`PreUpdateContext` will not be present.
 
  -* sqlite3_preupdate_hook
  */
@@ -5915,9 +5989,45 @@ Connection_preupdate_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     ARG_EPILOG(NULL, Connection_preupdate_hook_USAGE, );
   }
 
+  DBMUTEX_ENSURE(self->dbmutex);
 
+  unsigned before_hooks = generic_hooks_active(self->preupdate_hooks, self->preupdate_hooks_count);
 
+  generic_hooks_update(&self->preupdate_hooks, &self->preupdate_hooks_count, callback, id);
+  if (PyErr_Occurred())
+    goto error;
+
+  unsigned current_hooks = generic_hooks_active(self->preupdate_hooks, self->preupdate_hooks_count);
+
+  /* transition from some to none */
+  if (before_hooks && current_hooks == 0)
+  {
+    sqlite3_preupdate_hook(self->db, NULL, NULL);
+  }
+  /* none to some, some to some */
+  else if ((before_hooks == 0 && current_hooks) || (before_hooks && current_hooks))
+  {
+    /* We are paranoid about the session extension which could have
+       grabbed the hook.  The hook returns the current pCtx which
+       we set to self */
+    void *pCtx = sqlite3_preupdate_hook(self->db, APSWPreUpdateHook_cb, self);
+    if (pCtx && pCtx != self)
+    {
+      sqlite3_preupdate_hook(self->db, NULL, NULL);
+      PyErr_Format(PyExc_Exception,
+                   "The preupdate hook has been used by other code, most likely the serssion extension.  This WILL "
+                   "result in crashes in session, so the hook has been disabled.");
+      goto error;
+    }
+  }
+
+  sqlite3_mutex_leave(self->dbmutex);
   Py_RETURN_NONE;
+
+error:
+  assert(PyErr_Occurred());
+  sqlite3_mutex_leave(self->dbmutex);
+  return NULL;
 }
 
 #endif /* SQLITE_ENABLE_PREUPDATE_HOOK */
@@ -6105,7 +6215,12 @@ static PyMethodDef Connection_methods[] = {
   { "register_fts5_function", (PyCFunction)Connection_register_fts5_function, METH_FASTCALL | METH_KEYWORDS,
     Connection_register_fts5_function_DOC },
   { "data_version", (PyCFunction)Connection_data_version, METH_FASTCALL | METH_KEYWORDS, Connection_data_version_DOC },
-  { "setlk_timeout", (PyCFunction)Connection_setlk_timeout, METH_FASTCALL | METH_KEYWORDS, Connection_setlk_timeout_DOC },
+  { "setlk_timeout", (PyCFunction)Connection_setlk_timeout, METH_FASTCALL | METH_KEYWORDS,
+    Connection_setlk_timeout_DOC },
+#ifdef SQLITE_ENABLE_PREUPDATE_HOOK
+  { "preupdate_hook", (PyCFunction)Connection_preupdate_hook, METH_FASTCALL | METH_KEYWORDS,
+    Connection_preupdate_hook_DOC },
+#endif
 #ifndef APSW_OMIT_OLD_NAMES
   { Connection_set_busy_timeout_OLDNAME, (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
     Connection_set_busy_timeout_OLDDOC },
@@ -6181,3 +6296,169 @@ static PyTypeObject ConnectionType = {
   .tp_new = PyType_GenericNew,
   .tp_str = Connection_tp_str,
 };
+
+#ifdef SQLITE_ENABLE_PREUPDATE_HOOK
+
+/** .. class:: PreUpdateContext
+
+  Provides the details of one update to the
+  :meth:`Connection.preupdate_hook` callback.
+
+  .. note::
+
+     The object is only valid inside a the callback.
+     Using it outside the hook gives :exc:`InvalidContextError`.
+     You should copy all desired information in the callback.
+
+ */
+
+typedef struct
+{
+  PyObject_HEAD
+  /* the self field is used to detect if we have gone out of scope */
+  Connection *db;
+  int op;
+  int column_count;
+  const char *zDb;
+  const char *zName;
+  sqlite3_int64 iKey1;
+  sqlite3_int64 iKey2;
+} PreUpdateContext;
+
+static PyTypeObject PreUpdateContextType;
+
+static void
+APSWPreUpdateHook_cb(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName, sqlite3_int64 iKey1,
+                     sqlite3_int64 iKey2)
+{
+  PyGILState_STATE gilstate = PyGILState_Ensure();
+
+  CHAIN_EXC_BEGIN
+
+  PyObject *res = NULL;
+
+  PreUpdateContext *puc = (PreUpdateContext *)_PyObject_New(&PreUpdateContextType);
+  if (!puc)
+    goto end;
+
+  puc->db = (Connection *)Py_NewRef((PyObject *)pCtx);
+  puc->op = op;
+  puc->column_count = sqlite3_preupdate_count(db);
+  puc->zDb = zDb;
+  puc->zName = zName;
+  puc->iKey1 = iKey1;
+  puc->iKey2 = iKey2;
+
+  PyObject *vargs[] = { NULL, (PyObject *)puc };
+  for (unsigned i = 0; i < puc->db->preupdate_hooks_count; i++)
+  {
+    if (puc->db->preupdate_hooks[i].callback)
+    {
+      CHAIN_EXC_BEGIN
+      res = PyObject_Vectorcall(puc->db->preupdate_hooks[i].callback, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET,
+                                NULL);
+      Py_CLEAR(res);
+      CHAIN_EXC_END;
+    }
+  }
+
+end:
+  Py_XDECREF(res);
+  if (puc)
+    Py_CLEAR(puc->db);
+  Py_XDECREF(puc);
+
+  CHAIN_EXC_END;
+
+  PyGILState_Release(gilstate);
+}
+
+#define CHECK_PREUPDATE_SCOPE                                                                                          \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!self->db)                                                                                                     \
+      return PyErr_Format(ExcInvalidContext, "The preupdate context has gone out of scope");                           \
+  } while (0)
+
+/** .. attribute:: op
+  :type: str
+
+   The operation code as a string  ``INSERT``,
+   ``DELETE``, or ``UPDATE``.  See :attr:`opcode`
+   for this as a number.
+*/
+static PyObject *
+PreUpdateContext_op(PyObject *self_, void *Py_UNUSED(unused))
+{
+  PreUpdateContext *self = (PreUpdateContext *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  if (self->op == SQLITE_INSERT)
+    return Py_NewRef(apst.INSERT);
+  if (self->op == SQLITE_DELETE)
+    return Py_NewRef(apst.DELETE);
+  assert(self->op == SQLITE_UPDATE);
+  return Py_NewRef(apst.UPDATE);
+}
+/** .. attribute:: opcode
+  :type: int
+
+   The operation code - ``apsw.SQLITE_INSERT``,
+   ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.
+   See :attr:`op` for this as a string.
+*/
+static PyObject *
+PreUpdateContext_opcode(PyObject *self_, void *Py_UNUSED(unused))
+{
+  PreUpdateContext *self = (PreUpdateContext *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyLong_FromLong(self->op);
+}
+
+static void
+PreUpdateContext_dealloc(PyObject *self)
+{
+  assert(((PreUpdateContext *)self)->db == NULL);
+  Py_TpFree(self);
+}
+
+static PyObject *
+PreUpdateContext_tp_str(PyObject *self_)
+{
+  PreUpdateContext *self = (PreUpdateContext *)self_;
+  if (!self->db)
+    return PyUnicode_FromFormat("<apsw.PreUpdateContext out of scope, at %p>", self);
+
+  PyObject *op = NULL;
+
+  op = PreUpdateContext_op(self_, NULL);
+
+  PyObject *res = NULL;
+
+  if (op)
+    res = PyUnicode_FromFormat("<apsw.PreUpdateContext op=%U, database=\"%s\", table=\"%s\", column_count=%d "
+                               "at %p>",
+                               op, self->zDb, self->zName, self->column_count);
+
+  Py_XDECREF(op);
+
+  return res;
+}
+
+static PyGetSetDef PreUpdateContext_getset[] = {
+  { "op", PreUpdateContext_op, NULL, PreUpdateContext_op_DOC },
+  { "opcode", PreUpdateContext_opcode, NULL, PreUpdateContext_opcode_DOC },
+  { 0 },
+};
+
+static PyTypeObject PreUpdateContextType = {
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.PreUpdateContext",
+  .tp_basicsize = sizeof(PreUpdateContext),
+  .tp_getset = PreUpdateContext_getset,
+  .tp_doc = PreUpdateContext_class_DOC,
+  .tp_dealloc = PreUpdateContext_dealloc,
+  .tp_str = PreUpdateContext_tp_str,
+};
+
+#endif
