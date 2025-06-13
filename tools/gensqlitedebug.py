@@ -60,7 +60,6 @@ functions_not_used = (
     "sqlite3_realloc.*",
     "sqlite3_msize",
     "sqlite3_prepare(|_v2)",
-    "sqlite3_preupdate_.*",
     "sqlite3_(snprintf|vmprintf|vsnprintf)",
     # v2 should be used
     "sqlite3changeset_apply(|_strm)",
@@ -115,7 +114,6 @@ functions_global = (
     "sqlite3_open_v2",
     "sqlite3_randomness",
     "sqlite3_release_memory",
-    "sqlite3_setlk_timeout", # operates on db, but does not take a mutex
     "sqlite3_shutdown",
     "sqlite3_sleep",
     "sqlite3_soft_heap_limit64",
@@ -141,6 +139,7 @@ functions_global = (
     "sqlite3_limit",
     "sqlite3_total_changes64",
     "sqlite3_stmt_(isexplain|readonly)",
+    "sqlite3_preupdate_.*",
     # can't get to db from these
     "sqlite3_filename_(database|journal|wal)",
     "sqlite3_uri_.*",
@@ -225,6 +224,7 @@ functions_arg_one = {
         "sqlite3_update_hook",
         "sqlite3_vtab_config",
         "sqlite3_wal_hook",
+        "sqlite3_setlk_timeout",
     ),
     4: (
         "sqlite3_autovacuum_pages",
