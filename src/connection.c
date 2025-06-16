@@ -6469,8 +6469,8 @@ PreUpdateContext_depth(PyObject *self_, void *Py_UNUSED(unused))
 /** .. attribute:: new
   :type: tuple[SQLiteValue, ...] | None
 
-  :class:`None` if not applicable (like a DELETE).  Otherwise a
-  tuple of the values for the row after the update.
+  Row values for an INSERT, or after an UPDATE.  :class:`None` for
+  DELETE.  See also :attr:`old` and :attr:`update`.
 
   -* sqlite3_preupdate_new
 */
@@ -6496,15 +6496,10 @@ PreUpdateContext_new(PyObject *self_, void *Py_UNUSED(unused))
       SET_EXC(res, self->db->db);
       goto error;
     }
-    if (value == NULL)
-      PyTuple_SET_ITEM(tuple, i, Py_NewRef((PyObject *)&apsw_no_change_object));
-    else
-    {
       PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
       if (!pyvalue)
         goto error;
       PyTuple_SET_ITEM(tuple, i, pyvalue);
-    }
   }
 
   return tuple;
@@ -6518,8 +6513,8 @@ error:
 /** .. attribute:: old
   :type: tuple[SQLiteValue, ...] | None
 
-  :class:`None` if not applicable (like INSERT).  Otherwise a
-  tuple of the values for the row before the change.
+  Row values for a DELETE, or before an UPDATE. :class:`None` for
+  INSERT.  See also :attr:`new` and :attr:`update`.
 
   -* sqlite3_preupdate_old
 */
@@ -6545,11 +6540,107 @@ PreUpdateContext_old(PyObject *self_, void *Py_UNUSED(unused))
       SET_EXC(res, self->db->db);
       goto error;
     }
-    if (value == NULL)
+    PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
+    if (!pyvalue)
+      goto error;
+    PyTuple_SET_ITEM(tuple, i, pyvalue);
+  }
+
+  return tuple;
+
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(tuple);
+  return NULL;
+}
+
+/** .. attribute:: update
+  :type: tuple[SQLiteValue | Literal[no_change], ...] | None
+
+  For UPDATE compares old and new values, providing the changed value,
+  or :attr:`apsw.no_change` if that column was not changed.
+
+  :class:`None` for INSERT and DELETE.  See also :attr:`old` and
+  :attr:`new`.
+
+  -* sqlite3_preupdate_old sqlite3_preupdate_new
+*/
+static PyObject *
+PreUpdateContext_update(PyObject *self_, void *Py_UNUSED(unused))
+{
+  PreUpdateContext *self = (PreUpdateContext *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  if (self->op == SQLITE_INSERT || self->op == SQLITE_DELETE)
+    Py_RETURN_NONE;
+
+  PyObject *tuple = PyTuple_New(self->column_count);
+  if (!tuple)
+    goto error;
+
+  for (int i = 0; i < self->column_count; i++)
+  {
+    sqlite3_value *value_old = NULL, *value_new = NULL;
+    int res_old = sqlite3_preupdate_old(self->db->db, i, &value_old);
+    int res_new = sqlite3_preupdate_new(self->db->db, i, &value_new);
+    if (res_old)
+    {
+      SET_EXC(res_old, self->db->db);
+      goto error;
+    }
+    if (res_new)
+    {
+      SET_EXC(res_new, self->db->db);
+      goto error;
+    }
+
+    int type_old = sqlite3_value_type(value_old);
+    int type_new = sqlite3_value_type(value_new);
+
+    int eq = (type_old == type_new);
+    if (eq)
+    {
+      eq = (value_old == value_new);
+      if (!eq)
+        switch (type_old)
+        {
+        case SQLITE_NULL:
+          eq = 1;
+          break;
+        case SQLITE_INTEGER:
+          eq = (sqlite3_value_int64(value_old) == sqlite3_value_int64(value_new));
+          break;
+        case SQLITE_FLOAT:
+          eq = (sqlite3_value_double(value_old) == sqlite3_value_double(value_new));
+          break;
+        case SQLITE_TEXT:
+          /* compare length first */
+          eq = (sqlite3_value_bytes(value_old) == sqlite3_value_bytes(value_new));
+          /* these could fail if a UTF16 to UTF8 conversion happens */
+          const char *text_old = sqlite3_value_text(value_old);
+          const char *text_new = sqlite3_value_text(value_new);
+          if (!text_old || !text_new)
+          {
+            SET_EXC(SQLITE_NOMEM, self->db->db);
+            goto error;
+          }
+          if (eq)
+            eq = !memcmp(text_old, text_new, sqlite3_value_bytes(value_new));
+          break;
+        case SQLITE_BLOB:
+          /* compare length first */
+          eq = (sqlite3_value_bytes(value_old) == sqlite3_value_bytes(value_new));
+          if (eq)
+            /* no failure mode getting blob value */
+            eq = !memcmp(sqlite3_value_blob(value_old), sqlite3_value_blob(value_new), sqlite3_value_bytes(value_new));
+          break;
+        }
+    }
+    if (eq)
       PyTuple_SET_ITEM(tuple, i, Py_NewRef((PyObject *)&apsw_no_change_object));
     else
     {
-      PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
+      PyObject *pyvalue = convert_value_to_pyobject(value_new, 0, 0);
       if (!pyvalue)
         goto error;
       PyTuple_SET_ITEM(tuple, i, pyvalue);
@@ -6578,28 +6669,42 @@ PreUpdateContext_tp_str(PyObject *self_)
   if (!self->db)
     return PyUnicode_FromFormat("<apsw.PreUpdateContext out of scope, at %p>", self);
 
-  PyObject *op = NULL, *depth = NULL, *old_vals = NULL, *new_vals = NULL;
+  PyObject *op = NULL, *depth = NULL, *vals = NULL;
+
+  const char *label = NULL;
 
   op = PreUpdateContext_op(self_, NULL);
   if (op)
     depth = PreUpdateContext_depth(self_, NULL);
   if (depth)
-    old_vals = PreUpdateContext_old(self_, NULL);
-  if (old_vals)
-    new_vals = PreUpdateContext_new(self_, NULL);
+    switch (self->op)
+    {
+    case SQLITE_INSERT:
+      label = "insert";
+      vals = PreUpdateContext_new(self_, NULL);
+      break;
+    case SQLITE_DELETE:
+      label = "delete";
+      vals = PreUpdateContext_old(self_, NULL);
+      break;
+    case SQLITE_UPDATE:
+      label = "update";
+      vals = PreUpdateContext_update(self_, NULL);
+      break;
+    }
 
   PyObject *res = NULL;
 
-  if (new_vals)
+  if (vals)
     res = PyUnicode_FromFormat("<apsw.PreUpdateContext op=%U, database=\"%s\", table=\"%s\", depth=%S, "
-                               "column_count=%d, rowid=%lld, rowid_new=%lld, old=%S, new=%S "
+                               "column_count=%d, rowid=%lld, rowid_new=%lld, %s=%S "
                                "at %p>",
-                               op, self->zDb, self->zName, depth, self->column_count, self->iKey1, self->iKey2,
-                               old_vals, new_vals, self);
+                               op, self->zDb, self->zName, depth, self->column_count, self->iKey1, self->iKey2, label,
+                               vals, self);
 
   Py_XDECREF(op);
   Py_XDECREF(depth);
-  Py_XDECREF(new_vals);
+  Py_XDECREF(vals);
 
   return res;
 }
@@ -6612,6 +6717,7 @@ static PyGetSetDef PreUpdateContext_getset[] = {
   { "depth", PreUpdateContext_depth, NULL, PreUpdateContext_depth_DOC },
   { "old", PreUpdateContext_old, NULL, PreUpdateContext_old_DOC },
   { "new", PreUpdateContext_new, NULL, PreUpdateContext_new_DOC },
+  { "update", PreUpdateContext_update, NULL, PreUpdateContext_update_DOC },
   { 0 },
 };
 
