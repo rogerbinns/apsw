@@ -3646,15 +3646,15 @@
 
 #define  PreUpdateContext_new_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
 "\n" \
-":class:`None` if not applicable (like a DELETE).  Otherwise a\n" \
-"tuple of the values for the row after the update.\n" \
+"Row values for an INSERT, or after an UPDATE.  :class:`None` for\n" \
+"DELETE.  See also :attr:`old` and :attr:`update`.\n" \
 "\n" \
 "Calls: `sqlite3_preupdate_new <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
 #define  PreUpdateContext_old_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
 "\n" \
-":class:`None` if not applicable (like INSERT).  Otherwise a\n" \
-"tuple of the values for the row before the change.\n" \
+"Row values for a DELETE, or before an UPDATE. :class:`None` for\n" \
+"INSERT.  See also :attr:`new` and :attr:`update`.\n" \
 "\n" \
 "Calls: `sqlite3_preupdate_old <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
@@ -3681,6 +3681,18 @@
 #define  PreUpdateContext_rowid_new_DOC ":type: int\n" \
 "\n" \
 "New rowid if changed via rowid UPDATE.\n" 
+
+#define  PreUpdateContext_update_DOC ":type: tuple[SQLiteValue | Literal[no_change], ...] | None\n" \
+"\n" \
+"For UPDATE compares old and new values, providing the changed value,\n" \
+"or :attr:`apsw.no_change` if that column was not changed.\n" \
+"\n" \
+":class:`None` for INSERT and DELETE.  See also :attr:`old` and\n" \
+":attr:`new`.\n" \
+"\n" \
+"Calls:\n" \
+"  * `sqlite3_preupdate_old <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" \
+"  * `sqlite3_preupdate_new <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
 #define  Rebaser_class_DOC "This object wraps a `sqlite3_rebaser\n" \
 "<https://www.sqlite.org/session/rebaser.html>`__ object.\n" 

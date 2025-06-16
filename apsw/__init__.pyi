@@ -2760,14 +2760,14 @@ class PreUpdateContext:
     Calls: `sqlite3_preupdate_depth <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
 
     new: tuple[SQLiteValue, ...] | None
-    """:class:`None` if not applicable (like a DELETE).  Otherwise a
-    tuple of the values for the row after the update.
+    """Row values for an INSERT, or after an UPDATE.  :class:`None` for
+    DELETE.  See also :attr:`old` and :attr:`update`.
 
     Calls: `sqlite3_preupdate_new <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
 
     old: tuple[SQLiteValue, ...] | None
-    """:class:`None` if not applicable (like INSERT).  Otherwise a
-    tuple of the values for the row before the change.
+    """Row values for a DELETE, or before an UPDATE. :class:`None` for
+    INSERT.  See also :attr:`new` and :attr:`update`.
 
     Calls: `sqlite3_preupdate_old <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
 
@@ -2790,6 +2790,17 @@ class PreUpdateContext:
 
     rowid_new: int
     """New rowid if changed via rowid UPDATE."""
+
+    update: tuple[SQLiteValue | Literal[no_change], ...] | None
+    """For UPDATE compares old and new values, providing the changed value,
+    or :attr:`apsw.no_change` if that column was not changed.
+
+    :class:`None` for INSERT and DELETE.  See also :attr:`old` and
+    :attr:`new`.
+
+    Calls:
+      * `sqlite3_preupdate_old <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__
+      * `sqlite3_preupdate_new <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
 
 @final
 class Rebaser:
