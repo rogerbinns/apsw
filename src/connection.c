@@ -5966,7 +5966,7 @@ static void APSWPreUpdateHook_cb(void *pCtx, sqlite3 *db, int op, char const *zD
     a :class:`Session`.
 
  SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known
- to APSW at compile time.  If not, this API and :class:`PreUpdateContext` will not be present.
+ to APSW at compile time.  If not, this API and :class:`PreUpdate` will not be present.
 
  -* sqlite3_preupdate_hook
  */
@@ -6299,7 +6299,7 @@ static PyTypeObject ConnectionType = {
 
 #ifdef SQLITE_ENABLE_PREUPDATE_HOOK
 
-/** .. class:: PreUpdateContext
+/** .. class:: PreUpdate
 
   Provides the details of one update to the
   :meth:`Connection.preupdate_hook` callback.
@@ -6323,9 +6323,9 @@ typedef struct
   const char *zName;
   sqlite3_int64 iKey1;
   sqlite3_int64 iKey2;
-} PreUpdateContext;
+} APSWPreUpdate;
 
-static PyTypeObject PreUpdateContextType;
+static PyTypeObject PreUpdateType;
 
 static void
 APSWPreUpdateHook_cb(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName, sqlite3_int64 iKey1,
@@ -6337,7 +6337,7 @@ APSWPreUpdateHook_cb(void *pCtx, sqlite3 *db, int op, char const *zDb, char cons
 
   PyObject *res = NULL;
 
-  PreUpdateContext *puc = (PreUpdateContext *)_PyObject_New(&PreUpdateContextType);
+  APSWPreUpdate *puc = (APSWPreUpdate *)_PyObject_New(&PreUpdateType);
   if (!puc)
     goto end;
 
@@ -6377,7 +6377,7 @@ end:
   do                                                                                                                   \
   {                                                                                                                    \
     if (!self->db)                                                                                                     \
-      return PyErr_Format(ExcInvalidContext, "The preupdate context has gone out of scope");                           \
+      return PyErr_Format(ExcInvalidContext, "The PreUpdate has gone out of scope");                                   \
   } while (0)
 
 /** .. attribute:: op
@@ -6390,9 +6390,9 @@ end:
   -* sqlite3_preupdate_count
 */
 static PyObject *
-PreUpdateContext_op(PyObject *self_, void *Py_UNUSED(unused))
+PreUpdate_op(PyObject *self_, void *Py_UNUSED(unused))
 {
-  PreUpdateContext *self = (PreUpdateContext *)self_;
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
   CHECK_PREUPDATE_SCOPE;
 
   if (self->op == SQLITE_INSERT)
@@ -6413,9 +6413,9 @@ PreUpdateContext_op(PyObject *self_, void *Py_UNUSED(unused))
   -* sqlite3_preupdate_count
 */
 static PyObject *
-PreUpdateContext_opcode(PyObject *self_, void *Py_UNUSED(unused))
+PreUpdate_opcode(PyObject *self_, void *Py_UNUSED(unused))
 {
-  PreUpdateContext *self = (PreUpdateContext *)self_;
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
   CHECK_PREUPDATE_SCOPE;
 
   return PyLong_FromLong(self->op);
@@ -6427,9 +6427,9 @@ PreUpdateContext_opcode(PyObject *self_, void *Py_UNUSED(unused))
   The affected rowid.
 */
 static PyObject *
-PreUpdateContext_rowid(PyObject *self_, void *Py_UNUSED(unused))
+PreUpdate_rowid(PyObject *self_, void *Py_UNUSED(unused))
 {
-  PreUpdateContext *self = (PreUpdateContext *)self_;
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
   CHECK_PREUPDATE_SCOPE;
 
   return PyLong_FromLong(self->iKey1);
@@ -6441,9 +6441,9 @@ PreUpdateContext_rowid(PyObject *self_, void *Py_UNUSED(unused))
   New rowid if changed via rowid UPDATE.
 */
 static PyObject *
-PreUpdateContext_rowid_new(PyObject *self_, void *Py_UNUSED(unused))
+PreUpdate_rowid_new(PyObject *self_, void *Py_UNUSED(unused))
 {
-  PreUpdateContext *self = (PreUpdateContext *)self_;
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
   CHECK_PREUPDATE_SCOPE;
 
   return PyLong_FromLong(self->iKey2);
@@ -6458,9 +6458,9 @@ PreUpdateContext_rowid_new(PyObject *self_, void *Py_UNUSED(unused))
   -* sqlite3_preupdate_depth
 */
 static PyObject *
-PreUpdateContext_depth(PyObject *self_, void *Py_UNUSED(unused))
+PreUpdate_depth(PyObject *self_, void *Py_UNUSED(unused))
 {
-  PreUpdateContext *self = (PreUpdateContext *)self_;
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
   CHECK_PREUPDATE_SCOPE;
 
   return PyLong_FromLong(sqlite3_preupdate_depth(self->db->db));
@@ -6475,9 +6475,9 @@ PreUpdateContext_depth(PyObject *self_, void *Py_UNUSED(unused))
   -* sqlite3_preupdate_new
 */
 static PyObject *
-PreUpdateContext_new(PyObject *self_, void *Py_UNUSED(unused))
+PreUpdate_new(PyObject *self_, void *Py_UNUSED(unused))
 {
-  PreUpdateContext *self = (PreUpdateContext *)self_;
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
   CHECK_PREUPDATE_SCOPE;
 
   if (self->op == SQLITE_DELETE)
@@ -6519,9 +6519,9 @@ error:
   -* sqlite3_preupdate_old
 */
 static PyObject *
-PreUpdateContext_old(PyObject *self_, void *Py_UNUSED(unused))
+PreUpdate_old(PyObject *self_, void *Py_UNUSED(unused))
 {
-  PreUpdateContext *self = (PreUpdateContext *)self_;
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
   CHECK_PREUPDATE_SCOPE;
 
   if (self->op == SQLITE_INSERT)
@@ -6566,9 +6566,9 @@ error:
   -* sqlite3_preupdate_old sqlite3_preupdate_new
 */
 static PyObject *
-PreUpdateContext_update(PyObject *self_, void *Py_UNUSED(unused))
+PreUpdate_update(PyObject *self_, void *Py_UNUSED(unused))
 {
-  PreUpdateContext *self = (PreUpdateContext *)self_;
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
   CHECK_PREUPDATE_SCOPE;
 
   if (self->op == SQLITE_INSERT || self->op == SQLITE_DELETE)
@@ -6656,47 +6656,47 @@ error:
 }
 
 static void
-PreUpdateContext_dealloc(PyObject *self)
+PreUpdate_dealloc(PyObject *self)
 {
-  assert(((PreUpdateContext *)self)->db == NULL);
+  assert(((APSWPreUpdate *)self)->db == NULL);
   Py_TpFree(self);
 }
 
 static PyObject *
-PreUpdateContext_tp_str(PyObject *self_)
+PreUpdate_tp_str(PyObject *self_)
 {
-  PreUpdateContext *self = (PreUpdateContext *)self_;
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
   if (!self->db)
-    return PyUnicode_FromFormat("<apsw.PreUpdateContext out of scope, at %p>", self);
+    return PyUnicode_FromFormat("<apsw.PreUpdate out of scope, at %p>", self);
 
   PyObject *op = NULL, *depth = NULL, *vals = NULL;
 
   const char *label = NULL;
 
-  op = PreUpdateContext_op(self_, NULL);
+  op = PreUpdate_op(self_, NULL);
   if (op)
-    depth = PreUpdateContext_depth(self_, NULL);
+    depth = PreUpdate_depth(self_, NULL);
   if (depth)
     switch (self->op)
     {
     case SQLITE_INSERT:
       label = "insert";
-      vals = PreUpdateContext_new(self_, NULL);
+      vals = PreUpdate_new(self_, NULL);
       break;
     case SQLITE_DELETE:
       label = "delete";
-      vals = PreUpdateContext_old(self_, NULL);
+      vals = PreUpdate_old(self_, NULL);
       break;
     case SQLITE_UPDATE:
       label = "update";
-      vals = PreUpdateContext_update(self_, NULL);
+      vals = PreUpdate_update(self_, NULL);
       break;
     }
 
   PyObject *res = NULL;
 
   if (vals)
-    res = PyUnicode_FromFormat("<apsw.PreUpdateContext op=%U, database=\"%s\", table=\"%s\", depth=%S, "
+    res = PyUnicode_FromFormat("<apsw.PreUpdate op=%U, database=\"%s\", table=\"%s\", depth=%S, "
                                "column_count=%d, rowid=%lld, rowid_new=%lld, %s=%S "
                                "at %p>",
                                op, self->zDb, self->zName, depth, self->column_count, self->iKey1, self->iKey2, label,
@@ -6706,28 +6706,30 @@ PreUpdateContext_tp_str(PyObject *self_)
   Py_XDECREF(depth);
   Py_XDECREF(vals);
 
+  assert((res == NULL && PyErr_Occurred()) || (res != NULL && !PyErr_Occurred()));
+
   return res;
 }
 
-static PyGetSetDef PreUpdateContext_getset[] = {
-  { "op", PreUpdateContext_op, NULL, PreUpdateContext_op_DOC },
-  { "opcode", PreUpdateContext_opcode, NULL, PreUpdateContext_opcode_DOC },
-  { "rowid", PreUpdateContext_rowid, NULL, PreUpdateContext_rowid_DOC },
-  { "rowid_new", PreUpdateContext_rowid_new, NULL, PreUpdateContext_rowid_new_DOC },
-  { "depth", PreUpdateContext_depth, NULL, PreUpdateContext_depth_DOC },
-  { "old", PreUpdateContext_old, NULL, PreUpdateContext_old_DOC },
-  { "new", PreUpdateContext_new, NULL, PreUpdateContext_new_DOC },
-  { "update", PreUpdateContext_update, NULL, PreUpdateContext_update_DOC },
+static PyGetSetDef PreUpdate_getset[] = {
+  { "op", PreUpdate_op, NULL, PreUpdate_op_DOC },
+  { "opcode", PreUpdate_opcode, NULL, PreUpdate_opcode_DOC },
+  { "rowid", PreUpdate_rowid, NULL, PreUpdate_rowid_DOC },
+  { "rowid_new", PreUpdate_rowid_new, NULL, PreUpdate_rowid_new_DOC },
+  { "depth", PreUpdate_depth, NULL, PreUpdate_depth_DOC },
+  { "old", PreUpdate_old, NULL, PreUpdate_old_DOC },
+  { "new", PreUpdate_new, NULL, PreUpdate_new_DOC },
+  { "update", PreUpdate_update, NULL, PreUpdate_update_DOC },
   { 0 },
 };
 
-static PyTypeObject PreUpdateContextType = {
-  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.PreUpdateContext",
-  .tp_basicsize = sizeof(PreUpdateContext),
-  .tp_getset = PreUpdateContext_getset,
-  .tp_doc = PreUpdateContext_class_DOC,
-  .tp_dealloc = PreUpdateContext_dealloc,
-  .tp_str = PreUpdateContext_tp_str,
+static PyTypeObject PreUpdateType = {
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.PreUpdate",
+  .tp_basicsize = sizeof(APSWPreUpdate),
+  .tp_getset = PreUpdate_getset,
+  .tp_doc = PreUpdate_class_DOC,
+  .tp_dealloc = PreUpdate_dealloc,
+  .tp_str = PreUpdate_tp_str,
 };
 
 #endif

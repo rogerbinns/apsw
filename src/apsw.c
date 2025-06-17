@@ -1909,7 +1909,7 @@ PyInit_apsw(void)
       || PyType_Ready(&APSWChangesetIteratorType) < 0 || PyType_Ready(&APSWRebaserType) < 0
 #endif
 #ifdef SQLITE_ENABLE_PREUPDATE_HOOK
-      || PyType_Ready(&PreUpdateContextType) < 0
+      || PyType_Ready(&PreUpdateType) < 0
 #endif
   )
     goto fail;
@@ -1969,7 +1969,7 @@ PyInit_apsw(void)
   ADD(Rebaser, APSWRebaserType);
 #endif
 #ifdef SQLITE_ENABLE_PREUPDATE_HOOK
-  ADD(PreUpdateContext, PreUpdateContextType);
+  ADD(PreUpdate, PreUpdateType);
 #endif
 #undef ADD
 
