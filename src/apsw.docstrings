@@ -2085,7 +2085,7 @@
 "   a :class:`Session`.\n" \
 "\n" \
 "SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known\n" \
-"to APSW at compile time.  If not, this API and :class:`PreUpdateContext` will not be present.\n" \
+"to APSW at compile time.  If not, this API and :class:`PreUpdate` will not be present.\n" \
 "\n" \
 "Calls: `sqlite3_preupdate_hook <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
@@ -3628,7 +3628,7 @@
 } while(0)
 
 
-#define  PreUpdateContext_class_DOC "Provides the details of one update to the\n" \
+#define  PreUpdate_class_DOC "Provides the details of one update to the\n" \
 ":meth:`Connection.preupdate_hook` callback.\n" \
 "\n" \
 ".. note::\n" \
@@ -3637,28 +3637,28 @@
 "   Using it outside the hook gives :exc:`InvalidContextError`.\n" \
 "   You should copy all desired information in the callback.\n" 
 
-#define  PreUpdateContext_depth_DOC ":type: int\n" \
+#define  PreUpdate_depth_DOC ":type: int\n" \
 "\n" \
 "0 for direct SQL, 1 for triggers, 2 and so on for triggers\n" \
 "firing by a higher level trigger.\n" \
 "\n" \
 "Calls: `sqlite3_preupdate_depth <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
-#define  PreUpdateContext_new_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
+#define  PreUpdate_new_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
 "\n" \
 "Row values for an INSERT, or after an UPDATE.  :class:`None` for\n" \
 "DELETE.  See also :attr:`old` and :attr:`update`.\n" \
 "\n" \
 "Calls: `sqlite3_preupdate_new <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
-#define  PreUpdateContext_old_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
+#define  PreUpdate_old_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
 "\n" \
 "Row values for a DELETE, or before an UPDATE. :class:`None` for\n" \
 "INSERT.  See also :attr:`new` and :attr:`update`.\n" \
 "\n" \
 "Calls: `sqlite3_preupdate_old <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
-#define  PreUpdateContext_op_DOC ":type: str\n" \
+#define  PreUpdate_op_DOC ":type: str\n" \
 "\n" \
 "The operation code as a string  ``INSERT``,\n" \
 "``DELETE``, or ``UPDATE``.  See :attr:`opcode`\n" \
@@ -3666,7 +3666,7 @@
 "\n" \
 "Calls: `sqlite3_preupdate_count <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
-#define  PreUpdateContext_opcode_DOC ":type: int\n" \
+#define  PreUpdate_opcode_DOC ":type: int\n" \
 "\n" \
 "The operation code - ``apsw.SQLITE_INSERT``,\n" \
 "``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.\n" \
@@ -3674,15 +3674,15 @@
 "\n" \
 "Calls: `sqlite3_preupdate_count <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
-#define  PreUpdateContext_rowid_DOC ":type: int\n" \
+#define  PreUpdate_rowid_DOC ":type: int\n" \
 "\n" \
 "The affected rowid.\n" 
 
-#define  PreUpdateContext_rowid_new_DOC ":type: int\n" \
+#define  PreUpdate_rowid_new_DOC ":type: int\n" \
 "\n" \
 "New rowid if changed via rowid UPDATE.\n" 
 
-#define  PreUpdateContext_update_DOC ":type: tuple[SQLiteValue | Literal[no_change], ...] | None\n" \
+#define  PreUpdate_update_DOC ":type: tuple[SQLiteValue | Literal[no_change], ...] | None\n" \
 "\n" \
 "For UPDATE compares old and new values, providing the changed value,\n" \
 "or :attr:`apsw.no_change` if that column was not changed.\n" \

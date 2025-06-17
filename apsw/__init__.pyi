@@ -117,7 +117,7 @@ CommitHook = Callable[[], bool]
 """Commit hook is called with no arguments and should return True to abort the commit and False
 to let it continue"""
 
-PreupdateHook = Callable[[PreUpdateContext], None]
+PreupdateHook = Callable[[PreUpdate], None]
 """The hook is called with information about the update, and has no return value"""
 
 TokenizerResult = Iterable[str | tuple[str, ...] | tuple[int, int, *tuple[str, ...]]]
@@ -1708,7 +1708,7 @@ class Connection:
            a :class:`Session`.
 
         SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known
-        to APSW at compile time.  If not, this API and :class:`PreUpdateContext` will not be present.
+        to APSW at compile time.  If not, this API and :class:`PreUpdate` will not be present.
 
         Calls: `sqlite3_preupdate_hook <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
         ...
@@ -2743,7 +2743,7 @@ class IndexInfo:
         ...
 
 @final
-class PreUpdateContext:
+class PreUpdate:
     """Provides the details of one update to the
     :meth:`Connection.preupdate_hook` callback.
 
