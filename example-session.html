@@ -272,29 +272,29 @@ a change or patch set is equivalent to.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">len(patchset)=241</span>
 <span class="go">patchset</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;82AC12&#39;, &#39;microwave&#39;, NULL);</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;8EB6BB&#39;, &#39;kitchen walls&#39;, NULL);</span>
-<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;532F67&#39;;</span>
-<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;69DFE2&#39; AND tag_id = &#39;5D2948&#39;;</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;8EB6BB&#39;, &#39;846136&#39;, NULL);</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;8EB6BB&#39;, &#39;2632FF&#39;, NULL);</span>
-<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;82AC12&#39;, &#39;29DB97&#39;, &#39;system&#39;);</span>
-<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;8EB6BB&#39;, &#39;29DB97&#39;, &#39;system&#39;);</span>
-<span class="go">UPDATE tags SET cost_centre=NULL WHERE id = &#39;29DB97&#39;;</span>
-<span class="go">DELETE FROM tags WHERE id = &#39;5D2948&#39;;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;7BCE8B&#39;, &#39;microwave&#39;, NULL);</span>
+<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;17CBC6&#39;;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;D19DCA&#39;, &#39;kitchen walls&#39;, NULL);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;D19DCA&#39;, &#39;0A37D2&#39;, NULL);</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;3FB4FD&#39; AND tag_id = &#39;81AD84&#39;;</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;7BCE8B&#39;, &#39;FFB6E1&#39;, &#39;system&#39;);</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;D19DCA&#39;, &#39;FFB6E1&#39;, &#39;system&#39;);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;D19DCA&#39;, &#39;55F826&#39;, NULL);</span>
+<span class="go">DELETE FROM tags WHERE id = &#39;81AD84&#39;;</span>
+<span class="go">UPDATE tags SET cost_centre=NULL WHERE id = &#39;FFB6E1&#39;;</span>
 
 <span class="go">len(changeset)=274</span>
 <span class="go">changeset</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;82AC12&#39;, &#39;microwave&#39;, NULL);</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;8EB6BB&#39;, &#39;kitchen walls&#39;, NULL);</span>
-<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;532F67&#39; AND description IS NULL;</span>
-<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;69DFE2&#39; AND tag_id = &#39;5D2948&#39; AND reason IS NULL;</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;8EB6BB&#39;, &#39;846136&#39;, NULL);</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;8EB6BB&#39;, &#39;2632FF&#39;, NULL);</span>
-<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;82AC12&#39;, &#39;29DB97&#39;, &#39;system&#39;);</span>
-<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;8EB6BB&#39;, &#39;29DB97&#39;, &#39;system&#39;);</span>
-<span class="go">UPDATE tags SET cost_centre=NULL WHERE id = &#39;29DB97&#39; AND cost_centre = 100;</span>
-<span class="go">DELETE FROM tags WHERE id = &#39;5D2948&#39; AND label = &#39;battery&#39; AND cost_centre = 300;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;7BCE8B&#39;, &#39;microwave&#39;, NULL);</span>
+<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;17CBC6&#39; AND description IS NULL;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;D19DCA&#39;, &#39;kitchen walls&#39;, NULL);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;D19DCA&#39;, &#39;0A37D2&#39;, NULL);</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;3FB4FD&#39; AND tag_id = &#39;81AD84&#39; AND reason IS NULL;</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;7BCE8B&#39;, &#39;FFB6E1&#39;, &#39;system&#39;);</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;D19DCA&#39;, &#39;FFB6E1&#39;, &#39;system&#39;);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;D19DCA&#39;, &#39;55F826&#39;, NULL);</span>
+<span class="go">DELETE FROM tags WHERE id = &#39;81AD84&#39; AND label = &#39;battery&#39; AND cost_centre = 300;</span>
+<span class="go">UPDATE tags SET cost_centre=NULL WHERE id = &#39;FFB6E1&#39; AND cost_centre = 100;</span>
 </pre></div>
 </div>
 </section>
@@ -312,16 +312,16 @@ where you store changesets allowing for a later undo or redo.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">undo</span>
-<span class="go">DELETE FROM items WHERE id = &#39;82AC12&#39; AND name = &#39;microwave&#39; AND description IS NULL;</span>
-<span class="go">DELETE FROM items WHERE id = &#39;8EB6BB&#39; AND name = &#39;kitchen walls&#39; AND description IS NULL;</span>
-<span class="go">UPDATE items SET description=NULL WHERE id = &#39;532F67&#39; AND description = &#39;high gloss&#39;;</span>
-<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;69DFE2&#39;, &#39;5D2948&#39;, NULL);</span>
-<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;8EB6BB&#39; AND tag_id = &#39;846136&#39; AND reason IS NULL;</span>
-<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;8EB6BB&#39; AND tag_id = &#39;2632FF&#39; AND reason IS NULL;</span>
-<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;82AC12&#39; AND tag_id = &#39;29DB97&#39; AND reason = &#39;system&#39;;</span>
-<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;8EB6BB&#39; AND tag_id = &#39;29DB97&#39; AND reason = &#39;system&#39;;</span>
-<span class="go">UPDATE tags SET cost_centre=100 WHERE id = &#39;29DB97&#39; AND cost_centre IS NULL;</span>
-<span class="go">INSERT INTO tags(id, label, cost_centre) VALUES (&#39;5D2948&#39;, &#39;battery&#39;, 300);</span>
+<span class="go">DELETE FROM items WHERE id = &#39;7BCE8B&#39; AND name = &#39;microwave&#39; AND description IS NULL;</span>
+<span class="go">UPDATE items SET description=NULL WHERE id = &#39;17CBC6&#39; AND description = &#39;high gloss&#39;;</span>
+<span class="go">DELETE FROM items WHERE id = &#39;D19DCA&#39; AND name = &#39;kitchen walls&#39; AND description IS NULL;</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;D19DCA&#39; AND tag_id = &#39;0A37D2&#39; AND reason IS NULL;</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;3FB4FD&#39;, &#39;81AD84&#39;, NULL);</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;7BCE8B&#39; AND tag_id = &#39;FFB6E1&#39; AND reason = &#39;system&#39;;</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;D19DCA&#39; AND tag_id = &#39;FFB6E1&#39; AND reason = &#39;system&#39;;</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;D19DCA&#39; AND tag_id = &#39;55F826&#39; AND reason IS NULL;</span>
+<span class="go">INSERT INTO tags(id, label, cost_centre) VALUES (&#39;81AD84&#39;, &#39;battery&#39;, 300);</span>
+<span class="go">UPDATE tags SET cost_centre=100 WHERE id = &#39;FFB6E1&#39; AND cost_centre IS NULL;</span>
 </pre></div>
 </div>
 </section>
@@ -396,46 +396,46 @@ going to undo our earlier changes.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Exception exc=AbortError(&#39;query aborted&#39;)</span>
 <span class="go">conflict SQLITE_CHANGESET_DATA change.op=&#39;UPDATE&#39; change.opcode=23</span>
-<span class="go"> change.conflict=(&#39;532F67&#39;, &#39;bathroom ceiling&#39;, &#39;Orange flavour&#39;)</span>
+<span class="go"> change.conflict=(&#39;17CBC6&#39;, &#39;bathroom ceiling&#39;, &#39;Orange flavour&#39;)</span>
 <span class="go"> change.name=&#39;items&#39; change.column_count=3</span>
 <span class="go"> change.fk_conflicts=None change.indirect=False</span>
-<span class="go"> change.old=(&#39;532F67&#39;, &lt;class &#39;apsw.no_change&#39;&gt;, &#39;high gloss&#39;)</span>
+<span class="go"> change.old=(&#39;17CBC6&#39;, &lt;class &#39;apsw.no_change&#39;&gt;, &#39;high gloss&#39;)</span>
 <span class="go"> change.new=(&lt;class &#39;apsw.no_change&#39;&gt;, &lt;class &#39;apsw.no_change&#39;&gt;, None)</span>
 
 <span class="go">conflict SQLITE_CHANGESET_CONSTRAINT change.op=&#39;DELETE&#39; change.opcode=9</span>
 <span class="go"> change.conflict=None</span>
 <span class="go"> change.name=&#39;items&#39; change.column_count=3</span>
 <span class="go"> change.fk_conflicts=None change.indirect=False</span>
-<span class="go"> change.old=(&#39;82AC12&#39;, &#39;microwave&#39;, None)</span>
+<span class="go"> change.old=(&#39;7BCE8B&#39;, &#39;microwave&#39;, None)</span>
 <span class="go"> change.new=None</span>
 
 <span class="go">conflict SQLITE_CHANGESET_NOTFOUND change.op=&#39;DELETE&#39; change.opcode=9</span>
 <span class="go"> change.conflict=None</span>
 <span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
 <span class="go"> change.fk_conflicts=None change.indirect=False</span>
-<span class="go"> change.old=(&#39;8EB6BB&#39;, &#39;846136&#39;, None)</span>
-<span class="go"> change.new=None</span>
-
-<span class="go">conflict SQLITE_CHANGESET_NOTFOUND change.op=&#39;DELETE&#39; change.opcode=9</span>
-<span class="go"> change.conflict=None</span>
-<span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
-<span class="go"> change.fk_conflicts=None change.indirect=False</span>
-<span class="go"> change.old=(&#39;8EB6BB&#39;, &#39;2632FF&#39;, None)</span>
+<span class="go"> change.old=(&#39;D19DCA&#39;, &#39;0A37D2&#39;, None)</span>
 <span class="go"> change.new=None</span>
 
 <span class="go">conflict SQLITE_CHANGESET_NOTFOUND change.op=&#39;DELETE&#39; change.opcode=9</span>
 <span class="go"> change.conflict=None</span>
 <span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
 <span class="go"> change.fk_conflicts=None change.indirect=True</span>
-<span class="go"> change.old=(&#39;8EB6BB&#39;, &#39;29DB97&#39;, &#39;system&#39;)</span>
+<span class="go"> change.old=(&#39;D19DCA&#39;, &#39;FFB6E1&#39;, &#39;system&#39;)</span>
+<span class="go"> change.new=None</span>
+
+<span class="go">conflict SQLITE_CHANGESET_NOTFOUND change.op=&#39;DELETE&#39; change.opcode=9</span>
+<span class="go"> change.conflict=None</span>
+<span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
+<span class="go"> change.fk_conflicts=None change.indirect=False</span>
+<span class="go"> change.old=(&#39;D19DCA&#39;, &#39;55F826&#39;, None)</span>
 <span class="go"> change.new=None</span>
 
 <span class="go">failed</span>
-<span class="go">DELETE FROM items WHERE id = &#39;82AC12&#39; AND name = &#39;microwave&#39; AND description IS NULL;</span>
-<span class="go">UPDATE items SET description=NULL WHERE id = &#39;532F67&#39; AND description = &#39;high gloss&#39;;</span>
-<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;8EB6BB&#39; AND tag_id = &#39;846136&#39; AND reason IS NULL;</span>
-<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;8EB6BB&#39; AND tag_id = &#39;2632FF&#39; AND reason IS NULL;</span>
-<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;8EB6BB&#39; AND tag_id = &#39;29DB97&#39; AND reason = &#39;system&#39;;</span>
+<span class="go">DELETE FROM items WHERE id = &#39;7BCE8B&#39; AND name = &#39;microwave&#39; AND description IS NULL;</span>
+<span class="go">UPDATE items SET description=NULL WHERE id = &#39;17CBC6&#39; AND description = &#39;high gloss&#39;;</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;D19DCA&#39; AND tag_id = &#39;0A37D2&#39; AND reason IS NULL;</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;D19DCA&#39; AND tag_id = &#39;FFB6E1&#39; AND reason = &#39;system&#39;;</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;D19DCA&#39; AND tag_id = &#39;55F826&#39; AND reason IS NULL;</span>
 </pre></div>
 </div>
 </section>
@@ -548,15 +548,15 @@ for these more complicated situations.</p>
 <span class="go">└──────────────────┴─────────────────┴─────────────┘</span>
 
 <span class="go">Alice changeset</span>
-<span class="go">UPDATE tags SET label=&#39;painting&#39; WHERE id = &#39;2632FF&#39; AND label = &#39;paint&#39;;</span>
-<span class="go">INSERT INTO tags(id, label, cost_centre) VALUES (&#39;CC3773&#39;, &#39;approval needed&#39;, NULL);</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;A9E70C&#39;, &#39;storage closet&#39;, &#39;main storage space&#39;);</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;A9E70C&#39;, &#39;CC3773&#39;, NULL);</span>
+<span class="go">INSERT INTO tags(id, label, cost_centre) VALUES (&#39;24DAFC&#39;, &#39;approval needed&#39;, NULL);</span>
+<span class="go">UPDATE tags SET label=&#39;painting&#39; WHERE id = &#39;0A37D2&#39; AND label = &#39;paint&#39;;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;B12AB8&#39;, &#39;storage closet&#39;, &#39;main storage space&#39;);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;B12AB8&#39;, &#39;24DAFC&#39;, NULL);</span>
 
 <span class="go">Bob changseset</span>
-<span class="go">UPDATE tags SET cost_centre=&#39;150&#39; WHERE id = &#39;EE7714&#39; AND cost_centre = 145;</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;72BB4B&#39;, &#39;storage B&#39;, NULL);</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;72BB4B&#39;, &#39;EE7714&#39;, NULL);</span>
+<span class="go">UPDATE tags SET cost_centre=&#39;150&#39; WHERE id = &#39;1E5FB2&#39; AND cost_centre = 145;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;2ACA3D&#39;, &#39;storage B&#39;, NULL);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;2ACA3D&#39;, &#39;1E5FB2&#39;, NULL);</span>
 </pre></div>
 </div>
 </section>
@@ -583,11 +583,11 @@ structure (names, primary keys, number of columns).</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Only items table changes</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;82AC12&#39;, &#39;microwave&#39;, NULL);</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;8EB6BB&#39;, &#39;kitchen walls&#39;, NULL);</span>
-<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;532F67&#39; AND description IS NULL;</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;A9E70C&#39;, &#39;storage closet&#39;, &#39;main storage space&#39;);</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;72BB4B&#39;, &#39;storage B&#39;, NULL);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;7BCE8B&#39;, &#39;microwave&#39;, NULL);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;2ACA3D&#39;, &#39;storage B&#39;, NULL);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;D19DCA&#39;, &#39;kitchen walls&#39;, NULL);</span>
+<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;17CBC6&#39; AND description IS NULL;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;B12AB8&#39;, &#39;storage closet&#39;, &#39;main storage space&#39;);</span>
 </pre></div>
 </div>
 </section>
@@ -786,7 +786,7 @@ cleans up sessions when their corresponding connections are closed.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jun 06, 2025.
+      <span class="lastupdated">Last updated on Jun 17, 2025.
       </span></p>
   </div>
 
