@@ -43,6 +43,7 @@ NULL 0.0 -1e999 1e999
 (closed)
 
 release UPDATE INSERT DELETE
+<apsw.no_change>
 """
 
 
@@ -54,6 +55,7 @@ def mangle(name):
         "-1e999": "s_1e999",
         "1e999": "s1e999",
         "(closed)": "closed",
+        "<apsw.no_change>": "no_change",
     }.get(name, name)
 
 

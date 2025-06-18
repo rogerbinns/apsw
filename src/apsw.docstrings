@@ -241,7 +241,8 @@
 "\n" \
 "A sentinel value used to indicate no change in a value when\n" \
 "used with :meth:`VTCursor.ColumnNoChange`,\n" \
-":meth:`VTTable.UpdateChangeRow`, and :attr:`TableChange.new`.\n" 
+":meth:`VTTable.UpdateChangeRow`, :attr:`TableChange.new`,\n" \
+"and :class:`PreUpdate.update`.\n" 
 
 #define  Apsw_pyobject_DOC "apsw.pyobject(object: Any)\n\n" \
 "Indicates a Python object is being provided as a\n" \
@@ -3636,6 +3637,10 @@
 "   The object is only valid inside a the callback.\n" \
 "   Using it outside the hook gives :exc:`InvalidContextError`.\n" \
 "   You should copy all desired information in the callback.\n" 
+
+#define  PreUpdate_connection_DOC ":type: Connection\n" \
+"\n" \
+"The :class:`Connection` the preupdate is called on.\n" 
 
 #define  PreUpdate_depth_DOC ":type: int\n" \
 "\n" \

@@ -5814,7 +5814,7 @@ class APSW(unittest.TestCase):
             "APSWFTS5Tokenizer",
             "cursor",
             "APSWChangesetIterator",
-        ):
+        ) or name in {"apsw_no_change_repr"}:
             return
 
         checks = {
@@ -5939,6 +5939,15 @@ class APSW(unittest.TestCase):
             "apswurifilename": {"req": {"check": "CHECK_SCOPE"}},
             "connection": {"req": {}},
             "APSWFTS5ExtensionApi": {"req": {"check": "FTSEXT_CHECK"}},
+            "PyObjectBind": {
+                "req": {},
+            },
+            "PreUpdate":
+            {
+                "skip": ("dealloc", "tp_str", ),
+                "req": {"check": "CHECK_PREUPDATE_SCOPE"},
+                "order": ("check",),
+            },
             # these are in unicode.c and don't have any requirements
             "ToUtf8PositionMapper": {
                 "req": {},
@@ -5947,9 +5956,6 @@ class APSW(unittest.TestCase):
                 "req": {},
             },
             "OffsetMapper": {
-                "req": {},
-            },
-            "PyObjectBind": {
                 "req": {},
             },
         }

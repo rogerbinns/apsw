@@ -2039,7 +2039,8 @@ PyInit_apsw(void)
 
     A sentinel value used to indicate no change in a value when
     used with :meth:`VTCursor.ColumnNoChange`,
-    :meth:`VTTable.UpdateChangeRow`, and :attr:`TableChange.new`.
+    :meth:`VTTable.UpdateChangeRow`, :attr:`TableChange.new`,
+    and :class:`PreUpdate.update`.
   */
 
   if(!apsw_no_change_object)

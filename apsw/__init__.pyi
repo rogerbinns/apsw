@@ -370,7 +370,8 @@ memoryused = memory_used ## OLD-NAME
 no_change: object
 """A sentinel value used to indicate no change in a value when
 used with :meth:`VTCursor.ColumnNoChange`,
-:meth:`VTTable.UpdateChangeRow`, and :attr:`TableChange.new`."""
+:meth:`VTTable.UpdateChangeRow`, :attr:`TableChange.new`,
+and :class:`PreUpdate.update`."""
 
 def pyobject(object: Any):
     """Indicates a Python object is being provided as a
@@ -2752,6 +2753,9 @@ class PreUpdate:
        The object is only valid inside a the callback.
        Using it outside the hook gives :exc:`InvalidContextError`.
        You should copy all desired information in the callback."""
+
+    connection: Connection
+    """The :class:`Connection` the preupdate is called on."""
 
     depth: int
     """0 for direct SQL, 1 for triggers, 2 and so on for triggers
