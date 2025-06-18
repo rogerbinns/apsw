@@ -2468,7 +2468,7 @@ apswvtabColumn(sqlite3_vtab_cursor *pCursor, sqlite3_context *result, int ncolum
   if (!res)
     goto pyexception;
 
-  if (nc && Py_Is(res, (PyObject *)&apsw_no_change_object))
+  if (nc && Py_Is(res, apsw_no_change_object))
     ok = 1;
   else
     ok = set_context_result(result, res);

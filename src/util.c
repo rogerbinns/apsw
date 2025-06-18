@@ -221,7 +221,7 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
   sqlite3_value *in_value;
 
   if (no_change_possible && sqlite3_value_nochange(value))
-    return Py_NewRef((PyObject *)&apsw_no_change_object);
+    return Py_NewRef(apsw_no_change_object);
 
   switch (coltype)
   {

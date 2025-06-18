@@ -6651,7 +6651,7 @@ PreUpdate_update(PyObject *self_, void *Py_UNUSED(unused))
         }
     }
     if (eq)
-      PyTuple_SET_ITEM(tuple, i, Py_NewRef((PyObject *)&apsw_no_change_object));
+      PyTuple_SET_ITEM(tuple, i, Py_NewRef(apsw_no_change_object));
     else
     {
       PyObject *pyvalue = convert_value_to_pyobject(value_new, 0, 0);
