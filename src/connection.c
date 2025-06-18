@@ -6380,6 +6380,20 @@ end:
       return PyErr_Format(ExcInvalidContext, "The PreUpdate has gone out of scope");                                   \
   } while (0)
 
+/** .. attribute:: connection
+  :type: Connection
+
+  The :class:`Connection` the preupdate is called on.
+*/
+static PyObject *
+PreUpdate_connection(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return Py_NewRef((PyObject *)self->db);
+}
+
 /** .. attribute:: op
   :type: str
 
@@ -6712,6 +6726,7 @@ PreUpdate_tp_str(PyObject *self_)
 }
 
 static PyGetSetDef PreUpdate_getset[] = {
+  { "connection", PreUpdate_connection, NULL, PreUpdate_connection_DOC },
   { "op", PreUpdate_op, NULL, PreUpdate_op_DOC },
   { "opcode", PreUpdate_opcode, NULL, PreUpdate_opcode_DOC },
   { "rowid", PreUpdate_rowid, NULL, PreUpdate_rowid_DOC },
