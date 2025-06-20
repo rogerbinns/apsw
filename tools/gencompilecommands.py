@@ -29,13 +29,13 @@ def generate(options):
             "-Isrc",
             "-DSQLITE_ENABLE_FTS5",
             "-DSQLITE_ENABLE_SESSION",
+            "-UNDEBUG",
         ]
     )
 
     out = []
-    for f in glob.glob("src/*.c"):
-        main_file = "src/unicode.c" if "unicode" in f else "src/apsw.c"
-        out.append({"directory": os.getcwd(), "file": f, "arguments": cmd + ["-c", main_file]})
+    for f in ("src/unicode.c", "src/apsw.c"):
+        out.append({"directory": os.getcwd(), "file": f, "arguments": cmd + ["-c", f]})
 
     print(json.dumps(out, indent=2))
 
