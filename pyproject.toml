@@ -14,3 +14,6 @@ line-length = 120
 
 [tool.flake8]
 max-line-length = 120
+
+[tool.cibuildwheel]
+archs = ["auto64", "auto32"]
