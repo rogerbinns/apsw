@@ -437,6 +437,21 @@ class APSW(unittest.TestCase):
                 e = e.__context__
             self.assertIsInstance(e, exctype)
 
+    def assertRaisesChain(self, exctypes, fn, *args, **kwargs):
+        "Ensures that the exceptions including chained are exctypes, but doesn't check order"
+        try:
+            fn(*args, **kwargs)
+        except BaseException as e:
+            all_types = [type(e)]
+            while e.__context__:
+                e = e.__context__
+                all_types.append(type(e))
+
+            self.assertEqual(set(exctypes), set(all_types), "Exceptions didn't match")
+            return
+
+        self.fail(f"{fn} didn't raise an exception")
+
     def assertTableExists(self, tablename):
         self.assertTrue(self.db.table_exists(None, tablename))
 
@@ -6278,6 +6293,177 @@ class APSW(unittest.TestCase):
                 self.assertRaises(apsw.ConnectionClosedError, db.cursor)
                 self.assertRaises(apsw.ConnectionClosedError, db.get_autocommit)
                 self.assertRaises(apsw.ConnectionClosedError, db.in_transaction)
+
+    def testPreUpdate(self):
+        "preupdate hook"
+        if not hasattr(self.db, "preupdate_hook"):
+            return
+
+        # we also as a side effect test the generic hook code
+        test_ids = [3 + 4j, None, "orange", apsw, functools.partial, 3, math.inf, APSW, 1 / 3]
+
+        called = []
+
+        out_of_scope_update = None
+
+        def hook(myid, update):
+            nonlocal up, out_of_scope_update
+            out_of_scope_update = update
+            called.append(myid)
+            opcode, row = up
+            str(update)
+            self.assertIs(update.connection, self.db)
+            self.assertEqual(update.opcode, opcode)
+            self.assertEqual(update.depth, 0)
+            self.assertEqual(update.database_name, "main")
+            self.assertEqual(update.table_name, "foo")
+            if opcode == apsw.SQLITE_INSERT:
+                self.assertEqual(update.op, "INSERT")
+                self.assertIsNone(update.old)
+                self.assertEqual(row, update.new)
+                self.assertIsNone(update.update)
+                self.assertEqual(update.rowid, 1)
+                self.assertEqual(update.rowid_new, 1)
+            elif opcode == apsw.SQLITE_UPDATE:
+                self.assertEqual(update.op, "UPDATE")
+                self.assertEqual(update.old, ("one", "two", "three"))
+                self.assertEqual(row, update.new)
+                self.assertEqual(update.update, (apsw.no_change, apsw.no_change, row[2]))
+                self.assertEqual(update.rowid, 1)
+                self.assertEqual(update.rowid_new, 1)
+            elif opcode == apsw.SQLITE_DELETE:
+                self.assertEqual(update.op, "DELETE")
+                self.assertEqual(update.old, row)
+                self.assertEqual(update.new, None)
+                self.assertEqual(update.update, None)
+                self.assertEqual(update.rowid, 1)
+                self.assertEqual(update.rowid_new, 1)
+            else:
+                raise Exception("unexpected")
+
+        for id in test_ids:
+            self.db.preupdate_hook(functools.partial(hook, id), id=id)
+
+        self.db.execute("create table foo(x,y,z)")
+
+        expected_ids = test_ids[:]
+        did_empty = False
+
+        while expected_ids or not did_empty:
+            for up, sql in (
+                ((apsw.SQLITE_INSERT, ("one", "two", "three")), "insert into foo values('one', 'two', 'three')"),
+                ((apsw.SQLITE_UPDATE, ("one", "two", "banana")), "update foo set z='banana'"),
+                ((apsw.SQLITE_DELETE, ("one", "two", "banana")), "delete from foo"),
+            ):
+                called = []
+                self.db.execute(sql)
+                self.assertEqual(set(expected_ids), set(called))
+
+            if expected_ids:
+                victim = random.choice(expected_ids)
+                self.db.preupdate_hook(None, id=victim)
+                expected_ids.remove(victim)
+            else:
+                did_empty = True
+
+        for n in dir(out_of_scope_update):
+            if not n.startswith("_"):
+                self.assertRaises(apsw.InvalidContextError, getattr, out_of_scope_update, n)
+
+        self.assertIn("out of scope", str(out_of_scope_update))
+
+        self.db.execute("insert into foo values(null, null, null)")
+
+        if hasattr(apsw, "Session") and "DEBUG" not in apsw.compile_options:
+            # SQLITE_DEBUG causes an assertion failure
+            session = apsw.Session(self.db, "main")
+            self.assertRaisesRegex(
+                Exception,
+                ".*This WILL result in crashes in session, so the hook has been disabled.*",
+                self.db.preupdate_hook,
+                lambda x: None,
+            )
+
+        count = 0
+        last_row = (None, None, None)
+
+        def hook(update):
+            nonlocal value, count, last_row
+            count += 1
+            self.assertEqual(update.op, "UPDATE")
+            self.assertEqual(update.old, last_row)
+            self.assertEqual(update.new, (value, value, value))
+            self.assertEqual(update.update, (value, value, value))
+
+            last_row = update.new
+
+        self.db.preupdate_hook(hook)
+
+        for value in (3, 3.1, b"onetwothree", "onetwothree", None):
+            self.db.execute("update foo set x=?1, y=?1, z=?1", (value,))
+
+        self.assertEqual(count, 5)
+
+        def hook(update):
+            self.assertEqual(update.op, "UPDATE")
+            self.assertEqual(update.rowid, 1)
+            self.assertEqual(update.rowid_new, 77)
+
+        self.db.preupdate_hook(hook)
+        self.db.execute("update foo set rowid=77")
+        self.db.preupdate_hook(None)
+
+        def hook1(bad):
+            1 / 0
+
+        def hook2(bad):
+            raise FileExistsError()
+
+        def hook3():
+            pass
+
+        for fn in (hook1, hook2, hook3):
+            self.db.preupdate_hook(fn, id=fn)
+
+        self.assertRaisesChain(
+            (ZeroDivisionError, FileExistsError, TypeError), self.db.execute, "insert into foo values(11,22,33)"
+        )
+
+        for fn in (hook1, hook2, hook3):
+            self.db.preupdate_hook(None, id=fn)
+
+        class bad_eq:
+            def __eq__(self, other):
+                1 / 0
+
+        self.db.preupdate_hook(hook2, id=bad_eq())
+
+        self.assertRaises(ZeroDivisionError, self.db.preupdate_hook, hook3, id=3)
+        self.assertRaises(FileExistsError, self.db.execute, "delete from foo")
+
+        self.db = apsw.Connection(self.db.filename)
+
+        self.db.execute('create table "16"(x)')
+        for i in range(15, -1, -1):
+            self.db.execute(
+                f'''create table "{i}"(x); create trigger "{i}" after insert on "{i}" begin insert into  "{i + 1}" values(new.x+1000); end'''
+            )
+
+        expect_val = 0
+
+        def hook(update):
+            nonlocal expect_val
+            self.assertEqual(update.op, "INSERT")
+            self.assertEqual(update.depth, expect_val)
+            self.assertEqual(update.table_name, str(expect_val), update)
+            self.assertEqual(update.new, (update.depth * 1000,), update)
+            expect_val += 1
+
+        self.db.preupdate_hook(hook, id=7)
+
+        self.db.execute('insert into "0" values(0)')
+
+        # ::TODO:: database name, blob_write, check C coverage
 
     def testDropModules(self):
         "Verify dropping virtual table modules"

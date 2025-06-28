@@ -2754,8 +2754,18 @@ class PreUpdate:
        Using it outside the hook gives :exc:`InvalidContextError`.
        You should copy all desired information in the callback."""
 
+    blob_write: int
+    """Writes to blobs show up as `DELETE`, with this having the
+    column number being rewritten.  The value is negative if
+    no blob is being written.
+
+    Calls: `sqlite3_preupdate_blobwrite <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
+
     connection: Connection
     """The :class:`Connection` the preupdate is called on."""
+
+    database_name: str
+    """``main``, ``temp``, the name of an attached database."""
 
     depth: int
     """0 for direct SQL, 1 for triggers, 2 and so on for triggers
@@ -2778,22 +2788,21 @@ class PreUpdate:
     op: str
     """The operation code as a string  ``INSERT``,
     ``DELETE``, or ``UPDATE``.  See :attr:`opcode`
-    for this as a number.
-
-    Calls: `sqlite3_preupdate_count <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
+    for this as a number."""
 
     opcode: int
     """The operation code - ``apsw.SQLITE_INSERT``,
     ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.
-    See :attr:`op` for this as a string.
-
-    Calls: `sqlite3_preupdate_count <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
+    See :attr:`op` for this as a string."""
 
     rowid: int
     """The affected rowid."""
 
     rowid_new: int
     """New rowid if changed via rowid UPDATE."""
+
+    table_name: str
+    """Table name."""
 
     update: tuple[SQLiteValue | Literal[no_change], ...] | None
     """For UPDATE compares old and new values, providing the changed value,

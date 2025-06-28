@@ -3629,6 +3629,14 @@
 } while(0)
 
 
+#define  PreUpdate_blob_write_DOC ":type: int\n" \
+"\n" \
+"Writes to blobs show up as `DELETE`, with this having the\n" \
+"column number being rewritten.  The value is negative if\n" \
+"no blob is being written.\n" \
+"\n" \
+"Calls: `sqlite3_preupdate_blobwrite <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
+
 #define  PreUpdate_class_DOC "Provides the details of one update to the\n" \
 ":meth:`Connection.preupdate_hook` callback.\n" \
 "\n" \
@@ -3641,6 +3649,10 @@
 #define  PreUpdate_connection_DOC ":type: Connection\n" \
 "\n" \
 "The :class:`Connection` the preupdate is called on.\n" 
+
+#define  PreUpdate_database_name_DOC ":type: str\n" \
+"\n" \
+"``main``, ``temp``, the name of an attached database.\n" 
 
 #define  PreUpdate_depth_DOC ":type: int\n" \
 "\n" \
@@ -3667,17 +3679,13 @@
 "\n" \
 "The operation code as a string  ``INSERT``,\n" \
 "``DELETE``, or ``UPDATE``.  See :attr:`opcode`\n" \
-"for this as a number.\n" \
-"\n" \
-"Calls: `sqlite3_preupdate_count <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
+"for this as a number.\n" 
 
 #define  PreUpdate_opcode_DOC ":type: int\n" \
 "\n" \
 "The operation code - ``apsw.SQLITE_INSERT``,\n" \
 "``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.\n" \
-"See :attr:`op` for this as a string.\n" \
-"\n" \
-"Calls: `sqlite3_preupdate_count <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
+"See :attr:`op` for this as a string.\n" 
 
 #define  PreUpdate_rowid_DOC ":type: int\n" \
 "\n" \
@@ -3686,6 +3694,10 @@
 #define  PreUpdate_rowid_new_DOC ":type: int\n" \
 "\n" \
 "New rowid if changed via rowid UPDATE.\n" 
+
+#define  PreUpdate_table_name_DOC ":type: str\n" \
+"\n" \
+"Table name.\n" 
 
 #define  PreUpdate_update_DOC ":type: tuple[SQLiteValue | Literal[no_change], ...] | None\n" \
 "\n" \

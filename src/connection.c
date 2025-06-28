@@ -380,6 +380,7 @@ Connection_close_internal(Connection *self, int force)
     }
     PyMem_Free(self->preupdate_hooks);
     self->preupdate_hooks = NULL;
+    self->preupdate_hooks_count = 0;
   }
 
   if (self->stmtcache)
@@ -5653,9 +5654,9 @@ Connection_setlk_timeout(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
 
   DBMUTEX_ENSURE(self->dbmutex);
   int res = sqlite3_setlk_timeout(self->db, ms, flags);
+  SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
 
-  SET_EXC(res, NULL);
   if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
@@ -6096,6 +6097,11 @@ Connection_tp_traverse(PyObject *self_, visitproc visit, void *arg)
     Py_VISIT(self->progresshandler[i].callback);
     Py_VISIT(self->progresshandler[i].id);
   }
+  for (unsigned i = 0; i < self->preupdate_hooks_count; i++)
+  {
+    Py_VISIT(self->preupdate_hooks[i].callback);
+    Py_VISIT(self->preupdate_hooks[i].id);
+  }
   return 0;
 }
 
@@ -6404,7 +6410,6 @@ PreUpdate_connection(PyObject *self_, void *Py_UNUSED(unused))
   ``DELETE``, or ``UPDATE``.  See :attr:`opcode`
   for this as a number.
 
-  -* sqlite3_preupdate_count
 */
 static PyObject *
 PreUpdate_op(PyObject *self_, void *Py_UNUSED(unused))
@@ -6427,7 +6432,6 @@ PreUpdate_op(PyObject *self_, void *Py_UNUSED(unused))
   ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.
   See :attr:`op` for this as a string.
 
-  -* sqlite3_preupdate_count
 */
 static PyObject *
 PreUpdate_opcode(PyObject *self_, void *Py_UNUSED(unused))
@@ -6437,6 +6441,37 @@ PreUpdate_opcode(PyObject *self_, void *Py_UNUSED(unused))
 
   return PyLong_FromLong(self->op);
 }
+
+/** .. attribute:: database_name
+  :type: str
+
+  ``main``, ``temp``, the name of an attached database.
+
+*/
+static PyObject *
+PreUpdate_database_name(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyUnicode_FromString(self->zDb);
+}
+
+/** .. attribute:: table_name
+  :type: str
+
+  Table name.
+
+*/
+static PyObject *
+PreUpdate_table_name(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyUnicode_FromString(self->zName);
+}
+
 
 /** .. attribute:: rowid
   :type: int
@@ -6481,6 +6516,24 @@ PreUpdate_depth(PyObject *self_, void *Py_UNUSED(unused))
   CHECK_PREUPDATE_SCOPE;
 
   return PyLong_FromLong(sqlite3_preupdate_depth(self->db->db));
+}
+
+/** .. attribute:: blob_write
+  :type: int
+
+  Writes to blobs show up as `DELETE`, with this having the
+  column number being rewritten.  The value is negative if
+  no blob is being written.
+
+  -* sqlite3_preupdate_blobwrite
+*/
+static PyObject *
+PreUpdate_blob_write(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyLong_FromLong(sqlite3_preupdate_blobwrite(self->db->db));
 }
 
 /** .. attribute:: new
@@ -6634,8 +6687,8 @@ PreUpdate_update(PyObject *self_, void *Py_UNUSED(unused))
           /* compare length first */
           eq = (sqlite3_value_bytes(value_old) == sqlite3_value_bytes(value_new));
           /* these could fail if a UTF16 to UTF8 conversion happens */
-          const char *text_old = sqlite3_value_text(value_old);
-          const char *text_new = sqlite3_value_text(value_new);
+          const unsigned char *text_old = sqlite3_value_text(value_old);
+          const unsigned char *text_new = sqlite3_value_text(value_new);
           if (!text_old || !text_new)
           {
             SET_EXC(SQLITE_NOMEM, self->db->db);
@@ -6686,7 +6739,7 @@ PreUpdate_tp_str(PyObject *self_)
   if (!self->db)
     return PyUnicode_FromFormat("<apsw.PreUpdate out of scope, at %p>", self);
 
-  PyObject *op = NULL, *depth = NULL, *vals = NULL;
+  PyObject *op = NULL, *depth = NULL, *blob_write = NULL, *vals = NULL;
 
   const char *label = NULL;
 
@@ -6694,6 +6747,8 @@ PreUpdate_tp_str(PyObject *self_)
   if (op)
     depth = PreUpdate_depth(self_, NULL);
   if (depth)
+    blob_write = PreUpdate_blob_write(self_, NULL);
+  if (blob_write)
     switch (self->op)
     {
     case SQLITE_INSERT:
@@ -6714,13 +6769,14 @@ PreUpdate_tp_str(PyObject *self_)
 
   if (vals)
     res = PyUnicode_FromFormat("<apsw.PreUpdate op=%U, database=\"%s\", table=\"%s\", depth=%S, "
-                               "column_count=%d, rowid=%lld, rowid_new=%lld, %s=%S "
+                               "column_count=%d, rowid=%lld, rowid_new=%lld, blob_write=%S, %s=%S "
                                "at %p>",
-                               op, self->zDb, self->zName, depth, self->column_count, self->iKey1, self->iKey2, label,
-                               vals, self);
+                               op, self->zDb, self->zName, depth, self->column_count, self->iKey1, self->iKey2,
+                               blob_write, label, vals, self);
 
   Py_XDECREF(op);
   Py_XDECREF(depth);
+  Py_XDECREF(blob_write);
   Py_XDECREF(vals);
 
   assert((res == NULL && PyErr_Occurred()) || (res != NULL && !PyErr_Occurred()));
@@ -6732,6 +6788,8 @@ static PyGetSetDef PreUpdate_getset[] = {
   { "connection", PreUpdate_connection, NULL, PreUpdate_connection_DOC },
   { "op", PreUpdate_op, NULL, PreUpdate_op_DOC },
   { "opcode", PreUpdate_opcode, NULL, PreUpdate_opcode_DOC },
+  { "database_name", PreUpdate_database_name, NULL, PreUpdate_database_name_DOC },
+  { "table_name", PreUpdate_table_name, NULL, PreUpdate_table_name_DOC },
   { "rowid", PreUpdate_rowid, NULL, PreUpdate_rowid_DOC },
   { "rowid_new", PreUpdate_rowid_new, NULL, PreUpdate_rowid_new_DOC },
   { "depth", PreUpdate_depth, NULL, PreUpdate_depth_DOC },

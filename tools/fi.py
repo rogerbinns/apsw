@@ -119,6 +119,20 @@ def exercise(example_code, expect_exception):
     apsw.connections()
     con.wal_autocheckpoint(1)
 
+    # PreUpdate.tp_str needs this early
+    if hasattr(con, "preupdate_hook"):
+        def hook(update):
+            str(update)
+            for n in dir(update):
+                if not n.startswith("_"):
+                    getattr(update, n)
+
+        con.preupdate_hook(hook)
+        con.execute("create table preupdate(a,b,c,d,e); insert into preupdate values(null, 3, 3.3, 'three', x'abcdef')")
+        vals = [None, 5, 5.5, 'four', b'aaaaaaa']
+        for i in range(len(vals)):
+            con.execute("update preupdate set a=?, b=?, c=?, d=?, e=?", vals[i:] + vals[:i])
+
     # this needs to be early to exercise the chain of faults in TableChange.tp_str
     con.execute("create table one(two, three, four, PRIMARY KEY(two, three, four)); insert into one values(2,3,4)")
     session = apsw.Session(con, "main")

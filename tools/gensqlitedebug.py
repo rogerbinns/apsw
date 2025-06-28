@@ -139,7 +139,6 @@ functions_global = (
     "sqlite3_limit",
     "sqlite3_total_changes64",
     "sqlite3_stmt_(isexplain|readonly)",
-    "sqlite3_preupdate_.*",
     # can't get to db from these
     "sqlite3_filename_(database|journal|wal)",
     "sqlite3_uri_.*",
@@ -203,6 +202,9 @@ functions_arg_one = {
         "sqlite3_db_release_memory",
         "sqlite3_(errcode|errmsg|error_offset|extended_errcode)",
         "sqlite3_vtab_on_conflict",
+        "sqlite3_preupdate_count",
+        "sqlite3_preupdate_depth",
+        "sqlite3_preupdate_blobwrite",
     ),
     2: (
         "sqlite3_busy_timeout",
@@ -225,6 +227,9 @@ functions_arg_one = {
         "sqlite3_vtab_config",
         "sqlite3_wal_hook",
         "sqlite3_setlk_timeout",
+        "sqlite3_preupdate_hook",
+        "sqlite3_preupdate_old",
+        "sqlite3_preupdate_new",
     ),
     4: (
         "sqlite3_autovacuum_pages",
