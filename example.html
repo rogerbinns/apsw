@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.50.1.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.50.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=f1d38ea6"></script>
+      <script src="_static/documentation_options.js?v=63ac504d"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -195,10 +195,10 @@ and attribute documentation.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   Using amalgamation&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">using_amalgamation</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw-master/apsw/__init__.cpython-313-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.50.1.0</span>
-<span class="go">SQLite header version 3050001</span>
-<span class="go">   SQLite lib version 3.50.1</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-313-x86_64-linux-gnu.so</span>
+<span class="go">         APSW version 3.50.2.0</span>
+<span class="go">SQLite header version 3050002</span>
+<span class="go">   SQLite lib version 3.50.2</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -832,11 +832,11 @@ conversion, both for types you define and for other types.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 6, 17, 6, 51, 46, 906036))</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 6, 29, 5, 23, 21, 544116))</span>
 <span class="go">querying data</span>
 <span class="go">column 0 = Point(5.2, 7.6)</span>
 <span class="go">column 1 = (3+4j)</span>
-<span class="go">column 2 = datetime.datetime(2025, 6, 17, 13, 51, 46, 906036, tzinfo=datetime.timezone.utc)</span>
+<span class="go">column 2 = datetime.datetime(2025, 6, 29, 12, 23, 21, 544116, tzinfo=datetime.timezone.utc)</span>
 </pre></div>
 </div>
 </section>
@@ -896,7 +896,7 @@ runtime.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Bad binding argument type supplied - argument #1: type set</span>
-<span class="go">select ? {1, 2, &lt;_io.StringIO object at 0x77027fbb1e40&gt;, &#39;three&#39;, (4+5j)}</span>
+<span class="go">select ? {1, 2, &lt;_io.StringIO object at 0x743ab96b1e40&gt;, &#39;three&#39;, (4+5j)}</span>
 <span class="go">select typeof(?) null</span>
 <span class="go">make_set got ((3+4j), &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, &#39;hello&#39;)</span>
 <span class="go">select make_set(?, ?, ?) {&#39;hello&#39;, &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, (3+4j)}</span>
@@ -961,7 +961,7 @@ across all the queries within the block</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">len(rows)=20</span>
-<span class="go">After 0.200 seconds, we hit number=300996</span>
+<span class="go">After 0.200 seconds, we hit number=326796</span>
 <span class="go">exc=IndexError(&#39;query row limit hit&#39;)</span>
 </pre></div>
 </div>
@@ -1331,7 +1331,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9935335719,)</span>
+<span class="go">(9811449831,)</span>
 </pre></div>
 </div>
 </section>
@@ -1677,15 +1677,15 @@ useful instead.</p>
 
 <span class="go">┌────────────┬────────────────────────────────┬───────────────┐</span>
 <span class="go">│    date    │           directory            │     name      │</span>
-<span class="go">│ 2025-06-16 │ /usr/lib/python3.13/pydoc_data │ topics.py     │</span>
-<span class="go">│ 2025-06-16 │ /usr/lib/python3.13            │ _pydecimal.py │</span>
-<span class="go">│ 2025-06-16 │ /usr/lib/python3.13/tkinter    │ __init__.py   │</span>
+<span class="go">│ 2025-06-20 │ /usr/lib/python3.13/pydoc_data │ topics.py     │</span>
+<span class="go">│ 2025-06-20 │ /usr/lib/python3.13            │ _pydecimal.py │</span>
+<span class="go">│ 2025-06-20 │ /usr/lib/python3.13/tkinter    │ __init__.py   │</span>
 <span class="go">└────────────┴────────────────────────────────┴───────────────┘</span>
 
 <span class="go">┌────────────┬────────────┐</span>
 <span class="go">│ extension  │ total_size │</span>
 <span class="go">│            │ 483963     │</span>
-<span class="go">│ .a         │ 96520146   │</span>
+<span class="go">│ .a         │ 96521266   │</span>
 <span class="go">│ .allowlist │ 56         │</span>
 <span class="go">│ .bootstrap │ 1908       │</span>
 <span class="go">│ .c         │ 11288      │</span>
@@ -1699,8 +1699,8 @@ useful instead.</p>
 <span class="go">│ .local     │ 2128       │</span>
 <span class="go">│ .o         │ 15512      │</span>
 <span class="go">│ .ps1       │ 9031       │</span>
-<span class="go">│ .py        │ 11171456   │</span>
-<span class="go">│ .pyc       │ 11773746   │</span>
+<span class="go">│ .py        │ 11176608   │</span>
+<span class="go">│ .pyc       │ 11792276   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
 <span class="go">│ .sh        │ 2729       │</span>
 <span class="go">│ .so        │ 29503792   │</span>
@@ -1829,7 +1829,7 @@ for receiving parameters once a database is open.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">VFS available [&#39;unix&#39;, &#39;obfuscated&#39;, &#39;memdb&#39;, &#39;unix-excl&#39;, &#39;unix-dotfile&#39;, &#39;unix-none&#39;]</span>
 <span class="go">xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_MAIN_DB | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI</span>
-<span class="go">   uri filename /space/apsw-master/myobfudb</span>
+<span class="go">   uri filename /space/apsw/myobfudb</span>
 <span class="go">   fast is speed</span>
 <span class="go">   level is 7</span>
 <span class="go">   warp is True</span>
@@ -1837,11 +1837,11 @@ for receiving parameters once a database is open.</p>
 <span class="go">   all uris (&#39;fast&#39;, &#39;level&#39;, &#39;warp&#39;, &#39;another&#39;)</span>
 <span class="go">pragma received journal_mode = wal</span>
 <span class="go">xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_MAIN_JOURNAL | SQLITE_OPEN_READWRITE</span>
-<span class="go">   filename /space/apsw-master/myobfudb-journal</span>
+<span class="go">   filename /space/apsw/myobfudb-journal</span>
 <span class="go">pragma received foreign_keys = ON</span>
 <span class="go">pragma received optimize = 65538</span>
 <span class="go">xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_WAL</span>
-<span class="go">   filename /space/apsw-master/myobfudb-wal</span>
+<span class="go">   filename /space/apsw/myobfudb-wal</span>
 <span class="go">pragma received recursive_triggers = ON</span>
 <span class="go">What is on disk b&#39;\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa7\xa7&#39;</span>
 <span class="go">Unobfuscated disk b&#39;SQLite format 3\x00\x10\x00\x02\x02&#39;</span>
@@ -1946,11 +1946,11 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.50.1.0)</span>
-<span class="go">-- SQLite version 3.50.1</span>
-<span class="go">-- Date: Tue Jun 17 06:51:47 2025</span>
+<span class="go">-- SQLite dump (by APSW 3.50.2.0)</span>
+<span class="go">-- SQLite version 3.50.2</span>
+<span class="go">-- Date: Sun Jun 29 05:23:22 2025</span>
 <span class="go">-- Tables like: csvtest%</span>
-<span class="go">-- Database: /space/apsw-master/dbfile</span>
+<span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
 
 <span class="go">-- The values of various per-database settings</span>
@@ -1988,7 +1988,7 @@ for per connection statistics.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 517952 max 2495016</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 517920 max 2494984</span>
 <span class="go">5048 bytes used to store schema for this connection</span>
 </pre></div>
 </div>
@@ -2045,13 +2045,13 @@ for per connection statistics.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">code is  SQLITE_TRACE_STMT</span>
-<span class="go">{&#39;code&#39;: 1, &#39;id&#39;: 257426216, &#39;total_changes&#39;: 146, &#39;trigger&#39;: False}</span>
+<span class="go">{&#39;code&#39;: 1, &#39;id&#39;: 232476536, &#39;total_changes&#39;: 146, &#39;trigger&#39;: False}</span>
 <span class="go">code is  SQLITE_TRACE_ROW</span>
-<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 257426216}</span>
+<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 232476536}</span>
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;id&#39;: 257426216,</span>
-<span class="go"> &#39;nanoseconds&#39;: 16000000,</span>
+<span class="go"> &#39;id&#39;: 232476536,</span>
+<span class="go"> &#39;nanoseconds&#39;: 17000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
@@ -2083,13 +2083,15 @@ block of code does.  We use the same query from above.</p>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.3</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.023</span>
-<span class="go">                       Wall clock 1.324</span>
-<span class="go">        Maximum resident set size 804</span>
-<span class="go">             Page faults - no I/O 101</span>
-<span class="go">     Involuntary context switches 398</span>
-<span class="go">       Voluntary context switches 1</span>
-<span class="go">                Time in user mode 0.022</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.021</span>
+<span class="go">                       Wall clock 1.326</span>
+<span class="go">           Block input operations 232</span>
+<span class="go">        Maximum resident set size 192</span>
+<span class="go">             Page faults - no I/O 86</span>
+<span class="go">     Involuntary context switches 140</span>
+<span class="go">       Voluntary context switches 5</span>
+<span class="go">              Time in system mode 0.002</span>
+<span class="go">                Time in user mode 0.019</span>
 <span class="go">           SQLite full table scan 1,365</span>
 <span class="go">           SQLite sort operations 2</span>
 <span class="go">             SQLite vm operations 1,015,351</span>
@@ -2269,7 +2271,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jun 17, 2025.
+      <span class="lastupdated">Last updated on Jun 29, 2025.
       </span></p>
   </div>
 

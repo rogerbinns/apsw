@@ -67,10 +67,10 @@ Checking APSW and SQLite versions
 
 .. code-block:: output
 
-          Using APSW file /space/apsw-master/apsw/__init__.cpython-313-x86_64-linux-gnu.so
-             APSW version 3.50.1.0
-    SQLite header version 3050001
-       SQLite lib version 3.50.1
+          Using APSW file /space/apsw/apsw/__init__.cpython-313-x86_64-linux-gnu.so
+             APSW version 3.50.2.0
+    SQLite header version 3050002
+       SQLite lib version 3.50.2
        Using amalgamation True
 
 
@@ -875,11 +875,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 6, 17, 6, 51, 46, 906036))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 6, 29, 5, 23, 21, 544116))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2025, 6, 17, 13, 51, 46, 906036, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2025, 6, 29, 12, 23, 21, 544116, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Runtime Python objects (example code)
@@ -949,7 +949,7 @@ runtime.
 .. code-block:: output
 
     Bad binding argument type supplied - argument #1: type set
-    select ? {1, 2, <_io.StringIO object at 0x77027fbb1e40>, 'three', (4+5j)}
+    select ? {1, 2, <_io.StringIO object at 0x743ab96b1e40>, 'three', (4+5j)}
     select typeof(?) null
     make_set got ((3+4j), <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello')
     select make_set(?, ?, ?) {'hello', <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, (3+4j)}
@@ -1025,7 +1025,7 @@ across all the queries within the block
 .. code-block:: output
 
     len(rows)=20
-    After 0.200 seconds, we hit number=300996
+    After 0.200 seconds, we hit number=326796
     exc=IndexError('query row limit hit')
 
 
@@ -1444,7 +1444,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9935335719,)
+    (9811449831,)
 
 
 .. index:: File Control (example code)
@@ -1838,15 +1838,15 @@ useful instead.
     
     ┌────────────┬────────────────────────────────┬───────────────┐
     │    date    │           directory            │     name      │
-    │ 2025-06-16 │ /usr/lib/python3.13/pydoc_data │ topics.py     │
-    │ 2025-06-16 │ /usr/lib/python3.13            │ _pydecimal.py │
-    │ 2025-06-16 │ /usr/lib/python3.13/tkinter    │ __init__.py   │
+    │ 2025-06-20 │ /usr/lib/python3.13/pydoc_data │ topics.py     │
+    │ 2025-06-20 │ /usr/lib/python3.13            │ _pydecimal.py │
+    │ 2025-06-20 │ /usr/lib/python3.13/tkinter    │ __init__.py   │
     └────────────┴────────────────────────────────┴───────────────┘
     
     ┌────────────┬────────────┐
     │ extension  │ total_size │
     │            │ 483963     │
-    │ .a         │ 96520146   │
+    │ .a         │ 96521266   │
     │ .allowlist │ 56         │
     │ .bootstrap │ 1908       │
     │ .c         │ 11288      │
@@ -1860,8 +1860,8 @@ useful instead.
     │ .local     │ 2128       │
     │ .o         │ 15512      │
     │ .ps1       │ 9031       │
-    │ .py        │ 11171456   │
-    │ .pyc       │ 11773746   │
+    │ .py        │ 11176608   │
+    │ .pyc       │ 11792276   │
     │ .rst       │ 9561       │
     │ .sh        │ 2729       │
     │ .so        │ 29503792   │
@@ -2002,7 +2002,7 @@ for receiving parameters once a database is open.
 
     VFS available ['unix', 'obfuscated', 'memdb', 'unix-excl', 'unix-dotfile', 'unix-none']
     xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_MAIN_DB | SQLITE_OPEN_READWRITE | SQLITE_OPEN_URI
-       uri filename /space/apsw-master/myobfudb
+       uri filename /space/apsw/myobfudb
        fast is speed
        level is 7
        warp is True
@@ -2010,11 +2010,11 @@ for receiving parameters once a database is open.
        all uris ('fast', 'level', 'warp', 'another')
     pragma received journal_mode = wal
     xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_MAIN_JOURNAL | SQLITE_OPEN_READWRITE
-       filename /space/apsw-master/myobfudb-journal
+       filename /space/apsw/myobfudb-journal
     pragma received foreign_keys = ON
     pragma received optimize = 65538
     xOpen flags SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_WAL
-       filename /space/apsw-master/myobfudb-wal
+       filename /space/apsw/myobfudb-wal
     pragma received recursive_triggers = ON
     What is on disk b'\xf6\xf4\xe9\xcc\xd1\xc0\x85\xc3\xca\xd7\xc8\xc4\xd1\x85\x96\xa5\xb5\xa5\xa7\xa7'
     Unobfuscated disk b'SQLite format 3\x00\x10\x00\x02\x02'
@@ -2140,11 +2140,11 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.50.1.0)
-    -- SQLite version 3.50.1
-    -- Date: Tue Jun 17 06:51:47 2025
+    -- SQLite dump (by APSW 3.50.2.0)
+    -- SQLite version 3.50.2
+    -- Date: Sun Jun 29 05:23:22 2025
     -- Tables like: csvtest%
-    -- Database: /space/apsw-master/dbfile
+    -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
     
     -- The values of various per-database settings
@@ -2193,7 +2193,7 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 517952 max 2495016
+    SQLite memory usage 517920 max 2494984
     5048 bytes used to store schema for this connection
 
 
@@ -2260,13 +2260,13 @@ This shows using :meth:`Connection.trace_v2`
 .. code-block:: output
 
     code is  SQLITE_TRACE_STMT
-    {'code': 1, 'id': 257426216, 'total_changes': 146, 'trigger': False}
+    {'code': 1, 'id': 232476536, 'total_changes': 146, 'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 257426216}
+    {'code': 4, 'id': 232476536}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 257426216,
-     'nanoseconds': 16000000,
+     'id': 232476536,
+     'nanoseconds': 17000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
@@ -2309,13 +2309,15 @@ Only statistics that have changed are shown in the summary. There are
 
 .. code-block:: output
 
-                           Total CPU consumption 0.023
-                                      Wall clock 1.324
-                       Maximum resident set size 804
-                            Page faults - no I/O 101
-                    Involuntary context switches 398
-                      Voluntary context switches 1
-                               Time in user mode 0.022
+                           Total CPU consumption 0.021
+                                      Wall clock 1.326
+                          Block input operations 232
+                       Maximum resident set size 192
+                            Page faults - no I/O 86
+                    Involuntary context switches 140
+                      Voluntary context switches 5
+                             Time in system mode 0.002
+                               Time in user mode 0.019
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,351
