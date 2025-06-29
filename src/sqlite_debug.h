@@ -637,6 +637,11 @@
     sqlite3_set_last_insert_rowid((one), (two));         \
 })
 
+#define sqlite3_setlk_timeout(one, two, three) ({        \
+    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
+    sqlite3_setlk_timeout((one), (two), (three));        \
+})
+
 #undef sqlite3_snapshot_cmp
 #define sqlite3_snapshot_cmp *not used*
 
