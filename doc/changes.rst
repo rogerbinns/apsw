@@ -10,6 +10,13 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.50.2.0
+========
+
+PyPi builds now use `cibuildwheel version 3 <https://cibuildwheel.pypa.io/en/stable/changelog/#v300>`__
+which advances the minimum supported Linux distribution.  It is configured to continue building both
+32 and 64 bit binaries..
+
 3.50.1.0
 ========
 
