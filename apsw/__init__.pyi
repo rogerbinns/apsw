@@ -7,7 +7,7 @@ import array
 import types
 
 # Anything that resembles a dictionary
-Mapping: TypeAlias = collections.abc.Mapping
+Mapping = collections.abc.Mapping
 
 # Anything that resembles a sequence of bytes
 if sys.version_info >= (3, 12):
