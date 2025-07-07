@@ -6317,6 +6317,7 @@ class APSW(unittest.TestCase):
             self.assertEqual(update.depth, 0)
             self.assertEqual(update.database_name, "main")
             self.assertEqual(update.table_name, "foo")
+            self.assertEqual(update.blob_write, -1)
             if opcode == apsw.SQLITE_INSERT:
                 self.assertEqual(update.op, "INSERT")
                 self.assertIsNone(update.old)
@@ -6462,8 +6463,51 @@ class APSW(unittest.TestCase):
         self.db.preupdate_hook(hook, id=7)
 
         self.db.execute('insert into "0" values(0)')
+        self.assertEqual(expect_val, 17)
 
-        # ::TODO:: database name, blob_write, check C coverage
+        # blob write
+        self.db = apsw.Connection("")
+        rowid = self.db.execute("create table foo(x,y,z); insert into foo values(zeroblob(16), ?, ?) returning rowid", (b"gggg", b"a"*32)).get
+
+        expect_column = 3
+        def hook(update):
+            nonlocal expect_column, rowid
+            self.assertEqual(update.op, "DELETE")
+            self.assertEqual(update.new, None)
+            self.assertEqual(update.rowid, rowid)
+            self.assertEqual(update.blob_write, expect_column)
+
+        self.db.preupdate_hook(hook)
+
+        for column in "z", "y", "x":
+            expect_column -=1
+
+            with self.db.blob_open("main", "foo", column, rowid, True) as blob:
+                blob.write(b"11")
+                blob.reopen(rowid)
+                blob.write(b"22")
+
+        # check dbname field
+        self.db = apsw.Connection("")
+
+        expect = None
+        def hook(update):
+            nonlocal expect
+            self.assertEqual(update.database_name, expect[0])
+            self.assertEqual(update.table_name, expect[1])
+
+        self.db.preupdate_hook(hook)
+
+        uniname = "ts 🤦🏼‍♂️  regular 😂❤️ 𐍄𐌰𐌽"
+
+        for dbname in '', 'main', 'foo', 'temp', uniname:
+            if dbname not in {'main', 'temp'}:
+                self.db.execute(f"attach '' as [{dbname}]")
+            for tablename in '', 'main', 'foo', 'temp', uniname:
+                expect = dbname, tablename
+                self.db.execute(f"""
+                    create table [{dbname}].[{tablename}](x);
+                    insert into [{dbname}].[{tablename}] values(3)""")
 
     def testDropModules(self):
         "Verify dropping virtual table modules"
