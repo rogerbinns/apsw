@@ -6525,6 +6525,9 @@ PreUpdate_depth(PyObject *self_, void *Py_UNUSED(unused))
   column number being rewritten.  The value is negative if
   no blob is being written.
 
+  Only the old value is available.  To get the new value you have
+  to query the database.
+
   -* sqlite3_preupdate_blobwrite
 */
 static PyObject *
@@ -6796,6 +6799,7 @@ static PyGetSetDef PreUpdate_getset[] = {
   { "old", PreUpdate_old, NULL, PreUpdate_old_DOC },
   { "new", PreUpdate_new, NULL, PreUpdate_new_DOC },
   { "update", PreUpdate_update, NULL, PreUpdate_update_DOC },
+  { "blob_write", PreUpdate_blob_write, NULL, PreUpdate_blob_write_DOC},
   { 0 },
 };
 
