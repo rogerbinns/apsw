@@ -6345,6 +6345,8 @@ class APSW(unittest.TestCase):
         for id in test_ids:
             self.db.preupdate_hook(functools.partial(hook, id), id=id)
 
+        gc.get_referents(self.db)
+
         self.db.execute("create table foo(x,y,z)")
 
         expected_ids = test_ids[:]
@@ -6399,6 +6401,7 @@ class APSW(unittest.TestCase):
             last_row = update.new
 
         self.db.preupdate_hook(hook)
+        self.assertIn(hook, gc.get_referents(self.db))
 
         for value in (3, 3.1, b"onetwothree", "onetwothree", None):
             self.db.execute("update foo set x=?1, y=?1, z=?1", (value,))
