@@ -6512,6 +6512,16 @@ class APSW(unittest.TestCase):
                     create table [{dbname}].[{tablename}](x);
                     insert into [{dbname}].[{tablename}] values(3)""")
 
+        # shenanigans
+        def hook(update):
+            self.assertRaises(apsw.ThreadingViolationError, update.connection.close, force=2)
+
+        self.db = apsw.Connection("")
+        for i in range(5):
+            self.db.preupdate_hook(hook, id=i)
+
+        self.db.execute("create table foo(x); insert into foo values(3); insert into foo values(5)")
+
     def testDropModules(self):
         "Verify dropping virtual table modules"
 
