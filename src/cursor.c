@@ -1256,7 +1256,14 @@ APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_EPILOG(NULL, Cursor_close_USAGE, );
   }
   DBMUTEX_ENSURE(self->connection->dbmutex);
-  IN_QUERY_CHECK;
+  /* Manual IN_QUERY_CHECK to give better error message */
+  if (self->in_query)
+  {
+    if (!PyErr_Occurred())
+      PyErr_Format(ExcThreadingViolation, "You cannot close a Cursor (or its Connection) while inside an executing query");
+    sqlite3_mutex_leave(self->connection->dbmutex);
+    return NULL;
+  }
   APSWCursor_close_internal(self, !!force);
 
   if (PyErr_Occurred())
