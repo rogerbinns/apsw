@@ -5955,7 +5955,7 @@ static void APSWPreUpdateHook_cb(void *pCtx, sqlite3 *db, int op, char const *zD
 
 /** .. method:: preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None
 
- A callback as a database row is being updated.  You can have multiple hooks at once
+ A callback just after a database row is updated.  You can have multiple hooks at once
  (managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for
  ``callback`` will remove it.
 
@@ -5971,6 +5971,14 @@ static void APSWPreUpdateHook_cb(void *pCtx, sqlite3 *db, int op, char const *zD
 
  SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known
  to APSW at compile time.  If not, this API and :class:`PreUpdate` will not be present.
+
+ You do not get calls undoing changes when a transaction is
+ aborted/rolled back.  Consequently you can't use this hook to track
+ the current state of the database.  The approach taken by the
+ :doc:`session` is to note the rowid (or primary keys for without rowid
+ tables), and initial values the first time that a row is seen.  When a
+ changeset is requested, it compares the contents of the row now to the row
+ then, and generates the appropriate changeset entry.
 
  -* sqlite3_preupdate_hook
  */
@@ -6017,6 +6025,8 @@ Connection_preupdate_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     void *pCtx = sqlite3_preupdate_hook(self->db, APSWPreUpdateHook_cb, self);
     if (pCtx && pCtx != self)
     {
+      /* there will be an assertion failure in session if SQLite was compiled with
+         SQLITE_DEBUG - this is tested, just not in debug builds */
       sqlite3_preupdate_hook(self->db, NULL, NULL);
       PyErr_Format(PyExc_Exception,
                    "The preupdate hook has been used by other code, most likely the serssion extension.  This WILL "

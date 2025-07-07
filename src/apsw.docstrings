@@ -2071,7 +2071,7 @@
 
 
 #define  Connection_preupdate_hook_DOC "Connection.preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None\n\n" \
-"A callback as a database row is being updated.  You can have multiple hooks at once\n" \
+"A callback just after a database row is updated.  You can have multiple hooks at once\n" \
 "(managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for\n" \
 "``callback`` will remove it.\n" \
 "\n" \
@@ -2087,6 +2087,14 @@
 "\n" \
 "SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known\n" \
 "to APSW at compile time.  If not, this API and :class:`PreUpdate` will not be present.\n" \
+"\n" \
+"You do not get calls undoing changes when a transaction is\n" \
+"aborted/rolled back.  Consequently you can't use this hook to track\n" \
+"the current state of the database.  The approach taken by the\n" \
+":doc:`session` is to note the rowid (or primary keys for without rowid\n" \
+"tables), and initial values the first time that a row is seen.  When a\n" \
+"changeset is requested, it compares the contents of the row now to the row\n" \
+"then, and generates the appropriate changeset entry.\n" \
 "\n" \
 "Calls: `sqlite3_preupdate_hook <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
@@ -3634,6 +3642,9 @@
 "Writes to blobs show up as `DELETE`, with this having the\n" \
 "column number being rewritten.  The value is negative if\n" \
 "no blob is being written.\n" \
+"\n" \
+"Only the old value is available.  To get the new value you have\n" \
+"to query the database.\n" \
 "\n" \
 "Calls: `sqlite3_preupdate_blobwrite <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 

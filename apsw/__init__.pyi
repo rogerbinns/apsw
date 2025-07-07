@@ -1694,7 +1694,7 @@ class Connection:
         ...
 
     def preupdate_hook(self, callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None:
-        """A callback as a database row is being updated.  You can have multiple hooks at once
+        """A callback just after a database row is updated.  You can have multiple hooks at once
         (managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for
         ``callback`` will remove it.
 
@@ -1710,6 +1710,14 @@ class Connection:
 
         SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known
         to APSW at compile time.  If not, this API and :class:`PreUpdate` will not be present.
+
+        You do not get calls undoing changes when a transaction is
+        aborted/rolled back.  Consequently you can't use this hook to track
+        the current state of the database.  The approach taken by the
+        :doc:`session` is to note the rowid (or primary keys for without rowid
+        tables), and initial values the first time that a row is seen.  When a
+        changeset is requested, it compares the contents of the row now to the row
+        then, and generates the appropriate changeset entry.
 
         Calls: `sqlite3_preupdate_hook <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
         ...
@@ -2758,6 +2766,9 @@ class PreUpdate:
     """Writes to blobs show up as `DELETE`, with this having the
     column number being rewritten.  The value is negative if
     no blob is being written.
+
+    Only the old value is available.  To get the new value you have
+    to query the database.
 
     Calls: `sqlite3_preupdate_blobwrite <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
 
