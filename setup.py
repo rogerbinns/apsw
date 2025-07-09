@@ -29,6 +29,12 @@ except ImportError:
     # but older pythons with older versions don't
     from distutils.command import build
 
+try:
+    # https://github.com/pypa/setuptools/issues/5000
+    from setuptools.errors import OptionError
+except ImportError:
+    from distutils.errors import DistutilsOptionError as OptionError
+
 # This is used to find the compiler and flags for building the test extension
 import distutils.ccompiler
 
@@ -505,6 +511,8 @@ class apsw_build_ext(beparent):
         v = beparent.finalize_options(self)
 
         if self.enable_all_extensions:
+            if self.use_system_sqlite_config:
+                raise OptionError("You can't enable both all extensions **and** using system SQLite config")
             exts = [
                 "fts4",
                 "fts3",
@@ -572,11 +580,11 @@ class apsw_build_ext(beparent):
             # we also add the directory to include path since icu tries to use it
             ext.include_dirs.insert(0, os.path.dirname(path))
             write("SQLite: Using amalgamation", path)
+            sqlite3_dir = os.path.dirname(path)
         else:
             sqlite3_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sqlite3")
             inc = False
             if self.use_system_sqlite_config:
-                set_config_from_system(os.path.join(sqlite3_dir, "sqlite3config.h"))
                 inc = True
             if os.path.isdir(sqlite3_dir) and len(glob.glob(os.path.join(sqlite3_dir, "*"))) > 3:
                 write("SQLite: Using include/libraries in sqlite3 subdirectory")
@@ -587,6 +595,9 @@ class apsw_build_ext(beparent):
             if inc:
                 ext.include_dirs.insert(0, sqlite3_dir)
             ext.libraries.append("sqlite3")
+
+        if self.use_system_sqlite_config:
+            set_config_from_system(os.path.join(sqlite3_dir, "sqlite3config.h"))
 
         # sqlite3config.h used to be generated from configure output - now optional override file
         s3config = os.path.join(ext.include_dirs[0], "sqlite3config.h")

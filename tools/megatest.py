@@ -35,7 +35,7 @@ def run(cmd):
     subprocess.run(cmd, shell=True, check=True)
 
 
-def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig):
+def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, config):
     pyflags = "-X warn_default_encoding  -X dev -X tracemalloc=5" if debug else ""
     extdebug = "--debug" if debug else ""
     logf = os.path.abspath(os.path.join(logdir, "buildruntests.txt"))
@@ -45,21 +45,23 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig):
         if random.choice((False, True))
         else ""
     )
-    if pyver == "system" or sysconfig:
+    if pyver == "system" or config == "system":
         build_ext_flags += " --use-system-sqlite-config"
+    elif config == "full":
+        build_ext_flags += " --enable-all-extensions"
 
     run(
         f"""(
             set -ex ;
-            cd { workdir } ;
-            { pybin } -m venv venv
+            cd {workdir} ;
+            {pybin} -m venv venv
             venv/bin/python3 -m ensurepip || true ;
             venv/bin/python3 -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools ;
-            env LD_LIBRARY_PATH={ pylib } venv/bin/python3 -bb -Werror { pyflags } setup.py fetch \
-                --version={ sqlitever } --all build_test_extension build_ext --inplace --force --enable-all-extensions \
-                { extdebug } { build_ext_flags } test -v --locals;"""
+            env LD_LIBRARY_PATH={pylib} venv/bin/python3 -bb -Werror {pyflags} setup.py fetch \
+                --version={sqlitever} --all build_test_extension build_ext --inplace --force \
+                {extdebug} {build_ext_flags} test -v --locals;"""
         + (
-            f"""
+            """
             cp tools/setup-pypi.cfg setup.apsw ;
             venv/bin/python3 -m pip wheel -v . ;
             venv/bin/python3 -m pip install --no-index --force-reinstall --find-links=. apsw ;
@@ -67,13 +69,13 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig):
             if not debug
             else ""
         )
-        + f"""   ) >{ logf }  2>&1"""
+        + f"""   ) >{logf}  2>&1"""
     )
 
 
-def runtest(workdir, pyver, bits, sqlitever, logdir, debug, sysconfig):
+def runtest(workdir, pyver, bits, sqlitever, logdir, debug, config):
     pybin, pylib = buildpython(workdir, pyver, bits, debug, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
-    dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, sysconfig)
+    dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, config)
 
 
 def main(PYVERS, SQLITEVERS, BITS, concurrency):
@@ -95,45 +97,21 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
         for debug in False, True:
             for sqlitever in SQLITEVERS:
                 for pyver in PYVERS:
-                    for sysconfig in False, True:
+                    for config in ("none", "full", "system"):
                         for bits in BITS:
                             # we only have 64 bit system python
                             if pyver == "system" and bits != 64:
                                 continue
-                            if sysconfig and bits != 64:
-                                continue
-                            # python 3.14 alpha on 32 bit gets some SIMD intrinsics wrong
-                            if pyver == "3.14.0a1" and bits == 32:
+                            if config == "system" and bits != 64:
                                 continue
 
                             print(
-                                f"Python { pyver } { bits }bit  SQLite { sqlitever }  debug { debug } sysconfig { sysconfig }"
+                                f"Python {pyver} {bits}bit  SQLite {sqlitever}  debug {debug} config {config}"
                             )
-                            workdir = os.path.abspath(
-                                os.path.join(
-                                    topworkdir,
-                                    "py%s-%d-sq%s%s%s"
-                                    % (
-                                        pyver,
-                                        bits,
-                                        sqlitever,
-                                        "-debug" if debug else "",
-                                        "-sysconfig" if sysconfig else "",
-                                    ),
-                                )
-                            )
+                            name = f"py{pyver}-{bits}-{sqlitever}-config-{config}{'-debug' if debug else ''}"
+                            workdir = os.path.abspath(os.path.join(topworkdir, name))
                             logdir = os.path.abspath(
-                                os.path.join(
-                                    "megatestresults",
-                                    "py%s-%d-sq%s%s%s"
-                                    % (
-                                        pyver,
-                                        bits,
-                                        sqlitever,
-                                        "-debug" if debug else "",
-                                        "-sysconfig" if sysconfig else "",
-                                    ),
-                                )
+                                os.path.join("megatestresults", name)
                             )
                             os.makedirs(logdir)
                             os.makedirs(workdir)
@@ -146,9 +124,9 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
                                 sqlitever=sqlitever,
                                 logdir=logdir,
                                 debug=debug,
-                                sysconfig=sysconfig,
+                                config=config,
                             )
-                            job.info = f"py { pyver } sqlite { sqlitever } debug { debug } bits { bits } sysconfig { sysconfig }"
+                            job.info = f"py {pyver} sqlite {sqlitever} debug {debug} bits {bits} config {config}"
                             jobs.append(job)
 
         print(f"\nAll { len(jobs) } builds started, now waiting for them to finish ({ concurrency } concurrency)\n")
