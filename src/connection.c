@@ -247,8 +247,10 @@ Connection_remove_dependent(Connection *self, PyObject *o)
   }
 }
 
+#ifdef SQLITE_ENABLE_SESSION
 static PyTypeObject APSWSessionType;
 static PyTypeObject APSWChangesetBuilderType;
+#endif
 
 /* returns zero on success, non-zero on error */
 static int
@@ -276,10 +278,12 @@ Connection_close_internal(Connection *self, int force)
     if (vargs[2])
     {
       int nargs = 2;
+#ifdef SQLITE_ENABLE_SESSION
       /* these don't have force parameter */
       if (PyObject_IsInstance(item, (PyObject *)&APSWSessionType)
           || PyObject_IsInstance(item, (PyObject *)&APSWChangesetBuilderType))
         nargs = 1;
+#endif
       closeres = PyObject_VectorcallMethod(apst.close, vargs + 1, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     }
     Py_XDECREF(vargs[2]);
