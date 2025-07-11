@@ -758,14 +758,20 @@ class Trace:
            executing trigger is shown too.
     :param vtable: If `True` then statements executed behind the
            scenes by virtual tables are shown.
+    :param updates: If `True` and the :meth:`~apsw.Connection.preupdate_hook`
+           is available, then inserted, updated, and deleted rows are shown.
+           This is very helpful when you use bindings.
     :param truncate: Truncates SQL text to this many characters
     :param indent: Printed before each line of output
 
     You are shown each regular statement start with a prefix of ``>``,
     end with a prefix of ``<`` if there were in between statements
     like triggers, ``T`` indicating trigger statements, and ``V``
-    indicating virtual table statements.  As each statement ends you
-    are shown summary information.
+    indicating virtual table statements.  If ``updates`` is on, then
+    ``INS``. ``DEL``, and ``UPD`` are shown followed by the rowid, and
+    then the columns. For updates, unchanged columns are shown as ``...```.
+
+    As each statement ends you are shown summary information.
 
     .. list-table::
         :header-rows: 1
@@ -830,6 +836,7 @@ class Trace:
         *,
         trigger: bool = False,
         vtable: bool = False,
+        updates: bool = False,
         truncate: int = 75,
         indent: str = "",
     ):
@@ -838,6 +845,7 @@ class Trace:
         self.trigger = trigger
         self.vtable = vtable
         self.indent = indent
+        self.updates = updates
         self.truncate = truncate
 
     def _truncate(self, text: str) -> str:
@@ -858,7 +866,28 @@ class Trace:
             apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_ROW | apsw.SQLITE_TRACE_PROFILE, self._sqlite_trace, id=self
         )
 
+        if self.updates:
+            if hasattr(self.db, "preupdate_hook"):
+                self.db.preupdate_hook(self._preupdate, id=self)
+            else:
+                self.updates = False
+
         return self
+
+    def _preupdate(self, update: apsw.PreUpdate):
+        out = f"{update.op[:3]} {update.rowid}{('/' + update.rowid_new) if update.rowid_new != update.rowid else ''} ("
+        for num, column in enumerate(
+            update.old if update.op == "DELETE" else update.new if update.op == "INSERT" else update.update
+        ):
+            if len(out) > self.truncate:
+                break
+            val = "..." if column is apsw.no_change else apsw.format_sql_value(column)
+            if num != 0:
+                out += ", "
+            out += val
+        out += ")"
+
+        print(self.indent, " " + "  " * update.depth, self._truncate(out), file=self.file)
 
     def _sqlite_trace(self, event: dict):
         if event["code"] == apsw.SQLITE_TRACE_STMT:
@@ -948,6 +977,8 @@ class Trace:
 
     def __exit__(self, *_):
         self.db.trace_v2(0, None, id=self)
+        if self.updates:
+            self.db.preupdate_hook(None, id=self)
 
 
 class ShowResourceUsage:

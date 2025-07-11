@@ -1401,7 +1401,7 @@ with apsw.ext.ShowResourceUsage(
 # code.  This also shows behind the scenes SQL.
 
 # Use None instead of stdout and no information is printed or gathered
-with apsw.ext.Trace(sys.stdout, db=connection, vtable=True):
+with apsw.ext.Trace(sys.stdout, db=connection, vtable=True, updates=True):
     # APSW does a savepoint behind the scenes to wrap the block
     with connection:
         # Some regular SQL
