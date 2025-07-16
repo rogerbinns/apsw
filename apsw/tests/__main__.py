@@ -833,7 +833,7 @@ class APSW(unittest.TestCase):
             db.set_busy_handler(lambda x: False)
             db.set_busy_timeout(1000)
             db.set_commit_hook(lambda x=1: 0)
-            db.set_rollback_hook(lambda x=2: 1)
+            db.set_rollback_hook(lambda x=2: 1, id=i)
             db.set_update_hook(lambda x=3: 2)
             db.set_wal_hook(lambda *args: 0)
             db.collation_needed(lambda x: 4)
@@ -3371,6 +3371,54 @@ class APSW(unittest.TestCase):
         # check cursor still works
         for row in c.execute("select * from foo"):
             pass
+
+        # multiple ids
+        self.db.set_rollback_hook(None)
+
+        called = set()
+        expect = set(range(10))
+
+        def hook(i):
+            nonlocal called
+            called.add(i)
+
+        for i in expect:
+            self.db.set_rollback_hook(functools.partial(hook, i), id=i)
+
+        c.execute("begin; insert into foo values(11); rollback")
+        self.assertEqual(called, expect)
+
+        for i in expect:
+            called.remove(i)
+            self.db.set_rollback_hook(None, id=i)
+
+        c.execute("begin; insert into foo values(11); rollback")
+
+        self.assertEqual(called, set())
+
+        # chained exceptions
+        def hook1():
+            1 / 0
+
+        def hook2():
+            raise FileExistsError()
+
+        def hook3(x):
+            pass
+
+        for fn in (hook1, hook2, hook3):
+            self.db.set_rollback_hook(fn, id=fn)
+
+        self.assertRaisesChain(
+            (ZeroDivisionError, FileExistsError, TypeError),
+            self.db.execute,
+            "begin ; insert into foo values(12); rollback",
+        )
+
+        for fn in (hook1, hook2, hook3):
+            self.db.set_rollback_hook(None, id=fn)
+
+        self.db.execute("begin ; insert into foo values(12); rollback")
 
     def testUpdateHook(self):
         "Verify update hooks"
