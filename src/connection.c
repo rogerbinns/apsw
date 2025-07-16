@@ -97,9 +97,7 @@ struct Connection
 
   /* registered hooks/handlers (NULL or callable) */
   PyObject *busyhandler;
-  PyObject *rollbackhook;
   PyObject *updatehook;
-  PyObject *commithook;
   PyObject *walhook;
   PyObject *authorizer;
   PyObject *collationneeded;
@@ -115,6 +113,12 @@ struct Connection
 
   struct generichook_entry *preupdate_hooks;
   unsigned preupdate_hooks_count;
+
+  struct generichook_entry *commit_hooks;
+  unsigned commit_hooks_count;
+
+  struct generichook_entry *rollback_hooks;
+  unsigned rollback_hooks_count;
 
   /* if we are using one of our VFS since sqlite doesn't reference count them */
   PyObject *vfs;
@@ -259,9 +263,7 @@ Connection_internal_cleanup(Connection *self)
 {
   Py_CLEAR(self->cursor_factory);
   Py_CLEAR(self->busyhandler);
-  Py_CLEAR(self->rollbackhook);
   Py_CLEAR(self->updatehook);
-  Py_CLEAR(self->commithook);
   Py_CLEAR(self->walhook);
   Py_CLEAR(self->authorizer);
   Py_CLEAR(self->collationneeded);
@@ -385,6 +387,30 @@ Connection_close_internal(Connection *self, int force)
     PyMem_Free(self->preupdate_hooks);
     self->preupdate_hooks = NULL;
     self->preupdate_hooks_count = 0;
+  }
+
+  if (self->commit_hooks)
+  {
+    for (unsigned i = 0; i < self->commit_hooks_count; i++)
+    {
+      Py_CLEAR(self->commit_hooks[i].callback);
+      Py_CLEAR(self->commit_hooks[i].id);
+    }
+    PyMem_Free(self->commit_hooks);
+    self->commit_hooks = NULL;
+    self->commit_hooks_count = 0;
+  }
+
+  if (self->rollback_hooks)
+  {
+    for (unsigned i = 0; i < self->rollback_hooks_count; i++)
+    {
+      Py_CLEAR(self->rollback_hooks[i].callback);
+      Py_CLEAR(self->rollback_hooks[i].id);
+    }
+    PyMem_Free(self->rollback_hooks);
+    self->rollback_hooks = NULL;
+    self->rollback_hooks_count = 0;
   }
 
   if (self->stmtcache)
@@ -1235,41 +1261,44 @@ Connection_set_update_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize
 }
 
 static void
-rollbackhookcb(void *context)
+rollbackhook_cb(void *context)
 {
   /* The hook returns void. That makes it impossible for us to
      abort immediately due to an error in the callback */
 
-  PyGILState_STATE gilstate;
-  PyObject *retval = NULL;
+  PyGILState_STATE gilstate = PyGILState_Ensure();
   Connection *self = (Connection *)context;
-
-  assert(self);
-  assert(self->rollbackhook);
-  assert(!Py_IsNone(self->rollbackhook));
-
-  gilstate = PyGILState_Ensure();
 
   MakeExistingException();
 
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
-  else
+  CHAIN_EXC_BEGIN
+
+  for (unsigned i = 0; i < self->rollback_hooks_count; i++)
   {
-    PyObject *vargs[] = { NULL };
-    retval = PyObject_Vectorcall(self->rollbackhook, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    if (self->rollback_hooks[i].callback)
+    {
+      CHAIN_EXC_BEGIN
+      PyObject *vargs[] = { NULL };
+      PyObject *retval
+          = PyObject_Vectorcall(self->rollback_hooks[i].callback, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_XDECREF(retval);
+      CHAIN_EXC_END;
+    }
   }
 
-  Py_XDECREF(retval);
+  CHAIN_EXC_END;
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: set_rollback_hook(callable: Optional[Callable[[], None]]) -> None
+/** .. method:: set_rollback_hook(callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None
 
   Sets a callable which is invoked during a rollback.  If *callable*
   is *None* then any existing rollback hook is unregistered.
 
   The *callable* is called with no parameters and the return value is ignored.
+
+  You can have multiple hooks at once (managed by APSW) by specifying
+  different ``id`` for each one.
 
   -* sqlite3_rollback_hook
 */
@@ -1279,6 +1308,7 @@ Connection_set_rollback_hook(PyObject *self_, PyObject *const *fast_args, Py_ssi
   Connection *self = (Connection *)self_;
   /* sqlite3_rollback_hook doesn't return an error code */
   PyObject *callable;
+  PyObject *id = NULL;
 
   CHECK_CLOSED(self, NULL);
 
@@ -1286,23 +1316,48 @@ Connection_set_rollback_hook(PyObject *self_, PyObject *const *fast_args, Py_ssi
     Connection_set_rollback_hook_CHECK;
     ARG_PROLOG(1, Connection_set_rollback_hook_KWNAMES);
     ARG_MANDATORY ARG_optional_Callable(callable);
+    ARG_OPTIONAL ARG_pyobject(id);
     ARG_EPILOG(NULL, Connection_set_rollback_hook_USAGE, );
   }
 
   DBMUTEX_ENSURE(self->dbmutex);
 
-  if (!callable)
+  unsigned before_hooks = generic_hooks_active(self->rollback_hooks, self->rollback_hooks_count);
+
+  generic_hooks_update(&self->rollback_hooks, &self->rollback_hooks_count, callable, id);
+  if (PyErr_Occurred())
+    goto error;
+
+  unsigned current_hooks = generic_hooks_active(self->rollback_hooks, self->rollback_hooks_count);
+
+  /* transition from some to none */
+  if (before_hooks && current_hooks == 0)
+  {
     sqlite3_rollback_hook(self->db, NULL, NULL);
-  else
-    sqlite3_rollback_hook(self->db, rollbackhookcb, self);
+  }
+  /* none to some, some to some */
+  else if ((before_hooks == 0 && current_hooks) || (before_hooks && current_hooks))
+  {
+    /* We are paranoid because non-APSW code could have
+       grabbed the hook.  The hook returns the current pCtx which
+       we set to self */
+    void *pCtx = sqlite3_rollback_hook(self->db, rollbackhook_cb, self);
+    if (pCtx && pCtx != self)
+    {
+      sqlite3_rollback_hook(self->db, NULL, NULL);
+      PyErr_Format(PyExc_Exception, "The rollback hook has been used by other code.  This COULD "
+                                    "result in crashes in the other code, so the hook has been disabled.");
+      goto error;
+    }
+  }
 
   sqlite3_mutex_leave(self->dbmutex);
-
-  Py_CLEAR(self->rollbackhook);
-  if (callable)
-    self->rollbackhook = Py_NewRef(callable);
-
   Py_RETURN_NONE;
+
+error:
+  assert(PyErr_Occurred());
+  sqlite3_mutex_leave(self->dbmutex);
+  return NULL;
 }
 
 static int
@@ -1675,55 +1730,57 @@ Connection_trace_v2(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
 }
 
 static int
-commithookcb(void *context)
+commithook_cb(void *context)
 {
   /* The hook returns 0 for commit to go ahead and non-zero to abort
      commit (turn into a rollback). We return non-zero for errors */
 
-  PyGILState_STATE gilstate;
-  PyObject *retval = NULL;
-  int ok = 1; /* error state */
+  PyGILState_STATE gilstate = PyGILState_Ensure();
   Connection *self = (Connection *)context;
-
-  assert(self);
-  assert(self->commithook);
-  assert(!Py_IsNone(self->commithook));
-
-  gilstate = PyGILState_Ensure();
+  PyObject *retval = NULL;
+  int res = 1; /* error */
 
   MakeExistingException();
 
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
-  PyObject *vargs[] = { NULL };
-  retval = PyObject_Vectorcall(self->commithook, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-
-  if (!retval)
-    goto finally; /* abort hook due to exception */
-
-  ok = PyObject_IsTrueStrict(retval);
-  assert(ok == -1 || ok == 0 || ok == 1);
-  if (ok == -1)
+  for (unsigned i = 0; i < self->commit_hooks_count; i++)
   {
-    ok = 1;
-    assert(PyErr_Occurred());
-    goto finally; /* abort due to exception in return value */
-  }
+    if (self->commit_hooks[i].callback)
+    {
+      PyObject *vargs[] = { NULL };
+      retval = PyObject_Vectorcall(self->commit_hooks[i].callback, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
+      res = retval ? PyObject_IsTrueStrict(retval) : -1;
+      assert((PyErr_Occurred() && res == -1) || (!PyErr_Occurred() && (res == 0 || res == 1)));
+      if (PyErr_Occurred())
+      {
+        AddTraceBackHere(__FILE__, __LINE__, "Connection.commit_hook.callback", "{s:O,s:O,s:O}", "callback",
+                         self->commit_hooks[i].callback, "id", OBJ(self->commit_hooks[i].id), "returned", OBJ(retval));
+        break;
+      }
+      Py_CLEAR(retval);
+      if (res == 1)
+        break;
+    }
+  }
 finally:
   Py_XDECREF(retval);
   PyGILState_Release(gilstate);
-  return ok;
+  return res;
 }
 
-/** .. method:: set_commit_hook(callable: Optional[CommitHook]) -> None
+/** .. method:: set_commit_hook(callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None
 
   *callable* will be called just before a commit.  It should return
   False for the commit to go ahead and True for it to be turned
   into a rollback. In the case of an exception in your callable, a
   True (rollback) value is returned.  Pass None to unregister
   the existing hook.
+
+  You can have multiple hooks at once (managed by APSW) by specifying
+  different ``id`` for each one.
 
   .. seealso::
 
@@ -1738,6 +1795,7 @@ Connection_set_commit_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize
   Connection *self = (Connection *)self_;
   /* sqlite3_commit_hook doesn't return an error code */
   PyObject *callable;
+  PyObject *id = NULL;
 
   CHECK_CLOSED(self, NULL);
 
@@ -1745,21 +1803,48 @@ Connection_set_commit_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize
     Connection_set_commit_hook_CHECK;
     ARG_PROLOG(1, Connection_set_commit_hook_KWNAMES);
     ARG_MANDATORY ARG_optional_Callable(callable);
+    ARG_OPTIONAL ARG_pyobject(id);
     ARG_EPILOG(NULL, Connection_set_commit_hook_USAGE, );
   }
 
   DBMUTEX_ENSURE(self->dbmutex);
-  if (callable)
-    sqlite3_commit_hook(self->db, commithookcb, self);
-  else
+
+  unsigned before_hooks = generic_hooks_active(self->commit_hooks, self->commit_hooks_count);
+
+  generic_hooks_update(&self->commit_hooks, &self->commit_hooks_count, callable, id);
+  if (PyErr_Occurred())
+    goto error;
+
+  unsigned current_hooks = generic_hooks_active(self->commit_hooks, self->commit_hooks_count);
+
+  /* transition from some to none */
+  if (before_hooks && current_hooks == 0)
+  {
     sqlite3_commit_hook(self->db, NULL, NULL);
+  }
+  /* none to some, some to some */
+  else if ((before_hooks == 0 && current_hooks) || (before_hooks && current_hooks))
+  {
+    /* We are paranoid because non-APSW code could have
+       grabbed the hook.  The hook returns the current pCtx which
+       we set to self */
+    void *pCtx = sqlite3_commit_hook(self->db, commithook_cb, self);
+    if (pCtx && pCtx != self)
+    {
+      sqlite3_commit_hook(self->db, NULL, NULL);
+      PyErr_Format(PyExc_Exception, "The commit hook has been used by other code.  This COULD "
+                                    "result in crashes in the other code, so the hook has been disabled.");
+      goto error;
+    }
+  }
+
   sqlite3_mutex_leave(self->dbmutex);
-
-  Py_CLEAR(self->commithook);
-  if (callable)
-    self->commithook = Py_NewRef(callable);
-
   Py_RETURN_NONE;
+
+error:
+  assert(PyErr_Occurred());
+  sqlite3_mutex_leave(self->dbmutex);
+  return NULL;
 }
 
 static int
@@ -6090,9 +6175,7 @@ Connection_tp_traverse(PyObject *self_, visitproc visit, void *arg)
 {
   Connection *self = (Connection *)self_;
   Py_VISIT(self->busyhandler);
-  Py_VISIT(self->rollbackhook);
   Py_VISIT(self->updatehook);
-  Py_VISIT(self->commithook);
   Py_VISIT(self->walhook);
   Py_VISIT(self->authorizer);
   Py_VISIT(self->collationneeded);
@@ -6115,6 +6198,16 @@ Connection_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   {
     Py_VISIT(self->preupdate_hooks[i].callback);
     Py_VISIT(self->preupdate_hooks[i].id);
+  }
+  for (unsigned i = 0; i < self->rollback_hooks_count; i++)
+  {
+    Py_VISIT(self->rollback_hooks[i].callback);
+    Py_VISIT(self->rollback_hooks[i].id);
+  }
+  for (unsigned i = 0; i < self->commit_hooks_count; i++)
+  {
+    Py_VISIT(self->commit_hooks[i].callback);
+    Py_VISIT(self->commit_hooks[i].id);
   }
   return 0;
 }

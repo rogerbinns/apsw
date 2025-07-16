@@ -2316,12 +2316,15 @@
 #define Connection_set_busy_timeout_OLDNAME "setbusytimeout"
 #define Connection_set_busy_timeout_OLDDOC Connection_set_busy_timeout_USAGE "\n(Old less clear name setbusytimeout)"
 
-#define  Connection_set_commit_hook_DOC "Connection.set_commit_hook(callable: Optional[CommitHook]) -> None\n\n" \
+#define  Connection_set_commit_hook_DOC "Connection.set_commit_hook(callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None\n\n" \
 "*callable* will be called just before a commit.  It should return\n" \
 "False for the commit to go ahead and True for it to be turned\n" \
 "into a rollback. In the case of an exception in your callable, a\n" \
 "True (rollback) value is returned.  Pass None to unregister\n" \
 "the existing hook.\n" \
+"\n" \
+"You can have multiple hooks at once (managed by APSW) by specifying\n" \
+"different ``id`` for each one.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -2329,11 +2332,13 @@
 "\n" \
 "Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
-#define Connection_set_commit_hook_KWNAMES "callable"
-#define Connection_set_commit_hook_USAGE "Connection.set_commit_hook(callable: Optional[CommitHook]) -> None"
+#define Connection_set_commit_hook_KWNAMES "callable", "id"
+#define Connection_set_commit_hook_USAGE "Connection.set_commit_hook(callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None"
 
 #define Connection_set_commit_hook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(id), PyObject *)); \
+  assert(id == NULL); \
 } while(0)
 
 
@@ -2423,19 +2428,24 @@
 #define Connection_set_progress_handler_OLDNAME "setprogresshandler"
 #define Connection_set_progress_handler_OLDDOC Connection_set_progress_handler_USAGE "\n(Old less clear name setprogresshandler)"
 
-#define  Connection_set_rollback_hook_DOC "Connection.set_rollback_hook(callable: Optional[Callable[[], None]]) -> None\n\n" \
+#define  Connection_set_rollback_hook_DOC "Connection.set_rollback_hook(callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None\n\n" \
 "Sets a callable which is invoked during a rollback.  If *callable*\n" \
 "is *None* then any existing rollback hook is unregistered.\n" \
 "\n" \
 "The *callable* is called with no parameters and the return value is ignored.\n" \
 "\n" \
+"You can have multiple hooks at once (managed by APSW) by specifying\n" \
+"different ``id`` for each one.\n" \
+"\n" \
 "Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
-#define Connection_set_rollback_hook_KWNAMES "callable"
-#define Connection_set_rollback_hook_USAGE "Connection.set_rollback_hook(callable: Optional[Callable[[], None]]) -> None"
+#define Connection_set_rollback_hook_KWNAMES "callable", "id"
+#define Connection_set_rollback_hook_USAGE "Connection.set_rollback_hook(callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None"
 
 #define Connection_set_rollback_hook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(id), PyObject *)); \
+  assert(id == NULL); \
 } while(0)
 
 
