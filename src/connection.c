@@ -1281,6 +1281,9 @@ rollbackhook_cb(void *context)
       PyObject *vargs[] = { NULL };
       PyObject *retval
           = PyObject_Vectorcall(self->rollback_hooks[i].callback, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      if (!retval)
+        AddTraceBackHere(__FILE__, __LINE__, "Connection.rollback_hook", "{s:O,s:O}", "id",
+                         OBJ(self->rollback_hooks[i].id), "callback", OBJ(self->rollback_hooks[i].callback));
       Py_XDECREF(retval);
       CHAIN_EXC_END;
     }
