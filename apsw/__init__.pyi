@@ -1864,12 +1864,15 @@ class Connection:
 
     setbusytimeout = set_busy_timeout ## OLD-NAME
 
-    def set_commit_hook(self, callable: Optional[CommitHook]) -> None:
+    def set_commit_hook(self, callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None:
         """*callable* will be called just before a commit.  It should return
         False for the commit to go ahead and True for it to be turned
         into a rollback. In the case of an exception in your callable, a
         True (rollback) value is returned.  Pass None to unregister
         the existing hook.
+
+        You can have multiple hooks at once (managed by APSW) by specifying
+        different ``id`` for each one.
 
         .. seealso::
 
@@ -1928,11 +1931,14 @@ class Connection:
 
     setprogresshandler = set_progress_handler ## OLD-NAME
 
-    def set_rollback_hook(self, callable: Optional[Callable[[], None]]) -> None:
+    def set_rollback_hook(self, callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None:
         """Sets a callable which is invoked during a rollback.  If *callable*
         is *None* then any existing rollback hook is unregistered.
 
         The *callable* is called with no parameters and the return value is ignored.
+
+        You can have multiple hooks at once (managed by APSW) by specifying
+        different ``id`` for each one.
 
         Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__"""
         ...
