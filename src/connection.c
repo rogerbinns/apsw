@@ -1406,9 +1406,11 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
       if (connection->tracehooks[i].mask & SQLITE_TRACE_STMT)
       {
 
-        param = Py_BuildValue("{s: i, s: N, s: s, s: O, s: O, s: L}", "code", code, "id", PyLong_FromVoidPtr(one),
-                              "sql", trigger ? sql + 3 : sql, "trigger", trigger ? Py_True : Py_False, "connection",
-                              connection, "total_changes", sqlite3_total_changes64(connection->db));
+        param = Py_BuildValue(
+            "{s: i, s: N, s: s, s: O, s: O, s: L, s: O, s: i}", "code", code, "id", PyLong_FromVoidPtr(one), "sql",
+            trigger ? sql + 3 : sql, "trigger", trigger ? Py_True : Py_False, "connection", connection, "total_changes",
+            sqlite3_total_changes64(connection->db), "readonly", sqlite3_stmt_readonly(stmt) ? Py_True : Py_False,
+            "explain", sqlite3_stmt_isexplain(stmt));
         break;
       }
     }

@@ -761,6 +761,8 @@ class Trace:
     :param updates: If `True` and the :meth:`~apsw.Connection.preupdate_hook`
            is available, then inserted, updated, and deleted rows are shown.
            This is very helpful when you use bindings.
+    :param transaction: If `True` then transaction start and commit/rollback
+           will be shown, using commit/rollback hooks.
     :param truncate: Truncates SQL text to this many characters
     :param indent: Printed before each line of output
 
@@ -770,6 +772,7 @@ class Trace:
     indicating virtual table statements.  If ``updates`` is on, then
     ``INS``. ``DEL``, and ``UPD`` are shown followed by the rowid, and
     then the columns. For updates, unchanged columns are shown as ``...```.
+    Transaction control is shown with a ``!`` prefix.
 
     As each statement ends you are shown summary information.
 
@@ -837,6 +840,7 @@ class Trace:
         trigger: bool = False,
         vtable: bool = False,
         updates: bool = False,
+        transaction: bool = False,
         truncate: int = 75,
         indent: str = "",
     ):
@@ -846,6 +850,7 @@ class Trace:
         self.vtable = vtable
         self.indent = indent
         self.updates = updates
+        self.transaction = transaction
         self.truncate = truncate
 
     def _truncate(self, text: str) -> str:
@@ -872,10 +877,28 @@ class Trace:
             else:
                 self.updates = False
 
+        if self.transaction:
+            self.db.set_commit_hook(self._commit, id=self)
+            self.db.set_rollback_hook(self._rollback, id=self)
+            self.transaction_state: str | None = None
+
         return self
 
+    def _commit(self):
+        self._transaction("COMMIT")
+        return False
+
+    def _rollback(self):
+        self._transaction("ROLLBACK")
+
+    def _transaction(self, state: str):
+        if self.transaction and self.transaction_state != state:
+            self.transaction_state = state
+            print(self.indent, f" !{state}", file=self.file)
+
     def _preupdate(self, update: apsw.PreUpdate):
-        out = f"{update.op[:3]} {update.rowid}{('/' + update.rowid_new) if update.rowid_new != update.rowid else ''} ("
+        self._transaction("BEGIN")
+        out = f"{update.op[:3]} {update.rowid}{f'>{update.rowid_new}' if update.rowid_new != update.rowid else ''} ("
         for num, column in enumerate(
             update.old if update.op == "DELETE" else update.new if update.op == "INSERT" else update.update
         ):
@@ -891,6 +914,8 @@ class Trace:
 
     def _sqlite_trace(self, event: dict):
         if event["code"] == apsw.SQLITE_TRACE_STMT:
+            if self.db.in_transaction or not event["readonly"]:
+                self._transaction("BEGIN")
             stmt = self.statements[event["id"]]
             if stmt.change_count == -1:
                 stmt.change_count = event["total_changes"]
@@ -979,6 +1004,9 @@ class Trace:
         self.db.trace_v2(0, None, id=self)
         if self.updates:
             self.db.preupdate_hook(None, id=self)
+        if self.transaction:
+            self.db.set_commit_hook(None, id=self)
+            self.db.set_rollback_hook(None, id=self)
 
 
 class ShowResourceUsage:
