@@ -3341,6 +3341,40 @@ class APSW(unittest.TestCase):
         self.db.set_commit_hook(ch)
         self.assertRaises(ZeroDivisionError, c.execute, "insert into foo values(?)", (1,))
 
+        # multiple ids
+        expected = set(range(10))
+        seen = set()
+
+        def hook(i):
+            seen.add(i)
+            if i == 10:
+                1 / 0
+            if i == 11:
+                return True
+            return False
+
+        self.db.set_commit_hook(None)
+        for i in expected:
+            self.db.set_commit_hook(functools.partial(hook, i), id=i)
+
+        self.db.execute("insert into foo values(3)")
+        self.assertEqual(expected, seen)
+
+        self.db.set_commit_hook(functools.partial(hook, 10), id=10)
+        self.assertRaises(ZeroDivisionError, self.db.execute, "insert into foo values(77)")
+        self.assertEqual(None, self.db.execute("select * from foo where x=77").get)
+
+        self.db.set_commit_hook(None, id=10)
+        self.db.set_commit_hook(functools.partial(hook, 11), id=11)
+
+        # this depends on internal implementation - we know they will be added after id 11
+        for i in range(20, 100):
+            self.db.set_commit_hook(functools.partial(hook, 10), id=i)
+
+        seen = set()
+        self.assertRaises(apsw.ConstraintError, self.db.execute, "insert into foo values(99)")
+        self.assertEqual(seen, expected | {11})
+
     def testRollbackHook(self):
         "Verify rollback hooks"
         c = self.db.cursor()
