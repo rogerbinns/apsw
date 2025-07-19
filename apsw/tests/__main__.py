@@ -437,6 +437,21 @@ class APSW(unittest.TestCase):
                 e = e.__context__
             self.assertIsInstance(e, exctype)
 
+    def assertRaisesChain(self, exctypes, fn, *args, **kwargs):
+        "Ensures that the exceptions including chained are exctypes, but doesn't check order"
+        try:
+            fn(*args, **kwargs)
+        except BaseException as e:
+            all_types = [type(e)]
+            while e.__context__:
+                e = e.__context__
+                all_types.append(type(e))
+
+            self.assertEqual(set(exctypes), set(all_types), "Exceptions didn't match")
+            return
+
+        self.fail(f"{fn} didn't raise an exception")
+
     def assertTableExists(self, tablename):
         self.assertTrue(self.db.table_exists(None, tablename))
 
@@ -818,7 +833,7 @@ class APSW(unittest.TestCase):
             db.set_busy_handler(lambda x: False)
             db.set_busy_timeout(1000)
             db.set_commit_hook(lambda x=1: 0)
-            db.set_rollback_hook(lambda x=2: 1)
+            db.set_rollback_hook(lambda x=2: 1, id=i)
             db.set_update_hook(lambda x=3: 2)
             db.set_wal_hook(lambda *args: 0)
             db.collation_needed(lambda x: 4)
@@ -3053,6 +3068,15 @@ class APSW(unittest.TestCase):
         self.db.execute("select 3").get
         self.assertEqual(called, [False, True])
 
+
+        # bad id
+        class bad_eq:
+            def __eq__(self, other):
+                1 / 0
+
+        self.db.set_progress_handler(phabort, id=bad_eq())
+        self.assertRaises(ZeroDivisionError, self.db.set_progress_handler, phabort, id=3)
+
     def testChanges(self):
         "Verify reporting of changes"
         c = self.db.cursor()
@@ -3326,6 +3350,47 @@ class APSW(unittest.TestCase):
         self.db.set_commit_hook(ch)
         self.assertRaises(ZeroDivisionError, c.execute, "insert into foo values(?)", (1,))
 
+        # multiple ids
+        expected = set(range(10))
+        seen = set()
+
+        def hook(i):
+            seen.add(i)
+            if i == 10:
+                1 / 0
+            if i == 11:
+                return True
+            return False
+
+        self.db.set_commit_hook(None)
+        for i in expected:
+            self.db.set_commit_hook(functools.partial(hook, i), id=i)
+
+        self.db.execute("insert into foo values(3)")
+        self.assertEqual(expected, seen)
+
+        self.db.set_commit_hook(functools.partial(hook, 10), id=10)
+        self.assertRaises(ZeroDivisionError, self.db.execute, "insert into foo values(77)")
+        self.assertEqual(None, self.db.execute("select * from foo where x=77").get)
+
+        self.db.set_commit_hook(None, id=10)
+        self.db.set_commit_hook(functools.partial(hook, 11), id=11)
+
+        # this depends on internal implementation - we know they will be added after id 11
+        for i in range(20, 100):
+            self.db.set_commit_hook(functools.partial(hook, 10), id=i)
+
+        seen = set()
+        self.assertRaises(apsw.ConstraintError, self.db.execute, "insert into foo values(99)")
+        self.assertEqual(seen, expected | {11})
+
+        # bad id
+        class bad_eq:
+            def __eq__(self, other):
+                1 / 0
+
+        self.assertRaises(ZeroDivisionError, self.db.set_commit_hook, ch, id=bad_eq())
+
     def testRollbackHook(self):
         "Verify rollback hooks"
         c = self.db.cursor()
@@ -3356,6 +3421,62 @@ class APSW(unittest.TestCase):
         # check cursor still works
         for row in c.execute("select * from foo"):
             pass
+
+        # multiple ids
+        self.db.set_rollback_hook(None)
+
+        called = set()
+        expect = set(range(10))
+
+        def hook(i):
+            nonlocal called
+            called.add(i)
+
+        for i in expect:
+            self.db.set_rollback_hook(functools.partial(hook, i), id=i)
+
+        c.execute("begin; insert into foo values(11); rollback")
+        self.assertEqual(called, expect)
+
+        for i in expect:
+            called.remove(i)
+            self.db.set_rollback_hook(None, id=i)
+
+        c.execute("begin; insert into foo values(11); rollback")
+
+        self.assertEqual(called, set())
+
+        # chained exceptions
+        def hook1():
+            1 / 0
+
+        def hook2():
+            raise FileExistsError()
+
+        def hook3(x):
+            pass
+
+        for fn in (hook1, hook2, hook3):
+            self.db.set_rollback_hook(fn, id=fn)
+
+        self.assertRaisesChain(
+            (ZeroDivisionError, FileExistsError, TypeError),
+            self.db.execute,
+            "begin ; insert into foo values(12); rollback",
+        )
+
+        for fn in (hook1, hook2, hook3):
+            self.db.set_rollback_hook(None, id=fn)
+
+        self.db.execute("begin ; insert into foo values(12); rollback")
+
+        # bad id
+        class bad_eq:
+            def __eq__(self, other):
+                1 / 0
+
+        self.db.set_rollback_hook(hook2, id=bad_eq())
+        self.assertRaises(ZeroDivisionError, self.db.set_rollback_hook, hook3, id=3)
 
     def testUpdateHook(self):
         "Verify update hooks"
@@ -5814,7 +5935,7 @@ class APSW(unittest.TestCase):
             "APSWFTS5Tokenizer",
             "cursor",
             "APSWChangesetIterator",
-        ):
+        ) or name in {"apsw_no_change_repr"}:
             return
 
         checks = {
@@ -5939,6 +6060,15 @@ class APSW(unittest.TestCase):
             "apswurifilename": {"req": {"check": "CHECK_SCOPE"}},
             "connection": {"req": {}},
             "APSWFTS5ExtensionApi": {"req": {"check": "FTSEXT_CHECK"}},
+            "PyObjectBind": {
+                "req": {},
+            },
+            "PreUpdate":
+            {
+                "skip": ("dealloc", "tp_str", ),
+                "req": {"check": "CHECK_PREUPDATE_SCOPE"},
+                "order": ("check",),
+            },
             # these are in unicode.c and don't have any requirements
             "ToUtf8PositionMapper": {
                 "req": {},
@@ -5947,9 +6077,6 @@ class APSW(unittest.TestCase):
                 "req": {},
             },
             "OffsetMapper": {
-                "req": {},
-            },
-            "PyObjectBind": {
                 "req": {},
             },
         }
@@ -6272,6 +6399,238 @@ class APSW(unittest.TestCase):
                 self.assertRaises(apsw.ConnectionClosedError, db.cursor)
                 self.assertRaises(apsw.ConnectionClosedError, db.get_autocommit)
                 self.assertRaises(apsw.ConnectionClosedError, db.in_transaction)
+
+    def testPreUpdate(self):
+        "preupdate hook"
+        if not hasattr(self.db, "preupdate_hook"):
+            return
+
+        # we also as a side effect test the generic hook code
+        test_ids = [3 + 4j, None, "orange", apsw, functools.partial, 3, math.inf, APSW, 1 / 3]
+
+        called = []
+
+        out_of_scope_update = None
+
+        def hook(myid, update):
+            nonlocal up, out_of_scope_update
+            out_of_scope_update = update
+            called.append(myid)
+            opcode, row = up
+            str(update)
+            self.assertIs(update.connection, self.db)
+            self.assertEqual(update.opcode, opcode)
+            self.assertEqual(update.depth, 0)
+            self.assertEqual(update.database_name, "main")
+            self.assertEqual(update.table_name, "foo")
+            self.assertEqual(update.blob_write, -1)
+            if opcode == apsw.SQLITE_INSERT:
+                self.assertEqual(update.op, "INSERT")
+                self.assertIsNone(update.old)
+                self.assertEqual(row, update.new)
+                self.assertIsNone(update.update)
+                self.assertEqual(update.rowid, 1)
+                self.assertEqual(update.rowid_new, 1)
+            elif opcode == apsw.SQLITE_UPDATE:
+                self.assertEqual(update.op, "UPDATE")
+                self.assertEqual(update.old, ("one", "two", "three"))
+                self.assertEqual(row, update.new)
+                self.assertEqual(update.update, (apsw.no_change, apsw.no_change, row[2]))
+                self.assertEqual(update.rowid, 1)
+                self.assertEqual(update.rowid_new, 1)
+            elif opcode == apsw.SQLITE_DELETE:
+                self.assertEqual(update.op, "DELETE")
+                self.assertEqual(update.old, row)
+                self.assertEqual(update.new, None)
+                self.assertEqual(update.update, None)
+                self.assertEqual(update.rowid, 1)
+                self.assertEqual(update.rowid_new, 1)
+            else:
+                raise Exception("unexpected")
+
+        self.db.preupdate_hook(lambda: 1/0)
+
+        for id in test_ids:
+            self.db.preupdate_hook(functools.partial(hook, id), id=id)
+
+        self.db.preupdate_hook(None)
+
+        gc.get_referents(self.db)
+
+        self.db.execute("create table foo(x,y,z)")
+
+        expected_ids = test_ids[:]
+        did_empty = False
+
+        while expected_ids or not did_empty:
+            for up, sql in (
+                ((apsw.SQLITE_INSERT, ("one", "two", "three")), "insert into foo values('one', 'two', 'three')"),
+                ((apsw.SQLITE_UPDATE, ("one", "two", "banana")), "update foo set z='banana'"),
+                ((apsw.SQLITE_DELETE, ("one", "two", "banana")), "delete from foo"),
+            ):
+                called = []
+                self.db.execute(sql)
+                self.assertEqual(set(expected_ids), set(called))
+
+            if expected_ids:
+                victim = random.choice(expected_ids)
+                self.db.preupdate_hook(None, id=victim)
+                expected_ids.remove(victim)
+            else:
+                did_empty = True
+
+        for n in dir(out_of_scope_update):
+            if not n.startswith("_"):
+                self.assertRaises(apsw.InvalidContextError, getattr, out_of_scope_update, n)
+
+        self.assertIn("out of scope", str(out_of_scope_update))
+
+        self.db.execute("insert into foo values(null, null, null)")
+
+        if hasattr(apsw, "Session") and "DEBUG" not in apsw.compile_options:
+            # SQLITE_DEBUG causes an assertion failure
+            session = apsw.Session(self.db, "main")
+            self.assertRaisesRegex(
+                Exception,
+                ".*This WILL result in crashes in session, so the hook has been disabled.*",
+                self.db.preupdate_hook,
+                lambda x: None,
+            )
+
+        count = 0
+        last_row = (None, None, None)
+
+        def hook(update):
+            nonlocal value, count, last_row
+            count += 1
+            self.assertEqual(update.op, "UPDATE")
+            self.assertEqual(update.old, last_row)
+            self.assertEqual(update.new, (value, value, value))
+            self.assertEqual(update.update, (value, value, value))
+
+            last_row = update.new
+
+        self.db.preupdate_hook(hook)
+        self.assertIn(hook, gc.get_referents(self.db))
+
+        for value in (3, 3.1, b"onetwothree", "onetwothree", None):
+            self.db.execute("update foo set x=?1, y=?1, z=?1", (value,))
+
+        self.assertEqual(count, 5)
+
+        def hook(update):
+            self.assertEqual(update.op, "UPDATE")
+            self.assertEqual(update.rowid, 1)
+            self.assertEqual(update.rowid_new, 77)
+
+        self.db.preupdate_hook(hook)
+        self.db.execute("update foo set rowid=77")
+        self.db.preupdate_hook(None)
+
+        def hook1(bad):
+            1 / 0
+
+        def hook2(bad):
+            raise FileExistsError()
+
+        def hook3():
+            pass
+
+        for fn in (hook1, hook2, hook3):
+            self.db.preupdate_hook(fn, id=fn)
+
+        self.assertRaisesChain(
+            (ZeroDivisionError, FileExistsError, TypeError), self.db.execute, "insert into foo values(11,22,33)"
+        )
+
+        for fn in (hook1, hook2, hook3):
+            self.db.preupdate_hook(None, id=fn)
+
+        class bad_eq:
+            def __eq__(self, other):
+                1 / 0
+
+        self.db.preupdate_hook(hook2, id=bad_eq())
+
+        self.assertRaises(ZeroDivisionError, self.db.preupdate_hook, hook3, id=3)
+        self.assertRaises(FileExistsError, self.db.execute, "delete from foo")
+
+        self.db = apsw.Connection(self.db.filename)
+
+        self.db.execute('create table "16"(x)')
+        for i in range(15, -1, -1):
+            self.db.execute(
+                f'''create table "{i}"(x); create trigger "{i}" after insert on "{i}" begin insert into  "{i + 1}" values(new.x+1000); end'''
+            )
+
+        expect_val = 0
+
+        def hook(update):
+            nonlocal expect_val
+            self.assertEqual(update.op, "INSERT")
+            self.assertEqual(update.depth, expect_val)
+            self.assertEqual(update.table_name, str(expect_val), update)
+            self.assertEqual(update.new, (update.depth * 1000,), update)
+            expect_val += 1
+
+        self.db.preupdate_hook(hook, id=7)
+
+        self.db.execute('insert into "0" values(0)')
+        self.assertEqual(expect_val, 17)
+
+        # blob write
+        self.db = apsw.Connection("")
+        rowid = self.db.execute("create table foo(x,y,z); insert into foo values(zeroblob(16), ?, ?) returning rowid", (b"gggg", b"a"*32)).get
+
+        expect_column = 3
+        def hook(update):
+            nonlocal expect_column, rowid
+            self.assertEqual(update.op, "DELETE")
+            self.assertEqual(update.new, None)
+            self.assertEqual(update.rowid, rowid)
+            self.assertEqual(update.blob_write, expect_column)
+
+        self.db.preupdate_hook(hook)
+
+        for column in "z", "y", "x":
+            expect_column -=1
+
+            with self.db.blob_open("main", "foo", column, rowid, True) as blob:
+                blob.write(b"11")
+                blob.reopen(rowid)
+                blob.write(b"22")
+
+        # check dbname field
+        self.db = apsw.Connection("")
+
+        expect = None
+        def hook(update):
+            nonlocal expect
+            self.assertEqual(update.database_name, expect[0])
+            self.assertEqual(update.table_name, expect[1])
+
+        self.db.preupdate_hook(hook)
+
+        uniname = "ts 🤦🏼‍♂️  regular 😂❤️ 𐍄𐌰𐌽"
+
+        for dbname in '', 'main', 'foo', 'temp', uniname:
+            if dbname not in {'main', 'temp'}:
+                self.db.execute(f"attach '' as [{dbname}]")
+            for tablename in '', 'main', 'foo', 'temp', uniname:
+                expect = dbname, tablename
+                self.db.execute(f"""
+                    create table [{dbname}].[{tablename}](x);
+                    insert into [{dbname}].[{tablename}] values(3)""")
+
+        # shenanigans
+        def hook(update):
+            self.assertRaises(apsw.ThreadingViolationError, update.connection.close, force=2)
+
+        self.db = apsw.Connection("")
+        for i in range(5):
+            self.db.preupdate_hook(hook, id=i)
+
+        self.db.execute("create table foo(x); insert into foo values(3); insert into foo values(5)")
 
     def testDropModules(self):
         "Verify dropping virtual table modules"

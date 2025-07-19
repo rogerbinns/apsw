@@ -97,7 +97,7 @@ returns = {
             PyIter_Next PyList_GetItem  PyLong_FromVoidPtr PyMapping_GetItemString PyNumber_Float
             PyNumber_Long PySequence_Fast PySequence_List PySequence_Tuple PySequence_SetItem
             PyFrame_New PyStructSequence_NewType PyStructSequence_New
-            PyMem_Realloc PyUnicode_FromFormat PyTuple_Pack PyUnicode_AsUTF8String
+            PyMem_Realloc PyMem_Malloc PyUnicode_FromFormat PyTuple_Pack PyUnicode_AsUTF8String
             PyObject_VectorcallMethod PyObject_Vectorcall PyWeakref_GetObject PyUnicode_DecodeUTF8
             PyLong_FromSsize_t PyLong_FromUnsignedLongLong PyLong_FromSize_t
             PyFrozenSet_New PyType_FromModuleAndSpec PyModule_AddStringConstant
@@ -143,6 +143,8 @@ returns = {
             sqlite3_vfs_unregister sqlite3_vtab_config
             sqlite3_vtab_in_next sqlite3_vtab_rhs_value
             sqlite3_wal_autocheckpoint sqlite3_wal_checkpoint_v2
+
+            sqlite3_preupdate_old sqlite3_preupdate_new
 
             sqlite3_prepare
 

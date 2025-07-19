@@ -15,6 +15,7 @@ import apsw
 import apsw.ext
 import random
 import re
+import contextlib
 from pathlib import Path
 
 # pretty formatting
@@ -1401,7 +1402,13 @@ with apsw.ext.ShowResourceUsage(
 # code.  This also shows behind the scenes SQL.
 
 # Use None instead of stdout and no information is printed or gathered
-with apsw.ext.Trace(sys.stdout, db=connection, vtable=True):
+with apsw.ext.Trace(
+    sys.stdout,
+    db=connection,
+    vtable=True,
+    updates=True,
+    transaction=True,
+):
     # APSW does a savepoint behind the scenes to wrap the block
     with connection:
         # Some regular SQL
@@ -1414,12 +1421,22 @@ with apsw.ext.Trace(sys.stdout, db=connection, vtable=True):
         connection.execute("select * from multi limit 2").fetchall()
         # You can also see how many rows were changed
         connection.execute("delete from multi where x < 4")
-        # To implement the table, SQLIte issues the pragma behind the
-        # scenes.  Note how the output shows this statement starting,
-        # the pragma, and then this statement ending.
-        connection.execute(
-            "select count(*) from pragma_function_list"
-        )
+
+    # pragma functions are virtual tables - see how many rows this processes even
+    # though only one has 'pow'
+    connection.execute("SELECT narg FROM pragma_function_list WHERE name='pow'").get
+
+    # trigger that causes rollback
+    connection.execute("""
+        create trigger error after insert on multi
+        begin
+           update multi set rowid=100+new.rowid where rowid=new.rowid;
+           select raise(rollback, 'nope');
+       end;
+    """)
+
+    with contextlib.suppress(apsw.ConstraintError):
+        connection.execute("insert into multi values(54)")
 
 ### format_query: Formatting query results table
 # :meth:`apsw.ext.format_query_table` makes it easy

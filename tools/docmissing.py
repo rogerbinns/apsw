@@ -94,6 +94,7 @@ for name, obj in (
     ("VFSFcntlPragma", apsw.VFSFcntlPragma),
     ("zeroblob", apsw.zeroblob(3)),
     ("Session", session),
+    ("PreUpdate", apsw.PreUpdate),
 ):
     if name not in classes:
         retval = 1
@@ -143,6 +144,7 @@ for name, obj in (
                 "ChangesetBuilder",
                 "TableChange",
                 "Rebaser",
+                "PreUpdate",
             ):
                 continue
             # ignore mappings !!!

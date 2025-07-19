@@ -60,16 +60,22 @@ typedef struct
   PyObject *inversefunc; /* inverse function */
 } windowfunctioncontext;
 
-struct tracehook
+struct tracehook_entry
 {
   unsigned mask;
   PyObject *callback;
   PyObject *id;
 };
 
-struct progresshandler
+struct progresshandler_entry
 {
   int nsteps;
+  PyObject *callback;
+  PyObject *id;
+};
+
+struct generichook_entry
+{
   PyObject *callback;
   PyObject *id;
 };
@@ -91,9 +97,7 @@ struct Connection
 
   /* registered hooks/handlers (NULL or callable) */
   PyObject *busyhandler;
-  PyObject *rollbackhook;
   PyObject *updatehook;
-  PyObject *commithook;
   PyObject *walhook;
   PyObject *authorizer;
   PyObject *collationneeded;
@@ -101,11 +105,20 @@ struct Connection
   PyObject *rowtrace;
   /* Array of tracehook.  Entry 0 is reserved for the set_profile
      callback. */
-  struct tracehook *tracehooks;
+  struct tracehook_entry *tracehooks;
   unsigned tracehooks_count;
 
-  struct progresshandler *progresshandler;
+  struct progresshandler_entry *progresshandler;
   unsigned progresshandler_count;
+
+  struct generichook_entry *preupdate_hooks;
+  unsigned preupdate_hooks_count;
+
+  struct generichook_entry *commit_hooks;
+  unsigned commit_hooks_count;
+
+  struct generichook_entry *rollback_hooks;
+  unsigned rollback_hooks_count;
 
   /* if we are using one of our VFS since sqlite doesn't reference count them */
   PyObject *vfs;
@@ -172,6 +185,70 @@ FunctionCBInfo_dealloc(PyObject *self_)
   Py_TpFree(self_);
 }
 
+static unsigned
+generic_hooks_active(struct generichook_entry *hooks, unsigned hooks_count)
+{
+  unsigned total = 0;
+  for (unsigned i = 0; i < hooks_count; i++)
+  {
+    if (hooks[i].callback)
+      total += 1;
+  }
+  return total;
+}
+
+static void
+generic_hooks_update(struct generichook_entry **hooks, unsigned *hooks_count, PyObject *callback, PyObject *id)
+{
+  /* clear out any matching id */
+  for (unsigned i = 0; i < *hooks_count; i++)
+  {
+    if ((*hooks)[i].callback)
+    {
+      int eq;
+      /* handle either side being NULL */
+      if ((!id || !(*hooks)[i].id) && id != (*hooks)[i].id)
+        eq = 0;
+      else
+        eq = PyObject_RichCompareBool(id, (*hooks)[i].id, Py_EQ);
+
+      if (eq == -1)
+        return;
+      if (eq)
+      {
+        Py_CLEAR((*hooks)[i].callback);
+        Py_CLEAR((*hooks)[i].id);
+      }
+    }
+  }
+  if (!callback)
+    return;
+
+  /* find an empty slot */
+  for (unsigned i = 0; i < *hooks_count; i++)
+  {
+    if (!(*hooks)[i].callback)
+    {
+      (*hooks)[i].callback = Py_NewRef(callback);
+      (*hooks)[i].id = id ? Py_NewRef(id) : NULL;
+      return;
+    }
+  }
+
+  /* embiggen */
+  struct generichook_entry *new_hooks = PyMem_Realloc(*hooks, sizeof(struct generichook_entry) * (*hooks_count + 1));
+  if (!new_hooks)
+  {
+    assert(PyErr_Occurred());
+    return;
+  }
+
+  *hooks = new_hooks;
+  (*hooks)[*hooks_count].callback = Py_NewRef(callback);
+  (*hooks)[*hooks_count].id = id ? Py_NewRef(id) : NULL;
+  (*hooks_count)++;
+}
+
 /** .. class:: Connection
 
 
@@ -186,9 +263,7 @@ Connection_internal_cleanup(Connection *self)
 {
   Py_CLEAR(self->cursor_factory);
   Py_CLEAR(self->busyhandler);
-  Py_CLEAR(self->rollbackhook);
   Py_CLEAR(self->updatehook);
-  Py_CLEAR(self->commithook);
   Py_CLEAR(self->walhook);
   Py_CLEAR(self->authorizer);
   Py_CLEAR(self->collationneeded);
@@ -300,6 +375,42 @@ Connection_close_internal(Connection *self, int force)
         return 1;
       }
     }
+  }
+
+  if (self->preupdate_hooks)
+  {
+    for (unsigned i = 0; i < self->preupdate_hooks_count; i++)
+    {
+      Py_CLEAR(self->preupdate_hooks[i].callback);
+      Py_CLEAR(self->preupdate_hooks[i].id);
+    }
+    PyMem_Free(self->preupdate_hooks);
+    self->preupdate_hooks = NULL;
+    self->preupdate_hooks_count = 0;
+  }
+
+  if (self->commit_hooks)
+  {
+    for (unsigned i = 0; i < self->commit_hooks_count; i++)
+    {
+      Py_CLEAR(self->commit_hooks[i].callback);
+      Py_CLEAR(self->commit_hooks[i].id);
+    }
+    PyMem_Free(self->commit_hooks);
+    self->commit_hooks = NULL;
+    self->commit_hooks_count = 0;
+  }
+
+  if (self->rollback_hooks)
+  {
+    for (unsigned i = 0; i < self->rollback_hooks_count; i++)
+    {
+      Py_CLEAR(self->rollback_hooks[i].callback);
+      Py_CLEAR(self->rollback_hooks[i].id);
+    }
+    PyMem_Free(self->rollback_hooks);
+    self->rollback_hooks = NULL;
+    self->rollback_hooks_count = 0;
   }
 
   if (self->stmtcache)
@@ -464,7 +575,7 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   flags |= SQLITE_OPEN_EXRESCODE;
 
   self->cursor_factory = Py_NewRef((PyObject *)&APSWCursorType);
-  self->tracehooks = PyMem_Malloc(sizeof(struct tracehook) * 1);
+  self->tracehooks = PyMem_Malloc(sizeof(struct tracehook_entry) * 1);
   if (!self->tracehooks)
     return -1;
   self->tracehooks[0].callback = 0;
@@ -1150,41 +1261,47 @@ Connection_set_update_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize
 }
 
 static void
-rollbackhookcb(void *context)
+rollbackhook_cb(void *context)
 {
   /* The hook returns void. That makes it impossible for us to
      abort immediately due to an error in the callback */
 
-  PyGILState_STATE gilstate;
-  PyObject *retval = NULL;
+  PyGILState_STATE gilstate = PyGILState_Ensure();
   Connection *self = (Connection *)context;
-
-  assert(self);
-  assert(self->rollbackhook);
-  assert(!Py_IsNone(self->rollbackhook));
-
-  gilstate = PyGILState_Ensure();
 
   MakeExistingException();
 
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
-  else
+  CHAIN_EXC_BEGIN
+
+  for (unsigned i = 0; i < self->rollback_hooks_count; i++)
   {
-    PyObject *vargs[] = { NULL };
-    retval = PyObject_Vectorcall(self->rollbackhook, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    if (self->rollback_hooks[i].callback)
+    {
+      CHAIN_EXC_BEGIN
+      PyObject *vargs[] = { NULL };
+      PyObject *retval
+          = PyObject_Vectorcall(self->rollback_hooks[i].callback, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      if (!retval)
+        AddTraceBackHere(__FILE__, __LINE__, "Connection.rollback_hook", "{s:O,s:O}", "id",
+                         OBJ(self->rollback_hooks[i].id), "callback", OBJ(self->rollback_hooks[i].callback));
+      Py_XDECREF(retval);
+      CHAIN_EXC_END;
+    }
   }
 
-  Py_XDECREF(retval);
+  CHAIN_EXC_END;
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: set_rollback_hook(callable: Optional[Callable[[], None]]) -> None
+/** .. method:: set_rollback_hook(callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None
 
   Sets a callable which is invoked during a rollback.  If *callable*
   is *None* then any existing rollback hook is unregistered.
 
   The *callable* is called with no parameters and the return value is ignored.
+
+  You can have multiple hooks at once (managed by APSW) by specifying
+  different ``id`` for each one.
 
   -* sqlite3_rollback_hook
 */
@@ -1194,6 +1311,7 @@ Connection_set_rollback_hook(PyObject *self_, PyObject *const *fast_args, Py_ssi
   Connection *self = (Connection *)self_;
   /* sqlite3_rollback_hook doesn't return an error code */
   PyObject *callable;
+  PyObject *id = NULL;
 
   CHECK_CLOSED(self, NULL);
 
@@ -1201,23 +1319,48 @@ Connection_set_rollback_hook(PyObject *self_, PyObject *const *fast_args, Py_ssi
     Connection_set_rollback_hook_CHECK;
     ARG_PROLOG(1, Connection_set_rollback_hook_KWNAMES);
     ARG_MANDATORY ARG_optional_Callable(callable);
+    ARG_OPTIONAL ARG_pyobject(id);
     ARG_EPILOG(NULL, Connection_set_rollback_hook_USAGE, );
   }
 
   DBMUTEX_ENSURE(self->dbmutex);
 
-  if (!callable)
+  unsigned before_hooks = generic_hooks_active(self->rollback_hooks, self->rollback_hooks_count);
+
+  generic_hooks_update(&self->rollback_hooks, &self->rollback_hooks_count, callable, id);
+  if (PyErr_Occurred())
+    goto error;
+
+  unsigned current_hooks = generic_hooks_active(self->rollback_hooks, self->rollback_hooks_count);
+
+  /* transition from some to none */
+  if (before_hooks && current_hooks == 0)
+  {
     sqlite3_rollback_hook(self->db, NULL, NULL);
-  else
-    sqlite3_rollback_hook(self->db, rollbackhookcb, self);
+  }
+  /* none to some, some to some */
+  else if ((before_hooks == 0 && current_hooks) || (before_hooks && current_hooks))
+  {
+    /* We are paranoid because non-APSW code could have
+       grabbed the hook.  The hook returns the current pCtx which
+       we set to self */
+    void *pCtx = sqlite3_rollback_hook(self->db, rollbackhook_cb, self);
+    if (pCtx && pCtx != self)
+    {
+      sqlite3_rollback_hook(self->db, NULL, NULL);
+      PyErr_Format(PyExc_Exception, "The rollback hook has been used by other code.  This COULD "
+                                    "result in crashes in the other code, so the hook has been disabled.");
+      goto error;
+    }
+  }
 
   sqlite3_mutex_leave(self->dbmutex);
-
-  Py_CLEAR(self->rollbackhook);
-  if (callable)
-    self->rollbackhook = Py_NewRef(callable);
-
   Py_RETURN_NONE;
+
+error:
+  assert(PyErr_Occurred());
+  sqlite3_mutex_leave(self->dbmutex);
+  return NULL;
 }
 
 static int
@@ -1263,9 +1406,11 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
       if (connection->tracehooks[i].mask & SQLITE_TRACE_STMT)
       {
 
-        param = Py_BuildValue("{s: i, s: N, s: s, s: O, s: O, s: L}", "code", code, "id", PyLong_FromVoidPtr(one),
-                              "sql", trigger ? sql + 3 : sql, "trigger", trigger ? Py_True : Py_False, "connection",
-                              connection, "total_changes", sqlite3_total_changes64(connection->db));
+        param = Py_BuildValue(
+            "{s: i, s: N, s: s, s: O, s: O, s: L, s: O, s: i}", "code", code, "id", PyLong_FromVoidPtr(one), "sql",
+            trigger ? sql + 3 : sql, "trigger", trigger ? Py_True : Py_False, "connection", connection, "total_changes",
+            sqlite3_total_changes64(connection->db), "readonly", sqlite3_stmt_readonly(stmt) ? Py_True : Py_False,
+            "explain", sqlite3_stmt_isexplain(stmt));
         break;
       }
     }
@@ -1279,7 +1424,7 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
     /* Checking the refcount is subtle but important.  If the
        Connection is being closed because there are no more references to it
        then the ref count is zero when the callback fires and adding a
-       reference ressurects a mostly destroyed object which then hits zero
+       reference resurrects a mostly destroyed object which then hits zero
        again and gets destroyed a second time.  Too difficult to handle. */
     param = Py_BuildValue("{s: i, s: O}", "code", code, "connection",
                           Py_REFCNT(connection) ? (PyObject *)connection : Py_None);
@@ -1568,9 +1713,9 @@ Connection_trace_v2(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
     {
       /* increase tracehooks size - we have an arbitrary limit which
          makes it easier to test exhaustion */
-      struct tracehook *new_tracehooks
+      struct tracehook_entry *new_tracehooks
           = (self->tracehooks_count < 1024)
-                ? PyMem_Realloc(self->tracehooks, sizeof(struct tracehook) * (self->tracehooks_count + 1))
+                ? PyMem_Realloc(self->tracehooks, sizeof(struct tracehook_entry) * (self->tracehooks_count + 1))
                 : NULL;
       if (!new_tracehooks)
       {
@@ -1590,55 +1735,57 @@ Connection_trace_v2(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
 }
 
 static int
-commithookcb(void *context)
+commithook_cb(void *context)
 {
   /* The hook returns 0 for commit to go ahead and non-zero to abort
      commit (turn into a rollback). We return non-zero for errors */
 
-  PyGILState_STATE gilstate;
-  PyObject *retval = NULL;
-  int ok = 1; /* error state */
+  PyGILState_STATE gilstate = PyGILState_Ensure();
   Connection *self = (Connection *)context;
-
-  assert(self);
-  assert(self->commithook);
-  assert(!Py_IsNone(self->commithook));
-
-  gilstate = PyGILState_Ensure();
+  PyObject *retval = NULL;
+  int res = 1; /* error */
 
   MakeExistingException();
 
   if (PyErr_Occurred())
     goto finally; /* abort hook due to outstanding exception */
 
-  PyObject *vargs[] = { NULL };
-  retval = PyObject_Vectorcall(self->commithook, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-
-  if (!retval)
-    goto finally; /* abort hook due to exception */
-
-  ok = PyObject_IsTrueStrict(retval);
-  assert(ok == -1 || ok == 0 || ok == 1);
-  if (ok == -1)
+  for (unsigned i = 0; i < self->commit_hooks_count; i++)
   {
-    ok = 1;
-    assert(PyErr_Occurred());
-    goto finally; /* abort due to exception in return value */
-  }
+    if (self->commit_hooks[i].callback)
+    {
+      PyObject *vargs[] = { NULL };
+      retval = PyObject_Vectorcall(self->commit_hooks[i].callback, vargs + 1, 0 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
+      res = retval ? PyObject_IsTrueStrict(retval) : -1;
+      assert((PyErr_Occurred() && res == -1) || (!PyErr_Occurred() && (res == 0 || res == 1)));
+      if (PyErr_Occurred())
+      {
+        AddTraceBackHere(__FILE__, __LINE__, "Connection.commit_hook.callback", "{s:O,s:O,s:O}", "callback",
+                         self->commit_hooks[i].callback, "id", OBJ(self->commit_hooks[i].id), "returned", OBJ(retval));
+        break;
+      }
+      Py_CLEAR(retval);
+      if (res == 1)
+        break;
+    }
+  }
 finally:
   Py_XDECREF(retval);
   PyGILState_Release(gilstate);
-  return ok;
+  return res;
 }
 
-/** .. method:: set_commit_hook(callable: Optional[CommitHook]) -> None
+/** .. method:: set_commit_hook(callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None
 
   *callable* will be called just before a commit.  It should return
   False for the commit to go ahead and True for it to be turned
   into a rollback. In the case of an exception in your callable, a
   True (rollback) value is returned.  Pass None to unregister
   the existing hook.
+
+  You can have multiple hooks at once (managed by APSW) by specifying
+  different ``id`` for each one.
 
   .. seealso::
 
@@ -1653,6 +1800,7 @@ Connection_set_commit_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize
   Connection *self = (Connection *)self_;
   /* sqlite3_commit_hook doesn't return an error code */
   PyObject *callable;
+  PyObject *id = NULL;
 
   CHECK_CLOSED(self, NULL);
 
@@ -1660,21 +1808,48 @@ Connection_set_commit_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize
     Connection_set_commit_hook_CHECK;
     ARG_PROLOG(1, Connection_set_commit_hook_KWNAMES);
     ARG_MANDATORY ARG_optional_Callable(callable);
+    ARG_OPTIONAL ARG_pyobject(id);
     ARG_EPILOG(NULL, Connection_set_commit_hook_USAGE, );
   }
 
   DBMUTEX_ENSURE(self->dbmutex);
-  if (callable)
-    sqlite3_commit_hook(self->db, commithookcb, self);
-  else
+
+  unsigned before_hooks = generic_hooks_active(self->commit_hooks, self->commit_hooks_count);
+
+  generic_hooks_update(&self->commit_hooks, &self->commit_hooks_count, callable, id);
+  if (PyErr_Occurred())
+    goto error;
+
+  unsigned current_hooks = generic_hooks_active(self->commit_hooks, self->commit_hooks_count);
+
+  /* transition from some to none */
+  if (before_hooks && current_hooks == 0)
+  {
     sqlite3_commit_hook(self->db, NULL, NULL);
+  }
+  /* none to some, some to some */
+  else if ((before_hooks == 0 && current_hooks) || (before_hooks && current_hooks))
+  {
+    /* We are paranoid because non-APSW code could have
+       grabbed the hook.  The hook returns the current pCtx which
+       we set to self */
+    void *pCtx = sqlite3_commit_hook(self->db, commithook_cb, self);
+    if (pCtx && pCtx != self)
+    {
+      sqlite3_commit_hook(self->db, NULL, NULL);
+      PyErr_Format(PyExc_Exception, "The commit hook has been used by other code.  This COULD "
+                                    "result in crashes in the other code, so the hook has been disabled.");
+      goto error;
+    }
+  }
+
   sqlite3_mutex_leave(self->dbmutex);
-
-  Py_CLEAR(self->commithook);
-  if (callable)
-    self->commithook = Py_NewRef(callable);
-
   Py_RETURN_NONE;
+
+error:
+  assert(PyErr_Occurred());
+  sqlite3_mutex_leave(self->dbmutex);
+  return NULL;
 }
 
 static int
@@ -1908,10 +2083,10 @@ Connection_set_progress_handler(PyObject *self_, PyObject *const *fast_args, Py_
     {
       /* increase progresshandler size - we have an arbitrary limit which
          makes it easier to test exhaustion */
-      struct progresshandler *new_progresshandler
+      struct progresshandler_entry *new_progresshandler
           = (self->progresshandler_count < 1024)
                 ? PyMem_Realloc(self->progresshandler,
-                                sizeof(struct progresshandler) * (self->progresshandler_count + 1))
+                                sizeof(struct progresshandler_entry) * (self->progresshandler_count + 1))
                 : NULL;
       if (!new_progresshandler)
         return PyErr_NoMemory();
@@ -5573,10 +5748,10 @@ Connection_setlk_timeout(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
 
   DBMUTEX_ENSURE(self->dbmutex);
   int res = sqlite3_setlk_timeout(self->db, ms, flags);
-  SET_EXC(res, NULL);
+  SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
 
-  if(PyErr_Occurred())
+  if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
 }
@@ -5867,6 +6042,104 @@ finally:
   Py_RETURN_NONE;
 }
 
+#ifdef SQLITE_ENABLE_PREUPDATE_HOOK
+
+static void APSWPreUpdateHook_cb(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName,
+                                 sqlite3_int64 iKey1, sqlite3_int64 iKey2);
+
+/** .. method:: preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None
+
+ A callback just after a database row is updated.  You can have multiple hooks at once
+ (managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for
+ ``callback`` will remove it.
+
+ SQLite provides no way to report errors from the callback.  The SQLite level update
+ will always succeed, with Python exceptions reported when control returns to Python
+ code.
+
+ .. important::
+
+    The :doc:`session` extension uses the preupdate hook, and will **CRASH
+    THE PROCESS** if you register a hook via this method, and then create
+    a :class:`Session`.
+
+ SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known
+ to APSW at compile time.  If not, this API and :class:`PreUpdate` will not be present.
+
+ You do not get calls undoing changes when a transaction is
+ aborted/rolled back.  Consequently you can't use this hook to track
+ the current state of the database.  The approach taken by the
+ :doc:`session` is to note the rowid (or primary keys for without rowid
+ tables), and initial values the first time that a row is seen.  When a
+ changeset is requested, it compares the contents of the row now to the row
+ then, and generates the appropriate changeset entry.
+
+ -* sqlite3_preupdate_hook
+ */
+
+static PyObject *
+Connection_preupdate_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  Connection *self = (Connection *)self_;
+
+  CHECK_CLOSED(self, NULL);
+
+  PyObject *callback = NULL;
+  PyObject *id = NULL;
+
+  {
+    Connection_preupdate_hook_CHECK;
+    ARG_PROLOG(1, Connection_preupdate_hook_KWNAMES);
+    ARG_MANDATORY ARG_optional_Callable(callback);
+    ARG_OPTIONAL ARG_pyobject(id);
+    ARG_EPILOG(NULL, Connection_preupdate_hook_USAGE, );
+  }
+
+  DBMUTEX_ENSURE(self->dbmutex);
+
+  unsigned before_hooks = generic_hooks_active(self->preupdate_hooks, self->preupdate_hooks_count);
+
+  generic_hooks_update(&self->preupdate_hooks, &self->preupdate_hooks_count, callback, id);
+  if (PyErr_Occurred())
+    goto error;
+
+  unsigned current_hooks = generic_hooks_active(self->preupdate_hooks, self->preupdate_hooks_count);
+
+  /* transition from some to none */
+  if (before_hooks && current_hooks == 0)
+  {
+    sqlite3_preupdate_hook(self->db, NULL, NULL);
+  }
+  /* none to some, some to some */
+  else if ((before_hooks == 0 && current_hooks) || (before_hooks && current_hooks))
+  {
+    /* We are paranoid about the session extension which could have
+       grabbed the hook.  The hook returns the current pCtx which
+       we set to self */
+    void *pCtx = sqlite3_preupdate_hook(self->db, APSWPreUpdateHook_cb, self);
+    if (pCtx && pCtx != self)
+    {
+      /* there will be an assertion failure in session if SQLite was compiled with
+         SQLITE_DEBUG - this is tested, just not in debug builds */
+      sqlite3_preupdate_hook(self->db, NULL, NULL);
+      PyErr_Format(PyExc_Exception,
+                   "The preupdate hook has been used by other code, most likely the serssion extension.  This WILL "
+                   "result in crashes in session, so the hook has been disabled.");
+      goto error;
+    }
+  }
+
+  sqlite3_mutex_leave(self->dbmutex);
+  Py_RETURN_NONE;
+
+error:
+  assert(PyErr_Occurred());
+  sqlite3_mutex_leave(self->dbmutex);
+  return NULL;
+}
+
+#endif /* SQLITE_ENABLE_PREUPDATE_HOOK */
+
 static PyGetSetDef Connection_getseters[] = {
   /* name getter setter doc closure */
   { "filename", Connection_getmainfilename, NULL, Connection_filename_DOC, NULL },
@@ -5907,9 +6180,7 @@ Connection_tp_traverse(PyObject *self_, visitproc visit, void *arg)
 {
   Connection *self = (Connection *)self_;
   Py_VISIT(self->busyhandler);
-  Py_VISIT(self->rollbackhook);
   Py_VISIT(self->updatehook);
-  Py_VISIT(self->commithook);
   Py_VISIT(self->walhook);
   Py_VISIT(self->authorizer);
   Py_VISIT(self->collationneeded);
@@ -5927,6 +6198,21 @@ Connection_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   {
     Py_VISIT(self->progresshandler[i].callback);
     Py_VISIT(self->progresshandler[i].id);
+  }
+  for (unsigned i = 0; i < self->preupdate_hooks_count; i++)
+  {
+    Py_VISIT(self->preupdate_hooks[i].callback);
+    Py_VISIT(self->preupdate_hooks[i].id);
+  }
+  for (unsigned i = 0; i < self->rollback_hooks_count; i++)
+  {
+    Py_VISIT(self->rollback_hooks[i].callback);
+    Py_VISIT(self->rollback_hooks[i].id);
+  }
+  for (unsigned i = 0; i < self->commit_hooks_count; i++)
+  {
+    Py_VISIT(self->commit_hooks[i].callback);
+    Py_VISIT(self->commit_hooks[i].id);
   }
   return 0;
 }
@@ -6050,7 +6336,12 @@ static PyMethodDef Connection_methods[] = {
   { "register_fts5_function", (PyCFunction)Connection_register_fts5_function, METH_FASTCALL | METH_KEYWORDS,
     Connection_register_fts5_function_DOC },
   { "data_version", (PyCFunction)Connection_data_version, METH_FASTCALL | METH_KEYWORDS, Connection_data_version_DOC },
-  { "setlk_timeout", (PyCFunction)Connection_setlk_timeout, METH_FASTCALL | METH_KEYWORDS, Connection_setlk_timeout_DOC },
+  { "setlk_timeout", (PyCFunction)Connection_setlk_timeout, METH_FASTCALL | METH_KEYWORDS,
+    Connection_setlk_timeout_DOC },
+#ifdef SQLITE_ENABLE_PREUPDATE_HOOK
+  { "preupdate_hook", (PyCFunction)Connection_preupdate_hook, METH_FASTCALL | METH_KEYWORDS,
+    Connection_preupdate_hook_DOC },
+#endif
 #ifndef APSW_OMIT_OLD_NAMES
   { Connection_set_busy_timeout_OLDNAME, (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
     Connection_set_busy_timeout_OLDDOC },
@@ -6126,3 +6417,511 @@ static PyTypeObject ConnectionType = {
   .tp_new = PyType_GenericNew,
   .tp_str = Connection_tp_str,
 };
+
+#ifdef SQLITE_ENABLE_PREUPDATE_HOOK
+
+/** .. class:: PreUpdate
+
+  Provides the details of one update to the
+  :meth:`Connection.preupdate_hook` callback.
+
+  .. note::
+
+     The object is only valid inside a the callback.
+     Using it outside the hook gives :exc:`InvalidContextError`.
+     You should copy all desired information in the callback.
+
+ */
+
+typedef struct
+{
+  PyObject_HEAD
+  /* the self field is used to detect if we have gone out of scope */
+  Connection *db;
+  int op;
+  int column_count;
+  const char *zDb;
+  const char *zName;
+  sqlite3_int64 iKey1;
+  sqlite3_int64 iKey2;
+} APSWPreUpdate;
+
+static PyTypeObject PreUpdateType;
+
+static void
+APSWPreUpdateHook_cb(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName, sqlite3_int64 iKey1,
+                     sqlite3_int64 iKey2)
+{
+  PyGILState_STATE gilstate = PyGILState_Ensure();
+
+  CHAIN_EXC_BEGIN
+
+  PyObject *res = NULL;
+
+  APSWPreUpdate *puc = (APSWPreUpdate *)_PyObject_New(&PreUpdateType);
+  if (!puc)
+    goto end;
+
+  puc->db = (Connection *)Py_NewRef((PyObject *)pCtx);
+  puc->op = op;
+  puc->column_count = sqlite3_preupdate_count(db);
+  puc->zDb = zDb;
+  puc->zName = zName;
+  puc->iKey1 = iKey1;
+  puc->iKey2 = iKey2;
+
+  PyObject *vargs[] = { NULL, (PyObject *)puc };
+  for (unsigned i = 0; i < puc->db->preupdate_hooks_count; i++)
+  {
+    if (puc->db->preupdate_hooks[i].callback)
+    {
+      CHAIN_EXC_BEGIN
+      res = PyObject_Vectorcall(puc->db->preupdate_hooks[i].callback, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET,
+                                NULL);
+      Py_CLEAR(res);
+      CHAIN_EXC_END;
+    }
+  }
+
+end:
+  Py_XDECREF(res);
+  if (puc)
+    Py_CLEAR(puc->db);
+  Py_XDECREF(puc);
+
+  CHAIN_EXC_END;
+
+  PyGILState_Release(gilstate);
+}
+
+#define CHECK_PREUPDATE_SCOPE                                                                                          \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!self->db)                                                                                                     \
+      return PyErr_Format(ExcInvalidContext, "The PreUpdate has gone out of scope");                                   \
+  } while (0)
+
+/** .. attribute:: connection
+  :type: Connection
+
+  The :class:`Connection` the preupdate is called on.
+*/
+static PyObject *
+PreUpdate_connection(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return Py_NewRef((PyObject *)self->db);
+}
+
+/** .. attribute:: op
+  :type: str
+
+  The operation code as a string  ``INSERT``,
+  ``DELETE``, or ``UPDATE``.  See :attr:`opcode`
+  for this as a number.
+
+*/
+static PyObject *
+PreUpdate_op(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  if (self->op == SQLITE_INSERT)
+    return Py_NewRef(apst.INSERT);
+  if (self->op == SQLITE_DELETE)
+    return Py_NewRef(apst.DELETE);
+  assert(self->op == SQLITE_UPDATE);
+  return Py_NewRef(apst.UPDATE);
+}
+
+/** .. attribute:: opcode
+  :type: int
+
+  The operation code - ``apsw.SQLITE_INSERT``,
+  ``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.
+  See :attr:`op` for this as a string.
+
+*/
+static PyObject *
+PreUpdate_opcode(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyLong_FromLong(self->op);
+}
+
+/** .. attribute:: database_name
+  :type: str
+
+  ``main``, ``temp``, the name of an attached database.
+
+*/
+static PyObject *
+PreUpdate_database_name(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyUnicode_FromString(self->zDb);
+}
+
+/** .. attribute:: table_name
+  :type: str
+
+  Table name.
+
+*/
+static PyObject *
+PreUpdate_table_name(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyUnicode_FromString(self->zName);
+}
+
+
+/** .. attribute:: rowid
+  :type: int
+
+  The affected rowid.
+*/
+static PyObject *
+PreUpdate_rowid(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyLong_FromLong(self->iKey1);
+}
+
+/** .. attribute:: rowid_new
+  :type: int
+
+  New rowid if changed via rowid UPDATE.
+*/
+static PyObject *
+PreUpdate_rowid_new(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyLong_FromLong(self->iKey2);
+}
+
+/** .. attribute:: depth
+  :type: int
+
+  0 for direct SQL, 1 for triggers, 2 and so on for triggers
+  firing by a higher level trigger.
+
+  -* sqlite3_preupdate_depth
+*/
+static PyObject *
+PreUpdate_depth(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyLong_FromLong(sqlite3_preupdate_depth(self->db->db));
+}
+
+/** .. attribute:: blob_write
+  :type: int
+
+  Writes to blobs show up as `DELETE`, with this having the
+  column number being rewritten.  The value is negative if
+  no blob is being written.
+
+  Only the old value is available.  To get the new value you have
+  to query the database.
+
+  -* sqlite3_preupdate_blobwrite
+*/
+static PyObject *
+PreUpdate_blob_write(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  return PyLong_FromLong(sqlite3_preupdate_blobwrite(self->db->db));
+}
+
+/** .. attribute:: new
+  :type: tuple[SQLiteValue, ...] | None
+
+  Row values for an INSERT, or after an UPDATE.  :class:`None` for
+  DELETE.  See also :attr:`old` and :attr:`update`.
+
+  -* sqlite3_preupdate_new
+*/
+static PyObject *
+PreUpdate_new(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  if (self->op == SQLITE_DELETE)
+    Py_RETURN_NONE;
+
+  PyObject *tuple = PyTuple_New(self->column_count);
+  if (!tuple)
+    goto error;
+
+  for (int i = 0; i < self->column_count; i++)
+  {
+    sqlite3_value *value = NULL;
+    int res = sqlite3_preupdate_new(self->db->db, i, &value);
+    if (res)
+    {
+      SET_EXC(res, self->db->db);
+      goto error;
+    }
+      PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
+      if (!pyvalue)
+        goto error;
+      PyTuple_SET_ITEM(tuple, i, pyvalue);
+  }
+
+  return tuple;
+
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(tuple);
+  return NULL;
+}
+
+/** .. attribute:: old
+  :type: tuple[SQLiteValue, ...] | None
+
+  Row values for a DELETE, or before an UPDATE. :class:`None` for
+  INSERT.  See also :attr:`new` and :attr:`update`.
+
+  -* sqlite3_preupdate_old
+*/
+static PyObject *
+PreUpdate_old(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  if (self->op == SQLITE_INSERT)
+    Py_RETURN_NONE;
+
+  PyObject *tuple = PyTuple_New(self->column_count);
+  if (!tuple)
+    goto error;
+
+  for (int i = 0; i < self->column_count; i++)
+  {
+    sqlite3_value *value = NULL;
+    int res = sqlite3_preupdate_old(self->db->db, i, &value);
+    if (res)
+    {
+      SET_EXC(res, self->db->db);
+      goto error;
+    }
+    PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
+    if (!pyvalue)
+      goto error;
+    PyTuple_SET_ITEM(tuple, i, pyvalue);
+  }
+
+  return tuple;
+
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(tuple);
+  return NULL;
+}
+
+/** .. attribute:: update
+  :type: tuple[SQLiteValue | Literal[no_change], ...] | None
+
+  For UPDATE compares old and new values, providing the changed value,
+  or :attr:`apsw.no_change` if that column was not changed.
+
+  :class:`None` for INSERT and DELETE.  See also :attr:`old` and
+  :attr:`new`.
+
+  -* sqlite3_preupdate_old sqlite3_preupdate_new
+*/
+static PyObject *
+PreUpdate_update(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  CHECK_PREUPDATE_SCOPE;
+
+  if (self->op == SQLITE_INSERT || self->op == SQLITE_DELETE)
+    Py_RETURN_NONE;
+
+  PyObject *tuple = PyTuple_New(self->column_count);
+  if (!tuple)
+    goto error;
+
+  for (int i = 0; i < self->column_count; i++)
+  {
+    sqlite3_value *value_old = NULL, *value_new = NULL;
+    int res_old = sqlite3_preupdate_old(self->db->db, i, &value_old);
+    int res_new = sqlite3_preupdate_new(self->db->db, i, &value_new);
+    if (res_old)
+    {
+      SET_EXC(res_old, self->db->db);
+      goto error;
+    }
+    if (res_new)
+    {
+      SET_EXC(res_new, self->db->db);
+      goto error;
+    }
+
+    int type_old = sqlite3_value_type(value_old);
+    int type_new = sqlite3_value_type(value_new);
+
+    int eq = (type_old == type_new);
+    if (eq)
+    {
+      eq = (value_old == value_new);
+      if (!eq)
+        switch (type_old)
+        {
+        case SQLITE_NULL:
+          eq = 1;
+          break;
+        case SQLITE_INTEGER:
+          eq = (sqlite3_value_int64(value_old) == sqlite3_value_int64(value_new));
+          break;
+        case SQLITE_FLOAT:
+          eq = (sqlite3_value_double(value_old) == sqlite3_value_double(value_new));
+          break;
+        case SQLITE_TEXT:
+          /* compare length first */
+          eq = (sqlite3_value_bytes(value_old) == sqlite3_value_bytes(value_new));
+          /* these could fail if a UTF16 to UTF8 conversion happens */
+          const unsigned char *text_old = sqlite3_value_text(value_old);
+          const unsigned char *text_new = sqlite3_value_text(value_new);
+          if (!text_old || !text_new)
+          {
+            SET_EXC(SQLITE_NOMEM, self->db->db);
+            goto error;
+          }
+          if (eq)
+            eq = !memcmp(text_old, text_new, sqlite3_value_bytes(value_new));
+          break;
+        case SQLITE_BLOB:
+          /* compare length first */
+          eq = (sqlite3_value_bytes(value_old) == sqlite3_value_bytes(value_new));
+          if (eq)
+            /* no failure mode getting blob value */
+            eq = !memcmp(sqlite3_value_blob(value_old), sqlite3_value_blob(value_new), sqlite3_value_bytes(value_new));
+          break;
+        }
+    }
+    if (eq)
+      PyTuple_SET_ITEM(tuple, i, Py_NewRef(apsw_no_change_object));
+    else
+    {
+      PyObject *pyvalue = convert_value_to_pyobject(value_new, 0, 0);
+      if (!pyvalue)
+        goto error;
+      PyTuple_SET_ITEM(tuple, i, pyvalue);
+    }
+  }
+
+  return tuple;
+
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(tuple);
+  return NULL;
+}
+
+static void
+PreUpdate_dealloc(PyObject *self)
+{
+  assert(((APSWPreUpdate *)self)->db == NULL);
+  Py_TpFree(self);
+}
+
+static PyObject *
+PreUpdate_tp_str(PyObject *self_)
+{
+  APSWPreUpdate *self = (APSWPreUpdate *)self_;
+  if (!self->db)
+    return PyUnicode_FromFormat("<apsw.PreUpdate out of scope, at %p>", self);
+
+  PyObject *op = NULL, *depth = NULL, *blob_write = NULL, *vals = NULL;
+
+  const char *label = NULL;
+
+  op = PreUpdate_op(self_, NULL);
+  if (op)
+    depth = PreUpdate_depth(self_, NULL);
+  if (depth)
+    blob_write = PreUpdate_blob_write(self_, NULL);
+  if (blob_write)
+    switch (self->op)
+    {
+    case SQLITE_INSERT:
+      label = "insert";
+      vals = PreUpdate_new(self_, NULL);
+      break;
+    case SQLITE_DELETE:
+      label = "delete";
+      vals = PreUpdate_old(self_, NULL);
+      break;
+    case SQLITE_UPDATE:
+      label = "update";
+      vals = PreUpdate_update(self_, NULL);
+      break;
+    }
+
+  PyObject *res = NULL;
+
+  if (vals)
+    res = PyUnicode_FromFormat("<apsw.PreUpdate op=%U, database=\"%s\", table=\"%s\", depth=%S, "
+                               "column_count=%d, rowid=%lld, rowid_new=%lld, blob_write=%S, %s=%S "
+                               "at %p>",
+                               op, self->zDb, self->zName, depth, self->column_count, self->iKey1, self->iKey2,
+                               blob_write, label, vals, self);
+
+  Py_XDECREF(op);
+  Py_XDECREF(depth);
+  Py_XDECREF(blob_write);
+  Py_XDECREF(vals);
+
+  assert((res == NULL && PyErr_Occurred()) || (res != NULL && !PyErr_Occurred()));
+
+  return res;
+}
+
+static PyGetSetDef PreUpdate_getset[] = {
+  { "connection", PreUpdate_connection, NULL, PreUpdate_connection_DOC },
+  { "op", PreUpdate_op, NULL, PreUpdate_op_DOC },
+  { "opcode", PreUpdate_opcode, NULL, PreUpdate_opcode_DOC },
+  { "database_name", PreUpdate_database_name, NULL, PreUpdate_database_name_DOC },
+  { "table_name", PreUpdate_table_name, NULL, PreUpdate_table_name_DOC },
+  { "rowid", PreUpdate_rowid, NULL, PreUpdate_rowid_DOC },
+  { "rowid_new", PreUpdate_rowid_new, NULL, PreUpdate_rowid_new_DOC },
+  { "depth", PreUpdate_depth, NULL, PreUpdate_depth_DOC },
+  { "old", PreUpdate_old, NULL, PreUpdate_old_DOC },
+  { "new", PreUpdate_new, NULL, PreUpdate_new_DOC },
+  { "update", PreUpdate_update, NULL, PreUpdate_update_DOC },
+  { "blob_write", PreUpdate_blob_write, NULL, PreUpdate_blob_write_DOC},
+  { 0 },
+};
+
+static PyTypeObject PreUpdateType = {
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.PreUpdate",
+  .tp_basicsize = sizeof(APSWPreUpdate),
+  .tp_getset = PreUpdate_getset,
+  .tp_doc = PreUpdate_class_DOC,
+  .tp_dealloc = PreUpdate_dealloc,
+  .tp_str = PreUpdate_tp_str,
+};
+
+#endif

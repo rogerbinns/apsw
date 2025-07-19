@@ -163,17 +163,31 @@ static int APSW_Should_Fault(const char *);
   } while (0)
 #endif
 
+/* string constants struct */
+#include "stringconstants.c"
+
 /* The module object */
 static PyObject *apswmodule;
 
 /* root exception class */
 static PyObject *APSWException;
 
-/* no change sentinel for vtable updates */
-static PyTypeObject apsw_no_change_object = {
+/* no change sentinel for vtable and updates */
+static PyObject *apsw_no_change_object;
+
+static PyObject *
+apsw_no_change_repr(PyObject *self)
+{
+  return Py_NewRef(apst.no_change);
+}
+
+static PyTypeObject apsw_no_change_type = {
   PyVarObject_HEAD_INIT(NULL, 0)
+  .tp_basicsize = sizeof(PyObject),
+  .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_name = "apsw.no_change",
   .tp_doc = Apsw_no_change_DOC,
+  .tp_repr = apsw_no_change_repr,
 };
 
 typedef struct
@@ -205,9 +219,6 @@ pyobject_bind_destructor(void *value)
 }
 
 static void apsw_write_unraisable(PyObject *hookobject);
-
-/* string constants struct */
-#include "stringconstants.c"
 
 /* Make various versions of Python code compatible with each other */
 #include "pyutil.c"
@@ -1900,13 +1911,16 @@ PyInit_apsw(void)
       || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0
       || PyType_Ready(&apswfcntl_pragma_Type) < 0 || PyType_Ready(&APSWURIFilenameType) < 0
       || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0
-      || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_object) < 0
+      || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_type) < 0
       || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0
       || PyType_Ready(&PyObjectBindType) < 0
 #ifdef SQLITE_ENABLE_SESSION
       || PyType_Ready(&APSWSessionType) < 0 || PyType_Ready(&APSWTableChangeType) < 0
       || PyType_Ready(&APSWChangesetType) < 0 || PyType_Ready(&APSWChangesetBuilderType) < 0
       || PyType_Ready(&APSWChangesetIteratorType) < 0 || PyType_Ready(&APSWRebaserType) < 0
+#endif
+#ifdef SQLITE_ENABLE_PREUPDATE_HOOK
+      || PyType_Ready(&PreUpdateType) < 0
 #endif
   )
     goto fail;
@@ -1965,6 +1979,9 @@ PyInit_apsw(void)
   ADD(TableChange, APSWTableChangeType);
   ADD(Rebaser, APSWRebaserType);
 #endif
+#ifdef SQLITE_ENABLE_PREUPDATE_HOOK
+  ADD(PreUpdate, PreUpdateType);
+#endif
 #undef ADD
 
   /** .. attribute:: connection_hooks
@@ -2022,10 +2039,18 @@ PyInit_apsw(void)
 
     A sentinel value used to indicate no change in a value when
     used with :meth:`VTCursor.ColumnNoChange`,
-    :meth:`VTTable.UpdateChangeRow`, and :attr:`TableChange.new`.
+    :meth:`VTTable.UpdateChangeRow`, :attr:`TableChange.new`,
+    and :class:`PreUpdate.update`.
   */
 
-  if (PyModule_AddObject(m, "no_change", Py_NewRef((PyObject *)&apsw_no_change_object)))
+  if(!apsw_no_change_object)
+  {
+    apsw_no_change_object = _PyObject_New(&apsw_no_change_type);
+    if(!apsw_no_change_object)
+      goto fail;
+  }
+
+  if (PyModule_AddObject(m, "no_change", Py_NewRef(apsw_no_change_object)))
     goto fail;
 
   /* undocumented sentinel to do no bindings */

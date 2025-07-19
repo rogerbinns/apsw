@@ -60,7 +60,6 @@ functions_not_used = (
     "sqlite3_realloc.*",
     "sqlite3_msize",
     "sqlite3_prepare(|_v2)",
-    "sqlite3_preupdate_.*",
     "sqlite3_(snprintf|vmprintf|vsnprintf)",
     # v2 should be used
     "sqlite3changeset_apply(|_strm)",
@@ -203,6 +202,9 @@ functions_arg_one = {
         "sqlite3_db_release_memory",
         "sqlite3_(errcode|errmsg|error_offset|extended_errcode)",
         "sqlite3_vtab_on_conflict",
+        "sqlite3_preupdate_count",
+        "sqlite3_preupdate_depth",
+        "sqlite3_preupdate_blobwrite",
     ),
     2: (
         "sqlite3_busy_timeout",
@@ -225,6 +227,9 @@ functions_arg_one = {
         "sqlite3_vtab_config",
         "sqlite3_wal_hook",
         "sqlite3_setlk_timeout",
+        "sqlite3_preupdate_hook",
+        "sqlite3_preupdate_old",
+        "sqlite3_preupdate_new",
     ),
     4: (
         "sqlite3_autovacuum_pages",

@@ -45,6 +45,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyLong_FromVoidPtr
 #undef PyMapping_GetItemString
 #undef PyMem_Calloc
+#undef PyMem_Malloc
 #undef PyMem_Realloc
 #undef PyMemoryView_FromMemory
 #undef PyModule_AddIntConstant
@@ -165,6 +166,8 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef sqlite3_overload_function
 #undef sqlite3_prepare
 #undef sqlite3_prepare_v3
+#undef sqlite3_preupdate_new
+#undef sqlite3_preupdate_old
 #undef sqlite3_realloc
 #undef sqlite3_realloc64
 #undef sqlite3_result_zeroblob64
@@ -686,6 +689,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyMem_Calloc = (typeof (_res_PyMem_Calloc))18;                                                                              \
     }                                                                                                                                    \
     _res_PyMem_Calloc;                                                                                                                   \
+})
+#define PyMem_Malloc(...) \
+({                                                                                                                                       \
+    __auto_type _res_PyMem_Malloc = 0 ? PyMem_Malloc(__VA_ARGS__) : 0;                                                                   \
+                                                                                                                                         \
+    _res_PyMem_Malloc = (typeof (_res_PyMem_Malloc))APSW_FaultInjectControl("PyMem_Malloc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                         \
+    if ((typeof (_res_PyMem_Malloc))0x1FACADE == _res_PyMem_Malloc)                                                                      \
+       _res_PyMem_Malloc = PyMem_Malloc(__VA_ARGS__);                                                                                    \
+    else if ((typeof(_res_PyMem_Malloc))0x2FACADE == _res_PyMem_Malloc)                                                                  \
+    {                                                                                                                                    \
+        PyMem_Malloc(__VA_ARGS__);                                                                                                       \
+        _res_PyMem_Malloc = (typeof (_res_PyMem_Malloc))18;                                                                              \
+    }                                                                                                                                    \
+    _res_PyMem_Malloc;                                                                                                                   \
 })
 #define PyMem_Realloc(...) \
 ({                                                                                                                                          \
@@ -2524,6 +2542,36 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_sqlite3_prepare_v3 = (typeof (_res_sqlite3_prepare_v3))18;                                                                                    \
     }                                                                                                                                                      \
     _res_sqlite3_prepare_v3;                                                                                                                               \
+})
+#define sqlite3_preupdate_new(...) \
+({                                                                                                                                                                  \
+    __auto_type _res_sqlite3_preupdate_new = 0 ? sqlite3_preupdate_new(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_sqlite3_preupdate_new = (typeof (_res_sqlite3_preupdate_new))APSW_FaultInjectControl("sqlite3_preupdate_new", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_sqlite3_preupdate_new))0x1FACADE == _res_sqlite3_preupdate_new)                                                                               \
+       _res_sqlite3_preupdate_new = sqlite3_preupdate_new(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_sqlite3_preupdate_new))0x2FACADE == _res_sqlite3_preupdate_new)                                                                           \
+    {                                                                                                                                                               \
+        sqlite3_preupdate_new(__VA_ARGS__);                                                                                                                         \
+        _res_sqlite3_preupdate_new = (typeof (_res_sqlite3_preupdate_new))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_sqlite3_preupdate_new;                                                                                                                                     \
+})
+#define sqlite3_preupdate_old(...) \
+({                                                                                                                                                                  \
+    __auto_type _res_sqlite3_preupdate_old = 0 ? sqlite3_preupdate_old(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_sqlite3_preupdate_old = (typeof (_res_sqlite3_preupdate_old))APSW_FaultInjectControl("sqlite3_preupdate_old", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_sqlite3_preupdate_old))0x1FACADE == _res_sqlite3_preupdate_old)                                                                               \
+       _res_sqlite3_preupdate_old = sqlite3_preupdate_old(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_sqlite3_preupdate_old))0x2FACADE == _res_sqlite3_preupdate_old)                                                                           \
+    {                                                                                                                                                               \
+        sqlite3_preupdate_old(__VA_ARGS__);                                                                                                                         \
+        _res_sqlite3_preupdate_old = (typeof (_res_sqlite3_preupdate_old))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_sqlite3_preupdate_old;                                                                                                                                     \
 })
 #define sqlite3_realloc(...) \
 ({                                                                                                                                                \

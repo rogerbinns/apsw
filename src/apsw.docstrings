@@ -241,7 +241,8 @@
 "\n" \
 "A sentinel value used to indicate no change in a value when\n" \
 "used with :meth:`VTCursor.ColumnNoChange`,\n" \
-":meth:`VTTable.UpdateChangeRow`, and :attr:`TableChange.new`.\n" 
+":meth:`VTTable.UpdateChangeRow`, :attr:`TableChange.new`,\n" \
+"and :class:`PreUpdate.update`.\n" 
 
 #define  Apsw_pyobject_DOC "apsw.pyobject(object: Any)\n\n" \
 "Indicates a Python object is being provided as a\n" \
@@ -2069,6 +2070,44 @@
 } while(0)
 
 
+#define  Connection_preupdate_hook_DOC "Connection.preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None\n\n" \
+"A callback just after a database row is updated.  You can have multiple hooks at once\n" \
+"(managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for\n" \
+"``callback`` will remove it.\n" \
+"\n" \
+"SQLite provides no way to report errors from the callback.  The SQLite level update\n" \
+"will always succeed, with Python exceptions reported when control returns to Python\n" \
+"code.\n" \
+"\n" \
+".. important::\n" \
+"\n" \
+"   The :doc:`session` extension uses the preupdate hook, and will **CRASH\n" \
+"   THE PROCESS** if you register a hook via this method, and then create\n" \
+"   a :class:`Session`.\n" \
+"\n" \
+"SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known\n" \
+"to APSW at compile time.  If not, this API and :class:`PreUpdate` will not be present.\n" \
+"\n" \
+"You do not get calls undoing changes when a transaction is\n" \
+"aborted/rolled back.  Consequently you can't use this hook to track\n" \
+"the current state of the database.  The approach taken by the\n" \
+":doc:`session` is to note the rowid (or primary keys for without rowid\n" \
+"tables), and initial values the first time that a row is seen.  When a\n" \
+"changeset is requested, it compares the contents of the row now to the row\n" \
+"then, and generates the appropriate changeset entry.\n" \
+"\n" \
+"Calls: `sqlite3_preupdate_hook <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
+
+#define Connection_preupdate_hook_KWNAMES "callback", "id"
+#define Connection_preupdate_hook_USAGE "Connection.preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None"
+
+#define Connection_preupdate_hook_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(callback), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(id), PyObject *)); \
+  assert(id == NULL); \
+} while(0)
+
+
 #define  Connection_read_DOC "Connection.read(schema: str, which: int, offset: int, amount: int) -> tuple[bool, bytes]\n\n" \
 "Invokes the underlying VFS method to read data from the database.  It\n" \
 "is strongly recommended to read aligned complete pages, since that is\n" \
@@ -2277,12 +2316,15 @@
 #define Connection_set_busy_timeout_OLDNAME "setbusytimeout"
 #define Connection_set_busy_timeout_OLDDOC Connection_set_busy_timeout_USAGE "\n(Old less clear name setbusytimeout)"
 
-#define  Connection_set_commit_hook_DOC "Connection.set_commit_hook(callable: Optional[CommitHook]) -> None\n\n" \
+#define  Connection_set_commit_hook_DOC "Connection.set_commit_hook(callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None\n\n" \
 "*callable* will be called just before a commit.  It should return\n" \
 "False for the commit to go ahead and True for it to be turned\n" \
 "into a rollback. In the case of an exception in your callable, a\n" \
 "True (rollback) value is returned.  Pass None to unregister\n" \
 "the existing hook.\n" \
+"\n" \
+"You can have multiple hooks at once (managed by APSW) by specifying\n" \
+"different ``id`` for each one.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -2290,11 +2332,13 @@
 "\n" \
 "Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
-#define Connection_set_commit_hook_KWNAMES "callable"
-#define Connection_set_commit_hook_USAGE "Connection.set_commit_hook(callable: Optional[CommitHook]) -> None"
+#define Connection_set_commit_hook_KWNAMES "callable", "id"
+#define Connection_set_commit_hook_USAGE "Connection.set_commit_hook(callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None"
 
 #define Connection_set_commit_hook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(id), PyObject *)); \
+  assert(id == NULL); \
 } while(0)
 
 
@@ -2384,19 +2428,24 @@
 #define Connection_set_progress_handler_OLDNAME "setprogresshandler"
 #define Connection_set_progress_handler_OLDDOC Connection_set_progress_handler_USAGE "\n(Old less clear name setprogresshandler)"
 
-#define  Connection_set_rollback_hook_DOC "Connection.set_rollback_hook(callable: Optional[Callable[[], None]]) -> None\n\n" \
+#define  Connection_set_rollback_hook_DOC "Connection.set_rollback_hook(callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None\n\n" \
 "Sets a callable which is invoked during a rollback.  If *callable*\n" \
 "is *None* then any existing rollback hook is unregistered.\n" \
 "\n" \
 "The *callable* is called with no parameters and the return value is ignored.\n" \
 "\n" \
+"You can have multiple hooks at once (managed by APSW) by specifying\n" \
+"different ``id`` for each one.\n" \
+"\n" \
 "Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
-#define Connection_set_rollback_hook_KWNAMES "callable"
-#define Connection_set_rollback_hook_USAGE "Connection.set_rollback_hook(callable: Optional[Callable[[], None]]) -> None"
+#define Connection_set_rollback_hook_KWNAMES "callable", "id"
+#define Connection_set_rollback_hook_USAGE "Connection.set_rollback_hook(callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None"
 
 #define Connection_set_rollback_hook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(id), PyObject *)); \
+  assert(id == NULL); \
 } while(0)
 
 
@@ -3597,6 +3646,91 @@
   assert(__builtin_types_compatible_p(typeof(omit), int)); \
 } while(0)
 
+
+#define  PreUpdate_blob_write_DOC ":type: int\n" \
+"\n" \
+"Writes to blobs show up as `DELETE`, with this having the\n" \
+"column number being rewritten.  The value is negative if\n" \
+"no blob is being written.\n" \
+"\n" \
+"Only the old value is available.  To get the new value you have\n" \
+"to query the database.\n" \
+"\n" \
+"Calls: `sqlite3_preupdate_blobwrite <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
+
+#define  PreUpdate_class_DOC "Provides the details of one update to the\n" \
+":meth:`Connection.preupdate_hook` callback.\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"   The object is only valid inside a the callback.\n" \
+"   Using it outside the hook gives :exc:`InvalidContextError`.\n" \
+"   You should copy all desired information in the callback.\n" 
+
+#define  PreUpdate_connection_DOC ":type: Connection\n" \
+"\n" \
+"The :class:`Connection` the preupdate is called on.\n" 
+
+#define  PreUpdate_database_name_DOC ":type: str\n" \
+"\n" \
+"``main``, ``temp``, the name of an attached database.\n" 
+
+#define  PreUpdate_depth_DOC ":type: int\n" \
+"\n" \
+"0 for direct SQL, 1 for triggers, 2 and so on for triggers\n" \
+"firing by a higher level trigger.\n" \
+"\n" \
+"Calls: `sqlite3_preupdate_depth <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
+
+#define  PreUpdate_new_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
+"\n" \
+"Row values for an INSERT, or after an UPDATE.  :class:`None` for\n" \
+"DELETE.  See also :attr:`old` and :attr:`update`.\n" \
+"\n" \
+"Calls: `sqlite3_preupdate_new <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
+
+#define  PreUpdate_old_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
+"\n" \
+"Row values for a DELETE, or before an UPDATE. :class:`None` for\n" \
+"INSERT.  See also :attr:`new` and :attr:`update`.\n" \
+"\n" \
+"Calls: `sqlite3_preupdate_old <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
+
+#define  PreUpdate_op_DOC ":type: str\n" \
+"\n" \
+"The operation code as a string  ``INSERT``,\n" \
+"``DELETE``, or ``UPDATE``.  See :attr:`opcode`\n" \
+"for this as a number.\n" 
+
+#define  PreUpdate_opcode_DOC ":type: int\n" \
+"\n" \
+"The operation code - ``apsw.SQLITE_INSERT``,\n" \
+"``apsw.SQLITE_DELETE``, or ``apsw.SQLITE_UPDATE``.\n" \
+"See :attr:`op` for this as a string.\n" 
+
+#define  PreUpdate_rowid_DOC ":type: int\n" \
+"\n" \
+"The affected rowid.\n" 
+
+#define  PreUpdate_rowid_new_DOC ":type: int\n" \
+"\n" \
+"New rowid if changed via rowid UPDATE.\n" 
+
+#define  PreUpdate_table_name_DOC ":type: str\n" \
+"\n" \
+"Table name.\n" 
+
+#define  PreUpdate_update_DOC ":type: tuple[SQLiteValue | Literal[no_change], ...] | None\n" \
+"\n" \
+"For UPDATE compares old and new values, providing the changed value,\n" \
+"or :attr:`apsw.no_change` if that column was not changed.\n" \
+"\n" \
+":class:`None` for INSERT and DELETE.  See also :attr:`old` and\n" \
+":attr:`new`.\n" \
+"\n" \
+"Calls:\n" \
+"  * `sqlite3_preupdate_old <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" \
+"  * `sqlite3_preupdate_new <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
 #define  Rebaser_class_DOC "This object wraps a `sqlite3_rebaser\n" \
 "<https://www.sqlite.org/session/rebaser.html>`__ object.\n" 

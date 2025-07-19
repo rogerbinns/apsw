@@ -1059,7 +1059,7 @@ APSWTableChange_new(PyObject *self_, void *Py_UNUSED(unused))
       goto error;
     }
     if (value == NULL)
-      PyTuple_SET_ITEM(tuple, i, Py_NewRef((PyObject *)&apsw_no_change_object));
+      PyTuple_SET_ITEM(tuple, i, Py_NewRef(apsw_no_change_object));
     else
     {
       PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
@@ -1108,7 +1108,7 @@ APSWTableChange_old(PyObject *self_, void *Py_UNUSED(unused))
       goto error;
     }
     if (value == NULL)
-      PyTuple_SET_ITEM(tuple, i, Py_NewRef((PyObject *)&apsw_no_change_object));
+      PyTuple_SET_ITEM(tuple, i, Py_NewRef(apsw_no_change_object));
     else
     {
       PyObject *pyvalue = convert_value_to_pyobject(value, 0, 0);
