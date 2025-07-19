@@ -3068,6 +3068,15 @@ class APSW(unittest.TestCase):
         self.db.execute("select 3").get
         self.assertEqual(called, [False, True])
 
+
+        # bad id
+        class bad_eq:
+            def __eq__(self, other):
+                1 / 0
+
+        self.db.set_progress_handler(phabort, id=bad_eq())
+        self.assertRaises(ZeroDivisionError, self.db.set_progress_handler, phabort, id=3)
+
     def testChanges(self):
         "Verify reporting of changes"
         c = self.db.cursor()
@@ -3375,6 +3384,13 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ConstraintError, self.db.execute, "insert into foo values(99)")
         self.assertEqual(seen, expected | {11})
 
+        # bad id
+        class bad_eq:
+            def __eq__(self, other):
+                1 / 0
+
+        self.assertRaises(ZeroDivisionError, self.db.set_commit_hook, ch, id=bad_eq())
+
     def testRollbackHook(self):
         "Verify rollback hooks"
         c = self.db.cursor()
@@ -3453,6 +3469,14 @@ class APSW(unittest.TestCase):
             self.db.set_rollback_hook(None, id=fn)
 
         self.db.execute("begin ; insert into foo values(12); rollback")
+
+        # bad id
+        class bad_eq:
+            def __eq__(self, other):
+                1 / 0
+
+        self.db.set_rollback_hook(hook2, id=bad_eq())
+        self.assertRaises(ZeroDivisionError, self.db.set_rollback_hook, hook3, id=3)
 
     def testUpdateHook(self):
         "Verify update hooks"
@@ -6424,8 +6448,12 @@ class APSW(unittest.TestCase):
             else:
                 raise Exception("unexpected")
 
+        self.db.preupdate_hook(lambda: 1/0)
+
         for id in test_ids:
             self.db.preupdate_hook(functools.partial(hook, id), id=id)
+
+        self.db.preupdate_hook(None)
 
         gc.get_referents(self.db)
 
