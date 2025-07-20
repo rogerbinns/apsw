@@ -1584,6 +1584,8 @@
 ":param schema: `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,\n" \
 "    defaulting to `main` if not supplied.\n" \
 "\n" \
+"See the :ref:`example <example_caching>`.\n" \
+"\n" \
 "Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__\n" 
 
 #define Connection_data_version_KWNAMES "schema"

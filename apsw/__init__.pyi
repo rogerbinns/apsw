@@ -1339,6 +1339,8 @@ class Connection:
         :param schema: `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,
             defaulting to `main` if not supplied.
 
+        See the :ref:`example <example_caching>`.
+
         Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__"""
         ...
 
