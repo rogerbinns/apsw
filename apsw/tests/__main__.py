@@ -2804,6 +2804,17 @@ class APSW(unittest.TestCase):
             self.db.execute(query, can_cache=True).close()
         self.db.close()
 
+    def testDataVersion(self):
+        self.assertRaises(TypeError, self.db.data_version, 3)
+        self.assertRaises(TypeError, self.db.data_version, "main", "main")
+        # unknown schema
+        self.assertRaises(apsw.SQLError, self.db.data_version, "orange")
+        b4 = self.db.data_version()
+        self.db.execute("create table foo(x)")
+        self.db.execute("insert into foo values(3)")
+        new = self.db.data_version()
+        self.assertNotEqual(b4, new)
+
     def testFastcall(self):
         "fastcall argument processing"
         # function that takes one argument
