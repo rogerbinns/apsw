@@ -1474,6 +1474,43 @@ print(apsw.ext.format_query_table(connection, query, **kwargs))
 kwargs = {"quote": True}
 print(apsw.ext.format_query_table(connection, query, **kwargs))
 
+### caching: Caching
+# SQLite has a `builtin cache
+# <https://www.sqlite.org/pragma.html#pragma_cache_size>`__.  If you
+# do your own caching then you can find out if it is invalid via
+# `pragma
+# <https://www.sqlite.org/pragma.html#pragma_schema_version>`__ for
+# schema changes and :meth:`Connection.data_version` for table content
+# changes.  Any cache is invalid if the values are different - there
+# is no guarantee if they will go up or down.
+
+print(
+    "SQLite cache =",
+    connection.pragma("cache_size"),
+    " page_size = ",
+    connection.pragma("page_size"),
+)
+
+# Make a second connection to change the same database main
+# connection.  These also work if the changes were done in a different
+# process.
+con2 = apsw.Connection(connection.filename)
+
+# See values before change
+print("Before values")
+print(f'{connection.pragma("schema_version")=}')
+print(f'{connection.data_version()=}')
+
+print("\nAfter values")
+# add to table from previous section
+con2.execute("insert into dummy values(1, 2, 3)")
+print(f'{connection.data_version()=}')
+
+# and add a table.  changing an existing table definition etc also
+# bump the schema version
+con2.execute("create table more(x,y,z)")
+print(f'{connection.pragma("schema_version")=}')
+
 ### cleanup:  Cleanup
 # As a general rule you do not need to do any cleanup.  Standard
 # Python garbage collection will take of everything.  Even if the

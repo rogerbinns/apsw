@@ -5700,6 +5700,8 @@ Connection_is_interrupted(PyObject *self_, void *Py_UNUSED(unused))
   :param schema: `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,
       defaulting to `main` if not supplied.
 
+  See the :ref:`example <example_caching>`.
+
   -* sqlite3_file_control
 */
 static PyObject *
@@ -5715,11 +5717,13 @@ Connection_data_version(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
     ARG_OPTIONAL ARG_optional_str(schema);
     ARG_EPILOG(NULL, Connection_data_version_USAGE, );
   }
+  DBMUTEX_ENSURE(self->dbmutex);
   int res, data_version = -1;
   res = sqlite3_file_control(self->db, schema ? schema : "main", SQLITE_FCNTL_DATA_VERSION, &data_version);
 
   /* errmsg is not set on failure */
   SET_EXC(res, NULL);
+  sqlite3_mutex_leave(self->dbmutex);
 
   return PyErr_Occurred() ? NULL : PyLong_FromLong(data_version);
 }
