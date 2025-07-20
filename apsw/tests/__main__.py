@@ -2541,6 +2541,7 @@ class APSW(unittest.TestCase):
             self.db.create_aggregate_function("twelve", None)
 
         self.assertRaises(TypeError, self.db.create_aggregate_function, "twelve\N{BLACK STAR}", 12)  # must be ascii
+        self.db.create_aggregate_function("longest", None)
         self.db.create_aggregate_function("longest", longest.factory)
 
         vals = (
@@ -2559,6 +2560,9 @@ class APSW(unittest.TestCase):
 
         v = curnext(c.execute("select longest(x,y,z) from foo"))[0]
         self.assertEqual(v, vals[0][2])
+
+        self.db.create_aggregate_function("longest", None)
+        self.assertRaisesRegex(apsw.SQLError, ".*no such function.*longest.*", c.execute, "select longest(x,y,z) from foo")
 
         # SQLite doesn't allow step functions to return an error, so we have to defer to the final
         def badfactory():
@@ -2709,6 +2713,10 @@ class APSW(unittest.TestCase):
                 return self.v
 
         self.assertRaises(TypeError, self.db.create_window_function, 3, 3)
+        self.assertRaises(TypeError, self.db.create_window_function, "fred", windowfunc, 77, flags="zebra")
+        self.assertRaises(TypeError, self.db.create_window_function, "fred", windowfunc, 77, orange="zebra")
+        # sqlite doesn't complain about unknown flag values
+        self.db.create_window_function("fred", windowfunc, 77, flags=0b1111111111)
         self.db.create_window_function("sumint", None)
         self.db.create_window_function("sumint", windowfunc)
         self.db.execute("""CREATE TABLE t3(x, y);
