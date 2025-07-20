@@ -178,7 +178,8 @@ static PyObject *apsw_no_change_object;
 static PyObject *
 apsw_no_change_repr(PyObject *self)
 {
-  return Py_NewRef(apst.no_change);
+  Py_INCREF(apst.no_change);
+  return apst.no_change;
 }
 
 static PyTypeObject apsw_no_change_type = {
