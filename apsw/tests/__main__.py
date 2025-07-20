@@ -6508,15 +6508,9 @@ class APSW(unittest.TestCase):
 
         self.db.execute("insert into foo values(null, null, null)")
 
-        if hasattr(apsw, "Session") and "DEBUG" not in apsw.compile_options:
-            # SQLITE_DEBUG causes an assertion failure
-            session = apsw.Session(self.db, "main")
-            self.assertRaisesRegex(
-                Exception,
-                ".*This WILL result in crashes in session, so the hook has been disabled.*",
-                self.db.preupdate_hook,
-                lambda x: None,
-            )
+        # there used to be a test for clashing with session here, but it results
+        # in crashes because this and session cannot co-exist.  we can't control
+        # the order destructors run across all the python versions and systems.
 
         count = 0
         last_row = (None, None, None)
