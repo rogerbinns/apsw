@@ -3478,6 +3478,8 @@ class APSW(unittest.TestCase):
         for fn in (hook1, hook2, hook3):
             self.db.set_rollback_hook(fn, id=fn)
 
+        self.assertIn(hook1, gc.get_referents(self.db))
+
         self.assertRaisesChain(
             (ZeroDivisionError, FileExistsError, TypeError),
             self.db.execute,
