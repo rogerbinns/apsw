@@ -10,12 +10,21 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.50.3.0
+========
+
+:meth:`~Connection.preupdate_hook` is available.  The :meth:`commit
+<Connection.set_commit_hook>` and :meth:`rollback
+<Connection.set_rollback_hook>` hooks let you provide multiple
+callbacks, multiplex by APSW.  :func:`apsw.ext.Trace` can now show
+updates, and transaction begin, commit, and rollback.
+
 3.50.2.0
 ========
 
 PyPi builds now use `cibuildwheel version 3 <https://cibuildwheel.pypa.io/en/stable/changelog/#v300>`__
 which advances the minimum supported Linux distribution.  It is configured to continue building both
-32 and 64 bit binaries..
+32 and 64 bit binaries.
 
 3.50.1.0
 ========

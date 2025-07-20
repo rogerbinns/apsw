@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.50.2.0 documentation</title>
+  <title>apsw.ext &mdash; APSW 3.50.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=63ac504d"></script>
+      <script src="../../_static/documentation_options.js?v=12791a14"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -938,14 +938,23 @@
 <span class="sd">           executing trigger is shown too.</span>
 <span class="sd">    :param vtable: If `True` then statements executed behind the</span>
 <span class="sd">           scenes by virtual tables are shown.</span>
+<span class="sd">    :param updates: If `True` and the :meth:`~apsw.Connection.preupdate_hook`</span>
+<span class="sd">           is available, then inserted, updated, and deleted rows are shown.</span>
+<span class="sd">           This is very helpful when you use bindings.</span>
+<span class="sd">    :param transaction: If `True` then transaction start and commit/rollback</span>
+<span class="sd">           will be shown, using commit/rollback hooks.</span>
 <span class="sd">    :param truncate: Truncates SQL text to this many characters</span>
 <span class="sd">    :param indent: Printed before each line of output</span>
 
 <span class="sd">    You are shown each regular statement start with a prefix of ``&gt;``,</span>
 <span class="sd">    end with a prefix of ``&lt;`` if there were in between statements</span>
 <span class="sd">    like triggers, ``T`` indicating trigger statements, and ``V``</span>
-<span class="sd">    indicating virtual table statements.  As each statement ends you</span>
-<span class="sd">    are shown summary information.</span>
+<span class="sd">    indicating virtual table statements.  If ``updates`` is on, then</span>
+<span class="sd">    ``INS``. ``DEL``, and ``UPD`` are shown followed by the rowid, and</span>
+<span class="sd">    then the columns. For updates, unchanged columns are shown as ``...```.</span>
+<span class="sd">    Transaction control is shown with a ``!`` prefix.</span>
+
+<span class="sd">    As each statement ends you are shown summary information.</span>
 
 <span class="sd">    .. list-table::</span>
 <span class="sd">        :header-rows: 1</span>
@@ -1010,6 +1019,8 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">trigger</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">vtable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">updates</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">transaction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">truncate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">75</span><span class="p">,</span>
         <span class="n">indent</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">):</span>
@@ -1018,6 +1029,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">trigger</span> <span class="o">=</span> <span class="n">trigger</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vtable</span> <span class="o">=</span> <span class="n">vtable</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">=</span> <span class="n">indent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updates</span> <span class="o">=</span> <span class="n">updates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span> <span class="o">=</span> <span class="n">transaction</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span> <span class="o">=</span> <span class="n">truncate</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_truncate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -1038,10 +1051,51 @@
             <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_STMT</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_ROW</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_PROFILE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sqlite_trace</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span>
         <span class="p">)</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="s2">&quot;preupdate_hook&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">preupdate_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_preupdate</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">updates</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_commit_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commit</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_rollback_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rollback</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transaction_state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_commit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction</span><span class="p">(</span><span class="s2">&quot;COMMIT&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_rollback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction</span><span class="p">(</span><span class="s2">&quot;ROLLBACK&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction_state</span> <span class="o">!=</span> <span class="n">state</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transaction_state</span> <span class="o">=</span> <span class="n">state</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot; !</span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_preupdate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">PreUpdate</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction</span><span class="p">(</span><span class="s2">&quot;BEGIN&quot;</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">update</span><span class="o">.</span><span class="n">op</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">update</span><span class="o">.</span><span class="n">rowid</span><span class="si">}{</span><span class="sa">f</span><span class="s1">&#39;&gt;</span><span class="si">{</span><span class="n">update</span><span class="o">.</span><span class="n">rowid_new</span><span class="si">}</span><span class="s1">&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">update</span><span class="o">.</span><span class="n">rowid_new</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">update</span><span class="o">.</span><span class="n">rowid</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2"> (&quot;</span>
+        <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+            <span class="n">update</span><span class="o">.</span><span class="n">old</span> <span class="k">if</span> <span class="n">update</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;DELETE&quot;</span> <span class="k">else</span> <span class="n">update</span><span class="o">.</span><span class="n">new</span> <span class="k">if</span> <span class="n">update</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;INSERT&quot;</span> <span class="k">else</span> <span class="n">update</span><span class="o">.</span><span class="n">update</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="n">column</span> <span class="ow">is</span> <span class="n">apsw</span><span class="o">.</span><span class="n">no_change</span> <span class="k">else</span> <span class="n">apsw</span><span class="o">.</span><span class="n">format_sql_value</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">num</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">out</span> <span class="o">+=</span> <span class="s2">&quot;, &quot;</span>
+            <span class="n">out</span> <span class="o">+=</span> <span class="n">val</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="s2">&quot;)&quot;</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span><span class="p">,</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="s2">&quot;  &quot;</span> <span class="o">*</span> <span class="n">update</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_truncate</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_sqlite_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;code&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_STMT</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">in_transaction</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;readonly&quot;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_transaction</span><span class="p">(</span><span class="s2">&quot;BEGIN&quot;</span><span class="p">)</span>
             <span class="n">stmt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">statements</span><span class="p">[</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]]</span>
             <span class="k">if</span> <span class="n">stmt</span><span class="o">.</span><span class="n">change_count</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
                 <span class="n">stmt</span><span class="o">.</span><span class="n">change_count</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;total_changes&quot;</span><span class="p">]</span>
@@ -1127,7 +1181,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">last_emitted</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;sql&quot;</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">preupdate_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_commit_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_rollback_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span></div>
 
 
 
@@ -3110,7 +3169,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jun 29, 2025.
+      <span class="lastupdated">Last updated on Jul 20, 2025.
       </span></p>
   </div>
 

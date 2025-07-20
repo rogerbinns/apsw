@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.50.2.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.50.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=63ac504d"></script>
+      <script src="_static/documentation_options.js?v=12791a14"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -89,6 +89,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#system-and-sqlite-resource-usage-in-a-block">System and SQLite resource usage in a block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#sql-statement-tracing-in-a-block">SQL statement tracing in a block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#formatting-query-results-table">Formatting query results table</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#caching">Caching</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#cleanup">Cleanup</a></li>
 </ul>
 </li>
@@ -170,6 +171,7 @@ and attribute documentation.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">apsw.ext</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="c1"># pretty formatting</span>
@@ -196,9 +198,9 @@ and attribute documentation.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-313-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.50.2.0</span>
-<span class="go">SQLite header version 3050002</span>
-<span class="go">   SQLite lib version 3.50.2</span>
+<span class="go">         APSW version 3.50.3.0</span>
+<span class="go">SQLite header version 3050003</span>
+<span class="go">   SQLite lib version 3.50.3</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -832,11 +834,11 @@ conversion, both for types you define and for other types.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 6, 29, 5, 23, 21, 544116))</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 7, 20, 11, 41, 30, 789078))</span>
 <span class="go">querying data</span>
 <span class="go">column 0 = Point(5.2, 7.6)</span>
 <span class="go">column 1 = (3+4j)</span>
-<span class="go">column 2 = datetime.datetime(2025, 6, 29, 12, 23, 21, 544116, tzinfo=datetime.timezone.utc)</span>
+<span class="go">column 2 = datetime.datetime(2025, 7, 20, 18, 41, 30, 789078, tzinfo=datetime.timezone.utc)</span>
 </pre></div>
 </div>
 </section>
@@ -896,7 +898,7 @@ runtime.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Bad binding argument type supplied - argument #1: type set</span>
-<span class="go">select ? {1, 2, &lt;_io.StringIO object at 0x743ab96b1e40&gt;, &#39;three&#39;, (4+5j)}</span>
+<span class="go">select ? {1, 2, &#39;three&#39;, (4+5j), &lt;_io.StringIO object at 0x7d76af4b3940&gt;}</span>
 <span class="go">select typeof(?) null</span>
 <span class="go">make_set got ((3+4j), &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, &#39;hello&#39;)</span>
 <span class="go">select make_set(?, ?, ?) {&#39;hello&#39;, &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, (3+4j)}</span>
@@ -961,7 +963,7 @@ across all the queries within the block</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">len(rows)=20</span>
-<span class="go">After 0.200 seconds, we hit number=326796</span>
+<span class="go">After 0.200 seconds, we hit number=316762</span>
 <span class="go">exc=IndexError(&#39;query row limit hit&#39;)</span>
 </pre></div>
 </div>
@@ -1331,7 +1333,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9811449831,)</span>
+<span class="go">(9928988740,)</span>
 </pre></div>
 </div>
 </section>
@@ -1427,8 +1429,7 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.set_co
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">in commit hook</span>
-<span class="go">no commits out of hours</span>
-<span class="go">commit was not allowed</span>
+<span class="go">commits okay at this time</span>
 </pre></div>
 </div>
 </section>
@@ -1699,8 +1700,8 @@ useful instead.</p>
 <span class="go">│ .local     │ 2128       │</span>
 <span class="go">│ .o         │ 15512      │</span>
 <span class="go">│ .ps1       │ 9031       │</span>
-<span class="go">│ .py        │ 11176608   │</span>
-<span class="go">│ .pyc       │ 11792276   │</span>
+<span class="go">│ .py        │ 11176480   │</span>
+<span class="go">│ .pyc       │ 11792158   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
 <span class="go">│ .sh        │ 2729       │</span>
 <span class="go">│ .so        │ 29503792   │</span>
@@ -1946,9 +1947,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.50.2.0)</span>
-<span class="go">-- SQLite version 3.50.2</span>
-<span class="go">-- Date: Sun Jun 29 05:23:22 2025</span>
+<span class="go">-- SQLite dump (by APSW 3.50.3.0)</span>
+<span class="go">-- SQLite version 3.50.3</span>
+<span class="go">-- Date: Sun Jul 20 11:41:31 2025</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1988,8 +1989,8 @@ for per connection statistics.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 517920 max 2494984</span>
-<span class="go">5048 bytes used to store schema for this connection</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 522584 max 2499688</span>
+<span class="go">5360 bytes used to store schema for this connection</span>
 </pre></div>
 </div>
 </section>
@@ -2045,12 +2046,17 @@ for per connection statistics.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">code is  SQLITE_TRACE_STMT</span>
-<span class="go">{&#39;code&#39;: 1, &#39;id&#39;: 232476536, &#39;total_changes&#39;: 146, &#39;trigger&#39;: False}</span>
+<span class="go">{&#39;code&#39;: 1,</span>
+<span class="go"> &#39;explain&#39;: 0,</span>
+<span class="go"> &#39;id&#39;: 164263784,</span>
+<span class="go"> &#39;readonly&#39;: True,</span>
+<span class="go"> &#39;total_changes&#39;: 146,</span>
+<span class="go"> &#39;trigger&#39;: False}</span>
 <span class="go">code is  SQLITE_TRACE_ROW</span>
-<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 232476536}</span>
+<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 164263784}</span>
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;id&#39;: 232476536,</span>
+<span class="go"> &#39;id&#39;: 164263784,</span>
 <span class="go"> &#39;nanoseconds&#39;: 17000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
@@ -2083,15 +2089,14 @@ block of code does.  We use the same query from above.</p>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.3</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.021</span>
-<span class="go">                       Wall clock 1.326</span>
-<span class="go">           Block input operations 232</span>
-<span class="go">        Maximum resident set size 192</span>
-<span class="go">             Page faults - no I/O 86</span>
-<span class="go">     Involuntary context switches 140</span>
-<span class="go">       Voluntary context switches 5</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.022</span>
+<span class="go">                       Wall clock 1.323</span>
+<span class="go">        Maximum resident set size 208</span>
+<span class="go">             Page faults - no I/O 84</span>
+<span class="go">     Involuntary context switches 84</span>
+<span class="go">       Voluntary context switches 1</span>
 <span class="go">              Time in system mode 0.002</span>
-<span class="go">                Time in user mode 0.019</span>
+<span class="go">                Time in user mode 0.020</span>
 <span class="go">           SQLite full table scan 1,365</span>
 <span class="go">           SQLite sort operations 2</span>
 <span class="go">             SQLite vm operations 1,015,351</span>
@@ -2105,7 +2110,13 @@ block of code does.  We use the same query from above.</p>
 <p>Use <a class="reference internal" href="ext.html#apsw.ext.Trace" title="apsw.ext.Trace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.Trace()</span></code></a> to see SQL statements inside a block of
 code.  This also shows behind the scenes SQL.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use None instead of stdout and no information is printed or gathered</span>
-<span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">Trace</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">connection</span><span class="p">,</span> <span class="n">vtable</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">Trace</span><span class="p">(</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span>
+    <span class="n">db</span><span class="o">=</span><span class="n">connection</span><span class="p">,</span>
+    <span class="n">vtable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">updates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">transaction</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
     <span class="c1"># APSW does a savepoint behind the scenes to wrap the block</span>
     <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
         <span class="c1"># Some regular SQL</span>
@@ -2118,39 +2129,74 @@ code.  This also shows behind the scenes SQL.</p>
         <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from multi limit 2&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
         <span class="c1"># You can also see how many rows were changed</span>
         <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;delete from multi where x &lt; 4&quot;</span><span class="p">)</span>
-        <span class="c1"># To implement the table, SQLIte issues the pragma behind the</span>
-        <span class="c1"># scenes.  Note how the output shows this statement starting,</span>
-        <span class="c1"># the pragma, and then this statement ending.</span>
-        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="s2">&quot;select count(*) from pragma_function_list&quot;</span>
-        <span class="p">)</span>
+
+    <span class="c1"># pragma functions are virtual tables - see how many rows this processes even</span>
+    <span class="c1"># though only one has &#39;pow&#39;</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
+
+    <span class="c1"># trigger that causes rollback</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        create trigger error after insert on multi</span>
+<span class="s2">        begin</span>
+<span class="s2">           update multi set rowid=100+new.rowid where rowid=new.rowid;</span>
+<span class="s2">           select raise(rollback, &#39;nope&#39;);</span>
+<span class="s2">       end;</span>
+<span class="s2">    &quot;&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ConstraintError</span><span class="p">):</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into multi values(54)&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">&gt; SAVEPOINT &quot;_apsw-0&quot;</span>
 <span class="go">    Time: 0.000</span>
+<span class="go"> !BEGIN</span>
 <span class="go">&gt; create table multi(x)</span>
 <span class="go">    Time: 0.000</span>
 <span class="go">&gt; insert into multi values(?)</span>
+<span class="go">  INS 1 (0)</span>
 <span class="go">    Time: 0.000  Rows: 1  Changes: 1</span>
 <span class="go">&gt; insert into multi values(?)</span>
+<span class="go">  INS 2 (1)</span>
 <span class="go">    Time: 0.000  Changes: 1</span>
 <span class="go">&gt; insert into multi values(?)</span>
+<span class="go">  INS 3 (2)</span>
 <span class="go">    Time: 0.000  Changes: 1</span>
 <span class="go">&gt; insert into multi values(?)</span>
+<span class="go">  INS 4 (3)</span>
 <span class="go">    Time: 0.000  Changes: 1</span>
 <span class="go">&gt; insert into multi values(?)</span>
+<span class="go">  INS 5 (4)</span>
 <span class="go">    Time: 0.000  Changes: 1</span>
 <span class="go">&gt; select * from multi limit 2</span>
 <span class="go">    Time: 0.000  Rows: 2</span>
 <span class="go">&gt; delete from multi where x &lt; 4</span>
+<span class="go">  DEL 1 (0)</span>
+<span class="go">  DEL 2 (1)</span>
+<span class="go">  DEL 3 (2)</span>
+<span class="go">  DEL 4 (3)</span>
 <span class="go">    Time: 0.000  Changes: 4</span>
-<span class="go">&gt; select count(*) from pragma_function_list</span>
+<span class="go">&gt; RELEASE SAVEPOINT &quot;_apsw-0&quot;</span>
+<span class="go"> !COMMIT</span>
+<span class="go">    Time: 0.007</span>
+<span class="go">&gt; SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;</span>
 <span class="go">V PRAGMA function_list</span>
 <span class="go">    Time: 0.000  Rows: 211  VmStep: 1,481  Mem: 70.8KB</span>
-<span class="go">&lt; select count(*) from pragma_function_list</span>
-<span class="go">    Time: 0.000  Rows: 1  VmStep: 433</span>
-<span class="go">&gt; RELEASE SAVEPOINT &quot;_apsw-0&quot;</span>
-<span class="go">    Time: 0.007</span>
+<span class="go">&lt; SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;</span>
+<span class="go">    Time: 0.000  Rows: 1  VmStep: 644</span>
+<span class="go"> !BEGIN</span>
+<span class="go">&gt; create trigger error after insert on multi</span>
+<span class="go">       begin</span>
+<span class="go">          update ...</span>
+<span class="go"> !COMMIT</span>
+<span class="go">    Time: 0.002</span>
+<span class="go"> !BEGIN</span>
+<span class="go">&gt; insert into multi values(54)</span>
+<span class="go">  INS 6 (54)</span>
+<span class="go">T TRIGGER error</span>
+<span class="go">    UPD 6&gt;106 (...)</span>
+<span class="go"> !ROLLBACK</span>
+<span class="go">&lt; insert into multi values(54)</span>
+<span class="go">    Time: 0.000  Rows: 1  Changes: 1</span>
 </pre></div>
 </div>
 </section>
@@ -2245,8 +2291,55 @@ truncation etc.</p>
 </pre></div>
 </div>
 </section>
+<section id="caching">
+<span id="example-caching"></span><span id="index-38"></span><h2>Caching<a class="headerlink" href="#caching" title="Link to this heading"></a></h2>
+<p>SQLite has a <a class="reference external" href="https://www.sqlite.org/pragma.html#pragma_cache_size">builtin cache</a>.  If you
+do your own caching then you can find out if it is invalid via
+<a class="reference external" href="https://www.sqlite.org/pragma.html#pragma_schema_version">pragma</a> for
+schema changes and <a class="reference internal" href="connection.html#apsw.Connection.data_version" title="apsw.Connection.data_version"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.data_version()</span></code></a> for table content
+changes.  Any cache is invalid if the values are different - there
+is no guarantee if they will go up or down.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;SQLite cache =&quot;</span><span class="p">,</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;cache_size&quot;</span><span class="p">),</span>
+    <span class="s2">&quot; page_size = &quot;</span><span class="p">,</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;page_size&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># Make a second connection to change the same database main</span>
+<span class="c1"># connection.  These also work if the changes were done in a different</span>
+<span class="c1"># process.</span>
+<span class="n">con2</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="n">connection</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+
+<span class="c1"># See values before change</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Before values&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;schema_version&quot;</span><span class="p">)</span><span class="si">=}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">data_version</span><span class="p">()</span><span class="si">=}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">After values&quot;</span><span class="p">)</span>
+<span class="c1"># add to table from previous section</span>
+<span class="n">con2</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into dummy values(1, 2, 3)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">data_version</span><span class="p">()</span><span class="si">=}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># and add a table.  changing an existing table definition etc also</span>
+<span class="c1"># bump the schema version</span>
+<span class="n">con2</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table more(x,y,z)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;schema_version&quot;</span><span class="p">)</span><span class="si">=}</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite cache = -2000  page_size =  4096</span>
+<span class="go">Before values</span>
+<span class="go">connection.pragma(&quot;schema_version&quot;)=23</span>
+<span class="go">connection.data_version()=61</span>
+
+<span class="go">After values</span>
+<span class="go">connection.data_version()=61</span>
+<span class="go">connection.pragma(&quot;schema_version&quot;)=24</span>
+</pre></div>
+</div>
+</section>
 <section id="cleanup">
-<span id="example-cleanup"></span><span id="index-38"></span><h2>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading"></a></h2>
+<span id="example-cleanup"></span><span id="index-39"></span><h2>Cleanup<a class="headerlink" href="#cleanup" title="Link to this heading"></a></h2>
 <p>As a general rule you do not need to do any cleanup.  Standard
 Python garbage collection will take of everything.  Even if the
 process crashes with a connection in the middle of a transaction,
@@ -2271,7 +2364,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jun 29, 2025.
+      <span class="lastupdated">Last updated on Jul 20, 2025.
       </span></p>
   </div>
 

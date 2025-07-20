@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; APSW 3.50.2.0 documentation</title>
+  <title>Index &mdash; APSW 3.50.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=63ac504d"></script>
+      <script src="_static/documentation_options.js?v=12791a14"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -367,6 +367,8 @@
 </li>
       <li><a href="connection.html#apsw.Connection.blob_open">blob_open() (apsw.Connection method)</a>
 </li>
+      <li><a href="connection.html#apsw.PreUpdate.blob_write">blob_write (apsw.PreUpdate attribute)</a>
+</li>
       <li>
     blobopen
 
@@ -401,6 +403,8 @@
         <li><a href="changes.html#index-16">Connection.cache_flush</a>
 </li>
       </ul></li>
+      <li><a href="example.html#index-38">Caching (example code)</a>
+</li>
       <li><a href="exceptions.html#apsw.CantOpenError">CantOpenError</a>
 </li>
       <li><a href="textsearch.html#apsw.unicode.casefold">casefold() (in module apsw.unicode)</a>
@@ -445,7 +449,7 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5.TokenizerArgument.choices">choices (apsw.fts5.TokenizerArgument attribute)</a>
 </li>
-      <li><a href="example-fts.html#index-25">Cleanup (example code)</a>, <a href="example-session.html#index-12">[1]</a>, <a href="example.html#index-38">[2]</a>
+      <li><a href="example-fts.html#index-25">Cleanup (example code)</a>, <a href="example-session.html#index-12">[1]</a>, <a href="example.html#index-39">[2]</a>
 </li>
       <li><a href="shell.html#index-5">close (Shell command)</a>
 </li>
@@ -601,6 +605,8 @@
       <ul>
         <li><a href="textsearch.html#apsw.FTS5Tokenizer.connection">(apsw.FTS5Tokenizer attribute)</a>
 </li>
+        <li><a href="connection.html#apsw.PreUpdate.connection">(apsw.PreUpdate attribute)</a>
+</li>
       </ul></li>
       <li><a href="connection.html#apsw.Connection">Connection (class in apsw)</a>
 </li>
@@ -721,7 +727,11 @@
       <li><a href="connection.html#apsw.Connection.data_version">data_version() (apsw.Connection method)</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.database_name">database_name (apsw.ext.QueryAction attribute)</a>
+
+      <ul>
+        <li><a href="connection.html#apsw.PreUpdate.database_name">(apsw.PreUpdate attribute)</a>
 </li>
+      </ul></li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo">DatabaseFileInfo (class in apsw.ext)</a>
 </li>
       <li><a href="ext.html#apsw.ext.DatabasePageUsage">DatabasePageUsage (class in apsw.ext)</a>
@@ -761,6 +771,8 @@
       <li><a href="example.html#index-15">Defining window functions (example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.Table.delete">delete() (apsw.fts5.Table method)</a>
+</li>
+      <li><a href="connection.html#apsw.PreUpdate.depth">depth (apsw.PreUpdate attribute)</a>
 </li>
       <li><a href="cursor.html#apsw.Cursor.description">description (apsw.Cursor attribute)</a>
 
@@ -1544,8 +1556,12 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5query.NEAR">NEAR (class in apsw.fts5query)</a>
 </li>
-      <li><a href="session.html#apsw.TableChange.new">new (apsw.TableChange attribute)</a>
+      <li><a href="connection.html#apsw.PreUpdate.new">new (apsw.PreUpdate attribute)</a>
+
+      <ul>
+        <li><a href="session.html#apsw.TableChange.new">(apsw.TableChange attribute)</a>
 </li>
+      </ul></li>
       <li><a href="vtable.html#apsw.VTCursor.Next">Next() (apsw.VTCursor method)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.NGramTokenizer">NGramTokenizer() (in module apsw.fts5)</a>
@@ -1578,13 +1594,23 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="session.html#apsw.TableChange.old">old (apsw.TableChange attribute)</a>
+      <li><a href="connection.html#apsw.PreUpdate.old">old (apsw.PreUpdate attribute)</a>
+
+      <ul>
+        <li><a href="session.html#apsw.TableChange.old">(apsw.TableChange attribute)</a>
 </li>
-      <li><a href="session.html#apsw.TableChange.op">op (apsw.TableChange attribute)</a>
+      </ul></li>
+      <li><a href="connection.html#apsw.PreUpdate.op">op (apsw.PreUpdate attribute)</a>
+
+      <ul>
+        <li><a href="session.html#apsw.TableChange.op">(apsw.TableChange attribute)</a>
 </li>
+      </ul></li>
       <li><a href="ext.html#apsw.ext.VDBEInstruction.opcode">opcode (apsw.ext.VDBEInstruction attribute)</a>
 
       <ul>
+        <li><a href="connection.html#apsw.PreUpdate.opcode">(apsw.PreUpdate attribute)</a>
+</li>
         <li><a href="session.html#apsw.TableChange.opcode">(apsw.TableChange attribute)</a>
 </li>
       </ul></li>
@@ -1594,12 +1620,12 @@
 </li>
       <li><a href="connection.html#apsw.Connection.open_flags">open_flags (apsw.Connection attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.open_vfs">open_vfs (apsw.Connection attribute)</a>
 </li>
       <li><a href="example.html#index-3">Opening the database (example code)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.QueryAction.operation">operation (apsw.ext.QueryAction attribute)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5query.OR">OR (class in apsw.fts5query)</a>
@@ -1708,10 +1734,10 @@
 </li>
       <li><a href="textsearch.html#apsw.FTS5ExtensionApi.phrase_count">phrase_count (apsw.FTS5ExtensionApi attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="textsearch.html#apsw.FTS5ExtensionApi.phrase_locations">phrase_locations() (apsw.FTS5ExtensionApi method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="textsearch.html#apsw.fts5.QueryInfo.phrases">phrases (apsw.fts5.QueryInfo attribute)</a>
 
       <ul>
@@ -1746,6 +1772,12 @@
         <li><a href="textsearch.html#apsw.fts5query.PHRASE.prefix">(apsw.fts5query.PHRASE attribute)</a>
 </li>
       </ul></li>
+      <li><a href="connection.html#apsw.PreUpdate">PreUpdate (class in apsw)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.preupdate_hook">preupdate_hook() (apsw.Connection method)</a>
+</li>
+      <li><a href="apsw.html#apsw.PreupdateHook">PreupdateHook (class in apsw)</a>
+</li>
       <li><a href="shell.html#index-31">print (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.print_augmented_traceback">print_augmented_traceback() (in module apsw.ext)</a>
@@ -1922,14 +1954,14 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.Release">Release() (apsw.VTTable method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.release_memory">release_memory() (apsw.Connection method)</a>
 
       <ul>
         <li><a href="apsw.html#apsw.release_memory">(in module apsw)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     releasememory
 
@@ -1978,8 +2010,12 @@
       <ul>
         <li><a href="textsearch.html#apsw.FTS5ExtensionApi.rowid">(apsw.FTS5ExtensionApi attribute)</a>
 </li>
+        <li><a href="connection.html#apsw.PreUpdate.rowid">(apsw.PreUpdate attribute)</a>
+</li>
       </ul></li>
       <li><a href="vtable.html#apsw.VTCursor.Rowid">Rowid() (apsw.VTCursor method)</a>
+</li>
+      <li><a href="connection.html#apsw.PreUpdate.rowid_new">rowid_new (apsw.PreUpdate attribute)</a>
 </li>
       <li>
     rowtrace
@@ -2260,9 +2296,9 @@
 </li>
       <li><a href="blob.html#index-6">sqlite3_blob_write</a>
 </li>
-      <li><a href="connection.html#index-38">sqlite3_busy_handler</a>
+      <li><a href="connection.html#index-39">sqlite3_busy_handler</a>
 </li>
-      <li><a href="connection.html#index-39">sqlite3_busy_timeout</a>
+      <li><a href="connection.html#index-40">sqlite3_busy_timeout</a>
 </li>
       <li><a href="connection.html#index-7">sqlite3_changes64</a>
 </li>
@@ -2280,7 +2316,7 @@
 </li>
       <li><a href="cursor.html#index-2">sqlite3_column_table_name</a>
 </li>
-      <li><a href="connection.html#index-40">sqlite3_commit_hook</a>
+      <li><a href="connection.html#index-41">sqlite3_commit_hook</a>
 </li>
       <li><a href="apsw.html#index-0">sqlite3_compileoption_get</a>
 </li>
@@ -2304,11 +2340,11 @@
 </li>
       <li><a href="connection.html#index-19">sqlite3_db_name</a>
 </li>
-      <li><a href="connection.html#index-35">sqlite3_db_readonly</a>
+      <li><a href="connection.html#index-36">sqlite3_db_readonly</a>
 </li>
-      <li><a href="connection.html#index-36">sqlite3_db_release_memory</a>
+      <li><a href="connection.html#index-37">sqlite3_db_release_memory</a>
 </li>
-      <li><a href="connection.html#index-48">sqlite3_db_status</a>
+      <li><a href="connection.html#index-49">sqlite3_db_status</a>
 </li>
       <li><a href="connection.html#index-20">sqlite3_deserialize</a>
 </li>
@@ -2318,7 +2354,7 @@
 </li>
       <li><a href="cursor.html#index-4">sqlite3_expanded_sql</a>
 </li>
-      <li><a href="connection.html#index-17">sqlite3_file_control</a>, <a href="connection.html#index-22">[1]</a>, <a href="connection.html#index-34">[2]</a>
+      <li><a href="connection.html#index-17">sqlite3_file_control</a>, <a href="connection.html#index-22">[1]</a>, <a href="connection.html#index-35">[2]</a>
 </li>
       <li><a href="connection.html#index-24">sqlite3_filename_journal</a>
 </li>
@@ -2328,14 +2364,14 @@
 </li>
       <li><a href="apsw.html#index-4">sqlite3_hard_heap_limit64</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#index-5">sqlite3_initialize</a>
 </li>
       <li><a href="connection.html#index-28">sqlite3_interrupt</a>
 </li>
       <li><a href="connection.html#index-29">sqlite3_is_interrupted</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#index-6">sqlite3_keyword_count</a>
 </li>
       <li><a href="apsw.html#index-6">sqlite3_keyword_name</a>
@@ -2362,7 +2398,17 @@
 </li>
       <li><a href="cursor.html#index-3">sqlite3_prepare_v3</a>
 </li>
-      <li><a href="connection.html#index-43">sqlite3_progress_handler</a>
+      <li><a href="connection.html#index-59">sqlite3_preupdate_blobwrite</a>
+</li>
+      <li><a href="connection.html#index-60">sqlite3_preupdate_depth</a>
+</li>
+      <li><a href="connection.html#index-34">sqlite3_preupdate_hook</a>
+</li>
+      <li><a href="connection.html#index-61">sqlite3_preupdate_new</a>, <a href="connection.html#index-63">[1]</a>
+</li>
+      <li><a href="connection.html#index-62">sqlite3_preupdate_old</a>, <a href="connection.html#index-63">[1]</a>
+</li>
+      <li><a href="connection.html#index-44">sqlite3_progress_handler</a>
 </li>
       <li><a href="apsw.html#index-10">sqlite3_randomness</a>
 </li>
@@ -2370,15 +2416,15 @@
 </li>
       <li><a href="tips.html#index-2">sqlite3_result_pointer</a>
 </li>
-      <li><a href="connection.html#index-44">sqlite3_rollback_hook</a>
+      <li><a href="connection.html#index-45">sqlite3_rollback_hook</a>
 </li>
-      <li><a href="connection.html#index-37">sqlite3_serialize</a>
+      <li><a href="connection.html#index-38">sqlite3_serialize</a>
 </li>
       <li><a href="connection.html#index-2">sqlite3_set_authorizer</a>
 </li>
-      <li><a href="connection.html#index-41">sqlite3_set_last_insert_rowid</a>
+      <li><a href="connection.html#index-42">sqlite3_set_last_insert_rowid</a>
 </li>
-      <li><a href="connection.html#index-47">sqlite3_setlk_timeout</a>
+      <li><a href="connection.html#index-48">sqlite3_setlk_timeout</a>
 </li>
       <li><a href="apsw.html#index-13">sqlite3_shutdown</a>
 </li>
@@ -2400,7 +2446,7 @@
 </li>
       <li><a href="cursor.html#index-7">sqlite3_stmt_readonly</a>
 </li>
-      <li><a href="connection.html#index-52">sqlite3_stmt_status</a>
+      <li><a href="connection.html#index-53">sqlite3_stmt_status</a>
 </li>
       <li><a href="apsw.html#index-19">sqlite3_strglob</a>
 </li>
@@ -2410,17 +2456,17 @@
 </li>
       <li><a href="apsw.html#index-22">sqlite3_strnicmp</a>
 </li>
-      <li><a href="connection.html#index-49">sqlite3_system_errno</a>
+      <li><a href="connection.html#index-50">sqlite3_system_errno</a>
 </li>
-      <li><a href="connection.html#index-10">sqlite3_table_column_metadata</a>, <a href="connection.html#index-50">[1]</a>
+      <li><a href="connection.html#index-10">sqlite3_table_column_metadata</a>, <a href="connection.html#index-51">[1]</a>
 </li>
-      <li><a href="connection.html#index-51">sqlite3_total_changes64</a>
+      <li><a href="connection.html#index-52">sqlite3_total_changes64</a>
 </li>
-      <li><a href="connection.html#index-42">sqlite3_trace_v2</a>, <a href="connection.html#index-52">[1]</a>
+      <li><a href="connection.html#index-43">sqlite3_trace_v2</a>, <a href="connection.html#index-53">[1]</a>
 </li>
-      <li><a href="connection.html#index-53">sqlite3_txn_state</a>
+      <li><a href="connection.html#index-54">sqlite3_txn_state</a>
 </li>
-      <li><a href="connection.html#index-45">sqlite3_update_hook</a>
+      <li><a href="connection.html#index-46">sqlite3_update_hook</a>
 </li>
       <li><a href="vfs.html#index-3">sqlite3_uri_boolean</a>
 </li>
@@ -2440,7 +2486,7 @@
 </li>
       <li><a href="vtable.html#index-2">sqlite3_vtab_collation</a>
 </li>
-      <li><a href="connection.html#index-54">sqlite3_vtab_config</a>
+      <li><a href="connection.html#index-55">sqlite3_vtab_config</a>
 </li>
       <li><a href="vtable.html#index-0">sqlite3_vtab_distinct</a>
 </li>
@@ -2452,15 +2498,15 @@
 </li>
       <li><a href="vtable.html#index-5">sqlite3_vtab_nochange</a>
 </li>
-      <li><a href="connection.html#index-55">sqlite3_vtab_on_conflict</a>
+      <li><a href="connection.html#index-56">sqlite3_vtab_on_conflict</a>
 </li>
       <li><a href="vtable.html#index-3">sqlite3_vtab_rhs_value</a>
 </li>
-      <li><a href="connection.html#index-56">sqlite3_wal_autocheckpoint</a>
+      <li><a href="connection.html#index-57">sqlite3_wal_autocheckpoint</a>
 </li>
-      <li><a href="connection.html#index-57">sqlite3_wal_checkpoint_v2</a>
+      <li><a href="connection.html#index-58">sqlite3_wal_checkpoint_v2</a>
 </li>
-      <li><a href="connection.html#index-46">sqlite3_wal_hook</a>
+      <li><a href="connection.html#index-47">sqlite3_wal_hook</a>
 </li>
       <li><a href="session.html#index-28">sqlite3changegroup_add</a>
 </li>
@@ -2643,7 +2689,11 @@
       <li><a href="session.html#apsw.Session.table_filter">table_filter() (apsw.Session method)</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.table_name">table_name (apsw.ext.QueryAction attribute)</a>
+
+      <ul>
+        <li><a href="connection.html#apsw.PreUpdate.table_name">(apsw.PreUpdate attribute)</a>
 </li>
+      </ul></li>
       <li><a href="session.html#apsw.TableChange">TableChange (class in apsw)</a>
 </li>
       <li><a href="ext.html#apsw.ext.PageUsage.tables">tables (apsw.ext.PageUsage attribute)</a>
@@ -2774,6 +2824,8 @@
       <li><a href="vfs.html#apsw.VFS.unregister">unregister() (apsw.VFS method)</a>
 </li>
       <li><a href="apsw.html#apsw.unregister_vfs">unregister_vfs() (in module apsw)</a>
+</li>
+      <li><a href="connection.html#apsw.PreUpdate.update">update (apsw.PreUpdate attribute)</a>
 </li>
       <li><a href="example.html#index-28">Update hook (example code)</a>
 </li>
@@ -3027,7 +3079,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jun 29, 2025.
+      <span class="lastupdated">Last updated on Jul 20, 2025.
       </span></p>
   </div>
 

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APSW Module &mdash; APSW 3.50.2.0 documentation</title>
+  <title>APSW Module &mdash; APSW 3.50.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=63ac504d"></script>
+      <script src="_static/documentation_options.js?v=12791a14"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -74,6 +74,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ExecTracer"><code class="docutils literal notranslate"><span class="pre">ExecTracer</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Authorizer"><code class="docutils literal notranslate"><span class="pre">Authorizer</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.CommitHook"><code class="docutils literal notranslate"><span class="pre">CommitHook</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.PreupdateHook"><code class="docutils literal notranslate"><span class="pre">PreupdateHook</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.TokenizerResult"><code class="docutils literal notranslate"><span class="pre">TokenizerResult</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Tokenizer"><code class="docutils literal notranslate"><span class="pre">Tokenizer</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.FTS5TokenizerFactory"><code class="docutils literal notranslate"><span class="pre">FTS5TokenizerFactory</span></code></a></li>
@@ -409,6 +410,15 @@ to let it continue</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="apsw.PreupdateHook">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">PreupdateHook</span></span><a class="headerlink" href="#apsw.PreupdateHook" title="Link to this definition"></a></dt>
+<dd><div class="line-block">
+<div class="line"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>​[[PreUpdate], <code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code>​]</div>
+</div>
+<p>The hook is called with information about the update, and has no return value</p>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="apsw.TokenizerResult">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">TokenizerResult</span></span><a class="headerlink" href="#apsw.TokenizerResult" title="Link to this definition"></a></dt>
 <dd><div class="line-block">
@@ -722,7 +732,8 @@ True then the high water mark is reset to the current value.</p>
 <span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">no_change</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><span class="pre">object</span></a></em><a class="headerlink" href="#apsw.no_change" title="Link to this definition"></a></dt>
 <dd><p>A sentinel value used to indicate no change in a value when
 used with <a class="reference internal" href="vtable.html#apsw.VTCursor.ColumnNoChange" title="apsw.VTCursor.ColumnNoChange"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTCursor.ColumnNoChange()</span></code></a>,
-<a class="reference internal" href="vtable.html#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a>, and <a class="reference internal" href="session.html#apsw.TableChange.new" title="apsw.TableChange.new"><code class="xref py py-attr docutils literal notranslate"><span class="pre">TableChange.new</span></code></a>.</p>
+<a class="reference internal" href="vtable.html#apsw.VTTable.UpdateChangeRow" title="apsw.VTTable.UpdateChangeRow"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.UpdateChangeRow()</span></code></a>, <a class="reference internal" href="session.html#apsw.TableChange.new" title="apsw.TableChange.new"><code class="xref py py-attr docutils literal notranslate"><span class="pre">TableChange.new</span></code></a>,
+and <a class="reference internal" href="connection.html#apsw.PreUpdate.update" title="apsw.PreUpdate.update"><code class="xref py py-class docutils literal notranslate"><span class="pre">PreUpdate.update</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1192,7 +1203,7 @@ modules etc. For example:</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jun 29, 2025.
+      <span class="lastupdated">Last updated on Jul 20, 2025.
       </span></p>
   </div>
 
