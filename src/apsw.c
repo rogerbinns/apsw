@@ -1401,7 +1401,7 @@ fail:
 
   Note that SQLite represents floating point `Nan
   <https://en.wikipedia.org/wiki/NaN>`__ as :code:`NULL`, infinity as
-  :code:`1e999` and loses the sign on `negative zero
+  :code:`9e999` and loses the sign on `negative zero
   <https://en.wikipedia.org/wiki/Signed_zero>`__.
 */
 static PyObject *
@@ -1422,7 +1422,7 @@ formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value)
     if (isnan(d))
       return Py_NewRef(apst.sNULL);
     if (isinf(d))
-      return Py_NewRef(signbit(d) ? apst.s_1e999 : apst.s1e999);
+      return Py_NewRef(signbit(d) ? apst.s_9e999 : apst.s9e999);
     if (d == 0 && signbit(d))
       return Py_NewRef(apst.s0_0);
     return PyObject_Str(value);

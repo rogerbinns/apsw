@@ -39,7 +39,7 @@ can_cache
 
 step final value inverse
 
-NULL 0.0 -1e999 1e999
+NULL 0.0 -9e999 9e999
 (closed)
 
 release UPDATE INSERT DELETE
@@ -52,8 +52,8 @@ def mangle(name):
     return {
         "NULL": "sNULL",
         "0.0": "s0_0",
-        "-1e999": "s_1e999",
-        "1e999": "s1e999",
+        "-9e999": "s_9e999",
+        "9e999": "s9e999",
         "(closed)": "closed",
         "<apsw.no_change>": "no_change",
     }.get(name, name)

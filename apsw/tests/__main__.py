@@ -1425,8 +1425,8 @@ class APSW(unittest.TestCase):
             (wt[:77] + "'" + wt[77:], "'" + wt[:77] + "''" + wt[77:] + "'"),
             # SQLite doesn't understand 'inf', 'nan' or negative zero
             # so output what it does
-            (math.inf, "1e999"),
-            (-math.inf, "-1e999"),
+            (math.inf, "9e999"),
+            (-math.inf, "-9e999"),
             (math.nan, "NULL"),
             (-0.0, "0.0"),
         )
@@ -9138,7 +9138,7 @@ class APSW(unittest.TestCase):
         def testnasty():
             reset()
             cmd("""create table if not exists nastydata(x,y);
-                 insert into nastydata values(x'', 1e999); -- see issue 482 for zero sized blob
+                 insert into nastydata values(x'', 9e999); -- see issue 482 for zero sized blob
                  insert into nastydata values(null,'xxx\\u1234\\uabcdyyy\r\n\t\"this is nasty\u0001stuff!');
                 """)
             s.cmdloop()
