@@ -262,10 +262,12 @@ src/_unicodedb.c: tools/ucdprops2code.py ## Update generated Unicode database lo
 	$(PYTHON) tools/ucdprops2code.py $@
 
 # building a python debug interpreter
-PYDEBUG_VER=3.14.0b3
+PYDEBUG_VER=3.14.0rc1
 PYDEBUG_DIR=/space/pydebug
 PYTHREAD_VER=$(PYDEBUG_VER)
 PYTHREAD_DIR=/space/pythread
+PYFREETHREAD_VER=$(PYDEBUG_VER)
+PYFREETHREAD_DIR=/space/pyfreethread
 # This must end in slash
 PYDEBUG_WORKDIR=/space/apsw-test/
 
@@ -282,10 +284,20 @@ pydebug: ## Build a debug python including address sanitizer.  Extensions it bui
 pythread: ## Build a debug python including thread sanitizer.  Extensions it builds are also thread sanitized
 	set -x && cd "$(PYTHREAD_DIR)" && find . -delete && \
 	curl https://www.python.org/ftp/python/`echo $(PYTHREAD_VER) | sed 's/[abr].*//'`/Python-$(PYTHREAD_VER).tar.xz | tar xfJ - && \
-	cd Python-$(PYDEBUG_VER) && \
-	env CFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread TSAN_OPTIONS=report_bugs=0 ./configure  --without-pymalloc --with-pydebug --prefix="$(PYTHREAD_DIR)" --without-freelists  && \
-	$(MAKE) -j install
+	cd Python-$(PYTHREAD_VER) && \
+	./configure   --with-address-sanitizer --with-undefined-behavior-sanitizer --with-strict-overflow --with-thread-sanitizer \
+	--without-pymalloc --with-pydebug --prefix="$(PYTHREAD_DIR)" --without-freelists  --with-assertions --disable-ipv6 && \
+	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYTHREAD_DIR)/bin/python3
+
+pyfreethread: ## Build a debug FREE THREADED python
+	set -x && cd "$(PYFREETHREAD_DIR)" && find . -delete && \
+	curl https://www.python.org/ftp/python/`echo $(PYFREETHREAD_VER) | sed 's/[abr].*//'`/Python-$(PYFREETHREAD_VER).tar.xz | tar xfJ - && \
+	cd Python-$(PYFREETHREAD_VER) && \
+	./configure --disable-gil  --with-address-sanitizer --with-undefined-behavior-sanitizer --with-strict-overflow \
+	--with-pydebug --prefix="$(PYFREETHREAD_DIR)" --without-freelists  --with-assertions && \
+	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
+	$(MAKE) dev-depends PYTHON=$(PYFREETHREAD_DIR)/bin/python3
 
 langserver:  ## Language server integration json
 	$(PYTHON) tools/gencompilecommands.py > compile_commands.json

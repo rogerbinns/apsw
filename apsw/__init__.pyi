@@ -305,7 +305,7 @@ def format_sql_value(value: SQLiteValue) -> str:
 
     Note that SQLite represents floating point `Nan
     <https://en.wikipedia.org/wiki/NaN>`__ as :code:`NULL`, infinity as
-    :code:`1e999` and loses the sign on `negative zero
+    :code:`9e999` and loses the sign on `negative zero
     <https://en.wikipedia.org/wiki/Signed_zero>`__."""
     ...
 
