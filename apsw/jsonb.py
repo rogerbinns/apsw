@@ -20,10 +20,11 @@ class JSONBuffer:
     data: bytearray  # void *
     size: int  # size_t, also current offset
     allocated: int  # size_t, so we don't keep doing small realloc
-    seen: set[int] | None # Non-NULL if check_circular containing ids of seen containers in the call stack
-    default: Callable[[Any], JSONBTypes] | None# unknown type converter or NULL
-    skip_keys: bool # skipping non-string dict keys
-    recursion_limit: int = 100 # how deep we allow recursion, starts large and 0 means hit limit
+    seen: set[int] | None  # Non-NULL if check_circular containing ids of seen containers in the call stack
+    default: Callable[[Any], JSONBTypes] | None  # unknown type converter or NULL
+    skip_keys: bool  # skipping non-string dict keys
+    recursion_limit: int = 100  # how deep we allow recursion, starts large and 0 means hit limit
+
 
 class JSONBTag(IntEnum):
     NULL = 0
@@ -79,7 +80,21 @@ def jsonb_add_tag(buf: JSONBuffer, tag: JSONBTag, length: int):
         # SQLite can't support blobs this large ... but the
         # pattern follows above with tag 15 and 8 bytes
         # of length
-        raise apsw.TooBigError
+        raise apsw.TooBigError()
+
+
+def jsonb_update_tag(buf: JSONBuffer, tag_offset: int, tag: JSONBTag, new_length: int):
+    # the tag is only used as a sanity check
+    assert tag_offset < buf.size
+    assert buf.data[tag_offset] & 0x0F == tag
+    assert new_length <= 0xFFFF_FFFF
+
+    # we only allow 14 - 4 byte sizes
+    assert (buf.data[tag_offset] & 0xF0) >> 4 == 14
+    buf.data[tag_offset + 1] = (new_length & 0xFF00_0000) >> 24
+    buf.data[tag_offset + 2] = (new_length & 0x00FF_0000) >> 16
+    buf.data[tag_offset + 3] = (new_length & 0x0000_FF00) >> 8
+    buf.data[tag_offset + 4] = (new_length & 0x0000_00FF) >> 0
 
 
 def jsonb_append_data(buf: JSONBuffer, data: bytes):
@@ -88,27 +103,76 @@ def jsonb_append_data(buf: JSONBuffer, data: bytes):
     jsonb_grow_buffer(buf, len(data))
     buf.data[offset : offset + len(data)] = data
 
+
 def encode_internal(buf: JSONBuffer, obj: Any):
     if obj is None:
         jsonb_add_tag(buf, JSONBTag.NULL, 0)
+        return
     elif obj is True:
         jsonb_add_tag(buf, JSONBTag.TRUE, 0)
+        return
     elif obj is False:
         jsonb_add_tag(buf, JSONBTag.FALSE, 0)
+        return
     elif isinstance(obj, int):
         s = str(obj).encode("utf8")
         jsonb_add_tag(buf, JSONBTag.INT, len(s))
         jsonb_append_data(buf, s)
+        return
     elif isinstance(obj, float):
         s = str(obj).encode("utf8")
         jsonb_add_tag(buf, JSONBTag.FLOAT, len(s))
         jsonb_append_data(buf, s)
+        return
     elif isinstance(obj, str):
         s = obj.encode("utf8")
         jsonb_add_tag(buf, JSONBTag.TEXTRAW, len(s))
         jsonb_append_data(buf, s)
-    else:
-        1/0
+        return
+
+    if buf.seen is not None and id(obj) in buf.seen:
+        raise ValueError("circular reference detected")
+
+    if isinstance(obj, Mapping):
+        tag_offset = buf.size
+        jsonb_add_tag(buf, JSONBTag.OBJECT, 0xFFFF_FFFF if len(obj) else 0)
+
+        if len(obj):
+            # ::TODO:: recursion_limit decrement
+            if buf.seen is not None:
+                buf.seen.add(id(obj))
+
+            data_offset = buf.size
+
+            # PyMapping_Items
+            for k, v in obj.items():
+                # the json module converts base types to str
+                if isinstance(k, str):
+                    k = k
+                elif k is None:
+                    k = "null"
+                elif k is True:
+                    k = "true"
+                elif k is False:
+                    k = "false"
+                elif isinstance(k, (int, float)):
+                    k = str(k)
+                elif buf.skip_keys:
+                    continue
+                else:
+                    raise TypeError(f"Keys must be  str, int, float, bool or None. not {type(k)}")
+                encode_internal(buf, k)
+                encode_internal(buf, v)
+
+            size = buf.size - data_offset
+            jsonb_update_tag(buf, tag_offset, JSONBTag.OBJECT, size)
+
+            if buf.seen is not None:
+                buf.seen.remove(id(obj))
+            # ::TODO:: recursion_limit increment
+        return
+
+    raise TypeError(f"Unhandled object {type(obj)} {repr(obj)[:60]}")
 
 
 def encode(
@@ -126,15 +190,15 @@ def encode(
        :exc:`TypeError` is raised.
     """
     buf = JSONBuffer()
-    buf.data=bytearray(0)
-    buf.size=0
-    buf.allocated=0
+    buf.data = bytearray(0)
+    buf.size = 0
+    buf.allocated = 0
     buf.seen = set() if check_circular else None
     buf.default = default
     buf.recursion_limit = 100
     buf.skip_keys = skipkeys
     encode_internal(buf, obj)
-    return bytes(buf.data[:buf.size])
+    return bytes(buf.data[: buf.size])
 
 
 def decode(
@@ -153,10 +217,10 @@ def decode(
         :class:`str` and corresponding value, and should return a
         return a replacement value to use instead.
 
-    Only one of ``object_hook`` or ``object_pairs_hook`` can be provided.  ``object_pairs_hook`` is
-    useful when you care about the order of keys, and want to handle duplicate keys.
-
-    ::TODO:: we only need both if SQLite allows duplicate keys
+    Only one of ``object_hook`` or ``object_pairs_hook`` can be
+    provided.  ``object_pairs_hook`` is useful when you want something
+    other than a dict, care about the order of keys, want to convert
+    them (eg case, numbers), or want to handle duplicate keys.
     """
     pass
 
@@ -176,3 +240,18 @@ def detect(data: Buffer) -> bool:
     except Exception:
         pass
     return False
+
+
+if __name__ == "__main__":
+    import apsw, apsw.ext, json
+
+    con = apsw.Connection("")
+
+    # get json
+    fjson = apsw.ext.Function(con, "json")
+    # validity check
+    check = apsw.ext.Function(con, "json_valid")
+
+    foo = encode({1: {True: 4.1}})
+
+    print(f"{fjson(foo)=}")
