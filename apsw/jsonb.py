@@ -12,6 +12,8 @@ from collections.abc import Mapping, Sequence, Callable, Buffer
 
 from enum import IntEnum
 
+
+# json module uses isinstance of dict, list, tuple and not abstract types
 JSONBTypes: TypeAlias = str | None | int | float | Sequence["JSONBTypes"] | Mapping[str, "JSONBTypes"]
 
 
@@ -20,10 +22,9 @@ class JSONBuffer:
     data: bytearray  # void *
     size: int  # size_t, also current offset
     allocated: int  # size_t, so we don't keep doing small realloc
-    seen: set[int] | None  # Non-NULL if check_circular containing ids of seen containers in the call stack
     default: Callable[[Any], JSONBTypes] | None  # unknown type converter or NULL
     skip_keys: bool  # skipping non-string dict keys
-    recursion_limit: int = 100  # how deep we allow recursion, starts large and 0 means hit limit
+    seen: set[int] | None  # Non-NULL if check_circular containing ids of seen containers in the call stack
 
 
 class JSONBTag(IntEnum):
@@ -120,6 +121,14 @@ def encode_internal(buf: JSONBuffer, obj: Any):
         jsonb_append_data(buf, s)
         return
     elif isinstance(obj, float):
+        # json module does this
+        #        if o != o:
+        #            text = 'NaN'
+        #        elif o == _inf:
+        #            text = 'Infinity'
+        #        elif o == _neginf:
+        #            text = '-Infinity'
+        # but they are technically JSON5
         s = str(obj).encode("utf8")
         jsonb_add_tag(buf, JSONBTag.FLOAT, len(s))
         jsonb_append_data(buf, s)
@@ -138,7 +147,6 @@ def encode_internal(buf: JSONBuffer, obj: Any):
         jsonb_add_tag(buf, JSONBTag.OBJECT, 0xFFFF_FFFF if len(obj) else 0)
 
         if len(obj):
-            # ::TODO:: recursion_limit decrement
             if buf.seen is not None:
                 buf.seen.add(id(obj))
 
@@ -155,7 +163,10 @@ def encode_internal(buf: JSONBuffer, obj: Any):
                     k = "true"
                 elif k is False:
                     k = "false"
-                elif isinstance(k, (int, float)):
+                elif isinstance(k, int):
+                    k = str(k)
+                elif isinstance(k, float):
+                    # need to handle nan/+-infinity
                     k = str(k)
                 elif buf.skip_keys:
                     continue
@@ -169,7 +180,40 @@ def encode_internal(buf: JSONBuffer, obj: Any):
 
             if buf.seen is not None:
                 buf.seen.remove(id(obj))
-            # ::TODO:: recursion_limit increment
+        return
+
+    if isinstance(obj, Sequence):
+        # we probably want PySequence_Check but not PyBuffer_Check.
+        # bytes and bytearray are sequence - check what json module does
+        tag_offset = buf.size
+        jsonb_add_tag(buf, JSONBTag.ARRAY, 0xFFFF_FFFF if len(obj) else 0)
+
+        if len(obj):
+            if buf.seen is not None:
+                buf.seen.add(id(obj))
+
+            data_offset = buf.size
+
+            # PyuSequence_FAST?
+            for v in obj:
+                encode_internal(buf, v)
+
+            size = buf.size - data_offset
+            jsonb_update_tag(buf, tag_offset, JSONBTag.ARRAY, size)
+
+            if buf.seen is not None:
+                buf.seen.remove(id(obj))
+
+        return
+
+    if buf.default is not None:
+        replacement = buf.default(obj)
+        assert id(replacement) != id(obj)
+
+        saved = buf.default
+        buf.default = None
+        encode_internal(buf, replacement)
+        buf.default = saved
         return
 
     raise TypeError(f"Unhandled object {type(obj)} {repr(obj)[:60]}")
@@ -195,7 +239,6 @@ def encode(
     buf.allocated = 0
     buf.seen = set() if check_circular else None
     buf.default = default
-    buf.recursion_limit = 100
     buf.skip_keys = skipkeys
     encode_internal(buf, obj)
     return bytes(buf.data[: buf.size])
@@ -252,6 +295,7 @@ if __name__ == "__main__":
     # validity check
     check = apsw.ext.Function(con, "json_valid")
 
-    foo = encode({1: {True: 4.1}})
+    foo = encode({1: {True: 4.1}, "π\n": [1,2,3, "😂❤️🤣𐌲𐌻𐌴𐍃"]})
 
+    print(f"{check(foo,8)=}")
     print(f"{fjson(foo)=}")
