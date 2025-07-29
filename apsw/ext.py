@@ -286,6 +286,24 @@ class TypesConverterCursorFactory:
             )
 
 
+class Function:
+    """Provides a direct Python way to call a SQL level function
+
+    An example::
+
+        json_extract = apsw.ext.Function(connection, "json_extract")
+        value = json_extract(some_json, '$.c[2].f')
+    """
+
+    def __init__(self, con: apsw.Connection, name: str):
+        self.con = con
+        self.name = name.replace('"', '""')
+
+    def __call__(self, *args: apsw.SQLiteValue) -> apsw.SQLiteValue:
+        "Calls the function with zero or more arguments, returning the result"
+        return self.con.execute(f'SELECT "{self.name}"({",".join("?" * len(args))})', args).fetchone()[0]
+
+
 def log_sqlite(*, level: int = logging.ERROR, logger: logging.Logger | None = None) -> None:
     """Send SQLite `log messages <https://www.sqlite.org/errlog.html>`__ to :mod:`logging`
 
