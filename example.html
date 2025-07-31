@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.50.3.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.50.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=12791a14"></script>
+      <script src="_static/documentation_options.js?v=9c22ebda"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -198,9 +198,9 @@ and attribute documentation.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-313-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.50.3.0</span>
-<span class="go">SQLite header version 3050003</span>
-<span class="go">   SQLite lib version 3.50.3</span>
+<span class="go">         APSW version 3.50.4.0</span>
+<span class="go">SQLite header version 3050004</span>
+<span class="go">   SQLite lib version 3.50.4</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -834,11 +834,11 @@ conversion, both for types you define and for other types.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 7, 20, 11, 41, 30, 789078))</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 7, 31, 7, 21, 15, 885230))</span>
 <span class="go">querying data</span>
 <span class="go">column 0 = Point(5.2, 7.6)</span>
 <span class="go">column 1 = (3+4j)</span>
-<span class="go">column 2 = datetime.datetime(2025, 7, 20, 18, 41, 30, 789078, tzinfo=datetime.timezone.utc)</span>
+<span class="go">column 2 = datetime.datetime(2025, 7, 31, 14, 21, 15, 885230, tzinfo=datetime.timezone.utc)</span>
 </pre></div>
 </div>
 </section>
@@ -898,7 +898,7 @@ runtime.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Bad binding argument type supplied - argument #1: type set</span>
-<span class="go">select ? {1, 2, &#39;three&#39;, (4+5j), &lt;_io.StringIO object at 0x7d76af4b3940&gt;}</span>
+<span class="go">select ? {1, 2, &lt;_io.StringIO object at 0x78d56014e8c0&gt;, &#39;three&#39;, (4+5j)}</span>
 <span class="go">select typeof(?) null</span>
 <span class="go">make_set got ((3+4j), &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, &#39;hello&#39;)</span>
 <span class="go">select make_set(?, ?, ?) {&#39;hello&#39;, &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, (3+4j)}</span>
@@ -963,7 +963,7 @@ across all the queries within the block</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">len(rows)=20</span>
-<span class="go">After 0.200 seconds, we hit number=316762</span>
+<span class="go">After 0.200 seconds, we hit number=310229</span>
 <span class="go">exc=IndexError(&#39;query row limit hit&#39;)</span>
 </pre></div>
 </div>
@@ -1333,7 +1333,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9928988740,)</span>
+<span class="go">(9959779107,)</span>
 </pre></div>
 </div>
 </section>
@@ -1429,7 +1429,8 @@ with  <a class="reference internal" href="connection.html#apsw.Connection.set_co
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">in commit hook</span>
-<span class="go">commits okay at this time</span>
+<span class="go">no commits out of hours</span>
+<span class="go">commit was not allowed</span>
 </pre></div>
 </div>
 </section>
@@ -1700,8 +1701,8 @@ useful instead.</p>
 <span class="go">│ .local     │ 2128       │</span>
 <span class="go">│ .o         │ 15512      │</span>
 <span class="go">│ .ps1       │ 9031       │</span>
-<span class="go">│ .py        │ 11176480   │</span>
-<span class="go">│ .pyc       │ 11792158   │</span>
+<span class="go">│ .py        │ 11177310   │</span>
+<span class="go">│ .pyc       │ 11792159   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
 <span class="go">│ .sh        │ 2729       │</span>
 <span class="go">│ .so        │ 29503792   │</span>
@@ -1947,9 +1948,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.50.3.0)</span>
-<span class="go">-- SQLite version 3.50.3</span>
-<span class="go">-- Date: Sun Jul 20 11:41:31 2025</span>
+<span class="go">-- SQLite dump (by APSW 3.50.4.0)</span>
+<span class="go">-- SQLite version 3.50.4</span>
+<span class="go">-- Date: Thu Jul 31 07:21:16 2025</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -1989,8 +1990,8 @@ for per connection statistics.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 522584 max 2499688</span>
-<span class="go">5360 bytes used to store schema for this connection</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite memory usage 517928 max 2494992</span>
+<span class="go">5048 bytes used to store schema for this connection</span>
 </pre></div>
 </div>
 </section>
@@ -2048,15 +2049,15 @@ for per connection statistics.</p>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">code is  SQLITE_TRACE_STMT</span>
 <span class="go">{&#39;code&#39;: 1,</span>
 <span class="go"> &#39;explain&#39;: 0,</span>
-<span class="go"> &#39;id&#39;: 164263784,</span>
+<span class="go"> &#39;id&#39;: 356611224,</span>
 <span class="go"> &#39;readonly&#39;: True,</span>
 <span class="go"> &#39;total_changes&#39;: 146,</span>
 <span class="go"> &#39;trigger&#39;: False}</span>
 <span class="go">code is  SQLITE_TRACE_ROW</span>
-<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 164263784}</span>
+<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 356611224}</span>
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;id&#39;: 164263784,</span>
+<span class="go"> &#39;id&#39;: 356611224,</span>
 <span class="go"> &#39;nanoseconds&#39;: 17000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
@@ -2066,7 +2067,7 @@ for per connection statistics.</p>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_REPREPARE&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_RUN&#39;: 1,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_SORT&#39;: 2,</span>
-<span class="go">                 &#39;SQLITE_STMTSTATUS_VM_STEP&#39;: 1015351},</span>
+<span class="go">                 &#39;SQLITE_STMTSTATUS_VM_STEP&#39;: 1015353},</span>
 <span class="go"> &#39;total_changes&#39;: 146}</span>
 </pre></div>
 </div>
@@ -2089,17 +2090,16 @@ block of code does.  We use the same query from above.</p>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.3</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.022</span>
-<span class="go">                       Wall clock 1.323</span>
-<span class="go">        Maximum resident set size 208</span>
-<span class="go">             Page faults - no I/O 84</span>
-<span class="go">     Involuntary context switches 84</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.020</span>
+<span class="go">                       Wall clock 1.320</span>
+<span class="go">        Maximum resident set size 768</span>
+<span class="go">             Page faults - no I/O 143</span>
 <span class="go">       Voluntary context switches 1</span>
 <span class="go">              Time in system mode 0.002</span>
-<span class="go">                Time in user mode 0.020</span>
+<span class="go">                Time in user mode 0.018</span>
 <span class="go">           SQLite full table scan 1,365</span>
 <span class="go">           SQLite sort operations 2</span>
-<span class="go">             SQLite vm operations 1,015,351</span>
+<span class="go">             SQLite vm operations 1,015,353</span>
 <span class="go">      SQLite statements completed 1</span>
 <span class="go">SQLite allocations lookaside full 17,272</span>
 </pre></div>
@@ -2329,12 +2329,12 @@ is no guarantee if they will go up or down.</p>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SQLite cache = -2000  page_size =  4096</span>
 <span class="go">Before values</span>
-<span class="go">connection.pragma(&quot;schema_version&quot;)=23</span>
-<span class="go">connection.data_version()=61</span>
+<span class="go">connection.pragma(&quot;schema_version&quot;)=22</span>
+<span class="go">connection.data_version()=60</span>
 
 <span class="go">After values</span>
-<span class="go">connection.data_version()=61</span>
-<span class="go">connection.pragma(&quot;schema_version&quot;)=24</span>
+<span class="go">connection.data_version()=60</span>
+<span class="go">connection.pragma(&quot;schema_version&quot;)=23</span>
 </pre></div>
 </div>
 </section>
@@ -2364,7 +2364,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 20, 2025.
+      <span class="lastupdated">Last updated on Jul 31, 2025.
       </span></p>
   </div>
 

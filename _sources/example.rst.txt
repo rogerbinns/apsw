@@ -69,9 +69,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-313-x86_64-linux-gnu.so
-             APSW version 3.50.3.0
-    SQLite header version 3050003
-       SQLite lib version 3.50.3
+             APSW version 3.50.4.0
+    SQLite header version 3050004
+       SQLite lib version 3.50.4
        Using amalgamation True
 
 
@@ -876,11 +876,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 7, 20, 11, 41, 30, 789078))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 7, 31, 7, 21, 15, 885230))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2025, 7, 20, 18, 41, 30, 789078, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2025, 7, 31, 14, 21, 15, 885230, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Runtime Python objects (example code)
@@ -950,7 +950,7 @@ runtime.
 .. code-block:: output
 
     Bad binding argument type supplied - argument #1: type set
-    select ? {1, 2, 'three', (4+5j), <_io.StringIO object at 0x7d76af4b3940>}
+    select ? {1, 2, <_io.StringIO object at 0x78d56014e8c0>, 'three', (4+5j)}
     select typeof(?) null
     make_set got ((3+4j), <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello')
     select make_set(?, ?, ?) {'hello', <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, (3+4j)}
@@ -1026,7 +1026,7 @@ across all the queries within the block
 .. code-block:: output
 
     len(rows)=20
-    After 0.200 seconds, we hit number=316762
+    After 0.200 seconds, we hit number=310229
     exc=IndexError('query row limit hit')
 
 
@@ -1445,7 +1445,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9928988740,)
+    (9959779107,)
 
 
 .. index:: File Control (example code)
@@ -1564,7 +1564,8 @@ with  :meth:`Connection.set_commit_hook`.
 .. code-block:: output
 
     in commit hook
-    commits okay at this time
+    no commits out of hours
+    commit was not allowed
 
 
 .. index:: Update hook (example code)
@@ -1860,8 +1861,8 @@ useful instead.
     │ .local     │ 2128       │
     │ .o         │ 15512      │
     │ .ps1       │ 9031       │
-    │ .py        │ 11176480   │
-    │ .pyc       │ 11792158   │
+    │ .py        │ 11177310   │
+    │ .pyc       │ 11792159   │
     │ .rst       │ 9561       │
     │ .sh        │ 2729       │
     │ .so        │ 29503792   │
@@ -2140,9 +2141,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.50.3.0)
-    -- SQLite version 3.50.3
-    -- Date: Sun Jul 20 11:41:31 2025
+    -- SQLite dump (by APSW 3.50.4.0)
+    -- SQLite version 3.50.4
+    -- Date: Thu Jul 31 07:21:16 2025
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2193,8 +2194,8 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 522584 max 2499688
-    5360 bytes used to store schema for this connection
+    SQLite memory usage 517928 max 2494992
+    5048 bytes used to store schema for this connection
 
 
 .. index:: Tracing (example code)
@@ -2262,15 +2263,15 @@ This shows using :meth:`Connection.trace_v2`
     code is  SQLITE_TRACE_STMT
     {'code': 1,
      'explain': 0,
-     'id': 164263784,
+     'id': 356611224,
      'readonly': True,
      'total_changes': 146,
      'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 164263784}
+    {'code': 4, 'id': 356611224}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 164263784,
+     'id': 356611224,
      'nanoseconds': 17000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
@@ -2280,7 +2281,7 @@ This shows using :meth:`Connection.trace_v2`
                      'SQLITE_STMTSTATUS_REPREPARE': 0,
                      'SQLITE_STMTSTATUS_RUN': 1,
                      'SQLITE_STMTSTATUS_SORT': 2,
-                     'SQLITE_STMTSTATUS_VM_STEP': 1015351},
+                     'SQLITE_STMTSTATUS_VM_STEP': 1015353},
      'total_changes': 146}
 
 
@@ -2314,17 +2315,16 @@ Only statistics that have changed are shown in the summary. There are
 
 .. code-block:: output
 
-                           Total CPU consumption 0.022
-                                      Wall clock 1.323
-                       Maximum resident set size 208
-                            Page faults - no I/O 84
-                    Involuntary context switches 84
+                           Total CPU consumption 0.020
+                                      Wall clock 1.320
+                       Maximum resident set size 768
+                            Page faults - no I/O 143
                       Voluntary context switches 1
                              Time in system mode 0.002
-                               Time in user mode 0.020
+                               Time in user mode 0.018
                           SQLite full table scan 1,365
                           SQLite sort operations 2
-                            SQLite vm operations 1,015,351
+                            SQLite vm operations 1,015,353
                      SQLite statements completed 1
                SQLite allocations lookaside full 17,272
     
@@ -2589,12 +2589,12 @@ is no guarantee if they will go up or down.
 
     SQLite cache = -2000  page_size =  4096
     Before values
-    connection.pragma("schema_version")=23
-    connection.data_version()=61
+    connection.pragma("schema_version")=22
+    connection.data_version()=60
     
     After values
-    connection.data_version()=61
-    connection.pragma("schema_version")=24
+    connection.data_version()=60
+    connection.pragma("schema_version")=23
 
 
 .. index:: Cleanup (example code)

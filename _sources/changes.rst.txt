@@ -10,6 +10,18 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.50.4.0
+========
+
+PyPI binary builds are available for:
+
+  * Python 3.14
+  * Windows ARM
+  * Python 3.14 `free threaded
+    <https://py-free-threading.github.io/>`__ (no GIL).  The GIL will
+    be enabled when APSW is loaded.  APSW will be free threaded
+    in the future (:issue:`568`)
+
 3.50.3.0
 ========
 
