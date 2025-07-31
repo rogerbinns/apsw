@@ -244,6 +244,16 @@ def encode(
     return bytes(buf.data[: buf.size])
 
 
+# used for decoding
+class JSONBBuffer:
+    buf: Buffer # what we are decoding
+    offset: int # current decode position
+    size: int # offset of last position we can access + 1
+    object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None
+    object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None
+    alloc: bool # True to decode, False to just check validity
+    is_valid: bool = True # used to mark if buf was not valid.  in alloc == false mode we do not raise exceptions
+
 def decode(
     data: Buffer,
     *,
@@ -299,3 +309,5 @@ if __name__ == "__main__":
 
     print(f"{check(foo,8)=}")
     print(f"{fjson(foo)=}")
+
+
