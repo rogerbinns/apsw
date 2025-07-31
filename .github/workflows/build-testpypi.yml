@@ -4,19 +4,23 @@ on: workflow_dispatch
 
 jobs:
 
-  build_binary_native:
+  binary:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-       os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, macos-13, macos-14]
-       pyver: [cp39, cp310, cp311, cp312, cp313]
+       os: [ubuntu-latest, ubuntu-24.04-arm, windows-latest, windows-11-arm, macos-13, macos-15]
+       pyver: [cp39, cp310, cp311, cp312, cp313, cp314, cp314t]
+       exclude:
+         - os: windows-11-arm
+           pyver: cp39
+
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Build ${{ matrix.os }} ${{ matrix.pyver }}
-        uses: pypa/cibuildwheel@v3.0
+        uses: pypa/cibuildwheel@v3.1
         env:
           CIBW_BUILD: ${{ matrix.pyver }}-*
           CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
@@ -28,7 +32,7 @@ jobs:
           name: dist-${{ matrix.os }}-${{ matrix.pyver }}
           path: ./wheelhouse/*.whl
 
-  build_source:
+  source:
     runs-on: ubuntu-latest
 
     steps:
@@ -43,7 +47,7 @@ jobs:
         path: ./dist/*
 
   pypi_publish:
-    needs: [build_source, build_binary_native]
+    needs: [source, binary]
     runs-on: ubuntu-latest
     permissions:
         id-token: write

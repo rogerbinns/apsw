@@ -35,8 +35,12 @@ def run(cmd):
     subprocess.run(cmd, shell=True, check=True)
 
 
-def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, config):
+def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, config, gil):
     pyflags = "-X warn_default_encoding  -X dev -X tracemalloc=5" if debug else ""
+    if gil:
+        # we get RuntimeWarning: The global interpreter lock (GIL) has been enabled to load module 'apsw' ...
+        # with free threaded so suppress that until free thread is fully supported
+        pyflags+= " -bb -Werror"
     extdebug = "--debug" if debug else ""
     logf = os.path.abspath(os.path.join(logdir, "buildruntests.txt"))
     # this is used to alternate support for full metadata and test --definevalues flags
@@ -57,7 +61,7 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, config):
             {pybin} -m venv venv
             venv/bin/python3 -m ensurepip || true ;
             venv/bin/python3 -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools ;
-            env LD_LIBRARY_PATH={pylib} venv/bin/python3 -bb -Werror {pyflags} setup.py fetch \
+            env LD_LIBRARY_PATH={pylib} venv/bin/python3 {pyflags} setup.py fetch \
                 --version={sqlitever} --all build_test_extension build_ext --inplace --force \
                 {extdebug} {build_ext_flags} test -v --locals;"""
         + (
@@ -73,9 +77,9 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, config):
     )
 
 
-def runtest(workdir, pyver, bits, sqlitever, logdir, debug, config):
-    pybin, pylib = buildpython(workdir, pyver, bits, debug, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
-    dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, config)
+def runtest(workdir, pyver, bits, sqlitever, logdir, debug, config, gil):
+    pybin, pylib = buildpython(workdir, pyver, bits, debug, gil, os.path.abspath(os.path.join(logdir, "pybuild.txt")))
+    dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, config, gil)
 
 
 def main(PYVERS, SQLITEVERS, BITS, concurrency):
@@ -98,36 +102,45 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
             for sqlitever in SQLITEVERS:
                 for pyver in PYVERS:
                     for config in ("none", "full", "system"):
-                        for bits in BITS:
-                            # we only have 64 bit system python
-                            if pyver == "system" and bits != 64:
-                                continue
-                            if config == "system" and bits != 64:
-                                continue
+                        for gil in (True, False):
+                            for bits in BITS:
+                                # we only have 64 bit system python
+                                if pyver == "system" and bits != 64:
+                                    continue
+                                if config == "system" and bits != 64:
+                                    continue
+                                if config == "system" and not gil:
+                                    continue
 
-                            print(
-                                f"Python {pyver} {bits}bit  SQLite {sqlitever}  debug {debug} config {config}"
-                            )
-                            name = f"py{pyver}-{bits}-{sqlitever}-config-{config}{'-debug' if debug else ''}"
-                            workdir = os.path.abspath(os.path.join(topworkdir, name))
-                            logdir = os.path.abspath(
-                                os.path.join("megatestresults", name)
-                            )
-                            os.makedirs(logdir)
-                            os.makedirs(workdir)
-                            copy_git_files(workdir)
-                            job = executor.submit(
-                                runtest,
-                                workdir=workdir,
-                                bits=bits,
-                                pyver=pyver,
-                                sqlitever=sqlitever,
-                                logdir=logdir,
-                                debug=debug,
-                                config=config,
-                            )
-                            job.info = f"py {pyver} sqlite {sqlitever} debug {debug} bits {bits} config {config}"
-                            jobs.append(job)
+                                if not gil and natural_compare(pyver, "3.14") < 0:
+                                    continue
+
+                                print(
+                                    f"Python {pyver} {bits}bit  SQLite {sqlitever}  debug {debug} config {config} gil {gil}"
+                                )
+                                name = (
+                                    f"py{pyver}-{bits}-{sqlitever}-config-{config}-gil-{gil}{'-debug' if debug else ''}"
+                                )
+                                workdir = os.path.abspath(os.path.join(topworkdir, name))
+                                logdir = os.path.abspath(os.path.join("megatestresults", name))
+                                os.makedirs(logdir)
+                                os.makedirs(workdir)
+                                copy_git_files(workdir)
+                                job = executor.submit(
+                                    runtest,
+                                    workdir=workdir,
+                                    bits=bits,
+                                    pyver=pyver,
+                                    sqlitever=sqlitever,
+                                    logdir=logdir,
+                                    debug=debug,
+                                    config=config,
+                                    gil=gil,
+                                )
+                                job.info = (
+                                    f"py {pyver} sqlite {sqlitever} debug {debug} bits {bits} config {config} gil {gil}"
+                                )
+                                jobs.append(job)
 
         print(f"\nAll { len(jobs) } builds started, now waiting for them to finish ({ concurrency } concurrency)\n")
         start = time.time()
@@ -169,7 +182,7 @@ def getpyurl(pyver):
     return "https://www.python.org/ftp/python/%s/%sython-%s.tar.%s" % (dirver, p, pyver, ext)
 
 
-def buildpython(workdir, pyver, bits, debug, logfilename):
+def buildpython(workdir, pyver, bits, debug, gil, logfilename):
     if pyver == "system":
         return "/usr/bin/python3", ""
     url = getpyurl(pyver)
@@ -178,17 +191,21 @@ def buildpython(workdir, pyver, bits, debug, logfilename):
         'set -e ; cd %s ; mkdir pyinst ; ( echo "Getting %s"; wget -q %s -O - | tar xf%s -  ) > %s 2>&1'
         % (workdir, url, url, tarx, logfilename)
     )
-    full = ""
-    if sys.platform.startswith("linux"):
-        ldflags = 'LDFLAGS="-L/usr/lib/$(dpkg-architecture -qDEB_HOST_MULTIARCH)"; export LDFLAGS;'
-    else:
-        ldflags = ""
+
     configure_flags = "--with-pydebug  --without-freelists --with-assertions" if debug else ""
+    if not gil:
+        configure_flags += " --disable-gil"
+
+    env = ""
+    if bits != 64:
+        # this has to be as a CC.  With CFLAGS=-m32 the JIT gets enabled which is not supported on 32 bit
+        env = "env CC='gcc -m32'"
+
     run(f"""(set -ex ;
             cd { workdir } ;
             cd Python-{ pyver } ;
-            env CC='gcc -m{ bits }' ./configure --prefix={ workdir }/pyinst  --with-ensure-pip=yes --disable-test-modules {configure_flags} >> { logfilename } 2>&1 ;
-            env ASAN_OPTIONS=detect_leaks=false nice nice nice make  -j 4 install ;
+            { env } ./configure --prefix={ workdir }/pyinst  --with-ensure-pip=yes --disable-test-modules {configure_flags} >> { logfilename } 2>&1 ;
+            nice nice nice make  -j 4 install ;
             # a lot of effort to reduce disk space
             rm -rf  {workdir}/pyinst/lib/*/test { workdir}/pyinst/lib/*/idlelib { workdir}/pyinst/lib/*/lib2to3 { workdir}/pyinst/lib/*/tkinter ;
             rm -rf lib/test lib/idlelib lib/encodings ;
@@ -228,7 +245,7 @@ PYVERS = (
     "system",
 )
 
-SQLITEVERS = ("3.50.0", "3.50.1", "3.50.2", "3.50.3")
+SQLITEVERS = ("3.50.0", "3.50.1", "3.50.2", "3.50.3", "3.50.4")
 
 BITS = (64, 32)
 
