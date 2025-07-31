@@ -4,7 +4,7 @@ on: workflow_dispatch
 
 jobs:
 
-  build_binary_native:
+  binary:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -32,7 +32,7 @@ jobs:
           name: dist-${{ matrix.os }}-${{ matrix.pyver }}
           path: ./wheelhouse/*.whl
 
-  build_source:
+  source:
     runs-on: ubuntu-latest
 
     steps:
@@ -47,7 +47,7 @@ jobs:
         path: ./dist/*
 
   pypi_publish:
-    needs: [build_source, build_binary_native]
+    needs: [source, binary]
     runs-on: ubuntu-latest
     permissions:
         id-token: write
