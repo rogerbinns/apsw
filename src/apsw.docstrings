@@ -159,7 +159,7 @@
 "\n" \
 "Note that SQLite represents floating point `Nan\n" \
 "<https://en.wikipedia.org/wiki/NaN>`__ as :code:`NULL`, infinity as\n" \
-":code:`1e999` and loses the sign on `negative zero\n" \
+":code:`9e999` and loses the sign on `negative zero\n" \
 "<https://en.wikipedia.org/wiki/Signed_zero>`__.\n" 
 
 #define  Apsw_hard_heap_limit_DOC "apsw.hard_heap_limit(limit: int) -> int\n\n" \
