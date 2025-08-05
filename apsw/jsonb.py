@@ -10,7 +10,7 @@
 from typing import Any, TypeAlias
 from collections.abc import Mapping, Sequence, Callable, Buffer
 
-from enum import IntEnum
+from enum import IntEnum, Enum
 
 
 # json module uses isinstance of dict, list, tuple and not abstract types
@@ -42,6 +42,7 @@ class JSONBTag(IntEnum):
     ARRAY = 11
     OBJECT = 12
     # 13 - 15 are reserved
+    __str__ = Enum.__str__  # get pretty names
 
 
 def jsonb_grow_buffer(buf: JSONBuffer, count: int):
@@ -245,14 +246,180 @@ def encode(
 
 
 # used for decoding
-class JSONBBuffer:
-    buf: Buffer # what we are decoding
-    offset: int # current decode position
-    size: int # offset of last position we can access + 1
+class JSONBDecodeBuffer:
+    buf: Buffer  # what we are decoding
+    offset: int  # current decode position
+    end_offset: int  # offset of last position we can access + 1
     object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None
     object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None
-    alloc: bool # True to decode, False to just check validity
-    is_valid: bool = True # used to mark if buf was not valid.  in alloc == false mode we do not raise exceptions
+    alloc: bool  # True to decode data, False to not bother
+
+
+# for when we'd return NULL in C.  Can't distinguish None at Python level
+C_NULL = object()
+
+
+def malformed(buf: JSONBDecodeBuffer, note: str):
+    if buf.alloc:
+        raise ValueError(f"{note} at offset {buf.offset}")
+    return C_NULL
+
+
+def decode_one(buf: JSONBDecodeBuffer):
+    if buf.offset >= buf.end_offset:
+        return malformed(buf, "offset")
+
+    # raises if reserved value since we don't define it in enum
+    tag: JSONBTag = JSONBTag(buf.buf[buf.offset] & 0x0F)
+    tag_len: int = (buf.buf[buf.offset] & 0xF0) >> 4
+    buf.offset += 1
+
+    value_offset = buf.offset
+
+    if tag_len >= 12:
+        var_len = {12: 1, 13: 2, 14: 4, 15: 8}[tag_len]
+        if buf.offset + var_len > buf.end_offset:
+            return malformed(buf, "insufficient space for length")
+
+        value_offset += var_len
+
+        tag_len = 0
+        while var_len:
+            tag_len <<= 8
+            tag_len += buf.buf[buf.offset]
+            buf.offset += 1
+            var_len -= 1
+
+    # value_offset is now start of value, after tag + length bytes
+
+    if value_offset + tag_len > buf.end_offset:
+        return malformed(buf, "insufficient space for value")
+
+    # buf.offset is now the start of the next value
+    buf.offset = value_offset + tag_len
+
+    if tag == JSONBTag.NULL:
+        if tag_len != 0:
+            return malformed(buf, "NULL has length")
+        return None
+
+    if tag == JSONBTag.TRUE:
+        if tag_len != 0:
+            return malformed(buf, "True has length")
+        return True
+
+    if tag == JSONBTag.FALSE:
+        if tag_len != 0:
+            return malformed(buf, "False has length")
+        return False
+
+    if tag in (JSONBTag.INT, JSONBTag.INT5):
+        # ... check that only ascii chars are present and at least one digit
+        # ... optional leading sign
+        text = buf.buf[value_offset : buf.offset].decode("utf8")
+        if tag == JSONBTag.INT:
+            # python int parser accepts the same thing
+            return int(tag)
+        # JSON5: pos/neg opt, then 0x then hex digits
+        sign = 1
+        offset = 0
+        if text[0] == '+':
+            offset = 1
+        elif text[0] == '-':
+            sign = -1
+            offset = 1
+        assert text[offset] == '0'
+        offset+=1
+        assert text[offset] in "xX" # either case allowed
+        offset +=1
+        return sign * int(text[offset:], 16)
+
+    if tag in {JSONBTag.FLOAT, JSONBTag.FLOAT5}:
+        # ... check leading opt +/- and only ascii digits, at most one .,
+        # Ee opt followed by only digits
+        text = buf.buf[value_offset : buf.offset].decode("utf8")
+        # python float parser accepts json5 leading/trailing ., Infinity etc
+        return float(text)
+
+
+    if tag in (JSONBTag.TEXT, JSONBTag.TEXTJ, JSONBTag.TEXT5, JSONBTag.TEXTRAW):
+        # .. shortcut - handle zero length here
+        binary = buf.buf[value_offset : buf.offset]
+        if tag in {JSONBTag.TEXT, JSONBTag.TEXTRAW}:
+            if buf.alloc is False:
+                length, maxchar = decode_utf8_string(binary, None, 0)
+                if not length or not maxchar:
+                    return C_NULL
+                return True
+            return binary.decode('utf8')
+        length, maxchar = decode_utf8_string(binary, None, 1 if tag==JSONBTag.TEXTJ else 2)
+        if not length or not maxchar:
+            if buf.alloc==False:
+                return C_NULL
+            raise ValueError(f"incorrect encoded string at offset {value_offset}")
+
+        uni = PyUnicode(length, maxchar)
+        length2, maxchar2 = decode_utf8_string(binary, uni, 1 if tag==JSONBTag.TEXTJ else 2)
+        assert length==length2 and maxchar==maxchar2
+        return uni.as_string()
+
+
+    if tag == JSONBTag.ARRAY:
+        res = list() if buf.alloc else None
+        saved_end = buf.end_offset
+        buf.end_offset = buf.offset
+        buf.offset = value_offset
+        while buf.offset < buf.end_offset:
+            item = decode_one(buf)
+            if item is C_NULL:
+                assert buf.alloc is False
+                return item
+            if res is not None:
+                res.append(item)
+        buf.end_offset = saved_end
+        return res
+
+    if tag == JSONBTag.OBJECT:
+        if buf.alloc:
+            builder = list() if buf.object_pairs_hook else dict()
+        else:
+            builder = None
+
+        saved_end = buf.end_offset
+        buf.end_offset = buf.offset
+        buf.offset = value_offset
+        while buf.offset < buf.end_offset:
+            # check we have a string key
+            if buf.buf[buf.offset] & 0x0F not in {JSONBTag.TEXT, JSONBTag.TEXTJ, JSONBTag.TEXT5, JSONBTag.TEXTRAW}:
+                return malformed(buf, "object keys must be a string")
+            key = decode_one(buf)
+            if key is C_NULL:
+                assert buf.alloc is False
+                return key
+            if buf.offset >= buf.end_offset:
+                return malformed(buf, "no value for key")
+            value = decode_one(buf)
+            if value is C_NULL:
+                assert buf.alloc is False
+                return value
+
+            if buf.object_hook:
+                builder.append((key, value))
+            elif builder is not None:
+                builder[key] = value
+
+        if buf.object_hook:
+            res = buf.object_hook(builder)
+        elif buf.object_pairs_hook:
+            res = buf.object_pairs_hook(builder)
+        else:
+            res = builder
+
+        buf.end_offset = saved_end
+        return res
+
+    return malformed(buf, f"unknown tag {tag}")
+
 
 def decode(
     data: Buffer,
@@ -275,39 +442,119 @@ def decode(
     other than a dict, care about the order of keys, want to convert
     them (eg case, numbers), or want to handle duplicate keys.
     """
-    pass
+    assert not (object_hook and object_pairs_hook), "Both aren't allowed to be set"
+
+    assert len(data), "Zero length not valid"
+
+    buf = JSONBDecodeBuffer()
+    buf.buf = data
+    buf.offset = 0
+    buf.end_offset = len(data)
+    buf.object_hook = object_hook
+    buf.object_pairs_hook = object_pairs_hook
+    buf.alloc = True
+
+    res = decode_one(buf)
+    # decode modifies buf.end_offset
+    if buf.offset != len(data):
+        raise ValueError("not a valid JSONB value")
+    return res
 
 
 def detect(data: Buffer) -> bool:
     """Returns ``True`` if data is valid JSONB, otherwise ``False``.
 
     No exceptions are raised if data isn't bytes, or contains corrupt JSONB data.
+    If this returns ``True`` then no exceptions will arise from decode
     """
     # The way this will work is that decode takes an alloc flag
     # (default True) causing it to actually allocate the data
     # structures.  This method will pass in False for the flag, and
     # swallow any exceptions.
     try:
-        decode(data, alloc=False)
+        assert len(data), "Zero length not valid"
+        buf = JSONBDecodeBuffer()
+        buf.buf = data
+        buf.offset = 0
+        buf.end_offset = len(data)
+        buf.object_hook = None
+        buf.object_pairs_hook = None
+        buf.alloc = False
+        v = decode_one(buf)
+        # decode modifies buf.end_offset
+        if v is C_NULL or buf.offset != len(data):
+            return False
         return True
     except Exception:
         pass
     return False
+
+class PyUnicode:
+    def __init__(self, length:int , maxchar:int ):
+        assert codepoints>0 and maxchar>0
+        self.codepoints = [None] * length
+        self.maxchar = maxchar
+
+    def WRITE(self, index: int, codepoint:int):
+        assert isinstance(index, int) and isinstance(codepoint, int)
+        assert 0 <= index < len(self.codepoints)
+        assert 0 <= codepoint <= self.maxchar
+        self.codepoints[index] = codepoint
+
+    def as_string(self):
+        assert all(cp is not None for cp in self.codepoints)
+        return "".join(chr(cp) for cp in self.codepoints)
+
+
+def decode_utf8_string(sin: bytes, sout: PyUnicode|None, escapes: int = 0) -> (int, int):
+    # this function expresses what will happen when converted to C
+
+    # C params:
+    # sin: const unsigned char * and size_t length - must be at least one byte
+    # sout: NULL or PyUnicode
+    # escapes: how to handle backslash - 0 means ignore
+    #     1 means JSON
+    #     2 means JSON5
+    # returns length in codepoints and maxchar
+    # length and maxchar set to 0 on error
+
+    # a first pass is used to check validity and calculate the
+    # length in codepoints and maxchar, then the caller allocates a
+    # corresponding PyUnicode and calls again to fill in because that
+    # is how the CPython API works
+    assert len(sin)
+
+
 
 
 if __name__ == "__main__":
     import apsw, apsw.ext, json
 
     con = apsw.Connection("")
+    con.enable_load_extension(True)
+    con.load_extension("./randomjson")
 
     # get json
     fjson = apsw.ext.Function(con, "json")
+    jsonb = apsw.ext.Function(con, "jsonb")
     # validity check
     check = apsw.ext.Function(con, "json_valid")
 
-    foo = encode({1: {True: 4.1}, "π\n": [1,2,3, "😂❤️🤣𐌲𐌻𐌴𐍃"]})
+    foo = encode({1: {True: 4.1}, "π\n": [1, 2, 3, "😂❤️🤣𐌲𐌻𐌴𐍃"]})
 
     print(f"{check(foo,8)=}")
     print(f"{fjson(foo)=}")
 
+    print(f"{decode(foo)=}")
 
+    random_json=apsw.ext.Function(con, "random_json")
+    random_json5=apsw.ext.Function(con, "random_json5")
+
+
+    for seed in range(3):
+        print(f"\n\n{seed=}")
+        j = random_json5(seed)
+        b = jsonb(j)
+        j =fjson(j)
+        print(json.dumps(json.loads(j), indent=4))
+        print(f"\n\n{json.dumps(decode(b), indent=4)}")
