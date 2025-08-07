@@ -323,15 +323,15 @@ def decode_one(buf: JSONBDecodeBuffer):
         # JSON5: pos/neg opt, then 0x then hex digits
         sign = 1
         offset = 0
-        if text[0] == '+':
+        if text[0] == "+":
             offset = 1
-        elif text[0] == '-':
+        elif text[0] == "-":
             sign = -1
             offset = 1
-        assert text[offset] == '0'
-        offset+=1
-        assert text[offset] in "xX" # either case allowed
-        offset +=1
+        assert text[offset] == "0"
+        offset += 1
+        assert text[offset] in "xX"  # either case allowed
+        offset += 1
         return sign * int(text[offset:], 16)
 
     if tag in {JSONBTag.FLOAT, JSONBTag.FLOAT5}:
@@ -341,28 +341,27 @@ def decode_one(buf: JSONBDecodeBuffer):
         # python float parser accepts json5 leading/trailing ., Infinity etc
         return float(text)
 
-
     if tag in (JSONBTag.TEXT, JSONBTag.TEXTJ, JSONBTag.TEXT5, JSONBTag.TEXTRAW):
-        # .. shortcut - handle zero length here
         binary = buf.buf[value_offset : buf.offset]
+        if len(binary) == 0:
+            return ""
         if tag in {JSONBTag.TEXT, JSONBTag.TEXTRAW}:
             if buf.alloc is False:
                 length, maxchar = decode_utf8_string(binary, None, 0)
                 if not length or not maxchar:
                     return C_NULL
                 return True
-            return binary.decode('utf8')
-        length, maxchar = decode_utf8_string(binary, None, 1 if tag==JSONBTag.TEXTJ else 2)
-        if not length or not maxchar:
-            if buf.alloc==False:
+            return binary.decode("utf8")
+        length, maxchar = decode_utf8_string(binary, None, 1 if tag == JSONBTag.TEXTJ else 2)
+        if not length:
+            if not buf.alloc:
                 return C_NULL
             raise ValueError(f"incorrect encoded string at offset {value_offset}")
 
         uni = PyUnicode(length, maxchar)
-        length2, maxchar2 = decode_utf8_string(binary, uni, 1 if tag==JSONBTag.TEXTJ else 2)
-        assert length==length2 and maxchar==maxchar2
+        length2, maxchar2 = decode_utf8_string(binary, uni, 1 if tag == JSONBTag.TEXTJ else 2)
+        assert length == length2 and maxchar == maxchar2
         return uni.as_string()
-
 
     if tag == JSONBTag.ARRAY:
         res = list() if buf.alloc else None
@@ -489,24 +488,30 @@ def detect(data: Buffer) -> bool:
         pass
     return False
 
+
 class PyUnicode:
-    def __init__(self, length:int , maxchar:int ):
-        assert codepoints>0 and maxchar>0
+    def __init__(self, length: int, maxchar: int):
+        assert length > 0 and maxchar > 0
         self.codepoints = [None] * length
         self.maxchar = maxchar
 
-    def WRITE(self, index: int, codepoint:int):
+    def WRITE(self, index: int, codepoint: int):
         assert isinstance(index, int) and isinstance(codepoint, int)
         assert 0 <= index < len(self.codepoints)
-        assert 0 <= codepoint <= self.maxchar
+        assert 0 <= codepoint <= self.maxchar, f"{codepoint=}"
         self.codepoints[index] = codepoint
+
+    def READ(self, index) -> int:
+        assert 0 <= index < len(self.codepoints)
+        assert self.codepoints[index] is not None
+        return self.codepoints[index]
 
     def as_string(self):
         assert all(cp is not None for cp in self.codepoints)
         return "".join(chr(cp) for cp in self.codepoints)
 
 
-def decode_utf8_string(sin: bytes, sout: PyUnicode|None, escapes: int = 0) -> (int, int):
+def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> (int, int):
     # this function expresses what will happen when converted to C
 
     # C params:
@@ -522,9 +527,85 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode|None, escapes: int = 0) -> (i
     # length in codepoints and maxchar, then the caller allocates a
     # corresponding PyUnicode and calls again to fill in because that
     # is how the CPython API works
+
+    # at least one byte must be present
     assert len(sin)
+    assert escapes in {0, 1, 2}
+    # next input byte index to read
+    sin_index = 0
+    # next output codepoint index to write
+    sout_index = 0
 
+    max_char = 1
 
+    def get_hex(num_digits: int) -> int:
+        nonlocal sin_index
+        if sin_index + num_digits > len(sin):
+            return -1
+        val = 0
+        while num_digits:
+            c = sin[sin_index]
+            sin_index += 1
+            if ord("0") <= c <= ord("9"):
+                c = c - ord("0")
+            elif ord("A") <= c <= ord("F"):
+                c = 10 + c - ord("A")
+            elif ord("a") <= c <= ord("f"):
+                c = 10 + c - ord("a")
+            else:
+                return -1
+            num_digits -= 1
+            val = (val << 4) + c
+        return val
+
+    while sin_index < len(sin):
+        b = sin[sin_index]
+        sin_index += 1
+
+        if b & 0b1000_0000 == 0:  # 0x80
+            if b == ord("\\") and escapes:
+                # there must be at least one more char
+                if sin_index == len(sin):
+                    return 0, 0
+
+                b = chr(sin[sin_index])
+                sin_index += 1
+
+                # JSON escapes
+                if b in r"\"":
+                    # left as is
+                    pass
+                elif b in "bfnrtv":
+                    b = {"b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t"}[b]
+                elif escapes == 2 and b == "0":
+                    b = "\0"
+                    # but it must be followed by a non-digit
+                    if sin_index < len(sin) and sin[sin_index] in b"0123456789":
+                        return 0, 0
+                elif escapes == 2 and (b == "x" or b == "X"):
+                    b = get_hex(2)
+                elif b == "u":
+                    b = get_hex(4)
+                    if b < 0:
+                        return 0, 0
+                    # ::TODO:: after getting U+DFXX check to
+                    # see if previous was U+D8XX and amend previous
+                    # following surrogate rules
+                else:
+                    # not a valid escape
+                    return 0, 0
+
+                b = ord(b) if isinstance(b, str) else b
+
+            max_char = max(max_char, b)
+            if sout is not None:
+                sout.WRITE(sout_index, b)
+            sout_index += 1
+            continue
+
+        1 / 0
+
+    return sout_index, max_char
 
 
 if __name__ == "__main__":
@@ -547,14 +628,13 @@ if __name__ == "__main__":
 
     print(f"{decode(foo)=}")
 
-    random_json=apsw.ext.Function(con, "random_json")
-    random_json5=apsw.ext.Function(con, "random_json5")
-
+    random_json = apsw.ext.Function(con, "random_json")
+    random_json5 = apsw.ext.Function(con, "random_json5")
 
     for seed in range(3):
         print(f"\n\n{seed=}")
         j = random_json5(seed)
         b = jsonb(j)
-        j =fjson(j)
+        j = fjson(j)
         print(json.dumps(json.loads(j), indent=4))
         print(f"\n\n{json.dumps(decode(b), indent=4)}")
