@@ -609,7 +609,7 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
 
 
 if __name__ == "__main__":
-    import apsw, apsw.ext, json
+    import apsw, apsw.ext, json, difflib
 
     con = apsw.Connection("")
     con.enable_load_extension(True)
@@ -621,20 +621,51 @@ if __name__ == "__main__":
     # validity check
     check = apsw.ext.Function(con, "json_valid")
 
-    foo = encode({1: {True: 4.1}, "π\n": [1, 2, 3, "😂❤️🤣𐌲𐌻𐌴𐍃"]})
+    if False:
+        foo = encode({1: {True: 4.1}, "π\n": [1, 2, 3, "😂❤️🤣𐌲𐌻𐌴𐍃"]})
 
-    print(f"{check(foo,8)=}")
-    print(f"{fjson(foo)=}")
+        print(f"{check(foo,8)=}")
+        print(f"{fjson(foo)=}")
 
-    print(f"{decode(foo)=}")
+        print(f"{decode(foo)=}")
+
 
     random_json = apsw.ext.Function(con, "random_json")
     random_json5 = apsw.ext.Function(con, "random_json5")
 
-    for seed in range(3):
-        print(f"\n\n{seed=}")
+    FULL = True
+
+    for seed in range(500):
+
         j = random_json5(seed)
         b = jsonb(j)
         j = fjson(j)
-        print(json.dumps(json.loads(j), indent=4))
-        print(f"\n\n{json.dumps(decode(b), indent=4)}")
+
+        expected = json.dumps(json.loads(j), indent=4).splitlines()
+        got = json.dumps(decode(b), indent=4).splitlines()
+
+        if expected == got:
+            print(f"✅ {seed=}")
+            continue
+
+        print(f"\n✗ {seed=}\n")
+
+        if FULL:
+            print("\n".join(expected))
+            print("\n-----\n")
+            print("\n".join(got))
+            continue
+
+        header = "\033[44m"
+        plus = "\033[32m"
+        minus = "\033[31m"
+        reset = "\033[0m"
+
+        for line in difflib.unified_diff(expected, got, fromfile="correct", tofile="got"):
+            if line.endswith("\n"):
+                print(f"{header}{line[:-1]}", end=f"{reset}\n")
+                continue
+            v={" ": "", "+": plus, "-": minus}.get(line[0], "")
+            print(f"{v}{line}", end=f"{reset}\n")
+
+
