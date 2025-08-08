@@ -319,7 +319,7 @@ def decode_one(buf: JSONBDecodeBuffer):
         text = buf.buf[value_offset : buf.offset].decode("utf8")
         if tag == JSONBTag.INT:
             # python int parser accepts the same thing
-            return int(tag)
+            return int(text)
         # JSON5: pos/neg opt, then 0x then hex digits
         sign = 1
         offset = 0
