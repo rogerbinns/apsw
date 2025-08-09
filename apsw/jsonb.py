@@ -577,6 +577,9 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
                     pass
                 elif b in "bfnrtv":
                     b = {"b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t"}[b]
+                elif escapes == 2 and b == "\n":
+                    # literal \ literal newline should be ignored in json5 mode
+                    continue
                 elif escapes == 2 and b == "0":
                     b = "\0"
                     # but it must be followed by a non-digit
@@ -584,13 +587,17 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
                         return 0, 0
                 elif escapes == 2 and (b == "x" or b == "X"):
                     b = get_hex(2)
+                elif escapes == 2 and b=="'":
+                    # json5 can backslash single quote
+                    pass
                 elif b == "u":
                     b = get_hex(4)
                     if b < 0:
                         return 0, 0
-                    # ::TODO:: after getting U+DFXX check to
-                    # see if previous was U+D8XX and amend previous
-                    # following surrogate rules
+                    # ::TODO:: on getting \uD8XX check to see if next
+                    # is \uDFXX. to follow surrogate rules.  both
+                    # codepoints have to be sequential and be \u
+                    # escapes
                 else:
                     # not a valid escape
                     return 0, 0
@@ -633,11 +640,11 @@ if __name__ == "__main__":
     random_json = apsw.ext.Function(con, "random_json")
     random_json5 = apsw.ext.Function(con, "random_json5")
 
-    FULL = True
+    FULL = False
 
-    for seed in range(500):
+    for seed in range(0, 500000):
 
-        j = random_json5(seed)
+        j = random_json(seed)
         b = jsonb(j)
         j = fjson(j)
 
@@ -668,4 +675,4 @@ if __name__ == "__main__":
             v={" ": "", "+": plus, "-": minus}.get(line[0], "")
             print(f"{v}{line}", end=f"{reset}\n")
 
-
+        break
