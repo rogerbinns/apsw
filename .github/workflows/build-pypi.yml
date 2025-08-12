@@ -17,7 +17,7 @@ jobs:
 
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build ${{ matrix.os }} ${{ matrix.pyver }}
         uses: pypa/cibuildwheel@v3.1
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Create source dist
       run: python setup.py sdist --for-pypi
