@@ -7,6 +7,7 @@
 # APIs are encode, detect, and decode
 # The python JSON module dump and load APIs are used for shaping this API
 
+import inspect
 from typing import Any, TypeAlias
 from collections.abc import Mapping, Sequence, Callable, Buffer
 
@@ -260,6 +261,8 @@ C_NULL = object()
 
 
 def malformed(buf: JSONBDecodeBuffer, note: str):
+    print(f"  malformed at line {inspect.stack()[1].lineno}")
+
     if buf.alloc:
         raise ValueError(f"{note} at offset {buf.offset}")
     return C_NULL
@@ -336,7 +339,7 @@ def decode_one(buf: JSONBDecodeBuffer):
 
     if tag in {JSONBTag.FLOAT, JSONBTag.FLOAT5}:
         # ... check leading opt +/- and only ascii digits, at most one .,
-        # Ee opt followed by only digits
+        # Ee opt followed by sign and then only digits
         text = buf.buf[value_offset : buf.offset].decode("utf8")
         # python float parser accepts json5 leading/trailing ., Infinity etc
         return float(text)
@@ -511,6 +514,12 @@ class PyUnicode:
         return "".join(chr(cp) for cp in self.codepoints)
 
 
+# here for easy breakpoint
+def invalid_string():
+    print(f"  invalid string at line {inspect.stack()[1].lineno}")
+    return 0, 0
+
+
 def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> (int, int):
     # this function expresses what will happen when converted to C
 
@@ -566,7 +575,7 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
             if b == ord("\\") and escapes:
                 # there must be at least one more char
                 if sin_index == len(sin):
-                    return 0, 0
+                    return invalid_string()
 
                 b = chr(sin[sin_index])
                 sin_index += 1
@@ -584,25 +593,34 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
                     b = "\0"
                     # but it must be followed by a non-digit
                     if sin_index < len(sin) and sin[sin_index] in b"0123456789":
-                        return 0, 0
+                        return invalid_string()
                 elif escapes == 2 and (b == "x" or b == "X"):
                     b = get_hex(2)
-                elif escapes == 2 and b=="'":
+                elif escapes == 2 and b == "'":
                     # json5 can backslash single quote
                     pass
                 elif b == "u":
                     b = get_hex(4)
                     if b < 0:
-                        return 0, 0
-                    # ::TODO:: on getting \uD8XX check to see if next
-                    # is \uDFXX. to follow surrogate rules.  both
-                    # codepoints have to be sequential and be \u
-                    # escapes
+                        return invalid_string()
+                    if 0xD800 <= b <= 0xDBFF:
+                        # find second part of surrogate pair
+                        if sin_index + 6 <= len(sin) and sin[sin_index] == ord("\\") and sin[sin_index + 1] == ord("u"):
+                            sin_index += 2
+                            second = get_hex(4)
+                            if second < 0:
+                                return invalid_string()
+                            b = ((b - 0xD800) << 10) + (second - 0xDC00) + 0x10_000
+                        else:
+                            return invalid_string()
                 else:
                     # not a valid escape
-                    return 0, 0
+                    return invalid_string()
 
                 b = ord(b) if isinstance(b, str) else b
+
+                if not acceptable_codepoint(b):
+                    return invalid_string()
 
             max_char = max(max_char, b)
             if sout is not None:
@@ -610,13 +628,66 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
             sout_index += 1
             continue
 
-        1 / 0
+        # utf8 multi-byte sequences
+        if b & 0b1111_1000 == 0b1111_0000:
+            codepoint = b & 0b0000_0111
+            remaining = 3
+        elif b & 0b1111_0000 == 0b1110_0000:
+            codepoint = b & 0b0000_1111
+            remaining = 2
+        elif b & 0b1110_0000 == 0b1100_0000:
+            codepoint = b & 0b0001_1111
+            remaining = 1
+        else:
+            # not valid utf8
+            return invalid_string()
+
+        if codepoint == 0:
+            # an overlong encoding was used
+            return invalid_string()
+
+        if sin_index + remaining > len(sin):
+            # not enough continuation bytes
+            return invalid_string()
+
+        while remaining:
+            codepoint <<= 6
+            b = sin[sin_index]
+            sin_index += 1
+            if b & 0b1100_0000 != 0b1000_0000:
+                # not a valid continuation byte
+                return invalid_string()
+            codepoint += b & 0b0011_1111
+            remaining -= 1
+
+        if not acceptable_codepoint(codepoint):
+            return invalid_string()
+
+        max_char = max(max_char, codepoint)
+        if sout is not None:
+            sout.WRITE(sout_index, codepoint)
+        sout_index += 1
 
     return sout_index, max_char
 
 
+def acceptable_codepoint(codepoint: int) -> bool:
+    # 0 is allowed, surrogate pair ranges are not valid
+    # the builtin json decoder will allow a standalone surrogate
+    # but python won't allow a surrogate when constructing a string.
+    # python accepting lone surrogates https://bugs.python.org/issue11489
+    #
+    # "abc\ud83edef"  -- python rejects
+    # json.loads(r'"abc \ud83e def"')  -- json.loads accepts but
+    # it is really invalid and we reject
+
+    if 0xD800 <= codepoint <= 0xDBFF or 0xDC00 <= codepoint <= 0xDFFF:
+        return False
+    return True
+
+
 if __name__ == "__main__":
-    import apsw, apsw.ext, json, difflib
+    import apsw, apsw.ext, apsw.fts5, json, difflib
 
     con = apsw.Connection("")
     con.enable_load_extension(True)
@@ -628,6 +699,23 @@ if __name__ == "__main__":
     # validity check
     check = apsw.ext.Function(con, "json_valid")
 
+    test_strings = [s[0].decode("utf8") for s in apsw.fts5.tokenizer_test_strings()]
+
+    j0 = json.dumps(test_strings)
+    j1 = json.dumps(test_strings, ensure_ascii=True)
+
+    # check sqlite gets it right
+    assert json.loads(fjson(j0)) == test_strings
+    assert json.loads(fjson(j1)) == test_strings
+
+    # our jsonb encoder
+    assert json.loads(fjson(encode(test_strings))) == test_strings
+
+    # our jsonb decoder
+    assert decode(jsonb(j0)) == test_strings
+    assert decode(jsonb(j1)) == test_strings
+    assert decode(encode(test_strings)) == test_strings
+
     if False:
         foo = encode({1: {True: 4.1}, "π\n": [1, 2, 3, "😂❤️🤣𐌲𐌻𐌴𐍃"]})
 
@@ -636,43 +724,42 @@ if __name__ == "__main__":
 
         print(f"{decode(foo)=}")
 
+    if False:
+        random_json = apsw.ext.Function(con, "random_json")
+        random_json5 = apsw.ext.Function(con, "random_json5")
 
-    random_json = apsw.ext.Function(con, "random_json")
-    random_json5 = apsw.ext.Function(con, "random_json5")
+        FULL = False
 
-    FULL = False
+        for seed in range(0, 500000):
+            j = random_json(seed)
+            b = jsonb(j)
+            j = fjson(j)
 
-    for seed in range(0, 500000):
+            expected = json.dumps(json.loads(j), indent=4).splitlines()
+            got = json.dumps(decode(b), indent=4).splitlines()
 
-        j = random_json(seed)
-        b = jsonb(j)
-        j = fjson(j)
-
-        expected = json.dumps(json.loads(j), indent=4).splitlines()
-        got = json.dumps(decode(b), indent=4).splitlines()
-
-        if expected == got:
-            print(f"✅ {seed=}")
-            continue
-
-        print(f"\n✗ {seed=}\n")
-
-        if FULL:
-            print("\n".join(expected))
-            print("\n-----\n")
-            print("\n".join(got))
-            continue
-
-        header = "\033[44m"
-        plus = "\033[32m"
-        minus = "\033[31m"
-        reset = "\033[0m"
-
-        for line in difflib.unified_diff(expected, got, fromfile="correct", tofile="got"):
-            if line.endswith("\n"):
-                print(f"{header}{line[:-1]}", end=f"{reset}\n")
+            if expected == got:
+                print(f"✅ {seed=}")
                 continue
-            v={" ": "", "+": plus, "-": minus}.get(line[0], "")
-            print(f"{v}{line}", end=f"{reset}\n")
 
-        break
+            print(f"\n✗ {seed=}\n")
+
+            if FULL:
+                print("\n".join(expected))
+                print("\n-----\n")
+                print("\n".join(got))
+                continue
+
+            header = "\033[44m"
+            plus = "\033[32m"
+            minus = "\033[31m"
+            reset = "\033[0m"
+
+            for line in difflib.unified_diff(expected, got, fromfile="correct", tofile="got"):
+                if line.endswith("\n"):
+                    print(f"{header}{line[:-1]}", end=f"{reset}\n")
+                    continue
+                v = {" ": "", "+": plus, "-": minus}.get(line[0], "")
+                print(f"{v}{line}", end=f"{reset}\n")
+
+            break
