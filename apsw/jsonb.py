@@ -642,9 +642,7 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
             # not valid utf8
             return invalid_string()
 
-        if codepoint == 0:
-            # an overlong encoding was used
-            return invalid_string()
+        encoding_len = 1 + remaining
 
         if sin_index + remaining > len(sin):
             # not enough continuation bytes
@@ -661,6 +659,14 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
             remaining -= 1
 
         if not acceptable_codepoint(codepoint):
+            return invalid_string()
+
+        # check for overlong encoding
+        if (
+            codepoint < 0x80
+            or (0x80 <= codepoint <= 0x7FF and encoding_len != 2)
+            or (0x800 <= codepoint <= 0xFFFF and encoding_len != 3)
+        ):
             return invalid_string()
 
         max_char = max(max_char, codepoint)
