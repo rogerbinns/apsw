@@ -7,11 +7,12 @@
 # APIs are encode, detect, and decode
 # The python JSON module dump and load APIs are used for shaping this API
 
+import math
 import inspect
 from typing import Any, TypeAlias
 from collections.abc import Mapping, Sequence, Callable, Buffer
 
-from enum import IntEnum, Enum
+from enum import IntEnum, Enum, IntFlag
 
 
 # json module uses isinstance of dict, list, tuple and not abstract types
@@ -122,17 +123,34 @@ def encode_internal(buf: JSONBuffer, obj: Any):
         jsonb_add_tag(buf, JSONBTag.INT, len(s))
         jsonb_append_data(buf, s)
         return
-    elif isinstance(obj, float):
-        # json module does this
-        #        if o != o:
-        #            text = 'NaN'
-        #        elif o == _inf:
-        #            text = 'Infinity'
-        #        elif o == _neginf:
-        #            text = '-Infinity'
-        # but they are technically JSON5
-        s = str(obj).encode("utf8")
-        jsonb_add_tag(buf, JSONBTag.FLOAT, len(s))
+    elif isinstance(obj, float):  # ::TODO:: figure out numpy
+        if math.isnan(obj):
+            # this would be correct
+            s = "NaN"
+            tag = JSONBTag.FLOAT5
+            # sqlite does this
+            jsonb_add_tag(buf, JSONBTag.NULL, 0)
+            return
+        elif obj == math.inf:
+            # this would be correct
+            s = "Infinity"
+            tag = JSONBTag.FLOAT5
+            # sqlite does thi
+            s = "9e999"
+            tag = JSONBTag.FLOAT
+        elif obj == -math.inf:
+            # this would be correct
+            s = "-Infinity"
+            tag = JSONBTag.FLOAT5
+            # sqlite does thi
+            s = "-9e999"
+            tag = JSONBTag.FLOAT
+        else:
+            s = str(obj)
+            tag = JSONBTag.FLOAT
+        assert len(s) == len(s.encode("utf8"))
+        s = s.encode("utf8")
+        jsonb_add_tag(buf, tag, len(s))
         jsonb_append_data(buf, s)
         return
     elif isinstance(obj, str):
@@ -340,12 +358,17 @@ def decode_one(buf: JSONBDecodeBuffer):
         offset += 1
         return sign * int(text[offset:], 16)
 
-    if tag in {JSONBTag.FLOAT, JSONBTag.FLOAT5}:
-        # ... check leading opt +/- and only ascii digits, at most one .,
-        # Ee opt followed by sign and then only digits
+    if tag == JSONBTag.FLOAT:
+        if not check_float(buf.buf, value_offset, buf.offset):
+            return malformed(buf, "Not a float")
         text = buf.buf[value_offset : buf.offset].decode("utf8")
-        # python float parser accepts json5 leading/trailing ., Infinity etc
-        return float(text)
+        return float(text) if buf.alloc else None
+
+    if tag == JSONBTag.FLOAT5:
+        if not check_float5(buf.buf, value_offset, buf.offset):
+            return malformed(buf, "Not a float5")
+        text = buf.buf[value_offset : buf.offset].decode("utf8")
+        return float(text) if buf.alloc else None
 
     if tag in (JSONBTag.TEXT, JSONBTag.TEXTJ, JSONBTag.TEXT5, JSONBTag.TEXTRAW):
         binary = buf.buf[value_offset : buf.offset]
@@ -515,6 +538,149 @@ class PyUnicode:
     def as_string(self):
         assert all(cp is not None for cp in self.codepoints)
         return "".join(chr(cp) for cp in self.codepoints)
+
+
+# What we have seen so far in a float.  we don't use a true state
+# machine instead resetting values at points like seeing E (exponent)
+class Seen(IntFlag):
+    Sign = 1
+    Dot = 2
+    Digit = 4
+    E = 8
+    INVALID = 16
+    END = 32
+
+
+def check_float(buf: bytes, start: int, end: int) -> bool:
+    # optional sign
+    # at least one digit
+    # dot
+    # at least one digit
+    # optional E
+    #   optional sign
+    #     at least one digit
+    seen: Seen = 0
+
+    def next_token() -> Seen:
+        nonlocal start, end, buf
+
+        if start == end:
+            return Seen.END  # used as end marker
+        b = buf[start]
+        start += 1
+
+        if b == ord("-") or b == ord("+"):
+            return Seen.Sign
+        if b == ord("."):
+            return Seen.Dot
+        if ord("0") <= b <= ord("9"):
+            return Seen.Digit
+        if b == ord("E") or b == ord("e"):
+            return Seen.E
+        return Seen.INVALID
+
+    while True:
+        t = next_token()
+        match t:
+            case Seen.END:
+                break
+            case Seen.INVALID:
+                return False
+            case Seen.Sign:
+                # can't have more than one
+                if seen & Seen.Sign:
+                    return False
+                # can't be after digits
+                if seen & Seen.Digit:
+                    return False
+                # can't be after dot
+                if seen & Seen.Dot:
+                    return False
+                seen |= Seen.Sign
+            case Seen.Dot:
+                # can't have more than one
+                if seen & Seen.Dot:
+                    return False
+                # can't be after E
+                if seen & Seen.E:
+                    return False
+                # must be after at least one digit
+                if not (seen & Seen.Digit):
+                    return False
+                # a digit will be required after this
+                seen = Seen.Dot
+            case Seen.Digit:
+                seen |= Seen.Digit
+            case Seen.E:
+                # reset state to post E
+                seen = seen.E
+
+    return bool(seen & Seen.Digit)
+
+
+def check_float5(buf: bytes, start: int, end: int) -> bool:
+    # optional sign
+    # at least one digit with at most one dot anywhere including
+    #   before or after any digits.  This is the big JSON5 difference
+    # optional E
+    #   optional sign
+    #     at least one digit
+    seen: Seen = 0
+
+    def next_token() -> Seen:
+        nonlocal start, end, buf
+
+        if start == end:
+            return Seen.END  # used as end marker
+        b = buf[start]
+        start += 1
+
+        if b == ord("-") or b == ord("+"):
+            return Seen.Sign
+        if b == ord("."):
+            return Seen.Dot
+        if ord("0") <= b <= ord("9"):
+            return Seen.Digit
+        if b == ord("E") or b == ord("e"):
+            return Seen.E
+        return Seen.INVALID
+
+    while True:
+        t = next_token()
+        match t:
+            case Seen.END:
+                break
+            case Seen.INVALID:
+                return False
+            case Seen.Sign:
+                # can't have more than one
+                if seen & Seen.Sign:
+                    return False
+                # can't be after digits
+                if seen & Seen.Digit:
+                    return False
+                # can't be after dot
+                if seen & Seen.Dot:
+                    return False
+                seen |= Seen.Sign
+            case Seen.Dot:
+                # ::TODO:: combine both methods.  this arm is the only one
+                # with any difference
+
+                # can't have more than one
+                if seen & Seen.Dot:
+                    return False
+                # can't be after E
+                if seen & Seen.E:
+                    return False
+                seen |= Seen.Dot
+            case Seen.Digit:
+                seen |= Seen.Digit
+            case Seen.E:
+                # reset state to post E
+                seen = seen.E
+
+    return bool(seen & Seen.Digit)
 
 
 # here for easy breakpoint
