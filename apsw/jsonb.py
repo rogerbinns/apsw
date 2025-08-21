@@ -212,6 +212,9 @@ def encode_internal(buf: JSONBuffer, obj: Any):
         replacement = buf.default(obj)
         assert id(replacement) != id(obj)
 
+        # ::TODO:: allow default to return a bytes and emit that
+        # directly.  eg numpy.float128 can emit the right thing
+
         saved = buf.default
         buf.default = None
         encode_internal(buf, replacement)
@@ -322,7 +325,7 @@ def decode_one(buf: JSONBDecodeBuffer):
         text = buf.buf[value_offset : buf.offset].decode("utf8")
         if tag == JSONBTag.INT:
             # python int parser accepts the same thing
-            return int(text)
+            return int(text)  # ::TODO:: what about numpy.int16?
         # JSON5: pos/neg opt, then 0x then hex digits
         sign = 1
         offset = 0
@@ -686,6 +689,8 @@ def acceptable_codepoint(codepoint: int) -> bool:
     # "abc\ud83edef"  -- python rejects
     # json.loads(r'"abc \ud83e def"')  -- json.loads accepts but
     # it is really invalid and we reject
+    #
+    # related compatibility note is that sqlite encodes NaN json as null
 
     if 0xD800 <= codepoint <= 0xDBFF or 0xDC00 <= codepoint <= 0xDFFF:
         return False
