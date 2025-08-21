@@ -12141,6 +12141,7 @@ test_types_vals = (
 
 from .ftstests import *
 from .sessiontests import *
+from .jsonb import *
 
 if __name__ == "__main__":
     setup()
