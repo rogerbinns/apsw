@@ -124,6 +124,7 @@ def encode_internal(buf: JSONBuffer, obj: Any):
         jsonb_append_data(buf, s)
         return
     elif isinstance(obj, float):  # ::TODO:: figure out numpy
+        # ::TODO:: fix nan/infinity once SQLite allows it
         if math.isnan(obj):
             # this would be correct
             s = "NaN"
@@ -135,14 +136,14 @@ def encode_internal(buf: JSONBuffer, obj: Any):
             # this would be correct
             s = "Infinity"
             tag = JSONBTag.FLOAT5
-            # sqlite does thi
+            # sqlite does this
             s = "9e999"
             tag = JSONBTag.FLOAT
         elif obj == -math.inf:
             # this would be correct
             s = "-Infinity"
             tag = JSONBTag.FLOAT5
-            # sqlite does thi
+            # sqlite does this
             s = "-9e999"
             tag = JSONBTag.FLOAT
         else:
@@ -154,6 +155,7 @@ def encode_internal(buf: JSONBuffer, obj: Any):
         jsonb_append_data(buf, s)
         return
     elif isinstance(obj, str):
+        # ::TODO:: scan for quotes etc and use TEXT instead of TEXTRAW?
         s = obj.encode("utf8")
         jsonb_add_tag(buf, JSONBTag.TEXTRAW, len(s))
         jsonb_append_data(buf, s)
@@ -337,26 +339,28 @@ def decode_one(buf: JSONBDecodeBuffer):
             return malformed(buf, "False has length")
         return False
 
-    if tag in (JSONBTag.INT, JSONBTag.INT5):
-        # ... check that only ascii chars are present and at least one digit
-        # ... optional leading sign
+    if tag == JSONBTag.INT:
+        if not check_int(buf.buf, value_offset, buf.offset):
+            return malformed(buf, "Not an int")
         text = buf.buf[value_offset : buf.offset].decode("utf8")
-        if tag == JSONBTag.INT:
-            # python int parser accepts the same thing
-            return int(text)  # ::TODO:: what about numpy.int16?
-        # JSON5: pos/neg opt, then 0x then hex digits
-        sign = 1
-        offset = 0
-        if text[0] == "+":
-            offset = 1
-        elif text[0] == "-":
-            sign = -1
-            offset = 1
-        assert text[offset] == "0"
-        offset += 1
-        assert text[offset] in "xX"  # either case allowed
-        offset += 1
-        return sign * int(text[offset:], 16)
+        return int(text) if buf.alloc else None
+
+    if tag == JSONBTag.INT5:
+        # SQLite only allows hex and doesn't allow leading +
+        if not check_int5hex(buf.buf, value_offset, buf.offset):
+            return False
+
+        sign = +1
+        match buf.buf[value_offset]:
+            case ord("-"):
+                sign = -1
+                value_offset += 1
+            case ord("+"): # ::TODO:: delete this when spec settled
+                sign = +1
+                value_offset += 1
+        # +2 for 0x
+        text = buf.buf[value_offset + 2 : buf.offset].decode("utf8")
+        return sign * int(text, 16) if buf.alloc else None
 
     if tag == JSONBTag.FLOAT:
         if not check_float(buf.buf, value_offset, buf.offset):
@@ -540,17 +544,6 @@ class PyUnicode:
         return "".join(chr(cp) for cp in self.codepoints)
 
 
-# What we have seen so far in a float.  we don't use a true state
-# machine instead resetting values at points like seeing E (exponent)
-class Seen(IntFlag):
-    Sign = 1
-    Dot = 2
-    Digit = 4
-    E = 8
-    INVALID = 16
-    END = 32
-
-
 def check_float(buf: bytes, start: int, end: int) -> bool:
     # optional sign
     # at least one digit
@@ -559,63 +552,71 @@ def check_float(buf: bytes, start: int, end: int) -> bool:
     # optional E
     #   optional sign
     #     at least one digit
-    seen: Seen = 0
 
-    def next_token() -> Seen:
-        nonlocal start, end, buf
+    seen_sign = seen_dot = seen_digit = seen_e = seen_first_is_zero = False
 
-        if start == end:
-            return Seen.END  # used as end marker
-        b = buf[start]
-        start += 1
+    for t in buf[start:end]:
+        # should only be in ascii range of utf8
+        if t < 32 or t > 127:
+            return False
+        t = chr(t)
 
-        if b == ord("-") or b == ord("+"):
-            return Seen.Sign
-        if b == ord("."):
-            return Seen.Dot
-        if ord("0") <= b <= ord("9"):
-            return Seen.Digit
-        if b == ord("E") or b == ord("e"):
-            return Seen.E
-        return Seen.INVALID
-
-    while True:
-        t = next_token()
         match t:
-            case Seen.END:
-                break
-            case Seen.INVALID:
-                return False
-            case Seen.Sign:
+            case "-" | "+":
+                # + only allowed after E
+                if t == "+" and not seen_e:
+                    return False
                 # can't have more than one
-                if seen & Seen.Sign:
+                if seen_sign:
                     return False
                 # can't be after digits
-                if seen & Seen.Digit:
+                if seen_digit:
                     return False
                 # can't be after dot
-                if seen & Seen.Dot:
+                if seen_dot:
                     return False
-                seen |= Seen.Sign
-            case Seen.Dot:
-                # can't have more than one
-                if seen & Seen.Dot:
-                    return False
+                seen_sign = True
+            case ".":
                 # can't be after E
-                if seen & Seen.E:
+                if seen_e:
+                    return False
+                # can't have more than one
+                if seen_dot:
                     return False
                 # must be after at least one digit
-                if not (seen & Seen.Digit):
+                if not seen_digit:
                     return False
                 # a digit will be required after this
-                seen = Seen.Dot
-            case Seen.Digit:
-                seen |= Seen.Digit
-            case Seen.E:
+                seen_dot = True
+                seen_digit = False
+            case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9":
+                if seen_e or seen_dot:
+                    # all digits allowed after E or dot
+                    seen_digit = True
+                    continue
+                # leading zero not allowed
+                if seen_digit and seen_first_is_zero:
+                    return False
+                # leading zero but could 0.123
+                if not seen_digit and t == "0":
+                    seen_first_is_zero = True
+                seen_digit = True
+            case "e" | "E":
+                # must be at least one digit
+                if not seen_digit:
+                    return False
+                # can't have more than one E
+                if seen_e:
+                    return False
                 # reset state to post E
-                seen = seen.E
+                seen_e = True
+                seen_digit = False
+                seen_sign = False
+                seen_dot = False
+            case _:
+                return False
 
-    return bool(seen & Seen.Digit)
+    return seen_digit
 
 
 def check_float5(buf: bytes, start: int, end: int) -> bool:
@@ -625,62 +626,167 @@ def check_float5(buf: bytes, start: int, end: int) -> bool:
     # optional E
     #   optional sign
     #     at least one digit
-    seen: Seen = 0
 
-    def next_token() -> Seen:
-        nonlocal start, end, buf
+    # handle Nan/infinity - ::TODO:: not valid in SQLite (yet)
+    match buf[start:end]:
+        case b"NaN" | b"+Infinity" | b"Infinity" | b"-Infinity":
+            return True
 
-        if start == end:
-            return Seen.END  # used as end marker
-        b = buf[start]
-        start += 1
+    seen_sign = seen_dot = seen_digit = seen_e = seen_first_is_zero = False
 
-        if b == ord("-") or b == ord("+"):
-            return Seen.Sign
-        if b == ord("."):
-            return Seen.Dot
-        if ord("0") <= b <= ord("9"):
-            return Seen.Digit
-        if b == ord("E") or b == ord("e"):
-            return Seen.E
-        return Seen.INVALID
+    for t in buf[start:end]:
+        # should only be in ascii range of utf8
+        if t < 32 or t > 127:
+            return False
+        t = chr(t)
 
-    while True:
-        t = next_token()
         match t:
-            case Seen.END:
-                break
-            case Seen.INVALID:
-                return False
-            case Seen.Sign:
+            case "+" | "-":
                 # can't have more than one
-                if seen & Seen.Sign:
+                if seen_sign:
                     return False
                 # can't be after digits
-                if seen & Seen.Digit:
+                if seen_digit:
                     return False
                 # can't be after dot
-                if seen & Seen.Dot:
+                if seen_dot:
                     return False
-                seen |= Seen.Sign
-            case Seen.Dot:
-                # ::TODO:: combine both methods.  this arm is the only one
-                # with any difference
+                seen_sign = True
 
-                # can't have more than one
-                if seen & Seen.Dot:
-                    return False
+            case ".":
                 # can't be after E
-                if seen & Seen.E:
+                if seen_e:
                     return False
-                seen |= Seen.Dot
-            case Seen.Digit:
-                seen |= Seen.Digit
-            case Seen.E:
+                # can't be more than one
+                if seen_dot:
+                    return False
+                seen_dot = True
+            case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9":
+                if seen_e or seen_dot:
+                    # all digits allowed after E or dot
+                    seen_digit = True
+                    continue
+                # leading zero not allowed
+                if seen_digit and seen_first_is_zero:
+                    return False
+                # leading zero but could 0.123
+                if not seen_digit and t == "0":
+                    seen_first_is_zero = True
+                seen_digit = True
+            case "e" | "E":
+                # must be at least one digit
+                if not seen_digit:
+                    return False
+                # can't have more than one E
+                if seen_e:
+                    return False
                 # reset state to post E
-                seen = seen.E
+                seen_e = True
+                seen_digit = False
+                seen_sign = False
+                seen_dot = False
 
-    return bool(seen & Seen.Digit)
+            case _:
+                return False
+
+    return seen_digit
+
+
+def check_int(buf: bytes, start: int, end: int) -> bool:
+    # optional minus
+    # at least one digit
+    # no leading zeroes
+
+    seen_sign = seen_digit = seen_first_is_zero = False
+
+    for t in buf[start:end]:
+        # should only be in ascii range of utf8
+        if t < 32 or t > 127:
+            return False
+        t = chr(t)
+
+        match t:
+            case "-":
+                if seen_sign:
+                    return False
+                # can't be after digits
+                if seen_digit:
+                    return False
+                seen_sign = True
+            case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9":
+                # leading zero not allowed but could be plain 0
+                if seen_digit and seen_first_is_zero:
+                    return False
+                if not seen_digit and t == "0":
+                    seen_first_is_zero = True
+                seen_digit = True
+            case _:
+                return False
+
+    return seen_digit
+
+
+def check_int5hex(buf: bytes, start: int, end: int) -> bool:
+    # optional sign
+    # zero
+    # x
+    # at least one hex digit
+
+    seen_sign = seen_x = seen_leading_zero = seen_digit = False
+
+    for t in buf[start:end]:
+        # should only be in ascii range of utf8
+        if t < 32 or t > 127:
+            return False
+        t = chr(t)
+
+        match t:
+            case "-" | "+":
+                if seen_sign:
+                    return False
+                # can't be after x / leading zero / digits
+                if seen_x or seen_leading_zero or seen_digit:
+                    return False
+                seen_sign = True
+            case (
+                "0"
+                | "1"
+                | "2"
+                | "3"
+                | "4"
+                | "5"
+                | "6"
+                | "7"
+                | "8"
+                | "9"
+                | "a"
+                | "A"
+                | "b"
+                | "B"
+                | "c"
+                | "C"
+                | "d"
+                | "D"
+                | "e"
+                | "E"
+                | "f"
+                | "F"
+            ):
+                if t == "0":
+                    if not seen_x and not seen_leading_zero:
+                        seen_leading_zero = True
+                        continue
+                if not seen_x:
+                    return False
+                seen_digit = True
+            case "x" | "X":
+                if not seen_leading_zero:
+                    return False
+                seen_x = True
+            case _:
+                return False
+
+    return seen_digit
 
 
 # here for easy breakpoint
