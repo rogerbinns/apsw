@@ -93,13 +93,14 @@ class JSONB(unittest.TestCase):
         # our decoder and encoder
         assert decode(encode(item)) == (item if sqlite_value is not_set else sqlite_value)
 
-    def check_invalid(self, encoded: bytes):
+    def check_invalid(self, encoded: bytes, include_sqlite: bool = True):
         # encoded item should be rejected as not valid jsonb by us
         self.assertFalse(detect(encoded))
         self.assertRaises(ValueError, decode, encoded)
 
-        # and by sqlite
-        self.assertFalse(self.f_json_valid(encoded, 8))
+        if include_sqlite:
+            # and by sqlite which isn't as comprehensive
+            self.assertFalse(self.f_json_valid(encoded, 8))
 
     def check_valid(self, encoded: bytes, value):
         # encoded should be accepted as valid jsonb
@@ -110,16 +111,33 @@ class JSONB(unittest.TestCase):
         self.assertTrue(self.f_json_valid(encoded, 8))
         self.assertEqual(json.loads(self.f_json(encoded)), value)
 
-    def testEmpty(self):
-        "empty / none / etc"
-
-        for item in (None, "", [], [None], ["", None], [[], {}], [[[]]], {}, {"": None}, {"": ""}, {"": {}}, {"": []}):
+    def testBasics(self):
+        for item in (
+            # Various None/Empty
+            None,
+            False,
+            True,
+            "",
+            [],
+            [None],
+            ["", None],
+            [[], {}],
+            [[[]]],
+            {},
+            {"": None},
+            {"": ""},
+            {"": {}},
+            {"": []},
+            # simple
+            "hello world",
+            0,
+        ):
             self.check_item(item)
 
     def testNumbers(self):
         "numbers"
 
-        self.check_item(3.1415E-10)
+        self.check_item(3.1415e-10)
 
         # sqlite turns nan into None
         self.check_item(math.nan, sqlite_value=None)
@@ -210,7 +228,6 @@ class JSONB(unittest.TestCase):
         ):
             if expected is None:
                 expected = int(int5)
-            print(f"{int5=}")
             # not valid int.  json int doesn't allow leading + or
             # leading zeroes
             if abs(expected) != 123 or int5[0] == "+":
@@ -218,11 +235,64 @@ class JSONB(unittest.TestCase):
             # but valid int5 allows hex and leading + but not leading
             # zeroes
             encoded5 = make_item(4, int5)
-            print(f"{int5=} {expected=} {encoded5.hex()=}")
-            #breakpoint()
+            detect(encoded5)
             self.check_valid(encoded5, expected)
 
+    def testObjects(self):
+        # python json allows these types to be keys and
+        # does them as strings.  it does not call default
+        for obj in (None, True, False, 99, math.pi):
+            k = json.dumps(obj)
+            self.check_item({obj: obj}, {k: obj})
+
+        self.assertRaises(TypeError, encode, {3 + 3j: 3})
+
+        self.assertEqual(decode(encode({3 + 3j: 3}, skipkeys=True)), {})
+
+        circular = {"a": 3, "b": 4, "c": 5}
+        circular["b"] = circular
+        self.assertRaisesRegex(ValueError, ".*circular reference.*", encode, circular)
+
+        circular.pop("b")
+
+        peers = {str(n): circular for n in range(5)}
+        peers.update({str(n): list([k, v] for k, v in peers.items()) for n in range(5, 10)})
+        self.assertEqual(json.loads(self.f_json(encode(peers))), peers)
+        self.assertEqual(decode(encode(peers)), peers)
+
+        self.assertEqual(decode(encode([peers] * 3)), [peers] * 3)
+
+        # deliberately same ids
+        zero_d, zero_l = {}, []
+        encode([zero_d, zero_d, zero_l, zero_l])
+
+        class funky:
+            pass
+
+        def meth(v):
+            assert isinstance(v, funky)
+            return make_item(4, "0x10")
+
+        self.assertRaises(TypeError, encode, funky())
+        self.assertEqual(decode(encode(funky(), default=meth)), 0x10)
+
+        self.assertRaises(ValueError, encode, funky(), default=lambda v: b"0x01\x02")
+
+        # default
+        # detect returning same item
+        # returning binary
+
     def testBadContent(self):
+        # buffer must be one object only
+        encoded = make_item(0, None) + make_item(1, None)
+        self.check_invalid(encoded)
+
+        # none and bool with size
+        for tag in 0, 1, 2:
+            encoded = make_item(tag, ["null", "true", "false"][tag])
+            self.check_invalid(encoded)
+
+        # not numbers
         for number in (
             "--1",
             "-+1.2",
@@ -241,17 +311,51 @@ class JSONB(unittest.TestCase):
             "0x999x999",
             "00x88",
             # ::TODO:: sqlite doesn't reject these jsonb and should
-            # "0001",
-            # "+0001",
-            # "-001",
-            #"+002.2",
-
+            "0001",
+            "+0001",
+            "-001",
+            "+002.2",
         ):
             #  int, int5, float, float5
             for kind in (3, 4, 5, 6):
-                print(f"{kind=} {number=!r}")
                 encoded = make_item(kind, number)
-                self.check_invalid(encoded)
+                self.check_invalid(encoded, include_sqlite=False)
+
+        # ::TODO:: not text
+        # ::TODO:: not array
+        # ::TODO:: not object
+
+    def testSizing(self):
+        "length encoding"
+        # the same item length can be encoded multiple ways with leading
+        # zeroes.  this checks we handle them correctly.  while sqlite
+        # decodes 8 byte lengths, it rejects any longer than 4 bytes (4GB)
+        # because everything else in sqlite is 2GB limited.
+
+        for len_encoding in 0, 1, 2, 4, 8:
+            vals = {
+                0: (make_item(0, None, len_encoding), None),
+                1: (make_item(1, None, len_encoding), True),
+                2: (make_item(2, None, len_encoding), False),
+                3: (make_item(3, "3", len_encoding), 3),
+                4: (make_item(4, "0x3", len_encoding), 3),
+                5: (make_item(5, "3.0", len_encoding), 3),
+                6: (make_item(6, "3.", len_encoding), 3),
+                7: (make_item(7, "3", len_encoding), "3"),
+                8: (make_item(8, "3", len_encoding), "3"),
+                9: (make_item(9, "4", len_encoding), "4"),
+                10: (make_item(10, "3", len_encoding), "3"),
+            }
+            # array
+            vals[11] = make_item(11, vals[0][0] + vals[3][0] + vals[7][0], len_encoding), [None, 3, "3"]
+            # object
+            vals[12] = (
+                make_item(12, vals[7][0] + vals[3][0] + vals[9][0] + vals[1][0], len_encoding),
+                {"3": 3, "4": True},
+            )
+
+            for encoded, expected in vals.values():
+                self.check_valid(encoded, expected)
 
 
 def make_item(tag: int, value=None, len_encoding: int = None):

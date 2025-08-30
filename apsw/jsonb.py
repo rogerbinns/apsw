@@ -24,7 +24,7 @@ class JSONBuffer:
     data: bytearray  # void *
     size: int  # size_t, also current offset
     allocated: int  # size_t, so we don't keep doing small realloc
-    default: Callable[[Any], JSONBTypes] | None  # unknown type converter or NULL
+    default: Callable[[Any], JSONBTypes|Buffer] | None  # unknown type converter or NULL
     skip_keys: bool  # skipping non-string dict keys
     seen: set[int] | None  # Non-NULL if check_circular containing ids of seen containers in the call stack
 
@@ -81,9 +81,10 @@ def jsonb_add_tag(buf: JSONBuffer, tag: JSONBTag, length: int):
         buf.data[offset + 3] = (length & 0x0000_FF00) >> 8
         buf.data[offset + 4] = (length & 0x0000_00FF) >> 0
     else:
-        # SQLite can't support blobs this large ... but the
-        # pattern follows above with tag 15 and 8 bytes
-        # of length
+        # SQLite can't support blobs this large ... but the pattern
+        # follows above with tag 15 and 8 bytes of length.  ::TODO::
+        # document the restriction not because of our code but because
+        # of SQLite implementation limits
         raise apsw.TooBigError()
 
 
@@ -230,22 +231,30 @@ def encode_internal(buf: JSONBuffer, obj: Any):
 
     if buf.default is not None:
         replacement = buf.default(obj)
-        assert id(replacement) != id(obj)
 
-        # ::TODO:: allow default to return a bytes and emit that
-        # directly.  eg numpy.float128 can emit the right thing
+        if id(replacement) == id(obj):
+            raise ValueError("default callback returned the object is was passed and did not encode it")
 
-        saved = buf.default
-        buf.default = None
-        encode_internal(buf, replacement)
-        buf.default = saved
+        if isinstance(replacement, Buffer):
+            if not detect(replacement):
+                raise ValueError("item returned by default callback is not valid JSONB")
+            offset = buf.size
+            jsonb_grow_buffer(buf, len(replacement))
+            buf.data[offset: offset+len(replacement)] = replacement
+        else:
+            if buf.seen is not None:
+                buf.seen.add(id(obj))
+            encode_internal(buf, replacement)
+            if buf.seen is not None:
+                buf.seen.remove(id(obj))
+
         return
 
     raise TypeError(f"Unhandled object {type(obj)} {repr(obj)[:60]}")
 
 
 def encode(
-    obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes] | None = None
+    obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None
 ) -> bytes:
     """Encodes object as JSONB
 
@@ -257,6 +266,10 @@ def encode(
     :param default: Called if an object can't be encoded, and should
        return an object that can be encoded.  If not provided a
        :exc:`TypeError` is raised.
+
+       It can also return binary data in JSONB format.  For example
+       numpy.float128 could encode itself as a full precision JSONB
+       float.
     """
     buf = JSONBuffer()
     buf.data = bytearray(0)
@@ -284,7 +297,7 @@ C_NULL = object()
 
 
 def malformed(buf: JSONBDecodeBuffer, note: str):
-    print(f"  malformed at line {inspect.stack()[1].lineno}")
+    # print(f"  malformed at line {inspect.stack()[1].lineno}")
 
     if buf.alloc:
         raise ValueError(f"{note} at offset {buf.offset}")
@@ -348,14 +361,13 @@ def decode_one(buf: JSONBDecodeBuffer):
     if tag == JSONBTag.INT5:
         # SQLite only allows hex and doesn't allow leading +
         if not check_int5hex(buf.buf, value_offset, buf.offset):
-            return False
-
+            return malformed(buf, "Not an int5")
         sign = +1
-        match buf.buf[value_offset]:
-            case ord("-"):
+        match chr(buf.buf[value_offset]):
+            case "-":
                 sign = -1
                 value_offset += 1
-            case ord("+"): # ::TODO:: delete this when spec settled
+            case "+": # ::TODO:: delete this when spec settled
                 sign = +1
                 value_offset += 1
         # +2 for 0x
@@ -517,7 +529,8 @@ def detect(data: Buffer) -> bool:
         if v is C_NULL or buf.offset != len(data):
             return False
         return True
-    except Exception:
+    except Exception as exc:
+        print(f"{exc} raised in call from detect!")
         pass
     return False
 
@@ -780,6 +793,8 @@ def check_int5hex(buf: bytes, start: int, end: int) -> bool:
                     return False
                 seen_digit = True
             case "x" | "X":
+                if seen_x:
+                    return False
                 if not seen_leading_zero:
                     return False
                 seen_x = True
