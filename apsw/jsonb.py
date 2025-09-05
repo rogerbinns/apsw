@@ -875,10 +875,7 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
                     # left as is
                     pass
                 elif b in "bfnrtv":
-                    b = {"b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t"}[b]
-                elif escapes == 2 and b == "\n":
-                    # literal \ literal newline should be ignored in json5 mode
-                    continue
+                    b = {"b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t", "v": "\v"}[b]
                 elif escapes == 2 and b == "0":
                     b = "\0"
                     # but it must be followed by a non-digit
@@ -903,6 +900,21 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
                             b = ((b - 0xD800) << 10) + (second - 0xDC00) + 0x10_000
                         else:
                             return invalid_string()
+                elif escapes == 2:
+                    # JSON5 backslash LineTerminatorSequence gets swallowed
+                    # 2028 and 2029 are outside of ascii and hence multi-byte UTF8 sequence
+                    if b == "\n":
+                        continue
+                    if b == chr(0xe2) and sin_index + 1 < len(sin) and sin[sin_index] == 0x80 and sin[sin_index + 1] in {0xa8, 0xa9}:
+                        sin_index += 2
+                        continue
+                    if b == "\r":
+                        # if followed by \n then swallow that too
+                        if sin_index < len(sin) and chr(sin[sin_index]) == "\n":
+                            sin_index += 1
+                            continue
+                        continue
+                    return invalid_string()
                 else:
                     # not a valid escape
                     return invalid_string()
