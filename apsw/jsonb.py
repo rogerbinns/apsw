@@ -7,8 +7,10 @@
 # APIs are encode, detect, and decode
 # The python JSON module dump and load APIs are used for shaping this API
 
+import sys
 import math
 import inspect
+import traceback
 from typing import Any, TypeAlias
 from collections.abc import Mapping, Sequence, Callable, Buffer
 
@@ -24,7 +26,7 @@ class JSONBuffer:
     data: bytearray  # void *
     size: int  # size_t, also current offset
     allocated: int  # size_t, so we don't keep doing small realloc
-    default: Callable[[Any], JSONBTypes|Buffer] | None  # unknown type converter or NULL
+    default: Callable[[Any], JSONBTypes | Buffer] | None  # unknown type converter or NULL
     skip_keys: bool  # skipping non-string dict keys
     seen: set[int] | None  # Non-NULL if check_circular containing ids of seen containers in the call stack
 
@@ -43,7 +45,10 @@ class JSONBTag(IntEnum):
     TEXTRAW = 10
     ARRAY = 11
     OBJECT = 12
-    # 13 - 15 are reserved
+    RESERVED_13 = 13
+    RESERVED_14 = 14
+    RESERVED_15 = 15
+
     __str__ = Enum.__str__  # get pretty names
 
 
@@ -240,7 +245,7 @@ def encode_internal(buf: JSONBuffer, obj: Any):
                 raise ValueError("item returned by default callback is not valid JSONB")
             offset = buf.size
             jsonb_grow_buffer(buf, len(replacement))
-            buf.data[offset: offset+len(replacement)] = replacement
+            buf.data[offset : offset + len(replacement)] = replacement
         else:
             if buf.seen is not None:
                 buf.seen.add(id(obj))
@@ -254,7 +259,11 @@ def encode_internal(buf: JSONBuffer, obj: Any):
 
 
 def encode(
-    obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None
+    obj: Any,
+    *,
+    skipkeys: bool = False,
+    check_circular: bool = True,
+    default: Callable[[Any], JSONBTypes | Buffer] | None = None,
 ) -> bytes:
     """Encodes object as JSONB
 
@@ -367,7 +376,7 @@ def decode_one(buf: JSONBDecodeBuffer):
             case "-":
                 sign = -1
                 value_offset += 1
-            case "+": # ::TODO:: delete this when spec settled
+            case "+":  # ::TODO:: delete this when spec settled
                 sign = +1
                 value_offset += 1
         # +2 for 0x
@@ -387,6 +396,16 @@ def decode_one(buf: JSONBDecodeBuffer):
         return float(text) if buf.alloc else None
 
     if tag in (JSONBTag.TEXT, JSONBTag.TEXTJ, JSONBTag.TEXT5, JSONBTag.TEXTRAW):
+        # this is for coverage checking and won't be translated to C
+        if tag == JSONBTag.TEXT:
+            True
+        elif tag == JSONBTag.TEXTJ:
+            True
+        elif tag == JSONBTag.TEXT5:
+            True
+        elif tag == JSONBTag.TEXTRAW:
+            True
+
         binary = buf.buf[value_offset : buf.offset]
         if len(binary) == 0:
             return ""
@@ -398,10 +417,13 @@ def decode_one(buf: JSONBDecodeBuffer):
                 return True
             return binary.decode("utf8")
         length, maxchar = decode_utf8_string(binary, None, 1 if tag == JSONBTag.TEXTJ else 2)
-        if not length:
+        if not maxchar:
             if not buf.alloc:
                 return C_NULL
             raise ValueError(f"incorrect encoded string at offset {value_offset}")
+
+        if length == 0:
+            return ""
 
         uni = PyUnicode(length, maxchar)
         length2, maxchar2 = decode_utf8_string(binary, uni, 1 if tag == JSONBTag.TEXTJ else 2)
@@ -420,6 +442,8 @@ def decode_one(buf: JSONBDecodeBuffer):
                 return item
             if res is not None:
                 res.append(item)
+        if buf.offset != buf.end_offset:
+            return malformed(buf, "incorrectly sized array")
         buf.end_offset = saved_end
         return res
 
@@ -447,10 +471,13 @@ def decode_one(buf: JSONBDecodeBuffer):
                 assert buf.alloc is False
                 return value
 
-            if buf.object_hook:
+            if buf.object_pairs_hook:
                 builder.append((key, value))
             elif builder is not None:
                 builder[key] = value
+
+        if buf.offset != buf.end_offset:
+            return malformed(buf, "incorrectly sized object")
 
         if buf.object_hook:
             res = buf.object_hook(builder)
@@ -486,9 +513,11 @@ def decode(
     other than a dict, care about the order of keys, want to convert
     them (eg case, numbers), or want to handle duplicate keys.
     """
-    assert not (object_hook and object_pairs_hook), "Both aren't allowed to be set"
+    if object_hook and object_pairs_hook:
+        raise ValueError("You can't provide both object_hook and object_pairs_hook")
 
-    assert len(data), "Zero length not valid"
+    if not len(data):
+        raise ValueError("JSONB must be at least one byte long")
 
     buf = JSONBDecodeBuffer()
     buf.buf = data
@@ -516,7 +545,9 @@ def detect(data: Buffer) -> bool:
     # structures.  This method will pass in False for the flag, and
     # swallow any exceptions.
     try:
-        assert len(data), "Zero length not valid"
+        if not len(data):
+            return False
+
         buf = JSONBDecodeBuffer()
         buf.buf = data
         buf.offset = 0
@@ -530,7 +561,8 @@ def detect(data: Buffer) -> bool:
             return False
         return True
     except Exception as exc:
-        print(f"{exc} raised in call from detect!")
+        print(f"{exc} raised in call from detect {data=}")
+        traceback.print_exc()
         pass
     return False
 
@@ -540,6 +572,7 @@ class PyUnicode:
         assert length > 0 and maxchar > 0
         self.codepoints = [None] * length
         self.maxchar = maxchar
+        assert maxchar <= sys.maxunicode
 
     def WRITE(self, index: int, codepoint: int):
         assert isinstance(index, int) and isinstance(codepoint, int)
@@ -806,11 +839,11 @@ def check_int5hex(buf: bytes, start: int, end: int) -> bool:
 
 # here for easy breakpoint
 def invalid_string():
-    print(f"  invalid string at line {inspect.stack()[1].lineno}")
+    # print(f"  invalid string at line {inspect.stack()[1].lineno}")
     return 0, 0
 
 
-def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> (int, int):
+def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> tuple[int, int]:
     # this function expresses what will happen when converted to C
 
     # C params:
@@ -993,83 +1026,8 @@ def acceptable_codepoint(codepoint: int) -> bool:
 
     if 0xD800 <= codepoint <= 0xDBFF or 0xDC00 <= codepoint <= 0xDFFF:
         return False
+
+    if codepoint < 0 or codepoint > 0x10_FFFF:
+        return False
+
     return True
-
-
-if __name__ == "__main__":
-    import apsw, apsw.ext, apsw.fts5, json, difflib
-
-    con = apsw.Connection("")
-    con.enable_load_extension(True)
-    con.load_extension("./randomjson")
-
-    # get json
-    fjson = apsw.ext.Function(con, "json")
-    jsonb = apsw.ext.Function(con, "jsonb")
-    # validity check
-    check = apsw.ext.Function(con, "json_valid")
-
-    test_strings = [s[0].decode("utf8") for s in apsw.fts5.tokenizer_test_strings()]
-
-    j0 = json.dumps(test_strings)
-    j1 = json.dumps(test_strings, ensure_ascii=True)
-
-    # check sqlite gets it right
-    assert json.loads(fjson(j0)) == test_strings
-    assert json.loads(fjson(j1)) == test_strings
-
-    # our jsonb encoder
-    assert json.loads(fjson(encode(test_strings))) == test_strings
-
-    # our jsonb decoder
-    assert decode(jsonb(j0)) == test_strings
-    assert decode(jsonb(j1)) == test_strings
-    assert decode(encode(test_strings)) == test_strings
-
-    if False:
-        foo = encode({1: {True: 4.1}, "π\n": [1, 2, 3, "😂❤️🤣𐌲𐌻𐌴𐍃"]})
-
-        print(f"{check(foo,8)=}")
-        print(f"{fjson(foo)=}")
-
-        print(f"{decode(foo)=}")
-
-    if False:
-        random_json = apsw.ext.Function(con, "random_json")
-        random_json5 = apsw.ext.Function(con, "random_json5")
-
-        FULL = False
-
-        for seed in range(0, 500000):
-            j = random_json(seed)
-            b = jsonb(j)
-            j = fjson(j)
-
-            expected = json.dumps(json.loads(j), indent=4).splitlines()
-            got = json.dumps(decode(b), indent=4).splitlines()
-
-            if expected == got:
-                print(f"✅ {seed=}")
-                continue
-
-            print(f"\n✗ {seed=}\n")
-
-            if FULL:
-                print("\n".join(expected))
-                print("\n-----\n")
-                print("\n".join(got))
-                continue
-
-            header = "\033[44m"
-            plus = "\033[32m"
-            minus = "\033[31m"
-            reset = "\033[0m"
-
-            for line in difflib.unified_diff(expected, got, fromfile="correct", tofile="got"):
-                if line.endswith("\n"):
-                    print(f"{header}{line[:-1]}", end=f"{reset}\n")
-                    continue
-                v = {" ": "", "+": plus, "-": minus}.get(line[0], "")
-                print(f"{v}{line}", end=f"{reset}\n")
-
-            break
