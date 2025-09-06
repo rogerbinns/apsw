@@ -928,7 +928,8 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
                         if sin_index + 6 <= len(sin) and sin[sin_index] == ord("\\") and sin[sin_index + 1] == ord("u"):
                             sin_index += 2
                             second = get_hex(4)
-                            if second < 0:
+                            # no hex, or not second part of pair
+                            if second < 0 or second < 0xdc00 or second > 0xdfff:
                                 return invalid_string()
                             b = ((b - 0xD800) << 10) + (second - 0xDC00) + 0x10_000
                         else:
