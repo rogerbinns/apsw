@@ -374,6 +374,12 @@ class JSONB(unittest.TestCase):
             encoded = make_item(tag, ["null", "true", "false"][tag])
             self.check_invalid(encoded)
 
+        # insufficient space
+        self.check_invalid(make_item(5, "hello", length=3))
+        self.check_invalid(make_item(5, "hello", length=3, len_encoding=8))
+        self.check_invalid(make_item(5, "hello", length=3, len_encoding=8)[:4])
+        self.check_invalid(make_item(5, "hello world one two")[:7])
+
         # not numbers
         for number in (
             "--1",
@@ -420,28 +426,65 @@ class JSONB(unittest.TestCase):
             make_item(8, "one\\"),
             make_item(8, r"\one"),
             make_item(8, r"\'abc"),
+            make_item(8, r"\h"),
             # TEXT5
             make_item(9, r"hello\x1mark"),
             make_item(9, "hello\\"),
             make_item(9, r"\01"),
+            make_item(9, r"\h"),
         ):
             self.check_invalid(encoded, include_sqlite=b"mark" not in encoded)
 
-        # ::TODO:: not array
+        # not correctly formed surrogate pairs
+        for s in (
+            r"\ud8ab",
+            r"\ud8abX",
+            "\\ud8ab\\",
+            r"\ud8ab\u",
+            r"\ud8ab\uX",
+            r"\ud8ab\udc0",
+            r"\ud8ab\udbff",
+        ):
+            for tag in {8, 9}:
+                self.check_invalid(make_item(tag, s), include_sqlite=False)
 
         # not object
 
         for kind in range(16):
-            # text tags
+            # tag not text
             if kind not in {7, 8, 9, 10}:
                 self.check_invalid(make_item(12, make_item(kind, "hello") + make_item(0)))
 
         # missing value
-        self.check_invalid(make_item(12, make_item(1)))
+        self.check_invalid(make_item(12, make_item(7, "hello")))
 
-        # ::TODO:: get length of enclosing array and object wrong
+        # odd number
+        self.check_invalid(make_item(12, make_item(7, "hello") + make_item(0) + make_item(6, "3.3")))
 
-        # not valid utf8
+        # truncate
+        self.check_invalid(make_item(12, (make_item(7, "hello") + make_item(7, "world"))[:-2]))
+
+        # too long
+        self.check_invalid(make_item(12, make_item(7, "hello") + make_item(7, "world"), length=33))
+
+        # too short
+        self.check_invalid(make_item(12, make_item(7, "hello") + make_item(7, "world"), length=6))
+
+        # not array
+
+        # truncate
+        self.check_invalid(make_item(11, (make_item(7, "hello") + make_item(7, "world"))[:-2]))
+
+        # too long
+        self.check_invalid(make_item(11, make_item(7, "hello") + make_item(7, "world"), length=33))
+
+        # too short
+        self.check_invalid(make_item(11, make_item(7, "hello") + make_item(7, "world"), length=6))
+
+
+
+
+    def testInvalidUTF8(self):
 
         # AI prompt: generate 20 byte strings in python syntax that are convincing but invalid utf8
         for s in (
