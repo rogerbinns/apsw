@@ -2108,6 +2108,9 @@ modules etc. For example::
       collections_abc_Mapping = PyObject_GetAttrString(mod, "Mapping");
       Py_DECREF(mod);
     }
+    /* should always have succeeded */
+    if(!mod || !collections_abc_Mapping)
+      goto fail;
   }
 
   if (!PyErr_Occurred())
