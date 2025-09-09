@@ -4,13 +4,13 @@
 # mypy: ignore-errors
 # type: ignore
 
+import collections.abc
 import contextlib
-import unittest
-import functools
-import sys
-import os
-import math
 import json
+import math
+import os
+import types
+import unittest
 
 import apsw
 import apsw.ext
@@ -356,6 +356,21 @@ class JSONB(unittest.TestCase):
         self.assertEqual(decode(encode({"hello": 3, "world": {1: 2}}), object_pairs_hook=object_hook), 73)
         self.assertEqual(object_hook_got, [[("1", 2)], [("hello", 3), ("world", 73)]])
 
+    def testTypes(self):
+        "test types and hook types"
+
+        # read only dict
+        frozendict = types.MappingProxyType
+
+        d = {"a": {"1": "hello"}, "b": True}
+
+        self.assertEqual(d, decode(encode(d), object_hook=frozendict))
+        frozen = json.loads(json.dumps(d), object_hook=frozendict)
+        self.assertEqual(d, decode(encode(frozen)))
+
+
+
+
     def testBadContent(self):
         # not zero length
         self.check_invalid(b"")
@@ -481,11 +496,7 @@ class JSONB(unittest.TestCase):
         # too short
         self.check_invalid(make_item(11, make_item(7, "hello") + make_item(7, "world"), length=6))
 
-
-
-
     def testInvalidUTF8(self):
-
         # AI prompt: generate 20 byte strings in python syntax that are convincing but invalid utf8
         for s in (
             # CHATGPT
@@ -650,7 +661,6 @@ class JSONB(unittest.TestCase):
 
             self.assertEqual(json.loads(j), decode(encode(json.loads(j))))
             self.assertEqual(json.loads(j), decode(self.f_jsonb(j)))
-            self.assertEqual(json.loads(self.f_json(j5)), decode(self.f_jsonb(j5)))
             self.assertEqual(json.loads(self.f_json(j5)), decode(self.f_jsonb(j5)))
 
 
