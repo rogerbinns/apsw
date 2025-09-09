@@ -129,7 +129,7 @@ def encode_internal(buf: JSONBuffer, obj: Any):
         jsonb_add_tag(buf, JSONBTag.INT, len(s))
         jsonb_append_data(buf, s)
         return
-    elif isinstance(obj, float):  # ::TODO:: figure out numpy
+    elif isinstance(obj, float):
         # ::TODO:: fix nan/infinity once SQLite allows it
         if math.isnan(obj):
             # this would be correct
@@ -296,9 +296,12 @@ class JSONBDecodeBuffer:
     buf: Buffer  # what we are decoding
     offset: int  # current decode position
     end_offset: int  # offset of last position we can access + 1
-    object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None
-    object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None
     alloc: bool  # True to decode data, False to not bother
+    object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None
+    object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None
+    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None
+    int_hook: Callable[[str], Any] | None = None
+    float_hook: Callable[[str], Any] | None = None
 
 
 # for when we'd return NULL in C.  Can't distinguish None at Python level
@@ -365,7 +368,9 @@ def decode_one(buf: JSONBDecodeBuffer):
         if not check_int(buf.buf, value_offset, buf.offset):
             return malformed(buf, "Not an int")
         text = buf.buf[value_offset : buf.offset].decode("utf8")
-        return int(text) if buf.alloc else None
+        if not buf.alloc:
+            return None
+        return buf.int_hook(text) if buf.int_hook else int(text)
 
     if tag == JSONBTag.INT5:
         # SQLite only allows hex and doesn't allow leading +
@@ -387,13 +392,17 @@ def decode_one(buf: JSONBDecodeBuffer):
         if not check_float(buf.buf, value_offset, buf.offset):
             return malformed(buf, "Not a float")
         text = buf.buf[value_offset : buf.offset].decode("utf8")
-        return float(text) if buf.alloc else None
+        if not buf.alloc:
+            return None
+        return buf.float_hook(text) if buf.float_hook else float(text)
 
     if tag == JSONBTag.FLOAT5:
         if not check_float5(buf.buf, value_offset, buf.offset):
             return malformed(buf, "Not a float5")
         text = buf.buf[value_offset : buf.offset].decode("utf8")
-        return float(text) if buf.alloc else None
+        if not buf.alloc:
+            return None
+        return buf.float_hook(text) if buf.float_hook else float(text)
 
     if tag in (JSONBTag.TEXT, JSONBTag.TEXTJ, JSONBTag.TEXT5, JSONBTag.TEXTRAW):
         # this is for coverage checking and won't be translated to C
@@ -445,6 +454,8 @@ def decode_one(buf: JSONBDecodeBuffer):
         if buf.offset != buf.end_offset:
             return malformed(buf, "incorrectly sized array")
         buf.end_offset = saved_end
+        if buf.alloc and buf.array_hook:
+            res = buf.array_hook(res)
         return res
 
     if tag == JSONBTag.OBJECT:
@@ -479,9 +490,9 @@ def decode_one(buf: JSONBDecodeBuffer):
         if buf.offset != buf.end_offset:
             return malformed(buf, "incorrectly sized object")
 
-        if buf.object_hook:
+        if buf.alloc and buf.object_hook:
             res = buf.object_hook(builder)
-        elif buf.object_pairs_hook:
+        elif buf.alloc and buf.object_pairs_hook:
             res = buf.object_pairs_hook(builder)
         else:
             res = builder
@@ -495,26 +506,59 @@ def decode_one(buf: JSONBDecodeBuffer):
 def decode(
     data: Buffer,
     *,
-    object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,
     object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,
+    object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,
+    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,
+    int_hook: Callable[[str], Any] | None = None,
+    float_hook: Callable[[str], Any] | None = None,
 ) -> Any:
     """Decodes binary data into a Python object
 
     :param data: Binary data to decode
-    :param object_hook: Called after a JSON object has been decoded into a Python :class:`dict`
-        and should return a replacement value to use instead.
     :param object_pairs_hook: Called after a JSON object has been
         decoded with a list of tuples, each consisting of a
         :class:`str` and corresponding value, and should return a
-        return a replacement value to use instead.
+        replacement value to use instead.
+    :param object_hook: Called after a JSON object has been decoded
+        into a Python :class:`dict` and should return a replacement
+        value to use instead.
+    :param array_hook: Called after a JSON array has been decoded into
+        a list, and should return a replacement value to use instead.
+    :param int_hook: Called with a :class:`str` of the integer, and
+        should return a replacement value to use instead.  The default
+        is the builtin :class:`int`.
+    :param float_hook: Called with a :class:`str` of the float, and
+        should return a replacement value to use instead.  The default
+        is the builtin :class:`float`.
+
 
     Only one of ``object_hook`` or ``object_pairs_hook`` can be
     provided.  ``object_pairs_hook`` is useful when you want something
     other than a dict, care about the order of keys, want to convert
-    them (eg case, numbers), or want to handle duplicate keys.
+    them (eg case, numbers), want to handle duplicate keys etc.
+
+    The array, int, and float hooks let you use alternate
+    implementations.  For example if you are using `numpy
+    <https://numpy.org/doc/stable/user/basics.types.html>`__ then you
+    could use numpy arrays, or numpy's float128 to get higher
+    precision floating numbers with greater exponent range than the
+    builtin float type.
+
+    If you use :class:`types.MappingProxyType` as ``object_hook`` and
+    :class:`tuple` as ``array_hook`` then the overall returned value
+    will be immutable (read only).
     """
     if object_hook and object_pairs_hook:
         raise ValueError("You can't provide both object_hook and object_pairs_hook")
+
+    if (
+        (object_pairs_hook is not None and not callable(object_pairs_hook))
+        or (object_hook is not None and not callable(object_hook))
+        or (array_hook is not None and not callable(array_hook))
+        or (int_hook is not None and not callable(int_hook))
+        or (float_hook is not None and not callable(float_hook))
+    ):
+        raise TypeError("hooks must be callable")
 
     if not len(data):
         raise ValueError("JSONB must be at least one byte long")
@@ -523,8 +567,12 @@ def decode(
     buf.buf = data
     buf.offset = 0
     buf.end_offset = len(data)
-    buf.object_hook = object_hook
     buf.object_pairs_hook = object_pairs_hook
+    buf.object_hook = object_hook
+    buf.array_hook = array_hook
+    buf.int_hook = int_hook
+    buf.float_hook = float_hook
+
     buf.alloc = True
 
     res = decode_one(buf)
@@ -552,9 +600,13 @@ def detect(data: Buffer) -> bool:
         buf.buf = data
         buf.offset = 0
         buf.end_offset = len(data)
-        buf.object_hook = None
-        buf.object_pairs_hook = None
         buf.alloc = False
+        buf.object_pairs_hook = None
+        buf.object_hook = None
+        buf.array_hook = None
+        buf.int_hook = None
+        buf.float_hook = None
+
         v = decode_one(buf)
         # decode modifies buf.end_offset
         if v is C_NULL or buf.offset != len(data):
@@ -929,7 +981,7 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
                             sin_index += 2
                             second = get_hex(4)
                             # no hex, or not second part of pair
-                            if second < 0 or second < 0xdc00 or second > 0xdfff:
+                            if second < 0 or second < 0xDC00 or second > 0xDFFF:
                                 return invalid_string()
                             b = ((b - 0xD800) << 10) + (second - 0xDC00) + 0x10_000
                         else:
@@ -939,7 +991,12 @@ def decode_utf8_string(sin: bytes, sout: PyUnicode | None, escapes: int = 0) -> 
                     # 2028 and 2029 are outside of ascii and hence multi-byte UTF8 sequence
                     if b == "\n":
                         continue
-                    if b == chr(0xe2) and sin_index + 1 < len(sin) and sin[sin_index] == 0x80 and sin[sin_index + 1] in {0xa8, 0xa9}:
+                    if (
+                        b == chr(0xE2)
+                        and sin_index + 1 < len(sin)
+                        and sin[sin_index] == 0x80
+                        and sin[sin_index + 1] in {0xA8, 0xA9}
+                    ):
                         sin_index += 2
                         continue
                     if b == "\r":

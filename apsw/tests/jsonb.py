@@ -28,17 +28,22 @@ class DetectDecodeMisMatch(Exception):
     pass
 
 
-def decode(data, *, object_hook=None, object_pairs_hook=None):
+def decode(data, **kwargs):
     # this wrapper ensures that detect results are always the same as
     # decode - ie detect returns False for decodes that fail, and True for
     # success
     try:
         detection = detect(data)
+        if detection is not True and detection is not False:
+            raise Exception("not a bool")
     except Exception:
         raise DetectDecodeMisMatch("detection raised exception - it must never do that and only return bool")
 
+    if kwargs:
+        return decode_raw(data, **kwargs)
+
     try:
-        res = decode_raw(data, object_hook=object_hook, object_pairs_hook=object_pairs_hook)
+        res = decode_raw(data, **kwargs)
         if detection is not True:
             raise DetectDecodeMisMatch(f"detection gave {detection} while decode succeeded")
         return res
@@ -342,6 +347,9 @@ class JSONB(unittest.TestCase):
 
         self.assertRaises(ValueError, decode, b"", object_hook=lambda x: x, object_pairs_hook=lambda x: x)
 
+
+    def testHooks(self):
+
         object_hook_got = []
 
         def object_hook(v):
@@ -356,20 +364,40 @@ class JSONB(unittest.TestCase):
         self.assertEqual(decode(encode({"hello": 3, "world": {1: 2}}), object_pairs_hook=object_hook), 73)
         self.assertEqual(object_hook_got, [[("1", 2)], [("hello", 3), ("world", 73)]])
 
-    def testTypes(self):
-        "test types and hook types"
-
         # read only dict
         frozendict = types.MappingProxyType
-
         d = {"a": {"1": "hello"}, "b": True}
 
+        assert not isinstance(d, frozendict)
         self.assertEqual(d, decode(encode(d), object_hook=frozendict))
+        self.assertIsInstance(decode(encode(d), object_hook=frozendict), frozendict)
         frozen = json.loads(json.dumps(d), object_hook=frozendict)
         self.assertEqual(d, decode(encode(frozen)))
 
+        # lists don't compare equal to tuples
+        self.assertNotEqual((1,2,3), decode(encode((1,2,3))))
+        self.assertEqual((1,2,3), decode(encode((1,2,3)), array_hook=tuple))
 
+        # float and int
+        class floaty:
+            def __init__(self, x):
+                self.x = x
 
+        class inty(floaty):
+            pass
+
+        x = decode(encode([1, 2, 1.1, 2.2]), int_hook=inty, float_hook=floaty)
+        self.assertEqual(x[0].x, "1")
+        self.assertEqual(x[1].x, "2")
+        self.assertEqual(x[2].x, "1.1")
+        self.assertEqual(x[3].x, "2.2")
+
+        # error checking
+        all_types = {"orange": [67567567, math.pi]}
+        for kind in "int_hook", "float_hook", "object_hook", "array_hook", "object_pairs_hook":
+            detect(encode(all_types))
+            self.assertRaises(ZeroDivisionError, decode, encode(all_types), **{kind: lambda x: 1/0})
+            self.assertRaises(TypeError, decode, encode(all_types), **{kind: kind})
 
     def testBadContent(self):
         # not zero length
