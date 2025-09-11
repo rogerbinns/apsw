@@ -18,6 +18,7 @@ GENDOCS = \
 	doc/cursor.rst \
 	doc/apsw.rst \
 	doc/session.rst \
+	doc/jsonb.rst \
 	doc/backup.rst \
 	doc/fts.rst
 

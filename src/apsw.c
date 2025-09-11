@@ -239,6 +239,9 @@ static void apsw_write_unraisable(PyObject *hookobject);
 /* The statement cache */
 #include "statementcache.c"
 
+/* jsonb serialization */
+#include "jsonb.c"
+
 /* connections */
 #include "connection.c"
 
@@ -1870,6 +1873,10 @@ static PyMethodDef module_methods[] = {
 #ifdef SQLITE_ENABLE_SESSION
   { "session_config", (PyCFunction)apsw_session_config, METH_VARARGS, Apsw_session_config_DOC },
 #endif
+
+  {"jsonb_decode", (PyCFunction)JSONB_decode, METH_FASTCALL | METH_KEYWORDS, Apsw_jsonb_decode_DOC},
+  {"jsonb_encode", (PyCFunction)JSONB_encode, METH_FASTCALL | METH_KEYWORDS, Apsw_jsonb_encode_DOC},
+  {"jsonb_detect", (PyCFunction)JSONB_detect, METH_FASTCALL | METH_KEYWORDS, Apsw_jsonb_detect_DOC},
 
 #ifndef APSW_OMIT_OLD_NAMES
   { Apsw_sqlite_lib_version_OLDNAME, (PyCFunction)get_sqlite_version, METH_NOARGS, Apsw_sqlite_lib_version_OLDDOC },
