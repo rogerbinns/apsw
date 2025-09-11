@@ -453,6 +453,15 @@ def do_argparse(item):
             sys.exit(
                 f'param { param } comes after * or args with defaults and must have default value in { item["name"] } { item["signature_original"] }'
             )
+
+        if param["type"].endswith(" | None"):
+            # ::TODO:: convert all the code to use | None and fixup here.  sphinx
+            # currently fixes up the doc but the pyi is full of
+            # Optional.  Optional is easier to handle in the following
+            # code hence this transform
+            base = param["type"][:-len(" | None")]
+            param["type"]=f"Optional[{base}]"
+
         if param["type"] == "str":
             type = "const char *"
             kind = "str"
@@ -514,7 +523,7 @@ def do_argparse(item):
                 if param["default"] != "None":
                     breakpoint()
                 default_check = f"{ pname } == NULL"
-        elif param["type"] == "list[str] | None":
+        elif param["type"] == "Optional[list[str]]":
             type = "PyObject *"
             kind = "optional_list_str"
             if param["default"]:
