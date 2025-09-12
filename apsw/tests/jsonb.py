@@ -19,7 +19,7 @@ import apsw.fts5
 # these methods will move to being in C and part of apsw module
 import apsw.jsonb
 
-encode = apsw.jsonb.encode
+encode_raw = apsw.jsonb_encode
 decode_raw = apsw.jsonb.decode
 detect = apsw.jsonb.detect
 
@@ -51,6 +51,14 @@ def decode(data, **kwargs):
         if detection is not False:
             raise DetectDecodeMisMatch(f"detection gave {detection} while decode raised an exception")
         raise
+
+
+def encode(*args, **kwargs):
+    encoded = encode_raw(*args, **kwargs)
+    if detect(encoded) is not True:  # only allowed value
+        raise DetectDecodeMisMatch("encoded data not detected")
+    decode(encoded)
+    return encoded
 
 
 # sentinel
@@ -134,6 +142,7 @@ class JSONB(unittest.TestCase):
             "hello world",
             0,
         ):
+            print(f"{item=!r}")
             self.check_item(item)
 
     def testStrings(self):
@@ -347,9 +356,7 @@ class JSONB(unittest.TestCase):
 
         self.assertRaises(ValueError, decode, b"", object_hook=lambda x: x, object_pairs_hook=lambda x: x)
 
-
     def testHooks(self):
-
         object_hook_got = []
 
         def object_hook(v):
@@ -375,8 +382,8 @@ class JSONB(unittest.TestCase):
         self.assertEqual(d, decode(encode(frozen)))
 
         # lists don't compare equal to tuples
-        self.assertNotEqual((1,2,3), decode(encode((1,2,3))))
-        self.assertEqual((1,2,3), decode(encode((1,2,3)), array_hook=tuple))
+        self.assertNotEqual((1, 2, 3), decode(encode((1, 2, 3))))
+        self.assertEqual((1, 2, 3), decode(encode((1, 2, 3)), array_hook=tuple))
 
         # float and int
         class floaty:
@@ -396,7 +403,7 @@ class JSONB(unittest.TestCase):
         all_types = {"orange": [67567567, math.pi]}
         for kind in "int_hook", "float_hook", "object_hook", "array_hook", "object_pairs_hook":
             detect(encode(all_types))
-            self.assertRaises(ZeroDivisionError, decode, encode(all_types), **{kind: lambda x: 1/0})
+            self.assertRaises(ZeroDivisionError, decode, encode(all_types), **{kind: lambda x: 1 / 0})
             self.assertRaises(TypeError, decode, encode(all_types), **{kind: kind})
 
     def testBadContent(self):
