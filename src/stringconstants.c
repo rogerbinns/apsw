@@ -52,12 +52,15 @@
 #undef execute
 #undef executemany
 #undef extendedresult
+#undef sfalse
 #undef final
 #undef get
 #undef inverse
+#undef snull
 #undef release
 #undef result
 #undef step
+#undef strue
 #undef value
 #undef xAccess
 #undef xCheckReservedLock
@@ -138,12 +141,15 @@ static struct _apsw_string_table
     PyObject *execute;
     PyObject *executemany;
     PyObject *extendedresult;
+    PyObject *sfalse;
     PyObject *final;
     PyObject *get;
     PyObject *inverse;
+    PyObject *snull;
     PyObject *release;
     PyObject *result;
     PyObject *step;
+    PyObject *strue;
     PyObject *value;
     PyObject *xAccess;
     PyObject *xCheckReservedLock;
@@ -225,12 +231,15 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.execute);
     Py_CLEAR(apst.executemany);
     Py_CLEAR(apst.extendedresult);
+    Py_CLEAR(apst.sfalse);
     Py_CLEAR(apst.final);
     Py_CLEAR(apst.get);
     Py_CLEAR(apst.inverse);
+    Py_CLEAR(apst.snull);
     Py_CLEAR(apst.release);
     Py_CLEAR(apst.result);
     Py_CLEAR(apst.step);
+    Py_CLEAR(apst.strue);
     Py_CLEAR(apst.value);
     Py_CLEAR(apst.xAccess);
     Py_CLEAR(apst.xCheckReservedLock);
@@ -313,12 +322,15 @@ init_apsw_strings()
         || (!apst.execute && 0 == (apst.execute = PyUnicode_FromString("execute")))
         || (!apst.executemany && 0 == (apst.executemany = PyUnicode_FromString("executemany")))
         || (!apst.extendedresult && 0 == (apst.extendedresult = PyUnicode_FromString("extendedresult")))
+        || (!apst.sfalse && 0 == (apst.sfalse = PyUnicode_FromString("false")))
         || (!apst.final && 0 == (apst.final = PyUnicode_FromString("final")))
         || (!apst.get && 0 == (apst.get = PyUnicode_FromString("get")))
         || (!apst.inverse && 0 == (apst.inverse = PyUnicode_FromString("inverse")))
+        || (!apst.snull && 0 == (apst.snull = PyUnicode_FromString("null")))
         || (!apst.release && 0 == (apst.release = PyUnicode_FromString("release")))
         || (!apst.result && 0 == (apst.result = PyUnicode_FromString("result")))
         || (!apst.step && 0 == (apst.step = PyUnicode_FromString("step")))
+        || (!apst.strue && 0 == (apst.strue = PyUnicode_FromString("true")))
         || (!apst.value && 0 == (apst.value = PyUnicode_FromString("value")))
         || (!apst.xAccess && 0 == (apst.xAccess = PyUnicode_FromString("xAccess")))
         || (!apst.xCheckReservedLock && 0 == (apst.xCheckReservedLock = PyUnicode_FromString("xCheckReservedLock")))
