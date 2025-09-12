@@ -11,7 +11,18 @@ note many single byte is valid JSONB
 
 2GB limit because SQLite
 
+object keys are strings in JSON always.  following stdlib json, str |
+None | True | False | int | Float are automatically stringized
+
 */
+
+/* returns 0 if not jsonb else 1 if it is */
+static int
+jsonb_detect_internal(const void *data, size_t length)
+{
+  /* ::TODO:: replace with actual implementation */
+  return 1;
+}
 
 /* passed as context to the encoding routines */
 struct JSONBuffer
@@ -177,6 +188,299 @@ jsonb_append_data(struct JSONBuffer *buf, const void *data, size_t length)
   return 0;
 }
 
+/* 0 on success, anything else on failure */
+static int
+jsonb_add_tag_and_data(struct JSONBuffer *buf, enum JSONBTag tag, const void *data, size_t length)
+{
+  int res = jsonb_add_tag(buf, tag, length);
+  if (0 == res)
+    res = jsonb_append_data(buf, data, length);
+  return res;
+}
+
+/* 0 on success, anything else on failure */
+static int
+jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
+{
+  assert(obj);
+  if (Py_IsNone(obj))
+    return jsonb_add_tag(buf, JT_NULL, 0);
+  if (Py_IsTrue(obj))
+    return jsonb_add_tag(buf, JT_TRUE, 0);
+  if (Py_IsFalse(obj))
+    return jsonb_add_tag(buf, JT_FALSE, 0);
+  if (PyLong_Check(obj))
+  {
+    int res = -1;
+    PyObject *s = PyObject_Str(obj);
+    if (!s)
+      return res;
+    Py_ssize_t length;
+    const char *utf8 = PyUnicode_AsUTF8AndSize(s, &length);
+    if (utf8)
+      res = jsonb_add_tag_and_data(buf, JT_INT, utf8, length);
+    Py_DECREF(s);
+    return res;
+  }
+  if (PyFloat_Check(obj))
+  {
+    int res = -1;
+    PyObject *tmp_str = NULL;
+    const char *utf8 = NULL;
+    size_t length;
+
+    double d = PyFloat_AS_DOUBLE(obj);
+    if (isnan(d))
+    {
+      /* utf8 = "NaN" etc */
+      return jsonb_add_tag(buf, JT_NULL, 0);
+    }
+    if (isinf(d))
+    {
+      /* we want to use Infinity but need SQLite to ok */
+      utf8 = (d < 0) ? "-9e999" : "9e999";
+      length = strlen(utf8);
+    }
+    else
+    {
+      tmp_str = PyObject_Str(obj);
+      if (!tmp_str)
+        return -1;
+      Py_ssize_t py_length;
+      utf8 = PyUnicode_AsUTF8AndSize(tmp_str, &py_length);
+      length = (size_t)py_length;
+    }
+    if (utf8)
+      res = jsonb_add_tag_and_data(buf, JT_FLOAT, utf8, length);
+    Py_XDECREF(tmp_str);
+    return res;
+  }
+  if (PyUnicode_Check(obj))
+  {
+    Py_ssize_t length;
+    const char *utf8 = PyUnicode_AsUTF8AndSize(obj, &length);
+    if (!utf8)
+      return -1;
+    return jsonb_add_tag_and_data(buf, JT_TEXTRAW, utf8, length);
+  }
+
+  /* items is dict or list members */
+  PyObject *id_of_obj = NULL, *items = NULL;
+
+  /* check for circular references */
+
+  if (buf->seen)
+  {
+    id_of_obj = PyLong_FromVoidPtr(obj);
+    if (!id_of_obj)
+      goto error;
+    int contains = PySet_Contains(buf->seen, id_of_obj);
+    if (contains < 0)
+      goto error;
+    if (contains == 1)
+    {
+      PyErr_Format(PyExc_ValueError, "circular reference detected");
+      goto error;
+    }
+    assert(contains == 0);
+  }
+
+  /* this works better than pymapping_check */
+  int is_dict = PyObject_IsInstance(obj, collections_abc_Mapping);
+  if (is_dict < 0)
+    goto error;
+
+  if (is_dict)
+  {
+    Py_ssize_t dict_count = PyMapping_Length(obj);
+    if (dict_count < 0)
+      goto error;
+    size_t tag_offset = buf->size;
+    if (jsonb_add_tag(buf, JT_OBJECT, dict_count ? 0xffffffffu : 0))
+      goto error;
+    if (dict_count == 0)
+      goto success;
+    if (buf->seen && PySet_Add(buf->seen, id_of_obj))
+      goto error;
+    items = PyMapping_Items(obj);
+    if (!items)
+      goto error;
+    /* PyMapping_Items guarantees this */
+    assert(PyList_CheckExact(items));
+    for (Py_ssize_t i = 0; i < PyList_GET_SIZE(items); i++)
+    {
+      PyObject *tuple = PyList_GET_ITEM(items, i);
+      if (!PyTuple_CheckExact(tuple) || PyTuple_GET_SIZE(tuple) != 2)
+      {
+        PyErr_Format(PyExc_ValueError, "mapping items not 2-tuples");
+        goto error;
+      }
+      PyObject *key = PyTuple_GET_ITEM(tuple, 0), *value = PyTuple_GET_ITEM(tuple, 1);
+
+      /* keys have to be string, we copy stdlib json by stringizing some non-string
+         types */
+      if (PyUnicode_Check(key))
+      {
+        if (jsonb_encode_internal(buf, key))
+          goto error;
+      }
+      else if (PyFloat_Check(key) || PyLong_Check(key))
+      {
+        /* for these we write them out as their own types
+           and then alter the tag to be string */
+        unsigned char *tag_byte = (unsigned char *)buf->data + buf->size;
+        if (jsonb_encode_internal(buf, key))
+          goto error;
+        *tag_byte = (*tag_byte & 0x0f) | JT_TEXTRAW;
+      }
+      else if (Py_IsNone(key) || Py_IsTrue(key) || Py_IsFalse(key))
+      {
+        PyObject *key_subst = NULL;
+        if (Py_IsNone(key))
+          key_subst = apst.snull;
+        else if (Py_IsTrue(key))
+          key_subst = apst.strue;
+        else
+          key_subst = apst.sfalse;
+        if (jsonb_encode_internal(buf, key_subst))
+          goto error;
+      }
+      else if (buf->skip_keys)
+      {
+        continue;
+      }
+      else
+      {
+        PyErr_Format(PyExc_TypeError, "Keys must be str, int, float, bool or None. not %s", Py_TypeName(key));
+        goto error;
+      }
+      if (jsonb_encode_internal(buf, value))
+        goto error;
+    }
+    size_t size = buf->size - tag_offset;
+    if (jsonb_update_tag(buf, tag_offset, JT_OBJECT, size))
+      goto error;
+    if (buf->seen)
+    {
+      int discard = PySet_Discard(buf->seen, id_of_obj);
+      if (discard < 0)
+        goto error;
+      assert(discard);
+    }
+    goto success;
+  }
+
+  int is_sequence = PySequence_Check(obj);
+  if (is_sequence < 0)
+    goto error;
+
+  if (is_sequence)
+  {
+    size_t tag_offset = buf->size;
+    items = PySequence_Fast(obj, "expected a sequence for array");
+    if (!items)
+      goto error;
+    Py_ssize_t sequence_count = PySequence_Fast_GET_SIZE(items);
+    if (jsonb_add_tag(buf, JT_ARRAY, sequence_count ? 0xffffffffu : 0))
+      goto error;
+    if (sequence_count == 0)
+      goto success;
+
+    if (buf->seen && PySet_Add(buf->seen, id_of_obj))
+      goto error;
+    for (Py_ssize_t i = 0; i < PySequence_Fast_GET_SIZE(items); i++)
+    {
+      if (jsonb_encode_internal(buf, PySequence_Fast_GET_ITEM(items, i)))
+        goto error;
+    }
+    size_t size = buf->size - tag_offset;
+    if (jsonb_update_tag(buf, tag_offset, JT_ARRAY, size))
+      goto error;
+    if (buf->seen)
+    {
+      int discard = PySet_Discard(buf->seen, id_of_obj);
+      if (discard < 0)
+        goto error;
+      assert(discard);
+    }
+    goto success;
+  }
+
+  if (buf->default_)
+  {
+    PyObject *vargs[] = { NULL, obj };
+    PyObject *replacement = PyObject_Vectorcall(buf->default_, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    if (!replacement)
+      goto error;
+    if (replacement == obj)
+    {
+      Py_DECREF(replacement);
+      PyErr_Format(PyExc_ValueError, "default callback returned the object is was passed and did not encode it");
+      goto error;
+    }
+    if (PyObject_CheckBuffer(replacement))
+    {
+      Py_buffer replacement_buffer;
+      int success = 0;
+      if (0 == PyObject_GetBufferContiguous(replacement, &replacement_buffer, PyBUF_SIMPLE))
+      {
+        if (jsonb_detect_internal(replacement_buffer.buf, replacement_buffer.len))
+        {
+          size_t start = buf->size;
+          if (0 == jsonb_grow_buffer(buf, replacement_buffer.len))
+          {
+            memcpy((unsigned char *)buf->data + start, replacement_buffer.buf, replacement_buffer.len);
+            success = 1;
+          }
+        }
+        else
+          PyErr_Format(PyExc_ValueError, "bytes item returned by default callback is not valid JSONB");
+
+        PyBuffer_Release(&replacement_buffer);
+      }
+      if (!success)
+        goto error;
+    }
+    else
+    {
+      if (buf->seen && PySet_Add(buf->seen, id_of_obj))
+      {
+        Py_DECREF(replacement);
+        goto error;
+      }
+      if (jsonb_encode_internal(buf, replacement))
+      {
+        Py_DECREF(replacement);
+        goto error;
+      }
+      Py_DECREF(replacement);
+      if (buf->seen)
+      {
+        int discard = PySet_Discard(buf->seen, id_of_obj);
+        if (discard < 0)
+          goto error;
+        assert(discard);
+      }
+    }
+    goto success;
+  }
+
+  PyErr_Format(PyExc_TypeError, "Unhandled object of type %s", Py_TypeName(obj));
+  goto error;
+
+success:
+  assert(!PyErr_Occurred());
+  Py_XDECREF(items);
+  Py_XDECREF(id_of_obj);
+  return 0;
+
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(id_of_obj);
+  Py_XDECREF(items);
+  return -1;
+}
+
 /** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes:
     Encodes object as JSONB
 
@@ -210,7 +514,22 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     ARG_EPILOG(NULL, Apsw_jsonb_encode_USAGE, );
   }
 
-  Py_RETURN_NONE;
+  struct JSONBuffer buf = {
+    .data = 0,
+    .size = 0,
+    .allocated = 0,
+    .default_ = default_,
+    .skip_keys = skipkeys,
+    .seen = check_circular ? PySet_New(NULL) : 0,
+  };
+  if (check_circular && !buf.seen)
+    return NULL;
+
+  int res = jsonb_encode_internal(&buf, obj);
+  Py_CLEAR(buf.seen);
+  PyObject *retval = (0 == res) ? PyBytes_FromStringAndSize(buf.data, buf.size) : NULL;
+  PyMem_Free(buf.data);
+  return retval;
 }
 
 /** .. method:: jsonb_detect(data: Buffer) -> bool
