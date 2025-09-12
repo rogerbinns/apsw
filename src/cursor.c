@@ -96,8 +96,6 @@ struct APSWCursor
 typedef struct APSWCursor APSWCursor;
 static PyTypeObject APSWCursorType;
 
-static PyObject *collections_abc_Mapping;
-
 /* CURSOR CODE */
 
 /* Macro for getting a tracer.  If our tracer is NULL then return connection tracer */

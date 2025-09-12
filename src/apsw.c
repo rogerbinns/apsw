@@ -163,6 +163,8 @@ static int APSW_Should_Fault(const char *);
   } while (0)
 #endif
 
+static PyObject *collections_abc_Mapping = NULL;
+
 /* string constants struct */
 #include "stringconstants.c"
 
