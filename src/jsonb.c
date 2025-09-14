@@ -149,7 +149,7 @@ jsonb_add_tag(struct JSONBuffer *buf, enum JSONBTag tag, size_t length)
     return -1;
   }
 
-  return -1;
+  return 0;
 }
 
 /* 0 on success, anything else on failure */
