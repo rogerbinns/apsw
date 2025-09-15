@@ -83,7 +83,7 @@ jsonb_grow_buffer(struct JSONBuffer *buf, size_t count)
   /* and in debug just 1 byte to flush out bugs */
   size_t alloc_size = new_size + 1;
 #endif
-  void *new_data = PyMem_Realloc(buf->data, alloc_size);
+  void *new_data = realloc(buf->data, alloc_size);
   if (!new_data)
   {
     assert(PyErr_Occurred());
@@ -528,7 +528,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   int res = jsonb_encode_internal(&buf, obj);
   Py_CLEAR(buf.seen);
   PyObject *retval = (0 == res) ? PyBytes_FromStringAndSize(buf.data, buf.size) : NULL;
-  PyMem_Free(buf.data);
+  free(buf.data);
   return retval;
 }
 
