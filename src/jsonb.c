@@ -358,7 +358,7 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
         goto error;
     }
     size_t size = buf->size - tag_offset;
-    if (jsonb_update_tag(buf, tag_offset, JT_OBJECT, size))
+    if (jsonb_update_tag(buf, JT_OBJECT, tag_offset, size))
       goto error;
     if (buf->seen)
     {
@@ -394,7 +394,7 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
         goto error;
     }
     size_t size = buf->size - tag_offset;
-    if (jsonb_update_tag(buf, tag_offset, JT_ARRAY, size))
+    if (jsonb_update_tag(buf, JT_ARRAY, tag_offset, size))
       goto error;
     if (buf->seen)
     {
