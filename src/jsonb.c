@@ -70,7 +70,10 @@ jsonb_grow_buffer(struct JSONBuffer *buf, size_t count)
 {
   size_t new_size = buf->size + count;
   if (new_size < buf->allocated)
+  {
+    buf->size = new_size;
     return 0;
+  }
   if (new_size >= INT32_MAX)
   {
     SET_EXC(SQLITE_TOOBIG, NULL);
