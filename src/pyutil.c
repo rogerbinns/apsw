@@ -13,6 +13,13 @@ Py_NewRef(PyObject *o)
   return o;
 }
 
+static PyObject *
+Py_XNewRef(PyObject *o)
+{
+  Py_XINCREF(o);
+  return o;
+}
+
 static int
 Py_Is(const PyObject *left, const PyObject *right)
 {

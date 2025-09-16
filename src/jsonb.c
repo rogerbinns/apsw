@@ -303,6 +303,7 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
       goto error;
     if (dict_count == 0)
       goto success;
+    size_t data_offset = buf->size;
     if (buf->seen && PySet_Add(buf->seen, id_of_obj))
       goto error;
     items = PyMapping_Items(obj);
@@ -361,7 +362,7 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
       if (jsonb_encode_internal(buf, value))
         goto error;
     }
-    size_t size = buf->size - tag_offset;
+    size_t size = buf->size - data_offset;
     if (jsonb_update_tag(buf, JT_OBJECT, tag_offset, size))
       goto error;
     if (buf->seen)
@@ -390,6 +391,8 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
     if (sequence_count == 0)
       goto success;
 
+    size_t data_offset = buf->size;
+
     if (buf->seen && PySet_Add(buf->seen, id_of_obj))
       goto error;
     for (Py_ssize_t i = 0; i < PySequence_Fast_GET_SIZE(items); i++)
@@ -397,7 +400,7 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
       if (jsonb_encode_internal(buf, PySequence_Fast_GET_ITEM(items, i)))
         goto error;
     }
-    size_t size = buf->size - tag_offset;
+    size_t size = buf->size - data_offset;
     if (jsonb_update_tag(buf, JT_ARRAY, tag_offset, size))
       goto error;
     if (buf->seen)
@@ -442,6 +445,7 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
 
         PyBuffer_Release(&replacement_buffer);
       }
+      Py_DECREF(replacement);
       if (!success)
         goto error;
     }
@@ -522,7 +526,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     .data = 0,
     .size = 0,
     .allocated = 0,
-    .default_ = default_,
+    .default_ = Py_XNewRef(default_),
     .skip_keys = skipkeys,
     .seen = check_circular ? PySet_New(NULL) : 0,
   };
@@ -531,6 +535,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
 
   int res = jsonb_encode_internal(&buf, obj);
   Py_CLEAR(buf.seen);
+  Py_CLEAR(buf.default_);
   PyObject *retval = (0 == res) ? PyBytes_FromStringAndSize(buf.data, buf.size) : NULL;
   free(buf.data);
   return retval;
