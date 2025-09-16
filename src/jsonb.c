@@ -327,15 +327,6 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
         if (jsonb_encode_internal(buf, key))
           goto error;
       }
-      else if (PyFloat_Check(key) || PyLong_Check(key))
-      {
-        /* for these we write them out as their own types
-           and then alter the tag to be string */
-        unsigned char *tag_byte = (unsigned char *)buf->data + buf->size;
-        if (jsonb_encode_internal(buf, key))
-          goto error;
-        *tag_byte = (*tag_byte & 0x0f) | JT_TEXTRAW;
-      }
       else if (Py_IsNone(key) || Py_IsTrue(key) || Py_IsFalse(key))
       {
         PyObject *key_subst = NULL;
@@ -347,6 +338,16 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
           key_subst = apst.sfalse;
         if (jsonb_encode_internal(buf, key_subst))
           goto error;
+      }
+      else if (PyFloat_Check(key) || PyLong_Check(key))
+      {
+        /* for these we write them out as their own types
+           and then alter the tag to be string */
+        size_t tag_offset = buf->size;
+        if (jsonb_encode_internal(buf, key))
+          goto error;
+        unsigned char *as_ptr = (unsigned char *)buf->data;
+        as_ptr[tag_offset] = (as_ptr[tag_offset] & 0xf0) | JT_TEXTRAW;
       }
       else if (buf->skip_keys)
       {
