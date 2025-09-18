@@ -185,6 +185,101 @@
 "\n" \
 "Calls: `sqlite3_initialize <https://sqlite.org/c3ref/initialize.html>`__\n" 
 
+#define  Apsw_jsonb_decode_DOC "apsw.jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    int_hook: Callable[[str], Any] | None = None,    float_hook: Callable[[str], Any] | None = None,) -> Any\n\n" \
+"Decodes JSONB binary data into a Python object\n" \
+"\n" \
+":param data: Binary data to decode\n" \
+":param object_pairs_hook: Called after a JSON object has been\n" \
+"    decoded with a list of tuples, each consisting of a\n" \
+"    :class:`str` and corresponding value, and should return a\n" \
+"    replacement value to use instead.\n" \
+":param object_hook: Called after a JSON object has been decoded\n" \
+"    into a Python :class:`dict` and should return a replacement\n" \
+"    value to use instead.\n" \
+":param array_hook: Called after a JSON array has been decoded into\n" \
+"    a list, and should return a replacement value to use instead.\n" \
+":param int_hook: Called with a :class:`str` of the integer, and\n" \
+"    should return a replacement value to use instead.  The default\n" \
+"    is the builtin :class:`int`.\n" \
+":param float_hook: Called with a :class:`str` of the float, and\n" \
+"    should return a replacement value to use instead.  The default\n" \
+"    is the builtin :class:`float`.\n" \
+"\n" \
+"Only one of ``object_hook`` or ``object_pairs_hook`` can be\n" \
+"provided.  ``object_pairs_hook`` is useful when you want something\n" \
+"other than a dict, care about the order of keys, want to convert\n" \
+"them (eg case, numbers), want to handle duplicate keys etc.\n" \
+"\n" \
+"The array, int, and float hooks let you use alternate\n" \
+"implementations.  For example if you are using `numpy\n" \
+"<https://numpy.org/doc/stable/user/basics.types.html>`__ then you\n" \
+"could use numpy arrays, or numpy's float128 to get higher\n" \
+"precision floating numbers with greater exponent range than the\n" \
+"builtin float type.\n" \
+"\n" \
+"If you use :class:`types.MappingProxyType` as ``object_hook`` and\n" \
+":class:`tuple` as ``array_hook`` then the overall returned value\n" \
+"will be immutable (read only).\n" 
+
+#define Apsw_jsonb_decode_KWNAMES "data", "object_pairs_hook", "object_hook", "array_hook", "int_hook", "float_hook"
+#define Apsw_jsonb_decode_USAGE "apsw.jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    int_hook: Callable[[str], Any] | None = None,    float_hook: Callable[[str], Any] | None = None,) -> Any"
+
+#define Apsw_jsonb_decode_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(data), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(object_pairs_hook), PyObject *)); \
+  assert(object_pairs_hook == NULL); \
+  assert(__builtin_types_compatible_p(typeof(object_hook), PyObject *)); \
+  assert(object_hook == NULL); \
+  assert(__builtin_types_compatible_p(typeof(array_hook), PyObject *)); \
+  assert(array_hook == NULL); \
+  assert(__builtin_types_compatible_p(typeof(int_hook), PyObject *)); \
+  assert(int_hook == NULL); \
+  assert(__builtin_types_compatible_p(typeof(float_hook), PyObject *)); \
+  assert(float_hook == NULL); \
+} while(0)
+
+
+#define  Apsw_jsonb_detect_DOC "apsw.jsonb_detect(data: Buffer) -> bool\n\n" \
+"Returns ``True`` if data is valid JSONB, otherwise ``False``.\n" 
+
+#define Apsw_jsonb_detect_KWNAMES "data"
+#define Apsw_jsonb_detect_USAGE "apsw.jsonb_detect(data: Buffer) -> bool"
+
+#define Apsw_jsonb_detect_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(data), PyObject *)); \
+} while(0)
+
+
+#define  Apsw_jsonb_encode_DOC "apsw.jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes:\n\n" \
+"Encodes object as JSONB\n" \
+"\n" \
+":param obj: Object to encode\n" \
+":param check_circular: Detects if containers contain themselves\n" \
+"   (even indirectly) and raises :exc:`ValueError`.  If ``False``\n" \
+"   and there is a circular reference, you get\n" \
+"   :exc:`RecursionError` (or worse).\n" \
+":param default: Called if an object can't be encoded, and should\n" \
+"   return an object that can be encoded.  If not provided a\n" \
+"   :exc:`TypeError` is raised.\n" \
+"\n" \
+"   It can also return binary data in JSONB format.  For example\n" \
+"   numpy.float128 could encode itself as a full precision JSONB\n" \
+"   float.\n" 
+
+#define Apsw_jsonb_encode_KWNAMES "obj", "skipkeys", "check_circular", "default"
+#define Apsw_jsonb_encode_USAGE "apsw.jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes:"
+
+#define Apsw_jsonb_encode_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(obj), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(skipkeys), int)); \
+  assert(skipkeys == 0); \
+  assert(__builtin_types_compatible_p(typeof(check_circular), int)); \
+  assert(check_circular == 1); \
+  assert(__builtin_types_compatible_p(typeof(default_), PyObject *)); \
+  assert(default_ == NULL); \
+} while(0)
+
+
 #define  Apsw_log_DOC "apsw.log(errorcode: int, message: str) -> None\n\n" \
 "Calls the SQLite logging interface.  You must format the\n" \
 "message before passing it to this method::\n" \
@@ -4081,7 +4176,7 @@
 "\n" \
 "Calls: `sqlite3_uri_boolean <https://sqlite.org/c3ref/uri_boolean.html>`__\n" 
 
-#define URIFilename_uri_boolean_KWNAMES "name", "default_"
+#define URIFilename_uri_boolean_KWNAMES "name", "default"
 #define URIFilename_uri_boolean_USAGE "URIFilename.uri_boolean(name: str, default: bool) -> bool"
 
 #define URIFilename_uri_boolean_CHECK do { \
@@ -4096,7 +4191,7 @@
 "\n" \
 "Calls: `sqlite3_uri_int64 <https://sqlite.org/c3ref/uri_boolean.html>`__\n" 
 
-#define URIFilename_uri_int_KWNAMES "name", "default_"
+#define URIFilename_uri_int_KWNAMES "name", "default"
 #define URIFilename_uri_int_USAGE "URIFilename.uri_int(name: str, default: int) -> int"
 
 #define URIFilename_uri_int_CHECK do { \
