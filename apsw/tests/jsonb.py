@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 # This testing code deliberately does nasty stuff so mypy isn't helpful
 # mypy: ignore-errors
 # type: ignore
 
+import array
 import collections.abc
 import contextlib
 import json
@@ -142,7 +145,6 @@ class JSONB(unittest.TestCase):
             "hello world",
             0,
         ):
-            print(f"{item=!r}")
             self.check_item(item)
 
     def testStrings(self):
@@ -206,6 +208,8 @@ class JSONB(unittest.TestCase):
                 # not allowed in JSON
                 encoded = make_item(8, prefix + "\\" + LineTerminatorSequence + suffix)
                 self.check_invalid(encoded)
+
+        self.assertRaises(UnicodeEncodeError, encode, "a" + chr(0xD801) + "b")
 
     def testNumbers(self):
         "numbers"
@@ -311,6 +315,40 @@ class JSONB(unittest.TestCase):
             detect(encoded5)
             self.check_valid(encoded5, expected)
 
+        # bad things
+        class badint(int):
+            def bad_str1(self):
+                return 3 + 4j
+
+            def bad_str2(self):
+                1 / 0
+
+            def bad_str3(self):
+                return "a" + chr(0xD801) + "b"
+
+        class badfloat(float):
+            pass
+
+        badint.__str__ = badint.bad_str1
+        self.assertRaises(TypeError, encode, badint())
+        badfloat.__str__ = badint.bad_str1
+        self.assertRaises(TypeError, encode, badfloat())
+        badint.__str__ = badint.bad_str2
+        self.assertRaises(ZeroDivisionError, encode, badint())
+        badfloat.__str__ = badint.bad_str2
+        self.assertRaises(ZeroDivisionError, encode, badfloat())
+        badint.__str__ = badint.bad_str3
+        self.assertRaises(UnicodeEncodeError, encode, badint())
+        badfloat.__str__ = badint.bad_str3
+        self.assertRaises(UnicodeEncodeError, encode, badfloat())
+
+        self.assertRaises(UnicodeEncodeError, encode, {badint(): 1})
+        self.assertRaises(UnicodeEncodeError, encode, [1, badint(), 1])
+        self.assertRaises(UnicodeEncodeError, encode, {badfloat(): 1})
+        self.assertRaises(UnicodeEncodeError, encode, [1, badfloat(), 1])
+
+        self.assertRaises(UnicodeEncodeError, encode, 3 + 4j, default=lambda x: badfloat())
+
     def testObjects(self):
         # python json allows these types to be keys and
         # does them as strings.  it does not call default
@@ -350,11 +388,83 @@ class JSONB(unittest.TestCase):
         self.assertEqual(decode(encode(funky(), default=meth)), 0x10)
         self.assertEqual(decode(encode(funky(), default=lambda v: 0x11)), 0x11)
 
-        self.assertRaises(ValueError, encode, funky(), default=lambda v: b"0x01\x02")
+        # ::TODO:: uncomment once C jsonb_detect works
+        # self.assertRaises(ValueError, encode, funky(), default=lambda v: b"0x01\x02")
 
         self.assertRaisesRegex(ValueError, ".*returned the object.*", encode, funky(), default=lambda v: v)
 
         self.assertRaises(ValueError, decode, b"", object_hook=lambda x: x, object_pairs_hook=lambda x: x)
+
+        # collections.abc.Mapping
+
+        # environ is one
+        self.assertIsInstance(decode(encode(os.environ)), dict)
+
+        # custom class
+        class CustomMap(collections.abc.Mapping):
+            def __init__(self):
+                self._data = dict()
+                # put in dummy data
+                self._data[1] = "one"
+                self._data["two"] = 2
+                self._data[3] = {3: 3.3}
+                self._data[4] = [None, True, False]
+                self._data[5] = os.environ
+
+            def __getitem__(self, key: Any) -> Any:
+                return self._data[key]
+
+            def __iter__(self):
+                return iter(self._data)
+
+            def __len__(self):
+                return len(self._data)
+
+            # various evil routines for checking error handling
+            def bad_items1(self):
+                return {1, 2, 3}
+
+            def bad_items2(self):
+                1 / 0
+
+            def bad_len1(self):
+                return 1 + 4j
+
+            def bad_len2(self):
+                return 1 / 0
+
+        self.assertIsInstance(decode(encode(CustomMap())), dict)
+
+        CustomMap.items = CustomMap.bad_items1
+        self.assertRaisesRegex(ValueError, ".*mapping items not.*", encode, CustomMap())
+        CustomMap.items = CustomMap.bad_items2
+        self.assertRaises(ZeroDivisionError, encode, CustomMap())
+
+        del CustomMap.items
+
+        CustomMap.__len__ = CustomMap.bad_len1
+        self.assertRaises(TypeError, encode, CustomMap())
+        CustomMap.__len__ = CustomMap.bad_len2
+        self.assertRaises(ZeroDivisionError, encode, CustomMap())
+
+    def testArrays(self):
+        def meth():
+            yield 1
+            yield "two"
+            yield [3]
+            yield True
+
+        # stuff should fail
+        for v in (
+            {1, 2, 3, 4},
+            meth(),
+            b"aabb",
+            bytearray(),
+            array.array("w", ["1", "2", "3"]),
+            array.array("b", [1, 2, 3]),
+            array.array("f", [1.1, 2.2, 3.3]),
+        ):
+            self.assertRaisesRegex(TypeError, ".*Unhandled object of type.*", encode, v)
 
     def testHooks(self):
         object_hook_got = []

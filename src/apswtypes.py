@@ -150,3 +150,17 @@ ChangesetInput = SessionStreamInput | Buffer
 
 SessionStreamOutput = Callable[[memoryview], None]
 """Streaming output callable is called with each block of streaming data"""
+
+
+# Used by jsonb_encode. Mapping (dict) keys must ve str in JSONB.  Like
+# the builtin JSON module, None/int/float/bool keys will be stringized.
+JSONBTypes: TypeAlias = (
+    str
+    | bool
+    | None
+    | int
+    | float
+    | list["JSONBTypes"]
+    | tuple["JSONBTypes"]
+    | collections.abc.Mapping[str | None | int | float | bool, "JSONBTypes"]
+)

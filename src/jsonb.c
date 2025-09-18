@@ -80,12 +80,14 @@ jsonb_grow_buffer(struct JSONBuffer *buf, size_t count)
     return -1;
   }
 #ifndef APSW_DEBUG
-  /* in production builds we add a little extra*/
-  size_t alloc_size = (new_size + 8192) & 0xffffff00u;
+  /* in production builds we round up to next multiple of 256 */
+  size_t alloc_size = (new_size + 255) & ~(size_t)0xffu;
 #else
   /* and in debug just 1 byte to flush out bugs */
   size_t alloc_size = new_size + 1;
 #endif
+  assert(alloc_size >= new_size);
+
   void *new_data = realloc(buf->data, alloc_size);
   if (!new_data)
   {
@@ -375,11 +377,11 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
     goto success;
   }
 
-  int is_sequence = PySequence_Check(obj);
-  if (is_sequence < 0)
-    goto error;
-
-  if (is_sequence)
+  /* I really wanted PySequence_Check but that allows bytes,
+     array.array and others,  So we only accept list and tuple, and the
+     default converter can handle the other types.  This matches the json
+     module. */
+  if (PyList_Check(obj) || PyTuple_Check(obj))
   {
     size_t tag_offset = buf->size;
     items = PySequence_Fast(obj, "expected a sequence for array");
