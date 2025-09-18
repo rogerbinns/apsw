@@ -664,7 +664,13 @@ def do_argparse(item):
     code = "\n".join(line for line in code.split("\n") if line.strip())
 
     res.insert(0, f"""#define { item['symbol'] }_USAGE "{ get_usage(item) }"\n""")
-    n = ", ".join(f'"{ a }"' for a in kwlist) if kwlist else "NULL"
+
+    # put back to actual param names from mangling done to prevent
+    # using C reserved words as variable names
+    def repl(n):
+        return n.replace("default_", "default")
+
+    n = ", ".join(f'"{ repl(a) }"' for a in kwlist) if kwlist else "NULL"
 
     res.insert(0, f"""#define { item['symbol'] }_KWNAMES { n }""")
 
