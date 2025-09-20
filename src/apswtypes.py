@@ -1,7 +1,7 @@
 import sys
 
 from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
-import collections.abc
+from collections.abc import Mapping
 import array
 import types
 
@@ -151,10 +151,7 @@ ChangesetInput = SessionStreamInput | Buffer
 SessionStreamOutput = Callable[[memoryview], None]
 """Streaming output callable is called with each block of streaming data"""
 
-
-# Used by jsonb_encode. Mapping (dict) keys must ve str in JSONB.  Like
-# the builtin JSON module, None/int/float/bool keys will be stringized.
-JSONBTypes: TypeAlias = (
+JSONBTypes = (
     str
     | bool
     | None
@@ -162,5 +159,8 @@ JSONBTypes: TypeAlias = (
     | float
     | list["JSONBTypes"]
     | tuple["JSONBTypes"]
-    | collections.abc.Mapping[str | None | int | float | bool, "JSONBTypes"]
+    | Mapping[str | None | int | float | bool, "JSONBTypes"]
 )
+"""Used by :func:`apsw.jsonb_encode`. Mapping (dict) keys must be str
+in JSONB.  Like the builtin JSON module, None/int/float/bool keys will be
+stringized."""

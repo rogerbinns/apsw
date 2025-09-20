@@ -17,7 +17,7 @@ def process(module: ast.Module, source: str) -> list[tuple[str, str, str]]:
             klass = body[i].body[0]
             code = ast.unparse(klass).split("\n")
             code[0] = code[0].replace("class ", "").replace("(", "\\(")
-            res.append((klass.name, "\n".join(code), f"{ klass.name } Protocol"))
+            res.append((klass.name, "\n".join(code), f"{klass.name} Protocol"))
             i += 1
             continue
         if not isinstance(body[i], ast.Assign):
@@ -25,10 +25,13 @@ def process(module: ast.Module, source: str) -> list[tuple[str, str, str]]:
             continue
         name = ast.unparse(body[i].targets)
         value = ast.get_source_segment(source, body[i].value)
+        if name == "JSONBTypes":
+            value = value.replace('"JSONBTypes"', "JSONBTypes")
+        value = value.replace("\n    ", "\n")
         i += 1
-        assert isinstance(body[i], ast.Expr) and isinstance(
-            body[i].value, ast.Constant
-        ), f"Expecting constant at line { body[i].lineno }"
+        assert isinstance(body[i], ast.Expr) and isinstance(body[i].value, ast.Constant), (
+            f"Expecting constant at line {body[i].lineno}"
+        )
         descr = body[i].value.value
         assert isinstance(descr, str)
         i += 1
@@ -47,12 +50,14 @@ std_typing = {
     "Any",
     "Sequence",
     "Iterable",
-    "Mapping",
     "Protocol",
 }
 
 # stuff in collections.abc
-std_collections_abc = { "Buffer" }
+std_collections_abc = {
+    "Buffer",
+    "Mapping",
+}
 
 std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple", "bool", "list", "memoryview"}
 
@@ -68,18 +73,18 @@ def sub(m: re.Match) -> str:
     text: str = m.group("name")
 
     if text in std_collections_abc:
-        return f":class:`~collections.abc.{ text }`{sp}"
+        return f":class:`~collections.abc.{text}`{sp}"
     if text in std_typing:
-        return f":class:`~typing.{ text }`{sp}"
+        return f":class:`~typing.{text}`{sp}"
     if text in std_other:
         if text in {"int", "bool", "float"}:
-            return f":class:`{ text }`{sp}"
+            return f":class:`{text}`{sp}"
         if text == "None":
-            return f":class:`{ text }`{sp}"
-        return f":class:`{ text }`{sp}"
+            return f":class:`{text}`{sp}"
+        return f":class:`{text}`{sp}"
     if text == "no_change":
-        return f":attr:`{ text }`{sp}"
-    return f":class:`{ text }`{sp}"
+        return f":attr:`{text}`{sp}"
+    return f":class:`{text}`{sp}"
 
 
 def nomunge(pattern: str, replacement: Any, value: str) -> str:
@@ -113,18 +118,18 @@ def output(doc: list[tuple[str, str, str]]) -> str:
             ":meth:`:class:`FTS5ExtensionApi`\​.query_phrase`", ":meth:`FTS5ExtensionApi.query_phrase`"
         )
         res += f"""
-.. class:: { name }
+.. class:: {name}
 
-{ valuefmt(value, indent="    | ") }
+{valuefmt(value, indent="    | ")}
 
-{ valuefmt(descr, indent="    ") }
+{valuefmt(descr, indent="    ")}
 
 """
     return res
 
 
 def valuefmt(value: str, indent: str) -> str:
-    return indent + f"\n{ indent }".join(value.split("\n"))
+    return indent + f"\n{indent}".join(value.split("\n"))
 
 
 if __name__ == "__main__":
