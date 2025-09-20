@@ -28,7 +28,7 @@ jsonb_detect_internal(const void *data, size_t length)
 struct JSONBuffer
 {
   /* where the data is being assembled */
-  void *data;
+  uint8_t *data;
   /* current size which is also the offset to where the next data item goes */
   size_t size;
   /* how big the buffer allocation is, so we don't keep doing small reallocations */
@@ -114,7 +114,7 @@ jsonb_add_tag(struct JSONBuffer *buf, enum JSONBTag tag, size_t length)
   {                                                                                                                    \
     assert((pos) >= offset && (pos) <= buf->size);                                                                     \
     assert((val) >= 0 && (val) <= 255);                                                                                \
-    ((unsigned char *)buf->data)[pos] = val;                                                                           \
+    buf->data[pos] = val;                                                                                              \
   } while (0)
 
   if (length <= 11)
@@ -163,9 +163,9 @@ jsonb_update_tag(struct JSONBuffer *buf, enum JSONBTag tag, size_t offset, size_
 {
   assert(offset < buf->size);
   /* the tag is only used for assertion integrity check */
-  assert((((unsigned char *)buf->data)[offset] & 0x0f) == tag);
+  assert((buf->data[offset] & 0x0f) == tag);
   /* we only support 4 byte lengths */
-  assert((((unsigned char *)buf->data)[offset] & 0xf0) == (14 << 4));
+  assert((buf->data[offset] & 0xf0) == (14 << 4));
 
   if (new_length >= INT32_MAX)
   {
@@ -538,7 +538,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   int res = jsonb_encode_internal(&buf, obj);
   Py_CLEAR(buf.seen);
   Py_CLEAR(buf.default_);
-  PyObject *retval = (0 == res) ? PyBytes_FromStringAndSize(buf.data, buf.size) : NULL;
+  PyObject *retval = (0 == res) ? PyBytes_FromStringAndSize((const char *)buf.data, buf.size) : NULL;
   free(buf.data);
   return retval;
 }
