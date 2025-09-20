@@ -1,3 +1,21 @@
+/*
+
+This code implements encoding, decoding, and detection of SQLite's
+binary JSON format.  It also provides the documentation that ends up
+on the top level JSON page.
+
+It was originally developed in Python as apsw/jsonb.py but in a way to
+make it easy to convert to C.  Then the test suite was developed.  Finally
+the translation to C was done.  Looking at git history may be helpful.
+
+There are many inconsistencies between the SQLite code and the JSONB
+spec.  I've reported the issues, but was ignored so I'm being strict
+here.
+
+https://sqlite.org/forum/forumpost/28e21085f9
+
+*/
+
 /**
 
 JSONB
@@ -5,9 +23,9 @@ JSONB
 
 blah blah blah
 
-tighter checking than SQLite, especially around UTF8
+tighter checking than SQLite, especially around UTF8.  bom ignored (becomes regular codepoint)
 
-note many single byte is valid JSONB
+note many single byte is valid JSONB (<0x0d)
 
 2GB limit because SQLite
 
@@ -491,7 +509,7 @@ error:
   return -1;
 }
 
-/** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes:
+/** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes
     Encodes object as JSONB
 
     :param obj: Object to encode
@@ -541,6 +559,416 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   PyObject *retval = (0 == res) ? PyBytes_FromStringAndSize((const char *)buf.data, buf.size) : NULL;
   free(buf.data);
   return retval;
+}
+
+struct JSONBDecodeBuffer
+{
+  uint8_t *buffer;   /* what we are decoding */
+  size_t offset;     /* current decode position */
+  size_t end_offset; /* offset of last position we can access + 1 */
+  /* Optional Callables for hooks, or NULL if not present */
+  PyObject *object_pairs_hook;
+  PyObject *object_hook;
+  PyObject *array_hook;
+  PyObject *int_hook;
+  PyObject *float_hook;
+  int alloc; /* zero if doing a detect (no allocations), non-zero if doing a decode (allocations) */
+};
+
+/* these are used in non alloc (detect) mode and are valid PyObject
+   pointers but are not reference counted etc */
+#define DecodeSuccess ((PyObject *)1)
+#define DecodeFailure ((PyObject *)NULL)
+
+static PyObject *
+malformed(struct JSONBDecodeBuffer *buf, const char *msg, ...)
+{
+  if (buf->alloc)
+  {
+    va_list args;
+    va_start(args, msg);
+    PyErr_FormatV(PyExc_ValueError, msg, args);
+    va_end(args);
+    return NULL;
+  }
+  return DecodeFailure;
+}
+
+/* forward declarations of our various checking functions.  They
+   return zero if checks fail and non-zero if they succeed.  start is
+   position in the buffer, and end is the first offset after the value
+*/
+static int jsonb_check_int(struct JSONBDecodeBuffer *buf, size_t start, size_t end);
+static int jsonb_check_int5hex(struct JSONBDecodeBuffer *buf, size_t start, size_t end);
+static int jsonb_check_float(struct JSONBDecodeBuffer *buf, size_t start, size_t end);
+
+static PyObject *
+jsonb_decode_one(struct JSONBDecodeBuffer *buf)
+{
+  if (buf->offset >= buf->end_offset)
+    return malformed(buf, "item goes beyond end of buffer");
+
+  enum JSONBTag tag = buf->buffer[buf->offset] & 0x0f;
+  size_t tag_len = (buf->buffer[buf->offset] & 0xf0) >> 4;
+  buf->offset += 1;
+
+  size_t value_offset = buf->offset;
+
+  if (tag_len >= 12)
+  {
+    size_t var_len = 0;
+    switch (tag_len)
+    {
+    case 12:
+      var_len = 1;
+      break;
+    case 13:
+      var_len = 2;
+      break;
+    case 14:
+      var_len = 4;
+      break;
+    case 15:
+      var_len = 8;
+      break;
+    }
+    value_offset += tag_len;
+    tag_len = 0;
+
+    while (var_len)
+    {
+      tag_len <<= 8;
+      tag_len += buf->buffer[buf->offset];
+      buf->offset += 1;
+      var_len -= 1;
+    }
+  }
+
+  /* value_offset is now start of value, after tag + length bytes */
+  if (value_offset + tag_len > buf->end_offset)
+    return malformed(buf, "insufficent space for value");
+
+  /* set offset to start of next value */
+  buf->offset = value_offset + tag_len;
+
+  switch (tag)
+  {
+  case JT_NULL:
+    if (tag_len != 0)
+      return malformed(buf, "NULL has length");
+    return (buf->alloc) ? Py_NewRef(Py_None) : DecodeSuccess;
+
+  case JT_TRUE:
+    if (tag_len != 0)
+      return malformed(buf, "TRUE has length");
+    return (buf->alloc) ? Py_NewRef(Py_True) : DecodeSuccess;
+
+  case JT_FALSE:
+    if (tag_len != 0)
+      return malformed(buf, "FALSE has length");
+    return (buf->alloc) ? Py_NewRef(Py_False) : DecodeSuccess;
+
+  case JT_INT:
+    if (!jsonb_check_int(buf, value_offset, buf->offset))
+      return malformed(buf, "not a valid int");
+    if (!buf->alloc)
+      return DecodeSuccess;
+    {
+      /* we cant use PyLong_FromString because the end of the string can't be passed in */
+      PyObject *text = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset);
+      if (!text)
+        return NULL;
+      PyObject *result = NULL;
+      if (buf->int_hook)
+      {
+        PyObject *vargs[] = { NULL, text };
+        result = PyObject_Vectorcall(buf->int_hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      }
+      else
+        result = PyLong_FromUnicodeObject(text, 10);
+      Py_DECREF(text);
+      return result;
+    }
+
+  case JT_INT5:
+    /* JSON5 allows leading +, regular numbers (JT_INT), and hex.  SQLite
+       only allows hex .*/
+    if (!jsonb_check_int5hex(buf, value_offset, buf->offset))
+      return malformed(buf, "not a valid int5");
+    if (!buf->alloc)
+      return DecodeSuccess;
+    {
+      /* we cant use PyLong_FromString because the end of the string can't be passed in */
+      PyObject *text = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset);
+      if (!text)
+        return NULL;
+      PyObject *result = NULL;
+      if (buf->int_hook)
+      {
+        /* we need to pass zero as the base so leading sign and 0x are processed as expected */
+        PyObject *vargs[] = { NULL, text, PyLong_FromLong(0) };
+        if (vargs[2])
+          result = PyObject_Vectorcall(buf->int_hook, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+        Py_XDECREF(vargs[2]);
+      }
+      else
+        result = PyLong_FromUnicodeObject(text, 0);
+      Py_DECREF(text);
+      return result;
+    }
+
+  case JT_FLOAT:
+    if (!jsonb_check_float(buf, value_offset, buf->offset))
+      return malformed(buf, "not a valid float");
+    if (!buf->alloc)
+      return DecodeSuccess;
+    {
+      PyObject *text = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset);
+      if (!text)
+        return NULL;
+      PyObject *result = NULL;
+      if (buf->float_hook)
+      {
+        PyObject *vargs[] = { NULL, text };
+        result = PyObject_Vectorcall(buf->float_hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      }
+      else
+        result = PyFloat_FromString(text);
+      Py_DECREF(text);
+      return result;
+    }
+  }
+}
+
+static int
+jsonb_check_int(struct JSONBDecodeBuffer *buf, size_t start, size_t end)
+{
+  /*
+    optional minus
+    at least one digit
+    no leading zeroes
+  */
+
+  int seen_sign = 0, seen_digit = 0, seen_first_is_zero = 0;
+
+  for (size_t offset = start; offset < end; offset++)
+  {
+    uint8_t t = buf->buffer[offset];
+
+    /* must be in ascii normal range of utf8 */
+    if (t < 32 || t > 127)
+      return 0;
+
+    switch (t)
+    {
+    case '-':
+      if (seen_sign)
+        return 0;
+      if (seen_digit)
+        return 0;
+      seen_sign = 1;
+      break;
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      /* leading zero is not allowed unless the whole number is zero */
+      if (seen_digit && seen_first_is_zero)
+        return 0;
+      if (!seen_digit && t == '0')
+        seen_first_is_zero = 1;
+      seen_digit = 1;
+      break;
+    default:
+      return 0;
+    }
+  }
+  return seen_digit;
+}
+
+static int
+jsonb_check_int5hex(struct JSONBDecodeBuffer *buf, size_t start, size_t end)
+{
+  /*
+    optional minus
+    zero
+    x or X
+    at least one hex digit
+  */
+
+  int seen_sign = 0, seen_x = 0, seen_leading_zero = 0, seen_digit = 0;
+
+  for (size_t offset = start; offset < end; offset++)
+  {
+    uint8_t t = buf->buffer[offset];
+
+    /* must be in ascii normal range of utf8 */
+    if (t < 32 || t > 127)
+      return 0;
+
+    switch (t)
+    {
+    case '-':
+      if (seen_sign)
+        return 0;
+      /* can't be after x / leading zero / digits */
+      if (seen_x || seen_leading_zero || seen_digit)
+        return 0;
+      seen_sign = 1;
+      break;
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case 'a':
+    case 'A':
+    case 'b':
+    case 'B':
+    case 'c':
+    case 'C':
+    case 'd':
+    case 'D':
+    case 'e':
+    case 'E':
+    case 'f':
+    case 'F':
+      if (t == '0')
+      {
+        if (!seen_x && !seen_leading_zero)
+        {
+          seen_leading_zero = 1;
+          continue;
+        }
+      }
+      if (!seen_x)
+        return 0;
+      seen_digit = 1;
+      break;
+    case 'x':
+    case 'X':
+      if (seen_x)
+        return 0;
+      if (!seen_leading_zero)
+        return 0;
+      seen_x = 1;
+      break;
+    default:
+      return 0;
+    }
+  }
+  return seen_digit;
+}
+
+static int
+jsonb_check_float(struct JSONBDecodeBuffer *buf, size_t start, size_t end)
+{
+  /*
+    optional minus
+    at least one digit
+    dot
+    at least one digit
+    optional E
+        optional sign
+          at least one digit
+  */
+
+  int seen_sign = 0, seen_dot = 0, seen_digit = 0, seen_e = 0, seen_first_is_zero = 0;
+
+  for (size_t offset = start; offset < end; offset++)
+  {
+    uint8_t t = buf->buffer[offset];
+    /* must be in ascii normal range of utf8 */
+    if (t < 32 || t > 127)
+      return 0;
+
+    switch (t)
+    {
+    case '+':
+    case '-':
+      /* + only allowed after E */
+      if (t == '+' && !seen_e)
+        return 0;
+      /* can't have more than one */
+      if (seen_sign)
+        return 0;
+      /* can't be after digits */
+      if (seen_digit)
+        return 0;
+      /* can't be after dot */
+      if (seen_dot)
+        return 0;
+      seen_sign = 1;
+      break;
+    case '.':
+      /* can't be after E */
+      if (seen_e)
+        return 0;
+      /* can't have more than one */
+      if (seen_dot)
+        return 0;
+      /* must be after at least one digit */
+      if (!seen_digit)
+        return 0;
+      /* a digit will be required after this */
+      seen_dot = 1;
+      seen_digit = 1;
+      break;
+
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      if (seen_e || seen_dot)
+      {
+        /* all digits allowed after E or dot */
+        seen_digit = 1;
+        continue;
+      }
+      /* leading zero not allowed */
+      if (seen_digit && seen_first_is_zero)
+        return 0;
+      /* leading zero but could 0.123 */
+      if (!seen_digit && t == '0')
+        seen_first_is_zero = 1;
+      seen_digit = 1;
+      break;
+    case 'e':
+    case 'E':
+      /*  must be at least one digit */
+      if (!seen_digit)
+        return 0;
+      /* can't have more than one E */
+      if (seen_e)
+        return 0;
+      /* reset state to post E */
+      seen_e = 1;
+      seen_digit = 0;
+      seen_sign = 0;
+      seen_dot = 0;
+      break;
+    default:
+      return 0;
+    }
+  }
+  return seen_digit;
 }
 
 /** .. method:: jsonb_detect(data: Buffer) -> bool
