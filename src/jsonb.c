@@ -260,8 +260,11 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
     }
     if (isinf(d))
     {
-      /* we want to use Infinity but need SQLite to ok */
-      utf8 = (d < 0) ? "-9e999" : "9e999";
+      /* we want to use Infinity but need SQLite to ok, so this is
+         used instead.  SQLite uses 9e999 (3 9s)  for infinity but that is a
+         valid float128 value so this longer exponent works instead.  Until
+         float256 is a thing ... */
+      utf8 = (d < 0) ? "-9e9999" : "9e9999";
       length = strlen(utf8);
     }
     else
