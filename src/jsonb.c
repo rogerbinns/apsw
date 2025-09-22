@@ -606,6 +606,10 @@ static int jsonb_check_int5hex(struct JSONBDecodeBuffer *buf, size_t start, size
 static int jsonb_check_float(struct JSONBDecodeBuffer *buf, size_t start, size_t end);
 static int jsonb_check_float5(struct JSONBDecodeBuffer *buf, size_t start, size_t end);
 
+/* return like above check routines,  decodes into unistr if provided  */
+static int jsonb_decode_utf8_string(uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag, size_t *pLength,
+                                    Py_UCS4 *pMax_char);
+
 static PyObject *
 jsonb_decode_one(struct JSONBDecodeBuffer *buf)
 {
@@ -743,6 +747,38 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
       Py_DECREF(text);
       return result;
     }
+
+  case JT_TEXT:
+  case JT_TEXTJ:
+  case JT_TEXT5:
+  case JT_TEXTRAW:
+    /* zero length? */
+    if (value_offset == buf->offset)
+      return (buf->alloc) ? PyUnicode_New(0, 0) : DecodeSuccess;
+    /* this is the length in codepoints */
+    size_t length = 0;
+    Py_UCS4 max_char = 0;
+    if (!jsonb_decode_utf8_string(buf->buffer + value_offset, buf->offset, NULL,
+                                  (tag == JT_TEXT || tag == JT_TEXTRAW) ? JT_TEXT : tag, &length, &max_char))
+      return malformed(buf, "not a valid string");
+    assert(max_char > 0);
+    if (!buf->alloc)
+      return DecodeSuccess;
+    PyObject *retval = NULL;
+    if (tag == JT_TEXT || tag == JT_TEXTRAW)
+    {
+      retval = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset - value_offset);
+      if (retval)
+        assert(PyUnicode_GET_LENGTH(retval) == length);
+      return retval;
+    }
+    retval = PyUnicode_New(length, max_char);
+    if (!retval)
+      return retval;
+    int success = jsonb_decode_utf8_string(buf->buffer + value_offset, buf->offset, retval, tag, NULL, NULL);
+    (void)success;
+    assert(success);
+    return retval;
   }
 }
 
@@ -1072,6 +1108,249 @@ jsonb_check_float5(struct JSONBDecodeBuffer *buf, size_t start, size_t end)
     }
   }
   return seen_digit;
+}
+
+/* returns 0 if not acceptable, 1 if it is */
+static int
+acceptable_codepoint(Py_UCS4 codepoint)
+{
+  /*
+    0 is allowed, surrogate pair ranges are not valid
+    the builtin json decoder will allow a standalone surrogate
+    but python won't allow a surrogate when constructing a string.
+    python accepting lone surrogates https://bugs.python.org/issue11489
+
+    "abc\ud83edef"  -- python rejects
+    json.loads(r'"abc \ud83e def"')  -- json.loads accepts but
+    it is really invalid and we reject
+  */
+
+  /* no surrogates */
+  if ((codepoint >= 0xD800 && codepoint <= 0xDBFF) || (codepoint >= 0xDC00 && codepoint <= 0xDFFF))
+    return 0;
+
+  /* out of range */
+  if ((codepoint < 0) || (codepoint > 0x10FFFF))
+    return 0;
+
+  return 1;
+}
+
+static int
+jsonb_decode_utf8_string(uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag, size_t *pLength,
+                         Py_UCS4 *pMax_char)
+{
+  /*
+    unistr is PyUnicode to fill in, or NULL
+    tag is JT_TEXTJ for json escapes, TEXT5 for json5 escapes, else no
+    escapes
+    pLength is returning length in codepoints
+    pMax_char is returning maximum codepoint value
+
+    int return is zero for not valid utf8 + plus escapes, else non-zero
+    for success
+  */
+
+  /* zero length should not be passed in */
+  assert(end > 0);
+  /* only valid values.  TEXTRAW should be passed as TEXT  */
+  assert(tag == JT_TEXT || tag == JT_TEXTJ || tag == JT_TEXT5);
+
+  Py_UCS4 max_char = 1;
+
+  /* next byte to read */
+  size_t sin_index = 0;
+  /* next output codepoint to write, used when unistr supplied or to calculate length */
+  Py_ssize_t sout_index = 0;
+
+  void *unistr_DATA = unistr ? PyUnicode_DATA(unistr) : 0;
+  int unistr_KIND = unistr ? PyUnicode_KIND(unistr) : 0;
+
+  while (sin_index < end)
+  {
+    Py_UCS4 b = buf[sin_index];
+    sin_index++;
+
+    if ((b & 0x80) == 0) /* 0b1000_0000 */
+    {
+      if (b == '\\' && tag != JT_TEXT)
+      {
+        /* there must be at least one more byte */
+        if (sin_index == end)
+          return 0;
+
+        b = buf[sin_index];
+        sin_index++;
+
+        /* process JSON escapes */
+        if (b == '\\' || b == '"')
+        {
+          /* do nothing - left as is */
+        }
+        else if (b == 'b' || b == 'f' || b == 'n' || b == 'r' || b == 't' || b == 'v')
+        {
+          switch (b)
+          {
+          case 'b':
+            b = '\b';
+            break;
+
+          case 'f':
+            b = '\f';
+            break;
+
+          case 'n':
+            b = '\n';
+            break;
+
+          case 'r':
+            b = '\r';
+            break;
+
+          case 't':
+            b = '\t';
+            break;
+
+          case 'v':
+            b = '\v';
+            break;
+          }
+        }
+        else if (tag == JT_TEXTJ && b == '0')
+        {
+          b = 0;
+          /* but it must be followed by a non-digit or end of string */
+          if (sin_index < end)
+          {
+            if (buf[sin_index] < '0' || buf[sin_index] > '9')
+              return 0;
+          }
+        }
+        else if (tag == JT_TEXT5 && (b == 'x' || b == 'X'))
+        {
+          int v = get_hex(2);
+          if (v < 0)
+            return 0;
+          b = v;
+        }
+        else if (tag == JT_TEXT5 && b == '\'')
+        {
+          /* do nothing - json5 cam backslash escape single quote */
+        }
+        else if (b == 'u')
+        {
+          int v = get_hex(4);
+          if (v < 0)
+            return 0;
+          b = v;
+          /* surrogate pair? */
+          if (b >= 0xd800 && b <= 0xdbff)
+          {
+            if (sin_index + 6 <= end && buf[sin_index] == '\\' && buf[sin_index + 1] == 'u')
+            {
+              /* skip \u */
+              sin_index += 2;
+              int second = get_hex(4);
+              /* need to be in second part range */
+              if (second < 0 || second < 0xdc00 || second > 0xdfff)
+                return 0;
+              b = ((b - 0xD800) << 10) + (second - 0xDC00) + 0x10000;
+            }
+            else
+              return 0;
+          }
+        }
+        else if (tag == JT_TEXT5)
+        {
+          /* json5 swallows backslash LineTerminatorSequence */
+          if (b == '\n')
+            continue;
+          /* detect U+2028 or U+2029 as utf8 bytes */
+          if (b == 0xe2 && sin_index + 1 < end && buf[sin_index] == 0x80
+              && (buf[sin_index + 1] == 0xa8 || buf[sin_index + 1] == 0xa9))
+          {
+            sin_index += 2;
+            continue;
+          }
+          if (b == '\r')
+          {
+            /* if \r\n then swallow both, else just the \r */
+            if (sin_index < end && buf[sin_index] == '\n')
+              sin_index++;
+            continue;
+          }
+          else
+            /* not a valid backslash escape */
+            return 0;
+        }
+        if (!acceptable_codepoint(b))
+          return 0;
+      }
+      max_char = Py_MAX(b, max_char);
+      if (unistr)
+        PyUnicode_WRITE(unistr_KIND, unistr_DATA, sout_index, b);
+      sout_index++;
+      continue;
+    } /* end of single byte codepoint */
+
+    /* utf8 multi-byte sequences */
+    Py_UCS4 codepoint = 0;
+    int remaining = 0;
+    if ((b & 0xf8 /* 0b1111_1000 */) == 0xf0 /* 0b1111_0000*/)
+    {
+      codepoint = b & 0x07; /* 0b0000_0111 */
+      remaining = 3;
+    }
+    else if ((b & 0xf0 /* 0b1111_0000*/) == 0xe0 /* 0b1110_0000 */)
+    {
+      codepoint = b & 0x0f; /* 0b0000_1111 */
+      remaining = 2;
+    }
+    else if ((b & 0xe0 /* 0b1110_0000 */) == 0xc0 /* 0b1100_0000 */)
+    {
+      codepoint = b & 0x1f; /* 0b0001_1111 */
+      remaining = 1;
+    }
+    else
+      /* not a valid utf8 encoding */
+      return 0;
+
+    int encoding_len = 1 + remaining;
+    if (sin_index + remaining > end)
+      /* not enough continuation bytes */
+      return 0;
+
+    while (remaining)
+    {
+      codepoint <<= 6;
+      b = buf[sin_index];
+      sin_index++;
+      if ((b & 0xc0 /*0b1100_0000*/) != 0x80 /* 0b1000_0000 */)
+        /* invalid continuation byte */
+        return 0;
+      codepoint += b & 0x3f; /* 0b0011_1111 */
+      remaining -= 1;
+    }
+
+    if (!acceptable_codepoint(codepoint))
+      return 0;
+
+    /* check for overlong encoding */
+    if (codepoint < 0x80 || ((codepoint >= 0x80 && codepoint <= 0x7FF) && encoding_len != 2)
+        || ((codepoint >= 0x800 && codepoint <= 0xFFFF) && encoding_len != 3))
+      return 0;
+
+    max_char = Py_MAX(b, max_char);
+    if (unistr)
+      PyUnicode_WRITE(unistr_KIND, unistr_DATA, sout_index, b);
+    sout_index++;
+    continue;
+  }
+  if (pLength)
+    *pLength = sout_index;
+  if (pMax_char)
+    *pMax_char = max_char;
+  return 1;
 }
 
 /** .. method:: jsonb_detect(data: Buffer) -> bool
