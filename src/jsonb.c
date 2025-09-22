@@ -604,6 +604,7 @@ malformed(struct JSONBDecodeBuffer *buf, const char *msg, ...)
 static int jsonb_check_int(struct JSONBDecodeBuffer *buf, size_t start, size_t end);
 static int jsonb_check_int5hex(struct JSONBDecodeBuffer *buf, size_t start, size_t end);
 static int jsonb_check_float(struct JSONBDecodeBuffer *buf, size_t start, size_t end);
+static int jsonb_check_float5(struct JSONBDecodeBuffer *buf, size_t start, size_t end);
 
 static PyObject *
 jsonb_decode_one(struct JSONBDecodeBuffer *buf)
@@ -721,8 +722,10 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
     }
 
   case JT_FLOAT:
-    if (!jsonb_check_float(buf, value_offset, buf->offset))
-      return malformed(buf, "not a valid float");
+  case JT_FLOAT5:
+    if ((tag == JT_FLOAT) ? !jsonb_check_float(buf, value_offset, buf->offset)
+                          : !jsonb_check_float5(buf, value_offset, buf->offset))
+      return malformed(buf, (tag == JT_FLOAT) ? "not a valid float" : "not a valid float5");
     if (!buf->alloc)
       return DecodeSuccess;
     {
@@ -926,7 +929,104 @@ jsonb_check_float(struct JSONBDecodeBuffer *buf, size_t start, size_t end)
         return 0;
       /* a digit will be required after this */
       seen_dot = 1;
+      seen_digit = 0;
+      break;
+
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      if (seen_e || seen_dot)
+      {
+        /* all digits allowed after E or dot */
+        seen_digit = 1;
+        continue;
+      }
+      /* leading zero not allowed */
+      if (seen_digit && seen_first_is_zero)
+        return 0;
+      /* leading zero but could 0.123 */
+      if (!seen_digit && t == '0')
+        seen_first_is_zero = 1;
       seen_digit = 1;
+      break;
+    case 'e':
+    case 'E':
+      /*  must be at least one digit */
+      if (!seen_digit)
+        return 0;
+      /* can't have more than one E */
+      if (seen_e)
+        return 0;
+      /* reset state to post E */
+      seen_e = 1;
+      seen_digit = 0;
+      seen_sign = 0;
+      seen_dot = 0;
+      break;
+    default:
+      return 0;
+    }
+  }
+  return seen_digit;
+}
+
+static int
+jsonb_check_float5(struct JSONBDecodeBuffer *buf, size_t start, size_t end)
+{
+  /*
+    optional minus
+    at least one digit with at most one dot anywhere including
+       before or after any digits.  This is the big JSON5 difference
+    optional E
+       optional sign
+         at least one digit
+  */
+
+  /* If SQLite allows NaN/Infinity it would be handled here */
+
+  int seen_sign = 0, seen_dot = 0, seen_digit = 0, seen_e = 0, seen_first_is_zero = 0;
+
+  for (size_t offset = start; offset < end; offset++)
+  {
+    uint8_t t = buf->buffer[offset];
+    /* must be in ascii normal range of utf8 */
+    if (t < 32 || t > 127)
+      return 0;
+
+    switch (t)
+    {
+    case '+':
+    case '-':
+      /* + only allowed after E (JSON5 does allow leading but SQLite does not) */
+      if (t == '+' && !seen_e)
+        return 0;
+      /* can't have more than one */
+      if (seen_sign)
+        return 0;
+      /* can't be after digits */
+      if (seen_digit)
+        return 0;
+      /* can't be after dot */
+      if (seen_dot)
+        return 0;
+      seen_sign = 1;
+      break;
+
+    case '.':
+      /* can't be after E */
+      if (seen_e)
+        return 0;
+      /* can't have more than one */
+      if (seen_dot)
+        return 0;
+      seen_dot = 1;
       break;
 
     case '0':
