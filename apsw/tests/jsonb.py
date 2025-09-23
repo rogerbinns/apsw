@@ -23,8 +23,8 @@ import apsw.fts5
 import apsw.jsonb
 
 encode_raw = apsw.jsonb_encode
-decode_raw = apsw.jsonb.decode
-detect = apsw.jsonb.detect
+decode_raw = apsw.jsonb_decode
+detect = apsw.jsonb_detect
 
 
 class DetectDecodeMisMatch(Exception):

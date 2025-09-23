@@ -513,6 +513,7 @@ error:
 }
 
 /** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes
+
     Encodes object as JSONB
 
     :param obj: Object to encode
@@ -568,7 +569,7 @@ struct JSONBDecodeBuffer
 {
   uint8_t *buffer;   /* what we are decoding */
   size_t offset;     /* current decode position */
-  size_t end_offset; /* offset of last position we can access + 1 */
+  size_t end_offset; /* offset of last position we can access + 1 (ie the length) */
   /* Optional Callables for hooks, or NULL if not present */
   PyObject *object_pairs_hook;
   PyObject *object_hook;
@@ -779,7 +780,117 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
     (void)success;
     assert(success);
     return retval;
+
+  case JT_ARRAY: {
+    PyObject *res = buf->alloc ? PyList_New(0) : NULL;
+    if (buf->alloc && !res)
+      return NULL;
+    size_t saved_end_offset = buf->end_offset;
+    buf->end_offset = buf->offset;
+    buf->offset = value_offset;
+    while (buf->offset < buf->end_offset)
+    {
+      PyObject *item = jsonb_decode_one(buf);
+      if (!item)
+      {
+        Py_XDECREF(res);
+        return item;
+      }
+      if (buf->alloc)
+      {
+        if (PyList_Append(res, item) < 0)
+        {
+          Py_DECREF(res);
+          Py_DECREF(item);
+          return NULL;
+        }
+        Py_DECREF(item);
+      }
+    }
+    if (buf->offset != buf->end_offset)
+    {
+      Py_XDECREF(res);
+      return NULL;
+    }
+    buf->end_offset = saved_end_offset;
+    if (!buf->alloc)
+      return DecodeSuccess;
+    if (!buf->array_hook)
+      return res;
+    PyObject *vargs[] = { NULL, res };
+    PyObject *new_res = PyObject_Vectorcall(buf->array_hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_DECREF(res);
+    return new_res;
   }
+
+  case JT_OBJECT: {
+    PyObject *builder = NULL;
+    if (buf->alloc)
+    {
+      builder = (buf->object_pairs_hook) ? PyList_New(0) : PyDict_New();
+      if (!builder)
+        return NULL;
+    }
+
+    size_t saved_end_offset = buf->end_offset;
+    buf->end_offset = buf->offset;
+    buf->offset = value_offset;
+
+    while (buf->offset < buf->end_offset)
+    {
+      enum JSONBTag key_tag = buf->buffer[buf->offset] & 0x0f;
+      if (key_tag != JT_TEXT && key_tag != JT_TEXTJ && key_tag != JT_TEXT5 && key_tag != JT_TEXTRAW)
+        return malformed(buf, "object key is not a string");
+      PyObject *key = jsonb_decode_one(buf);
+      if (!key)
+        return key;
+      if (buf->offset >= buf->end_offset)
+        return malformed(buf, "no value for key");
+      PyObject *value = jsonb_decode_one(buf);
+      if (!value)
+        return value;
+      if (builder)
+      {
+        int added = -1;
+        if (buf->object_pairs_hook)
+        {
+          PyObject *tuple = PyTuple_Pack(2, key, value);
+          if (tuple)
+            added = PyList_Append(builder, tuple);
+          Py_XDECREF(tuple);
+        }
+        else
+          added = PyDict_SetItem(builder, key, value);
+        Py_DECREF(key);
+        Py_DECREF(value);
+        if (added < 0)
+          return NULL;
+      }
+      else
+        assert(key == DecodeSuccess && value == DecodeSuccess);
+    }
+    if (buf->offset != buf->end_offset)
+    {
+      Py_XDECREF(builder);
+      return NULL;
+    }
+    buf->end_offset = saved_end_offset;
+    if (!buf->alloc)
+      return DecodeSuccess;
+    if (!buf->object_hook && !buf->object_pairs_hook)
+      return builder;
+    PyObject *vargs[] = { NULL, builder };
+    PyObject *new_res = PyObject_Vectorcall(buf->object_hook ? buf->object_hook : buf->object_pairs_hook, vargs + 1,
+                                            1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_DECREF(builder);
+    return new_res;
+  }
+  case JT_RESERVED_13:
+  case JT_RESERVED_14:
+  case JT_RESERVED_15:
+    return malformed(buf, "unknown tag");
+  }
+  Py_UNREACHABLE();
 }
 
 static int
@@ -1136,6 +1247,31 @@ acceptable_codepoint(Py_UCS4 codepoint)
   return 1;
 }
 
+/* returns negative number on error.  checking the number of digits
+   are available must be done by caller.  */
+static int
+get_hex(uint8_t *buf, int num_digits)
+{
+  int value = 0;
+
+  while (num_digits)
+  {
+    uint8_t c = *buf;
+    if (c >= '0' && c <= '9')
+      c = c - '0';
+    else if (c >= 'A' && c <= 'F')
+      c = 10 + c - 'A';
+    else if (c >= 'a' && c <= 'f')
+      c = 10 + c - 'a';
+    else
+      return -1;
+    num_digits -= 1;
+    buf++;
+    value = (value << 4) + c;
+  }
+  return value;
+}
+
 static int
 jsonb_decode_utf8_string(uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag, size_t *pLength,
                          Py_UCS4 *pMax_char)
@@ -1228,10 +1364,16 @@ jsonb_decode_utf8_string(uint8_t *buf, size_t end, PyObject *unistr, enum JSONBT
         }
         else if (tag == JT_TEXT5 && (b == 'x' || b == 'X'))
         {
-          int v = get_hex(2);
-          if (v < 0)
+          if (sin_index + 2 <= end)
+          {
+            int v = get_hex(buf + sin_index, 2);
+            if (v < 0)
+              return 0;
+            b = v;
+            sin_index += 2;
+          }
+          else
             return 0;
-          b = v;
         }
         else if (tag == JT_TEXT5 && b == '\'')
         {
@@ -1239,10 +1381,16 @@ jsonb_decode_utf8_string(uint8_t *buf, size_t end, PyObject *unistr, enum JSONBT
         }
         else if (b == 'u')
         {
-          int v = get_hex(4);
-          if (v < 0)
+          if (sin_index + 4 <= end)
+          {
+            int v = get_hex(buf + sin_index, 4);
+            if (v < 0)
+              return 0;
+            b = v;
+            sin_index += 4;
+          }
+          else
             return 0;
-          b = v;
           /* surrogate pair? */
           if (b >= 0xd800 && b <= 0xdbff)
           {
@@ -1250,7 +1398,8 @@ jsonb_decode_utf8_string(uint8_t *buf, size_t end, PyObject *unistr, enum JSONBT
             {
               /* skip \u */
               sin_index += 2;
-              int second = get_hex(4);
+              int second = get_hex(buf + sin_index, 4);
+              sin_index += 4;
               /* need to be in second part range */
               if (second < 0 || second < 0xdc00 || second > 0xdfff)
                 return 0;
@@ -1368,7 +1517,26 @@ JSONB_detect(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     ARG_EPILOG(NULL, Apsw_jsonb_detect_USAGE, );
   }
 
-  Py_RETURN_NONE;
+  Py_buffer data_buffer;
+
+  if (PyObject_GetBufferContiguous(data, &data_buffer, PyBUF_SIMPLE) < 0)
+    return NULL;
+
+  struct JSONBDecodeBuffer buf = {
+    .buffer = data_buffer.buf,
+    .end_offset = data_buffer.len,
+    .alloc = 0,
+  };
+
+  PyObject *res = jsonb_decode_one(&buf);
+  assert(!PyErr_Occurred() && (res == DecodeFailure || res == DecodeSuccess));
+  if (res == DecodeSuccess && buf.offset != buf.end_offset)
+    res = DecodeFailure;
+  PyBuffer_Release(&data_buffer);
+
+  if (res == DecodeFailure)
+    Py_RETURN_FALSE;
+  Py_RETURN_TRUE;
 }
 
 /** .. method:: jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    int_hook: Callable[[str], Any] | None = None,    float_hook: Callable[[str], Any] | None = None,) -> Any
@@ -1431,5 +1599,34 @@ JSONB_decode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     ARG_EPILOG(NULL, Apsw_jsonb_decode_USAGE, );
   }
 
-  Py_RETURN_NONE;
+  if (object_pairs_hook && object_hook)
+    return PyErr_Format(PyExc_ValueError, "You can't provide both object_hook and object_pairs_hook");
+
+  Py_buffer data_buffer;
+
+  if (PyObject_GetBufferContiguous(data, &data_buffer, PyBUF_SIMPLE) < 0)
+    return NULL;
+
+  struct JSONBDecodeBuffer buf = {
+    .buffer = data_buffer.buf,
+    .end_offset = data_buffer.len,
+    .object_pairs_hook = object_pairs_hook,
+    .object_hook = object_hook,
+    .array_hook = array_hook,
+    .int_hook = int_hook,
+    .float_hook = float_hook,
+    .alloc = 1,
+  };
+
+  PyObject *res = jsonb_decode_one(&buf);
+  PyBuffer_Release(&data_buffer);
+
+  assert((PyErr_Occurred() && !res) || (!PyErr_Occurred() && res));
+  if (res && buf.offset != buf.end_offset)
+  {
+    Py_CLEAR(res);
+    PyErr_Format(PyExc_ValueError, "not a valid jsonb value");
+  }
+
+  return res;
 }
