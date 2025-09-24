@@ -641,7 +641,11 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
       var_len = 8;
       break;
     }
-    value_offset += tag_len;
+
+    if (buf->offset + var_len > buf->end_offset)
+      return malformed(buf, "insufficient space for length");
+
+    value_offset += var_len;
     tag_len = 0;
 
     while (var_len)
@@ -684,7 +688,8 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
       return DecodeSuccess;
     {
       /* we cant use PyLong_FromString because the end of the string can't be passed in */
-      PyObject *text = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset);
+      PyObject *text
+          = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset - value_offset);
       if (!text)
         return NULL;
       PyObject *result = NULL;
@@ -708,7 +713,8 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
       return DecodeSuccess;
     {
       /* we cant use PyLong_FromString because the end of the string can't be passed in */
-      PyObject *text = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset);
+      PyObject *text
+          = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset - value_offset);
       if (!text)
         return NULL;
       PyObject *result = NULL;
@@ -734,7 +740,8 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
     if (!buf->alloc)
       return DecodeSuccess;
     {
-      PyObject *text = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset);
+      PyObject *text
+          = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset - value_offset);
       if (!text)
         return NULL;
       PyObject *result = NULL;
@@ -759,7 +766,7 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
     /* this is the length in codepoints */
     size_t length = 0;
     Py_UCS4 max_char = 0;
-    if (!jsonb_decode_utf8_string(buf->buffer + value_offset, buf->offset, NULL,
+    if (!jsonb_decode_utf8_string(buf->buffer + value_offset, buf->offset - value_offset, NULL,
                                   (tag == JT_TEXT || tag == JT_TEXTRAW) ? JT_TEXT : tag, &length, &max_char))
       return malformed(buf, "not a valid string");
     assert(max_char > 0);
@@ -770,13 +777,14 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
     {
       retval = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset - value_offset);
       if (retval)
-        assert(PyUnicode_GET_LENGTH(retval) == length);
+        assert((size_t)PyUnicode_GET_LENGTH(retval) == length);
       return retval;
     }
     retval = PyUnicode_New(length, max_char);
     if (!retval)
       return retval;
-    int success = jsonb_decode_utf8_string(buf->buffer + value_offset, buf->offset, retval, tag, NULL, NULL);
+    int success
+        = jsonb_decode_utf8_string(buf->buffer + value_offset, buf->offset - value_offset, retval, tag, NULL, NULL);
     (void)success;
     assert(success);
     return retval;
@@ -845,10 +853,18 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
       if (!key)
         return key;
       if (buf->offset >= buf->end_offset)
+      {
+        if (buf->alloc)
+          Py_DECREF(key);
         return malformed(buf, "no value for key");
+      }
       PyObject *value = jsonb_decode_one(buf);
       if (!value)
+      {
+        if (buf->alloc)
+          Py_DECREF(key);
         return value;
+      }
       if (builder)
       {
         int added = -1;
@@ -1352,13 +1368,13 @@ jsonb_decode_utf8_string(uint8_t *buf, size_t end, PyObject *unistr, enum JSONBT
             break;
           }
         }
-        else if (tag == JT_TEXTJ && b == '0')
+        else if (tag == JT_TEXT5 && b == '0')
         {
           b = 0;
           /* but it must be followed by a non-digit or end of string */
           if (sin_index < end)
           {
-            if (buf[sin_index] < '0' || buf[sin_index] > '9')
+            if (buf[sin_index] >= '0' && buf[sin_index] <= '9')
               return 0;
           }
         }
