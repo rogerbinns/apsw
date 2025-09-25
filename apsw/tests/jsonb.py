@@ -19,9 +19,6 @@ import apsw
 import apsw.ext
 import apsw.fts5
 
-# these methods will move to being in C and part of apsw module
-import apsw.jsonb
-
 encode_raw = apsw.jsonb_encode
 decode_raw = apsw.jsonb_decode
 detect = apsw.jsonb_detect
@@ -126,11 +123,13 @@ class JSONB(unittest.TestCase):
 
     def testBasics(self):
         for item in (
-            # Various None/Empty
             None,
             False,
             True,
+            3,
+            3.3,
             "",
+            "a",
             [],
             [None],
             ["", None],
@@ -141,9 +140,6 @@ class JSONB(unittest.TestCase):
             {"": ""},
             {"": {}},
             {"": []},
-            # simple
-            "hello world",
-            0,
         ):
             self.check_item(item)
 
@@ -156,17 +152,24 @@ class JSONB(unittest.TestCase):
         self.check_valid(self.f_jsonb(r'"\uAbCd\u0fFf"'), "\uabcd\u0fff")
 
         # try to get each type of string - we only generate textraw
+        seen = set()
         for s, expected in (
             ('"hello"', "hello"),
+            ('"table select []"', "table select []"),
             (r'"\u0020\n"', " \n"),
             (r'"\0"', "\0"),
             (r'"\0a"', "\0a"),
+            ("\"\\'\"", "'"),
             # ::TODO:: \v needs to be added back once SQLite fixes bug
             (r'"\x5c\"\0\n\r\b\t\f\'"', "\\\"\0\n\r\b\t\f'"),
         ):
             encoded = self.f_jsonb(s)
+            seen.add(encoded[0] & 0x0f)
             self.assertEqual(decode(encoded), expected)
             self.assertEqual(json.loads(self.f_json(encoded)), expected)
+
+        # I can't get sqlite to generate textraw, but we do ...
+        self.assertEqual(seen, {7, 8, 9})
 
         # zero length
         for tag in {7, 8, 9, 10}:
@@ -175,6 +178,10 @@ class JSONB(unittest.TestCase):
 
         # others
         for s in (
+            "/",
+            "\\",
+            '"',
+            "'",
             "\0",
             "\0\n\r\b\t\f\v\\\"'/",
             "0x" + chr(0x10FFFF) + chr(0x10FFFE) + chr(0x10FFFD) + chr(1) + chr(2),
