@@ -35,12 +35,7 @@ None | True | False | int | Float are automatically stringized
 */
 
 /* returns 0 if not jsonb else 1 if it is */
-static int
-jsonb_detect_internal(const void *data, size_t length)
-{
-  /* ::TODO:: replace with actual implementation */
-  return 1;
-}
+static int jsonb_detect_internal(const void *data, size_t length);
 
 /* passed as context to the encoding routines */
 struct JSONBuffer
@@ -1557,6 +1552,21 @@ JSONB_detect(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   if (res == DecodeFailure)
     Py_RETURN_FALSE;
   Py_RETURN_TRUE;
+}
+
+/* returns 0 if not jsonb else 1 if it is */
+static int
+jsonb_detect_internal(const void *data, size_t length)
+{
+  struct JSONBDecodeBuffer buf = {
+    .buffer = data,
+    .end_offset = length,
+    .alloc = 0,
+  };
+
+  PyObject *res = jsonb_decode_one(&buf);
+  assert(!PyErr_Occurred() && (res == DecodeFailure || res == DecodeSuccess));
+  return (res == DecodeSuccess) ? 1 : 0;
 }
 
 /** .. method:: jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    int_hook: Callable[[str], Any] | None = None,    float_hook: Callable[[str], Any] | None = None,) -> Any
