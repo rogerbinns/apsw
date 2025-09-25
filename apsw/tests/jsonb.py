@@ -395,8 +395,8 @@ class JSONB(unittest.TestCase):
         self.assertEqual(decode(encode(funky(), default=meth)), 0x10)
         self.assertEqual(decode(encode(funky(), default=lambda v: 0x11)), 0x11)
 
-        # ::TODO:: uncomment once C jsonb_detect works
-        # self.assertRaises(ValueError, encode, funky(), default=lambda v: b"0x01\x02")
+        # invalid jsonb returned
+        self.assertRaises(ValueError, encode, funky(), default=lambda v: b"0x01\x02")
 
         self.assertRaisesRegex(ValueError, ".*returned the object.*", encode, funky(), default=lambda v: v)
 
