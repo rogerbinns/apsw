@@ -562,9 +562,9 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
 
 struct JSONBDecodeBuffer
 {
-  uint8_t *buffer;   /* what we are decoding */
-  size_t offset;     /* current decode position */
-  size_t end_offset; /* offset of last position we can access + 1 (ie the length) */
+  const uint8_t *const buffer; /* what we are decoding */
+  size_t offset;               /* current decode position */
+  size_t end_offset;           /* offset of last position we can access + 1 (ie the length) */
   /* Optional Callables for hooks, or NULL if not present */
   PyObject *object_pairs_hook;
   PyObject *object_hook;
@@ -603,8 +603,8 @@ static int jsonb_check_float(struct JSONBDecodeBuffer *buf, size_t start, size_t
 static int jsonb_check_float5(struct JSONBDecodeBuffer *buf, size_t start, size_t end);
 
 /* return like above check routines,  decodes into unistr if provided  */
-static int jsonb_decode_utf8_string(uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag, size_t *pLength,
-                                    Py_UCS4 *pMax_char);
+static int jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag,
+                                    size_t *pLength, Py_UCS4 *pMax_char);
 
 static PyObject *
 jsonb_decode_one(struct JSONBDecodeBuffer *buf)
@@ -1261,7 +1261,7 @@ acceptable_codepoint(Py_UCS4 codepoint)
 /* returns negative number on error.  checking the number of digits
    are available must be done by caller.  */
 static int
-get_hex(uint8_t *buf, int num_digits)
+get_hex(const uint8_t *buf, int num_digits)
 {
   int value = 0;
 
@@ -1284,7 +1284,7 @@ get_hex(uint8_t *buf, int num_digits)
 }
 
 static int
-jsonb_decode_utf8_string(uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag, size_t *pLength,
+jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag, size_t *pLength,
                          Py_UCS4 *pMax_char)
 {
   /*
