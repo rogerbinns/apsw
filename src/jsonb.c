@@ -1448,6 +1448,10 @@ jsonb_decode_utf8_string(uint8_t *buf, size_t end, PyObject *unistr, enum JSONBT
             /* not a valid backslash escape */
             return 0;
         }
+        else
+          /* not an acceptable escape */
+          return 0;
+
         if (!acceptable_codepoint(b))
           return 0;
       }
