@@ -2,7 +2,7 @@
 import sys
 
 from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
-import collections.abc
+from collections.abc import Mapping
 import array
 import types
 
@@ -151,6 +151,20 @@ ChangesetInput = SessionStreamInput | Buffer
 
 SessionStreamOutput = Callable[[memoryview], None]
 """Streaming output callable is called with each block of streaming data"""
+
+JSONBTypes = (
+    str
+    | bool
+    | None
+    | int
+    | float
+    | list["JSONBTypes"]
+    | tuple["JSONBTypes"]
+    | Mapping[str | None | int | float | bool, "JSONBTypes"]
+)
+"""Used by :func:`apsw.jsonb_encode`. Mapping (dict) keys must be str
+in JSONB.  Like the builtin JSON module, None/int/float/bool keys will be
+stringized."""
 
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
@@ -367,7 +381,7 @@ def jsonb_detect(data: Buffer) -> bool:
     """Returns ``True`` if data is valid JSONB, otherwise ``False``."""
     ...
 
-def jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes::
+def jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes:
     """Encodes object as JSONB
 
     :param obj: Object to encode
@@ -4110,6 +4124,32 @@ SQLITE_CANTOPEN_NOTEMPDIR: int = 270
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_CANTOPEN_SYMLINK: int = 1550
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
+SQLITE_CHANGESETAPPLY_FKNOACTION: int = 8
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETAPPLY_IGNORENOOP: int = 4
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETAPPLY_INVERT: int = 2
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETAPPLY_NOSAVEPOINT: int = 1
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETSTART_INVERT: int = 2
+"""For `Flags for sqlite3changeset_start_v2 <https://sqlite.org/session/c_changesetstart_invert.html>'__"""
+SQLITE_CHANGESET_ABORT: int = 2
+"""For `Constants Returned By The Conflict Handler <https://sqlite.org/session/c_changeset_abort.html>'__"""
+SQLITE_CHANGESET_CONFLICT: int = 3
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_CONSTRAINT: int = 4
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_DATA: int = 1
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_FOREIGN_KEY: int = 5
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_NOTFOUND: int = 2
+"""For `Constants Passed To The Conflict Handler <https://sqlite.org/session/c_changeset_conflict.html>'__"""
+SQLITE_CHANGESET_OMIT: int = 0
+"""For `Constants Returned By The Conflict Handler <https://sqlite.org/session/c_changeset_abort.html>'__"""
+SQLITE_CHANGESET_REPLACE: int = 1
+"""For `Constants Returned By The Conflict Handler <https://sqlite.org/session/c_changeset_abort.html>'__"""
 SQLITE_CHECKPOINT_FULL: int = 1
 """For `Checkpoint Mode Values <https://sqlite.org/c3ref/c_checkpoint_full.html>'__"""
 SQLITE_CHECKPOINT_PASSIVE: int = 0
@@ -4750,6 +4790,12 @@ SQLITE_SELECT: int = 21
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_SELFORDER1: int = 33554432
 """For `Function Flags <https://sqlite.org/c3ref/c_deterministic.html>'__"""
+SQLITE_SESSION_CONFIG_STRMSIZE: int = 1
+"""For `Values for sqlite3session_config <https://sqlite.org/session/c_session_config_strmsize.html>'__"""
+SQLITE_SESSION_OBJCONFIG_ROWID: int = 2
+"""For `Options for sqlite3session_object_config <https://sqlite.org/session/c_session_objconfig_rowid.html>'__"""
+SQLITE_SESSION_OBJCONFIG_SIZE: int = 1
+"""For `Options for sqlite3session_object_config <https://sqlite.org/session/c_session_objconfig_rowid.html>'__"""
 SQLITE_SETLK_BLOCK_ON_CONNECT: int = 1
 """For `Flags for sqlite3_setlk_timeout() <https://sqlite.org/c3ref/c_setlk_block_on_connect.html>'__"""
 SQLITE_SHM_EXCLUSIVE: int = 8
@@ -5073,6 +5119,45 @@ SQLITE_LOCKED SQLITE_MISMATCH SQLITE_MISUSE SQLITE_NOLFS SQLITE_NOMEM
 SQLITE_NOTADB SQLITE_NOTFOUND SQLITE_NOTICE SQLITE_OK SQLITE_PERM
 SQLITE_PROTOCOL SQLITE_RANGE SQLITE_READONLY SQLITE_ROW SQLITE_SCHEMA
 SQLITE_TOOBIG SQLITE_WARNING"""
+
+mapping_session_changeset_apply_v2_flags: dict[str | int, int | str]
+"""Flags for sqlite3changeset_apply_v2 mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changesetapply_fknoaction.html
+
+SQLITE_CHANGESETAPPLY_FKNOACTION SQLITE_CHANGESETAPPLY_IGNORENOOP
+SQLITE_CHANGESETAPPLY_INVERT SQLITE_CHANGESETAPPLY_NOSAVEPOINT"""
+
+mapping_session_changeset_start_v2_flags: dict[str | int, int | str]
+"""Flags for sqlite3changeset_start_v2 mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changesetstart_invert.html
+
+SQLITE_CHANGESETSTART_INVERT"""
+
+mapping_session_config_options: dict[str | int, int | str]
+"""Values for sqlite3session_config mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_session_config_strmsize.html
+
+SQLITE_SESSION_CONFIG_STRMSIZE"""
+
+mapping_session_conflict: dict[str | int, int | str]
+"""Constants Passed To The Conflict Handler mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changeset_conflict.html
+
+SQLITE_CHANGESET_CONFLICT SQLITE_CHANGESET_CONSTRAINT
+SQLITE_CHANGESET_DATA SQLITE_CHANGESET_FOREIGN_KEY
+SQLITE_CHANGESET_NOTFOUND"""
+
+mapping_session_conflict_response: dict[str | int, int | str]
+"""Constants Returned By The Conflict Handler mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_changeset_abort.html
+
+SQLITE_CHANGESET_ABORT SQLITE_CHANGESET_OMIT SQLITE_CHANGESET_REPLACE"""
+
+mapping_session_object_config_options: dict[str | int, int | str]
+"""Options for sqlite3session_object_config mapping names to int and int to names.
+Doc at https://sqlite.org/session/c_session_objconfig_rowid.html
+
+SQLITE_SESSION_OBJCONFIG_ROWID SQLITE_SESSION_OBJCONFIG_SIZE"""
 
 mapping_setlk_timeout_flags: dict[str | int, int | str]
 """Flags for sqlite3_setlk_timeout() mapping names to int and int to names.

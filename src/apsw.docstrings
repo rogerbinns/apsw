@@ -250,7 +250,7 @@
 } while(0)
 
 
-#define  Apsw_jsonb_encode_DOC "apsw.jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes:\n\n" \
+#define  Apsw_jsonb_encode_DOC "apsw.jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes\n\n" \
 "Encodes object as JSONB\n" \
 "\n" \
 ":param obj: Object to encode\n" \
@@ -267,7 +267,7 @@
 "   float.\n" 
 
 #define Apsw_jsonb_encode_KWNAMES "obj", "skipkeys", "check_circular", "default"
-#define Apsw_jsonb_encode_USAGE "apsw.jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes:"
+#define Apsw_jsonb_encode_USAGE "apsw.jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes"
 
 #define Apsw_jsonb_encode_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(obj), PyObject *)); \
