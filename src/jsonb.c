@@ -1508,9 +1508,9 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
         || ((codepoint >= 0x800 && codepoint <= 0xFFFF) && encoding_len != 3))
       return 0;
 
-    max_char = Py_MAX(b, max_char);
+    max_char = Py_MAX(codepoint, max_char);
     if (unistr)
-      PyUnicode_WRITE(unistr_KIND, unistr_DATA, sout_index, b);
+      PyUnicode_WRITE(unistr_KIND, unistr_DATA, sout_index, codepoint);
     sout_index++;
     continue;
   }

@@ -153,20 +153,23 @@ class JSONB(unittest.TestCase):
 
         # try to get each type of string - we only generate textraw
         seen = set()
-        for s, expected in (
-            ('"hello"', "hello"),
-            ('"table select []"', "table select []"),
-            (r'"\u0020\n"', " \n"),
-            (r'"\0"', "\0"),
-            (r'"\0a"', "\0a"),
-            ('"\\\'"', "'"),
+        for test, expected in (
+            ('hello', "hello"),
+            ('table select []', "table select []"),
+            (r'\u0020\n', " \n"),
+            (r'\0', "\0"),
+            (r'\0a', "\0a"),
+            ('\\\'', "'"),
             # ::TODO:: \v needs to be added back once SQLite fixes bug
-            (r'"\x5c\"\0\n\r\b\t\f\'"', "\\\"\0\n\r\b\t\f'"),
+            (r'\x5c\"\0\n\r\b\t\f\'', "\\\"\0\n\r\b\t\f'"),
         ):
-            encoded = self.f_jsonb(s)
-            seen.add(encoded[0] & 0x0F)
-            self.assertEqual(decode(encoded), expected)
-            self.assertEqual(json.loads(self.f_json(encoded)), expected)
+            # this is to ensure we test non-ascii ranges too
+            for suffix in ("", "".join(test_strings)):
+                s = '"' + test + json.dumps(suffix)[1:-1] + '"'
+                encoded = self.f_jsonb(s)
+                seen.add(encoded[0] & 0x0F)
+                self.assertEqual(decode(encoded), expected + suffix)
+                self.assertEqual(json.loads(self.f_json(encoded)), expected + suffix )
 
         # I can't get sqlite to generate textraw, but we do ...
         self.assertEqual(seen, {7, 8, 9})
