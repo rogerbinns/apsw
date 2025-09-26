@@ -652,7 +652,11 @@ APSWCursor_dobindings(APSWCursor *self)
   }
 
   /* a dictionary? */
-  if (self->bindings && APSWCursor_is_dict_binding(self->bindings))
+  int is_dict = self->bindings && APSWCursor_is_dict_binding(self->bindings);
+  /* a PyObject_IsInstance call can exception in above */
+  if (PyErr_Occurred())
+    return -1;
+  if (is_dict)
   {
     for (arg = 1; arg <= nargs; arg++)
     {
@@ -1042,7 +1046,10 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
 
   if (self->bindings)
   {
-    if (APSWCursor_is_dict_binding(self->bindings) || Py_Is(self->bindings, apsw_cursor_null_bindings))
+    int is_dict = APSWCursor_is_dict_binding(self->bindings);
+    if (PyErr_Occurred())
+      goto error_out;
+    if (is_dict || Py_Is(self->bindings, apsw_cursor_null_bindings))
       Py_INCREF(self->bindings);
     else
     {
