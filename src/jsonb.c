@@ -810,11 +810,7 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
         Py_DECREF(item);
       }
     }
-    if (buf->offset != buf->end_offset)
-    {
-      Py_XDECREF(res);
-      return NULL;
-    }
+    assert(buf->offset == buf->end_offset);
     buf->end_offset = saved_end_offset;
     if (!buf->alloc)
       return DecodeSuccess;
@@ -880,11 +876,7 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
       else
         assert(key == DecodeSuccess && value == DecodeSuccess);
     }
-    if (buf->offset != buf->end_offset)
-    {
-      Py_XDECREF(builder);
-      return NULL;
-    }
+    assert(buf->offset == buf->end_offset);
     buf->end_offset = saved_end_offset;
     if (!buf->alloc)
       return DecodeSuccess;
