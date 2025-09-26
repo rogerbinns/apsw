@@ -75,12 +75,12 @@ enum JSONBTag
   JT_RESERVED_15 = 15,
 };
 
-/* ::TODO:: these json tag manipulation functions need to be added to fault inject*/
-
 /* returns 0 on success, anything else on failure */
+#undef jsonb_grow_buffer
 static int
 jsonb_grow_buffer(struct JSONBuffer *buf, size_t count)
 {
+#include "faultinject.h"
   size_t new_size = buf->size + count;
   if (new_size < buf->allocated)
   {
@@ -96,8 +96,8 @@ jsonb_grow_buffer(struct JSONBuffer *buf, size_t count)
   /* in production builds we round up to next multiple of 256 */
   size_t alloc_size = (new_size + 255) & ~(size_t)0xffu;
 #else
-  /* and in debug just 1 byte to flush out bugs */
-  size_t alloc_size = new_size + 1;
+  /* and in debug no surplus to flush out bugs */
+  size_t alloc_size = new_size + 0;
 #endif
   assert(alloc_size >= new_size);
 
@@ -116,9 +116,11 @@ jsonb_grow_buffer(struct JSONBuffer *buf, size_t count)
 /* returns 0 on success, anything else on failure. length is either
 the correct length, or the maximum possible length which will be
 adjusted later via jsonb_update_tag */
+#undef jsonb_add_tag
 static int
 jsonb_add_tag(struct JSONBuffer *buf, enum JSONBTag tag, size_t length)
 {
+#include "faultinject.h"
   assert(tag >= JT_NULL && tag <= JT_OBJECT);
   size_t offset = buf->size;
 
@@ -171,9 +173,11 @@ jsonb_add_tag(struct JSONBuffer *buf, enum JSONBTag tag, size_t length)
 }
 
 /* 0 on success, anything else on failure */
+#undef jsonb_update_tag
 static int
 jsonb_update_tag(struct JSONBuffer *buf, enum JSONBTag tag, size_t offset, size_t new_length)
 {
+#include "faultinject.h"
   assert(offset < buf->size);
   /* the tag is only used for assertion integrity check */
   assert((buf->data[offset] & 0x0f) == tag);
@@ -196,9 +200,11 @@ jsonb_update_tag(struct JSONBuffer *buf, enum JSONBTag tag, size_t offset, size_
 }
 
 /* 0 on success, anything else on failure */
+#undef jsonb_append_data
 static int
 jsonb_append_data(struct JSONBuffer *buf, const void *data, size_t length)
 {
+#include "faultinject.h"
   size_t offset = buf->size;
   if (jsonb_grow_buffer(buf, length))
     return -1;
@@ -207,9 +213,12 @@ jsonb_append_data(struct JSONBuffer *buf, const void *data, size_t length)
 }
 
 /* 0 on success, anything else on failure */
+#undef jsonb_add_tag_and_data
 static int
 jsonb_add_tag_and_data(struct JSONBuffer *buf, enum JSONBTag tag, const void *data, size_t length)
 {
+#include "faultinject.h"
+
   int res = jsonb_add_tag(buf, tag, length);
   if (0 == res)
     res = jsonb_append_data(buf, data, length);
