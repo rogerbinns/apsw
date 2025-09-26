@@ -159,12 +159,12 @@ class JSONB(unittest.TestCase):
             (r'"\u0020\n"', " \n"),
             (r'"\0"', "\0"),
             (r'"\0a"', "\0a"),
-            ("\"\\'\"", "'"),
+            ('"\\\'"', "'"),
             # ::TODO:: \v needs to be added back once SQLite fixes bug
             (r'"\x5c\"\0\n\r\b\t\f\'"', "\\\"\0\n\r\b\t\f'"),
         ):
             encoded = self.f_jsonb(s)
-            seen.add(encoded[0] & 0x0f)
+            seen.add(encoded[0] & 0x0F)
             self.assertEqual(decode(encoded), expected)
             self.assertEqual(json.loads(self.f_json(encoded)), expected)
 
@@ -384,6 +384,9 @@ class JSONB(unittest.TestCase):
         zero_d, zero_l = {}, []
         self.assertEqual(decode(encode([zero_d, zero_d, zero_l, zero_l])), [zero_d, zero_d, zero_l, zero_l])
 
+        self.assertRaises(ZeroDivisionError, encode, 3 + 4j, default=lambda x: 1 / 0)
+        self.assertRaises(TypeError, encode, 3 + 4j, default=lambda x, y, z, a, b: 1 / 0)
+
         class funky:
             pass
 
@@ -518,9 +521,13 @@ class JSONB(unittest.TestCase):
 
         # error checking
         all_types = {"orange": [67567567, math.pi]}
+        five_numbers = self.f_jsonb("[0x1234, 5., .1]")
         for kind in "int_hook", "float_hook", "object_hook", "array_hook", "object_pairs_hook":
             detect(encode(all_types))
             self.assertRaises(ZeroDivisionError, decode, encode(all_types), **{kind: lambda x: 1 / 0})
+            if kind in {"int_hook", "float_hook"}:
+                self.assertRaises(ZeroDivisionError, decode, five_numbers, **{kind: lambda *args: 1 / 0})
+            self.assertRaises(TypeError, decode, encode(all_types), **{kind: kind})
             self.assertRaises(TypeError, decode, encode(all_types), **{kind: kind})
 
     def testBadContent(self):
