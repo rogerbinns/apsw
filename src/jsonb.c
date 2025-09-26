@@ -1410,6 +1410,8 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
             }
             else
               return 0;
+            /* surrogate pairs can't express unacceptable codepoints */
+            assert(acceptable_codepoint(b));
           }
         }
         else if (tag == JT_TEXT5)
@@ -1439,8 +1441,9 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
           /* not an acceptable escape */
           return 0;
 
-        if (!acceptable_codepoint(b))
-          return 0;
+        /* all unacceptable codepoints are >= 0x80 which requires a
+           multibyte-sequence to express. */
+        assert(acceptable_codepoint(b));
       }
       max_char = Py_MAX(b, max_char);
       if (unistr)
