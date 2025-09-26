@@ -45,7 +45,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyLong_FromUnsignedLongLong
 #undef PyLong_FromVoidPtr
 #undef PyMapping_GetItemString
-#undef PyMapping_Length
+#undef PyMapping_Size
 #undef PyMem_Calloc
 #undef PyMem_Malloc
 #undef PyMem_Realloc
@@ -114,6 +114,12 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef get_token_value
 #undef get_window_function_context
 #undef getfunctionargs
+#undef jsonb_add_tag
+#undef jsonb_add_tag_and_data
+#undef jsonb_append_data
+#undef jsonb_grow_buffer
+#undef jsonb_update_tag
+#undef realloc
 #undef sqlite3_aggregate_context
 #undef sqlite3_autovacuum_pages
 #undef sqlite3_backup_finish
@@ -695,20 +701,20 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                                                     \
     _res_PyMapping_GetItemString;                                                                                                                                         \
 })
-#define PyMapping_Length(...) \
-({                                                                                                                                                   \
-    __auto_type _res_PyMapping_Length = 0 ? PyMapping_Length(__VA_ARGS__) : 0;                                                                       \
-                                                                                                                                                     \
-    _res_PyMapping_Length = (typeof (_res_PyMapping_Length))APSW_FaultInjectControl("PyMapping_Length", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                                     \
-    if ((typeof (_res_PyMapping_Length))0x1FACADE == _res_PyMapping_Length)                                                                          \
-       _res_PyMapping_Length = PyMapping_Length(__VA_ARGS__);                                                                                        \
-    else if ((typeof(_res_PyMapping_Length))0x2FACADE == _res_PyMapping_Length)                                                                      \
-    {                                                                                                                                                \
-        PyMapping_Length(__VA_ARGS__);                                                                                                               \
-        _res_PyMapping_Length = (typeof (_res_PyMapping_Length))18;                                                                                  \
-    }                                                                                                                                                \
-    _res_PyMapping_Length;                                                                                                                           \
+#define PyMapping_Size(...) \
+({                                                                                                                                             \
+    __auto_type _res_PyMapping_Size = 0 ? PyMapping_Size(__VA_ARGS__) : 0;                                                                     \
+                                                                                                                                               \
+    _res_PyMapping_Size = (typeof (_res_PyMapping_Size))APSW_FaultInjectControl("PyMapping_Size", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                               \
+    if ((typeof (_res_PyMapping_Size))0x1FACADE == _res_PyMapping_Size)                                                                        \
+       _res_PyMapping_Size = PyMapping_Size(__VA_ARGS__);                                                                                      \
+    else if ((typeof(_res_PyMapping_Size))0x2FACADE == _res_PyMapping_Size)                                                                    \
+    {                                                                                                                                          \
+        PyMapping_Size(__VA_ARGS__);                                                                                                           \
+        _res_PyMapping_Size = (typeof (_res_PyMapping_Size))18;                                                                                \
+    }                                                                                                                                          \
+    _res_PyMapping_Size;                                                                                                                       \
 })
 #define PyMem_Calloc(...) \
 ({                                                                                                                                       \
@@ -1767,6 +1773,96 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_getfunctionargs = (typeof (_res_getfunctionargs))18;                                                                                 \
     }                                                                                                                                             \
     _res_getfunctionargs;                                                                                                                         \
+})
+#define jsonb_add_tag(...) \
+({                                                                                                                                          \
+    __auto_type _res_jsonb_add_tag = 0 ? jsonb_add_tag(__VA_ARGS__) : 0;                                                                    \
+                                                                                                                                            \
+    _res_jsonb_add_tag = (typeof (_res_jsonb_add_tag))APSW_FaultInjectControl("jsonb_add_tag", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                            \
+    if ((typeof (_res_jsonb_add_tag))0x1FACADE == _res_jsonb_add_tag)                                                                       \
+       _res_jsonb_add_tag = jsonb_add_tag(__VA_ARGS__);                                                                                     \
+    else if ((typeof(_res_jsonb_add_tag))0x2FACADE == _res_jsonb_add_tag)                                                                   \
+    {                                                                                                                                       \
+        jsonb_add_tag(__VA_ARGS__);                                                                                                         \
+        _res_jsonb_add_tag = (typeof (_res_jsonb_add_tag))18;                                                                               \
+    }                                                                                                                                       \
+    _res_jsonb_add_tag;                                                                                                                     \
+})
+#define jsonb_add_tag_and_data(...) \
+({                                                                                                                                                                     \
+    __auto_type _res_jsonb_add_tag_and_data = 0 ? jsonb_add_tag_and_data(__VA_ARGS__) : 0;                                                                             \
+                                                                                                                                                                       \
+    _res_jsonb_add_tag_and_data = (typeof (_res_jsonb_add_tag_and_data))APSW_FaultInjectControl("jsonb_add_tag_and_data", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                       \
+    if ((typeof (_res_jsonb_add_tag_and_data))0x1FACADE == _res_jsonb_add_tag_and_data)                                                                                \
+       _res_jsonb_add_tag_and_data = jsonb_add_tag_and_data(__VA_ARGS__);                                                                                              \
+    else if ((typeof(_res_jsonb_add_tag_and_data))0x2FACADE == _res_jsonb_add_tag_and_data)                                                                            \
+    {                                                                                                                                                                  \
+        jsonb_add_tag_and_data(__VA_ARGS__);                                                                                                                           \
+        _res_jsonb_add_tag_and_data = (typeof (_res_jsonb_add_tag_and_data))18;                                                                                        \
+    }                                                                                                                                                                  \
+    _res_jsonb_add_tag_and_data;                                                                                                                                       \
+})
+#define jsonb_append_data(...) \
+({                                                                                                                                                      \
+    __auto_type _res_jsonb_append_data = 0 ? jsonb_append_data(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_jsonb_append_data = (typeof (_res_jsonb_append_data))APSW_FaultInjectControl("jsonb_append_data", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_jsonb_append_data))0x1FACADE == _res_jsonb_append_data)                                                                           \
+       _res_jsonb_append_data = jsonb_append_data(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_jsonb_append_data))0x2FACADE == _res_jsonb_append_data)                                                                       \
+    {                                                                                                                                                   \
+        jsonb_append_data(__VA_ARGS__);                                                                                                                 \
+        _res_jsonb_append_data = (typeof (_res_jsonb_append_data))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_jsonb_append_data;                                                                                                                             \
+})
+#define jsonb_grow_buffer(...) \
+({                                                                                                                                                      \
+    __auto_type _res_jsonb_grow_buffer = 0 ? jsonb_grow_buffer(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_jsonb_grow_buffer = (typeof (_res_jsonb_grow_buffer))APSW_FaultInjectControl("jsonb_grow_buffer", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_jsonb_grow_buffer))0x1FACADE == _res_jsonb_grow_buffer)                                                                           \
+       _res_jsonb_grow_buffer = jsonb_grow_buffer(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_jsonb_grow_buffer))0x2FACADE == _res_jsonb_grow_buffer)                                                                       \
+    {                                                                                                                                                   \
+        jsonb_grow_buffer(__VA_ARGS__);                                                                                                                 \
+        _res_jsonb_grow_buffer = (typeof (_res_jsonb_grow_buffer))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_jsonb_grow_buffer;                                                                                                                             \
+})
+#define jsonb_update_tag(...) \
+({                                                                                                                                                   \
+    __auto_type _res_jsonb_update_tag = 0 ? jsonb_update_tag(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_jsonb_update_tag = (typeof (_res_jsonb_update_tag))APSW_FaultInjectControl("jsonb_update_tag", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_jsonb_update_tag))0x1FACADE == _res_jsonb_update_tag)                                                                          \
+       _res_jsonb_update_tag = jsonb_update_tag(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_jsonb_update_tag))0x2FACADE == _res_jsonb_update_tag)                                                                      \
+    {                                                                                                                                                \
+        jsonb_update_tag(__VA_ARGS__);                                                                                                               \
+        _res_jsonb_update_tag = (typeof (_res_jsonb_update_tag))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_jsonb_update_tag;                                                                                                                           \
+})
+#define realloc(...) \
+({                                                                                                                        \
+    __auto_type _res_realloc = 0 ? realloc(__VA_ARGS__) : 0;                                                              \
+                                                                                                                          \
+    _res_realloc = (typeof (_res_realloc))APSW_FaultInjectControl("realloc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                          \
+    if ((typeof (_res_realloc))0x1FACADE == _res_realloc)                                                                 \
+       _res_realloc = realloc(__VA_ARGS__);                                                                               \
+    else if ((typeof(_res_realloc))0x2FACADE == _res_realloc)                                                             \
+    {                                                                                                                     \
+        realloc(__VA_ARGS__);                                                                                             \
+        _res_realloc = (typeof (_res_realloc))18;                                                                         \
+    }                                                                                                                     \
+    _res_realloc;                                                                                                         \
 })
 #define sqlite3_aggregate_context(...) \
 ({                                                                                                                                                                              \

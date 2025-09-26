@@ -106,6 +106,7 @@ returns = {
             PyUnicode_New PyWeakref_GetObject PyWeakref_NewRef Py_BuildValue
             Py_VaBuildValue _PyObject_New
 
+            realloc
 
             Connection_fts5_api get_token_value fts5extensionapi_acquire
 
@@ -169,7 +170,7 @@ returns = {
             sqlite3rebaser_rebase
 
             """.split(),
-    # py functions that return a number to indicate failure
+    # py functions that return a number (-1) to indicate failure
     "number": """
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
         PyLong_AsLongLong PyList_Append PyDict_SetItemString
@@ -177,12 +178,15 @@ returns = {
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
         PyStructSequence_InitType2 PyList_Size PyLong_AsInt
         PyList_SetItem PySet_Contains PyObject_IsInstance
-        PyMapping_Length PySet_Discard
+        PyMapping_Size PySet_Discard
 
         PyObject_GetBufferContiguous PyObject_GetBuffer PyObject_GetBufferContiguousBounded
         _PyTuple_Resize
 
         connection_trace_and_exec getfunctionargs
+
+        jsonb_grow_buffer jsonb_add_tag jsonb_update_tag jsonb_append_data
+        jsonb_add_tag_and_data
         """.split(),
 }
 

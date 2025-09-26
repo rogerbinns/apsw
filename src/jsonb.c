@@ -313,7 +313,7 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
 
   if (is_dict)
   {
-    Py_ssize_t dict_count = PyMapping_Length(obj);
+    Py_ssize_t dict_count = PyMapping_Size(obj);
     if (dict_count < 0)
       goto error;
     size_t tag_offset = buf->size;
