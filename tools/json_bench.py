@@ -60,10 +60,8 @@ for i in range(len(data)):
 
 del data
 
-import apsw.jsonb
-
-decode = apsw.jsonb.decode
-encode = apsw.jsonb.encode
+decode = apsw.jsonb_decode
+encode = apsw.jsonb_encode
 
 timerfn = time.process_time
 
