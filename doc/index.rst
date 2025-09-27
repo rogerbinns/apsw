@@ -19,6 +19,8 @@ APSW |version| documentation
    cursor
    blob
    backup
+   example-json
+   jsonb
    example-fts
    textsearch
    example-session

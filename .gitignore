@@ -17,6 +17,7 @@ doc/apsw.rst
 doc/vtable.rst
 doc/fts.rst
 doc/session.rst
+doc/jsonb.rst
 doc/typing.rstgen
 doc/renames.rstgen
 doc/docdb.json
