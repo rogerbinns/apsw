@@ -1855,7 +1855,10 @@ APSWVFS_init(PyObject *self_, PyObject *args, PyObject *kwargs)
     int include = 1;                                                                                                   \
     if (exclude)                                                                                                       \
     {                                                                                                                  \
-      if (1 == PySet_Contains(exclude, apst.x##meth))                                                                  \
+      int excl = PySet_Contains(exclude, apst.x##meth);                                                                \
+      if (excl < 0)                                                                                                    \
+        goto error;                                                                                                    \
+      else if (excl)                                                                                                   \
         include = 0;                                                                                                   \
     }                                                                                                                  \
     if (include)                                                                                                       \
