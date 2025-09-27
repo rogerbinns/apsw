@@ -96,8 +96,11 @@ jsonb_grow_buffer(struct JSONBuffer *buf, size_t count)
   /* in production builds we round up to next multiple of 256 */
   size_t alloc_size = (new_size + 255) & ~(size_t)0xffu;
 #else
-  /* and in debug no surplus to flush out bugs */
-  size_t alloc_size = new_size + 0;
+  /* and in debug alternate between 0 and 7 so we exercise the buffer
+     having space and not  */
+  static int flip_extra = 0;
+  size_t alloc_size = new_size + flip_extra;
+  flip_extra = (!flip_extra) ? 7 : 0;
 #endif
   assert(alloc_size >= new_size);
 
@@ -226,9 +229,12 @@ jsonb_add_tag_and_data(struct JSONBuffer *buf, enum JSONBTag tag, const void *da
 }
 
 /* 0 on success, anything else on failure */
+#undef jsonb_encode_internal
 static int
 jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
 {
+#include "faultinject.h"
+
   assert(obj);
   if (Py_IsNone(obj))
     return jsonb_add_tag(buf, JT_NULL, 0);
@@ -562,6 +568,8 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     return NULL;
 
   int res = jsonb_encode_internal(&buf, obj);
+  assert((0 == res && !PyErr_Occurred()) || (res != 0 && PyErr_Occurred()));
+
   Py_CLEAR(buf.seen);
   Py_CLEAR(buf.default_);
   PyObject *retval = (0 == res) ? PyBytes_FromStringAndSize((const char *)buf.data, buf.size) : NULL;
@@ -1389,7 +1397,7 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
         }
         else if (tag == JT_TEXT5 && b == '\'')
         {
-          /* do nothing - json5 cam backslash escape single quote */
+          /* do nothing - json5 can backslash escape single quote */
         }
         else if (b == 'u')
         {
@@ -1547,10 +1555,13 @@ JSONB_detect(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     .alloc = 0,
   };
 
+  assert(!PyErr_Occurred());
   PyObject *res = jsonb_decode_one(&buf);
   assert(!PyErr_Occurred() && (res == DecodeFailure || res == DecodeSuccess));
+
   if (res == DecodeSuccess && buf.offset != buf.end_offset)
     res = DecodeFailure;
+
   PyBuffer_Release(&data_buffer);
 
   if (res == DecodeFailure)
