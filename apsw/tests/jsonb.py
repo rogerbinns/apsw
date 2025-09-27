@@ -160,6 +160,7 @@ class JSONB(unittest.TestCase):
             (r'\0', "\0"),
             (r'\0a', "\0a"),
             ('\\\'', "'"),
+            ("\\\n", ""),
             # ::TODO:: \v needs to be added back once SQLite fixes bug
             (r'\x5c\"\0\n\r\b\t\f\'', "\\\"\0\n\r\b\t\f'"),
         ):
@@ -541,6 +542,8 @@ class JSONB(unittest.TestCase):
         encoded = make_item(0, None) + make_item(1, None)
         self.check_invalid(encoded)
 
+        self.assertRaises(TypeError, detect, 3+4j)
+
         # reserved tags
         for tag in (13, 14, 15):
             encoded = make_item(tag, "foo")
@@ -609,6 +612,7 @@ class JSONB(unittest.TestCase):
             make_item(9, "hello\\"),
             make_item(9, r"\01"),
             make_item(9, r"\h"),
+            make_item(9, r"\x3"),
         ):
             self.check_invalid(encoded, include_sqlite=b"mark" not in encoded)
 

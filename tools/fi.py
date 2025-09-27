@@ -121,6 +121,7 @@ def exercise(example_code, expect_exception):
 
     # PreUpdate.tp_str needs this early
     if hasattr(con, "preupdate_hook"):
+
         def hook(update):
             str(update)
             for n in dir(update):
@@ -129,7 +130,7 @@ def exercise(example_code, expect_exception):
 
         con.preupdate_hook(hook)
         con.execute("create table preupdate(a,b,c,d,e); insert into preupdate values(null, 3, 3.3, 'three', x'abcdef')")
-        vals = [None, 5, 5.5, 'four', b'aaaaaaa']
+        vals = [None, 5, 5.5, "four", b"aaaaaaa"]
         for i in range(len(vals)):
             con.execute("update preupdate set a=?, b=?, c=?, d=?, e=?", vals[i:] + vals[:i])
 
@@ -229,6 +230,39 @@ def exercise(example_code, expect_exception):
     con.pragma("user_version")
     con.pragma("user_version", 7)
 
+    # jsonb stuff
+
+    data = {
+        128: " " * 128,
+        1024: " " * 1024,
+        True: 1,
+        False: 0,
+        None: -1,
+        "more": {
+            "another": "nested",
+            True: True,
+            False: False,
+            None: None,
+            3: 4,
+            3.3: 5,
+            "to exercise": [
+                "seen tracking",
+                [
+                    "which",
+                    "should have",
+                    ["set", "addand", "discard", [3 + 4j]],
+                ],
+            ],
+        },
+    }
+    encoded = apsw.jsonb_encode(data, default=lambda x: ["deeper", {"stuff": ["here"]}])
+    apsw.jsonb_detect(encoded)
+    apsw.jsonb_decode(encoded, int_hook=int, float_hook=float, object_hook=dict, array_hook=tuple)
+
+    encoded = con.execute("select jsonb(?)", ("""[0x1234, 4., .3, "\\0 𐌼𐌰𐌲 𐌲𐌻𐌴𐍃 𐌹̈𐍄𐌰𐌽", "\\'", "\\"", "\\u1234"]""",)).get
+    apsw.jsonb_decode(encoded)
+
+    # fts5
     con.fts5_tokenizer("unicode61", ["remove_diacritics", "1"])
 
     # this needs to be a type that doesn't happen in synthesized faults
@@ -829,7 +863,11 @@ class Tester:
                 self.expect_exception.append(OverflowError)
                 return (-1, OverflowError, self.FAULTS)
 
-            if fname.startswith("Py") or fname in {"_PyBytes_Resize", "_PyTuple_Resize", "getfunctionargs"}:
+            if (
+                fname.startswith("Py")
+                or fname.startswith("jsonb_")
+                or fname in {"_PyBytes_Resize", "_PyTuple_Resize", "getfunctionargs"}
+            ):
                 # for ones returning -1 on error
                 self.expect_exception.append(self.FAULTT)
                 return (-1, *self.FAULT)

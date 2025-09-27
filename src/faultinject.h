@@ -117,6 +117,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef jsonb_add_tag
 #undef jsonb_add_tag_and_data
 #undef jsonb_append_data
+#undef jsonb_encode_internal
 #undef jsonb_grow_buffer
 #undef jsonb_update_tag
 #undef realloc
@@ -1818,6 +1819,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_jsonb_append_data = (typeof (_res_jsonb_append_data))18;                                                                                   \
     }                                                                                                                                                   \
     _res_jsonb_append_data;                                                                                                                             \
+})
+#define jsonb_encode_internal(...) \
+({                                                                                                                                                                  \
+    __auto_type _res_jsonb_encode_internal = 0 ? jsonb_encode_internal(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_jsonb_encode_internal = (typeof (_res_jsonb_encode_internal))APSW_FaultInjectControl("jsonb_encode_internal", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_jsonb_encode_internal))0x1FACADE == _res_jsonb_encode_internal)                                                                               \
+       _res_jsonb_encode_internal = jsonb_encode_internal(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_jsonb_encode_internal))0x2FACADE == _res_jsonb_encode_internal)                                                                           \
+    {                                                                                                                                                               \
+        jsonb_encode_internal(__VA_ARGS__);                                                                                                                         \
+        _res_jsonb_encode_internal = (typeof (_res_jsonb_encode_internal))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_jsonb_encode_internal;                                                                                                                                     \
 })
 #define jsonb_grow_buffer(...) \
 ({                                                                                                                                                      \
