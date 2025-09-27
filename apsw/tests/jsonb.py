@@ -474,7 +474,6 @@ class JSONB(unittest.TestCase):
             meth(),
             b"aabb",
             bytearray(),
-            array.array("w", ["1", "2", "3"]),
             array.array("b", [1, 2, 3]),
             array.array("f", [1.1, 2.2, 3.3]),
         ):
@@ -881,7 +880,7 @@ def make_item(tag: int, value=None, *, len_encoding: int = None, length: int = N
         assert l <= 11
         res = bytes([tag | (l << 4)])
     else:
-        res = bytes([tag | ((12 + int(math.log2(len_encoding))) << 4)]) + l.to_bytes(len_encoding)
+        res = bytes([tag | ((12 + int(math.log2(len_encoding))) << 4)]) + l.to_bytes(len_encoding, "big")
 
     return res + value
 

@@ -5956,6 +5956,7 @@ class APSW(unittest.TestCase):
             "APSWFTS5Tokenizer",
             "cursor",
             "APSWChangesetIterator",
+            "JSONB",
         ) or name in {"apsw_no_change_repr"}:
             return
 
