@@ -716,8 +716,8 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
       return DecodeSuccess;
     {
       /* we cant use PyLong_FromString because the end of the string can't be passed in */
-      PyObject *text
-          = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset - value_offset);
+      PyObject *text = PyUnicode_FromKindAndData(PyUnicode_1BYTE_KIND, (const char *)(buf->buffer + value_offset),
+                                                 buf->offset - value_offset);
       if (!text)
         return NULL;
       PyObject *result = NULL;
@@ -741,8 +741,8 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
       return DecodeSuccess;
     {
       /* we cant use PyLong_FromString because the end of the string can't be passed in */
-      PyObject *text
-          = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset - value_offset);
+      PyObject *text = PyUnicode_FromKindAndData(PyUnicode_1BYTE_KIND, (const char *)(buf->buffer + value_offset),
+                                                 buf->offset - value_offset);
       if (!text)
         return NULL;
       PyObject *result = NULL;
@@ -768,8 +768,8 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
     if (!buf->alloc)
       return DecodeSuccess;
     {
-      PyObject *text
-          = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset - value_offset);
+      PyObject *text = PyUnicode_FromKindAndData(PyUnicode_1BYTE_KIND, (const char *)(buf->buffer + value_offset),
+                                                 buf->offset - value_offset);
       if (!text)
         return NULL;
       PyObject *result = NULL;
@@ -803,7 +803,11 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
     PyObject *retval = NULL;
     if (tag == JT_TEXT || tag == JT_TEXTRAW)
     {
-      retval = PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset - value_offset);
+      retval
+          = (max_char == 127)
+                ? PyUnicode_FromKindAndData(PyUnicode_1BYTE_KIND, (const char *)(buf->buffer + value_offset),
+                                            buf->offset - value_offset)
+                : PyUnicode_FromStringAndSize((const char *)(buf->buffer + value_offset), buf->offset - value_offset);
       if (retval)
         assert((size_t)PyUnicode_GET_LENGTH(retval) == length);
       return retval;
