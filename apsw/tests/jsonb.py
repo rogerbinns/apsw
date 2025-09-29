@@ -180,6 +180,13 @@ class JSONB(unittest.TestCase):
             encoded = make_item(tag, "")
             self.check_valid(encoded, "")
 
+        for encoded, expected in (
+            (make_item(9, '"'), '"'),
+            (make_item(9, "\x17"), "\x17"),
+            (make_item(9, "\\0"), "\0"),
+        ):
+            self.check_valid(encoded, expected)
+
         # others
         for s in (
             "/",
@@ -571,6 +578,7 @@ class JSONB(unittest.TestCase):
 
         # not numbers
         for number in (
+            "",
             "--1",
             "1-2",
             "0.-1",
@@ -609,14 +617,28 @@ class JSONB(unittest.TestCase):
 
         # not valid text
         for encoded in (
+            # TEXT
+            # apostrophe, double quote, backslash not allowed
+            # control (<0x1f) not allowed
+            make_item(7, "one'two"),
+            make_item(7, "one\x17two"),
+            make_item(7, 'one"two'),
+            make_item(7, "one\\two"),
             # TEXTJ
+            # not backslashed escaped apostrophe, double quote, backslash disallowed
+            # control (<0x1f) not allowed
+            make_item(8, "one\x17two"),
+            make_item(8, "one'two"),
+            make_item(8, 'one"two'),
             make_item(8, r"one\u123two"),
             make_item(8, r"one\u123"),
             make_item(8, "one\\"),
             make_item(8, r"\one"),
             make_item(8, r"\'abc"),
             make_item(8, r"\h"),
+            make_item(8, r"\v"),
             # TEXT5
+            # double quote is allowed
             make_item(9, r"hello\x1mark"),
             make_item(9, "hello\\"),
             make_item(9, r"\01"),
