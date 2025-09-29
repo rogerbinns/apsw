@@ -1326,8 +1326,8 @@ get_hex(const uint8_t *buf, int num_digits)
 }
 
 static int
-jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag, size_t *pLength,
-                         Py_UCS4 *pMax_char)
+jsonb_decode_utf8_string_complex(const uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag, size_t *pLength,
+                                 Py_UCS4 *pMax_char)
 {
   /*
     unistr is PyUnicode to fill in, or NULL
@@ -1345,7 +1345,7 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
   /* only valid values.  TEXTRAW should be passed as TEXT  */
   assert(tag == JT_TEXT || tag == JT_TEXTJ || tag == JT_TEXT5);
 
-  Py_UCS4 max_char = 1;
+  Py_UCS4 max_char = 127;
 
   /* next byte to read */
   size_t sin_index = 0;
@@ -1559,6 +1559,25 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
     *pLength = sout_index;
   if (pMax_char)
     *pMax_char = max_char;
+  return 1;
+}
+
+// ::TODO:: JT_TEXT needs checking separate from TEXTRAW - eg ', null
+/* the most common case is dealing with ascii range and no backslashes */
+static int
+jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag, size_t *pLength,
+                         Py_UCS4 *pMax_char)
+{
+  if (unistr || tag == JT_TEXT5 || tag == JT_TEXTJ)
+    return jsonb_decode_utf8_string_complex(buf, end, unistr, tag, pLength, pMax_char);
+
+  for (size_t pos = 0; pos < end; pos++)
+  {
+    if ((buf[pos] & 0x80))
+      return jsonb_decode_utf8_string_complex(buf, end, unistr, tag, pLength, pMax_char);
+  }
+  *pMax_char = 127;
+  *pLength = end;
   return 1;
 }
 
