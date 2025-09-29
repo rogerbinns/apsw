@@ -95,8 +95,11 @@ jsonb_grow_buffer(struct JSONBuffer *buf, size_t count)
     return -1;
   }
 #ifndef APSW_DEBUG
-  /* in production builds we round up to next multiple of 256 */
-  size_t alloc_size = (new_size + 255) & ~(size_t)0xffu;
+  /* in production builds we go to 1024 if smaller than that, else
+     double the size each time which is also what Python internals do.  the
+     allocation is short lived as we copy it into a pybytes and free at the
+     end  */
+  size_t alloc_size = (new_size < 1024) ? 1024 : (2 * new_size);
 #else
   /* and in debug alternate between 0 and 7 so we exercise the buffer
      having space and not  */
