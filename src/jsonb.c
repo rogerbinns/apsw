@@ -945,6 +945,9 @@ jsonb_check_int(struct JSONBDecodeBuffer *buf, size_t start, size_t end)
     no leading zeroes
   */
 
+  if (end == start)
+    return 0;
+
   int seen_sign = 0, seen_digit = 0, seen_first_is_zero = 0;
 
   for (size_t offset = start; offset < end; offset++)
@@ -997,7 +1000,8 @@ jsonb_check_int5hex(struct JSONBDecodeBuffer *buf, size_t start, size_t end)
     x or X
     at least one hex digit
   */
-
+  if (end - start < 3)
+    return 0;
   int seen_sign = 0, seen_x = 0, seen_leading_zero = 0, seen_digit = 0;
 
   for (size_t offset = start; offset < end; offset++)
@@ -1079,6 +1083,9 @@ jsonb_check_float(struct JSONBDecodeBuffer *buf, size_t start, size_t end)
         optional sign
           at least one digit
   */
+
+  if (end - start < 3)
+    return 0;
 
   int seen_sign = 0, seen_dot = 0, seen_digit = 0, seen_e = 0, seen_first_is_zero = 0;
 
@@ -1180,6 +1187,9 @@ jsonb_check_float5(struct JSONBDecodeBuffer *buf, size_t start, size_t end)
   */
 
   /* If SQLite allows NaN/Infinity it would be handled here */
+
+  if (end - start < 2)
+    return 0;
 
   int seen_sign = 0, seen_dot = 0, seen_digit = 0, seen_e = 0, seen_first_is_zero = 0;
 
