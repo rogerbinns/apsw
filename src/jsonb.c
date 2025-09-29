@@ -56,6 +56,9 @@ struct JSONBuffer
   int sort_keys;
 };
 
+/* returns 0 if encoded successsfully,  else -1 */
+static int jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj);
+
 /* The JT_ prefix is needed to avoid name clashes */
 enum JSONBTag
 {
@@ -233,6 +236,51 @@ jsonb_add_tag_and_data(struct JSONBuffer *buf, enum JSONBTag tag, const void *da
   return res;
 }
 
+/* 0 on success, anything else on failure. if key is skipped then buf->size won't have changed */
+#undef jsonb_encode_object_key
+static int
+jsonb_encode_object_key(struct JSONBuffer *buf, PyObject *key)
+{
+#include "faultinject.h"
+  /* this is a separate function because we have to stringify
+     int/float etc to match stdlin json.dumps behaviour */
+  if (PyUnicode_Check(key))
+    return jsonb_encode_internal(buf, key);
+  else if (Py_IsNone(key) || Py_IsTrue(key) || Py_IsFalse(key))
+  {
+    PyObject *key_subst = NULL;
+    if (Py_IsNone(key))
+      key_subst = apst.snull;
+    else if (Py_IsTrue(key))
+      key_subst = apst.strue;
+    else
+      key_subst = apst.sfalse;
+    return jsonb_encode_internal(buf, key_subst);
+  }
+  else if (PyFloat_Check(key) || PyLong_Check(key))
+  {
+    /* for these we write them out as their own types
+           and then alter the tag to be string */
+    size_t tag_offset = buf->size;
+    if (jsonb_encode_internal(buf, key) == 0)
+    {
+      unsigned char *as_ptr = (unsigned char *)buf->data;
+      as_ptr[tag_offset] = (as_ptr[tag_offset] & 0xf0) | JT_TEXTRAW;
+      return 0;
+    }
+    return -1;
+  }
+  else if (buf->skip_keys)
+  {
+    return 0;
+  }
+  else
+  {
+    PyErr_Format(PyExc_TypeError, "Keys must be str, int, float, bool or None. not %s", Py_TypeName(key));
+    return -1;
+  }
+}
+
 /* 0 on success, anything else on failure */
 #undef jsonb_encode_internal
 static int
@@ -327,9 +375,13 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
   }
 
   /* this works better than pymapping_check */
-  int is_dict = PyObject_IsInstance(obj, collections_abc_Mapping);
-  if (is_dict < 0)
-    goto error;
+  int is_dict = PyDict_CheckExact(obj);
+  if (!is_dict)
+  {
+    is_dict = PyObject_IsInstance(obj, collections_abc_Mapping);
+    if (is_dict < 0)
+      goto error;
+  }
 
   if (is_dict)
   {
@@ -344,64 +396,50 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
     size_t data_offset = buf->size;
     if (buf->seen && PySet_Add(buf->seen, id_of_obj))
       goto error;
-    items = PyMapping_Items(obj);
-    if (!items)
-      goto error;
-    /* PyMapping_Items guarantees this */
-    assert(PyList_CheckExact(items));
-    if (buf->sort_keys && PyList_Sort(items) < 0)
-      goto error;
-    for (Py_ssize_t i = 0; i < PyList_GET_SIZE(items); i++)
-    {
-      PyObject *tuple = PyList_GET_ITEM(items, i);
-      if (!PyTuple_CheckExact(tuple) || PyTuple_GET_SIZE(tuple) != 2)
-      {
-        PyErr_Format(PyExc_ValueError, "mapping items not 2-tuples");
-        goto error;
-      }
-      PyObject *key = PyTuple_GET_ITEM(tuple, 0), *value = PyTuple_GET_ITEM(tuple, 1);
 
-      /* keys have to be string, we copy stdlib json by stringizing some non-string
-         types */
-      if (PyUnicode_Check(key))
+    if (!buf->sort_keys && PyDict_CheckExact(obj))
+    {
+      /* the expected code path */
+      Py_ssize_t pos = 0;
+      PyObject *key, *value;
+      while (PyDict_Next(obj, &pos, &key, &value))
       {
-        if (jsonb_encode_internal(buf, key))
+        size_t offset = buf->size;
+
+        if (jsonb_encode_object_key(buf, key))
+          goto error;
+        if (buf->size != offset && jsonb_encode_internal(buf, value))
           goto error;
       }
-      else if (Py_IsNone(key) || Py_IsTrue(key) || Py_IsFalse(key))
-      {
-        PyObject *key_subst = NULL;
-        if (Py_IsNone(key))
-          key_subst = apst.snull;
-        else if (Py_IsTrue(key))
-          key_subst = apst.strue;
-        else
-          key_subst = apst.sfalse;
-        if (jsonb_encode_internal(buf, key_subst))
-          goto error;
-      }
-      else if (PyFloat_Check(key) || PyLong_Check(key))
-      {
-        /* for these we write them out as their own types
-           and then alter the tag to be string */
-        size_t tag_offset = buf->size;
-        if (jsonb_encode_internal(buf, key))
-          goto error;
-        unsigned char *as_ptr = (unsigned char *)buf->data;
-        as_ptr[tag_offset] = (as_ptr[tag_offset] & 0xf0) | JT_TEXTRAW;
-      }
-      else if (buf->skip_keys)
-      {
-        continue;
-      }
-      else
-      {
-        PyErr_Format(PyExc_TypeError, "Keys must be str, int, float, bool or None. not %s", Py_TypeName(key));
-        goto error;
-      }
-      if (jsonb_encode_internal(buf, value))
-        goto error;
     }
+    else
+    {
+      items = PyMapping_Items(obj);
+      if (!items)
+        goto error;
+      /* PyMapping_Items guarantees this */
+      assert(PyList_CheckExact(items));
+      if (buf->sort_keys && PyList_Sort(items) < 0)
+        goto error;
+      for (Py_ssize_t i = 0; i < PyList_GET_SIZE(items); i++)
+      {
+        PyObject *tuple = PyList_GET_ITEM(items, i);
+        if (!PyTuple_CheckExact(tuple) || PyTuple_GET_SIZE(tuple) != 2)
+        {
+          PyErr_Format(PyExc_ValueError, "mapping items not 2-tuples");
+          goto error;
+        }
+        PyObject *key = PyTuple_GET_ITEM(tuple, 0), *value = PyTuple_GET_ITEM(tuple, 1);
+
+        size_t offset = buf->size;
+
+        if (jsonb_encode_object_key(buf, key))
+          goto error;
+        if (buf->size != offset && jsonb_encode_internal(buf, value))
+          goto error;
+      }
+    }
+
     size_t size = buf->size - data_offset;
     if (jsonb_update_tag(buf, JT_OBJECT, tag_offset, size))
       goto error;
