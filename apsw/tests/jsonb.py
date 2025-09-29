@@ -154,15 +154,15 @@ class JSONB(unittest.TestCase):
         # try to get each type of string - we only generate textraw
         seen = set()
         for test, expected in (
-            ('hello', "hello"),
-            ('table select []', "table select []"),
-            (r'\u0020\n', " \n"),
-            (r'\0', "\0"),
-            (r'\0a', "\0a"),
-            ('\\\'', "'"),
+            ("hello", "hello"),
+            ("table select []", "table select []"),
+            (r"\u0020\n", " \n"),
+            (r"\0", "\0"),
+            (r"\0a", "\0a"),
+            ("\\'", "'"),
             ("\\\n", ""),
             # ::TODO:: \v needs to be added back once SQLite fixes bug
-            (r'\x5c\"\0\n\r\b\t\f\'', "\\\"\0\n\r\b\t\f'"),
+            (r"\x5c\"\0\n\r\b\t\f\'", "\\\"\0\n\r\b\t\f'"),
         ):
             # this is to ensure we test non-ascii ranges too
             for suffix in ("", "".join(test_strings)):
@@ -170,7 +170,7 @@ class JSONB(unittest.TestCase):
                 encoded = self.f_jsonb(s)
                 seen.add(encoded[0] & 0x0F)
                 self.assertEqual(decode(encoded), expected + suffix)
-                self.assertEqual(json.loads(self.f_json(encoded)), expected + suffix )
+                self.assertEqual(json.loads(self.f_json(encoded)), expected + suffix)
 
         # I can't get sqlite to generate textraw, but we do ...
         self.assertEqual(seen, {7, 8, 9})
@@ -551,7 +551,7 @@ class JSONB(unittest.TestCase):
         encoded = make_item(0, None) + make_item(1, None)
         self.check_invalid(encoded)
 
-        self.assertRaises(TypeError, detect, 3+4j)
+        self.assertRaises(TypeError, detect, 3 + 4j)
 
         # reserved tags
         for tag in (13, 14, 15):
@@ -780,10 +780,11 @@ class JSONB(unittest.TestCase):
 
     def testSizing(self):
         "length encoding"
-        # the same item length can be encoded multiple ways with leading
-        # zeroes.  this checks we handle them correctly.  while sqlite
-        # decodes 8 byte lengths, it rejects any longer than 4 bytes (4GB)
-        # because everything else in sqlite is 2GB limited.
+        # the same item length can be encoded multiple ways with
+        # leading zeroes.  this checks we handle them correctly.
+        # while sqlite decodes 8 byte lengths, it rejects any value
+        # longer than 4 bytes (4GB) because everything else in sqlite
+        # is 2GB limited.
 
         for len_encoding in 0, 1, 2, 4, 8:
             vals = {
