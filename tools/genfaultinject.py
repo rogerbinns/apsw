@@ -177,7 +177,7 @@ returns = {
         PyObject_SetAttr _PyBytes_Resize PyDict_SetItem
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
         PyStructSequence_InitType2 PyList_Size PyLong_AsInt
-        PyList_SetItem PySet_Contains PyObject_IsInstance
+        PyList_SetItem PyList_Sort PySet_Contains PyObject_IsInstance
         PyMapping_Size PySet_Discard
 
         PyObject_GetBufferContiguous PyObject_GetBuffer PyObject_GetBufferContiguousBounded

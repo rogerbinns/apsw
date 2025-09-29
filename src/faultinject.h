@@ -35,6 +35,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyList_New
 #undef PyList_SetItem
 #undef PyList_Size
+#undef PyList_Sort
 #undef PyLong_AsInt
 #undef PyLong_AsLong
 #undef PyLong_AsLongLong
@@ -551,6 +552,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyList_Size = (typeof (_res_PyList_Size))18;                                                                             \
     }                                                                                                                                 \
     _res_PyList_Size;                                                                                                                 \
+})
+#define PyList_Sort(...) \
+({                                                                                                                                    \
+    __auto_type _res_PyList_Sort = 0 ? PyList_Sort(__VA_ARGS__) : 0;                                                                  \
+                                                                                                                                      \
+    _res_PyList_Sort = (typeof (_res_PyList_Sort))APSW_FaultInjectControl("PyList_Sort", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                      \
+    if ((typeof (_res_PyList_Sort))0x1FACADE == _res_PyList_Sort)                                                                     \
+       _res_PyList_Sort = PyList_Sort(__VA_ARGS__);                                                                                   \
+    else if ((typeof(_res_PyList_Sort))0x2FACADE == _res_PyList_Sort)                                                                 \
+    {                                                                                                                                 \
+        PyList_Sort(__VA_ARGS__);                                                                                                     \
+        _res_PyList_Sort = (typeof (_res_PyList_Sort))18;                                                                             \
+    }                                                                                                                                 \
+    _res_PyList_Sort;                                                                                                                 \
 })
 #define PyLong_AsInt(...) \
 ({                                                                                                                                       \
