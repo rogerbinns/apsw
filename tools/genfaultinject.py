@@ -186,7 +186,7 @@ returns = {
         connection_trace_and_exec getfunctionargs
 
         jsonb_grow_buffer jsonb_add_tag jsonb_update_tag jsonb_append_data
-        jsonb_add_tag_and_data jsonb_encode_internal
+        jsonb_add_tag_and_data jsonb_encode_internal jsonb_encode_object_key
         """.split(),
 }
 
