@@ -1583,7 +1583,14 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
 
 /** .. method:: jsonb_detect(data: Buffer) -> bool
 
-    Returns ``True`` if data is valid JSONB, otherwise ``False``.
+    Returns ``True`` if data is valid JSONB, otherwise ``False``.  No exceptions are raised
+    while processing the data.
+
+    .. note::
+
+      :func:`~apsw.jsonb_decode` always validates the data as it decodes, so there is no
+      need to call this function separately.  This function is useful for determining if
+      some data is valid, and not some other binary format such as an image.
 */
 static PyObject *
 JSONB_detect(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -1636,9 +1643,12 @@ jsonb_detect_internal(const void *data, size_t length)
   return (res == DecodeSuccess) ? 1 : 0;
 }
 
-/** .. method:: jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    int_hook: Callable[[str], Any] | None = None,    float_hook: Callable[[str], Any] | None = None,) -> Any
+// ::TODO:: rename int/float hook to parse_ variant like stdlib
 
-    Decodes JSONB binary data into a Python object
+/** .. method:: jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    parse_int: Callable[[str], Any] | None = None,    parse_float: Callable[[str], Any] | None = None,) -> Any
+
+    Decodes JSONB binary data into a Python object.  It is like :func:`json.loads`
+    but operating on JSONB.
 
     :param data: Binary data to decode
     :param object_pairs_hook: Called after a JSON object has been
@@ -1650,29 +1660,34 @@ jsonb_detect_internal(const void *data, size_t length)
         value to use instead.
     :param array_hook: Called after a JSON array has been decoded into
         a list, and should return a replacement value to use instead.
-    :param int_hook: Called with a :class:`str` of the integer, and
-        should return a replacement value to use instead.  The default
-        is the builtin :class:`int`.
-    :param float_hook: Called with a :class:`str` of the float, and
-        should return a replacement value to use instead.  The default
-        is the builtin :class:`float`.
+    :param parse_int: Called with a :class:`str` of the integer, and
+        should return a value to use.  The default is :class:`int`.
+        If the integer is hexadecimal then it will be called with a
+        second parameter of 16.
+    :param parse_float: Called with a :class:`str` of the float, and
+        should return a value to use.  The default is :class:`float`.
 
     Only one of ``object_hook`` or ``object_pairs_hook`` can be
     provided.  ``object_pairs_hook`` is useful when you want something
     other than a dict, care about the order of keys, want to convert
-    them (eg case, numbers), want to handle duplicate keys etc.
+    them first (eg case, numbers, normalization), want to handle duplicate
+    keys etc.
 
-    The array, int, and float hooks let you use alternate
-    implementations.  For example if you are using `numpy
+    The array, int, and float hooks let you use alternate implementations.
+    For example if you are using `numpy
     <https://numpy.org/doc/stable/user/basics.types.html>`__ then you
-    could use numpy arrays, or numpy's float128 to get higher
-    precision floating numbers with greater exponent range than the
+    could use numpy arrays instead of lists, or numpy's float128 to get
+    higher precision floating numbers with greater exponent range than the
     builtin float type.
 
     If you use :class:`types.MappingProxyType` as ``object_hook`` and
     :class:`tuple` as ``array_hook`` then the overall returned value
     will be immutable (read only).
 
+    .. note::
+
+      The data is always validated during decode.  There is no need to
+      separately call :func:`~apsw.jsonb_detect`.
 */
 static PyObject *
 JSONB_decode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -1681,8 +1696,8 @@ JSONB_decode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   PyObject *object_pairs_hook = NULL;
   PyObject *object_hook = NULL;
   PyObject *array_hook = NULL;
-  PyObject *int_hook = NULL;
-  PyObject *float_hook = NULL;
+  PyObject *parse_int = NULL;
+  PyObject *parse_float = NULL;
 
   {
     Apsw_jsonb_decode_CHECK;
@@ -1691,8 +1706,8 @@ JSONB_decode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     ARG_OPTIONAL ARG_optional_Callable(object_pairs_hook);
     ARG_OPTIONAL ARG_optional_Callable(object_hook);
     ARG_OPTIONAL ARG_optional_Callable(array_hook);
-    ARG_OPTIONAL ARG_optional_Callable(int_hook);
-    ARG_OPTIONAL ARG_optional_Callable(float_hook);
+    ARG_OPTIONAL ARG_optional_Callable(parse_int);
+    ARG_OPTIONAL ARG_optional_Callable(parse_float);
     ARG_EPILOG(NULL, Apsw_jsonb_decode_USAGE, );
   }
 
@@ -1710,8 +1725,8 @@ JSONB_decode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     .object_pairs_hook = object_pairs_hook,
     .object_hook = object_hook,
     .array_hook = array_hook,
-    .int_hook = int_hook,
-    .float_hook = float_hook,
+    .parse_int = parse_int,
+    .parse_float = parse_float,
     .alloc = 1,
   };
 
