@@ -257,7 +257,7 @@ def exercise(example_code, expect_exception):
     }
     encoded = apsw.jsonb_encode(data, default=lambda x: ["deeper", {"stuff": ["here"]}])
     apsw.jsonb_detect(encoded)
-    apsw.jsonb_decode(encoded, int_hook=int, float_hook=float, object_hook=dict, array_hook=tuple)
+    apsw.jsonb_decode(encoded, parse_int=int, parse_float=float, object_hook=dict, array_hook=tuple)
 
     encoded = con.execute("select jsonb(?)", ("""[0x1234, 4., .3, "\\0 𐌼𐌰𐌲 𐌲𐌻𐌴𐍃 𐌹̈𐍄𐌰𐌽", "\\'", "\\"", "\\u1234"]""",)).get
     apsw.jsonb_decode(encoded)
