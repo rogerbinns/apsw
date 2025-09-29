@@ -461,6 +461,16 @@ class JSONB(unittest.TestCase):
         CustomMap.__len__ = CustomMap.bad_len2
         self.assertRaises(ZeroDivisionError, encode, CustomMap())
 
+        # key sorting - this depends on dict keys being in sort order
+        data = {"f": 1, "e": 2, "d": 3, "c": 4, "b": 5, "a": 6}
+        self.assertEqual(decode(encode(data), object_pairs_hook=lambda x: x), list(data.items()))
+        self.assertEqual(decode(encode(data, sort_keys=True), object_pairs_hook=lambda x: x), sorted(data.items()))
+
+        # unsortable
+        self.assertRaises(TypeError, encode, {1: 2, None: 3}, sort_keys=True)
+        # this won't raise
+        encode({1: 2, None: 3}, sort_keys=False)
+
     def testArrays(self):
         def meth():
             yield 1
@@ -516,7 +526,7 @@ class JSONB(unittest.TestCase):
         class inty(floaty):
             pass
 
-        x = decode(encode([1, 2, 1.1, 2.2]), int_hook=inty, float_hook=floaty)
+        x = decode(encode([1, 2, 1.1, 2.2]), parse_int=inty, parse_float=floaty)
         self.assertEqual(x[0].x, "1")
         self.assertEqual(x[1].x, "2")
         self.assertEqual(x[2].x, "1.1")
@@ -525,10 +535,10 @@ class JSONB(unittest.TestCase):
         # error checking
         all_types = {"orange": [67567567, math.pi]}
         five_numbers = self.f_jsonb("[0x1234, 5., .1]")
-        for kind in "int_hook", "float_hook", "object_hook", "array_hook", "object_pairs_hook":
+        for kind in "parse_int", "parse_float", "object_hook", "array_hook", "object_pairs_hook":
             detect(encode(all_types))
             self.assertRaises(ZeroDivisionError, decode, encode(all_types), **{kind: lambda x: 1 / 0})
-            if kind in {"int_hook", "float_hook"}:
+            if kind in {"parse_int", "parse_float"}:
                 self.assertRaises(ZeroDivisionError, decode, five_numbers, **{kind: lambda *args: 1 / 0})
             self.assertRaises(TypeError, decode, encode(all_types), **{kind: kind})
             self.assertRaises(TypeError, decode, encode(all_types), **{kind: kind})

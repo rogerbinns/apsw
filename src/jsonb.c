@@ -52,6 +52,8 @@ struct JSONBuffer
   PyObject *seen;
   /* do we skip non-string dict keys? */
   int skip_keys;
+  /* are dict keys sorted */
+  int sort_keys;
 };
 
 /* The JT_ prefix is needed to avoid name clashes */
@@ -344,6 +346,8 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
       goto error;
     /* PyMapping_Items guarantees this */
     assert(PyList_CheckExact(items));
+    if (buf->sort_keys && PyList_Sort(items) < 0)
+      goto error;
     for (Py_ssize_t i = 0; i < PyList_GET_SIZE(items); i++)
     {
       PyObject *tuple = PyList_GET_ITEM(items, i);
@@ -522,11 +526,20 @@ error:
   return -1;
 }
 
-/** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes
+/** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys:bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes
 
-    Encodes object as JSONB
+    Encodes object as JSONB.  It is like :func:`json.dumps` except it produces
+    JSONB.
 
     :param obj: Object to encode
+    :param skipkeys: If ``True`` and a non-string dict key is
+       encountered then it is skipped.  Otherwise :exc:`ValueError`
+       is raised.  Default ``False``.  Like :func:`json.dumps` keys
+       that are bool, int, float, and None are always converted to
+       string.
+    :param sort_keys: If ``True`` then objects (dict) will be output
+       with the keys sorted.  This produces deterministic output.
+       Default ``False``.
     :param check_circular: Detects if containers contain themselves
        (even indirectly) and raises :exc:`ValueError`.  If ``False``
        and there is a circular reference, you get
@@ -544,6 +557,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
 {
   PyObject *obj;
   int skipkeys = 0;
+  int sort_keys = 0;
   int check_circular = 1;
   PyObject *default_ = NULL;
   {
@@ -551,6 +565,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     ARG_PROLOG(1, Apsw_jsonb_encode_KWNAMES);
     ARG_MANDATORY ARG_pyobject(obj);
     ARG_OPTIONAL ARG_bool(skipkeys);
+    ARG_OPTIONAL ARG_bool(sort_keys);
     ARG_OPTIONAL ARG_bool(check_circular);
     ARG_OPTIONAL ARG_optional_Callable(default_);
     ARG_EPILOG(NULL, Apsw_jsonb_encode_USAGE, );
@@ -562,6 +577,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     .allocated = 0,
     .default_ = Py_XNewRef(default_),
     .skip_keys = skipkeys,
+    .sort_keys = sort_keys,
     .seen = check_circular ? PySet_New(NULL) : 0,
   };
   if (check_circular && !buf.seen)
@@ -586,8 +602,8 @@ struct JSONBDecodeBuffer
   PyObject *object_pairs_hook;
   PyObject *object_hook;
   PyObject *array_hook;
-  PyObject *int_hook;
-  PyObject *float_hook;
+  PyObject *parse_int;
+  PyObject *parse_float;
   int alloc; /* zero if doing a detect (no allocations), non-zero if doing a decode (allocations) */
 };
 
@@ -705,10 +721,10 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
       if (!text)
         return NULL;
       PyObject *result = NULL;
-      if (buf->int_hook)
+      if (buf->parse_int)
       {
         PyObject *vargs[] = { NULL, text };
-        result = PyObject_Vectorcall(buf->int_hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+        result = PyObject_Vectorcall(buf->parse_int, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       }
       else
         result = PyLong_FromUnicodeObject(text, 10);
@@ -730,12 +746,12 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
       if (!text)
         return NULL;
       PyObject *result = NULL;
-      if (buf->int_hook)
+      if (buf->parse_int)
       {
         /* we need to pass zero as the base so leading sign and 0x are processed as expected */
         PyObject *vargs[] = { NULL, text, PyLong_FromLong(0) };
         if (vargs[2])
-          result = PyObject_Vectorcall(buf->int_hook, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+          result = PyObject_Vectorcall(buf->parse_int, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
         Py_XDECREF(vargs[2]);
       }
       else
@@ -757,10 +773,10 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
       if (!text)
         return NULL;
       PyObject *result = NULL;
-      if (buf->float_hook)
+      if (buf->parse_float)
       {
         PyObject *vargs[] = { NULL, text };
-        result = PyObject_Vectorcall(buf->float_hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+        result = PyObject_Vectorcall(buf->parse_float, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       }
       else
         result = PyFloat_FromString(text);
