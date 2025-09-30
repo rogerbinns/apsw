@@ -56,7 +56,8 @@ struct JSONBuffer
   int sort_keys;
 };
 
-/* returns 0 if encoded successsfully,  else -1 */
+#undef jsonb_encode_internal
+/* returns 0 if encoded successfully,  else -1 */
 static int jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj);
 
 /* The JT_ prefix is needed to avoid name clashes */
@@ -243,7 +244,7 @@ jsonb_encode_object_key(struct JSONBuffer *buf, PyObject *key)
 {
 #include "faultinject.h"
   /* this is a separate function because we have to stringify
-     int/float etc to match stdlin json.dumps behaviour */
+     int/float etc to match stdlib json.dumps behaviour */
   if (PyUnicode_Check(key))
     return jsonb_encode_internal(buf, key);
   else if (Py_IsNone(key) || Py_IsTrue(key) || Py_IsFalse(key))
@@ -1641,7 +1642,7 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
       /* jsonIsOk table in sqlite source and JSONB_TEXT case in jsonbValidityCheck.
          bizarrely single quote is allowed even though it needs to be escaped in
          sql contrary to the spec */
-      if (b < 0x20 || b == 0x22 || b == 0x5c )
+      if (b < 0x20 || b == 0x22 || b == 0x5c)
         return 0;
       if (b & 0x80)
         return jsonb_decode_utf8_string_complex(buf, end, unistr, tag, pLength, pMax_char);
