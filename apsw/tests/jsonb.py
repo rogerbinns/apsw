@@ -143,6 +143,44 @@ class JSONB(unittest.TestCase):
         ):
             self.check_item(item)
 
+    def testAllowedChars(self):
+        # work out exactly what values are allowed in strings, and confirm we match
+        for tag in {7, 8, 9, 10}:
+            for value in range(0, 130):
+                for repeat in (1, 2):
+                    for backslash in (0, 1):
+                        # this is to force >= 0x80 utf8 bytes
+                        for suffix in ("", chr(1234)):
+                            s = "\\" * backslash + chr(value) * repeat + suffix
+                            encoded = make_item(tag, s)
+                            sqlite = bool(self.f_json_valid(encoded, 8))
+                            us = detect(encoded)
+
+                            if sqlite and not us and value == 0:
+                                # sqlite allows backslash zero byte which is nonsensical
+                                if tag == 8:
+                                    continue
+
+                            j = self.f_json(encoded) if sqlite else None
+
+                            if tag == 9 and j and sqlite and not us:
+                                # sqlite incorrectly allows \x ANYTHING but generates garbage json
+                                try:
+                                    json.loads(j)
+                                except json.decoder.JSONDecodeError:
+                                    # correct sqlite's error
+                                    sqlite = False
+
+                            self.assertEqual(sqlite, us)
+
+                            if sqlite:
+                                left = json.loads(self.f_json(encoded))
+                                right = decode(encoded)
+                                # 3.50.4 gets \v wrong
+                                if left.replace("\t", "\v") == right:
+                                    continue
+                                self.assertEqual(left, right)
+
     def testStrings(self):
         # our gnarly test strings
         test_strings = [s[0].decode("utf8") for s in apsw.fts5.tokenizer_test_strings()]
@@ -618,17 +656,11 @@ class JSONB(unittest.TestCase):
         # not valid text
         for encoded in (
             # TEXT
-            # apostrophe, double quote, backslash not allowed
-            # control (<0x1f) not allowed
-            make_item(7, "one'two"),
             make_item(7, "one\x17two"),
             make_item(7, 'one"two'),
             make_item(7, "one\\two"),
             # TEXTJ
-            # not backslashed escaped apostrophe, double quote, backslash disallowed
-            # control (<0x1f) not allowed
             make_item(8, "one\x17two"),
-            make_item(8, "one'two"),
             make_item(8, 'one"two'),
             make_item(8, r"one\u123two"),
             make_item(8, r"one\u123"),
@@ -638,7 +670,6 @@ class JSONB(unittest.TestCase):
             make_item(8, r"\h"),
             make_item(8, r"\v"),
             # TEXT5
-            # double quote is allowed
             make_item(9, r"hello\x1mark"),
             make_item(9, "hello\\"),
             make_item(9, r"\01"),

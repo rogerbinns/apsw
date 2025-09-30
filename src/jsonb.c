@@ -835,8 +835,8 @@ jsonb_decode_one(struct JSONBDecodeBuffer *buf)
     /* this is the length in codepoints */
     size_t length = 0;
     Py_UCS4 max_char = 0;
-    if (!jsonb_decode_utf8_string(buf->buffer + value_offset, buf->offset - value_offset, NULL,
-                                  (tag == JT_TEXT || tag == JT_TEXTRAW) ? JT_TEXT : tag, &length, &max_char))
+    if (!jsonb_decode_utf8_string(buf->buffer + value_offset, buf->offset - value_offset, NULL, tag, &length,
+                                  &max_char))
       return malformed(buf, "not a valid string");
     assert(max_char > 0);
     if (!buf->alloc)
@@ -1381,7 +1381,7 @@ jsonb_decode_utf8_string_complex(const uint8_t *buf, size_t end, PyObject *unist
   /* zero length should not be passed in */
   assert(end > 0);
   /* only valid values.  TEXTRAW should be passed as TEXT  */
-  assert(tag == JT_TEXT || tag == JT_TEXTJ || tag == JT_TEXT5);
+  assert(tag == JT_TEXT || tag == JT_TEXTJ || tag == JT_TEXT5 || tag == JT_TEXTRAW);
 
   Py_UCS4 max_char = 127;
 
@@ -1400,140 +1400,154 @@ jsonb_decode_utf8_string_complex(const uint8_t *buf, size_t end, PyObject *unist
 
     if ((b & 0x80) == 0) /* 0b1000_0000 */
     {
-      if (b == '\\' && tag != JT_TEXT)
+      if (tag != JT_TEXTRAW)
       {
-        /* there must be at least one more byte */
-        if (sin_index == end)
+        /* handle various banned chars */
+        if (b < 0x20 && (tag == JT_TEXT || tag == JT_TEXTJ))
           return 0;
 
-        b = buf[sin_index];
-        sin_index++;
+        if (b == '"' && (tag == JT_TEXT || tag == JT_TEXTJ))
+          return 0;
 
-        /* process JSON escapes */
-        if (b == '\\' || b == '"')
+        if (b == '\\')
         {
-          /* do nothing - left as is */
-        }
-        else if (b == 'b' || b == 'f' || b == 'n' || b == 'r' || b == 't' || b == 'v')
-        {
-          switch (b)
-          {
-          case 'b':
-            b = '\b';
-            break;
-
-          case 'f':
-            b = '\f';
-            break;
-
-          case 'n':
-            b = '\n';
-            break;
-
-          case 'r':
-            b = '\r';
-            break;
-
-          case 't':
-            b = '\t';
-            break;
-
-          case 'v':
-            b = '\v';
-            break;
-          }
-        }
-        else if (tag == JT_TEXT5 && b == '0')
-        {
-          b = 0;
-          /* but it must be followed by a non-digit or end of string */
-          if (sin_index < end)
-          {
-            if (buf[sin_index] >= '0' && buf[sin_index] <= '9')
-              return 0;
-          }
-        }
-        else if (tag == JT_TEXT5 && (b == 'x' || b == 'X'))
-        {
-          if (sin_index + 2 <= end)
-          {
-            int v = get_hex(buf + sin_index, 2);
-            if (v < 0)
-              return 0;
-            b = v;
-            sin_index += 2;
-          }
-          else
+          if (tag == JT_TEXT)
             return 0;
-        }
-        else if (tag == JT_TEXT5 && b == '\'')
-        {
-          /* do nothing - json5 can backslash escape single quote */
-        }
-        else if (b == 'u')
-        {
-          if (sin_index + 4 <= end)
-          {
-            int v = get_hex(buf + sin_index, 4);
-            if (v < 0)
-              return 0;
-            b = v;
-            sin_index += 4;
-          }
-          else
+          /* there must be at least one more byte */
+          if (sin_index == end)
             return 0;
-          /* surrogate pair? */
-          if (b >= 0xd800 && b <= 0xdbff)
+
+          b = buf[sin_index];
+          sin_index++;
+
+          /* process JSON escapes */
+          if (b == '\\' || b == '"' || b == '/')
           {
-            if (sin_index + 6 <= end && buf[sin_index] == '\\' && buf[sin_index + 1] == 'u')
+            /* do nothing - left as is */
+          }
+          else if (b == 'b' || b == 'f' || b == 'n' || b == 'r' || b == 't' || b == 'v')
+          {
+            switch (b)
             {
-              /* skip \u */
-              sin_index += 2;
-              int second = get_hex(buf + sin_index, 4);
-              sin_index += 4;
-              /* need to be in second part range */
-              if (second < 0 || second < 0xdc00 || second > 0xdfff)
+            case 'b':
+              b = '\b';
+              break;
+
+            case 'f':
+              b = '\f';
+              break;
+
+            case 'n':
+              b = '\n';
+              break;
+
+            case 'r':
+              b = '\r';
+              break;
+
+            case 't':
+              b = '\t';
+              break;
+
+            case 'v':
+              b = '\v';
+              if (tag == JT_TEXTJ)
                 return 0;
-              b = ((b - 0xD800) << 10) + (second - 0xDC00) + 0x10000;
+              break;
+            }
+          }
+          else if (tag == JT_TEXT5 && b == '0')
+          {
+            b = 0;
+            /* but it must be followed by a non-digit or end of string */
+            if (sin_index < end)
+            {
+              if (buf[sin_index] >= '0' && buf[sin_index] <= '9')
+                return 0;
+            }
+          }
+          else if (tag == JT_TEXT5 && (b == 'x' || b == 'X'))
+          {
+            if (sin_index + 2 <= end)
+            {
+              int v = get_hex(buf + sin_index, 2);
+              if (v < 0)
+                return 0;
+              b = v;
+              sin_index += 2;
             }
             else
               return 0;
-            /* surrogate pairs can't express unacceptable codepoints */
-            assert(acceptable_codepoint(b));
           }
-        }
-        else if (tag == JT_TEXT5)
-        {
-          /* json5 swallows backslash LineTerminatorSequence */
-          if (b == '\n')
-            continue;
-          /* detect U+2028 or U+2029 as utf8 bytes */
-          if (b == 0xe2 && sin_index + 1 < end && buf[sin_index] == 0x80
-              && (buf[sin_index + 1] == 0xa8 || buf[sin_index + 1] == 0xa9))
+          else if (tag == JT_TEXT5 && b == '\'')
           {
-            sin_index += 2;
-            continue;
+            /* do nothing - json5 can backslash escape single quote */
           }
-          if (b == '\r')
+          else if (b == 'u')
           {
-            /* if \r\n then swallow both, else just the \r */
-            if (sin_index < end && buf[sin_index] == '\n')
-              sin_index++;
-            continue;
+            if (sin_index + 4 <= end)
+            {
+              int v = get_hex(buf + sin_index, 4);
+              if (v < 0)
+                return 0;
+              b = v;
+              sin_index += 4;
+            }
+            else
+              return 0;
+            /* surrogate pair? */
+            if (b >= 0xd800 && b <= 0xdbff)
+            {
+              if (sin_index + 6 <= end && buf[sin_index] == '\\' && buf[sin_index + 1] == 'u')
+              {
+                /* skip \u */
+                sin_index += 2;
+                int second = get_hex(buf + sin_index, 4);
+                sin_index += 4;
+                /* need to be in second part range */
+                if (second < 0 || second < 0xdc00 || second > 0xdfff)
+                  return 0;
+                b = ((b - 0xD800) << 10) + (second - 0xDC00) + 0x10000;
+              }
+              else
+                return 0;
+              /* surrogate pairs can't express unacceptable codepoints */
+              assert(acceptable_codepoint(b));
+            }
+          }
+          else if (tag == JT_TEXT5)
+          {
+            /* json5 swallows backslash LineTerminatorSequence */
+            if (b == '\n')
+              continue;
+            /* detect U+2028 or U+2029 as utf8 bytes */
+            if (b == 0xe2 && sin_index + 1 < end && buf[sin_index] == 0x80
+                && (buf[sin_index + 1] == 0xa8 || buf[sin_index + 1] == 0xa9))
+            {
+              sin_index += 2;
+              continue;
+            }
+            if (b == '\r')
+            {
+              /* if \r\n then swallow both, else just the \r */
+              if (sin_index < end && buf[sin_index] == '\n')
+                sin_index++;
+              continue;
+            }
+            else
+              /* not a valid backslash escape */
+              return 0;
           }
           else
-            /* not a valid backslash escape */
+            /* not an acceptable escape */
             return 0;
-        }
-        else
-          /* not an acceptable escape */
-          return 0;
 
-        /* all unacceptable codepoints are >= 0x80 which requires a
+          /* all unacceptable codepoints are >= 0x80 which requires a
            multibyte-sequence to express. */
-        assert(acceptable_codepoint(b));
+          assert(acceptable_codepoint(b));
+        }
+        max_char = Py_MAX(b, max_char);
       }
-      max_char = Py_MAX(b, max_char);
       if (unistr)
         PyUnicode_WRITE(unistr_KIND, unistr_DATA, sout_index, b);
       sout_index++;
@@ -1600,8 +1614,9 @@ jsonb_decode_utf8_string_complex(const uint8_t *buf, size_t end, PyObject *unist
   return 1;
 }
 
-// ::TODO:: JT_TEXT needs checking separate from TEXTRAW - eg ', null
-/* the most common case is dealing with ascii range and no backslashes */
+/* the most common case is dealing with ascii range and no
+   backslashes, quotes etc.  SQLite never generates TEXTRAW but it does
+   generate the other 3 text types so fast path */
 static int
 jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag, size_t *pLength,
                          Py_UCS4 *pMax_char)
@@ -1609,10 +1624,32 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
   if (unistr || tag == JT_TEXT5 || tag == JT_TEXTJ)
     return jsonb_decode_utf8_string_complex(buf, end, unistr, tag, pLength, pMax_char);
 
-  for (size_t pos = 0; pos < end; pos++)
+  assert(tag == JT_TEXTRAW || tag == JT_TEXT);
+
+  switch (tag)
   {
-    if ((buf[pos] & 0x80))
-      return jsonb_decode_utf8_string_complex(buf, end, unistr, tag, pLength, pMax_char);
+  case JT_TEXTRAW: {
+    for (size_t pos = 0; pos < end; pos++)
+      if (buf[pos] & 0x80)
+        return jsonb_decode_utf8_string_complex(buf, end, unistr, tag, pLength, pMax_char);
+    break;
+  }
+  case JT_TEXT: {
+    for (size_t pos = 0; pos < end; pos++)
+    {
+      uint8_t b = buf[pos];
+      /* jsonIsOk table in sqlite source and JSONB_TEXT case in jsonbValidityCheck.
+         bizarrely single quote is allowed even though it needs to be escaped in
+         sql contrary to the spec */
+      if (b < 0x20 || b == 0x22 || b == 0x5c )
+        return 0;
+      if (b & 0x80)
+        return jsonb_decode_utf8_string_complex(buf, end, unistr, tag, pLength, pMax_char);
+    }
+    break;
+  }
+  default:
+    Py_UNREACHABLE();
   }
   *pMax_char = 127;
   *pLength = end;
