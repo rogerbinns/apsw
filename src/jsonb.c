@@ -375,6 +375,44 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
     assert(contains == 0);
   }
 
+  /* I really wanted PySequence_Check but that allows bytes,
+     array.array and others,  So we only accept list and tuple, and the
+     default converter can handle the other types.  This matches the json
+     module. */
+  if (PyList_Check(obj) || PyTuple_Check(obj))
+  {
+    size_t tag_offset = buf->size;
+    items = PySequence_Fast(obj, "expected a sequence for array");
+    if (!items)
+      goto error;
+    Py_ssize_t sequence_count = PySequence_Fast_GET_SIZE(items);
+    if (jsonb_add_tag(buf, JT_ARRAY, sequence_count ? 0xffffffffu : 0))
+      goto error;
+    if (sequence_count == 0)
+      goto success;
+
+    size_t data_offset = buf->size;
+
+    if (buf->seen && PySet_Add(buf->seen, id_of_obj))
+      goto error;
+    for (Py_ssize_t i = 0; i < PySequence_Fast_GET_SIZE(items); i++)
+    {
+      if (jsonb_encode_internal(buf, PySequence_Fast_GET_ITEM(items, i)))
+        goto error;
+    }
+    size_t size = buf->size - data_offset;
+    if (jsonb_update_tag(buf, JT_ARRAY, tag_offset, size))
+      goto error;
+    if (buf->seen)
+    {
+      int discard = PySet_Discard(buf->seen, id_of_obj);
+      if (discard < 0)
+        goto error;
+      assert(discard);
+    }
+    goto success;
+  }
+
   /* this works better than pymapping_check */
   int is_dict = PyDict_CheckExact(obj);
   if (!is_dict)
@@ -443,44 +481,6 @@ jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
 
     size_t size = buf->size - data_offset;
     if (jsonb_update_tag(buf, JT_OBJECT, tag_offset, size))
-      goto error;
-    if (buf->seen)
-    {
-      int discard = PySet_Discard(buf->seen, id_of_obj);
-      if (discard < 0)
-        goto error;
-      assert(discard);
-    }
-    goto success;
-  }
-
-  /* I really wanted PySequence_Check but that allows bytes,
-     array.array and others,  So we only accept list and tuple, and the
-     default converter can handle the other types.  This matches the json
-     module. */
-  if (PyList_Check(obj) || PyTuple_Check(obj))
-  {
-    size_t tag_offset = buf->size;
-    items = PySequence_Fast(obj, "expected a sequence for array");
-    if (!items)
-      goto error;
-    Py_ssize_t sequence_count = PySequence_Fast_GET_SIZE(items);
-    if (jsonb_add_tag(buf, JT_ARRAY, sequence_count ? 0xffffffffu : 0))
-      goto error;
-    if (sequence_count == 0)
-      goto success;
-
-    size_t data_offset = buf->size;
-
-    if (buf->seen && PySet_Add(buf->seen, id_of_obj))
-      goto error;
-    for (Py_ssize_t i = 0; i < PySequence_Fast_GET_SIZE(items); i++)
-    {
-      if (jsonb_encode_internal(buf, PySequence_Fast_GET_ITEM(items, i)))
-        goto error;
-    }
-    size_t size = buf->size - data_offset;
-    if (jsonb_update_tag(buf, JT_ARRAY, tag_offset, size))
       goto error;
     if (buf->seen)
     {
