@@ -5,9 +5,17 @@ import sys
 import json
 import time
 
+# some random text to force non-ascii codepoints because we grab text from this file
+#
+#  Кырык мары Lëtzebuergesch Lìgure Limburgs Lombard मैथिली Malagasy മലയാളം मराठी მარგალური
+#  Mìng-dĕ̤ng-ngṳ̄ / 閩東語 Монгол Napulitano नेपाल भाषा नेपाली Nordfriisk Occitan Олык марий ଓଡି଼ଆ অসমীযা় ਪੰਜਾਬੀ (ਗੁਰਮੁਖੀ) پنجابی (شاہ مکھی)
+# پښتو Piemontèis Plattdüütsch Qırımtatarca Runa Simi संस्कृतम् Саха Тыла Scots ChiShona Shqip Sicilianu සිංහල سنڌي Ślůnski
+# 🤦🏼‍♂️  regular 😂❤️🤣🤣😭🙏😘
+# Basa Sunda Kiswahili Tagalog ၽႃႇသႃႇတႆး తెలుగు chiTumbuka Basa Ugi
 
 topdir = pathlib.Path(__file__).parent.parent.resolve()
 
+# grab text from this file
 words = pathlib.Path(__file__).read_text().split()
 
 randomjson = topdir / "randomjson.so"
@@ -62,6 +70,13 @@ del data
 
 decode = apsw.jsonb_decode
 encode = apsw.jsonb_encode
+
+# this is necessary to make all the loading happen otherwise
+# times below include first load
+decode, encode
+
+# open("big_data.bin", "wb").write(encode(big_data))
+# open("big_data.py", "wt").write("big_data ="+repr(big_data))
 
 timerfn = time.process_time
 
