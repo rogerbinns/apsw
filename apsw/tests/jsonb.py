@@ -12,6 +12,7 @@ import contextlib
 import json
 import math
 import os
+import sys
 import types
 import unittest
 
@@ -588,6 +589,37 @@ class JSONB(unittest.TestCase):
             self.assertRaises(TypeError, decode, encode(all_types), **{kind: kind})
             self.assertRaises(TypeError, decode, encode(all_types), **{kind: kind})
 
+    def testRecursion(self):
+        "recursion control"
+        import inspect
+        depth = len(inspect.stack(0))
+
+        # Note: this testing depends on list being looked for before
+        # dict in the C.  dict detection runs __instancecheck__ which
+        # is python code, so that may hit the RecursionError instead
+        # of our code.
+
+
+        # encode nesting.  we use complex to get an exception if that
+        # is reached
+
+        item = 3+4j
+        for _ in range(10000):
+            item=[item]
+
+        # deeply nested jsonb.  deepest is an object we can use
+        # object_hook to see if we reached it
+        encoded = make_item(12, None)
+        for _ in range(10000):
+            encoded = make_item(11, encoded)
+
+        with recursion_limit(depth+30):
+            # encode
+            self.assertRaisesRegex(RecursionError, ".*JSONB.*", encode, item)
+            # decode vs detect
+            self.assertRaisesRegex(RecursionError, ".*JSONB.*", decode, encoded, object_hook=lambda x: 1/0)
+            self.assertFalse(detect(encoded))
+
     def testBadContent(self):
         # not zero length
         self.check_invalid(b"")
@@ -961,6 +993,15 @@ def pi_digits(count: int):
             q, r, t, k, n, l = q * k, (2 * q + r) * l, t * l, k + 1, (q * (7 * k + 2) + r * l) // (t * l), l + 2
 
     return res[0] + "." + "".join(res[1:])
+
+@contextlib.contextmanager
+def recursion_limit(value: int):
+    existing = sys.getrecursionlimit()
+    sys.setrecursionlimit(value)
+    try:
+        yield
+    finally:
+        sys.setrecursionlimit(existing)
 
 
 __all_ = ("JSONB",)

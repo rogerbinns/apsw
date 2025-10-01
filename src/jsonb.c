@@ -282,13 +282,24 @@ jsonb_encode_object_key(struct JSONBuffer *buf, PyObject *key)
   }
 }
 
+static int jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj);
+
 /* 0 on success, anything else on failure */
 #undef jsonb_encode_internal
 static int
 jsonb_encode_internal(struct JSONBuffer *buf, PyObject *obj)
 {
 #include "faultinject.h"
+  if (Py_EnterRecursiveCall(" encoding JSONB"))
+    return -1;
+  int res = jsonb_encode_internal_actual(buf, obj);
+  Py_LeaveRecursiveCall();
+  return res;
+}
 
+static int
+jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
+{
   assert(obj);
   if (Py_IsNone(obj))
     return jsonb_add_tag(buf, JT_NULL, 0);
@@ -681,8 +692,28 @@ static int jsonb_check_float5(struct JSONBDecodeBuffer *buf, size_t start, size_
 static int jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum JSONBTag tag,
                                     size_t *pLength, Py_UCS4 *pMax_char);
 
+static PyObject *jsonb_decode_one_actual(struct JSONBDecodeBuffer *buf);
+
 static PyObject *
 jsonb_decode_one(struct JSONBDecodeBuffer *buf)
+{
+  if (Py_EnterRecursiveCall(" decoding JSONB"))
+  {
+    if (!buf->alloc)
+    {
+      PyErr_Clear();
+      return DecodeFailure;
+    }
+    return NULL;
+  }
+
+  PyObject *res = jsonb_decode_one_actual(buf);
+  Py_LeaveRecursiveCall();
+  return res;
+}
+
+static PyObject *
+jsonb_decode_one_actual(struct JSONBDecodeBuffer *buf)
 {
   if (buf->offset >= buf->end_offset)
     return malformed(buf, "item goes beyond end of buffer");
