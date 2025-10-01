@@ -18,19 +18,226 @@ https://sqlite.org/forum/forumpost/28e21085f9
 
 /**
 
+JSON (Javascript Object Notation)
+*********************************
+
+SQLite provides extensive functionality for working with JSON.  APSW
+complements that.
+
+What is JSON?
+=============
+
+`Javascript Object Notation <https://www.json.org/>`__ is a **TEXT**
+based format for representing data, encoded in `UTF-8
+<https://en.wikipedia.org/wiki/UTF-8>`__.  It is deliberately
+constrained in what can be represented, and as a result is very widely
+supported across languages and platforms.
+
+Types
+-----
+
+.. list-table::
+    :header-rows: 1
+    :widths: auto
+
+    * - Type (JS)
+      - Python
+      - Example
+    * - null
+      - :class:`None`
+      - .. code-block:: json
+
+          null
+    * - boolean
+      - :class:`bool`
+      - .. code-block:: json
+
+          true
+    * - string - some characters are backslash escaped such as double quote
+        and forward slash, while Unicode codepoints can be backslash u escaped
+        allowing for the JSON text to be all ASCII.  Codepoint U+2603 is
+        snowman ☃
+      - :class:`str`
+      - .. code-block:: json
+
+          "hello \" world \/ \u2603"
+
+    * - number
+      - :class:`int` and :class:`float`
+      - .. code-block:: json
+
+          -3.14E7
+    * - array - array contents can be any JSON types
+      - :class:`list`
+      - .. code-block:: json
+
+          [null, 3.2, "hello"]
+    * - object - keys must be strings, but values can be any JSON types
+      - :class:`dict`
+      - .. code-block:: json
+
+          {
+            "description": "Orange",
+            "price": 3.07,
+            "varieties": ["fall", {"long": "...", "short": 3443}]
+          }
+
+What is not in JSON
+-------------------
+
+Versioning and extension mechanisms
+
+  There is no version number, nor is there a way to extend the format
+  to add additional functionality within the standard.
+
+Comments
+
+  There is deliberately no syntax for comments.
+
+Whitespace sensitivity
+
+  Although the examples above use indents and spacing for readability,
+  JSON ignores all whitespace.  Machine generated JSON usually omits
+  whitespace, while JSON intended for human consumption has whitespace
+  added.
+
+Dates and times
+
+  There is no native date or time representation.  The most common
+  approach is to use `ISO8601
+  <https://en.wikipedia.org/wiki/ISO_8601>`__ formatted strings which
+  look like ``2025-09-30T09:45:00Z`` for UTC and
+  ``2025-09-30T01:15:00-07:00`` with a timezone.
+
+Binary data
+
+  Binary data can't be included in a text format.  The most common approach
+  is to use `base 64 <https://en.wikipedia.org/wiki/Base64>`__ strings which
+  look like ``bGlnaHQgd29yaw==``
+
+Infinity and NaN
+
+  There is no explicit representation for infinity or for `Not A Number
+  <https://en.wikipedia.org/wiki/NaN>`__ which arise from floating point
+  calculations.  For example ``1e500`` (1 with 500 zeroes) multiplied by
+  itself is too large to be  represented in the most common `64 bit
+  floating point <https://en.wikipedia.org/wiki/IEEE_754>`__, while
+  subtracting infinity from itself produces ``NaN``.
+
+  Because infinity and NaN can occur in calculations, many JSON libraries
+  will produce and accept them.
+
+String normalization
+
+  Unicode allows different representations of what will appear as the same
+  text.  For example an ``e`` with an accent can be represented as a single
+  codepoint, or as two with the ``e`` and the combining accent separately.
+  JSON makes no requirements on strings, with all implementations usually
+  producing and accepting the strings as is.  You can read about the
+  subject `here <https://en.wikipedia.org/wiki/Unicode_equivalence>`__.
+
+Trailing commas
+
+  Trailing commas will not be accepted or produced by JSON libraries.  For example
+  a list like ``[1, 2, 3,]`` or an object like ``{"one": 1, "two": 2,}`` are not
+  valid.
+
+Explicit limits
+
+  The standard does not say how long strings can be, or how many items
+  can be in an array or object.  There is no limit on how many digits
+  can be used in numbers nor a minimum or maximum fidelity.  It is
+  common for implementations to have limits especially 64 bits for
+  numbers.  String limits may be 1 or 2 bullion characters, and arrays /
+  objects be limited to a similar number of members.  (Python has a 64
+  bit limit on floating point numbers, but has no limit on integers, strings,
+  arrays, or objects other than available memory.)
+
+  If data is that large, then other representations are far more appropriate.
+
+Object (dict) key order or duplicates
+
+  While arrays (list) are ordered, there is no specification for what
+  order object keys are in, or that duplicates are not allowed.  This
+  usually doesn't matter, but there are security attacks where one
+  component may use the first occurrence of a duplicate key, while
+  another component uses the last occurrence.  The Python :mod:`json`
+  module, and APSW both let you see objects as lists of keys and values
+  so you can do your own validation or other processing.
+
+JSON5
+=====
+
+`JSON5 <https://json5.org/>`__ is a superset of JSON intended to be
+more human readable and writable.  SQLite will accept JSON5 encoded
+text, but will never produce it.  The extensions are ignored as SQLite
+parses JSON5, and you can't get back JSON5 output from a JSON5 input.
+
+For example JSON5 allows omitting some quoting, comments, hexadecimal
+numbers, trailing commas, infinity and NaN.
+
+Using JSON
+==========
+
+Python
+------
+
+The standard library :mod:`json` module provides all necessary
+functionality, including turning Python objects into JSON, and JSON
+text into Python objects.  You can read and write JSON text, or a
+:term:`file object`.
+
+It deviates from the standard:
+
+* ``Infinity`` and ``NaN`` are produced and consumed by default,
+  although there are keyword arguments to turn it off
+* When producing JSON objects, keys that are numbers, None, or
+  boolean are turned into their corresponding JSON text representation.
+  When reading an object back, the reverse transformation is not
+  done since there is no way to know if that is intended,
+* Various corner cases in Unicode / UTF8 are accepted such as
+  unpaired surrogates and UTF8 encoded surrogates.  This was done
+  because other implementations at the time could produced this
+  kind of encoding.  Attempting to encode the resulting strings as UTF-8
+  again will result in exceptions.
+
+You can see a `full list of JSON issues
+<https://github.com/orgs/python/projects/6>`__.
+
+SQLite
+------
+
+functions
+
 JSONB
-*****
+=====
 
-blah blah blah
+why, apsw function reason
 
-tighter checking than SQLite, especially around UTF8.  bom ignored (becomes regular codepoint)
+perf vs json
 
-note many single byte is valid JSONB (<0x0d)
+Numbers
+=======
+
+precision and length
+
+json5 hex, sqlite behaviour, our flags
+
+nan infinity
+
+Notes
+=====
 
 2GB limit because SQLite
 
-object keys are strings in JSON always.  following stdlib json, str |
-None | True | False | int | Float are automatically stringized
+note many single byte is valid JSONB (<0x0d)
+
+tighter checking than SQLite, especially around UTF8.
+
+tighter checking of jsonb.  always done even for decode
+
+API
+===
 
 */
 
@@ -579,6 +786,9 @@ error:
   return -1;
 }
 
+// ::TODO:: add check_exact param that doesn't allow subclasses
+// ::TODO:: add default_key param that controls how object keys are made
+
 /** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys:bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes
 
     Encodes object as JSONB.  It is like :func:`json.dumps` except it produces
@@ -876,6 +1086,7 @@ jsonb_decode_one_actual(struct JSONBDecodeBuffer *buf)
     PyObject *retval = NULL;
     if (tag == JT_TEXT || tag == JT_TEXTRAW)
     {
+      /* these two have no escapes to decode */
       retval
           = (max_char == 127)
                 ? PyUnicode_FromKindAndData(PyUnicode_1BYTE_KIND, (const char *)(buf->buffer + value_offset),
@@ -1749,8 +1960,6 @@ jsonb_detect_internal(const void *data, size_t length)
   assert(!PyErr_Occurred() && (res == DecodeFailure || res == DecodeSuccess));
   return (res == DecodeSuccess) ? 1 : 0;
 }
-
-// ::TODO:: rename int/float hook to parse_ variant like stdlib
 
 /** .. method:: jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    parse_int: Callable[[str], Any] | None = None,    parse_float: Callable[[str], Any] | None = None,) -> Any
 
