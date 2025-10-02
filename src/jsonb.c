@@ -351,6 +351,8 @@ struct JSONBuffer
   size_t allocated;
   /* callback for unknown types */
   PyObject *default_;
+  /* callback for non string object keys */
+  PyObject *default_key;
   /* a set if check_circular is true of ids we have seen */
   PyObject *seen;
   /* do we skip non-string dict keys? */
@@ -552,7 +554,27 @@ jsonb_encode_object_key(struct JSONBuffer *buf, PyObject *key)
      int/float etc to match stdlib json.dumps behaviour */
   if (PyUnicode_Check(key))
     return jsonb_encode_internal(buf, key);
-  else if (Py_IsNone(key) || Py_IsTrue(key) || Py_IsFalse(key))
+  if (buf->skip_keys)
+    return 0;
+  if (buf->default_key)
+  {
+    PyObject *vargs[] = { NULL, key };
+    PyObject *converted = PyObject_Vectorcall(buf->default_key, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    if (!converted)
+      return -1;
+    int res = 0;
+    if (!PyUnicode_Check(converted))
+    {
+      PyErr_Format(PyExc_TypeError, "default_key callback needs to return a str, not %s", Py_TypeName(converted));
+      res = -1;
+    }
+    if (res == 0)
+      res = jsonb_encode_internal(buf, converted);
+    Py_DECREF(converted);
+    return res;
+  }
+
+  if (Py_IsNone(key) || Py_IsTrue(key) || Py_IsFalse(key))
   {
     PyObject *key_subst = NULL;
     if (Py_IsNone(key))
@@ -576,15 +598,8 @@ jsonb_encode_object_key(struct JSONBuffer *buf, PyObject *key)
     }
     return -1;
   }
-  else if (buf->skip_keys)
-  {
-    return 0;
-  }
-  else
-  {
-    PyErr_Format(PyExc_TypeError, "Keys must be str, int, float, bool or None. not %s", Py_TypeName(key));
-    return -1;
-  }
+  PyErr_Format(PyExc_TypeError, "Keys must be str, int, float, bool or None. not %s", Py_TypeName(key));
+  return -1;
 }
 
 static int jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj);
@@ -891,9 +906,8 @@ error:
 }
 
 // ::TODO:: add check_exact param that doesn't allow subclasses
-// ::TODO:: add default_key param that controls how object keys are made
 
-/** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys:bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None, allow_nan:bool = True) -> bytes
+/** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys:bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None, default_key: Callable[[Any], str] | None = None, allow_nan:bool = True) -> bytes
 
     Encodes object as JSONB.  It is like :func:`json.dumps` except it produces
     JSONB.
@@ -918,6 +932,14 @@ error:
        It can also return binary data in JSONB format.  For example
        numpy.float128 could encode itself as a full precision JSONB
        float.
+    :param default_key: Objects (dict) must have string keys.  If a
+       non-string key is encountered, it is skipped if ``skipkeys``
+       is ``True``.  Otherwise this is called.  If not supplied the
+       default matches the standard library :mod:`json` which
+       converts None, bool, int and float to their string JSON
+       equivalents and uses those.  This callback is useful if
+       you want to raise an exception, or use a different way
+       of generating the key string.
     :param allow_nan: If ``True`` (default) then following SQLite practise,
         infinity is converted to float ``9e999`` and NaN is converted
         to ``None``.  If ``False`` a :exc:`ValueError` is raised.
@@ -935,6 +957,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   int allow_nan = 1;
 
   PyObject *default_ = NULL;
+  PyObject *default_key = NULL;
   {
     Apsw_jsonb_encode_CHECK;
     ARG_PROLOG(1, Apsw_jsonb_encode_KWNAMES);
@@ -943,15 +966,20 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     ARG_OPTIONAL ARG_bool(sort_keys);
     ARG_OPTIONAL ARG_bool(check_circular);
     ARG_OPTIONAL ARG_optional_Callable(default_);
+    ARG_OPTIONAL ARG_optional_Callable(default_key);
     ARG_OPTIONAL ARG_bool(allow_nan);
     ARG_EPILOG(NULL, Apsw_jsonb_encode_USAGE, );
   }
+
+  if (skipkeys && default_key)
+    return PyErr_Format(PyExc_ValueError, "You can't both skipkeys and default_key");
 
   struct JSONBuffer buf = {
     .data = 0,
     .size = 0,
     .allocated = 0,
     .default_ = Py_XNewRef(default_),
+    .default_key = Py_XNewRef(default_key),
     .skip_keys = skipkeys,
     .sort_keys = sort_keys,
     .allow_nan = allow_nan,
@@ -965,6 +993,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
 
   Py_CLEAR(buf.seen);
   Py_CLEAR(buf.default_);
+  Py_CLEAR(buf.default_key);
   PyObject *retval = (0 == res) ? PyBytes_FromStringAndSize((const char *)buf.data, buf.size) : NULL;
   free(buf.data);
   return retval;

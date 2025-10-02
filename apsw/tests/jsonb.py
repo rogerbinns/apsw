@@ -636,6 +636,12 @@ class JSONB(unittest.TestCase):
         decode(encode({1: math.inf}))
         self.assertRaisesRegex(ValueError, ".*Infinity value not allowed.", encode, {1: math.inf}, allow_nan=False)
 
+
+        self.assertRaises(ValueError, encode, None, skipkeys=True, default_key = lambda : 1)
+        self.assertRaises(TypeError, encode, {3+4j: 1}, default_key = lambda x: 1)
+        self.assertRaises(ZeroDivisionError, encode, {3+4j: 1}, default_key = lambda x: 1/0)
+
+        self.assertEqual({"": 1}, decode(encode({3+4j: 1}, default_key=lambda x: "")))
     def testBadContent(self):
         # not zero length
         self.check_invalid(b"")
