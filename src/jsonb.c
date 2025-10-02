@@ -16,6 +16,22 @@ https://sqlite.org/forum/forumpost/28e21085f9
 
 */
 
+
+/* Not addressing:
+
+https://github.com/python/cpython/issues/69643 - sort_keys when all keys aren't the same type
+(we won't stringify and then sort)
+
+https://github.com/python/cpython/issues/131955 - json module always memoizes object keys
+so only a single instance is used for the strings.  this isn't intern which does approximately
+the same thing.  stdlib uses a memoization dict with PyDict_SetDefaultRef.  PyUnicode_InternInPlace
+is probably a better choice because the strings are not immortal - they are un-interned when the
+last reference goes away.  CPython does intern attribute names, function names etc, and they
+likely overlap with object keys.  However JSONB should be relatively small and focussed.
+
+*/
+
+
 /**
 
 JSON (Javascript Object Notation)
@@ -27,8 +43,8 @@ complements that.
 What is JSON?
 =============
 
-`Javascript Object Notation <https://www.json.org/>`__ is a **TEXT**
-based format for representing data, encoded in `UTF-8
+`Javascript Object Notation <https://www.json.org/>`__ (:rfc:`8259`)
+is a **TEXT** based format for representing data, encoded in `UTF-8
 <https://en.wikipedia.org/wiki/UTF-8>`__.  It is deliberately
 constrained in what can be represented, and as a result is very widely
 supported across languages and platforms.
@@ -125,7 +141,8 @@ Infinity and NaN
   subtracting infinity from itself produces ``NaN``.
 
   Because infinity and NaN can occur in calculations, many JSON libraries
-  will produce and accept them.
+  will produce and accept them despite not being in the JSON standard.
+  See below for how SQLite deals with infinity and NaN.
 
 String normalization
 
@@ -146,9 +163,9 @@ Explicit limits
 
   The standard does not say how long strings can be, or how many items
   can be in an array or object.  There is no limit on how many digits
-  can be used in numbers nor a minimum or maximum fidelity.  It is
+  can be used in numbers nor a minimum or maximum precision.  It is
   common for implementations to have limits especially 64 bits for
-  numbers.  String limits may be 1 or 2 bullion characters, and arrays /
+  numbers.  String limits may be 1 or 2 billion characters, and arrays /
   objects be limited to a similar number of members.  (Python has a 64
   bit limit on floating point numbers, but has no limit on integers, strings,
   arrays, or objects other than available memory.)
@@ -170,8 +187,8 @@ JSON5
 
 `JSON5 <https://json5.org/>`__ is a superset of JSON intended to be
 more human readable and writable.  SQLite will accept JSON5 encoded
-text, but will never produce it.  The extensions are ignored as SQLite
-parses JSON5, and you can't get back JSON5 output from a JSON5 input.
+text, but will never produce it.  While SQLite parses JSON5, you
+can't get back JSON5 output from a JSON5 input.
 
 For example JSON5 allows omitting some quoting, comments, hexadecimal
 numbers, trailing commas, infinity and NaN.
@@ -183,21 +200,21 @@ Python
 ------
 
 The standard library :mod:`json` module provides all necessary
-functionality, including turning Python objects into JSON, and JSON
-text into Python objects.  You can read and write JSON text, or a
+functionality, including turning Python objects into JSON text, and
+JSON text into Python objects.  You can read and write JSON text, or a
 :term:`file object`.
 
 It deviates from the standard:
 
 * ``Infinity`` and ``NaN`` are produced and consumed by default,
-  although there are keyword arguments to turn it off
+  although there is a  keyword argument to turn it off
 * When producing JSON objects, keys that are numbers, None, or
   boolean are turned into their corresponding JSON text representation.
   When reading an object back, the reverse transformation is not
   done since there is no way to know if that is intended,
 * Various corner cases in Unicode / UTF8 are accepted such as
   unpaired surrogates and UTF8 encoded surrogates.  This was done
-  because other implementations at the time could produced this
+  because other implementations at the time could produce this
   kind of encoding.  Attempting to encode the resulting strings as UTF-8
   again will result in exceptions.
 
@@ -207,34 +224,113 @@ You can see a `full list of JSON issues
 SQLite
 ------
 
-functions
+SQLite has over `30 functions <https://sqlite.org/json1.html>`__ for
+consuming, extracting, iterating, and producing JSON.  You will need
+to ensure that what you get back is what is intended.  You can usually
+get back the JSON text representation of values, or the actual
+representation.  For example a SQLite string is the same as a Python
+string, while the JSON text representation includes double quotes
+around it and various quoting inside.
+
+You can store JSON text directly in the database, but there is no way
+to differentiate it from any other text value.  The `json_valid
+<https://sqlite.org/json1.html#jvalid>`__ function may help - for
+example as `CHECK constraint
+<https://sqlite.org/lang_createtable.html#check_constraints>`__ on a
+column.
+
+Infinity and NaN
+----------------
+
+SQLite accepts infinity but represents it as the floating point value
+``9e999`` and accepts NaN representing it as ``null`` (None).  Unfortunately
+``9e999`` is a valid value for :class:`decimal.Decimal` as well as
+``numpy.float128``, so you won't be able to tell if infinity was the
+original value
+
 
 JSONB
 =====
 
-why, apsw function reason
+SQLite has a binary format for representing JSON - named JSONB.  It is
+`specified here <https://sqlite.org/jsonb.html>`__.  It is
+significantly faster to use because JSON text requires finding
+matching quotes around strings, square brackets around arrays, curly
+braces around objects, and ensuring numeric values are valid.  JSONB
+has already done all that processing so accessing and extracting
+members is a lot quicker.  It also saves some space.
 
-perf vs json
+In most cases using SQLite JSON text functions results in SQLite doing an
+internal conversion to JSONB (which is cached) and then operating on that.
+JSONB internally stores values as text so producing JSON text again is quick.
 
-Numbers
-=======
+You can store JSONB to the database, and again can use the `json_valid
+<https://sqlite.org/json1.html#jvalid>`__ function as `CHECK constraint
+<https://sqlite.org/lang_createtable.html#check_constraints>`__ with the
+value ``8``.
 
-precision and length
+.. note::
 
-json5 hex, sqlite behaviour, our flags
+  JSONB does not have a version number or any header explicitly
+  identifying binary data as JSONB.  There is no checksum or similar
+  validation.  As an example a single byte whose value is 0 through 12
+  is valid JSONB.
 
-nan infinity
+APSW
+----
+
+APSW provides 2 functions for working directly with JSONB, and a
+validation function.  This is for performance reasons so that there
+is no need for an intermediate step representing objects as JSON text.
+The validation function is stricter to avoid false positives.
+
+Performance testing was done using SQLite's randomjson code to create
+a large object with many nested values- your objects will be
+different.
+
+:func:`~apsw.jsonb_encode`
+
+  Converts a Python object directly to JSONB.  This takes less than
+  10% of the CPU time versus converting the same object to JSON text.
+  SQLite then has to convert that JSON to JSONB for its own work
+  which takes more time.
+
+ .. list-table:: Test results
+    :widths: auto
+
+    * - 0.13 seconds
+      - APSW Python object to JSONB
+    * - 1.17 seconds
+      - :mod:`json` same object to JSON text
+    * - 1.67 seconds
+      - SQLite JSON text to JSONB
+
+:func:`~apsw.jsonb_decode`
+
+  Converts JSONB directly back to a Python object.
+
+  .. list-table:: Test results
+    :widths: auto
+
+    * - 0.33 seconds
+      - APSW JSONB to Python object
+    * - 1.29 seconds
+      - :mod:`json` JSON text to Python object
+    * - 0.21 seconds
+      - SQLite JSONB to JSON text
+
+:func:`~apsw.jsonb_detect`
+
+  Returns a boolean if some binary data is valid JSONB.  Unlike
+  `json_valid <https://sqlite.org/json1.html#jvalid>`__, the APSW
+  function also verifies that the UTF8 encoding of text is correct, and
+  is strict about various corner cases the SQLite version is not.
 
 Notes
 =====
 
-2GB limit because SQLite
-
-note many single byte is valid JSONB (<0x0d)
-
-tighter checking than SQLite, especially around UTF8.
-
-tighter checking of jsonb.  always done even for decode
+Because SQLite has a 2GB limit on text or blobs (binary data), it
+can't work with individual JSON text or JSONB data over that size.
 
 API
 ===
@@ -542,11 +638,9 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
     }
     if (isinf(d))
     {
-      /* we want to use Infinity but need SQLite to ok, so this is
-         used instead.  SQLite uses 9e999 (3 9s)  for infinity but that is a
-         valid float128 value so this longer exponent works instead.  Until
-         float256 is a thing ... */
-      utf8 = (d < 0) ? "-9e9999" : "9e9999";
+      /* we want to use Infinity but need SQLite to ok.
+         https://sqlite.org/forum/forumpost/2af718640d. */
+      utf8 = (d < 0) ? "-9e999" : "9e999";
       length = strlen(utf8);
     }
     else
@@ -814,6 +908,13 @@ error:
        It can also return binary data in JSONB format.  For example
        numpy.float128 could encode itself as a full precision JSONB
        float.
+
+
+    Following SQLite practise, infinity is converted to ``9e999`` and
+    NaN is converted to ``None``.
+
+    You will get a :exc:`~apsw.TooBigError` if the resulting JSONB
+    will exceed 2GB because SQLite can't handle it.
 */
 static PyObject *
 JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
