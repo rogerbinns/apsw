@@ -628,6 +628,14 @@ class JSONB(unittest.TestCase):
             self.assertRaisesRegex(RecursionError, ".*JSONB.*", decode, encoded, object_hook=lambda x: 1 / 0)
             self.assertFalse(detect(encoded))
 
+    def testExtras(self):
+        # various flags added later to match/address issues in stdlib json
+        # when used with non-default values
+        decode(encode({1: math.nan}))
+        self.assertRaisesRegex(ValueError, ".*NaN value not allowed.", encode, {1: math.nan}, allow_nan=False)
+        decode(encode({1: math.inf}))
+        self.assertRaisesRegex(ValueError, ".*Infinity value not allowed.", encode, {1: math.inf}, allow_nan=False)
+
     def testBadContent(self):
         # not zero length
         self.check_invalid(b"")

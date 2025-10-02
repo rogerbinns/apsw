@@ -357,6 +357,8 @@ struct JSONBuffer
   int skip_keys;
   /* are dict keys sorted */
   int sort_keys;
+  /* are nan/infinity rejected */
+  int allow_nan;
 };
 
 #undef jsonb_encode_internal
@@ -633,15 +635,23 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
     double d = PyFloat_AS_DOUBLE(obj);
     if (isnan(d))
     {
-      /* utf8 = "NaN" etc */
-      return jsonb_add_tag(buf, JT_NULL, 0);
+      if (buf->allow_nan)
+        return jsonb_add_tag(buf, JT_NULL, 0);
+      PyErr_Format(PyExc_ValueError, "NaN value not allowed by allow_nan parameter");
+      return -1;
     }
     if (isinf(d))
     {
-      /* we want to use Infinity but need SQLite to ok.
-         https://sqlite.org/forum/forumpost/2af718640d. */
-      utf8 = (d < 0) ? "-9e999" : "9e999";
-      length = strlen(utf8);
+      if (buf->allow_nan)
+      {
+        utf8 = (d < 0) ? "-9e999" : "9e999";
+        length = strlen(utf8);
+      }
+      else
+      {
+        PyErr_Format(PyExc_ValueError, "Infinity value not allowed by allow_nan parameter");
+        return -1;
+      }
     }
     else
     {
@@ -883,7 +893,7 @@ error:
 // ::TODO:: add check_exact param that doesn't allow subclasses
 // ::TODO:: add default_key param that controls how object keys are made
 
-/** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys:bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes
+/** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys:bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None, allow_nan:bool = True) -> bytes
 
     Encodes object as JSONB.  It is like :func:`json.dumps` except it produces
     JSONB.
@@ -908,10 +918,9 @@ error:
        It can also return binary data in JSONB format.  For example
        numpy.float128 could encode itself as a full precision JSONB
        float.
-
-
-    Following SQLite practise, infinity is converted to ``9e999`` and
-    NaN is converted to ``None``.
+    :param allow_nan: If ``True`` (default) then following SQLite practise,
+        infinity is converted to float ``9e999`` and NaN is converted
+        to ``None``.  If ``False`` a :exc:`ValueError` is raised.
 
     You will get a :exc:`~apsw.TooBigError` if the resulting JSONB
     will exceed 2GB because SQLite can't handle it.
@@ -923,6 +932,8 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   int skipkeys = 0;
   int sort_keys = 0;
   int check_circular = 1;
+  int allow_nan = 1;
+
   PyObject *default_ = NULL;
   {
     Apsw_jsonb_encode_CHECK;
@@ -932,6 +943,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     ARG_OPTIONAL ARG_bool(sort_keys);
     ARG_OPTIONAL ARG_bool(check_circular);
     ARG_OPTIONAL ARG_optional_Callable(default_);
+    ARG_OPTIONAL ARG_bool(allow_nan);
     ARG_EPILOG(NULL, Apsw_jsonb_encode_USAGE, );
   }
 
@@ -942,6 +954,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     .default_ = Py_XNewRef(default_),
     .skip_keys = skipkeys,
     .sort_keys = sort_keys,
+    .allow_nan = allow_nan,
     .seen = check_circular ? PySet_New(NULL) : 0,
   };
   if (check_circular && !buf.seen)
