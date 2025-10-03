@@ -340,8 +340,9 @@ def initialize() -> None:
     Calls: `sqlite3_initialize <https://sqlite.org/c3ref/initialize.html>`__"""
     ...
 
-def jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    int_hook: Callable[[str], Any] | None = None,    float_hook: Callable[[str], Any] | None = None,) -> Any:
-    """Decodes JSONB binary data into a Python object
+def jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    parse_int: Callable[[str], Any] | None = None,    parse_float: Callable[[str], Any] | None = None,) -> Any:
+    """Decodes JSONB binary data into a Python object.  It is like :func:`json.loads`
+    but operating on JSONB.
 
     :param data: Binary data to decode
     :param object_pairs_hook: Called after a JSON object has been
@@ -353,49 +354,93 @@ def jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, 
         value to use instead.
     :param array_hook: Called after a JSON array has been decoded into
         a list, and should return a replacement value to use instead.
-    :param int_hook: Called with a :class:`str` of the integer, and
-        should return a replacement value to use instead.  The default
-        is the builtin :class:`int`.
-    :param float_hook: Called with a :class:`str` of the float, and
-        should return a replacement value to use instead.  The default
-        is the builtin :class:`float`.
+    :param parse_int: Called with a :class:`str` of the integer, and
+        should return a value to use.  The default is :class:`int`.
+        If the integer is hexadecimal then it will be called with a
+        second parameter of 16.
+    :param parse_float: Called with a :class:`str` of the float, and
+        should return a value to use.  The default is :class:`float`.
 
     Only one of ``object_hook`` or ``object_pairs_hook`` can be
     provided.  ``object_pairs_hook`` is useful when you want something
     other than a dict, care about the order of keys, want to convert
-    them (eg case, numbers), want to handle duplicate keys etc.
+    them first (eg case, numbers, normalization), want to handle duplicate
+    keys etc.
 
-    The array, int, and float hooks let you use alternate
-    implementations.  For example if you are using `numpy
+    The array, int, and float hooks let you use alternate implementations.
+    For example if you are using `numpy
     <https://numpy.org/doc/stable/user/basics.types.html>`__ then you
-    could use numpy arrays, or numpy's float128 to get higher
-    precision floating numbers with greater exponent range than the
+    could use numpy arrays instead of lists, or numpy's float128 to get
+    higher precision floating numbers with greater exponent range than the
     builtin float type.
 
     If you use :class:`types.MappingProxyType` as ``object_hook`` and
     :class:`tuple` as ``array_hook`` then the overall returned value
-    will be immutable (read only)."""
+    will be immutable (read only).
+
+    .. note::
+
+      The data is always validated during decode.  There is no need to
+      separately call :func:`~apsw.jsonb_detect`."""
     ...
 
 def jsonb_detect(data: Buffer) -> bool:
-    """Returns ``True`` if data is valid JSONB, otherwise ``False``."""
+    """Returns ``True`` if data is valid JSONB, otherwise ``False``.  No exceptions are raised
+    while processing the data.
+
+    .. note::
+
+      :func:`~apsw.jsonb_decode` always validates the data as it decodes, so there is no
+      need to call this function separately.  This function is useful for determining if
+      some data is valid, and not some other binary format such as an image."""
     ...
 
-def jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes:
-    """Encodes object as JSONB
+def jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys: bool = False, check_circular: bool = True, exact_types: bool = False, default: Callable[[Any], JSONBTypes | Buffer] | None = None, default_key: Callable[[Any], str] | None = None, allow_nan:bool = True) -> bytes:
+    """Encodes object as JSONB.  It is like :func:`json.dumps` except it produces
+    JSONB.
 
     :param obj: Object to encode
+    :param skipkeys: If ``True`` and a non-string dict key is
+       encountered then it is skipped.  Otherwise :exc:`ValueError`
+       is raised.  Default ``False``.  Like :func:`json.dumps` keys
+       that are bool, int, float, and None are always converted to
+       string.
+    :param sort_keys: If ``True`` then objects (dict) will be output
+       with the keys sorted.  This produces deterministic output.
+       Default ``False``.
     :param check_circular: Detects if containers contain themselves
        (even indirectly) and raises :exc:`ValueError`.  If ``False``
-       and there is a circular reference, you get
-       :exc:`RecursionError` (or worse).
+       and there is a circular reference, you eventually get
+       :exc:`RecursionError` (or run out of memory or similar).
     :param default: Called if an object can't be encoded, and should
        return an object that can be encoded.  If not provided a
        :exc:`TypeError` is raised.
 
        It can also return binary data in JSONB format.  For example
        numpy.float128 could encode itself as a full precision JSONB
-       float."""
+       float.
+    :param default_key: Objects (dict) must have string keys.  If a
+       non-string key is encountered, it is skipped if ``skipkeys``
+       is ``True``.  Otherwise this is called.  If not supplied the
+       default matches the standard library :mod:`json` which
+       converts None, bool, int and float to their string JSON
+       equivalents and uses those.  This callback is useful if
+       you want to raise an exception, or use a different way
+       of generating the key string.
+    :param allow_nan: If ``True`` (default) then following SQLite practise,
+        infinity is converted to float ``9e999`` and NaN is converted
+        to ``None``.  If ``False`` a :exc:`ValueError` is raised.
+    :param exact_types: By default subclasses of int, float, list (including
+        tuple), dict (including :class:`collections.abc.Mapping`), and
+        :class:`str` are converted the same as the parent class.  This
+        is usually what you want.  However sometimes you are using a
+        subclass and want them converted by the ``default`` function
+        with an example being :class:`enum.IntEnum`.  If this parameter
+        is ``True`` then only the exact types are directly converted
+        and subclasses will be passed to ``default`` or ``default_key``.
+
+    You will get a :exc:`~apsw.TooBigError` if the resulting JSONB
+    will exceed 2GB because SQLite can't handle it."""
     ...
 
 keywords: set[str]

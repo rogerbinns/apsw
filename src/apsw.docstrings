@@ -185,8 +185,9 @@
 "\n" \
 "Calls: `sqlite3_initialize <https://sqlite.org/c3ref/initialize.html>`__\n" 
 
-#define  Apsw_jsonb_decode_DOC "apsw.jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    int_hook: Callable[[str], Any] | None = None,    float_hook: Callable[[str], Any] | None = None,) -> Any\n\n" \
-"Decodes JSONB binary data into a Python object\n" \
+#define  Apsw_jsonb_decode_DOC "apsw.jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    parse_int: Callable[[str], Any] | None = None,    parse_float: Callable[[str], Any] | None = None,) -> Any\n\n" \
+"Decodes JSONB binary data into a Python object.  It is like :func:`json.loads`\n" \
+"but operating on JSONB.\n" \
 "\n" \
 ":param data: Binary data to decode\n" \
 ":param object_pairs_hook: Called after a JSON object has been\n" \
@@ -198,31 +199,37 @@
 "    value to use instead.\n" \
 ":param array_hook: Called after a JSON array has been decoded into\n" \
 "    a list, and should return a replacement value to use instead.\n" \
-":param int_hook: Called with a :class:`str` of the integer, and\n" \
-"    should return a replacement value to use instead.  The default\n" \
-"    is the builtin :class:`int`.\n" \
-":param float_hook: Called with a :class:`str` of the float, and\n" \
-"    should return a replacement value to use instead.  The default\n" \
-"    is the builtin :class:`float`.\n" \
+":param parse_int: Called with a :class:`str` of the integer, and\n" \
+"    should return a value to use.  The default is :class:`int`.\n" \
+"    If the integer is hexadecimal then it will be called with a\n" \
+"    second parameter of 16.\n" \
+":param parse_float: Called with a :class:`str` of the float, and\n" \
+"    should return a value to use.  The default is :class:`float`.\n" \
 "\n" \
 "Only one of ``object_hook`` or ``object_pairs_hook`` can be\n" \
 "provided.  ``object_pairs_hook`` is useful when you want something\n" \
 "other than a dict, care about the order of keys, want to convert\n" \
-"them (eg case, numbers), want to handle duplicate keys etc.\n" \
+"them first (eg case, numbers, normalization), want to handle duplicate\n" \
+"keys etc.\n" \
 "\n" \
-"The array, int, and float hooks let you use alternate\n" \
-"implementations.  For example if you are using `numpy\n" \
+"The array, int, and float hooks let you use alternate implementations.\n" \
+"For example if you are using `numpy\n" \
 "<https://numpy.org/doc/stable/user/basics.types.html>`__ then you\n" \
-"could use numpy arrays, or numpy's float128 to get higher\n" \
-"precision floating numbers with greater exponent range than the\n" \
+"could use numpy arrays instead of lists, or numpy's float128 to get\n" \
+"higher precision floating numbers with greater exponent range than the\n" \
 "builtin float type.\n" \
 "\n" \
 "If you use :class:`types.MappingProxyType` as ``object_hook`` and\n" \
 ":class:`tuple` as ``array_hook`` then the overall returned value\n" \
-"will be immutable (read only).\n" 
+"will be immutable (read only).\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"  The data is always validated during decode.  There is no need to\n" \
+"  separately call :func:`~apsw.jsonb_detect`.\n" 
 
-#define Apsw_jsonb_decode_KWNAMES "data", "object_pairs_hook", "object_hook", "array_hook", "int_hook", "float_hook"
-#define Apsw_jsonb_decode_USAGE "apsw.jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    int_hook: Callable[[str], Any] | None = None,    float_hook: Callable[[str], Any] | None = None,) -> Any"
+#define Apsw_jsonb_decode_KWNAMES "data", "object_pairs_hook", "object_hook", "array_hook", "parse_int", "parse_float"
+#define Apsw_jsonb_decode_USAGE "apsw.jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    parse_int: Callable[[str], Any] | None = None,    parse_float: Callable[[str], Any] | None = None,) -> Any"
 
 #define Apsw_jsonb_decode_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(data), PyObject *)); \
@@ -232,15 +239,22 @@
   assert(object_hook == NULL); \
   assert(__builtin_types_compatible_p(typeof(array_hook), PyObject *)); \
   assert(array_hook == NULL); \
-  assert(__builtin_types_compatible_p(typeof(int_hook), PyObject *)); \
-  assert(int_hook == NULL); \
-  assert(__builtin_types_compatible_p(typeof(float_hook), PyObject *)); \
-  assert(float_hook == NULL); \
+  assert(__builtin_types_compatible_p(typeof(parse_int), PyObject *)); \
+  assert(parse_int == NULL); \
+  assert(__builtin_types_compatible_p(typeof(parse_float), PyObject *)); \
+  assert(parse_float == NULL); \
 } while(0)
 
 
 #define  Apsw_jsonb_detect_DOC "apsw.jsonb_detect(data: Buffer) -> bool\n\n" \
-"Returns ``True`` if data is valid JSONB, otherwise ``False``.\n" 
+"Returns ``True`` if data is valid JSONB, otherwise ``False``.  No exceptions are raised\n" \
+"while processing the data.\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"  :func:`~apsw.jsonb_decode` always validates the data as it decodes, so there is no\n" \
+"  need to call this function separately.  This function is useful for determining if\n" \
+"  some data is valid, and not some other binary format such as an image.\n" 
 
 #define Apsw_jsonb_detect_KWNAMES "data"
 #define Apsw_jsonb_detect_USAGE "apsw.jsonb_detect(data: Buffer) -> bool"
@@ -250,33 +264,72 @@
 } while(0)
 
 
-#define  Apsw_jsonb_encode_DOC "apsw.jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes\n\n" \
-"Encodes object as JSONB\n" \
+#define  Apsw_jsonb_encode_DOC "apsw.jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys: bool = False, check_circular: bool = True, exact_types: bool = False, default: Callable[[Any], JSONBTypes | Buffer] | None = None, default_key: Callable[[Any], str] | None = None, allow_nan:bool = True) -> bytes\n\n" \
+"Encodes object as JSONB.  It is like :func:`json.dumps` except it produces\n" \
+"JSONB.\n" \
 "\n" \
 ":param obj: Object to encode\n" \
+":param skipkeys: If ``True`` and a non-string dict key is\n" \
+"   encountered then it is skipped.  Otherwise :exc:`ValueError`\n" \
+"   is raised.  Default ``False``.  Like :func:`json.dumps` keys\n" \
+"   that are bool, int, float, and None are always converted to\n" \
+"   string.\n" \
+":param sort_keys: If ``True`` then objects (dict) will be output\n" \
+"   with the keys sorted.  This produces deterministic output.\n" \
+"   Default ``False``.\n" \
 ":param check_circular: Detects if containers contain themselves\n" \
 "   (even indirectly) and raises :exc:`ValueError`.  If ``False``\n" \
-"   and there is a circular reference, you get\n" \
-"   :exc:`RecursionError` (or worse).\n" \
+"   and there is a circular reference, you eventually get\n" \
+"   :exc:`RecursionError` (or run out of memory or similar).\n" \
 ":param default: Called if an object can't be encoded, and should\n" \
 "   return an object that can be encoded.  If not provided a\n" \
 "   :exc:`TypeError` is raised.\n" \
 "\n" \
 "   It can also return binary data in JSONB format.  For example\n" \
 "   numpy.float128 could encode itself as a full precision JSONB\n" \
-"   float.\n" 
+"   float.\n" \
+":param default_key: Objects (dict) must have string keys.  If a\n" \
+"   non-string key is encountered, it is skipped if ``skipkeys``\n" \
+"   is ``True``.  Otherwise this is called.  If not supplied the\n" \
+"   default matches the standard library :mod:`json` which\n" \
+"   converts None, bool, int and float to their string JSON\n" \
+"   equivalents and uses those.  This callback is useful if\n" \
+"   you want to raise an exception, or use a different way\n" \
+"   of generating the key string.\n" \
+":param allow_nan: If ``True`` (default) then following SQLite practise,\n" \
+"    infinity is converted to float ``9e999`` and NaN is converted\n" \
+"    to ``None``.  If ``False`` a :exc:`ValueError` is raised.\n" \
+":param exact_types: By default subclasses of int, float, list (including\n" \
+"    tuple), dict (including :class:`collections.abc.Mapping`), and\n" \
+"    :class:`str` are converted the same as the parent class.  This\n" \
+"    is usually what you want.  However sometimes you are using a\n" \
+"    subclass and want them converted by the ``default`` function\n" \
+"    with an example being :class:`enum.IntEnum`.  If this parameter\n" \
+"    is ``True`` then only the exact types are directly converted\n" \
+"    and subclasses will be passed to ``default`` or ``default_key``.\n" \
+"\n" \
+"You will get a :exc:`~apsw.TooBigError` if the resulting JSONB\n" \
+"will exceed 2GB because SQLite can't handle it.\n" 
 
-#define Apsw_jsonb_encode_KWNAMES "obj", "skipkeys", "check_circular", "default"
-#define Apsw_jsonb_encode_USAGE "apsw.jsonb_encode(obj: Any, *, skipkeys: bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None,) -> bytes"
+#define Apsw_jsonb_encode_KWNAMES "obj", "skipkeys", "sort_keys", "check_circular", "exact_types", "default", "default_key", "allow_nan"
+#define Apsw_jsonb_encode_USAGE "apsw.jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys: bool = False, check_circular: bool = True, exact_types: bool = False, default: Callable[[Any], JSONBTypes | Buffer] | None = None, default_key: Callable[[Any], str] | None = None, allow_nan:bool = True) -> bytes"
 
 #define Apsw_jsonb_encode_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(obj), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(skipkeys), int)); \
   assert(skipkeys == 0); \
+  assert(__builtin_types_compatible_p(typeof(sort_keys), int)); \
+  assert(sort_keys == 0); \
   assert(__builtin_types_compatible_p(typeof(check_circular), int)); \
   assert(check_circular == 1); \
+  assert(__builtin_types_compatible_p(typeof(exact_types), int)); \
+  assert(exact_types == 0); \
   assert(__builtin_types_compatible_p(typeof(default_), PyObject *)); \
   assert(default_ == NULL); \
+  assert(__builtin_types_compatible_p(typeof(default_key), PyObject *)); \
+  assert(default_key == NULL); \
+  assert(__builtin_types_compatible_p(typeof(allow_nan), int)); \
+  assert(allow_nan == 1); \
 } while(0)
 
 

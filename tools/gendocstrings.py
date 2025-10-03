@@ -668,7 +668,7 @@ def do_argparse(item):
     # put back to actual param names from mangling done to prevent
     # using C reserved words as variable names
     def repl(n):
-        return n.replace("default_", "default")
+        return {"default_": "default"}.get(n, n)
 
     n = ", ".join(f'"{ repl(a) }"' for a in kwlist) if kwlist else "NULL"
 
