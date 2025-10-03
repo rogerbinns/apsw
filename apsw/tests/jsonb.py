@@ -607,7 +607,6 @@ class JSONB(unittest.TestCase):
         # is python code, so that may hit the RecursionError instead
         # of our code.
 
-
         # encode nesting.  we use complex to get an exception if that
         # is reached
 
@@ -631,17 +630,140 @@ class JSONB(unittest.TestCase):
     def testExtras(self):
         # various flags added later to match/address issues in stdlib json
         # when used with non-default values
+
+        # allow_nan (which is also allow infinity)
         decode(encode({1: math.nan}))
         self.assertRaisesRegex(ValueError, ".*NaN value not allowed.", encode, {1: math.nan}, allow_nan=False)
         decode(encode({1: math.inf}))
         self.assertRaisesRegex(ValueError, ".*Infinity value not allowed.", encode, {1: math.inf}, allow_nan=False)
 
+        # how non-str are stringified as object keys
+        self.assertRaises(ValueError, encode, None, skipkeys=True, default_key=lambda: 1)
+        self.assertRaises(TypeError, encode, {3 + 4j: 1}, default_key=lambda x: 1)
+        self.assertRaises(ZeroDivisionError, encode, {3 + 4j: 1}, default_key=lambda x: 1 / 0)
 
-        self.assertRaises(ValueError, encode, None, skipkeys=True, default_key = lambda : 1)
-        self.assertRaises(TypeError, encode, {3+4j: 1}, default_key = lambda x: 1)
-        self.assertRaises(ZeroDivisionError, encode, {3+4j: 1}, default_key = lambda x: 1/0)
+        self.assertEqual({"": 1}, decode(encode({3 + 4j: 1}, default_key=lambda x: "")))
 
-        self.assertEqual({"": 1}, decode(encode({3+4j: 1}, default_key=lambda x: "")))
+        # exact types
+        class sint(int):
+            pass
+
+        class sstr(str):
+            pass
+
+        class sfloat(float):
+            pass
+
+        class slist(list):
+            def __hash__(self):
+                return 9
+
+        class stuple(tuple):
+            pass
+
+        class sdict(dict):
+            def __hash__(self):
+                return 8
+
+        subs = {sint, sstr, sfloat, slist, stuple, sdict}
+
+        seen = set()
+        seen_keys = set()
+
+        for s in subs:
+            # instance of subclass
+            inst = s()
+            parent = inst.__class__.__bases__[0](inst)
+
+            encode(inst, exact_types=False)
+            self.assertRaisesRegex(TypeError, ".*Unhandled object of type.*", encode, inst, exact_types=True)
+            self.assertRaisesRegex(TypeError, ".*Unhandled object of type.*", encode, [1, inst, 3], exact_types=True)
+            self.assertRaisesRegex(TypeError, ".*Unhandled object of type.*", encode, {1: 1, 2: inst}, exact_types=True)
+
+            def conv(x):
+                seen.add(x.__class__)
+                return x.__class__.__bases__[0](x)
+
+            self.assertEqual(encode(parent), encode(inst, default=conv, exact_types=True))
+
+            # check object keys
+            def conv(x):
+                seen_keys.add(x.__class__)
+                return x.__class__.__name__
+
+            self.assertRaisesRegex(TypeError, ".*Keys must be str, .*not.*", encode, {inst: 3}, exact_types=True)
+            encode({inst: 3}, default_key=conv, exact_types=True)
+
+        self.assertEqual(seen, subs)
+        self.assertEqual(seen_keys, subs)
+
+        all_at_once = dict(
+            sdict(
+                [
+                    (1, sint(3)),
+                    (2, sstr("seven")),
+                    (3, sfloat(3.14)),
+                    (4, slist([sint()])),
+                    (5, stuple(["hello", sstr("world")])),
+                ]
+            )
+        )
+
+        expected = {"1": 3, "2": "seven", "3": 3.14, "4": [0], "5": ["hello", "world"]}
+
+        self.assertRaisesRegex(TypeError, ".*Unhandled object of type.*", encode, all_at_once, exact_types=True)
+        self.assertEqual(expected, decode(encode(all_at_once)))
+
+        def conv(x):
+            return encode(x.__class__.__bases__[0](x))
+
+        self.assertEqual(expected, decode(encode(all_at_once, default=conv, exact_types=True)))
+
+        def conv(x):
+            return 3
+
+        self.assertRaisesRegex(
+            TypeError,
+            ".*default_key callback needs to return a str, not int.*",
+            encode,
+            {3 + 4j: 1},
+            exact_types=True,
+            default_key=conv,
+        )
+
+        # original use case using examples from enum doc
+        import enum
+
+        class Number(enum.IntEnum):
+            ONE = 1
+            TWO = 2
+            THREE = 3
+
+        class Color(enum.StrEnum):
+            RED = "r"
+            GREEN = "g"
+            BLUE = "b"
+
+        example = {"one": Number.ONE, "r": Color.RED, Number.TWO: "two", Color.GREEN: "g"}
+        expected = {"one": 1, "r": "r", "2": "two", "g": "g"}
+
+        self.assertEqual(expected, decode(encode(example)))
+
+        self.assertRaises(TypeError, encode, example, exact_types=True)
+        self.assertRaises(TypeError, encode, example, default=lambda x: str(x), exact_types=True)
+        self.assertRaises(TypeError, encode, example, default_key=lambda x: str(x), exact_types=True)
+
+        expected = {
+            "one": "<Number.ONE: 1>",
+            "r": "<Color.RED: 'r'>",
+            "<Number.TWO: 2>": "two",
+            "<Color.GREEN: 'g'>": "g",
+        }
+        self.assertEqual(
+            expected,
+            decode(encode(example, default=lambda x: repr(x), default_key=lambda x: repr(x), exact_types=True)),
+        )
+
     def testBadContent(self):
         # not zero length
         self.check_invalid(b"")
@@ -1015,6 +1137,7 @@ def pi_digits(count: int):
             q, r, t, k, n, l = q * k, (2 * q + r) * l, t * l, k + 1, (q * (7 * k + 2) + r * l) // (t * l), l + 2
 
     return res[0] + "." + "".join(res[1:])
+
 
 @contextlib.contextmanager
 def recursion_limit(value: int):

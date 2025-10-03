@@ -361,6 +361,8 @@ struct JSONBuffer
   int sort_keys;
   /* are nan/infinity rejected */
   int allow_nan;
+  /* do we only look at exact types, or  */
+  int exact_types;
 };
 
 #undef jsonb_encode_internal
@@ -552,7 +554,7 @@ jsonb_encode_object_key(struct JSONBuffer *buf, PyObject *key)
 #include "faultinject.h"
   /* this is a separate function because we have to stringify
      int/float etc to match stdlib json.dumps behaviour */
-  if (PyUnicode_Check(key))
+  if ((buf->exact_types) ? PyUnicode_CheckExact(key) : PyUnicode_Check(key))
     return jsonb_encode_internal(buf, key);
   if (buf->skip_keys)
     return 0;
@@ -585,7 +587,8 @@ jsonb_encode_object_key(struct JSONBuffer *buf, PyObject *key)
       key_subst = apst.sfalse;
     return jsonb_encode_internal(buf, key_subst);
   }
-  else if (PyFloat_Check(key) || PyLong_Check(key))
+  else if ((buf->exact_types) ? (PyFloat_CheckExact(key) || PyLong_CheckExact(key))
+                              : (PyFloat_Check(key) || PyLong_Check(key)))
   {
     /* for these we write them out as their own types
            and then alter the tag to be string */
@@ -627,7 +630,7 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
     return jsonb_add_tag(buf, JT_TRUE, 0);
   if (Py_IsFalse(obj))
     return jsonb_add_tag(buf, JT_FALSE, 0);
-  if (PyLong_Check(obj))
+  if ((buf->exact_types) ? PyLong_CheckExact(obj) : PyLong_Check(obj))
   {
     int res = -1;
     PyObject *s = PyObject_Str(obj);
@@ -640,7 +643,7 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
     Py_DECREF(s);
     return res;
   }
-  if (PyFloat_Check(obj))
+  if ((buf->exact_types) ? PyFloat_CheckExact(obj) : PyFloat_Check(obj))
   {
     int res = -1;
     PyObject *tmp_str = NULL;
@@ -682,7 +685,7 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
     Py_XDECREF(tmp_str);
     return res;
   }
-  if (PyUnicode_Check(obj))
+  if ((buf->exact_types) ? PyUnicode_CheckExact(obj) : PyUnicode_Check(obj))
   {
     Py_ssize_t length;
     const char *utf8 = PyUnicode_AsUTF8AndSize(obj, &length);
@@ -716,7 +719,8 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
      array.array and others,  So we only accept list and tuple, and the
      default converter can handle the other types.  This matches the json
      module. */
-  if (PyList_Check(obj) || PyTuple_Check(obj))
+  if ((buf->exact_types) ? (PyList_CheckExact(obj) || PyTuple_CheckExact(obj))
+                         : (PyList_Check(obj) || PyTuple_Check(obj)))
   {
     size_t tag_offset = buf->size;
     items = PySequence_Fast(obj, "expected a sequence for array");
@@ -752,7 +756,7 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
 
   /* this works better than pymapping_check */
   int is_dict = PyDict_CheckExact(obj);
-  if (!is_dict)
+  if (!is_dict && !buf->exact_types)
   {
     is_dict = PyObject_IsInstance(obj, collections_abc_Mapping);
     if (is_dict < 0)
@@ -905,9 +909,7 @@ error:
   return -1;
 }
 
-// ::TODO:: add check_exact param that doesn't allow subclasses
-
-/** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys:bool = False, check_circular: bool = True, default: Callable[[Any], JSONBTypes | Buffer] | None = None, default_key: Callable[[Any], str] | None = None, allow_nan:bool = True) -> bytes
+/** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys: bool = False, check_circular: bool = True, exact_types: bool = False, default: Callable[[Any], JSONBTypes | Buffer] | None = None, default_key: Callable[[Any], str] | None = None, allow_nan:bool = True) -> bytes
 
     Encodes object as JSONB.  It is like :func:`json.dumps` except it produces
     JSONB.
@@ -923,8 +925,8 @@ error:
        Default ``False``.
     :param check_circular: Detects if containers contain themselves
        (even indirectly) and raises :exc:`ValueError`.  If ``False``
-       and there is a circular reference, you get
-       :exc:`RecursionError` (or worse).
+       and there is a circular reference, you eventually get
+       :exc:`RecursionError` (or run out of memory or similar).
     :param default: Called if an object can't be encoded, and should
        return an object that can be encoded.  If not provided a
        :exc:`TypeError` is raised.
@@ -943,6 +945,14 @@ error:
     :param allow_nan: If ``True`` (default) then following SQLite practise,
         infinity is converted to float ``9e999`` and NaN is converted
         to ``None``.  If ``False`` a :exc:`ValueError` is raised.
+    :param exact_types: By default subclasses of int, float, list (including
+        tuple), dict (including :class:`collections.abc.Mapping`), and
+        :class:`str` are converted the same as the parent class.  This
+        is usually what you want.  However sometimes you are using a
+        subclass and want them converted by the ``default`` function
+        with an example being :class:`enum.IntEnum`.  If this parameter
+        is ``True`` then only the exact types are directly converted
+        and subclasses will be passed to ``default`` or ``default_key``.
 
     You will get a :exc:`~apsw.TooBigError` if the resulting JSONB
     will exceed 2GB because SQLite can't handle it.
@@ -955,6 +965,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   int sort_keys = 0;
   int check_circular = 1;
   int allow_nan = 1;
+  int exact_types = 0;
 
   PyObject *default_ = NULL;
   PyObject *default_key = NULL;
@@ -965,6 +976,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     ARG_OPTIONAL ARG_bool(skipkeys);
     ARG_OPTIONAL ARG_bool(sort_keys);
     ARG_OPTIONAL ARG_bool(check_circular);
+    ARG_OPTIONAL ARG_bool(exact_types);
     ARG_OPTIONAL ARG_optional_Callable(default_);
     ARG_OPTIONAL ARG_optional_Callable(default_key);
     ARG_OPTIONAL ARG_bool(allow_nan);
@@ -983,6 +995,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
     .skip_keys = skipkeys,
     .sort_keys = sort_keys,
     .allow_nan = allow_nan,
+    .exact_types = exact_types,
     .seen = check_circular ? PySet_New(NULL) : 0,
   };
   if (check_circular && !buf.seen)
