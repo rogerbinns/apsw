@@ -415,6 +415,13 @@ class JSONB(unittest.TestCase):
 
         self.assertRaises(TypeError, encode, {3 + 3j: 3})
 
+        # coverage - dict subclass path
+        class sdict(dict):
+            pass
+
+        self.assertRaises(TypeError, encode, sdict({3 + 3j: 3}))
+        self.assertRaises(TypeError, encode, sdict({3: 3 + 3j}))
+
         self.assertEqual(decode(encode({3 + 3j: 3}, skipkeys=True)), {})
 
         circular = {"a": 3, "b": 4, "c": 5}
@@ -807,6 +814,10 @@ class JSONB(unittest.TestCase):
             "1.2E+",
             "1.2E-",
             "1.2.3",
+            "1\x99",
+            "1\x03",
+            "0x\x07",
+            "0x\xa7",
             "0x",
             "0xx89",
             "0x9exa",
@@ -818,41 +829,59 @@ class JSONB(unittest.TestCase):
             "\r\n",
             "1.2\r\n",
             "E3",
-            # ::TODO:: sqlite doesn't reject these jsonb and should
-            "0001",
-            "+0001",
-            "-001",
-            "+002.2",
+            "00001",
+            "+00001",
+            "-00001",
+            "+00002.2",
         ):
             #  int, int5, float, float5
             for kind in (3, 4, 5, 6):
                 encoded = make_item(kind, number)
-                self.check_invalid(encoded, include_sqlite=False)
+                # sqlite doesn't check enough
+                include_sqlite = True
+                if "0000" in number:
+                    # it doesn't reject leading zeroes
+                    include_sqlite = False
+                elif kind in {5, 6} and number == "E3":
+                    # it doesn't verify a leading floats have leading number or 0x
+                    include_sqlite = False
+                self.check_invalid(encoded, include_sqlite=include_sqlite)
 
         # not valid text
-        for encoded in (
-            # TEXT
-            make_item(7, "one\x17two"),
-            make_item(7, 'one"two'),
-            make_item(7, "one\\two"),
-            # TEXTJ
-            make_item(8, "one\x17two"),
-            make_item(8, 'one"two'),
-            make_item(8, r"one\u123two"),
-            make_item(8, r"one\u123"),
-            make_item(8, "one\\"),
-            make_item(8, r"\one"),
-            make_item(8, r"\'abc"),
-            make_item(8, r"\h"),
-            make_item(8, r"\v"),
-            # TEXT5
-            make_item(9, r"hello\x1mark"),
-            make_item(9, "hello\\"),
-            make_item(9, r"\01"),
-            make_item(9, r"\h"),
-            make_item(9, r"\x3"),
-        ):
-            self.check_invalid(encoded, include_sqlite=b"mark" not in encoded)
+        invalid_texts = {
+            7:  # TEXT
+            (
+                "one\x17two",
+                'one"two',
+                "one\\two",
+            ),
+            8:  # TEXTJ
+            (
+                "one\x17two",
+                'one"two',
+                r"one\u123two",
+                r"one\u123",
+                "one\\",
+                r"\one",
+                r"\'abc",
+                r"\h",
+                r"\v",
+            ),
+            9:  # TEXT5
+            (
+                r"hello\x1mark",
+                "hello\\",
+                r"\01",
+                r"\h",
+                r"\x3",
+            ),
+        }
+        for tag in invalid_texts:
+            for item in invalid_texts[tag]:
+                # the prefix is to force code to go to the complex function
+                for prefix in ("", "🤦🏼‍♂️"):
+                    encoded = make_item(tag, prefix + item)
+                    self.check_invalid(encoded, include_sqlite="mark" not in item)
 
         # not correctly formed surrogate pairs
         for s in (
