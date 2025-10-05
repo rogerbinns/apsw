@@ -766,9 +766,9 @@ class Tester:
 
         example_files = []
         if not self.example_arg:
-            example_files.extend(list(pathlib.Path().glob("examples/*.py")))
+            example_files.extend(sorted(pathlib.Path().glob("examples/*.py")))
         else:
-            names = list(pathlib.Path().glob(f"examples/{self.example_arg}.py"))
+            names = sorted(pathlib.Path().glob(f"examples/{self.example_arg}.py"))
             if not names:
                 sys.exit(f"f{pattern=} matched no examples files")
             example_files.extend(names)
