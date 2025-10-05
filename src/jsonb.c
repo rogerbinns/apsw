@@ -16,7 +16,6 @@ https://sqlite.org/forum/forumpost/28e21085f9
 
 */
 
-
 /* Not addressing:
 
 https://github.com/python/cpython/issues/69643 - sort_keys when all keys aren't the same type
@@ -30,7 +29,6 @@ last reference goes away.  CPython does intern attribute names, function names e
 likely overlap with object keys.  However JSONB should be relatively small and focussed.
 
 */
-
 
 /**
 
@@ -321,10 +319,15 @@ different.
 
 :func:`~apsw.jsonb_detect`
 
-  Returns a boolean if some binary data is valid JSONB.  Unlike
-  `json_valid <https://sqlite.org/json1.html#jvalid>`__, the APSW
-  function also verifies that the UTF8 encoding of text is correct, and
-  is strict about various corner cases the SQLite version is not.
+  Returns a boolean if some binary data is valid JSONB.
+  If this returns ``True`` then SQLite will produce valid JSON from the
+  JSONB.
+
+  SQLite's `json_valid <https://sqlite.org/json1.html#jvalid>`__  only
+  checks the various internal length fields are consistent and items
+  seem reasonable.  It does not check all corner cases, or the UTF8
+  encoding, and so can produce invalid JSON even if json_valid said it
+  was valid JSONB.
 
 Notes
 =====
@@ -332,8 +335,8 @@ Notes
 Because SQLite has a 2GB limit on text or blobs (binary data), it
 can't work with individual JSON text or JSONB data over that size.
 
-API
-===
+JSONB API
+=========
 
 */
 
@@ -2057,8 +2060,12 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
 
 /** .. method:: jsonb_detect(data: Buffer) -> bool
 
-    Returns ``True`` if data is valid JSONB, otherwise ``False``.  No exceptions are raised
-    while processing the data.
+    Returns ``True`` if data is valid JSONB, otherwise ``False``.  If this returns
+    ``True`` then SQLite will produce valid JSON from it.
+
+    SQLite's json_valid only checks the various internal length fields are consistent
+    and items seem reasonable.  It does not check all corner cases, or the UTF8
+    encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.
 
     .. note::
 
