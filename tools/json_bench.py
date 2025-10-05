@@ -75,6 +75,10 @@ encode = apsw.jsonb_encode
 # times below include first load
 decode, encode
 
+print("bytes len as json ", len(json.dumps(big_data).encode("utf8")))
+print("bytes len as jsonb", len(encode(big_data)))
+
+
 # open("big_data.bin", "wb").write(encode(big_data))
 # open("big_data.py", "wt").write("big_data ="+repr(big_data))
 
