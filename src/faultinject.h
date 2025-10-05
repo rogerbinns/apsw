@@ -95,6 +95,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyUnicode_AsUTF8String
 #undef PyUnicode_DecodeUTF8
 #undef PyUnicode_FromFormat
+#undef PyUnicode_FromKindAndData
 #undef PyUnicode_FromString
 #undef PyUnicode_FromStringAndSize
 #undef PyUnicode_New
@@ -1453,6 +1454,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyUnicode_FromFormat = (typeof (_res_PyUnicode_FromFormat))18;                                                                                      \
     }                                                                                                                                                            \
     _res_PyUnicode_FromFormat;                                                                                                                                   \
+})
+#define PyUnicode_FromKindAndData(...) \
+({                                                                                                                                                                              \
+    __auto_type _res_PyUnicode_FromKindAndData = 0 ? PyUnicode_FromKindAndData(__VA_ARGS__) : 0;                                                                                \
+                                                                                                                                                                                \
+    _res_PyUnicode_FromKindAndData = (typeof (_res_PyUnicode_FromKindAndData))APSW_FaultInjectControl("PyUnicode_FromKindAndData", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                \
+    if ((typeof (_res_PyUnicode_FromKindAndData))0x1FACADE == _res_PyUnicode_FromKindAndData)                                                                                   \
+       _res_PyUnicode_FromKindAndData = PyUnicode_FromKindAndData(__VA_ARGS__);                                                                                                 \
+    else if ((typeof(_res_PyUnicode_FromKindAndData))0x2FACADE == _res_PyUnicode_FromKindAndData)                                                                               \
+    {                                                                                                                                                                           \
+        PyUnicode_FromKindAndData(__VA_ARGS__);                                                                                                                                 \
+        _res_PyUnicode_FromKindAndData = (typeof (_res_PyUnicode_FromKindAndData))18;                                                                                           \
+    }                                                                                                                                                                           \
+    _res_PyUnicode_FromKindAndData;                                                                                                                                             \
 })
 #define PyUnicode_FromString(...) \
 ({                                                                                                                                                               \

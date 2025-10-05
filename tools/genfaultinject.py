@@ -102,8 +102,8 @@ returns = {
             PyStructSequence_NewType PyTuple_New PyTuple_Pack
             PyType_FromModuleAndSpec PyType_GenericNew PyUnicode_AsUTF8
             PyUnicode_AsUTF8AndSize PyUnicode_AsUTF8String PyUnicode_DecodeUTF8
-            PyUnicode_FromFormat PyUnicode_FromString PyUnicode_FromStringAndSize
-            PyUnicode_New PyWeakref_GetObject PyWeakref_NewRef Py_BuildValue
+            PyUnicode_FromFormat PyUnicode_FromKindAndData PyUnicode_FromString
+            PyUnicode_FromStringAndSize  PyUnicode_New PyWeakref_GetObject PyWeakref_NewRef Py_BuildValue
             Py_VaBuildValue _PyObject_New
 
             realloc
