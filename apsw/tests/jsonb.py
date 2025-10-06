@@ -24,6 +24,9 @@ encode_raw = apsw.jsonb_encode
 decode_raw = apsw.jsonb_decode
 detect = apsw.jsonb_detect
 
+# \v came back as the wrong value before this release
+backslash_v_fixed = tuple(int(v) for v in apsw.sqlite_lib_version().split(".")) >= (3, 51, 0)
+
 
 class DetectDecodeMisMatch(Exception):
     pass
@@ -200,8 +203,10 @@ class JSONB(unittest.TestCase):
             (r"\0a", "\0a"),
             ("\\'", "'"),
             ("\\\n", ""),
-            # ::TODO:: \v needs to be added back once SQLite fixes bug
-            (r"\x5c\"\0\n\r\b\t\f\'", "\\\"\0\n\r\b\t\f'"),
+            (
+                r"\x5c\"\0\n\r\b\t\f\'" + ("\\v" if backslash_v_fixed else ""),
+                "\\\"\0\n\r\b\t\f'" + ("\v" if backslash_v_fixed else ""),
+            ),
         ):
             # this is to ensure we test non-ascii ranges too
             for suffix in ("", "".join(test_strings)):
@@ -239,9 +244,8 @@ class JSONB(unittest.TestCase):
             self.check_item(s)
 
         # escaping
-        # ::TODO:: \v needs to be added back once SQLite fixes bug
-        encoded = make_item(9, r"\'\\\b\f\n\r\t\0")
-        self.check_valid(encoded, "'\\\b\f\n\r\t\0")
+        encoded = make_item(9, r"\'\\\b\f\n\r\t\0" + ("\\v" if backslash_v_fixed else ""))
+        self.check_valid(encoded, "'\\\b\f\n\r\t\0" + ("\v" if backslash_v_fixed else ""))
 
         # JSON5 backslash LineTerminatorSequence should be swallowed
         for LineTerminatorSequence in (
@@ -328,7 +332,7 @@ class JSONB(unittest.TestCase):
                 self.assertEqual(json.loads(self.f_json(encoded)), expected)
                 self.assertEqual(json.loads(self.f_json(encoded5)), expected)
 
-        # json5 allows leading and trailing dots, and leading +
+        # json5 allows leading and trailing dots, and leading +.  sqlite doesn't allow leading + so neither do we
         for float5, expected in (
             (".123", None),
             ("123.", None),
@@ -339,9 +343,6 @@ class JSONB(unittest.TestCase):
             ("123.E+11", None),
             ("123.E11", None),
             ("123.E-11", None),
-            # ::TODO:: sqlite bug this is not accepted - json doesn't allow leading + but json5 does
-            # ("+123.", None),
-            # ("+.123", None),
         ):
             if expected is None:
                 expected = float(float5)
@@ -357,8 +358,6 @@ class JSONB(unittest.TestCase):
             ("0Xdecaf", 0xDECAF),
             ("0XdEcAf", 0xDECAF),
             ("-0xdeCaf", -0xDECAF),
-            # ::TODO:: sqlite doesn't allow leading +
-            # ("+0XdeCaf", 0xDECAF),
         ):
             if expected is None:
                 expected = int(int5)
@@ -819,6 +818,9 @@ class JSONB(unittest.TestCase):
             "0x\x07",
             "0x\xa7",
             "0x",
+            "+1",
+            "+1.1",
+            "1+1",
             "0xx89",
             "0x9exa",
             "0x999x999",
