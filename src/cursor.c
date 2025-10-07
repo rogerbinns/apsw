@@ -551,11 +551,9 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
   /* DUPLICATE(ish) code: this is substantially similar to the code in
      set_context_result.  If you fix anything here then do it there as
      well.
+  */
 
-     These have to release the GIL for the bind calls because SQLite
-     acquires the db mutex during the bind (unbinding the previous value)
-     and we prevent deadlocks by always releasing the GIL before sqlite
-     mutex acquire */
+  assert(sqlite3_mutex_held(sqlite3_db_mutex(self->connection->db)));
 
   int res = SQLITE_OK;
 
