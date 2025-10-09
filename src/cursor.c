@@ -98,9 +98,18 @@ static PyTypeObject APSWCursorType;
 
 /* CURSOR CODE */
 
-/* Macro for getting a tracer.  If our tracer is NULL then return connection tracer */
+/* Macro for getting a cal;back where the cursor inherits from connection:
 
-#define ROWTRACE (self->rowtrace ? self->rowtrace : self->connection->rowtrace)
+  - if cursor is set to PyNone then callback disabled
+  - if cursor is set then use that
+  - else cursor is NULL so use value from connection
+*/
+
+#define GET_CALLBACK(name) ((self->name == Py_None) ? NULL : (self->name) ? self->name : self->connection->name)
+
+#define ROWTRACE GET_CALLBACK(rowtrace)
+
+#define EXECTRACE GET_CALLBACK(exectrace)
 
 #define EXECTRACE (self->exectrace ? self->exectrace : self->connection->exectrace)
 
@@ -1385,6 +1394,9 @@ APSWCursor_set_exec_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     ARG_EPILOG(NULL, Cursor_set_exec_trace_USAGE, );
   }
 
+  if (!callable)
+    callable = Py_None;
+
   Py_XINCREF(callable);
   Py_XDECREF(self->exectrace);
   self->exectrace = callable;
@@ -1412,6 +1424,9 @@ APSWCursor_set_row_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Cursor_set_row_trace_USAGE, );
   }
 
+  if (!callable)
+    callable = Py_None;
+
   Py_XINCREF(callable);
   Py_XDECREF(self->rowtrace);
   self->rowtrace = callable;
@@ -1419,7 +1434,7 @@ APSWCursor_set_row_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
   Py_RETURN_NONE;
 }
 
-/** .. method:: get_exec_trace() -> Optional[ExecTracer]
+/** .. method:: get_exec_trace() -> ExecTracer | None
 
   Returns the currently installed :attr:`execution tracer
   <Cursor.exec_trace>`
@@ -1440,7 +1455,7 @@ APSWCursor_get_exec_trace(PyObject *self_, PyObject *Py_UNUSED(unused))
   return Py_NewRef(ret);
 }
 
-/** .. method:: get_row_trace() -> Optional[RowTracer]
+/** .. method:: get_row_trace() -> RowTracer | None
 
   Returns the currently installed (via :meth:`~Cursor.set_row_trace`)
   row tracer.
@@ -1511,7 +1526,7 @@ APSWCursor_fetchone(PyObject *self_, PyObject *Py_UNUSED(unused))
 }
 
 /** .. attribute:: exec_trace
-  :type: Optional[ExecTracer]
+  :type: ExecTracer | None
 
   Called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
@@ -1550,13 +1565,12 @@ APSWCursor_set_exec_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED
     return -1;
   }
   Py_CLEAR(self->exectrace);
-  if (!Py_IsNone(value))
-    self->exectrace = Py_NewRef(value);
+  self->exectrace = Py_NewRef(value);
   return 0;
 }
 
 /** .. attribute:: row_trace
-  :type: Optional[RowTracer]
+  :type: RowTracer | None
 
   Called with cursor and row being returned.  You can
   change the data that is returned or cause the row to be skipped
@@ -1595,8 +1609,7 @@ APSWCursor_set_row_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(
     return -1;
   }
   Py_CLEAR(self->rowtrace);
-  if (!Py_IsNone(value))
-    self->rowtrace = Py_NewRef(value);
+  self->rowtrace = Py_NewRef(value);
   return 0;
 }
 
