@@ -66,6 +66,7 @@ struct APSWCursor
   PyObject *bindings;        /* dict or sequence */
   Py_ssize_t bindingsoffset; /* for sequence tracks how far along we are when dealing with multiple statements */
   PyObject *convert_binding;
+  PyObject *convert_jsonb;
 
   /* iterator for executemany, original query string, prepare options */
   PyObject *emiter;
@@ -113,6 +114,8 @@ static PyTypeObject APSWCursorType;
 #define EXECTRACE GET_CALLBACK(exectrace)
 
 #define CONVERT_BINDING GET_CALLBACK(convert_binding)
+
+#define CONVERT_JSONB GET_CALLBACK(convert_jsonb)
 
 /* prevent recursive use of the cursor - eg a callback function or
    tracer executing new SQL while the call stack above is in a
@@ -239,6 +242,7 @@ APSWCursor_close_internal(APSWCursor *self, int force)
   Py_CLEAR(self->exectrace);
   Py_CLEAR(self->rowtrace);
   Py_CLEAR(self->convert_binding);
+  Py_CLEAR(self->convert_jsonb);
 
   /* we no longer need connection */
   Py_CLEAR(self->connection);
@@ -308,6 +312,7 @@ APSWCursor_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   Py_VISIT(self->exectrace);
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->convert_binding);
+  Py_VISIT(self->convert_jsonb);
   return 0;
 }
 
@@ -361,7 +366,20 @@ convert_column_to_pyobject(APSWCursor *self, int col)
     size_t len;
     data = sqlite3_column_blob(stmt, col);
     len = sqlite3_column_bytes(stmt, col);
-    return PyBytes_FromStringAndSize(data, len);
+
+    PyObject *value = PyBytes_FromStringAndSize(data, len);
+
+    if (value && CONVERT_JSONB && jsonb_detect_internal(data, len))
+    {
+      PyObject *new_value = NULL;
+      PyObject *vargs[] = { NULL, (PyObject*)self, PyLong_FromLong(col), value };
+      if (vargs[2])
+        new_value = PyObject_Vectorcall(CONVERT_JSONB, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_XDECREF(vargs[2]);
+      Py_DECREF(value);
+      value = new_value;
+    }
+    return value;
   }
   }
 }
@@ -1647,6 +1665,41 @@ APSWCursor_set_convert_binding(PyObject *self_, PyObject *value, void *Py_UNUSED
   return 0;
 }
 
+/** .. attribute:: convert_jsonb
+  :type: ConvertJSOMB | None
+
+  Called with the :class:`Cursor`, column number, and bytes value
+  when the value is valid JSONB.  The callback can :func:`decode the
+  <jsonb_decode>` or return the bytes as is. ::TODO:: write more
+
+*/
+static PyObject *
+APSWCursor_get_convert_jsonb(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
+  if (self->convert_jsonb)
+    return Py_NewRef(self->convert_jsonb);
+  Py_RETURN_NONE;
+}
+
+static int
+APSWCursor_set_convert_jsonb(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(-1);
+
+  if (!Py_IsNone(value) && !PyCallable_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "convert_jsonb expected a Callable not %s", Py_TypeName(value));
+    return -1;
+  }
+  Py_CLEAR(self->convert_jsonb);
+  self->convert_jsonb = Py_NewRef(value);
+  return 0;
+}
+
 /** .. attribute:: exec_trace
   :type: ExecTracer | None
 
@@ -2056,6 +2109,7 @@ static PyGetSetDef APSWCursor_getset[] = {
   { "bindings_names", APSWCursor_bindings_names, NULL, Cursor_bindings_names_DOC, NULL },
   { "expanded_sql", APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL },
   { "convert_binding", APSWCursor_get_convert_binding, APSWCursor_set_convert_binding, Cursor_convert_binding_DOC },
+  { "convert_jsonb", APSWCursor_get_convert_jsonb, APSWCursor_set_convert_jsonb, Cursor_convert_jsonb_DOC },
   { "exec_trace", APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr, Cursor_exec_trace_DOC },
   { Cursor_exec_trace_OLDNAME, APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr,
     Cursor_exec_trace_OLDDOC },

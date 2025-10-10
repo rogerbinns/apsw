@@ -104,6 +104,7 @@ struct Connection
   PyObject *exectrace;
   PyObject *rowtrace;
   PyObject *convert_binding;
+  PyObject *convert_jsonb;
   /* Array of tracehook.  Entry 0 is reserved for the set_profile
      callback. */
   struct tracehook_entry *tracehooks;
@@ -6198,6 +6199,7 @@ Connection_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   Py_VISIT(self->exectrace);
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->convert_binding);
+  Py_VISIT(self->convert_jsonb);
   Py_VISIT(self->vfs);
   Py_VISIT(self->dependents);
   Py_VISIT(self->cursor_factory);
