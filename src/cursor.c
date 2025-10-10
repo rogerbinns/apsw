@@ -678,7 +678,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
   }
   else if (CONVERTBINDING)
   {
-    PyObject *vargs[] = { NULL, (PyObject *)self, PyLong_FromLong(arg), obj };
+    PyObject *vargs[] = { NULL, (PyObject *)self, PyLong_FromLong(arg - 1), obj };
     if (!vargs[2])
       return -1;
     if (Py_EnterRecursiveCall(" converting binding"))
