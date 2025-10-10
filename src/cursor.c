@@ -65,6 +65,7 @@ struct APSWCursor
   /* bindings for query */
   PyObject *bindings;        /* dict or sequence */
   Py_ssize_t bindingsoffset; /* for sequence tracks how far along we are when dealing with multiple statements */
+  PyObject *convert_binding;
 
   /* iterator for executemany, original query string, prepare options */
   PyObject *emiter;
@@ -111,7 +112,7 @@ static PyTypeObject APSWCursorType;
 
 #define EXECTRACE GET_CALLBACK(exectrace)
 
-#define EXECTRACE (self->exectrace ? self->exectrace : self->connection->exectrace)
+#define CONVERTBINDING GET_CALLBACK(convert_binding)
 
 /* prevent recursive use of the cursor - eg a callback function or
    tracer executing new SQL while the call stack above is in a
@@ -237,6 +238,7 @@ APSWCursor_close_internal(APSWCursor *self, int force)
   /* no need for tracing */
   Py_CLEAR(self->exectrace);
   Py_CLEAR(self->rowtrace);
+  Py_CLEAR(self->convert_binding);
 
   /* we no longer need connection */
   Py_CLEAR(self->connection);
@@ -305,6 +307,7 @@ APSWCursor_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   Py_VISIT(self->connection);
   Py_VISIT(self->exectrace);
   Py_VISIT(self->rowtrace);
+  Py_VISIT(self->convert_binding);
   return 0;
 }
 
@@ -619,6 +622,36 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
     res = sqlite3_bind_pointer(self->statement->vdbestatement, arg, pyobject, PYOBJECT_BIND_TAG,
                                pyobject_bind_destructor);
     /* sqlite3_bind_pointer calls the destructor on failure */
+  }
+  else if (CONVERTBINDING)
+  {
+    PyObject *vargs[] = { NULL, (PyObject *)self, PyLong_FromLong(arg), obj };
+    if (!vargs[2])
+      return -1;
+    if (Py_EnterRecursiveCall(" converting binding"))
+    {
+      Py_DECREF(vargs[2]);
+      return -1;
+    }
+    PyObject *converted = PyObject_Vectorcall(CONVERTBINDING, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_LeaveRecursiveCall();
+    Py_DECREF(vargs[2]);
+    if (!converted)
+    {
+      AddTraceBackHere(__FILE__, __LINE__, "Cursor.convert_binding", "{s: i, s: O}", "number", arg, "value", obj);
+      return -1;
+    }
+    if (converted == obj)
+    {
+      PyErr_Format(PyExc_ValueError, "convert_binding returned the same object it was passed");
+      AddTraceBackHere(__FILE__, __LINE__, "Cursor.dobinding", "{s: i, s: O}", "number", arg, "value", obj);
+      Py_DECREF(converted);
+      return -1;
+    }
+
+    int res = APSWCursor_dobinding(self, arg, converted);
+    Py_DECREF(converted);
+    return res;
   }
   else
   {
@@ -1524,6 +1557,40 @@ APSWCursor_fetchone(PyObject *self_, PyObject *Py_UNUSED(unused))
   return res;
 }
 
+/** .. attribute:: convert_binding
+  :type: ConvertBinding | None
+
+  Called with the :class:`Cursor`, parameter number, and value when
+  an unsuppported type is used in a binding.  ::TODO:: write more
+
+*/
+static PyObject *
+APSWCursor_get_convert_binding(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
+  if (self->convert_binding)
+    return Py_NewRef(self->convert_binding);
+  Py_RETURN_NONE;
+}
+
+static int
+APSWCursor_set_convert_binding(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(-1);
+
+  if (!Py_IsNone(value) && !PyCallable_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "convert_binding expected a Callable not %s", Py_TypeName(value));
+    return -1;
+  }
+  Py_CLEAR(self->convert_binding);
+  self->convert_binding = Py_NewRef(value);
+  return 0;
+}
+
 /** .. attribute:: exec_trace
   :type: ExecTracer | None
 
@@ -1920,28 +1987,27 @@ static PyMethodDef APSWCursor_methods[] = {
   { 0, 0, 0, 0 } /* Sentinel */
 };
 
-static PyGetSetDef APSWCursor_getset[]
-    = { { "description", APSWCursor_getdescription_dbapi, NULL, Cursor_description_DOC, NULL },
+static PyGetSetDef APSWCursor_getset[] = {
+  { "description", APSWCursor_getdescription_dbapi, NULL, Cursor_description_DOC, NULL },
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
-        { "description_full", APSWCursor_get_description_full, NULL, Cursor_description_full_DOC, NULL },
+  { "description_full", APSWCursor_get_description_full, NULL, Cursor_description_full_DOC, NULL },
 #endif
-        { "is_explain", APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL },
-        { "is_readonly", APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL },
-        { "has_vdbe", APSWCursor_has_vdbe, NULL, Cursor_has_vdbe_DOC, NULL },
-        { "bindings_count", APSWCursor_bindings_count, NULL, Cursor_bindings_count_DOC, NULL },
-        { "bindings_names", APSWCursor_bindings_names, NULL, Cursor_bindings_names_DOC, NULL },
-        { "expanded_sql", APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL },
-        { "exec_trace", APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr,
-          Cursor_exec_trace_DOC },
-        { Cursor_exec_trace_OLDNAME, APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr,
-          Cursor_exec_trace_OLDDOC },
-        { "row_trace", APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr,
-          Cursor_row_trace_DOC },
-        { Cursor_row_trace_OLDNAME, APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr,
-          Cursor_row_trace_OLDDOC },
-        { "connection", APSWCursor_get_connection_attr, NULL, Cursor_connection_DOC },
-        { "get", APSWCursor_get, NULL, Cursor_get_DOC },
-        { NULL, NULL, NULL, NULL, NULL } };
+  { "is_explain", APSWCursor_is_explain, NULL, Cursor_is_explain_DOC, NULL },
+  { "is_readonly", APSWCursor_is_readonly, NULL, Cursor_is_readonly_DOC, NULL },
+  { "has_vdbe", APSWCursor_has_vdbe, NULL, Cursor_has_vdbe_DOC, NULL },
+  { "bindings_count", APSWCursor_bindings_count, NULL, Cursor_bindings_count_DOC, NULL },
+  { "bindings_names", APSWCursor_bindings_names, NULL, Cursor_bindings_names_DOC, NULL },
+  { "expanded_sql", APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL },
+  { "convert_binding", APSWCursor_get_convert_binding, APSWCursor_set_convert_binding, Cursor_convert_binding_DOC },
+  { "exec_trace", APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr, Cursor_exec_trace_DOC },
+  { Cursor_exec_trace_OLDNAME, APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr,
+    Cursor_exec_trace_OLDDOC },
+  { "row_trace", APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr, Cursor_row_trace_DOC },
+  { Cursor_row_trace_OLDNAME, APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr, Cursor_row_trace_OLDDOC },
+  { "connection", APSWCursor_get_connection_attr, NULL, Cursor_connection_DOC },
+  { "get", APSWCursor_get, NULL, Cursor_get_DOC },
+  { NULL, NULL, NULL, NULL, NULL }
+};
 
 static PyTypeObject APSWCursorType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Cursor",
