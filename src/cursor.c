@@ -112,7 +112,7 @@ static PyTypeObject APSWCursorType;
 
 #define EXECTRACE GET_CALLBACK(exectrace)
 
-#define CONVERTBINDING GET_CALLBACK(convert_binding)
+#define CONVERT_BINDING GET_CALLBACK(convert_binding)
 
 /* prevent recursive use of the cursor - eg a callback function or
    tracer executing new SQL while the call stack above is in a
@@ -676,7 +676,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                                pyobject_bind_destructor);
     /* sqlite3_bind_pointer calls the destructor on failure */
   }
-  else if (CONVERTBINDING)
+  else if (CONVERT_BINDING)
   {
     PyObject *vargs[] = { NULL, (PyObject *)self, PyLong_FromLong(arg - 1), obj };
     if (!vargs[2])
@@ -686,7 +686,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
       Py_DECREF(vargs[2]);
       return -1;
     }
-    PyObject *converted = PyObject_Vectorcall(CONVERTBINDING, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    PyObject *converted = PyObject_Vectorcall(CONVERT_BINDING, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     Py_LeaveRecursiveCall();
     Py_DECREF(vargs[2]);
     if (!converted)
