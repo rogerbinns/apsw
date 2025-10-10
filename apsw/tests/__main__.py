@@ -5957,7 +5957,7 @@ class APSW(unittest.TestCase):
             "cursor",
             "APSWChangesetIterator",
             "JSONB",
-        ) or name in {"apsw_no_change_repr"}:
+        ) or name in {"apsw_no_change_repr", "convert_column_to_pyobject"}:
             return
 
         checks = {

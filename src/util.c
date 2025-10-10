@@ -282,58 +282,6 @@ convert_value_to_pyobject_not_in(sqlite3_value *value)
   return convert_value_to_pyobject(value, 0, 0);
 }
 
-/* Converts column to PyObject.  Returns a new reference. Almost identical to above
-   but we cannot just use sqlite3_column_value and then call the above function as
-   SQLite doesn't allow that ("unprotected values") and assertion failure */
-#undef convert_column_to_pyobject
-static PyObject *
-convert_column_to_pyobject(sqlite3_stmt *stmt, int col)
-{
-#include "faultinject.h"
-  int coltype;
-
-  coltype = sqlite3_column_type(stmt, col);
-
-  switch (coltype)
-  {
-  case SQLITE_INTEGER: {
-    sqlite3_int64 val;
-    val = sqlite3_column_int64(stmt, col);
-    return PyLong_FromLongLong(val);
-  }
-
-  case SQLITE_FLOAT: {
-    double d;
-    d = sqlite3_column_double(stmt, col);
-    return PyFloat_FromDouble(d);
-  }
-  case SQLITE_TEXT: {
-    const char *data;
-    size_t len;
-    data = (const char *)sqlite3_column_text(stmt, col);
-    len = sqlite3_column_bytes(stmt, col);
-    return PyUnicode_FromStringAndSize(data, len);
-  }
-
-  default:
-  case SQLITE_NULL: {
-    void *pointer;
-    pointer = sqlite3_value_pointer(sqlite3_column_value(stmt, col), PYOBJECT_BIND_TAG);
-    if (pointer)
-      return Py_NewRef((PyObject *)pointer);
-    Py_RETURN_NONE;
-  }
-
-  case SQLITE_BLOB: {
-    const void *data;
-    size_t len;
-    data = sqlite3_column_blob(stmt, col);
-    len = sqlite3_column_bytes(stmt, col);
-    return PyBytes_FromStringAndSize(data, len);
-  }
-  }
-}
-
 /* Some macros used for frequent operations */
 
 /* used by Connection */

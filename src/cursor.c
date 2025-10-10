@@ -311,6 +311,59 @@ APSWCursor_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   return 0;
 }
 
+/* Converts column to PyObject.  Returns a new reference. Almost identical to above
+   but we cannot just use sqlite3_column_value and then call the above function as
+   SQLite doesn't allow that ("unprotected values") and assertion failure */
+#undef convert_column_to_pyobject
+static PyObject *
+convert_column_to_pyobject(APSWCursor *self, int col)
+{
+#include "faultinject.h"
+  sqlite3_stmt *stmt = self->statement->vdbestatement;
+  int coltype;
+
+  coltype = sqlite3_column_type(stmt, col);
+
+  switch (coltype)
+  {
+  case SQLITE_INTEGER: {
+    sqlite3_int64 val;
+    val = sqlite3_column_int64(stmt, col);
+    return PyLong_FromLongLong(val);
+  }
+
+  case SQLITE_FLOAT: {
+    double d;
+    d = sqlite3_column_double(stmt, col);
+    return PyFloat_FromDouble(d);
+  }
+  case SQLITE_TEXT: {
+    const char *data;
+    size_t len;
+    data = (const char *)sqlite3_column_text(stmt, col);
+    len = sqlite3_column_bytes(stmt, col);
+    return PyUnicode_FromStringAndSize(data, len);
+  }
+
+  default:
+  case SQLITE_NULL: {
+    void *pointer;
+    pointer = sqlite3_value_pointer(sqlite3_column_value(stmt, col), PYOBJECT_BIND_TAG);
+    if (pointer)
+      return Py_NewRef((PyObject *)pointer);
+    Py_RETURN_NONE;
+  }
+
+  case SQLITE_BLOB: {
+    const void *data;
+    size_t len;
+    data = sqlite3_column_blob(stmt, col);
+    len = sqlite3_column_bytes(stmt, col);
+    return PyBytes_FromStringAndSize(data, len);
+  }
+  }
+}
+
 static const char *description_formats[] = { "(ss)", "(ssOOOOO)", "(sssss)" };
 
 static PyObject *
@@ -1362,7 +1415,7 @@ again:
 
   for (i = 0; i < numcols; i++)
   {
-    item = convert_column_to_pyobject(self->statement->vdbestatement, i);
+    item = convert_column_to_pyobject(self, i);
     if (!item)
       goto error;
     PyTuple_SET_ITEM(retval, i, item);
@@ -1907,7 +1960,7 @@ APSWCursor_get(PyObject *self_, void *Py_UNUSED(unused))
     numcols = sqlite3_data_count(self->statement->vdbestatement);
     if (numcols == 1)
     {
-      the_row = convert_column_to_pyobject(self->statement->vdbestatement, 0);
+      the_row = convert_column_to_pyobject(self, 0);
       if (!the_row)
         goto error;
     }
@@ -1918,7 +1971,7 @@ APSWCursor_get(PyObject *self_, void *Py_UNUSED(unused))
         goto error;
       for (i = 0; i < numcols; i++)
       {
-        item = convert_column_to_pyobject(self->statement->vdbestatement, i);
+        item = convert_column_to_pyobject(self, i);
         if (!item)
           goto error;
         PyTuple_SET_ITEM(the_row, i, item);
