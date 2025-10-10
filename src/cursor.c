@@ -1080,31 +1080,30 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   self->bindingsoffset = 0;
   savedbindingsoffset = 0;
 
+  self->in_query = 1;
   if (APSWCursor_dobindings(self))
     goto error_out;
   if (EXECTRACE)
   {
-    self->in_query = 1;
     if (APSWCursor_do_exec_trace(self, savedbindingsoffset))
-    {
-      self->in_query = 0;
       goto error_out;
-    }
   }
 
   self->status = C_BEGIN;
-  self->in_query = 1;
   retval = APSWCursor_step(self);
-  self->in_query = 0;
   if (!retval)
     goto error_out;
 
   sqlite3_mutex_leave(self->connection->dbmutex);
+  self->in_query = 0;
+
   return Py_NewRef(retval);
 
 error_out:
   assert(PyErr_Occurred());
   sqlite3_mutex_leave(self->connection->dbmutex);
+  self->in_query = 0;
+
   return NULL;
 }
 
