@@ -319,6 +319,8 @@ static PyObject *
 convert_column_to_pyobject(APSWCursor *self, int col)
 {
 #include "faultinject.h"
+  assert(self->in_query);
+
   sqlite3_stmt *stmt = self->statement->vdbestatement;
   int coltype;
 
@@ -1387,11 +1389,11 @@ APSWCursor_next(PyObject *self_)
     return NULL;
 
 again:
+  self->in_query = 1;
+
   if (self->status == C_BEGIN)
   {
-    self->in_query = 1;
     int step = !!APSWCursor_step(self);
-    self->in_query = 0;
     if (!step)
       goto error;
   }
@@ -1400,6 +1402,7 @@ again:
   {
     /* end of iteration */
     sqlite3_mutex_leave(self->connection->dbmutex);
+    self->in_query = 0;
     return NULL;
   }
 
@@ -1422,9 +1425,7 @@ again:
   }
   if (ROWTRACE)
   {
-    self->in_query = 1;
     PyObject *r2 = APSWCursor_do_row_trace(self, retval);
-    self->in_query = 0;
     Py_CLEAR(retval);
     if (!r2)
       goto error;
@@ -1436,6 +1437,7 @@ again:
     retval = r2;
   }
   sqlite3_mutex_leave(self->connection->dbmutex);
+  self->in_query = 0;
   return retval;
 
 error:
@@ -1443,6 +1445,7 @@ error:
   assert(PyErr_Occurred());
 
   sqlite3_mutex_leave(self->connection->dbmutex);
+  self->in_query = 0;
   return NULL;
 }
 
@@ -1943,6 +1946,7 @@ APSWCursor_get(PyObject *self_, void *Py_UNUSED(unused))
     Py_RETURN_NONE;
 
   DBMUTEX_ENSURE(self->connection->dbmutex);
+  self->in_query = 1;
 
   do
   {
@@ -1983,14 +1987,13 @@ APSWCursor_get(PyObject *self_, void *Py_UNUSED(unused))
         goto error;
       Py_CLEAR(the_row);
     }
-    self->in_query = 1;
     step = APSWCursor_step(self);
-    self->in_query = 0;
     if (step == NULL)
       goto error;
   } while (self->status != C_DONE);
 
   sqlite3_mutex_leave(self->connection->dbmutex);
+  self->in_query = 0;
 
   if (the_list)
     return the_list;
@@ -1999,6 +2002,7 @@ APSWCursor_get(PyObject *self_, void *Py_UNUSED(unused))
 
 error:
   sqlite3_mutex_leave(self->connection->dbmutex);
+  self->in_query = 0;
   assert(PyErr_Occurred());
   Py_CLEAR(the_list);
   Py_CLEAR(the_row);
