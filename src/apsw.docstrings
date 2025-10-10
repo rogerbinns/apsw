@@ -247,8 +247,12 @@
 
 
 #define  Apsw_jsonb_detect_DOC "apsw.jsonb_detect(data: Buffer) -> bool\n\n" \
-"Returns ``True`` if data is valid JSONB, otherwise ``False``.  No exceptions are raised\n" \
-"while processing the data.\n" \
+"Returns ``True`` if data is valid JSONB, otherwise ``False``.  If this returns\n" \
+"``True`` then SQLite will produce valid JSON from it.\n" \
+"\n" \
+"SQLite's json_valid only checks the various internal length fields are consistent\n" \
+"and items seem reasonable.  It does not check all corner cases, or the UTF8\n" \
+"encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.\n" \
 "\n" \
 ".. note::\n" \
 "\n" \
@@ -3002,6 +3006,17 @@
 "\n" \
 ":class:`Connection` this cursor is using\n" 
 
+#define  Cursor_convert_binding_DOC ":type: ConvertBinding | None\n" \
+"\n" \
+"Called with the :class:`Cursor`, parameter number, and value when\n" \
+"an unsuppported type is used in a binding.  ::TODO:: write more\n" 
+
+#define  Cursor_convert_jsonb_DOC ":type: ConvertJSOMB | None\n" \
+"\n" \
+"Called with the :class:`Cursor`, column number, and bytes value\n" \
+"when the value is valid JSONB.  The callback can :func:`decode the\n" \
+"<jsonb_decode>` or return the bytes as is. ::TODO:: write more\n" 
+
 #define  Cursor_description_DOC ":type: tuple[tuple[str, str, None, None, None, None, None], ...]\n" \
 "\n" \
 "Based on the `DB-API cursor property\n" \
@@ -3025,14 +3040,13 @@
 "  * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__\n" \
 "  * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__\n" 
 
-#define  Cursor_exec_trace_DOC ":type: Optional[ExecTracer]\n" \
+#define  Cursor_exec_trace_DOC ":type: ExecTracer | None\n" \
 "\n" \
 "Called with the cursor, statement and bindings for\n" \
 "each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this\n" \
 "cursor.\n" \
 "\n" \
-"If *callable* is *None* then any existing execution tracer is\n" \
-"unregistered.\n" \
+"If *callable* is *None* then execution tracing is disabled for the cursor..\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -3200,7 +3214,7 @@
 #define Cursor_get_description_USAGE "Cursor.get_description() -> tuple[tuple[str, str], ...]"
 #define Cursor_get_description_OLDDOC Cursor_get_description_USAGE "\n(Old less clear name getdescription)"
 
-#define  Cursor_get_exec_trace_DOC "Cursor.get_exec_trace() -> Optional[ExecTracer]\n\n" \
+#define  Cursor_get_exec_trace_DOC "Cursor.get_exec_trace() -> ExecTracer | None\n\n" \
 "Returns the currently installed :attr:`execution tracer\n" \
 "<Cursor.exec_trace>`\n" \
 "\n" \
@@ -3209,10 +3223,10 @@
 "  * :ref:`tracing`\n" 
 
 #define Cursor_get_exec_trace_OLDNAME "getexectrace"
-#define Cursor_get_exec_trace_USAGE "Cursor.get_exec_trace() -> Optional[ExecTracer]"
+#define Cursor_get_exec_trace_USAGE "Cursor.get_exec_trace() -> ExecTracer | None"
 #define Cursor_get_exec_trace_OLDDOC Cursor_get_exec_trace_USAGE "\n(Old less clear name getexectrace)"
 
-#define  Cursor_get_row_trace_DOC "Cursor.get_row_trace() -> Optional[RowTracer]\n\n" \
+#define  Cursor_get_row_trace_DOC "Cursor.get_row_trace() -> RowTracer | None\n\n" \
 "Returns the currently installed (via :meth:`~Cursor.set_row_trace`)\n" \
 "row tracer.\n" \
 "\n" \
@@ -3221,7 +3235,7 @@
 "  * :ref:`tracing`\n" 
 
 #define Cursor_get_row_trace_OLDNAME "getrowtrace"
-#define Cursor_get_row_trace_USAGE "Cursor.get_row_trace() -> Optional[RowTracer]"
+#define Cursor_get_row_trace_USAGE "Cursor.get_row_trace() -> RowTracer | None"
 #define Cursor_get_row_trace_OLDDOC Cursor_get_row_trace_USAGE "\n(Old less clear name getrowtrace)"
 
 #define  Cursor_has_vdbe_DOC ":type: bool\n" \
@@ -3261,7 +3275,7 @@
 #define  Cursor_next_DOC "Cursor.__next__(self: Cursor) -> Any\n\n" \
 "Cursors are iterators\n" 
 
-#define  Cursor_row_trace_DOC ":type: Optional[RowTracer]\n" \
+#define  Cursor_row_trace_DOC ":type: RowTracer | None\n" \
 "\n" \
 "Called with cursor and row being returned.  You can\n" \
 "change the data that is returned or cause the row to be skipped\n" \

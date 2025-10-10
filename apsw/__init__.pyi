@@ -385,8 +385,12 @@ def jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, 
     ...
 
 def jsonb_detect(data: Buffer) -> bool:
-    """Returns ``True`` if data is valid JSONB, otherwise ``False``.  No exceptions are raised
-    while processing the data.
+    """Returns ``True`` if data is valid JSONB, otherwise ``False``.  If this returns
+    ``True`` then SQLite will produce valid JSON from it.
+
+    SQLite's json_valid only checks the various internal length fields are consistent
+    and items seem reasonable.  It does not check all corner cases, or the UTF8
+    encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.
 
     .. note::
 
@@ -2351,6 +2355,15 @@ class Cursor:
     connection: Connection
     """:class:`Connection` this cursor is using"""
 
+    convert_binding: ConvertBinding | None
+    """Called with the :class:`Cursor`, parameter number, and value when
+    an unsuppported type is used in a binding.  ::TODO:: write more"""
+
+    convert_jsonb: ConvertJSOMB | None
+    """Called with the :class:`Cursor`, column number, and bytes value
+    when the value is valid JSONB.  The callback can :func:`decode the
+    <jsonb_decode>` or return the bytes as is. ::TODO:: write more"""
+
     description: tuple[tuple[str, str, None, None, None, None, None], ...]
     """Based on the `DB-API cursor property
     <https://www.python.org/dev/peps/pep-0249/>`__, this returns the
@@ -2372,13 +2385,12 @@ class Cursor:
       * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__
       * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__"""
 
-    exec_trace: Optional[ExecTracer]
+    exec_trace: ExecTracer | None
     """Called with the cursor, statement and bindings for
     each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
     cursor.
 
-    If *callable* is *None* then any existing execution tracer is
-    unregistered.
+    If *callable* is *None* then execution tracing is disabled for the cursor..
 
     .. seealso::
 
@@ -2513,7 +2525,7 @@ class Cursor:
 
     getdescription = get_description ## OLD-NAME
 
-    def get_exec_trace(self) -> Optional[ExecTracer]:
+    def get_exec_trace(self) -> ExecTracer | None:
         """Returns the currently installed :attr:`execution tracer
         <Cursor.exec_trace>`
 
@@ -2524,7 +2536,7 @@ class Cursor:
 
     getexectrace = get_exec_trace ## OLD-NAME
 
-    def get_row_trace(self) -> Optional[RowTracer]:
+    def get_row_trace(self) -> RowTracer | None:
         """Returns the currently installed (via :meth:`~Cursor.set_row_trace`)
         row tracer.
 
@@ -2564,7 +2576,7 @@ class Cursor:
         """Cursors are iterators"""
         ...
 
-    row_trace: Optional[RowTracer]
+    row_trace: RowTracer | None
     """Called with cursor and row being returned.  You can
     change the data that is returned or cause the row to be skipped
     altogether.
