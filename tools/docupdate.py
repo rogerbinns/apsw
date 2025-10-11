@@ -9,6 +9,8 @@ import os
 import textwrap
 import re
 
+os.environ["NO_COLOR"] = "1"
+
 # get the download file names correct
 
 version = sys.argv[1]
