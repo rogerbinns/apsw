@@ -290,7 +290,7 @@
 "   :exc:`TypeError` is raised.\n" \
 "\n" \
 "   It can also return binary data in JSONB format.  For example\n" \
-"   numpy.float128 could encode itself as a full precision JSONB\n" \
+"   :mod:`decimal` values can be encoded as a full precision JSONB\n" \
 "   float.\n" \
 ":param default_key: Objects (dict) must have string keys.  If a\n" \
 "   non-string key is encountered, it is skipped if ``skipkeys``\n" \
@@ -1473,6 +1473,18 @@
 "leaves unaltered.  The effective value is always returned.\n" \
 "\n" \
 "Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__\n" 
+
+#define  Connection_convert_binding_DOC ":type: ConvertBinding | None\n" \
+"\n" \
+"Called on a cursor when a binding is not a supported type.\n" \
+"This connection value is used when the cursor does not set\n" \
+"its own value.  See :attr:`Cursor.convert_binding`\n" 
+
+#define  Connection_convert_jsonb_DOC ":type: ConvertJSONB | None\n" \
+"\n" \
+"Called on a cursor when a blob being returned is valid JSONB.\n" \
+"This connection value is used when the cursor does not set\n" \
+"its own value.  See :attr:`Cursor.convert_jsonb`\n" 
 
 #define  Connection_create_aggregate_function_DOC "Connection.create_aggregate_function(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None\n\n" \
 "Registers an aggregate function.  Aggregate functions operate on all\n" \
@@ -3009,13 +3021,31 @@
 #define  Cursor_convert_binding_DOC ":type: ConvertBinding | None\n" \
 "\n" \
 "Called with the :class:`Cursor`, parameter number, and value when\n" \
-"an unsuppported type is used in a binding.  ::TODO:: write more\n" 
+"an unsuppported type is used in a binding. Note that parameter\n" \
+"numbers start at 1.\n" \
+"\n" \
+"If set to ``None`` then conversion is disabled for this cursor.\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+"  * :attr:`bindings_count`\n" \
+"  * :attr:`bindings_names`\n" 
 
-#define  Cursor_convert_jsonb_DOC ":type: ConvertJSOMB | None\n" \
+#define  Cursor_convert_jsonb_DOC ":type: ConvertJSONB | None\n" \
 "\n" \
 "Called with the :class:`Cursor`, column number, and bytes value\n" \
-"when the value is valid JSONB.  The callback can :func:`decode the\n" \
-"<jsonb_decode>` or return the bytes as is. ::TODO:: write more\n" 
+"when a blob value is valid JSONB.  The callback can :func:`decode the\n" \
+"<jsonb_decode>` or return the bytes as is.\n" \
+"\n" \
+"If set to ``None`` then conversion is disabled for this cursor.\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+"  You can consult the description to get further confirmation if\n" \
+"  the value is intended to be JSONB.\n" \
+"\n" \
+"  * :attr:`Cursor.description_full`\n" \
+"  * :attr:`Cursor.description`\n" 
 
 #define  Cursor_description_DOC ":type: tuple[tuple[str, str, None, None, None, None, None], ...]\n" \
 "\n" \
@@ -3321,6 +3351,12 @@
 
 #define Cursor_set_row_trace_OLDNAME "setrowtrace"
 #define Cursor_set_row_trace_OLDDOC Cursor_set_row_trace_USAGE "\n(Old less clear name setrowtrace)"
+
+#define  Cursor_sql_DOC ":type: str\n" \
+"\n" \
+"The SQL being executed\n" \
+"\n" \
+"Calls: `sqlite3_sql <https://sqlite.org/c3ref/expanded_sql.html>`__\n" 
 
 #define  FTS5ExtensionApi_aux_data_DOC ":type: Any\n" \
 "\n" \

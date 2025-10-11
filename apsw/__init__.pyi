@@ -109,6 +109,18 @@ ExecTracer = Callable[[Cursor, str, Optional[Bindings]], bool]
 """Execution tracers are called with the cursor, sql query text, and the bindings
 used.  Return False/None to abort execution, or True to continue"""
 
+ConvertBinding = Callable[[Cursor, int, Any], SQLiteValue]
+"""Called with a cursor, parameter number, and value to convert
+into a supported SQLite value.  Note that parameter numbers begin at 1.
+This is a good location to call :func:`jsonb_encode` to convert values
+to :doc:`JSON representation <jsonb>`"""
+
+ConvertJSONB = Callable[[Cursor, int, bytes], Any]
+"""Called with a cursor, column number, and a bytes that is valid
+JSONB.  This is a good location to call :func:`jsonb_decode` to
+convert :doc:`JSON representation <jsonb>` into any Python
+value"""
+
 Authorizer = Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]
 """Authorizers are called with an operation code and 4 strings (which could be None) depending
 on the operatation.  Return SQLITE_OK, SQLITE_DENY, or SQLITE_IGNORE"""
@@ -421,7 +433,7 @@ def jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys: bool = False, c
        :exc:`TypeError` is raised.
 
        It can also return binary data in JSONB format.  For example
-       numpy.float128 could encode itself as a full precision JSONB
+       :mod:`decimal` values can be encoded as a full precision JSONB
        float.
     :param default_key: Objects (dict) must have string keys.  If a
        non-string key is encountered, it is skipped if ``skipkeys``
@@ -1267,6 +1279,16 @@ class Connection:
 
         Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__"""
         ...
+
+    convert_binding: ConvertBinding | None
+    """Called on a cursor when a binding is not a supported type.
+    This connection value is used when the cursor does not set
+    its own value.  See :attr:`Cursor.convert_binding`"""
+
+    convert_jsonb: ConvertJSONB | None
+    """Called on a cursor when a blob being returned is valid JSONB.
+    This connection value is used when the cursor does not set
+    its own value.  See :attr:`Cursor.convert_jsonb`"""
 
     def create_aggregate_function(self, name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None:
         """Registers an aggregate function.  Aggregate functions operate on all
@@ -2357,12 +2379,30 @@ class Cursor:
 
     convert_binding: ConvertBinding | None
     """Called with the :class:`Cursor`, parameter number, and value when
-    an unsuppported type is used in a binding.  ::TODO:: write more"""
+    an unsuppported type is used in a binding. Note that parameter
+    numbers start at 1.
 
-    convert_jsonb: ConvertJSOMB | None
+    If set to ``None`` then conversion is disabled for this cursor.
+
+    .. seealso::
+
+      * :attr:`bindings_count`
+      * :attr:`bindings_names`"""
+
+    convert_jsonb: ConvertJSONB | None
     """Called with the :class:`Cursor`, column number, and bytes value
-    when the value is valid JSONB.  The callback can :func:`decode the
-    <jsonb_decode>` or return the bytes as is. ::TODO:: write more"""
+    when a blob value is valid JSONB.  The callback can :func:`decode the
+    <jsonb_decode>` or return the bytes as is.
+
+    If set to ``None`` then conversion is disabled for this cursor.
+
+    .. seealso::
+
+      You can consult the description to get further confirmation if
+      the value is intended to be JSONB.
+
+      * :attr:`Cursor.description_full`
+      * :attr:`Cursor.description`"""
 
     description: tuple[tuple[str, str, None, None, None, None, None], ...]
     """Based on the `DB-API cursor property
@@ -2603,6 +2643,11 @@ class Cursor:
         ...
 
     setrowtrace = set_row_trace ## OLD-NAME
+
+    sql: str
+    """The SQL being executed
+
+    Calls: `sqlite3_sql <https://sqlite.org/c3ref/expanded_sql.html>`__"""
 
 @final
 class FTS5ExtensionApi:
