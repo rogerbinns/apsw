@@ -1959,6 +1959,31 @@ APSWCursor_expanded_sql(PyObject *self_, void *Py_UNUSED(unused))
   return res;
 }
 
+/** .. attribute:: sql
+  :type: str
+
+  The SQL being executed
+
+  -* sqlite3_sql
+*/
+static PyObject *
+APSWCursor_sql(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  PyObject *res;
+
+  CHECK_CURSOR_CLOSED(NULL);
+
+  if (!self->statement)
+    Py_RETURN_NONE;
+
+  DBMUTEX_ENSURE(self->connection->dbmutex);
+  res = convertutf8string(sqlite3_sql(self->statement->vdbestatement));
+  sqlite3_mutex_leave(self->connection->dbmutex);
+
+  return res;
+}
+
 /** .. attribute:: get
  :type: Any
 
@@ -2108,6 +2133,7 @@ static PyGetSetDef APSWCursor_getset[] = {
   { "bindings_count", APSWCursor_bindings_count, NULL, Cursor_bindings_count_DOC, NULL },
   { "bindings_names", APSWCursor_bindings_names, NULL, Cursor_bindings_names_DOC, NULL },
   { "expanded_sql", APSWCursor_expanded_sql, NULL, Cursor_expanded_sql_DOC, NULL },
+  { "sql", APSWCursor_sql, NULL, Cursor_sql_DOC, NULL },
   { "convert_binding", APSWCursor_get_convert_binding, APSWCursor_set_convert_binding, Cursor_convert_binding_DOC },
   { "convert_jsonb", APSWCursor_get_convert_jsonb, APSWCursor_set_convert_jsonb, Cursor_convert_jsonb_DOC },
   { "exec_trace", APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr, Cursor_exec_trace_DOC },
