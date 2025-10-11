@@ -605,6 +605,16 @@ class JSONB(unittest.TestCase):
             # give up
             return
 
+        # this test works but depends on magic numbers and isn't stable
+        # across python versions.  if I add 10 to the current depth and
+        # then do *10,000* nested calls to Py_EnterRecursiveCall it
+        # may or may not generate RecursionError depending on the wind
+        # direction.  fault injection also tests the code.
+
+        # so disabling this test for now because it is too difficult to
+        # trigger reliably
+        return
+
         import inspect
 
         depth = len(inspect.stack(0))
