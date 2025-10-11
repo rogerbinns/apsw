@@ -698,7 +698,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
   }
   else if (CONVERT_BINDING)
   {
-    PyObject *vargs[] = { NULL, (PyObject *)self, PyLong_FromLong(arg - 1), obj };
+    PyObject *vargs[] = { NULL, (PyObject *)self, PyLong_FromLong(arg), obj };
     if (!vargs[2])
       return -1;
     if (Py_EnterRecursiveCall(" converting binding"))
@@ -1635,7 +1635,13 @@ APSWCursor_fetchone(PyObject *self_, PyObject *Py_UNUSED(unused))
   :type: ConvertBinding | None
 
   Called with the :class:`Cursor`, parameter number, and value when
-  an unsuppported type is used in a binding.  ::TODO:: write more
+  an unsuppported type is used in a binding. Note that parameter
+  numbers start at 1.
+
+  .. sealso::
+
+    * :attr:`bindings_count`
+    * :attr:`bindings_names`
 
 */
 static PyObject *
