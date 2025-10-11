@@ -185,8 +185,6 @@ class TypesConverterCursorFactory:
 
     def adapt_value(self, value: Any) -> apsw.SQLiteValue:
         "Returns SQLite representation of `value`"
-        if value is None or isinstance(value, (int, bytes, str, float)):
-            return value
         if isinstance(value, self.abstract_base_class):
             return value.to_sqlite_value()
         adapter = self.adapters.get(type(value))
@@ -201,38 +199,9 @@ class TypesConverterCursorFactory:
             return value
         return converter(value)
 
-    def wrap_bindings(self, bindings: apsw.Bindings | None) -> apsw.Bindings | None:
-        "Wraps bindings that are supplied to underlying execute"
-        if bindings is None:
-            return None
-        if isinstance(bindings, (dict, collections.abc.Mapping)):
-            return TypesConverterCursorFactory.DictAdapter(self, bindings)  # type: ignore[arg-type]
-        return tuple(self.adapt_value(v) for v in bindings)
-
-    def wrap_sequence_bindings(
-        self, sequenceofbindings: Iterable[apsw.Bindings]
-    ) -> Generator[apsw.Bindings, None, None]:
-        "Wraps a sequence of bindings that are supplied to the underlying executemany"
-        for binding in sequenceofbindings:
-            yield self.wrap_bindings(binding)  # type: ignore[misc]
-
-    class DictAdapter(collections.abc.Mapping):
-        "Used to wrap dictionaries supplied as bindings"
-
-        def __init__(self, factory: TypesConverterCursorFactory, data: collections.abc.Mapping[str, apsw.SQLiteValue]):
-            self.data = data
-            self.factory = factory
-
-        def __getitem__(self, key: str) -> apsw.SQLiteValue:
-            return self.factory.adapt_value(self.data[key])
-
-        def __iter__(self):
-            "Required by mapping, but not used"
-            raise NotImplementedError
-
-        def __len__(self):
-            "Required by mapping, but not used"
-            raise NotImplementedError
+    def convert_binding(self, _, __, value: Any):
+        "convert_binding callback"
+        return self.adapt_value(value)
 
     class TypeConverterCursor(apsw.Cursor):
         "Cursor used to do conversions"
@@ -240,50 +209,11 @@ class TypesConverterCursorFactory:
         def __init__(self, connection: apsw.Connection, factory: TypesConverterCursorFactory):
             super().__init__(connection)
             self.factory = factory
+            self.convert_binding = factory.convert_binding
             self.row_trace = self._rowtracer
 
         def _rowtracer(self, cursor: apsw.Cursor, values: apsw.SQLiteValues) -> tuple[Any, ...]:
             return tuple(self.factory.convert_value(d[1], v) for d, v in zip(cursor.get_description(), values))
-
-        def execute(
-            self,
-            statements: str,
-            bindings: apsw.Bindings | None = None,
-            *,
-            can_cache: bool = True,
-            prepare_flags: int = 0,
-            explain: int = -1,
-        ) -> apsw.Cursor:
-            """Executes the statements doing conversions on supplied and returned values
-
-            See :meth:`apsw.Cursor.execute` for parameter details"""
-            return super().execute(
-                statements,
-                self.factory.wrap_bindings(bindings),
-                can_cache=can_cache,
-                prepare_flags=prepare_flags,
-                explain=explain,
-            )
-
-        def executemany(
-            self,
-            statements: str,
-            sequenceofbindings: Iterable[apsw.Bindings],
-            *,
-            can_cache: bool = True,
-            prepare_flags: int = 0,
-            explain: int = -1,
-        ) -> apsw.Cursor:
-            """Executes the statements against each item in sequenceofbindings, doing conversions on supplied and returned values
-
-            See :meth:`apsw.Cursor.executemany` for parameter details"""
-            return super().executemany(
-                statements,
-                self.factory.wrap_sequence_bindings(sequenceofbindings),  # type: ignore[arg-type]
-                can_cache=can_cache,
-                prepare_flags=prepare_flags,
-                explain=explain,
-            )
 
 
 class Function:
