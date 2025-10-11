@@ -5516,6 +5516,77 @@ Connection_get_in_transaction(PyObject *self_, void *Py_UNUSED(unused))
   Py_RETURN_FALSE;
 }
 
+/** .. attribute:: convert_binding
+  :type: ConvertBinding | None
+
+  Called on a cursor when a binding is not a supported type.
+  This connection value is used when the cursor does not set
+  its own value.  See :attr:`Cursor.convert_binding`
+*/
+static PyObject *
+Connection_get_convert_binding(PyObject *self_, void *Py_UNUSED(unused))
+{
+  Connection *self = (Connection *)self_;
+  CHECK_CLOSED(self, NULL);
+
+  if (self->convert_binding)
+    return Py_NewRef(self->convert_binding);
+  Py_RETURN_NONE;
+}
+
+static int
+Connection_set_convert_binding(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
+{
+  Connection *self = (Connection *)self_;
+  CHECK_CLOSED(self, -1);
+
+  if (!Py_IsNone(value) && !PyCallable_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "convert_binding expected a Callable not %s", Py_TypeName(value));
+    return -1;
+  }
+  Py_CLEAR(self->convert_binding);
+  if (value != Py_None)
+    self->convert_binding = Py_NewRef(value);
+  return 0;
+}
+
+/** .. attribute:: convert_jsonb
+  :type: ConvertJSONB | None
+
+  Called on a cursor when a blob being returned is valid JSONB.
+  This connection value is used when the cursor does not set
+  its own value.  See :attr:`Cursor.convert_jsonb`
+
+*/
+static PyObject *
+Connection_get_convert_jsonb(PyObject *self_, void *Py_UNUSED(unused))
+{
+  Connection *self = (Connection *)self_;
+  CHECK_CLOSED(self, NULL);
+
+  if (self->convert_jsonb)
+    return Py_NewRef(self->convert_jsonb);
+  Py_RETURN_NONE;
+}
+
+static int
+Connection_set_convert_jsonb(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
+{
+  Connection *self = (Connection *)self_;
+  CHECK_CLOSED(self, -1);
+
+  if (!Py_IsNone(value) && !PyCallable_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "convert_jsonb expected a Callable not %s", Py_TypeName(value));
+    return -1;
+  }
+  Py_CLEAR(self->convert_jsonb);
+  if (value != Py_None)
+    self->convert_jsonb = Py_NewRef(value);
+  return 0;
+}
+
 /** .. attribute:: exec_trace
   :type: Optional[ExecTracer]
 
@@ -6160,6 +6231,8 @@ static PyGetSetDef Connection_getseters[] = {
   { "cursor_factory", Connection_get_cursor_factory, Connection_set_cursor_factory, Connection_cursor_factory_DOC,
     NULL },
   { "in_transaction", Connection_get_in_transaction, NULL, Connection_in_transaction_DOC },
+  { "convert_binding", Connection_get_convert_binding, Connection_set_convert_binding, Connection_convert_binding_DOC },
+  { "convert_jsonb", Connection_get_convert_jsonb, Connection_set_convert_jsonb, Connection_convert_jsonb_DOC },
   { "exec_trace", Connection_get_exec_trace_attr, Connection_set_exec_trace_attr, Connection_exec_trace_DOC },
   { "row_trace", Connection_get_row_trace_attr, Connection_set_row_trace_attr, Connection_row_trace_DOC },
   { "authorizer", Connection_get_authorizer_attr, Connection_set_authorizer_attr, Connection_authorizer_DOC },

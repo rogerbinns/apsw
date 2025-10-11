@@ -1638,7 +1638,9 @@ APSWCursor_fetchone(PyObject *self_, PyObject *Py_UNUSED(unused))
   an unsuppported type is used in a binding. Note that parameter
   numbers start at 1.
 
-  .. sealso::
+  If set to ``None`` then conversion is disabled for this cursor.
+
+  .. seealso::
 
     * :attr:`bindings_count`
     * :attr:`bindings_names`
@@ -1672,12 +1674,21 @@ APSWCursor_set_convert_binding(PyObject *self_, PyObject *value, void *Py_UNUSED
 }
 
 /** .. attribute:: convert_jsonb
-  :type: ConvertJSOMB | None
+  :type: ConvertJSONB | None
 
   Called with the :class:`Cursor`, column number, and bytes value
-  when the value is valid JSONB.  The callback can :func:`decode the
-  <jsonb_decode>` or return the bytes as is. ::TODO:: write more
+  when a blob value is valid JSONB.  The callback can :func:`decode the
+  <jsonb_decode>` or return the bytes as is.
 
+  If set to ``None`` then conversion is disabled for this cursor.
+
+  .. seealso::
+
+    You can consult the description to get further confirmation if
+    the value is intended to be JSONB.
+
+    * :attr:`Cursor.description_full`
+    * :attr:`Cursor.description`
 */
 static PyObject *
 APSWCursor_get_convert_jsonb(PyObject *self_, void *Py_UNUSED(unused))

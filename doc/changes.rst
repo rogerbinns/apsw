@@ -10,6 +10,25 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+next
+====
+
+:ref:`JSON <jsontype>` can be used as though it is a native type of
+SQLite, with automatic conversion of Python objects on writing and
+reading.
+
+:meth:`Connection.convert_binding` (and :meth:`Cursor.convert_binding`)
+callback to allow conversion of bindings when executing SQL.
+
+:meth:`Connection.convert_jsonb` (and :meth:`Cursor.convert_jsonb`)
+callback to allow conversion of :ref:`JSONB <jsonb>`  when reading
+query results.  (JSONB is SQLite's internal parsed format for quick
+operations on JSON.)
+
+:ref:`3 functions <apsw_jsonb>` for working directly with JSONB
+allowing direct conversion between Python objects and JSONB, without
+having to go through the intermediate JSON text format.
+
 3.50.4.0
 ========
 

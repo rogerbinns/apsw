@@ -176,9 +176,13 @@ Object (dict) key order or duplicates
   order object keys are in, or that duplicates are not allowed.  This
   usually doesn't matter, but there are security attacks where one
   component may use the first occurrence of a duplicate key, while
-  another component uses the last occurrence.  The Python :mod:`json`
-  module, and APSW both let you see objects as lists of keys and values
-  so you can do your own validation or other processing.
+  another component uses the last occurrence.  For example the SQLite
+  function extracting values will use the first occurrence of a key,
+  while a dict created from the object will use the last occurrence.
+
+  The Python :mod:`json` module, and APSW both let you see objects
+  as lists of keys and values so you can do your own validation or
+  other processing.
 
 JSON5
 =====
@@ -231,7 +235,8 @@ string, while the JSON text representation includes double quotes
 around it and various quoting inside.
 
 You can store JSON text directly in the database, but there is no way
-to differentiate it from any other text value.  The `json_valid
+to differentiate it from any other text value.  For example the number
+``2`` in JSON is text ``2``.  The `json_valid
 <https://sqlite.org/json1.html#jvalid>`__ function may help - for
 example as `CHECK constraint
 <https://sqlite.org/lang_createtable.html#check_constraints>`__ on a
@@ -246,6 +251,7 @@ SQLite accepts infinity but represents it as the floating point value
 ``numpy.float128``, so you won't be able to tell if infinity was the
 original value
 
+.. _jsonb:
 
 JSONB
 =====
@@ -274,13 +280,17 @@ value ``8``.
   validation.  As an example a single byte whose value is 0 through 12
   is valid JSONB.
 
+
+.. _apsw_jsonb:
+
 APSW
 ----
 
 APSW provides 2 functions for working directly with JSONB, and a
 validation function.  This is for performance reasons so that there
 is no need for an intermediate step representing objects as JSON text.
-The validation function is stricter to avoid false positives.
+The validation function is stricter than SQLite's equivalent to avoid
+false positives.
 
 Performance testing was done using SQLite's randomjson code to create
 a large object with many nested values- your objects will be
@@ -288,34 +298,42 @@ different.
 
 :func:`~apsw.jsonb_encode`
 
-  Converts a Python object directly to JSONB.  This takes less than
-  10% of the CPU time versus converting the same object to JSON text.
-  SQLite then has to convert that JSON to JSONB for its own work
-  which takes more time.
+  Converts a Python object directly to JSONB.  The alternative is
+  two steps using :mod:`json` to convert to JSON text and then
+  SQLite's internal JSON text to JSONB.
 
- .. list-table:: Test results
+  .. list-table:: Test results (CPU time)
     :widths: auto
 
     * - 0.13 seconds
       - APSW Python object to JSONB
-    * - 1.17 seconds
-      - :mod:`json` same object to JSON text
-    * - 1.67 seconds
-      - SQLite JSON text to JSONB
+    * - 1.20 seconds
+      - :mod:`json` same Python object to JSON text
+    * - 0.80 seconds
+      - SQLite that JSON text to JSONB
+
+  The same parameters as :func:`json.dumps` are used, with more
+  providing control over how non-string object keys are converted,
+  and allowing for conversion to JSONB types.
 
 :func:`~apsw.jsonb_decode`
 
-  Converts JSONB directly back to a Python object.
+  Converts JSONB directly back to a Python object.  The alternative
+  is two steps using SQLite's internal JSONB to JSON text and then
+  :mod:`json` to convert the JSON text to Python object.
 
-  .. list-table:: Test results
+  .. list-table:: Test results (CPU time)
     :widths: auto
 
-    * - 0.33 seconds
+    * - 0.48 seconds
       - APSW JSONB to Python object
-    * - 1.29 seconds
-      - :mod:`json` JSON text to Python object
-    * - 0.21 seconds
-      - SQLite JSONB to JSON text
+    * - 0.22 seconds
+      - SQLite same JSONB to JSON text
+    * - 1.35 seconds
+      - :mod:`json` that JSON text to Python object
+
+  the same parameters as :func:`json.loads` are used, with an additional
+  hook for arrays (lists).
 
 :func:`~apsw.jsonb_detect`
 
@@ -334,6 +352,43 @@ Notes
 
 Because SQLite has a 2GB limit on text or blobs (binary data), it
 can't work with individual JSON text or JSONB data over that size.
+
+.. _jsontype:
+
+JSON as a SQLite value type
+===========================
+
+Using APSW it is possible to make SQLite automatically support JSON
+as though it was a natively supported type.
+
+:ref:`Store JSONB <jsonb>`
+
+  SQLite's binary JSON representation is stored as a binary blob in the
+  database.  This is necessary because JSON text can't easily be
+  distinguished from other text, while a blob is far more
+  distinguishable.  SQLite operates on JSONB internally when using
+  the `JSON functions <https://sqlite.org/json1.html>`__, and its
+  ``json`` function can turn JSONB into JSON text format if needed.
+
+  You have full access to all the keys and values inside for
+  reading, iterating, qnd modifying.
+
+Convert bindings
+
+  You can set a :attr:`cursor convertor <Cursor.convert_binding>`
+  callback for SQLite unknown types, which can then :func:`encode them
+  <jsonb_encode>` as JSONB.  You can also set the callback on the
+  :attr:`connection <Connection.convert_binding>` which will then be
+  used by all cursors.
+
+Convert JSONB
+
+  You can set a :attr:`cursor convertor <Cursor.convert_jsonb>` callback
+  for when a blob is read from the database and is valid JSONB.  The callback
+  has the :class:`Cursor` as a first parameter and can consult the
+  :attr:`description <Cursor.description_full>` to decide to :func:`decode <jsonb_decode>`
+  or return the blob as is.
+
 
 JSONB API
 =========
@@ -935,7 +990,7 @@ error:
        :exc:`TypeError` is raised.
 
        It can also return binary data in JSONB format.  For example
-       numpy.float128 could encode itself as a full precision JSONB
+       :mod:`decimal` values can be encoded as a full precision JSONB
        float.
     :param default_key: Objects (dict) must have string keys.  If a
        non-string key is encountered, it is skipped if ``skipkeys``
