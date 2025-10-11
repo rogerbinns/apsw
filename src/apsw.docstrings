@@ -3311,8 +3311,7 @@
 "change the data that is returned or cause the row to be skipped\n" \
 "altogether.\n" \
 "\n" \
-"If *callable* is *None* then any existing row tracer is\n" \
-"unregistered.\n" \
+"If ``None`` then row tracing is disabled for this cursor.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -3324,11 +3323,11 @@
 #define Cursor_row_trace_USAGE "Cursor.row_trace"
 #define Cursor_row_trace_OLDDOC Cursor_row_trace_USAGE "\n(Old less clear name rowtrace)"
 
-#define  Cursor_set_exec_trace_DOC "Cursor.set_exec_trace(callable: Optional[ExecTracer]) -> None\n\n" \
+#define  Cursor_set_exec_trace_DOC "Cursor.set_exec_trace(callable: ExecTracer | None) -> None\n\n" \
 "Sets the :attr:`execution tracer <Cursor.exec_trace>`\n" 
 
 #define Cursor_set_exec_trace_KWNAMES "callable"
-#define Cursor_set_exec_trace_USAGE "Cursor.set_exec_trace(callable: Optional[ExecTracer]) -> None"
+#define Cursor_set_exec_trace_USAGE "Cursor.set_exec_trace(callable: ExecTracer | None) -> None"
 
 #define Cursor_set_exec_trace_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -3338,11 +3337,12 @@
 #define Cursor_set_exec_trace_OLDNAME "setexectrace"
 #define Cursor_set_exec_trace_OLDDOC Cursor_set_exec_trace_USAGE "\n(Old less clear name setexectrace)"
 
-#define  Cursor_set_row_trace_DOC "Cursor.set_row_trace(callable: Optional[RowTracer]) -> None\n\n" \
-"Sets the :attr:`row tracer <Cursor.row_trace>`\n" 
+#define  Cursor_set_row_trace_DOC "Cursor.set_row_trace(callable: RowTracer | None) -> None\n\n" \
+"Sets the :attr:`row tracer <Cursor.row_trace>`.  If ``None``\n" \
+"then row tracing is disabled for this cursor.\n" 
 
 #define Cursor_set_row_trace_KWNAMES "callable"
-#define Cursor_set_row_trace_USAGE "Cursor.set_row_trace(callable: Optional[RowTracer]) -> None"
+#define Cursor_set_row_trace_USAGE "Cursor.set_row_trace(callable: RowTracer | None) -> None"
 
 #define Cursor_set_row_trace_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \

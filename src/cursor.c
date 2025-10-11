@@ -1481,7 +1481,7 @@ APSWCursor_iter(PyObject *self_)
   return Py_NewRef(self_);
 }
 
-/** .. method:: set_exec_trace(callable: Optional[ExecTracer]) -> None
+/** .. method:: set_exec_trace(callable: ExecTracer | None) -> None
 
   Sets the :attr:`execution tracer <Cursor.exec_trace>`
 */
@@ -1510,9 +1510,10 @@ APSWCursor_set_exec_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_
   Py_RETURN_NONE;
 }
 
-/** .. method:: set_row_trace(callable: Optional[RowTracer]) -> None
+/** .. method:: set_row_trace(callable: RowTracer | None) -> None
 
-  Sets the :attr:`row tracer <Cursor.row_trace>`
+  Sets the :attr:`row tracer <Cursor.row_trace>`.  If ``None``
+  then row tracing is disabled for this cursor.
 */
 
 static PyObject *
@@ -1724,8 +1725,7 @@ APSWCursor_set_convert_jsonb(PyObject *self_, PyObject *value, void *Py_UNUSED(u
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
   cursor.
 
-  If *callable* is *None* then any existing execution tracer is
-  unregistered.
+  If *callable* is *None* then execution tracing is disabled for the cursor..
 
   .. seealso::
 
@@ -1768,8 +1768,7 @@ APSWCursor_set_exec_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED
   change the data that is returned or cause the row to be skipped
   altogether.
 
-  If *callable* is *None* then any existing row tracer is
-  unregistered.
+  If ``None`` then row tracing is disabled for this cursor.
 
   .. seealso::
 

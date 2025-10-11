@@ -2621,8 +2621,7 @@ class Cursor:
     change the data that is returned or cause the row to be skipped
     altogether.
 
-    If *callable* is *None* then any existing row tracer is
-    unregistered.
+    If ``None`` then row tracing is disabled for this cursor.
 
     .. seealso::
 
@@ -2632,14 +2631,15 @@ class Cursor:
 
     rowtrace = row_trace ## OLD-NAME
 
-    def set_exec_trace(self, callable: Optional[ExecTracer]) -> None:
+    def set_exec_trace(self, callable: ExecTracer | None) -> None:
         """Sets the :attr:`execution tracer <Cursor.exec_trace>`"""
         ...
 
     setexectrace = set_exec_trace ## OLD-NAME
 
-    def set_row_trace(self, callable: Optional[RowTracer]) -> None:
-        """Sets the :attr:`row tracer <Cursor.row_trace>`"""
+    def set_row_trace(self, callable: RowTracer | None) -> None:
+        """Sets the :attr:`row tracer <Cursor.row_trace>`.  If ``None``
+        then row tracing is disabled for this cursor."""
         ...
 
     setrowtrace = set_row_trace ## OLD-NAME
