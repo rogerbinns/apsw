@@ -10,12 +10,8 @@ import os
 
 
 def output(filename: str, executed: int, total: int) -> None:
-    # Python bug "% 3.2f" doesn't behave correctly (100.00 is formatted with leading space!)
-    percent = 100 * executed / max(total, 1)
-    op = [f"{filename:40}", f"{executed:6,}", "  /", f"{total:6,}", "\t    ", "% 4.2f%%" % (percent,)]
-    if percent == 100:
-        op[-1] = "100.00%"
-    print("".join(op))
+    proportion = executed / max(total, 1)
+    print(f"{filename:40} {executed:6,} / {total:6,}    {proportion:>8.2%}")
 
 
 # we want sqlite3 first, then unicodedb, then unicode, then the rest
@@ -41,6 +37,7 @@ for f in names:
     p = priority(f)
     if p == 4 and lastp == 3:
         lines_executed = lines_total = 0
+
     file_exec = set()
     file_total = set()
 
@@ -76,7 +73,7 @@ for f in names:
         print("-" * 30 + "\n")
     output(n, len(file_exec), len(file_total))
     lines_executed += len(file_exec)
-    lines_total = len(file_total)
+    lines_total += len(file_total)
     if p < 4:
         print()
     lastp = p
