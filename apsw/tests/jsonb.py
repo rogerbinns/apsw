@@ -9,6 +9,8 @@ from __future__ import annotations
 import array
 import collections.abc
 import contextlib
+import decimal
+import gc
 import json
 import math
 import os
@@ -64,6 +66,16 @@ def encode(*args, **kwargs):
     decode(encoded)
     return encoded
 
+
+# this contains all the data types representable in json
+example_data = {
+    "foo": [None, True, 3.1, -3, ["nested", {"yes": ["this", "too", 3.1e-5]}]],
+    "🤦🏼‍♂️": "𐌼𐌰𐌲 𐌲𐌻𐌴𐍃 𐌹̈𐍄𐌰𐌽",
+    "": [],
+    "𐌼𐌰𐌲 𐌲𐌻𐌴𐍃 𐌹̈𐍄𐌰𐌽": {},
+    "null": None,
+    "3": {"3": 3},
+}
 
 # sentinel
 not_set = object()
@@ -1110,6 +1122,229 @@ class JSONB(unittest.TestCase):
             self.assertEqual(json.loads(self.f_json(j5)), decode(self.f_jsonb(j5)))
 
 
+class Conversion(unittest.TestCase):
+    "the convert binding and jsonb apis"
+
+    def setUp(self):
+        self.db = apsw.Connection(":memory:")
+        # set these up each time
+        self.f_json = apsw.ext.Function(self.db, "json")
+        self.f_jsonb = apsw.ext.Function(self.db, "jsonb")
+        self.f_json_valid = apsw.ext.Function(self.db, "json_valid")
+
+    def tearDown(self):
+        self.db.close()
+        del self.db
+        for c in apsw.connections():
+            c.close()
+
+    def testConvertBinding(self):
+        "just convert binding"
+        called = [0, 0]
+
+        def con_conv(cur, argnum, value):
+            self.assertIsInstance(cur, apsw.Cursor)
+            self.assertIsInstance(argnum, int)
+            self.assertGreaterEqual(argnum, 1)
+            called[0] += 1
+            return "con"
+
+        def cur_conv(cur, argnum, value):
+            self.assertIsInstance(cur, apsw.Cursor)
+            self.assertIsInstance(argnum, int)
+            self.assertGreaterEqual(argnum, 1)
+            called[1] += 1
+            return "cur"
+
+        cur = self.db.cursor()
+
+        self.assertIsNone(self.db.convert_binding)
+        self.assertIsNone(cur.convert_binding)
+
+        self.assertRaises(TypeError, self.db.execute, "select ?", (3 + 4j,))
+
+        self.db.convert_binding = con_conv
+        self.assertEqual("con", self.db.execute("select ?", (3 + 4j,)).get)
+        self.assertEqual(called, [1, 0])
+
+        called = [0, 0]
+        cur.convert_binding = cur_conv
+        self.assertEqual("cur", cur.execute("select ?", (3 + 4j,)).get)
+        self.assertEqual(called, [0, 1])
+
+        called = [0, 0]
+        cur.convert_binding = None
+        self.assertRaises(TypeError, cur.execute, "select ?", (3 + 4j,))
+        self.assertEqual(called, [0, 0])
+
+        # it should be called on the missing bindings since we don't check
+        # each one is actually used
+        self.assertEqual(
+            "con",
+            self.db.execute(
+                "select ?3",
+                (
+                    1 + 4j,
+                    2 + 4j,
+                    3 + 4j,
+                ),
+            ).get,
+        )
+        self.assertEqual(called, [3, 0])
+        self.db.convert_binding = None
+        self.assertRaises(TypeError, self.db.execute, "select ?", (3 + 4j,))
+
+        def func(*args):
+            1 / 0
+
+        self.db.convert_binding = func
+        self.assertRaises(ZeroDivisionError, self.db.execute, "select ?", (3 + 4j,))
+
+        def func(cur, n, val):
+            if n == 3:
+                return val
+            return "foo"
+
+        self.db.convert_binding = func
+        self.assertRaisesRegex(
+            ValueError,
+            ".*convert_binding returned the same object it was passed.*",
+            self.db.execute,
+            "select ?3",
+            (
+                1 + 4j,
+                2 + 4j,
+                3 + 4j,
+            ),
+        )
+
+        # basic json
+        def conv(cur, n, val):
+            return encode(val)
+
+        self.db.convert_binding = conv
+
+        self.assertEqual(example_data, decode(self.db.execute("select ?", (example_data,)).get))
+        self.assertEqual("blob", self.db.execute("select typeof(?)", (example_data,)).get)
+        self.assertEqual(example_data, json.loads(self.db.execute("select json(?)", (example_data,)).get))
+
+        # decimal
+        decimal.getcontext().prec = 128
+        def conv(cur, n, val):
+            self.assertIsInstance(val, decimal.Decimal)
+            return make_item(5, str(val))
+        self.db.convert_binding = conv
+
+        d = decimal.Decimal("-0.786438726487326478632879468237648732687463287648723648762384732")
+        self.assertNotEqual(float(d), d)
+        self.assertEqual(d, decode(self.db.execute("select ?", (d,)).get, parse_float=decimal.Decimal))
+
+        # traverse
+        self.assertIn(conv, gc.get_referents(self.db))
+        self.assertNotIn(conv, gc.get_referents(cur))
+        cur.convert_binding = conv
+        self.assertIn(conv, gc.get_referents(cur))
+
+        # get set
+        self.assertRaises(TypeError, setattr, self.db, "convert_binding", 3+4j)
+        self.assertEqual(conv, self.db.convert_binding)
+        self.assertRaises(TypeError, setattr, cur, "convert_binding", 3+4j)
+        self.assertEqual(conv, cur.convert_binding)
+        self.db.convert_binding = cur.convert_binding = None
+        self.assertIsNone(self.db.convert_binding)
+        self.assertIsNone(cur.convert_binding)
+
+
+    def testConvertJSONB(self):
+        "just convert jsonb"
+        called = [0, 0]
+
+        def con_conv(cur, argnum, value):
+            self.assertIsInstance(cur, apsw.Cursor)
+            self.assertIsInstance(argnum, int)
+            self.assertEqual(0, argnum)
+            called[0] += 1
+            return "con"
+
+        def cur_conv(cur, argnum, value):
+            self.assertIsInstance(cur, apsw.Cursor)
+            self.assertIsInstance(argnum, int)
+            self.assertEqual(0, argnum)
+            called[1] += 1
+            return "cur"
+
+        cur = self.db.cursor()
+
+        self.assertIsNone(self.db.convert_jsonb)
+        self.assertIsNone(cur.convert_jsonb)
+
+        t = make_item(3, "33")
+
+        self.assertEqual(t, self.db.execute("select ?", (t,)).get)
+
+        self.db.convert_jsonb = con_conv
+        self.assertEqual("con", self.db.execute("select ?", (t,)).get)
+        self.assertEqual(called, [1, 0])
+
+        called = [0, 0]
+        cur.convert_jsonb = cur_conv
+        self.assertEqual("cur", cur.execute("select ?", (t,)).get)
+        self.assertEqual(called, [0, 1])
+
+        called = [0, 0]
+        cur.convert_jsonb = None
+        self.assertEqual(t, cur.execute("select ?", (t,)).get)
+        self.assertEqual(called, [0, 0])
+
+        def func(*args):
+            1 / 0
+
+        self.db.convert_jsonb = func
+        self.db.execute("select x'112233'").get
+        self.assertRaises(ZeroDivisionError, getattr, self.db.execute("select ?", (t,)), "get")
+
+        # basic json
+        def conv(cur, n, val):
+            return decode(val)
+
+        self.db.convert_jsonb = conv
+
+        self.assertEqual(example_data, self.db.execute("select jsonb(?)", (json.dumps(example_data),)).get)
+
+        def conv(cur, n, val):
+            return
+
+        # decimal
+        decimal.getcontext().prec = 128
+        def conv(cur, n, val):
+            return decode(val, parse_float=decimal.Decimal)
+
+        self.db.convert_jsonb = conv
+
+        d = decimal.Decimal("-0.786438726487326478632879468237648732687463287648723648762384732")
+        self.assertNotEqual(float(d), d)
+        self.assertEqual(d, self.db.execute("select ?", (make_item(5, str(d)),)).get)
+
+        # traverse
+        self.assertIn(conv, gc.get_referents(self.db))
+        self.assertNotIn(conv, gc.get_referents(cur))
+        cur.convert_jsonb = conv
+        self.assertIn(conv, gc.get_referents(cur))
+
+        # get set
+        self.assertRaises(TypeError, setattr, self.db, "convert_jsonb", 3+4j)
+        self.assertEqual(conv, self.db.convert_jsonb)
+        self.assertRaises(TypeError, setattr, cur, "convert_jsonb", 3+4j)
+        self.assertEqual(conv, cur.convert_jsonb)
+        self.db.convert_jsonb = cur.convert_jsonb = None
+        self.assertIsNone(self.db.convert_jsonb)
+        self.assertIsNone(cur.convert_jsonb)
+
+    def testRoundTrip(self):
+        "conversion both ways"
+        pass
+
+
 def check_strings_valid_utf8(obj):
     # checks all strings in a json decoded object came from valid utf8
     if isinstance(obj, str):
@@ -1190,7 +1425,7 @@ def recursion_limit(value: int):
         sys.setrecursionlimit(existing)
 
 
-__all_ = ("JSONB",)
+__all_ = ("JSONB", "Conversion")
 
 
 if __name__ == "__main__":
