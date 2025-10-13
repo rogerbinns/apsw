@@ -6307,12 +6307,16 @@ class APSW(unittest.TestCase):
 
     def testPyObject(self):
         "apsw.pyobject runtime objects"
+
+        self.assertRaises(TypeError, apsw.pyobject)
+        self.assertRaises(TypeError, apsw.pyobject, 1, 2)
+
         # a bunch of things SQLite should complain about
         objects = (set((1, 2, 3)), sys, 3 + 4j, self)
 
         for o in objects:
             self.assertRaises(TypeError, self.db.execute, "select ?", (o,))
-            self.assertEqual(o, self.db.execute("select ?", (apsw.pyobject(o),)).get)
+            self.assertIs(o, self.db.execute("select ?", (apsw.pyobject(o),)).get)
 
         def check(items):
             for i in items:
