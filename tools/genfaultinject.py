@@ -171,7 +171,7 @@ returns = {
 
             """.split(),
     # py functions that return a number (-1) to indicate failure
-    "number": """
+    "number": """Py_EnterRecursiveCall
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
         PyLong_AsLongLong PyList_Append PyDict_SetItemString
         PyObject_SetAttr _PyBytes_Resize PyDict_SetItem
@@ -228,7 +228,7 @@ no_error.update(
     """PyArg_ParseTuple PyBytes_AsString PyErr_GivenExceptionMatches PyFrame_GetBack
     PyImport_ImportModule PyLong_AsLongAndOverflow PyLong_AsVoidPtr
     PyObject_IsInstance PySys_GetObject PyErr_ExceptionMatches
-    PyErr_SetString PyStructSequence_SetItem PyObject_Print Py_EnterRecursiveCall
+    PyErr_SetString PyStructSequence_SetItem PyObject_Print
     Py_GetRecursionLimit Py_LeaveRecursiveCall Py_SetRecursionLimit _PyErr_ChainExceptions
 
 """.split()

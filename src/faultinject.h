@@ -102,6 +102,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyWeakref_GetObject
 #undef PyWeakref_NewRef
 #undef Py_BuildValue
+#undef Py_EnterRecursiveCall
 #undef Py_VaBuildValue
 #undef _PyBytes_Resize
 #undef _PyObject_New
@@ -1579,6 +1580,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     _res_Py_BuildValue;                                                                                                                     \
 })
 #endif
+#define Py_EnterRecursiveCall(...) \
+({                                                                                                                                                                  \
+    __auto_type _res_Py_EnterRecursiveCall = 0 ? Py_EnterRecursiveCall(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_Py_EnterRecursiveCall = (typeof (_res_Py_EnterRecursiveCall))APSW_FaultInjectControl("Py_EnterRecursiveCall", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_Py_EnterRecursiveCall))0x1FACADE == _res_Py_EnterRecursiveCall)                                                                               \
+       _res_Py_EnterRecursiveCall = Py_EnterRecursiveCall(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_Py_EnterRecursiveCall))0x2FACADE == _res_Py_EnterRecursiveCall)                                                                           \
+    {                                                                                                                                                               \
+        Py_EnterRecursiveCall(__VA_ARGS__);                                                                                                                         \
+        _res_Py_EnterRecursiveCall = (typeof (_res_Py_EnterRecursiveCall))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_Py_EnterRecursiveCall;                                                                                                                                     \
+})
 #if PY_VERSION_HEX < 0x030d0000
 #undef Py_VaBuildValue
 #define Py_VaBuildValue(...) \
