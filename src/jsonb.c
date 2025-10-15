@@ -1142,8 +1142,9 @@ jsonb_decode_one_actual(struct JSONBDecodeBuffer *buf)
   if (buf->offset >= buf->end_offset)
     return malformed(buf, "item goes beyond end of buffer");
 
-  enum JSONBTag tag = buf->buffer[buf->offset] & 0x0f;
-  size_t tag_len = (buf->buffer[buf->offset] & 0xf0) >> 4;
+  uint8_t tag_and_len = buf->buffer[buf->offset];
+  enum JSONBTag tag = tag_and_len & 0x0f;
+  size_t tag_len = (tag_and_len & 0xf0) >> 4;
   buf->offset += 1;
 
   size_t value_offset = buf->offset;
@@ -1192,17 +1193,17 @@ jsonb_decode_one_actual(struct JSONBDecodeBuffer *buf)
   switch (tag)
   {
   case JT_NULL:
-    if (tag_len != 0)
+    if (tag_and_len != JT_NULL || tag_len != 0)
       return malformed(buf, "NULL has length");
     return (buf->alloc) ? Py_NewRef(Py_None) : DecodeSuccess;
 
   case JT_TRUE:
-    if (tag_len != 0)
+    if (tag_and_len != JT_TRUE || tag_len != 0)
       return malformed(buf, "TRUE has length");
     return (buf->alloc) ? Py_NewRef(Py_True) : DecodeSuccess;
 
   case JT_FALSE:
-    if (tag_len != 0)
+    if (tag_and_len != JT_FALSE || tag_len != 0)
       return malformed(buf, "FALSE has length");
     return (buf->alloc) ? Py_NewRef(Py_False) : DecodeSuccess;
 
