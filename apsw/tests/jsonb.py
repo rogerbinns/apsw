@@ -1092,9 +1092,12 @@ class JSONB(unittest.TestCase):
 
             for k, (encoded, expected) in vals.items():
                 # jsonb_valid says overlong encodings of null/true/false are invalid,  eg c000 is
-                # rejected even though it is a compliant encoding of 0 length null.
-                include_sqlite_valid_check = True if 3 <= k <= 10 or len_encoding == 0 else False
-                self.check_valid(encoded, expected, include_sqlite_valid_check=include_sqlite_valid_check)
+                # rejected even though it is a compliant encoding of 0 length null.   sqlite also
+                # decodes it wrong, so we give up and do things the sqlite way
+                if k <= 2 and len_encoding >0:
+                    self.check_invalid(encoded)
+                else:
+                    self.check_valid(encoded, expected)
 
     def testRandomJSON(self):
         "sqlite randomjson extension if present"
@@ -1340,9 +1343,6 @@ class Conversion(unittest.TestCase):
         self.assertIsNone(self.db.convert_jsonb)
         self.assertIsNone(cur.convert_jsonb)
 
-    def testRoundTrip(self):
-        "conversion both ways"
-        pass
 
 
 def check_strings_valid_utf8(obj):
