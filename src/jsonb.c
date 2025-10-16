@@ -266,7 +266,8 @@ members is a lot quicker.  It also saves some space.
 
 In most cases using SQLite JSON text functions results in SQLite doing an
 internal conversion to JSONB (which is cached) and then operating on that.
-JSONB internally stores values as text so producing JSON text again is quick.
+JSONB internally stores values as a binary tag and length, then the UTF8 text
+so producing JSON text again is quick.
 
 You can store JSONB to the database, and again can use the `json_valid
 <https://sqlite.org/json1.html#jvalid>`__ function as `CHECK constraint
@@ -280,6 +281,24 @@ value ``8``.
   validation.  As an example a single byte whose value is 0 through 12
   is valid JSONB.
 
+  As byte sequences get longer, the likelihood they are valid JSONB
+  decreases.  This table lists what proportion of all byte sequences
+  of each length are also valid JSONB.
+
+  .. list-table:: Valid JSONB sequences
+    :header-rows: 1
+    :widths: auto
+
+    * - Sequence length
+      - Proportion valid JSONB
+    * - 1 byte
+      - 3.52%
+    * - 2 bytes
+      - 0.71%
+    * - 3 bytes
+      - 0.35%
+    * - 4 bytes
+      - 0.18%
 
 .. _apsw_jsonb:
 
@@ -306,7 +325,7 @@ different.
     :widths: auto
 
     * - 0.13 seconds
-      - APSW Python object to JSONB
+      - APSW Python object direct to JSONB
     * - 1.20 seconds
       - :mod:`json` same Python object to JSON text
     * - 0.80 seconds
@@ -326,13 +345,13 @@ different.
     :widths: auto
 
     * - 0.48 seconds
-      - APSW JSONB to Python object
+      - APSW JSONB direct to Python object
     * - 0.22 seconds
       - SQLite same JSONB to JSON text
     * - 1.35 seconds
       - :mod:`json` that JSON text to Python object
 
-  the same parameters as :func:`json.loads` are used, with an additional
+  The same parameters as :func:`json.loads` are used, with an additional
   hook for arrays (lists).
 
 :func:`~apsw.jsonb_detect`
