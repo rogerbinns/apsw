@@ -1358,7 +1358,7 @@ def check_strings_valid_utf8(obj):
             check_strings_valid_utf8(v)
 
 
-def make_item(tag: int, value=None, *, len_encoding: int = None, length: int = None):
+def make_item_test(tag: int, value=None, *, len_encoding: int = None, length: int = None):
     # value is str/bytes of the payload
     # len_encoding is how many bytes to use to encode the length, None means
     # auto
@@ -1400,6 +1400,16 @@ def make_item(tag: int, value=None, *, len_encoding: int = None, length: int = N
 
     return res + value
 
+def make_item(tag: int, value=None, *, len_encoding: int = None, length: int = None):
+    if tag > 12 or len_encoding is not None or length is not None:
+        return make_item_test(tag, value, len_encoding=len_encoding, length=length)
+
+    check = make_item_test(tag, value)
+    against =  apsw.ext.make_jsonb(tag, value)
+
+    assert check == against
+
+    return check
 
 def pi_digits(count: int):
     # adapted from a chatgpt answer

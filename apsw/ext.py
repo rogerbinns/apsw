@@ -234,6 +234,48 @@ class Function:
         return self.con.execute(f'SELECT "{self.name}"({",".join("?" * len(args))})', args).fetchone()[0]
 
 
+def make_jsonb(tag: int, value: None | str | bytes | Any = None):
+    """Creates JSONB (binary) from tag and value
+
+    The value will be converted to a :class:`str` and UTF8 encoded if
+    necessary.  JSONB format is `documented here
+    <https://sqlite.org/jsonb.html>`__.
+    """
+    # Only tags 0 through 12 are valid
+    if not 0 <= tag <= 12:
+        raise ValueError("tag must be between 0 and 12 inclusive")
+
+    # we need the value as bytes
+    if value is None:
+        value = b""
+    elif isinstance(value, bytes):
+        # all good
+        pass
+    else:
+        # stringize and encode
+        value = str(value).encode("utf8")
+
+    len_value = len(value)
+
+    if len_value <= 11:
+        # length is encoded in the same byte as the tag
+        return bytes([(len_value << 4) | tag]) + value
+
+    # The length is encoded after the tag
+    if len_value <= 0xFF:
+        bytes_len = 1
+    elif len_value <= 0xFFFF:
+        bytes_len = 2
+    elif len_value <= 0xFFFF_FFFF:
+        bytes_len = 4
+    elif len_value <= 0xFFFF_FFFF_FFFF_FFFF:
+        bytes_len = 8
+    else:
+        raise ValueError("Value is too large")
+
+    return bytes([((11 + bytes_len) << 4) | tag]) + len_value.to_bytes(bytes_len, "big") + value
+
+
 def log_sqlite(*, level: int = logging.ERROR, logger: logging.Logger | None = None) -> None:
     """Send SQLite `log messages <https://www.sqlite.org/errlog.html>`__ to :mod:`logging`
 
