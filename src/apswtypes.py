@@ -1,18 +1,9 @@
 import sys
 
 from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
-from collections.abc import Mapping
+from collections.abc import Mapping, Buffer
 import array
 import types
-
-# Anything that resembles a dictionary
-from collections.abc import Mapping
-
-# Anything that resembles a sequence of bytes
-if sys.version_info >= (3, 12):
-    Buffer: TypeAlias = collections.abc.Buffer
-else:
-    Buffer: TypeAlias = bytes
 
 SQLiteValue = None | int | float | Buffer | str
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
