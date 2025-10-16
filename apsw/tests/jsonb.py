@@ -1141,6 +1141,21 @@ class Conversion(unittest.TestCase):
         for c in apsw.connections():
             c.close()
 
+    def testPrefix(self):
+        # check we don't treat a valid JSONB prefix of a BLOB as JSONB
+        # which was a bug ...
+        def cb(cur, n, val):
+            return apsw.jsonb_decode(val)
+
+        self.db.convert_jsonb=cb
+        for v in (
+            b"\x01\x73\x94\x65",
+            make_item(5, "3.14") + b"5",
+            make_item(5, "3.14")[:-1],
+        ):
+            x = self.db.execute("select ?", (v,)).get
+            self.assertIsInstance(x, bytes)
+
     def testConvertBinding(self):
         "just convert binding"
         called = [0, 0]

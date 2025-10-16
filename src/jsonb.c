@@ -2196,7 +2196,7 @@ jsonb_detect_internal(const void *data, size_t length)
 
   PyObject *res = jsonb_decode_one(&buf);
   assert(!PyErr_Occurred() && (res == DecodeFailure || res == DecodeSuccess));
-  return (res == DecodeSuccess) ? 1 : 0;
+  return (res == DecodeSuccess && buf.offset == length) ? 1 : 0;
 }
 
 /** .. method:: jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    parse_int: Callable[[str], Any] | None = None,    parse_float: Callable[[str], Any] | None = None,) -> Any
