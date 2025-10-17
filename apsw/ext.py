@@ -223,15 +223,37 @@ class Function:
 
         json_extract = apsw.ext.Function(connection, "json_extract")
         value = json_extract(some_json, '$.c[2].f')
-    """
 
-    def __init__(self, con: apsw.Connection, name: str):
-        self.con = con
+    :attr:`~apsw.Cursor.get` is used to return the results
+    """
+    # This is tested in tests/jsonb.py because it was developed in
+    # conjunction with jsonb
+    def __init__(
+        self,
+        connection: apsw.Connection,
+        name: str,
+        *,
+        convert_binding=None,
+        convert_jsonb=None,
+        exec_trace=None,
+    ):
+        """
+        :param connection: Connection to use
+        :param name: SQL function name.
+
+        Converters and tracers are off by default for the call, and must be
+        provided if you want to use them,
+        """
         self.name = name.replace('"', '""')
+        cursor = connection.cursor()
+        cursor.convert_binding = convert_binding
+        cursor.convert_jsonb = convert_jsonb
+        cursor.exec_trace = exec_trace
+        self.cursor = cursor
 
     def __call__(self, *args: apsw.SQLiteValue) -> apsw.SQLiteValue:
-        "Calls the function with zero or more arguments, returning the result"
-        return self.con.execute(f'SELECT "{self.name}"({",".join("?" * len(args))})', args).fetchone()[0]
+        "Calls the function with zero or more parameters, returning the result"
+        return self.cursor.execute(f'SELECT "{self.name}"({",".join("?" * len(args))})', args).get
 
 
 def make_jsonb(tag: int, value: None | str | bytes | Any = None):

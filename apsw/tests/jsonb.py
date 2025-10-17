@@ -1360,6 +1360,63 @@ class Conversion(unittest.TestCase):
         self.assertIsNone(self.db.convert_jsonb)
         self.assertIsNone(cur.convert_jsonb)
 
+class Ext(unittest.TestCase):
+    "related code in apsw.ext"
+
+    def setUp(self):
+        self.db = apsw.Connection(":memory:")
+
+    def tearDown(self):
+        self.db.close()
+        del self.db
+        for c in apsw.connections():
+            c.close()
+
+    def testFunction(self):
+        called = 0
+
+        def rowcb(*args):
+            nonlocal called
+            called += 1
+            return ("rowcb", "was", "here")
+
+        def execcb(*args):
+            nonlocal called
+            called += 1
+            return True
+
+        def convbind(*args):
+            nonlocal called
+            called += 1
+            return "convbind"
+
+        def convjsonb(*args):
+            nonlocal called
+            called += 1
+            return "convjsonb"
+
+        self.assertRaisesRegex(
+            apsw.SQLError, ".*no such function.*", apsw.ext.Function(self.db, "this do\"esn't exist"), "hello"
+        )
+
+        self.db.row_trace = rowcb
+        self.db.exec_trace = execcb
+        self.db.convert_binding = convbind
+        self.db.convert_jsonb = convjsonb
+
+        self.assertEqual(8, self.db.execute("select length(?)", (3 + 4j,)).get)
+        self.assertEqual(2, called)
+
+        called = 0
+        length = apsw.ext.Function(self.db, "length")
+        self.assertEqual(5, length("hello"))
+        self.assertEqual(0, called)
+
+        length = apsw.ext.Function(
+            self.db, "length", convert_binding=convbind, exec_trace=execcb, convert_jsonb=convjsonb
+        )
+        self.assertEqual(8, length(3 + 4j))
+        self.assertEqual(2, called)
 
 
 def check_strings_valid_utf8(obj):
@@ -1452,7 +1509,7 @@ def recursion_limit(value: int):
         sys.setrecursionlimit(existing)
 
 
-__all_ = ("JSONB", "Conversion")
+__all_ = ("JSONB", "Conversion", "Ext")
 
 
 if __name__ == "__main__":
