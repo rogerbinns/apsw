@@ -29,6 +29,9 @@ operations on JSON.)
 allowing direct conversion between Python objects and JSONB, without
 having to go through the intermediate JSON text format.
 
+Added :func:`apsw.ext.Function` for calling of SQL functions directly
+from Python.
+
 3.50.4.0
 ========
 
