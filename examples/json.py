@@ -4,13 +4,18 @@
 # ignore them and do not need to use them.  If you do use them
 # then you must include this future annotations line first.
 from __future__ import annotations
+from typing import Any
 
+import base64
+import contextvars
 import datetime
 import decimal
-from typing import Any
+from types import MappingProxyType
+
 from pprint import pprint
 
 import apsw
+import apsw.ext
 
 # A database to work on
 connection = apsw.Connection("")
@@ -45,12 +50,16 @@ def query(sql, bindings=None):
 # JSON as a native data type, then do the following.
 
 
-def convert_binding(cursor, num, value):
+def convert_binding(
+    cursor: apsw.Cursor, num: int, value: Any
+) -> bytes:
     # called to convert unknown types - we convert to JSONB
     return apsw.jsonb_encode(value)
 
 
-def convert_jsonb(cursor, column, value):
+def convert_jsonb(
+    cursor: apsw.Cursor, column: int, value: bytes
+) -> Any:
     # called when a blob is valid JSONB
     return apsw.jsonb_decode(value)
 
@@ -75,6 +84,23 @@ connection.execute(
 # And get it back
 query("SELECT shape, extra FROM items WHERE name='orange'")
 
+# If you want the data returned to be read only then use this.
+# Note how the list becomes a tuple and dict becomes MappingProxyType
+# which doesn't allow writes.
+
+
+def convert_jsonb_readonly(
+    cursor: apsw.Cursor, column: int, value: bytes
+) -> Any:
+    return apsw.jsonb_decode(
+        value, array_hook=tuple, object_hook=MappingProxyType
+    )
+
+
+connection.convert_jsonb = convert_jsonb_readonly
+
+query("SELECT shape, extra FROM items WHERE name='orange'")
+
 ### json_functions: SQLite JSON functions
 # SQLite has `over 30 functions <https://sqlite.org/json1.html>`__ for dealing with JSON.
 # Here are some of the most useful.
@@ -90,120 +116,128 @@ query("SELECT extra ->> '$.origin' FROM items")
 # Lets get the first tag
 query("SELECT extra ->> '$.tags[0]' FROM items")
 
-# Iterate over each tag
+# Iterate over each tag - you would typically use this with a JOIN
 query(
     "SELECT name, shape, value FROM items, json_each(items.extra, '$.tags')"
 )
 
-### convert binding: Converting bindings
-# The :meth:`~Connection.convert_binding` function is called with more
-# context about the binding.  This can be helpful if you want to
-# customise how a value is encoded.
+### custom_conversion: Customising conversion
+# The :meth:`~Cursor.convert_binding` and
+# :meth:`~Cursor.convert_jsonb` functions are provided with the
+# :class:`Cursor` as the first parameter, and a second parameter with
+# the binding number or column being returned.  You can use
+# :attr:`Cursor.bindings_names` and :attr:`Cursor.description` for
+# more details about the value being converted.  You can also use
+# :attr:`Cursor.connection` to get back to the connection and your own
+# data structures.  :mod:`contextvars` can be used to provide more.
+#
+# :func:`~apsw.jsonb_encode` and :func:`~apsw.jsonb_decode` have parameters
+# like the :mod:`json` module functions for controlling how non-JSON
+# Python types can be converted to JSON compatible ones, and how JSON values
+# are converted back to Python objects.
+#
+# This section shows all of these in action at once!
 
 
-# A new version of the callback
-def convert_binding(cursor: apsw.Cursor, num: int, value: Any):
-    print(f"convert_binding callback {num=} {value=}")
-    print(f"{cursor.bindings_count=}")
-    print(f"{cursor.bindings_names=}")
-
-    # you can also use cursor.connection to get the connection and
-    # from there any other pertinent information
-    return apsw.jsonb_encode(value)
-
-
-connection.convert_binding = convert_binding
-
-query(
-    "SELECT $name, $shape, $extra",
-    {
-        "name": ["dog", "puppy"],
-        "shape": [True],
-        "extra": {3: "three"},
-    },
+volume: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "volume", default="quiet"
 )
 
-### jsonb_encode_custom: Customising encoding values
-# Examples of encoding various types.
 
-
-def convert_binding(cursor, num, value):
+def py_to_json(value):
+    # Used by jsonb_encode to convert types that aren't JSON compatible
     if isinstance(value, bytes):
-        # Creates an alphanumeric string
-        value = base64.b64encode(value)
+        # base64 encode binary data.  Note it returns bytes so we have to
+        # convert to text.
+        return base64.b64encode(value).decode("ascii")
 
-    elif isinstance(value, datetime.datetime):
-        # Creates ISO8601
-        value = value.isoformat()
+    if isinstance(value, datetime.datetime):
+        # ISO8601
+        return value.isoformat()
 
-    elif isinstance(value, decimal.Decimal):
-        # Create JSONb directly.  Tag 5 is FLOAT.  str of a
-        # Decimal gives a full precision string of the value
+    if isinstance(value, decimal.Decimal):
+        # Create JSONB bytes directly.  Tag 5 is FLOAT.  str of a Decimal
+        # gives a full precision string of the value
         return apsw.ext.make_jsonb(5, str(value))
 
-    return apsw.jsonb_encode(value)
-
-
-connection.convert_binding = convert_binding
-
-# some values to test
-binary = b"\x01\x73\x94\x65"
-
-datestamp = datetime.datetime.now()
-
-# we will loose precision on reading this back - see later when that
-# is addressed
-decimal.getcontext().prec = 50
-d = decimal.Decimal("0.7843262344923523492342352344523423423423")
-
-query("SELECT ?, ?, ?", (d, binary, datestamp))
-
-### jsonb_encode_type: Encoding objects
-# That turns one value into another.  It doesn't help with objects
-# that have multiple fields. We want to turn them into an
-# object with multiple fields.
-
-# Using a complex number that has real and imaginary parts
-example = 3 + 4j
-
-
-def convert_binding(cursor, num, value):
     if isinstance(value, complex):
-        return apsw.jsonb_encode(
-            {
-                # I made up this key as unlikely to clash with any others
-                "$py$type": "complex",
-                # fields from complex
-                "real": value.real,
-                "imag": value.imag,
-            }
-        )
-    return apsw.jsonb_encode(value)
+        # The above are all single values.  For objects with multiple
+        # fields we return a dict with their members and a key to
+        # detect this
+        return {
+            # I made up this key as unlikely to be used in other dicts
+            "$py$type": "complex",
+            # fields from complex
+            "real": value.real,
+            "imag": value.imag,
+        }
+
+    raise TypeError(f"Can't convert {value!r}")
+
+
+def convert_binding(cursor: apsw.Cursor, num: int, value: Any):
+    # note that binding numbers start at 1
+    print(f"\nconvert_binding callback {num=} {value=!r:.20}...")
+    print(f"{cursor.bindings_count=}")
+    print(f"{cursor.bindings_names=}")
+    print(f"contextvar {volume.get()=}")
+
+    return apsw.jsonb_encode(value, default=py_to_json)
 
 
 connection.convert_binding = convert_binding
 
-### jsonb_decode: Decoding JSONB
-# Your decoder can be automatically called if a blob would be returned
-# and is valid JSONB.  Like encoding you have context available.
+# The above deals with conversion to JSONB, now deal with
+# conversion from JSONB
 
 
-def convert_jsonb(
-    cursor: apsw.Cursor, column_number: int, jsonb: bytes
-) -> Any:
-    print(f"convert_jsonb callback {column_number=} {len(jsonb)=}")
-    print(f"{cursor.description=}")
-    return apsw.jsonb_decode(jsonb)
+def object_hook(value: dict):
+    # We will use this to convert back to a Python type
+    match value.get("$py$type"):
+        case None:
+            # Doesn't have this key, so return as is
+            return value
+        case "complex":
+            return complex(value["real"], value["imag"])
+        case _:
+            raise ValueError("Unknown $py$type")
+
+
+def convert_jsonb(cursor: apsw.Cursor, num: int, value: bytes):
+    print(f"\nconvert_jsonb callback {num=} {value=!r:.20}...")
+    # the description will contain the column names, declared types and
+    # more if using description_full
+    print(f"columns are {[col[0] for col in cursor.description]}")
+    print(f"contextvar {volume.get()=}\n")
+
+    # We want decimal to handle float conversion because it has more
+    # precision
+    return apsw.jsonb_decode(
+        value, object_hook=object_hook, parse_float=decimal.Decimal
+    )
 
 
 connection.convert_jsonb = convert_jsonb
 
-query(
-    "SELECT extra AS the_extra, ? AS complex_num FROM items",
-    (3 + 4j,),
-)
+example_data = {
+    "binary": b"\x01\x73\x94\x65",
+    "date stamp": datetime.datetime.now(),
+    "decimal": decimal.Decimal(
+        "0.7843262344923523492342352344523423423423"
+    ),
+    "complex": 3 + 4j,
+}
 
-### jsonb_decode_customise: Customising decoding
-# :func:`apsw.jsonb_decode` has a parameter for each value
-# type when decoding.  The most useful is ``object_hook``
+# Use the contextvar
+with volume.set("loud"):
+    query(
+        "SELECT $name AS scope, $data AS hello",
+        {
+            "name": "test",
+            "data": example_data,
+        },
+    )
 
+### jsonb_cleanup: Cleanup
+# No cleanup is needed.  Converters are automatically cleared when
+# connections and cursors are no longer used.
