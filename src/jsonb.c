@@ -920,6 +920,7 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
     {
       Py_DECREF(replacement);
       PyErr_Format(PyExc_ValueError, "default callback returned the object is was passed and did not encode it");
+      AddTraceBackHere(__FILE__, __LINE__, "jsonb_encode_internal", "{s: O}", "object", obj);
       goto error;
     }
     if (PyObject_CheckBuffer(replacement))
@@ -938,7 +939,10 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
           }
         }
         else
+        {
           PyErr_Format(PyExc_ValueError, "bytes item returned by default callback is not valid JSONB");
+          AddTraceBackHere(__FILE__, __LINE__, "jsonb_encode_internal", "{s: O}", "replacement", replacement, "object", obj);
+        }
 
         PyBuffer_Release(&replacement_buffer);
       }
@@ -971,6 +975,7 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
   }
 
   PyErr_Format(PyExc_TypeError, "Unhandled object of type %s", Py_TypeName(obj));
+  AddTraceBackHere(__FILE__, __LINE__, "jsonb_encode_internal", "{s: O}", "object", obj);
   goto error;
 
 success:
