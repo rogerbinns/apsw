@@ -760,37 +760,39 @@ class JSONB(unittest.TestCase):
         )
 
         # original use case using examples from enum doc
-        import enum
+        if sys.version_info >= (3, 11):
+            # python 3.10 doesn't have StrEnum
+            import enum
 
-        class Number(enum.IntEnum):
-            ONE = 1
-            TWO = 2
-            THREE = 3
+            class Number(enum.IntEnum):
+                ONE = 1
+                TWO = 2
+                THREE = 3
 
-        class Color(enum.StrEnum):
-            RED = "r"
-            GREEN = "g"
-            BLUE = "b"
+            class Color(enum.StrEnum):
+                RED = "r"
+                GREEN = "g"
+                BLUE = "b"
 
-        example = {"one": Number.ONE, "r": Color.RED, Number.TWO: "two", Color.GREEN: "g"}
-        expected = {"one": 1, "r": "r", "2": "two", "g": "g"}
+            example = {"one": Number.ONE, "r": Color.RED, Number.TWO: "two", Color.GREEN: "g"}
+            expected = {"one": 1, "r": "r", "2": "two", "g": "g"}
 
-        self.assertEqual(expected, decode(encode(example)))
+            self.assertEqual(expected, decode(encode(example)))
 
-        self.assertRaises(TypeError, encode, example, exact_types=True)
-        self.assertRaises(TypeError, encode, example, default=lambda x: str(x), exact_types=True)
-        self.assertRaises(TypeError, encode, example, default_key=lambda x: str(x), exact_types=True)
+            self.assertRaises(TypeError, encode, example, exact_types=True)
+            self.assertRaises(TypeError, encode, example, default=lambda x: str(x), exact_types=True)
+            self.assertRaises(TypeError, encode, example, default_key=lambda x: str(x), exact_types=True)
 
-        expected = {
-            "one": "<Number.ONE: 1>",
-            "r": "<Color.RED: 'r'>",
-            "<Number.TWO: 2>": "two",
-            "<Color.GREEN: 'g'>": "g",
-        }
-        self.assertEqual(
-            expected,
-            decode(encode(example, default=lambda x: repr(x), default_key=lambda x: repr(x), exact_types=True)),
-        )
+            expected = {
+                "one": "<Number.ONE: 1>",
+                "r": "<Color.RED: 'r'>",
+                "<Number.TWO: 2>": "two",
+                "<Color.GREEN: 'g'>": "g",
+            }
+            self.assertEqual(
+                expected,
+                decode(encode(example, default=lambda x: repr(x), default_key=lambda x: repr(x), exact_types=True)),
+            )
 
     def testBadContent(self):
         # not zero length
