@@ -101,8 +101,8 @@ def main(PYVERS, SQLITEVERS, BITS, concurrency):
         for debug in False, True:
             for sqlitever in SQLITEVERS:
                 for pyver in PYVERS:
-                    for config in ("none", "full", "system"):
-                        for gil in (True, False):
+                    for config in CONFIG:
+                        for gil in GIL:
                             for bits in BITS:
                                 # we only have 64 bit system python
                                 if pyver == "system" and bits != 64:
@@ -236,18 +236,22 @@ def cmp(a, b):
 
 # Default versions we support
 PYVERS = (
-    "3.14.0rc2",
-    "3.13.7",
-    "3.12.11",
-    "3.11.13",
-    "3.10.18",
-    "3.9.23",
+    "3.14.0",
+    "3.13.9",
+    "3.12.12",
+    "3.11.14",
+    "3.10.19",
+    "3.9.24",
     "system",
 )
 
 SQLITEVERS = ("3.50.0", "3.50.1", "3.50.2", "3.50.3", "3.50.4")
 
 BITS = (64, 32)
+
+CONFIG = ("none", "full", "system")
+
+GIL = (True, False)
 
 if __name__ == "__main__":
     if os.path.isdir("/usr/lib/ccache"):
@@ -281,6 +285,9 @@ if __name__ == "__main__":
         default=",".join(SQLITEVERS),
     )
     parser.add_argument("--bits", default=",".join(str(b) for b in BITS), help="Bits [%(default)s]")
+    parser.add_argument("--config", default=",".join(str(c) for c in CONFIG), help="Config [%(default)s]")
+    parser.add_argument("--gil", action="store_true", help="Only test GIL build")
+    parser.add_argument("--no-gil", action="store_false", dest="gil", help="Only test non-GIL build")
     parser.add_argument(
         "--tasks",
         type=int,
@@ -293,6 +300,9 @@ if __name__ == "__main__":
 
     pyvers = options.pyvers.split(",")
     sqlitevers = options.sqlitevers.split(",")
+    CONFIG = options.config.split(",")
+    if options.gil is not None:
+        GIL = (options.gil,)
     bits = tuple(int(b.strip()) for b in options.bits.split(","))
     concurrency = options.concurrency
     sqlitevers = [x for x in sqlitevers if x]
