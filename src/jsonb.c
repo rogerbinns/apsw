@@ -299,6 +299,18 @@ value ``8``.
       - 0.35%
     * - 4 bytes
       - 0.18%
+    * - 5 bytes
+      - 0.10%
+    * - 6 bytes
+      - 0.05%
+    * - 7 bytes
+      - 0.03%
+    * - 8 bytes
+      - 0.02%
+    * - 9 bytes
+      - 0.01%
+    * - 10+ bytes
+      - very low
 
 .. _apsw_jsonb:
 
@@ -1015,7 +1027,7 @@ error:
 
        It can also return binary data in JSONB format.  For example
        :mod:`decimal` values can be encoded as a full precision JSONB
-       float.
+       float.  :func:`apsw.ext.make_jsonb` can be used.
     :param default_key: Objects (dict) must have string keys.  If a
        non-string key is encountered, it is skipped if ``skipkeys``
        is ``True``.  Otherwise this is called.  If not supplied the
