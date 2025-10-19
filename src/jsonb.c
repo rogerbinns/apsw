@@ -67,10 +67,10 @@ Types
       - .. code-block:: json
 
           true
-    * - string - some characters are backslash escaped such as double quote
-        and forward slash, while Unicode codepoints can be backslash u escaped
-        allowing for the JSON text to be all ASCII.  Codepoint U+2603 is
-        snowman ☃
+    * - string - surrounding double quotes with some characters backslash escaped
+        such as double quote and forward slash, while Unicode codepoints can be
+        backslash-u escaped allowing for the JSON text to be all ASCII.  Codepoint
+        U+2603 is snowman ☃
       - :class:`str`
       - .. code-block:: json
 
@@ -80,6 +80,7 @@ Types
       - :class:`int` and :class:`float`
       - .. code-block:: json
 
+          72
           -3.14E7
     * - array - array contents can be any JSON types
       - :class:`list`
@@ -164,11 +165,16 @@ Explicit limits
   can be used in numbers nor a minimum or maximum precision.  It is
   common for implementations to have limits especially 64 bits for
   numbers.  String limits may be 1 or 2 billion characters, and arrays /
-  objects be limited to a similar number of members.  (Python has a 64
-  bit limit on floating point numbers, but has no limit on integers, strings,
-  arrays, or objects other than available memory.)
+  objects be limited to a similar number of members.
 
-  If data is that large, then other representations are far more appropriate.
+  Python has a 64  bit limit on floating point numbers when using
+  :class:`float` but :mod:`decimal` is unlimited, and has no limit
+  on integers, strings, arrays, or objects other than available memory.
+
+  SQLite has an upper limit of 2GB for strings, uses signed 64 bit
+  integers, and standard 64 bit floating point.
+
+  If data is large, then other representations are more appropriate.
 
 Object (dict) key order or duplicates
 
@@ -192,8 +198,8 @@ more human readable and writable.  SQLite will accept JSON5 encoded
 text, but will never produce it.  While SQLite parses JSON5, you
 can't get back JSON5 output from a JSON5 input.
 
-For example JSON5 allows omitting some quoting, comments, hexadecimal
-numbers, trailing commas, infinity and NaN.
+For example JSON5 allows comments, hexadecimal numbers, trailing
+commas, infinity and NaN, and omitting some quoting,
 
 Using JSON
 ==========
@@ -229,16 +235,17 @@ SQLite
 SQLite has over `30 functions <https://sqlite.org/json1.html>`__ for
 consuming, extracting, iterating, and producing JSON.  You will need
 to ensure that what you get back is what is intended.  You can usually
-get back the JSON text representation of values, or the actual
-representation.  For example a SQLite string is the same as a Python
+get back the JSON text representation of values, or the SQLite
+value.  For example a SQLite string is the same as a Python
 string, while the JSON text representation includes double quotes
-around it and various quoting inside.
+around it and various quoting inside. (:ref:`Example
+<example_json_functions>`)
 
 You can store JSON text directly in the database, but there is no way
 to differentiate it from any other text value.  For example the number
 ``2`` in JSON is text ``2``.  The `json_valid
 <https://sqlite.org/json1.html#jvalid>`__ function may help - for
-example as `CHECK constraint
+example as a `CHECK constraint
 <https://sqlite.org/lang_createtable.html#check_constraints>`__ on a
 column.
 
@@ -343,15 +350,15 @@ different.
     * - 0.80 seconds
       - SQLite that JSON text to JSONB
 
-  The same parameters as :func:`json.dumps` are used, with more
+  The same parameters as :func:`json.dumps` are available, with more
   providing control over how non-string object keys are converted,
-  and allowing for conversion to JSONB types.
+  type matching, and direct conversion to JSONB types can be done.
 
 :func:`~apsw.jsonb_decode`
 
   Converts JSONB directly back to a Python object.  The alternative
   is two steps using SQLite's internal JSONB to JSON text and then
-  :mod:`json` to convert the JSON text to Python object.
+  :mod:`json` to convert the JSON text to a Python object.
 
   .. list-table:: Test results (CPU time)
     :widths: auto
@@ -363,20 +370,20 @@ different.
     * - 1.35 seconds
       - :mod:`json` that JSON text to Python object
 
-  The same parameters as :func:`json.loads` are used, with an additional
+  The same parameters as :func:`json.loads` are available, with an additional
   hook for arrays (lists).
 
 :func:`~apsw.jsonb_detect`
 
   Returns a boolean if some binary data is valid JSONB.
-  If this returns ``True`` then SQLite will produce valid JSON from the
+  If this returns ``True`` then SQLite will always produce valid JSON from the
   JSONB.
 
   SQLite's `json_valid <https://sqlite.org/json1.html#jvalid>`__  only
-  checks the various internal length fields are consistent and items
-  seem reasonable.  It does not check all corner cases, or the UTF8
-  encoding, and so can produce invalid JSON even if json_valid said it
-  was valid JSONB.
+  checks the various internal type and length fields are consistent
+  and items seem reasonable.  It does not check all corner cases, or
+  the UTF8 encoding, and so can produce invalid JSON even if
+  json_valid said it was valid JSONB.
 
 Notes
 =====
@@ -389,8 +396,9 @@ can't work with individual JSON text or JSONB data over that size.
 JSON as a SQLite value type
 ===========================
 
-Using APSW it is possible to make SQLite automatically support JSON
-as though it was a natively supported type.
+You can make SQLite automatically support JSON as though it was a
+natively supported type.  :ref:`Example code <example_json_quick>`
+that does these steps.
 
 :ref:`Store JSONB <jsonb>`
 
@@ -401,25 +409,20 @@ as though it was a natively supported type.
   the `JSON functions <https://sqlite.org/json1.html>`__, and its
   ``json`` function can turn JSONB into JSON text format if needed.
 
-  You have full access to all the keys and values inside for
-  reading, iterating, qnd modifying.
+  SQLite's functions provide full access to all the values inside JSON
+  and JSONB for reading, iterating, qnd modifying.
 
 Convert bindings
 
-  You can set a :attr:`cursor convertor <Cursor.convert_binding>`
-  callback for SQLite unknown types, which can then :func:`encode them
-  <jsonb_encode>` as JSONB.  You can also set the callback on the
-  :attr:`connection <Connection.convert_binding>` which will then be
-  used by all cursors.
+  The :attr:`~Cursor.convert_binding` callback for SQLite unknown types
+  can :func:`encode them <jsonb_encode>` as JSONB.
 
 Convert JSONB
 
-  You can set a :attr:`cursor convertor <Cursor.convert_jsonb>` callback
-  for when a blob is read from the database and is valid JSONB.  The callback
-  has the :class:`Cursor` as a first parameter and can consult the
-  :attr:`description <Cursor.description_full>` to decide to :func:`decode <jsonb_decode>`
-  or return the blob as is.
-
+  The :attr:`~Cursor.convert_jsonb` callback is called when a blob would
+  be returned and is also valid JSONB.  You can :func:`decode it <jsonb_decode>`
+  or return the blob.  The cursor is provided so you can examine
+  the :attr:`~Cursor.description` to help decide.
 
 JSONB API
 =========
@@ -1005,8 +1008,8 @@ error:
 
 /** .. method:: jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys: bool = False, check_circular: bool = True, exact_types: bool = False, default: Callable[[Any], JSONBTypes | Buffer] | None = None, default_key: Callable[[Any], str] | None = None, allow_nan:bool = True) -> bytes
 
-    Encodes object as JSONB.  It is like :func:`json.dumps` except it produces
-    JSONB.
+    Encodes a Python object as JSONB.  It is like :func:`json.dumps` except it produces
+    JSONB bytes instead of JSON text.
 
     :param obj: Object to encode
     :param skipkeys: If ``True`` and a non-string dict key is
@@ -2155,7 +2158,7 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
     Returns ``True`` if data is valid JSONB, otherwise ``False``.  If this returns
     ``True`` then SQLite will produce valid JSON from it.
 
-    SQLite's json_valid only checks the various internal length fields are consistent
+    SQLite's json_valid only checks the various internal type and length fields are consistent
     and items seem reasonable.  It does not check all corner cases, or the UTF8
     encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.
 
@@ -2219,7 +2222,7 @@ jsonb_detect_internal(const void *data, size_t length)
 /** .. method:: jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    parse_int: Callable[[str], Any] | None = None,    parse_float: Callable[[str], Any] | None = None,) -> Any
 
     Decodes JSONB binary data into a Python object.  It is like :func:`json.loads`
-    but operating on JSONB.
+    but operating on JSONB binary source instead of a JSON text source.
 
     :param data: Binary data to decode
     :param object_pairs_hook: Called after a JSON object has been
