@@ -17,10 +17,10 @@ next
 SQLite, with automatic conversion of Python objects on writing and
 reading.
 
-:meth:`Connection.convert_binding` (and :meth:`Cursor.convert_binding`)
+:attr:`Connection.convert_binding` (and :attr:`Cursor.convert_binding`)
 callback to allow conversion of bindings when executing SQL.
 
-:meth:`Connection.convert_jsonb` (and :meth:`Cursor.convert_jsonb`)
+:attr:`Connection.convert_jsonb` (and :attr:`Cursor.convert_jsonb`)
 callback to allow conversion of :ref:`JSONB <jsonb>`  when reading
 query results.  (JSONB is SQLite's internal parsed format for quick
 operations on JSON.)
@@ -29,7 +29,7 @@ operations on JSON.)
 allowing direct conversion between Python objects and JSONB, without
 having to go through the intermediate JSON text format.
 
-Added :func:`apsw.ext.Function` for calling of SQL functions directly
+Added :func:`apsw.ext.Function` for calling SQL functions directly
 from Python.
 
 3.50.4.0
