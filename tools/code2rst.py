@@ -229,8 +229,10 @@ def do_methods():
 
         # insert index stuff
         op.extend(indexop)
-        # we need full buffer name
+        # we need full buffer name and others
         dec = re.sub(r"\bBuffer\b", "collections.abc.Buffer", dec)
+        dec = re.sub(r"\bCallable\b", "typing.Callable", dec)
+        dec = re.sub(r"\bAny\b", "typing.Any", dec)
         # insert classname into dec
         if curclass:
             dec = re.sub(r"^(\.\.\s+(method|attribute)::\s+)()", r"\1" + curclass + ".", dec)
