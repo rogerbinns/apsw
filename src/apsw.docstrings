@@ -187,7 +187,7 @@
 
 #define  Apsw_jsonb_decode_DOC "apsw.jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    parse_int: Callable[[str], Any] | None = None,    parse_float: Callable[[str], Any] | None = None,) -> Any\n\n" \
 "Decodes JSONB binary data into a Python object.  It is like :func:`json.loads`\n" \
-"but operating on JSONB.\n" \
+"but operating on JSONB binary source instead of a JSON text source.\n" \
 "\n" \
 ":param data: Binary data to decode\n" \
 ":param object_pairs_hook: Called after a JSON object has been\n" \
@@ -250,7 +250,7 @@
 "Returns ``True`` if data is valid JSONB, otherwise ``False``.  If this returns\n" \
 "``True`` then SQLite will produce valid JSON from it.\n" \
 "\n" \
-"SQLite's json_valid only checks the various internal length fields are consistent\n" \
+"SQLite's json_valid only checks the various internal type and length fields are consistent\n" \
 "and items seem reasonable.  It does not check all corner cases, or the UTF8\n" \
 "encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.\n" \
 "\n" \
@@ -269,8 +269,8 @@
 
 
 #define  Apsw_jsonb_encode_DOC "apsw.jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys: bool = False, check_circular: bool = True, exact_types: bool = False, default: Callable[[Any], JSONBTypes | Buffer] | None = None, default_key: Callable[[Any], str] | None = None, allow_nan:bool = True) -> bytes\n\n" \
-"Encodes object as JSONB.  It is like :func:`json.dumps` except it produces\n" \
-"JSONB.\n" \
+"Encodes a Python object as JSONB.  It is like :func:`json.dumps` except it produces\n" \
+"JSONB bytes instead of JSON text.\n" \
 "\n" \
 ":param obj: Object to encode\n" \
 ":param skipkeys: If ``True`` and a non-string dict key is\n" \
@@ -291,7 +291,7 @@
 "\n" \
 "   It can also return binary data in JSONB format.  For example\n" \
 "   :mod:`decimal` values can be encoded as a full precision JSONB\n" \
-"   float.\n" \
+"   float.  :func:`apsw.ext.make_jsonb` can be used.\n" \
 ":param default_key: Objects (dict) must have string keys.  If a\n" \
 "   non-string key is encountered, it is skipped if ``skipkeys``\n" \
 "   is ``True``.  Otherwise this is called.  If not supplied the\n" \

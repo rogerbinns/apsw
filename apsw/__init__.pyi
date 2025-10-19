@@ -2,18 +2,9 @@
 import sys
 
 from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
-from collections.abc import Mapping
+from collections.abc import Mapping, Buffer
 import array
 import types
-
-# Anything that resembles a dictionary
-from collections.abc import Mapping
-
-# Anything that resembles a sequence of bytes
-if sys.version_info >= (3, 12):
-    Buffer: TypeAlias = collections.abc.Buffer
-else:
-    Buffer: TypeAlias = bytes
 
 SQLiteValue = None | int | float | Buffer | str
 """SQLite supports 5 types - None (NULL), 64 bit signed int, 64 bit
@@ -354,7 +345,7 @@ def initialize() -> None:
 
 def jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, JSONBTypes | Any]]], Any] | None = None,  object_hook: Callable[[dict[str, JSONBTypes | Any]], Any] | None = None,    array_hook: Callable[[list[JSONBTypes | Any]], Any] | None = None,    parse_int: Callable[[str], Any] | None = None,    parse_float: Callable[[str], Any] | None = None,) -> Any:
     """Decodes JSONB binary data into a Python object.  It is like :func:`json.loads`
-    but operating on JSONB.
+    but operating on JSONB binary source instead of a JSON text source.
 
     :param data: Binary data to decode
     :param object_pairs_hook: Called after a JSON object has been
@@ -400,7 +391,7 @@ def jsonb_detect(data: Buffer) -> bool:
     """Returns ``True`` if data is valid JSONB, otherwise ``False``.  If this returns
     ``True`` then SQLite will produce valid JSON from it.
 
-    SQLite's json_valid only checks the various internal length fields are consistent
+    SQLite's json_valid only checks the various internal type and length fields are consistent
     and items seem reasonable.  It does not check all corner cases, or the UTF8
     encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.
 
@@ -412,8 +403,8 @@ def jsonb_detect(data: Buffer) -> bool:
     ...
 
 def jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys: bool = False, check_circular: bool = True, exact_types: bool = False, default: Callable[[Any], JSONBTypes | Buffer] | None = None, default_key: Callable[[Any], str] | None = None, allow_nan:bool = True) -> bytes:
-    """Encodes object as JSONB.  It is like :func:`json.dumps` except it produces
-    JSONB.
+    """Encodes a Python object as JSONB.  It is like :func:`json.dumps` except it produces
+    JSONB bytes instead of JSON text.
 
     :param obj: Object to encode
     :param skipkeys: If ``True`` and a non-string dict key is
@@ -434,7 +425,7 @@ def jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys: bool = False, c
 
        It can also return binary data in JSONB format.  For example
        :mod:`decimal` values can be encoded as a full precision JSONB
-       float.
+       float.  :func:`apsw.ext.make_jsonb` can be used.
     :param default_key: Objects (dict) must have string keys.  If a
        non-string key is encountered, it is skipped if ``skipkeys``
        is ``True``.  Otherwise this is called.  If not supplied the
