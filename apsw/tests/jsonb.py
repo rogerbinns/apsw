@@ -1280,6 +1280,8 @@ class Conversion(unittest.TestCase):
         called = [0, 0]
 
         def con_conv(cur, argnum, value):
+            self.assertRaises(apsw.ThreadingViolationError, cur.connection.close)
+            self.assertRaises(apsw.ThreadingViolationError, cur.close)
             self.assertIsInstance(cur, apsw.Cursor)
             self.assertIsInstance(argnum, int)
             self.assertEqual(0, argnum)
@@ -1287,16 +1289,15 @@ class Conversion(unittest.TestCase):
             return "con"
 
         def cur_conv(cur, argnum, value):
+            self.assertRaises(apsw.ThreadingViolationError, cur.connection.close)
+            self.assertRaises(apsw.ThreadingViolationError, cur.close)
             self.assertIsInstance(cur, apsw.Cursor)
             self.assertIsInstance(argnum, int)
             self.assertEqual(0, argnum)
             called[1] += 1
             return "cur"
 
-        cur = self.db.cursor()
-
         self.assertIsNone(self.db.convert_jsonb)
-        self.assertIsNone(cur.convert_jsonb)
 
         t = make_item(3, "33")
 
@@ -1306,8 +1307,10 @@ class Conversion(unittest.TestCase):
         self.assertEqual("con", self.db.execute("select ?", (t,)).get)
         self.assertEqual(called, [1, 0])
 
-        called = [0, 0]
+        cur = self.db.cursor()
+        self.assertIsNone(cur.convert_jsonb)
         cur.convert_jsonb = cur_conv
+        called = [0, 0]
         self.assertEqual("cur", cur.execute("select ?", (t,)).get)
         self.assertEqual(called, [0, 1])
 
