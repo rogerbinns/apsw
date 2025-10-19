@@ -1096,7 +1096,7 @@ class JSONB(unittest.TestCase):
                 # jsonb_valid says overlong encodings of null/true/false are invalid,  eg c000 is
                 # rejected even though it is a compliant encoding of 0 length null.   sqlite also
                 # decodes it wrong, so we give up and do things the sqlite way
-                if k <= 2 and len_encoding >0:
+                if k <= 2 and len_encoding > 0:
                     self.check_invalid(encoded)
                 else:
                     self.check_valid(encoded, expected)
@@ -1149,7 +1149,7 @@ class Conversion(unittest.TestCase):
         def cb(cur, n, val):
             return apsw.jsonb_decode(val)
 
-        self.db.convert_jsonb=cb
+        self.db.convert_jsonb = cb
         for v in (
             b"\x01\x73\x94\x65",
             make_item(5, "3.14") + b"5",
@@ -1250,9 +1250,11 @@ class Conversion(unittest.TestCase):
 
         # decimal
         decimal.getcontext().prec = 128
+
         def conv(cur, n, val):
             self.assertIsInstance(val, decimal.Decimal)
             return make_item(5, str(val))
+
         self.db.convert_binding = conv
 
         d = decimal.Decimal("-0.786438726487326478632879468237648732687463287648723648762384732")
@@ -1266,14 +1268,13 @@ class Conversion(unittest.TestCase):
         self.assertIn(conv, gc.get_referents(cur))
 
         # get set
-        self.assertRaises(TypeError, setattr, self.db, "convert_binding", 3+4j)
+        self.assertRaises(TypeError, setattr, self.db, "convert_binding", 3 + 4j)
         self.assertEqual(conv, self.db.convert_binding)
-        self.assertRaises(TypeError, setattr, cur, "convert_binding", 3+4j)
+        self.assertRaises(TypeError, setattr, cur, "convert_binding", 3 + 4j)
         self.assertEqual(conv, cur.convert_binding)
         self.db.convert_binding = cur.convert_binding = None
         self.assertIsNone(self.db.convert_binding)
         self.assertIsNone(cur.convert_binding)
-
 
     def testConvertJSONB(self):
         "just convert jsonb"
@@ -1339,6 +1340,7 @@ class Conversion(unittest.TestCase):
 
         # decimal
         decimal.getcontext().prec = 128
+
         def conv(cur, n, val):
             return decode(val, parse_float=decimal.Decimal)
 
@@ -1355,13 +1357,14 @@ class Conversion(unittest.TestCase):
         self.assertIn(conv, gc.get_referents(cur))
 
         # get set
-        self.assertRaises(TypeError, setattr, self.db, "convert_jsonb", 3+4j)
+        self.assertRaises(TypeError, setattr, self.db, "convert_jsonb", 3 + 4j)
         self.assertEqual(conv, self.db.convert_jsonb)
-        self.assertRaises(TypeError, setattr, cur, "convert_jsonb", 3+4j)
+        self.assertRaises(TypeError, setattr, cur, "convert_jsonb", 3 + 4j)
         self.assertEqual(conv, cur.convert_jsonb)
         self.db.convert_jsonb = cur.convert_jsonb = None
         self.assertIsNone(self.db.convert_jsonb)
         self.assertIsNone(cur.convert_jsonb)
+
 
 class Ext(unittest.TestCase):
     "related code in apsw.ext"
@@ -1477,16 +1480,18 @@ def make_item_test(tag: int, value=None, *, len_encoding: int = None, length: in
 
     return res + value
 
+
 def make_item(tag: int, value=None, *, len_encoding: int = None, length: int = None):
     if tag > 12 or len_encoding is not None or length is not None:
         return make_item_test(tag, value, len_encoding=len_encoding, length=length)
 
     check = make_item_test(tag, value)
-    against =  apsw.ext.make_jsonb(tag, value)
+    against = apsw.ext.make_jsonb(tag, value)
 
     assert check == against
 
     return check
+
 
 def pi_digits(count: int):
     # adapted from a chatgpt answer
