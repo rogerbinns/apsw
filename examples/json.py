@@ -60,7 +60,8 @@ def convert_binding(
 def convert_jsonb(
     cursor: apsw.Cursor, column: int, value: bytes
 ) -> Any:
-    # called when a blob is valid JSONB
+    # Called when a blob is valid JSONB.You can decode
+    # it, or return it as is.
     return apsw.jsonb_decode(value)
 
 
@@ -68,7 +69,6 @@ def convert_jsonb(
 connection.convert_binding = convert_binding
 connection.convert_jsonb = convert_jsonb
 
-# data we use
 example_data = {
     "origin": "Spain",
     "diameter": 7.5,
