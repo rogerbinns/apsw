@@ -38,7 +38,7 @@ def query(sql, bindings=None):
         result = connection.execute(sql, bindings).fetchall()
         if len(result):
             pprint(result[0] if len(result) == 1 else result)
-    except Exception as exc:
+    except apsw.Error as exc:
         print("Exception:", exc)
 
 
