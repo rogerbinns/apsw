@@ -34,12 +34,9 @@ connection.execute(
 # This method is used to show queries and results
 def query(sql, bindings=None):
     print(f"\n\n{sql}")
-    try:
-        result = connection.execute(sql, bindings).fetchall()
-        if len(result):
-            pprint(result[0] if len(result) == 1 else result)
-    except apsw.Error as exc:
-        print("Exception:", exc)
+    result = connection.execute(sql, bindings).fetchall()
+    if len(result):
+        pprint(result[0] if len(result) == 1 else result)
 
 
 ### json_quick: Quick start
