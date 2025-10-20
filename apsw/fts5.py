@@ -1506,8 +1506,8 @@ class Table:
 
         The rowid of the inserted/modified row is returned.
 
-        If you are using an [external
-        content](https://www.sqlite.org/fts5.html#external_content_tables)
+        If you are using an `external
+        content <https://www.sqlite.org/fts5.html#external_content_tables>`__
         table:
 
         * The insert will be directed to the external content table

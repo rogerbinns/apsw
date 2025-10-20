@@ -319,10 +319,10 @@ for query in (
 
 ### fts5_auxfunc: Auxiliary functions
 # `Auxiliary functions
-# <https://sqlite.org/fts5.html#_auxiliary_functions_>__ are called
+# <https://sqlite.org/fts5.html#_auxiliary_functions_>`__ are called
 # for each matching row.  They can be used to provide `ranking
 # (sorting)
-# <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__`
+# <https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results>`__
 # for determining better matches, or returning information about the
 # match and row such as `highlights
 # <https://www.sqlite.org/fts5.html#the_highlight_function>`__, and

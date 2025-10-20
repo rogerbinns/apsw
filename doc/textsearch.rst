@@ -513,7 +513,7 @@ text into ascii text that sounds approximately similar::
 Available auxiliary functions
 =============================
 
-SQLite includes X builtin auxiliary functions, with APSW providing
+SQLite includes 3 builtin auxiliary functions, with APSW providing
 some more.
 
 .. list-table::
