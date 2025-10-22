@@ -32,6 +32,10 @@ having to go through the intermediate JSON text format.
 Added :func:`apsw.ext.Function` for calling SQL functions directly
 from Python.
 
+The `percentile extension <https://sqlite.org/percentile.html>`__ is
+enabled when enabling all extensions, which is standard for pypi
+downloads.
+
 ``SQLITE_SCM_`` constants (``BRANCH``, ``TAGS``, ``DATETIME``) are available
 on the module if built with the :attr:`amalgamation <using_amalgamation>`.
 

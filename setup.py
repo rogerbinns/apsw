@@ -524,6 +524,7 @@ class apsw_build_ext(beparent):
                 "math_functions",
                 "dbstat_vtab",
                 "session",
+                "percentile",
             ]
             if not self.omit or "icu" not in self.omit.split(","):
                 if get_icu_config():
@@ -646,6 +647,8 @@ class apsw_build_ext(beparent):
                         "rbu",
                         "geopoly",
                         "session",
+                        "carray",
+                        "percentile",
                     )
                 ):
                     write("Unknown enable " + e, sys.stderr)
