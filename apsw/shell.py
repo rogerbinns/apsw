@@ -3271,7 +3271,7 @@ Enter ".help" for instructions
         "trusted_schema": _pragmas_bool,
         "user_version=": None,
         "wal_autocheckpoint=": None,
-        "wal_checkpoint": None,
+        "wal_checkpoint": ("PASSIVE", "FULL", "RESTART", "TRUNCATE", "NOOP"),
         "writable_schema": _pragmas_bool,
     }
 
