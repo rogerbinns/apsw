@@ -72,7 +72,14 @@ def print_version_info():
     print("          APSW version ", apsw.apsw_version())
     print("    SQLite lib version ", apsw.sqlite_lib_version())
     print("SQLite headers version ", apsw.SQLITE_VERSION_NUMBER)
-    print("    Using amalgamation ", apsw.using_amalgamation, flush=True)
+    print("    Using amalgamation ", apsw.using_amalgamation)
+
+    if apsw.using_amalgamation:
+        print("     SQLITE_SCM_BRANCH ", apsw.SQLITE_SCM_BRANCH)
+        print("       SQLITE_SCM_TAGS ", apsw.SQLITE_SCM_TAGS)
+        print("   SQLITE_SCM_DATETIME ", apsw.SQLITE_SCM_DATETIME)
+
+    print(flush=True)
 
 
 # sigh

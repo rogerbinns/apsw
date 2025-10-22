@@ -2044,6 +2044,16 @@ PyInit_apsw(void)
     goto fail;
 #endif
 
+#ifdef APSW_USE_SQLITE_AMALGAMATION
+  if (PyModule_AddStringConstant(m, "SQLITE_SCM_BRANCH", SQLITE_SCM_BRANCH))
+    goto fail;
+  if (PyModule_AddStringConstant(m, "SQLITE_SCM_TAGS", SQLITE_SCM_TAGS))
+    goto fail;
+  if (PyModule_AddStringConstant(m, "SQLITE_SCM_DATETIME", SQLITE_SCM_DATETIME))
+    goto fail;
+
+#endif
+
   /** .. attribute:: no_change
     :type: object
 

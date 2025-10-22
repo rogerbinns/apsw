@@ -150,6 +150,9 @@ for name, obj in (
             # ignore mappings !!!
             if c.startswith("mapping_"):
                 continue
+            # SCM
+            if c.startswith("SQLITE_SCM_"):
+                continue
         if c not in classes[name] and not c.startswith("_") and c != "apsw_fault_inject":
             retval = 1
             print("%s.%s on object but not in documentation" % (name, c))

@@ -796,7 +796,7 @@ def generate_typestubs(items: list[dict]) -> None:
     # constants
     print("\n", file=out)
     for n in dir(apsw):
-        if n in {"SQLITE_VERSION_NUMBER"}:
+        if n in {"SQLITE_VERSION_NUMBER"} or n.startswith("SQLITE_SCM_"):
             continue
         if n.startswith("SQLITE_") or n.startswith("FTS5_TOKENIZE_"):
             assert isinstance(getattr(apsw, n), int)
