@@ -4688,14 +4688,15 @@ Connection_config(PyObject *self_, PyObject *args)
     * :func:`apsw.status` which does the same for SQLite as a whole
     * :ref:`Example <example_status>`
 
-  -* sqlite3_db_status
+  -* sqlite3_db_status64
 
 */
 static PyObject *
 Connection_status(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   Connection *self = (Connection *)self_;
-  int res, op, current = 0, highwater = 0, reset = 0;
+  int res, op;
+  sqlite3_int64 current = 0, highwater = 0, reset = 0;
 
   CHECK_CLOSED(self, NULL);
 
@@ -4708,14 +4709,14 @@ Connection_status(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   }
 
   DBMUTEX_ENSURE(self->dbmutex);
-  res = sqlite3_db_status(self->db, op, &current, &highwater, reset);
+  res = sqlite3_db_status64(self->db, op, &current, &highwater, reset);
   SET_EXC(res, NULL);
   sqlite3_mutex_leave(self->dbmutex);
 
   if (PyErr_Occurred())
     return NULL;
 
-  return Py_BuildValue("(ii)", current, highwater);
+  return Py_BuildValue("(LL)", current, highwater);
 }
 
 /** .. method:: readonly(name: str) -> bool
