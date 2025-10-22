@@ -30,9 +30,9 @@ developer experience.  See more about the :doc:`differences between
 APSW and sqlite3 <pysqlite>`.
 
 Because of the complete integration with SQLite, APSW offers useful
-additional functionality such as :doc:`these <ext>`, comprehensive
-:doc:`full text search support <textsearch>` (including Unicode), and
-the :doc:`session`.
+additional functionality such as :doc:`jsonb`, :doc:`these <ext>`,
+comprehensive :doc:`full text search support <textsearch>` (including
+Unicode), and the :doc:`session`.
 
 Dependencies
 ------------
@@ -121,6 +121,8 @@ one final APSW release supporting that version of Python.
 
   * - Python version
     - APSW release
+  * - 3.9
+    - `3.51.0.0 <https://github.com/rogerbinns/apsw/releases/tag/3.51.0.0>`__
   * - 3.8
     - `3.46.1.0 <https://github.com/rogerbinns/apsw/releases/tag/3.46.1.0>`__
   * - 3.6, 3.7
