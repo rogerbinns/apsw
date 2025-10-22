@@ -32,6 +32,12 @@ having to go through the intermediate JSON text format.
 Added :func:`apsw.ext.Function` for calling SQL functions directly
 from Python.
 
+Updated :meth:`Connection.status` to use 64 bit API, and
+:func:`apsw.ext.ShowResourceUsage` to show `TEMPBUF_SPILL
+<https://sqlite.org/c3ref/c_dbstatus_options.html>`__.
+(`cache_size <https://sqlite.org/pragma.html#pragma_cache_size>`__
+controls the amount of memory available.)
+
 The `percentile extension <https://sqlite.org/percentile.html>`__ is
 enabled when enabling all extensions, which is standard for pypi
 downloads.

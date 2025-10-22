@@ -1115,6 +1115,7 @@ class ShowResourceUsage:
             "SQLITE_DBSTATUS_CACHE_WRITE": self.db.status(apsw.SQLITE_DBSTATUS_CACHE_WRITE)[0],
             "SQLITE_DBSTATUS_CACHE_SPILL": self.db.status(apsw.SQLITE_DBSTATUS_CACHE_SPILL)[0],
             "SQLITE_DBSTATUS_DEFERRED_FKS": self.db.status(apsw.SQLITE_DBSTATUS_DEFERRED_FKS)[0],
+            "SQLITE_DBSTATUS_TEMPBUF_SPILL": self.db.status(apsw.SQLITE_DBSTATUS_TEMPBUF_SPILL)[0],
         }
 
     def __exit__(self, *_) -> None:
@@ -1186,6 +1187,7 @@ class ShowResourceUsage:
         "SQLITE_DBSTATUS_CACHE_WRITE": "SQLite pager cache writes",
         "SQLITE_DBSTATUS_CACHE_SPILL": "SQLite pager cache writes during transaction",
         "SQLITE_DBSTATUS_DEFERRED_FKS": "SQLite unresolved foreign keys",
+        "SQLITE_DBSTATUS_TEMPBUF_SPILL": "SQLite temp spill from full memory to disk",
         "ru_utime": "Time in user mode",
         "ru_stime": "Time in system mode",
         "ru_maxrss": "Maximum resident set size",

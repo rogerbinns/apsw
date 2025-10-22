@@ -1384,7 +1384,7 @@ connection.trace_v2(0, None)
 # block of code does.  We use the same query from above.
 #
 # Only statistics that have changed are shown in the summary. There are
-# 20 SQLite values tracked including caching, and 20 system values.
+# 21 SQLite values tracked including caching, and 20 system values.
 
 with apsw.ext.ShowResourceUsage(
     sys.stdout, db=connection, scope="thread"
