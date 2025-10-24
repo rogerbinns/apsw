@@ -823,6 +823,7 @@ class JSONB(unittest.TestCase):
         # not numbers
         for number in (
             "",
+            "-",
             "--1",
             "1-2",
             "0.-1",
@@ -831,6 +832,9 @@ class JSONB(unittest.TestCase):
             "+1.-2",
             "1e-2-",
             "1e++2",
+            "1e+-2",
+            "1e-+2",
+            "1e--2",
             "1.2.3",
             "1.2E3.4",
             "1.2E2E3",
@@ -842,6 +846,7 @@ class JSONB(unittest.TestCase):
             "0x\x07",
             "0x\xa7",
             "0x",
+            "x123",
             "+1",
             "+1.1",
             "1+1",
@@ -855,6 +860,7 @@ class JSONB(unittest.TestCase):
             "\r\n",
             "1.2\r\n",
             "E3",
+            "3E",
             "00001",
             "+00001",
             "-00001",
