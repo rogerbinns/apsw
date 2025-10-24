@@ -696,6 +696,17 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
                                pyobject_bind_destructor);
     /* sqlite3_bind_pointer calls the destructor on failure */
   }
+#ifdef SQLITE_ENABLE_CARRAY
+  else if (PyObject_TypeCheck(obj, &CArrayBindType) == 1)
+  {
+    /* This is decref in carray_bind_destructor and ensures the buffer
+       lives at least as long as SQLite wants it to */
+    Py_INCREF(obj);
+    CArrayBind *cab = (CArrayBind *)obj;
+    res = sqlite3_carray_bind(self->statement->vdbestatement, arg, cab->aData, cab->nData, cab->mFlags,
+                              carray_bind_destructor);
+  }
+#endif
   else if (CONVERT_BINDING)
   {
     PyObject *vargs[] = { NULL, (PyObject *)self, PyLong_FromLong(arg), obj };

@@ -117,7 +117,6 @@ def do_mappings():
         "Flags for sqlite3_serialize",
         "Win32 Directory Types",
         "Prepared Statement Scan Status",
-        "Datatypes for the CARRAY table-valued funtion with values",
     }
 
     for d in sorted(consts.keys()):

@@ -855,6 +855,16 @@ class Tester:
                 self.expect_exception.append(apsw_attr("NoFTS5Error"))
                 return self.apsw_attr("SQLITE_ERROR")
 
+            # these call the destructor on bind failure so we need them to succeed
+            if fname in {
+                "sqlite3_bind_pointer",
+                "sqlite3_carray_bind",
+                "sqlite3_bind_blob64",
+                "sqlite3_bind_blob",
+            } or fname.startswith("sqlite3_bind_text"):
+                self.expect_exception.append(apsw_attr("TooBigError"))  # code 18
+                return self.ProceedReturn18
+
             if fname.startswith("sqlite3"):  # sqlite api as well as session stuff
                 self.expect_exception.append(apsw_attr("TooBigError"))
                 return self.apsw_attr("SQLITE_TOOBIG")

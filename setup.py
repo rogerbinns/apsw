@@ -525,6 +525,7 @@ class apsw_build_ext(beparent):
                 "dbstat_vtab",
                 "session",
                 "percentile",
+                "carray",
             ]
             if not self.omit or "icu" not in self.omit.split(","):
                 if get_icu_config():

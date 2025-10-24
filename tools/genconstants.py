@@ -21,7 +21,7 @@ title_to_mapping = {
     "Conflict resolution modes": "conflict_resolution_modes",
     "Constants Defining Special Destructor Behavior": None,
     "Database Connection Configuration Options": "db_config",
-    "Datatypes for the CARRAY table-valued funtion": None,
+    "Datatypes for the CARRAY table-valued funtion": "carray",
     "Device Characteristics": "device_characteristics",
     "Extended Result Codes": "extended_result_codes",
     "File Locking Levels": "locking_level",

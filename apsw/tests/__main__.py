@@ -6092,6 +6092,9 @@ class APSW(unittest.TestCase):
             "PyObjectBind": {
                 "req": {},
             },
+            "CArrayBind":  {
+                "req": {},
+            },
             "PreUpdate":
             {
                 "skip": ("dealloc", "tp_str", ),

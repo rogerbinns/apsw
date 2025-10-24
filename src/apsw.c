@@ -244,6 +244,10 @@ static void apsw_write_unraisable(PyObject *hookobject);
 /* jsonb serialization */
 #include "jsonb.c"
 
+#ifdef SQLITE_ENABLE_CARRAY
+#include "carray.c"
+#endif
+
 /* connections */
 #include "connection.c"
 
@@ -282,6 +286,39 @@ static int allow_missing_dict_bindings = 0;
 
   Indicates a Python object is being provided as a
   :ref:`runtime value <pyobject>`.
+*/
+
+/** .. method:: carray(object: Buffer, *, start: int = 0, stop: int = -1, flags: int = -1)
+
+  Indicates a Python object is being provided as a runtime array for the
+  `Carray extension <https://sqlite.org/carray.html>`__.
+
+  .. code-block:: python
+
+    import array
+
+    # packed array of 32 bit int
+    ids = array.array("l", [1, 73, 94567, 62])
+
+    # get records matching those ids
+    for row in con.execute("SELECT * FROM record WHERE record.id in CARRAY(?)",
+      apsw.carray(ids)):
+      print(row)
+
+  :param object: Any object that implements the buffer protocol as
+     a single contiguous binary data like :class:`bytes`, :class:`bytearray`,
+     :class:`array.array`, numpy etc.
+  :param start: Index of the first entry to bind
+  :param stop: Index to stop at - ie one beyond the last entry bound.  Default
+      is all remaining members.  There is a limit of 2 billion.
+  :param flags: Indicates if the data is 32/64 bit int, or 64 bit double (floating point).
+      If not supplied then the buffer format is examined and accepted if native byte order.
+      You can see the `format string <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`
+      with :code:`memoryview(object).format`.  Alternately provide a :data:`constant <apsw.mapping_carray>`
+      like :code:`apsw.SQLITE_CARRAY_INT32`
+
+  Carray support is only present if APSW was compiled with ``SQLITE_ENABLE_CARRAY`` such as
+  PyPi builds.
 */
 
 /** .. method:: sqlite_lib_version() -> str
@@ -1032,6 +1069,9 @@ static PyObject *
 apsw_fini(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   fini_apsw_strings();
+#ifdef SQLITE_ENABLE_CARRAY
+  free(carray_owner_array);
+#endif
   Py_RETURN_NONE;
 }
 #endif
@@ -1924,6 +1964,9 @@ PyInit_apsw(void)
       || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_type) < 0
       || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0
       || PyType_Ready(&PyObjectBindType) < 0
+#ifdef SQLITE_ENABLE_CARRAY
+      || PyType_Ready(&CArrayBindType) < 0
+#endif
 #ifdef SQLITE_ENABLE_SESSION
       || PyType_Ready(&APSWSessionType) < 0 || PyType_Ready(&APSWTableChangeType) < 0
       || PyType_Ready(&APSWChangesetType) < 0 || PyType_Ready(&APSWChangesetBuilderType) < 0
@@ -1982,6 +2025,9 @@ PyInit_apsw(void)
   ADD(FTS5Tokenizer, APSWFTS5TokenizerType);
   ADD(FTS5ExtensionApi, APSWFTS5ExtensionAPIType);
   ADD(pyobject, PyObjectBindType);
+#ifdef SQLITE_ENABLE_CARRAY
+  ADD(carray, CArrayBindType);
+#endif
 #ifdef SQLITE_ENABLE_SESSION
   ADD(Session, APSWSessionType);
   ADD(Changeset, APSWChangesetType);
