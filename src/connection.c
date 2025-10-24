@@ -4696,7 +4696,8 @@ Connection_status(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
 {
   Connection *self = (Connection *)self_;
   int res, op;
-  sqlite3_int64 current = 0, highwater = 0, reset = 0;
+  sqlite3_int64 current = 0, highwater = 0;
+  int reset = 0;
 
   CHECK_CLOSED(self, NULL);
 
