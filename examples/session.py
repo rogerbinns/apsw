@@ -143,8 +143,8 @@ undo = apsw.Changeset.invert(changeset)
 show_changeset("undo", undo)
 
 ### applying: Applying changesets
-# We can filter which tables get affected when :meth:`applying a
-# changeset <Changeset.apply>` (default all) and can define a conflict
+# We can filter which tables or changes get affected when :meth:`applying a
+# changeset <Changeset.apply>` (default all), and can define a conflict
 # handler (default abort the transaction).  Conflicts are `described
 # here <https://sqlite.org/sessionintro.html#conflicts>`__. We are
 # going to undo our earlier changes.
@@ -203,9 +203,32 @@ def conflict_handler(reason: int, change: apsw.TableChange) -> int:
     # proceed ignoring this failed change
     return apsw.SQLITE_CHANGESET_OMIT
 
+# We can filter by table name or individual change.  Here we will will
+# exclude all indirect changes since they were made by triggers which
+# we also have.
+def filter_change(change: apsw.TableChange) -> bool:
+    if change.indirect:
+        print(
+            "filter_change excluding",
+            f"{change.op=} {change.opcode=}",
+            "\n",
+            f"{change.conflict=}",
+            "\n",
+            f"{change.name=} {change.column_count=}",
+            "\n",
+            f"{change.fk_conflicts=}",
+            f"{change.indirect=}",
+            "\n",
+            f"{change.old=}\n",
+            f"{change.new=}\n",
+        )
+        # This excludes the change
+        return False
+    # This allows the change
+    return True
 
 # Undo our earlier changes again
-apsw.Changeset.apply(undo, connection, conflict=conflict_handler)
+apsw.Changeset.apply(undo, connection, filter_change=filter_change, conflict=conflict_handler)
 
 # Now lets see what couldn't apply as SQL
 show_changeset("failed", failed.output())

@@ -32,6 +32,11 @@ having to go through the intermediate JSON text format.
 Added :func:`apsw.ext.Function` for calling SQL functions directly
 from Python.
 
+:meth:`Changeset.apply` now takes ``filter_change`` parameter for
+allowing filtering on individual change level, taking advantage of
+`sqlite3changeset_apply_v3
+<https://sqlite.org/session/sqlite3changeset_apply.html>`__
+
 Updated :meth:`Connection.status` to use 64 bit API, and
 :func:`apsw.ext.ShowResourceUsage` to show `TEMPBUF_SPILL
 <https://sqlite.org/c3ref/c_dbstatus_options.html>`__.

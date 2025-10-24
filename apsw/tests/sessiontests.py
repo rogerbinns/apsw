@@ -95,7 +95,7 @@ class Session(unittest.TestCase):
         changeset = session.changeset()
         self.db.execute("delete from foo")
         self.assertEqual(0, self.db.execute("select count(*) from foo").get)
-        apsw.Changeset.apply(changeset, self.db)
+        apsw.Changeset.apply(changeset, self.db, filter_change=lambda x: True)
         self.assertEqual(20, self.db.execute("select count(*) from foo").get)
 
     def testConfig(self):
@@ -237,19 +237,22 @@ class Session(unittest.TestCase):
         self.assertGreater(len(sp.sizes), 1)
 
         # streamed input changes should be the same as non-streamed versions
-        for kind in s.patchset, s.changeset:
-            db_direct = apsw.Connection("")
-            db_stream = apsw.Connection("")
+        for filter in "filter", "filter_change":
+            for val in True, False:
+                kwargs = {filter: lambda x: val}
+                for kind in s.patchset, s.changeset:
+                    db_direct = apsw.Connection("")
+                    db_stream = apsw.Connection("")
 
-            db_direct.execute(self.base_sql)
-            apsw.Changeset.apply(kind(), db_direct)
+                    db_direct.execute(self.base_sql)
+                    apsw.Changeset.apply(kind(), db_direct, **kwargs)
 
-            db_stream.execute(self.base_sql)
-            si = StreamInput(kind())
-            apsw.Changeset.apply(si, db_stream)
-            self.assertGreater(len(si.sizes), 1)
+                    db_stream.execute(self.base_sql)
+                    si = StreamInput(kind())
+                    apsw.Changeset.apply(si, db_stream, **kwargs)
+                    self.assertGreater(len(si.sizes), 1)
 
-            self.checkDbIdentical(db_direct, db_stream)
+                    self.checkDbIdentical(db_direct, db_stream)
 
         # check errors don't change db
         for kind in s.patchset, s.changeset:
@@ -636,22 +639,28 @@ class Session(unittest.TestCase):
         changeset = session.changeset()
 
         # filter check
-        for kind in "insert", "delete", "update":
-            self.db.execute(setup_sql)
+        for scope in "table", "change":
+            for kind in "insert", "delete", "update":
+                self.db.execute(setup_sql)
 
-            def tf(name):
-                return name == kind
+                def tf(name):
+                    return name == kind
 
-            counter = self.db.total_changes()
-            apsw.Changeset.apply(changeset, self.db, filter=tf)
-            self.assertEqual(
-                self.db.total_changes() - counter,
-                {
-                    "insert": 1,
-                    "delete": 1,
-                    "update": 3,
-                }[kind],
-            )
+                def cf(change):
+                    return change.name == kind
+
+                kwargs = {"filter": tf} if scope == "table" else {"filter_change": cf}
+
+                counter = self.db.total_changes()
+                apsw.Changeset.apply(changeset, self.db, **kwargs)
+                self.assertEqual(
+                    self.db.total_changes() - counter,
+                    {
+                        "insert": 1,
+                        "delete": 1,
+                        "update": 3,
+                    }[kind],
+                )
 
         # invert above
         apsw.Changeset.apply(
@@ -667,11 +676,21 @@ class Session(unittest.TestCase):
 
         # filter error - we can't report them to SQLite but the filter should
         # have returned false and no changes made
-        for tf in (lambda x, y, z: True, lambda x: 1 / 0):
-            self.assertRaises((TypeError, ZeroDivisionError), apsw.Changeset.apply, changeset, self.db, filter=tf)
+        for err in (lambda x, y, z: True, lambda x: 1 / 0):
+            self.assertRaises((TypeError, ZeroDivisionError), apsw.Changeset.apply, changeset, self.db, filter=err)
             # no changes should have happened because we returned
             # false in the filter due to the error
             self.checkDbIdentical(self.db, db2)
+
+            # repeat with filter_change
+            self.assertRaises(
+                (TypeError, ZeroDivisionError), apsw.Changeset.apply, changeset, self.db, filter_change=err
+            )
+            self.checkDbIdentical(self.db, db2)
+
+        self.assertRaises(
+            ValueError, apsw.Changeset.apply, changeset, self.db, filter=lambda x: 1 / 0, filter_change=lambda x: 1 / 0
+        )
 
         def handler(*args):
             nonlocal handler_return
