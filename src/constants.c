@@ -100,8 +100,9 @@ add_apsw_constants(PyObject *module)
 
     /* Checkpoint Mode Values */
     the_dict = Py_BuildValue(
-        "{siissiissiissiis}",
+        "{siissiissiissiissiis}",
         "SQLITE_CHECKPOINT_FULL", SQLITE_CHECKPOINT_FULL, SQLITE_CHECKPOINT_FULL, "SQLITE_CHECKPOINT_FULL",
+        "SQLITE_CHECKPOINT_NOOP", SQLITE_CHECKPOINT_NOOP, SQLITE_CHECKPOINT_NOOP, "SQLITE_CHECKPOINT_NOOP",
         "SQLITE_CHECKPOINT_PASSIVE", SQLITE_CHECKPOINT_PASSIVE, SQLITE_CHECKPOINT_PASSIVE, "SQLITE_CHECKPOINT_PASSIVE",
         "SQLITE_CHECKPOINT_RESTART", SQLITE_CHECKPOINT_RESTART, SQLITE_CHECKPOINT_RESTART, "SQLITE_CHECKPOINT_RESTART",
         "SQLITE_CHECKPOINT_TRUNCATE", SQLITE_CHECKPOINT_TRUNCATE, SQLITE_CHECKPOINT_TRUNCATE, "SQLITE_CHECKPOINT_TRUNCATE");
@@ -261,6 +262,28 @@ add_apsw_constants(PyObject *module)
         return -1;
     }
 
+#ifdef SQLITE_ENABLE_CARRAY
+    /* Datatypes for the CARRAY table-valued funtion */
+    the_dict = Py_BuildValue(
+        "{siissiissiissiissiis}",
+        "SQLITE_CARRAY_BLOB", SQLITE_CARRAY_BLOB, SQLITE_CARRAY_BLOB, "SQLITE_CARRAY_BLOB",
+        "SQLITE_CARRAY_DOUBLE", SQLITE_CARRAY_DOUBLE, SQLITE_CARRAY_DOUBLE, "SQLITE_CARRAY_DOUBLE",
+        "SQLITE_CARRAY_INT32", SQLITE_CARRAY_INT32, SQLITE_CARRAY_INT32, "SQLITE_CARRAY_INT32",
+        "SQLITE_CARRAY_INT64", SQLITE_CARRAY_INT64, SQLITE_CARRAY_INT64, "SQLITE_CARRAY_INT64",
+        "SQLITE_CARRAY_TEXT", SQLITE_CARRAY_TEXT, SQLITE_CARRAY_TEXT, "SQLITE_CARRAY_TEXT");
+    if (!the_dict)
+    {
+        assert(PyErr_Occurred());
+        return -1;
+    }
+    if (PyModule_AddObject(module, "mapping_carray", the_dict))
+    {
+        assert(PyErr_Occurred());
+        Py_DECREF(the_dict);
+        return -1;
+    }
+#endif /* SQLITE_ENABLE_CARRAY */
+
     /* Device Characteristics */
     the_dict = Py_BuildValue(
         "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
@@ -294,7 +317,7 @@ add_apsw_constants(PyObject *module)
 
     /* Extended Result Codes */
     the_dict = Py_BuildValue(
-        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
+        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
         "SQLITE_ABORT_ROLLBACK", SQLITE_ABORT_ROLLBACK, SQLITE_ABORT_ROLLBACK, "SQLITE_ABORT_ROLLBACK",
         "SQLITE_AUTH_USER", SQLITE_AUTH_USER, SQLITE_AUTH_USER, "SQLITE_AUTH_USER",
         "SQLITE_BUSY_RECOVERY", SQLITE_BUSY_RECOVERY, SQLITE_BUSY_RECOVERY, "SQLITE_BUSY_RECOVERY",
@@ -321,15 +344,20 @@ add_apsw_constants(PyObject *module)
         "SQLITE_CORRUPT_INDEX", SQLITE_CORRUPT_INDEX, SQLITE_CORRUPT_INDEX, "SQLITE_CORRUPT_INDEX",
         "SQLITE_CORRUPT_SEQUENCE", SQLITE_CORRUPT_SEQUENCE, SQLITE_CORRUPT_SEQUENCE, "SQLITE_CORRUPT_SEQUENCE",
         "SQLITE_CORRUPT_VTAB", SQLITE_CORRUPT_VTAB, SQLITE_CORRUPT_VTAB, "SQLITE_CORRUPT_VTAB",
+        "SQLITE_ERROR_KEY", SQLITE_ERROR_KEY, SQLITE_ERROR_KEY, "SQLITE_ERROR_KEY",
         "SQLITE_ERROR_MISSING_COLLSEQ", SQLITE_ERROR_MISSING_COLLSEQ, SQLITE_ERROR_MISSING_COLLSEQ, "SQLITE_ERROR_MISSING_COLLSEQ",
+        "SQLITE_ERROR_RESERVESIZE", SQLITE_ERROR_RESERVESIZE, SQLITE_ERROR_RESERVESIZE, "SQLITE_ERROR_RESERVESIZE",
         "SQLITE_ERROR_RETRY", SQLITE_ERROR_RETRY, SQLITE_ERROR_RETRY, "SQLITE_ERROR_RETRY",
         "SQLITE_ERROR_SNAPSHOT", SQLITE_ERROR_SNAPSHOT, SQLITE_ERROR_SNAPSHOT, "SQLITE_ERROR_SNAPSHOT",
+        "SQLITE_ERROR_UNABLE", SQLITE_ERROR_UNABLE, SQLITE_ERROR_UNABLE, "SQLITE_ERROR_UNABLE",
         "SQLITE_IOERR_ACCESS", SQLITE_IOERR_ACCESS, SQLITE_IOERR_ACCESS, "SQLITE_IOERR_ACCESS",
         "SQLITE_IOERR_AUTH", SQLITE_IOERR_AUTH, SQLITE_IOERR_AUTH, "SQLITE_IOERR_AUTH",
+        "SQLITE_IOERR_BADKEY", SQLITE_IOERR_BADKEY, SQLITE_IOERR_BADKEY, "SQLITE_IOERR_BADKEY",
         "SQLITE_IOERR_BEGIN_ATOMIC", SQLITE_IOERR_BEGIN_ATOMIC, SQLITE_IOERR_BEGIN_ATOMIC, "SQLITE_IOERR_BEGIN_ATOMIC",
         "SQLITE_IOERR_BLOCKED", SQLITE_IOERR_BLOCKED, SQLITE_IOERR_BLOCKED, "SQLITE_IOERR_BLOCKED",
         "SQLITE_IOERR_CHECKRESERVEDLOCK", SQLITE_IOERR_CHECKRESERVEDLOCK, SQLITE_IOERR_CHECKRESERVEDLOCK, "SQLITE_IOERR_CHECKRESERVEDLOCK",
         "SQLITE_IOERR_CLOSE", SQLITE_IOERR_CLOSE, SQLITE_IOERR_CLOSE, "SQLITE_IOERR_CLOSE",
+        "SQLITE_IOERR_CODEC", SQLITE_IOERR_CODEC, SQLITE_IOERR_CODEC, "SQLITE_IOERR_CODEC",
         "SQLITE_IOERR_COMMIT_ATOMIC", SQLITE_IOERR_COMMIT_ATOMIC, SQLITE_IOERR_COMMIT_ATOMIC, "SQLITE_IOERR_COMMIT_ATOMIC",
         "SQLITE_IOERR_CONVPATH", SQLITE_IOERR_CONVPATH, SQLITE_IOERR_CONVPATH, "SQLITE_IOERR_CONVPATH",
         "SQLITE_IOERR_CORRUPTFS", SQLITE_IOERR_CORRUPTFS, SQLITE_IOERR_CORRUPTFS, "SQLITE_IOERR_CORRUPTFS",
@@ -804,7 +832,7 @@ add_apsw_constants(PyObject *module)
 
     /* Status Parameters for database connections */
     the_dict = Py_BuildValue(
-        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
+        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
         "SQLITE_DBSTATUS_CACHE_HIT", SQLITE_DBSTATUS_CACHE_HIT, SQLITE_DBSTATUS_CACHE_HIT, "SQLITE_DBSTATUS_CACHE_HIT",
         "SQLITE_DBSTATUS_CACHE_MISS", SQLITE_DBSTATUS_CACHE_MISS, SQLITE_DBSTATUS_CACHE_MISS, "SQLITE_DBSTATUS_CACHE_MISS",
         "SQLITE_DBSTATUS_CACHE_SPILL", SQLITE_DBSTATUS_CACHE_SPILL, SQLITE_DBSTATUS_CACHE_SPILL, "SQLITE_DBSTATUS_CACHE_SPILL",
@@ -818,7 +846,8 @@ add_apsw_constants(PyObject *module)
         "SQLITE_DBSTATUS_LOOKASIDE_USED", SQLITE_DBSTATUS_LOOKASIDE_USED, SQLITE_DBSTATUS_LOOKASIDE_USED, "SQLITE_DBSTATUS_LOOKASIDE_USED",
         "SQLITE_DBSTATUS_MAX", SQLITE_DBSTATUS_MAX, SQLITE_DBSTATUS_MAX, "SQLITE_DBSTATUS_MAX",
         "SQLITE_DBSTATUS_SCHEMA_USED", SQLITE_DBSTATUS_SCHEMA_USED, SQLITE_DBSTATUS_SCHEMA_USED, "SQLITE_DBSTATUS_SCHEMA_USED",
-        "SQLITE_DBSTATUS_STMT_USED", SQLITE_DBSTATUS_STMT_USED, SQLITE_DBSTATUS_STMT_USED, "SQLITE_DBSTATUS_STMT_USED");
+        "SQLITE_DBSTATUS_STMT_USED", SQLITE_DBSTATUS_STMT_USED, SQLITE_DBSTATUS_STMT_USED, "SQLITE_DBSTATUS_STMT_USED",
+        "SQLITE_DBSTATUS_TEMPBUF_SPILL", SQLITE_DBSTATUS_TEMPBUF_SPILL, SQLITE_DBSTATUS_TEMPBUF_SPILL, "SQLITE_DBSTATUS_TEMPBUF_SPILL");
     if (!the_dict)
     {
         assert(PyErr_Occurred());
@@ -987,6 +1016,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_CANTOPEN_NOTEMPDIR", SQLITE_CANTOPEN_NOTEMPDIR)
         || PyModule_AddIntConstant(module, "SQLITE_CANTOPEN_SYMLINK", SQLITE_CANTOPEN_SYMLINK)
         || PyModule_AddIntConstant(module, "SQLITE_CHECKPOINT_FULL", SQLITE_CHECKPOINT_FULL)
+        || PyModule_AddIntConstant(module, "SQLITE_CHECKPOINT_NOOP", SQLITE_CHECKPOINT_NOOP)
         || PyModule_AddIntConstant(module, "SQLITE_CHECKPOINT_PASSIVE", SQLITE_CHECKPOINT_PASSIVE)
         || PyModule_AddIntConstant(module, "SQLITE_CHECKPOINT_RESTART", SQLITE_CHECKPOINT_RESTART)
         || PyModule_AddIntConstant(module, "SQLITE_CHECKPOINT_TRUNCATE", SQLITE_CHECKPOINT_TRUNCATE)
@@ -1083,6 +1113,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_DBSTATUS_MAX", SQLITE_DBSTATUS_MAX)
         || PyModule_AddIntConstant(module, "SQLITE_DBSTATUS_SCHEMA_USED", SQLITE_DBSTATUS_SCHEMA_USED)
         || PyModule_AddIntConstant(module, "SQLITE_DBSTATUS_STMT_USED", SQLITE_DBSTATUS_STMT_USED)
+        || PyModule_AddIntConstant(module, "SQLITE_DBSTATUS_TEMPBUF_SPILL", SQLITE_DBSTATUS_TEMPBUF_SPILL)
         || PyModule_AddIntConstant(module, "SQLITE_DELETE", SQLITE_DELETE)
         || PyModule_AddIntConstant(module, "SQLITE_DENY", SQLITE_DENY)
         || PyModule_AddIntConstant(module, "SQLITE_DETACH", SQLITE_DETACH)
@@ -1100,9 +1131,12 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_DROP_VTABLE", SQLITE_DROP_VTABLE)
         || PyModule_AddIntConstant(module, "SQLITE_EMPTY", SQLITE_EMPTY)
         || PyModule_AddIntConstant(module, "SQLITE_ERROR", SQLITE_ERROR)
+        || PyModule_AddIntConstant(module, "SQLITE_ERROR_KEY", SQLITE_ERROR_KEY)
         || PyModule_AddIntConstant(module, "SQLITE_ERROR_MISSING_COLLSEQ", SQLITE_ERROR_MISSING_COLLSEQ)
+        || PyModule_AddIntConstant(module, "SQLITE_ERROR_RESERVESIZE", SQLITE_ERROR_RESERVESIZE)
         || PyModule_AddIntConstant(module, "SQLITE_ERROR_RETRY", SQLITE_ERROR_RETRY)
         || PyModule_AddIntConstant(module, "SQLITE_ERROR_SNAPSHOT", SQLITE_ERROR_SNAPSHOT)
+        || PyModule_AddIntConstant(module, "SQLITE_ERROR_UNABLE", SQLITE_ERROR_UNABLE)
         || PyModule_AddIntConstant(module, "SQLITE_FAIL", SQLITE_FAIL)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_BEGIN_ATOMIC_WRITE", SQLITE_FCNTL_BEGIN_ATOMIC_WRITE)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_BLOCK_ON_CONNECT", SQLITE_FCNTL_BLOCK_ON_CONNECT)
@@ -1193,10 +1227,12 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR", SQLITE_IOERR)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_ACCESS", SQLITE_IOERR_ACCESS)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_AUTH", SQLITE_IOERR_AUTH)
+        || PyModule_AddIntConstant(module, "SQLITE_IOERR_BADKEY", SQLITE_IOERR_BADKEY)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_BEGIN_ATOMIC", SQLITE_IOERR_BEGIN_ATOMIC)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_BLOCKED", SQLITE_IOERR_BLOCKED)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_CHECKRESERVEDLOCK", SQLITE_IOERR_CHECKRESERVEDLOCK)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_CLOSE", SQLITE_IOERR_CLOSE)
+        || PyModule_AddIntConstant(module, "SQLITE_IOERR_CODEC", SQLITE_IOERR_CODEC)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_COMMIT_ATOMIC", SQLITE_IOERR_COMMIT_ATOMIC)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_CONVPATH", SQLITE_IOERR_CONVPATH)
         || PyModule_AddIntConstant(module, "SQLITE_IOERR_CORRUPTFS", SQLITE_IOERR_CORRUPTFS)
@@ -1350,6 +1386,13 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_VTAB_USES_ALL_SCHEMAS", SQLITE_VTAB_USES_ALL_SCHEMAS)
         || PyModule_AddIntConstant(module, "SQLITE_WARNING", SQLITE_WARNING)
         || PyModule_AddIntConstant(module, "SQLITE_WARNING_AUTOINDEX", SQLITE_WARNING_AUTOINDEX)
+#ifdef SQLITE_ENABLE_CARRAY
+        || PyModule_AddIntConstant(module, "SQLITE_CARRAY_BLOB", SQLITE_CARRAY_BLOB)
+        || PyModule_AddIntConstant(module, "SQLITE_CARRAY_DOUBLE", SQLITE_CARRAY_DOUBLE)
+        || PyModule_AddIntConstant(module, "SQLITE_CARRAY_INT32", SQLITE_CARRAY_INT32)
+        || PyModule_AddIntConstant(module, "SQLITE_CARRAY_INT64", SQLITE_CARRAY_INT64)
+        || PyModule_AddIntConstant(module, "SQLITE_CARRAY_TEXT", SQLITE_CARRAY_TEXT)
+#endif /* SQLITE_ENABLE_CARRAY */
 #ifdef SQLITE_ENABLE_SESSION
         || PyModule_AddIntConstant(module, "SQLITE_CHANGESETAPPLY_FKNOACTION", SQLITE_CHANGESETAPPLY_FKNOACTION)
         || PyModule_AddIntConstant(module, "SQLITE_CHANGESETAPPLY_IGNORENOOP", SQLITE_CHANGESETAPPLY_IGNORENOOP)
@@ -1368,7 +1411,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_SESSION_OBJCONFIG_ROWID", SQLITE_SESSION_OBJCONFIG_ROWID)
         || PyModule_AddIntConstant(module, "SQLITE_SESSION_OBJCONFIG_SIZE", SQLITE_SESSION_OBJCONFIG_SIZE)
 #endif /* SQLITE_ENABLE_SESSION */
-)
+    )
         return -1;
 
     assert(!PyErr_Occurred());
