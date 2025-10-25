@@ -699,12 +699,9 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
 #ifdef SQLITE_ENABLE_CARRAY
   else if (PyObject_TypeCheck(obj, &CArrayBindType) == 1)
   {
-    /* This is decref in carray_bind_destructor and ensures the buffer
-       lives at least as long as SQLite wants it to */
-    Py_INCREF(obj);
     CArrayBind *cab = (CArrayBind *)obj;
     res = sqlite3_carray_bind(self->statement->vdbestatement, arg, cab->aData, cab->nData, cab->mFlags,
-                              carray_bind_destructor);
+                              SQLITE_TRANSIENT);
   }
 #endif
   else if (CONVERT_BINDING)
@@ -2206,9 +2203,10 @@ PyObjectBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 }
 
 static void
-PyObjectBind_finalize(PyObject *self)
+PyObjectBind_dealloc(PyObject *self)
 {
   Py_CLEAR(((PyObjectBind *)self)->object);
+  Py_TpFree(self);
 }
 
 static PyTypeObject PyObjectBindType = {
@@ -2216,7 +2214,7 @@ static PyTypeObject PyObjectBindType = {
   .tp_basicsize = sizeof(PyObjectBind),
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
   .tp_init = PyObjectBind_init,
-  .tp_finalize = PyObjectBind_finalize,
+  .tp_dealloc = PyObjectBind_dealloc,
   .tp_new = PyType_GenericNew,
   .tp_doc = Apsw_pyobject_DOC,
 };

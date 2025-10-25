@@ -1,60 +1,8 @@
 
-/* The destructor API does a callback on the void * passed in which means
-   we can't get back to the PyObject that owns it.  This array is
-   used to store the mapping.  Hopefully it can be deleted at some point.  */
-
-typedef struct
-{
-  void *aData;
-  PyObject *owner;
-} carray_pyobject_owner;
-
-static carray_pyobject_owner *carray_owner_array = 0;
-size_t carray_owner_array_length = 0;
-
-/* returns 0 on success, -1 on failure */
-static int
-carray_add_owner(void *aData, PyObject *owner)
-{
-  assert(aData && owner);
-
-  for (size_t i = 0; i < carray_owner_array_length; i++)
-  {
-    if (!carray_owner_array[i].aData)
-    {
-      carray_owner_array[i].aData = aData;
-      carray_owner_array[i].owner = owner;
-      return 0;
-    }
-  }
-  carray_pyobject_owner *new_array
-      = realloc(carray_owner_array, sizeof(carray_pyobject_owner) * (carray_owner_array_length + 1));
-  if (!new_array)
-    return -1;
-  carray_owner_array = new_array;
-  carray_owner_array[carray_owner_array_length].aData = aData;
-  carray_owner_array[carray_owner_array_length].owner = owner;
-  carray_owner_array_length++;
-  return 0;
-}
-
-/* returns the owner and clears the entry - ie can only be called once */
-static PyObject *
-carray_get_owner(void *aData)
-{
-  for (size_t i = 0; i < carray_owner_array_length; i++)
-  {
-    if (carray_owner_array[i].aData == aData)
-    {
-      PyObject *owner = carray_owner_array[i].owner;
-
-      carray_owner_array[i].aData = 0;
-      carray_owner_array[i].owner = 0;
-      return owner;
-    }
-  }
-  Py_UNREACHABLE();
-}
+/* The destructor API does a callback on the void * passed in, but we
+could have multiple PyObject owners referencing the same array so the
+data always has to be duplicated when passed to sqlite3_carray_bind/.
+   */
 
 typedef struct
 {
@@ -110,36 +58,35 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   self->aData = self->view.buf;
   self->nData = self->view.len / 8;
   self->mFlags = flags;
-
-  if (carray_add_owner(self->aData, (PyObject *)self))
-  {
-    PyErr_NoMemory();
-    goto error;
-  }
-
   return 0;
+
 error:
   if (res == 0)
     PyBuffer_Release(&self->view);
+  self->aData = 0;
   return -1;
 }
 
 static void
-carray_bind_destructor(void *value)
+CArrayBind_dealloc(PyObject *self_)
 {
-  PyGILState_STATE gilstate = PyGILState_Ensure();
-  CArrayBind *self = (CArrayBind *)carray_get_owner(value);
-  PyBuffer_Release(&self->view);
-  /* undo incref in APSWCursor_dobinding */
-  Py_DECREF((PyObject *)self);
-  PyGILState_Release(gilstate);
+
+  CArrayBind *self = (CArrayBind *)self_;
+
+  if (self->aData)
+  {
+    PyBuffer_Release(&self->view);
+    self->aData = 0;
+  }
+  Py_TpFree(self_);
 }
 
 static PyTypeObject CArrayBindType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.carray",
   .tp_basicsize = sizeof(CArrayBind),
-  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+  .tp_flags = Py_TPFLAGS_DEFAULT,
   .tp_init = CArrayBind_init,
   .tp_new = PyType_GenericNew,
+  .tp_dealloc = CArrayBind_dealloc,
   .tp_doc = Apsw_carray_DOC,
 };

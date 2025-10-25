@@ -1069,9 +1069,6 @@ static PyObject *
 apsw_fini(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   fini_apsw_strings();
-#ifdef SQLITE_ENABLE_CARRAY
-  free(carray_owner_array);
-#endif
   Py_RETURN_NONE;
 }
 #endif
