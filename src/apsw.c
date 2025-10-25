@@ -291,7 +291,9 @@ static int allow_missing_dict_bindings = 0;
 /** .. method:: carray(object: Buffer, *, start: int = 0, stop: int = -1, flags: int = -1)
 
   Indicates a Python object is being provided as a runtime array for the
-  `Carray extension <https://sqlite.org/carray.html>`__.
+  `Carray extension <https://sqlite.org/carray.html>`__.  This is useful if you
+  need a large number of int or float available during a query, as they will
+  be used without calling back into Python code or acquiring the GIL.
 
   .. code-block:: python
 
@@ -301,19 +303,20 @@ static int allow_missing_dict_bindings = 0;
     ids = array.array("l", [1, 73, 94567, 62])
 
     # get records matching those ids
-    for row in con.execute("SELECT * FROM record WHERE record.id in CARRAY(?)",
+    for row in con.execute("SELECT * FROM record WHERE record.id IN CARRAY(?)",
       apsw.carray(ids)):
       print(row)
 
   :param object: Any object that implements the buffer protocol as
      a single contiguous binary data like :class:`bytes`, :class:`bytearray`,
-     :class:`array.array`, numpy etc.
+     :class:`array.array`, numpy.array etc.
   :param start: Index of the first entry to bind
   :param stop: Index to stop at - ie one beyond the last entry bound.  Default
-      is all remaining members.  There is a limit of 2 billion.
+      is all remaining members.  There is a limit of 2 billion, and a minimum
+      of 1.
   :param flags: Indicates if the data is 32/64 bit int, or 64 bit double (floating point).
-      If not supplied then the buffer format is examined and accepted if native byte order.
-      You can see the `format string <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`
+      If not supplied then the buffer format is detected.
+      You can see the `format string <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`__
       with :code:`memoryview(object).format`.  Alternately provide a :data:`constant <apsw.mapping_carray>`
       like :code:`apsw.SQLITE_CARRAY_INT32`
 

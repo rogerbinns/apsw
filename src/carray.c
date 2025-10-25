@@ -55,8 +55,76 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
     goto error;
   }
 
-  self->aData = self->view.buf;
-  self->nData = self->view.len / 8;
+  if (flags == -1)
+  {
+    /* try to auto-detect format */
+    if (0 == strcmp(self->view.format, "i"))
+      flags = SQLITE_CARRAY_INT32;
+    else if (0 == strcmp(self->view.format, "l"))
+      flags = SQLITE_CARRAY_INT64;
+    else if (0 == strcmp(self->view.format, "d"))
+      flags = SQLITE_CARRAY_DOUBLE;
+    else
+    {
+      PyErr_Format(PyExc_ValueError, "unable to detect array type from format \"%s\"", self->view.format);
+      goto error;
+    }
+  }
+
+  switch (flags)
+  {
+  case SQLITE_CARRAY_INT32:
+  case SQLITE_CARRAY_INT64:
+  case SQLITE_CARRAY_DOUBLE:
+    break;
+  default:
+    PyErr_Format(PyExc_ValueError, "Unsupported flags value %d", flags);
+    goto error;
+  }
+
+  const unsigned item_size = (flags == SQLITE_CARRAY_INT32) ? 4 : 8;
+  if (self->view.len % item_size)
+  {
+    PyErr_Format(PyExc_ValueError, "Array size %lld bytes is not a multiple of item size %u bytes", self->view.len,
+                 item_size);
+    goto error;
+  }
+
+  size_t nitems = self->view.len / item_size;
+  if (start > nitems)
+  {
+    PyErr_Format(PyExc_ValueError, "Start %lld is beyond end of %lld item array", start, nitems);
+    goto error;
+  }
+  if (stop < 0)
+    stop = nitems;
+  if (stop > nitems)
+  {
+    PyErr_Format(PyExc_ValueError, "Stop %lld is beyond end of %lld item array", stop, nitems);
+    goto error;
+  }
+
+  if (stop < start)
+  {
+    PyErr_Format(PyExc_ValueError, "Stop %lld is before start %lld", stop, start);
+    goto error;
+  }
+
+  nitems = stop - start;
+  if (!nitems)
+  {
+    PyErr_Format(PyExc_ValueError, "CARRAY can't work with a zero item array");
+    goto error;
+  }
+
+  if (nitems >= INT32_MAX)
+  {
+    PyErr_Format(PyExc_ValueError, "CARRAY supports a maximum of 2 billion items");
+    goto error;
+  }
+
+  self->aData = ((uint8_t *)self->view.buf) + (start * item_size);
+  self->nData = nitems;
   self->mFlags = flags;
   return 0;
 
