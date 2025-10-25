@@ -122,6 +122,22 @@ per_item = """\
         return -1;
     }"""
 
+def get_ifdef(name):
+    for title, values in constants.items():
+        if name in values:
+            mapping = title_to_mapping[title]
+            if mapping:
+                if mapping.startswith("session_") and name in constants[title]:
+                    return "SQLITE_ENABLE_SESSION"
+                if mapping == "carray":
+                    return "SQLITE_ENABLE_CARRAY"
+
+    return None
+
+def constant_sort_key(name):
+    return (get_ifdef(name) or "", name)
+
+
 op: list[str] = [header]
 
 top_level: set[str] = set()
@@ -129,10 +145,11 @@ top_level: set[str] = set()
 for title, cons in sorted(constants.items()):
     if not title_to_mapping[title]:
         continue
-    is_session = title_to_mapping[title].startswith("session_")
 
-    if is_session:
-        op.append("#ifdef SQLITE_ENABLE_SESSION")
+    ifdef = get_ifdef(cons[-1])
+
+    if ifdef:
+        op.append(f"#ifdef {ifdef}")
     op.append(f"    /* { title } */")
     op.append("    the_dict = Py_BuildValue(")
     op.append('        "{' + "siis" * len(cons) + '}",')
@@ -141,36 +158,26 @@ for title, cons in sorted(constants.items()):
         op.append(f'        "{ c }", { c }, { c }, "{ c }",')
     op[-1] = op[-1].rstrip(",") + ");"
     op.append(per_item.replace("NAME", title_to_mapping[title]))
-    if is_session:
-        op.append("#endif /* SQLITE_ENABLE_SESSION */")
+    if ifdef:
+        op.append(f"#endif /* {ifdef} */")
     op.append("")
 
 
-def is_session_constant(name):
-    for title, mapping in title_to_mapping.items():
-        if mapping is None:
-            continue
-        if mapping.startswith("session_") and name in constants[title]:
-            return True
-    return False
-
-def constant_sort_key(name):
-    if is_session_constant(name):
-        # makes session constants last
-        return (1, name)
-    return (0, name)
-
-
 op.append("    if (")
-in_session=False
+last_ifdef = None
 for i, c in enumerate(sorted(top_level, key=constant_sort_key)):
-    if not in_session and is_session_constant(c):
-        op.append("#ifdef SQLITE_ENABLE_SESSION")
-        in_session = True
+    ifdef = get_ifdef(c)
+    if ifdef != last_ifdef:
+        if last_ifdef:
+            op.append(f"#endif /* {last_ifdef} */")
+        if ifdef:
+            op.append(f"#ifdef {ifdef}")
+        last_ifdef = ifdef
     sor = "|| " if i else ""
     op.append(f'        { sor }PyModule_AddIntConstant(module, "{ c }", { c })')
-op.append("#endif /* SQLITE_ENABLE_SESSION */\n")
-op[-1] += ")"
+op.append(f"#endif /* {last_ifdef} */")
+op.append("    )")
+
 op.append("        return -1;")
 
 op.append(trailer)
