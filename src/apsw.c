@@ -288,12 +288,13 @@ static int allow_missing_dict_bindings = 0;
   :ref:`runtime value <pyobject>`.
 */
 
-/** .. method:: carray(object: Buffer, *, start: int = 0, stop: int = -1, flags: int = -1)
+/** .. method:: carray(object: Buffer | tuple[str] | tuple[Buffer], *, start: int = 0, stop: int = -1, flags: int = -1)
 
   Indicates a Python object is being provided as a runtime array for the
   `Carray extension <https://sqlite.org/carray.html>`__.  This is useful if you
-  need a large number of int or float available during a query, as they will
-  be used without calling back into Python code or acquiring the GIL.
+  need a number of numbers (int or float), strings, or blobs available during a query,
+  You can avoid temporary tables, formatting SQL with corresponding numbers of ``?``,
+  and the array will be used without calling back into Python code or acquiring the GIL.
 
   .. code-block:: python
 
@@ -307,14 +308,20 @@ static int allow_missing_dict_bindings = 0;
       apsw.carray(ids)):
       print(row)
 
-  :param object: Any object that implements the buffer protocol as
+  :param object: For numbers, any object that implements the buffer protocol as
      a single contiguous binary data like :class:`bytes`, :class:`bytearray`,
      :class:`array.array`, numpy.array etc.
+
+     Otherwise it should be a tuple of strings, or a tuple of binary data
+     objects.
+
   :param start: Index of the first entry to bind
   :param stop: Index to stop at - ie one beyond the last entry bound.  Default
       is all remaining members.  There is a limit of 2 billion, and a minimum
       of 1.
-  :param flags: The numeric type, defaulting to auto-detect from the buffer
+  :param flags: Default auto detect.
+
+      For numbers, detection is done from the buffer
       `format code <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`__.
       Use :code:`memoryview(object).format` to see it..
 
@@ -333,6 +340,10 @@ static int allow_missing_dict_bindings = 0;
 
       You can explicitly provide the type such as :code:`apsw.SQLITE_CARRAY_INT32`.  If
       it is incorrect then the values will be nonsense.
+
+      If using a tuple of string or blobs, you can specify :code:`apsw.SQLITE_CARRAY_TEXT`
+      and :code:`apsw.SQLITE_CARRAY_BLOB` respectively, but they would be detected anyway.
+      A wrong value will fail.
 
   Carray support is only present if APSW was compiled with ``SQLITE_ENABLE_CARRAY`` such as
   PyPi builds.

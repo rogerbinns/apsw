@@ -478,6 +478,20 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     argp_optindex++;                                                                                                   \
   } while (0)
 
+/* carray accepts buffer, tuple[str], tuple[buffer] but we only check tuple contents in the later code*/
+#define ARG_carray(varname)                                                                                            \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!PyObject_CheckBuffer(useargs[argp_optindex]) && !PyTuple_CheckExact(useargs[argp_optindex]))                  \
+    {                                                                                                                  \
+      PyErr_Format(PyExc_TypeError, "Expected tuple or Buffer compatible, not %s",                                     \
+                   Py_TypeName(useargs[argp_optindex]));                                                               \
+      goto param_error;                                                                                                \
+    }                                                                                                                  \
+    varname = useargs[argp_optindex];                                                                                  \
+    argp_optindex++;                                                                                                   \
+  } while (0)
+
 /* 1 is added to the size of fast_args to ensure the vla is always at
    least 1 item long.  If it ends up as zero then sanitizers complain. */
 #define ARG_CONVERT_VARARGS_TO_FASTCALL                                                                                \
