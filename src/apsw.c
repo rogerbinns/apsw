@@ -314,11 +314,25 @@ static int allow_missing_dict_bindings = 0;
   :param stop: Index to stop at - ie one beyond the last entry bound.  Default
       is all remaining members.  There is a limit of 2 billion, and a minimum
       of 1.
-  :param flags: Indicates if the data is 32/64 bit int, or 64 bit double (floating point).
-      If not supplied then the buffer format is detected.
-      You can see the `format string <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`__
-      with :code:`memoryview(object).format`.  Alternately provide a :data:`constant <apsw.mapping_carray>`
-      like :code:`apsw.SQLITE_CARRAY_INT32`
+  :param flags: The numeric type, defaulting to auto-detect from the buffer
+      `format code <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`__.
+      Use :code:`memoryview(object).format` to see it..
+
+      .. list-table::
+        :widths: auto
+        :header-rows: 1
+
+        * - Format
+          - Flag
+        * - ``i``
+          - ``SQLITE_CARRAY_INT32``
+        * - ``l``
+          - ``SQLITE_CARRAY_INT64``
+        * - ``d``
+          - ``SQLITE_CARRAY_DOUBLE``
+
+      You can explicitly provide the type such as :code:`apsw.SQLITE_CARRAY_INT32`.  If
+      it is incorrect then the values will be nonsense.
 
   Carray support is only present if APSW was compiled with ``SQLITE_ENABLE_CARRAY`` such as
   PyPi builds.
