@@ -44,13 +44,6 @@ class CArray(unittest.TestCase):
 
         # non-contiguous buffer
         self.assertRaises(BufferError, apsw.carray, memoryview(arr)[::2])
-        # contiguous but not 1 dimensional
-        self.assertRaisesRegex(
-            ValueError,
-            ".*object is not contiguous scalar array.*",
-            apsw.carray,
-            memoryview(b"abcd").cast("b", shape=[2, 2]),
-        )
 
         # auto-detection
         numbers = tuple(range(20))

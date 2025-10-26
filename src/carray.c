@@ -43,11 +43,6 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   res = PyObject_GetBuffer(object, &self->view, PyBUF_FORMAT | PyBUF_C_CONTIGUOUS);
   if (res != 0)
     goto error;
-  if (!PyBuffer_IsContiguous(&self->view, 'C') || self->view.ndim != 1)
-  {
-    PyErr_Format(PyExc_ValueError, "object is not contiguous scalar array");
-    goto error;
-  }
 
   if (flags == -1)
   {
