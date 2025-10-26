@@ -301,7 +301,7 @@ static int allow_missing_dict_bindings = 0;
     import array
 
     # packed array of 32 bit int
-    ids = array.array("l", [1, 73, 94567, 62])
+    ids = array.array("i", [1, 73, 94567, 62])
 
     # get records matching those ids
     for row in con.execute("SELECT * FROM record WHERE record.id IN CARRAY(?)",
