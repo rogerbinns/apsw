@@ -57,8 +57,10 @@ def convert_binding(
 def convert_jsonb(
     cursor: apsw.Cursor, column: int, value: bytes
 ) -> Any:
-    # Called when a blob is valid JSONB.You can decode
-    # it, or return it as is.
+    # Called when a blob is valid JSONB.  If you don't use blobs then
+    # this is all that is needed.  If you do use blobs then you can
+    # examine information from the cursor/query to decide, shown
+    # further down.
     return apsw.jsonb_decode(value)
 
 
@@ -75,7 +77,8 @@ example_data = {
 
 # Note how we can INSERT the data
 connection.execute(
-    "INSERT INTO items VALUES('orange', 'round', ?)", (example_data,)
+    "INSERT INTO items VALUES(?, ?, ?)",
+    ("orange", "round", example_data),
 )
 
 # And get it back

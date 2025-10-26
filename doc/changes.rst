@@ -15,7 +15,7 @@ APSW changes by version
 
 :ref:`JSON <jsontype>` can be used as though it is a native type of
 SQLite, with automatic conversion of Python objects on writing and
-reading.
+reading. (:doc:`example <example-json>`)
 
 :attr:`Connection.convert_binding` (and :attr:`Cursor.convert_binding`)
 callback to allow conversion of bindings when executing SQL.

@@ -54,7 +54,7 @@ Types
     :header-rows: 1
     :widths: auto
 
-    * - Type (JS)
+    * - Javascript
       - Python
       - Example
     * - null
@@ -94,7 +94,10 @@ Types
           {
             "description": "Orange",
             "price": 3.07,
-            "varieties": ["fall", {"long": "...", "short": 3443}]
+            "varieties": ["fall",
+                            {"long": "...",
+                             "short": 3443}
+                         ]
           }
 
 What is not in JSON
@@ -404,8 +407,10 @@ that does these steps.
 
   SQLite's binary JSON representation is stored as a binary blob in the
   database.  This is necessary because JSON text can't easily be
-  distinguished from other text, while a blob is far more
-  distinguishable.  SQLite operates on JSONB internally when using
+  distinguished from other text, while a blob is far less
+  ambiguous.
+
+  SQLite often operates on JSONB internally when using
   the `JSON functions <https://sqlite.org/json1.html>`__, and its
   ``json`` function can turn JSONB into JSON text format if needed.
 
