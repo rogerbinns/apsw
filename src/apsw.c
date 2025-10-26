@@ -292,21 +292,11 @@ static int allow_missing_dict_bindings = 0;
 
   Indicates a Python object is being provided as a runtime array for the
   `Carray extension <https://sqlite.org/carray.html>`__.  This is useful if you
-  need a number of numbers (int or float), strings, or blobs available during a query,
+  need many numbers (int or float), strings, or blobs available during a query,
   You can avoid temporary tables, formatting SQL with corresponding numbers of ``?``,
   and the array will be used without calling back into Python code or acquiring the GIL.
 
-  .. code-block:: python
-
-    import array
-
-    # packed array of 32 bit int
-    ids = array.array("i", [1, 73, 94567, 62])
-
-    # get records matching those ids
-    for row in con.execute("SELECT * FROM record WHERE record.id IN CARRAY(?)",
-      apsw.carray(ids)):
-      print(row)
+  See the :ref:`example <example_carray>`.
 
   :param object: For numbers, any object that implements the buffer protocol as
      a single contiguous binary data like :class:`bytes`, :class:`bytearray`,
@@ -314,11 +304,9 @@ static int allow_missing_dict_bindings = 0;
 
      Otherwise it should be a tuple of strings, or a tuple of binary data
      objects.
-
   :param start: Index of the first entry to bind
   :param stop: Index to stop at - ie one beyond the last entry bound.  Default
-      is all remaining members.  There is a limit of 2 billion, and a minimum
-      of 1.
+      is all remaining members.
   :param flags: Default auto detect.
 
       For numbers, detection is done from the buffer
@@ -345,8 +333,10 @@ static int allow_missing_dict_bindings = 0;
       and :code:`apsw.SQLITE_CARRAY_BLOB` respectively, but they would be detected anyway.
       A wrong value will fail.
 
-  Carray support is only present if APSW was compiled with ``SQLITE_ENABLE_CARRAY`` such as
-  PyPi builds.
+  .. note::
+
+    Carray support is only present if APSW was compiled with ``SQLITE_ENABLE_CARRAY`` such as
+    PyPi builds.  The array must have at least one member and at most 2 billion.
 */
 
 /** .. method:: sqlite_lib_version() -> str

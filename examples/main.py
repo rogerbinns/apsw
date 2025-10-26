@@ -103,13 +103,13 @@ for row in connection.execute("select * from point"):
 # a simple value
 event = "system started"
 # DO NOT DO THIS
-query = f"insert into log values(0, '{ event }')"
+query = f"insert into log values(0, '{event}')"
 print("query:", query)
 
 # BECAUSE ... a bad guy could provide a value like this
 event = "bad guy here') ; drop table important; -- comment"
 # which has effects like this
-query = f"insert into log values(0, '{ event }')"
+query = f"insert into log values(0, '{event}')"
 print("bad guy:", query)
 
 ### bindings_sequence: Bindings (sequence)
@@ -277,7 +277,7 @@ connection.row_trace = None
 
 def ilove7(*args: apsw.SQLiteValue) -> int:
     "A scalar function"
-    print(f"ilove7 got { args } but I love 7")
+    print(f"ilove7 got {args} but I love 7")
     return 7
 
 
@@ -489,7 +489,7 @@ class Point(apsw.ext.SQLiteTypeAdapter):
         self.y = y
 
     def __repr__(self) -> str:
-        return f"Point({ self.x }, { self.y })"
+        return f"Point({self.x}, {self.y})"
 
     def __eq__(self, other: object) -> bool:
         return (
@@ -500,7 +500,7 @@ class Point(apsw.ext.SQLiteTypeAdapter):
 
     def to_sqlite_value(self) -> str:
         # called to convert Point into something SQLite supports
-        return f"{ self.x };{ self.y }"
+        return f"{self.x};{self.y}"
 
     # This converter will be registered
     @classmethod
@@ -510,7 +510,7 @@ class Point(apsw.ext.SQLiteTypeAdapter):
 
 # Existing types
 def complex_to_sqlite_value(c: complex) -> str:
-    return f"{ c.real }+{ c.imag }"
+    return f"{c.real}+{c.imag}"
 
 
 def datetime_to_sqlite_value(dt: datetime.datetime) -> float:
@@ -561,7 +561,7 @@ print("inserted", test_data)
 print("querying data")
 for row in connection.execute("select * from conversion"):
     for i, value in enumerate(row):
-        print(f"column {i} = { value !r}")
+        print(f"column {i} = {value!r}")
 
 # clear registrar
 connection.cursor_factory = apsw.Cursor
@@ -657,7 +657,9 @@ with apsw.ext.query_limit(connection, timeout=0.2):
     ):
         pass
 
-print(f"After {time.monotonic() - start:.3f} seconds, we hit {number=}")
+print(
+    f"After {time.monotonic() - start:.3f} seconds, we hit {number=}"
+)
 
 # We used the default "no exception" exception.  Lets have an explicit exception.
 # with both row and time limits ...
@@ -941,7 +943,7 @@ def my_update_hook(
 ) -> None:
     op: str = apsw.mapping_authorizer_function[type]
     print(
-        f"Updated: { op } db { db_name }, table { table_name }, rowid { rowid }"
+        f"Updated: {op} db {db_name}, table {table_name}, rowid {rowid}"
     )
 
 
@@ -1191,7 +1193,7 @@ class ObfuscatedVFSFile(apsw.VFSFile):
             return super().xFileControl(op, ptr)
         # implement our own pragma
         p = apsw.VFSFcntlPragma(ptr)
-        print(f"pragma received { p.name } = { p.value }")
+        print(f"pragma received {p.name} = {p.value}")
         # what do we understand?
         if p.name == "my_custom_pragma":
             p.result = "orange"
@@ -1323,11 +1325,9 @@ print(output.getvalue())
 # for per connection statistics.
 
 current_usage, max_usage = apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
-print(f"SQLite memory usage { current_usage } max { max_usage }")
+print(f"SQLite memory usage {current_usage} max {max_usage}")
 schema_used, _ = connection.status(apsw.SQLITE_DBSTATUS_SCHEMA_USED)
-print(
-    f"{ schema_used } bytes used to store schema for this connection"
-)
+print(f"{schema_used} bytes used to store schema for this connection")
 
 ### trace_v2: Tracing
 # This shows using :meth:`Connection.trace_v2`
@@ -1424,7 +1424,9 @@ with apsw.ext.Trace(
 
     # pragma functions are virtual tables - see how many rows this processes even
     # though only one has 'pow'
-    connection.execute("SELECT narg FROM pragma_function_list WHERE name='pow'").get
+    connection.execute(
+        "SELECT narg FROM pragma_function_list WHERE name='pow'"
+    ).get
 
     # trigger that causes rollback
     connection.execute("""
@@ -1499,12 +1501,12 @@ con2 = apsw.Connection(connection.filename)
 # See values before change
 print("Before values")
 print(f'{connection.pragma("schema_version")=}')
-print(f'{connection.data_version()=}')
+print(f"{connection.data_version()=}")
 
 print("\nAfter values")
 # add to table from previous section
 con2.execute("insert into dummy values(1, 2, 3)")
-print(f'{connection.data_version()=}')
+print(f"{connection.data_version()=}")
 
 # and add a table.  changing an existing table definition etc also
 # bump the schema version

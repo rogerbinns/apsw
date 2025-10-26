@@ -54,7 +54,7 @@ It allows :meth:`binding single dimension packed arrays <apsw.carray>`
 of 32/64 bit integers, or 64 bit floats.  For example these can come
 from :mod:`array`, `numpy arrays
 <https://numpy.org/doc/stable/reference/generated/numpy.array.html>`__
-or binary data.
+or binary data.  See the :ref:`example <example_carray>`.
 
 ``SQLITE_SCM_`` constants (``BRANCH``, ``TAGS``, ``DATETIME``) are available
 on the module if built with the :attr:`amalgamation <using_amalgamation>`.
