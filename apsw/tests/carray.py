@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+
+from __future__ import annotations
+
+# This testing code deliberately does nasty stuff so mypy isn't helpful
+# mypy: ignore-errors
+# type: ignore
+
+import array
+import random
+import unittest
+
+import apsw
+
+
+class CArray(unittest.TestCase):
+    def setUp(self):
+        self.db = apsw.Connection(":memory:")
+
+    def tearDown(self):
+        self.db.close()
+        del self.db
+        for c in apsw.connections():
+            c.close()
+
+    def testBasics(self):
+        # does it work?
+        values = [random.randint(-100, 100) for _ in range(1024)]
+
+        arr = array.array("l", values)
+
+        self.assertEqual(max(values), self.db.execute("select max(value) from carray(?)", (apsw.carray(arr),)).get)
+
+        # arg parsing
+        self.assertRaises(TypeError, apsw.carray, "hello")
+        self.assertRaises(TypeError, apsw.carray, arr, "hello")
+        self.assertRaises(TypeError, apsw.carray, arr, 1.1, "hello")
+        self.assertRaises(TypeError, apsw.carray, arr, 1, 1, "hello")
+        self.assertRaises(TypeError, apsw.carray, arr, 1, 1, 1, 1)
+        self.assertRaises(TypeError, apsw.carray, arr, 1, 1, 1, flags=2)
+
+        c = apsw.carray(arr)
+        self.assertRaisesRegex(RuntimeError, ".*has already been called.*", c.__init__, arr)
+
+        # non-contiguous buffer
+        self.assertRaises(BufferError, apsw.carray, memoryview(arr)[::2])
+        # contiguous but not 1 dimensional
+        self.assertRaisesRegex(
+            ValueError,
+            ".*object is not contiguous scalar array.*",
+            apsw.carray,
+            memoryview(b"abcd").cast("b", shape=[2, 2]),
+        )
+
+        # auto-detection
+        numbers = tuple(range(20))
+        for format in "ild":
+            arr = array.array(format, numbers)
+            self.assertEqual(
+                list(arr), self.db.execute("select value from carray(?) order by value", (apsw.carray(arr),)).get
+            )
+
+        self.assertRaises(ValueError, apsw.carray, array.array("f", arr))
+
+        # lie about format - treating int as float will not give the same values!
+        self.assertNotEqual(
+            list(arr),
+            self.db.execute(
+                "select value from carray(?) order by value", (apsw.carray(arr, flags=apsw.SQLITE_CARRAY_INT32),)
+            ).get,
+        )
+
+        self.assertRaisesRegex(ValueError, ".*Unsupported flags.*", apsw.carray, arr, flags=247)
+
+        for flag in "INT32", "INT64", "DOUBLE":
+            self.assertRaisesRegex(
+                ValueError,
+                ".*not a multiple of.*",
+                apsw.carray,
+                b"123456",
+                flags=getattr(apsw, f"SQLITE_CARRAY_{flag}"),
+            )
+
+        # Start and stop
+        self.assertRaises(ValueError, apsw.carray, b"\0" * 8, start=-1, flags=apsw.SQLITE_CARRAY_INT32)
+        self.assertRaises(ValueError, apsw.carray, b"\0" * 8, start=73, flags=apsw.SQLITE_CARRAY_INT32)
+        self.assertRaises(ValueError, apsw.carray, b"\0" * 8, stop=73, flags=apsw.SQLITE_CARRAY_INT32)
+        self.assertRaises(ValueError, apsw.carray, b"\0" * 16, stop=0, start=1, flags=apsw.SQLITE_CARRAY_INT32)
+
+        # current limitation - needs to be at least one item
+        self.assertRaises(ValueError, apsw.carray, b"\0" * 8, start=2, stop=2, flags=apsw.SQLITE_CARRAY_INT32)
+
+
+    def testOffsets(self):
+        arr = array.array("l", range(20))
+
+        def get(start, stop):
+            return self.db.execute(
+                "select value from carray(?) order by value", (apsw.carray(arr, start=start, stop=stop),)
+            ).get
+
+        self.assertEqual([1,2,3], get(1, 4))
+        self.assertEqual(19, get(19, -1))
+        self.assertEqual(list(arr), get(0, -1))
+        self.assertEqual(list(arr)[1:], get(1, -1))
+        self.assertEqual(list(arr)[2:], get(2, 20))
+
+        # 0 length limitation
+        self.assertRaises(ValueError, apsw.carray, arr, start=20, stop=20)
+
+has_carray = False
+
+if hasattr(apsw, "carray"):
+    # the table valued function doesn't show up in the module or
+    # function lists so figure it out the hard way
+    feature_check_db = apsw.Connection("")
+    try:
+        feature_check_db.execute("select * from carray(?)", (apsw.carray(array.array("l", [1, 2, 3])),)).get
+        has_carray = True
+    except apsw.SQLError:
+        pass
+    feature_check_db.close()
+
+if has_carray:
+    __all__ = ("CArray",)
+else:
+    del CArray
+    __all__ = tuple()
+
+
+if __name__ == "__main__":
+    unittest.main()
