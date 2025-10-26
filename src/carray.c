@@ -98,7 +98,7 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
       goto error;
     }
 
-    for (size_t i = 0; i < nitems; i++)
+    for (size_t i = 0; i < (size_t)nitems; i++)
     {
       PyObject *item = PyTuple_GET_ITEM(object, i + start);
       if (flags < 0)
@@ -129,7 +129,7 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
         array[i] = PyUnicode_AsUTF8AndSize(item, &length);
         if (!array[i])
           goto error;
-        if (length != strlen(array[i]))
+        if ((size_t)length != strlen(array[i]))
         {
           PyErr_Format(PyExc_ValueError, "Tuple item %lld string has embedded nulls and can't be used with carray",
                        i + start);
