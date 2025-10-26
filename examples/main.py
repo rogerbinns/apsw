@@ -1516,9 +1516,8 @@ print(f'{connection.pragma("schema_version")=}')
 ### carray: The CARRAY extension
 # The `extension <https://sqlite.org/carray.html>`__ makes it easy to
 # provide an array of numbers, strings, or binary blobs during a
-# query.  You can avoid temporary tables, formatting SQL with
-# corresponding numbers of ``?``, and the array will be used without
-# calling back into Python code or acquiring the GIL.
+# query.  The array will be used without calling back into Python
+# code or acquiring the GIL.
 #
 # Arrays of numbers can come from binary data, :class:`array.array`,
 # `numpy arrays

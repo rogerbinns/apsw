@@ -31,7 +31,8 @@ Comprehensive :mod:`type annotations <typing>` :source:`are included
 tools like `mypy <https://mypy-lang.org/>`__.  You can refer to the
 types below for your annotations (eg as :class:`apsw.SQLiteValue`)
 
-Your source files should include::
+Your source files should include this line, which can be omitted in
+Python 3.14 onwards::
 
     from __future__ import annotations
 
@@ -282,19 +283,18 @@ static int allow_missing_dict_bindings = 0;
    we are trying to hide the implementation details as much as possible.
 */
 
-/** .. method:: pyobject(object: Any)
+/** .. method:: pyobject(object: Any) -> PyObjectBinding
 
   Indicates a Python object is being provided as a
   :ref:`runtime value <pyobject>`.
 */
 
-/** .. method:: carray(object: Buffer | tuple[str] | tuple[Buffer], *, start: int = 0, stop: int = -1, flags: int = -1)
+/** .. method:: carray(object: Buffer | tuple[str] | tuple[Buffer], *, start: int = 0, stop: int = -1, flags: int = -1) -> CArrayBinding
 
   Indicates a Python object is being provided as a runtime array for the
-  `Carray extension <https://sqlite.org/carray.html>`__.  This is useful if you
-  need many numbers (int or float), strings, or blobs available during a query,
-  You can avoid temporary tables, formatting SQL with corresponding numbers of ``?``,
-  and the array will be used without calling back into Python code or acquiring the GIL.
+  `Carray extension <https://sqlite.org/carray.html>`__.  This is to provide
+  bulk numbers (int or float), strings, or blobs to a query,  The array will
+  be used without calling back into Python code or acquiring the GIL.
 
   See the :ref:`example <example_carray>`.
 
@@ -303,7 +303,7 @@ static int allow_missing_dict_bindings = 0;
      :class:`array.array`, numpy.array etc.
 
      Otherwise it should be a tuple of strings, or a tuple of binary data
-     objects.
+     objects.  All elements must be the same type.
   :param start: Index of the first entry to bind
   :param stop: Index to stop at - ie one beyond the last entry bound.  Default
       is all remaining members.

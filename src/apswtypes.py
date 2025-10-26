@@ -12,11 +12,22 @@ float, bytes (Buffer), and str (unicode text)"""
 SQLiteValues = tuple[SQLiteValue, ...]
 "A sequence of zero or more SQLiteValue"
 
-Bindings = Sequence[SQLiteValue | zeroblob] | Mapping[str, SQLiteValue | zeroblob]
-"""Query bindings are either a sequence of SQLiteValue, or a dict mapping names
-to SQLiteValues.  You can also provide zeroblob in Bindings. You can use
-dict subclasses or any type registered with :class:`collections.abc.Mapping`
-for named bindings"""
+class PyObjectBinding:
+    "Result of :meth:`pyobject`"
+    ...
+
+class CArrayBinding:
+    "Result of :meth:`carray`"
+    ...
+
+Binding = SQLiteValue | zeroblob | PyObjectBinding | CArrayBinding
+"""An individual binding can be any of the SQLiteValues.
+zeroblob, pyobject, or carray"""
+
+Bindings = Sequence[Binding] | Mapping[str, Binding]
+"""Query bindings are either a sequence of Binding, or a dict mapping string names
+to a Binding. You can use dict subclasses or any type registered with
+:class:`collections.abc.Mapping` for named bindings"""
 
 
 class AggregateClass(Protocol):
