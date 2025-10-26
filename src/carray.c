@@ -40,12 +40,6 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
   int res = -1;
 
-  if (start < 0)
-  {
-    PyErr_Format(PyExc_ValueError, "start is %lld needs to be >=0", start);
-    goto error;
-  }
-
   res = PyObject_GetBuffer(object, &self->view, PyBUF_FORMAT | PyBUF_C_CONTIGUOUS);
   if (res != 0)
     goto error;
@@ -91,14 +85,22 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   }
 
   size_t nitems = self->view.len / item_size;
-  if (start > nitems)
+
+  if (start < 0)
+  {
+    PyErr_Format(PyExc_ValueError, "Start %lld is negative", start);
+    goto error;
+  }
+  if ((size_t)start > nitems)
   {
     PyErr_Format(PyExc_ValueError, "Start %lld is beyond end of %lld item array", start, nitems);
     goto error;
   }
+
   if (stop < 0)
     stop = nitems;
-  if (stop > nitems)
+
+  if ((size_t)stop > nitems)
   {
     PyErr_Format(PyExc_ValueError, "Stop %lld is beyond end of %lld item array", stop, nitems);
     goto error;
