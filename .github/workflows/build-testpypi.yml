@@ -27,7 +27,7 @@ jobs:
           CIBW_TEST_COMMAND: python -m apsw.tests -v
           APSW_HEAVY_DURATION: 2
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: dist-${{ matrix.os }}-${{ matrix.pyver }}
           path: ./wheelhouse/*.whl
@@ -41,7 +41,7 @@ jobs:
     - name: Create source dist
       run: python setup.py sdist --for-pypi
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
         name: dist-source
         path: ./dist/*
