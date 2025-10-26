@@ -42,6 +42,9 @@ class CArray(unittest.TestCase):
         c = apsw.carray(arr)
         self.assertRaisesRegex(RuntimeError, ".*has already been called.*", c.__init__, arr)
 
+    def testNumbers(self):
+        arr = array.array("l", range(100, 0, -1))
+
         # non-contiguous buffer
         self.assertRaises(BufferError, apsw.carray, memoryview(arr)[::2])
 
@@ -82,6 +85,60 @@ class CArray(unittest.TestCase):
 
         # current limitation - needs to be at least one item
         self.assertRaises(ValueError, apsw.carray, b"\0" * 8, start=2, stop=2, flags=apsw.SQLITE_CARRAY_INT32)
+
+    def testTuple(self):
+        # str and blobs
+        self.assertRaises(ValueError, apsw.carray, tuple(), flags=192)
+
+        str_tuple = ("zero", "one", "two", "three", "")
+        bin_tuple = (b"zero", b"one", b"two", b"three", b"")
+
+        self.assertRaisesRegex(ValueError, ".*Start.*is beyond end.*", apsw.carray, str_tuple, start=294)
+        self.assertRaisesRegex(ValueError, ".*Start.*is beyond end.*", apsw.carray, bin_tuple, start=1_000_000)
+
+        self.assertRaisesRegex(ValueError, ".*Stop.*is beyond end.*", apsw.carray, str_tuple, stop=294)
+        self.assertRaisesRegex(ValueError, ".*Stop.*is beyond end.*", apsw.carray, bin_tuple, stop=1_000_000)
+
+        self.assertRaisesRegex(ValueError, ".*zero item array.*", apsw.carray, tuple())
+        self.assertRaisesRegex(ValueError, ".*zero item array.*", apsw.carray, str_tuple, start=len(str_tuple))
+        self.assertRaisesRegex(ValueError, ".*zero item array.*", apsw.carray, str_tuple, start=1, stop=1)
+        self.assertRaisesRegex(ValueError, ".*zero item array.*", apsw.carray, bin_tuple, start=len(bin_tuple))
+        self.assertRaisesRegex(ValueError, ".*zero item array.*", apsw.carray, bin_tuple, start=1, stop=1)
+
+        self.assertRaisesRegex(ValueError, ".*Stop.* is before start.*", apsw.carray, str_tuple, start=2, stop=1)
+        self.assertRaisesRegex(ValueError, ".*Stop.* is before start.*", apsw.carray, bin_tuple, start=3, stop=2)
+
+        self.assertRaises(TypeError, apsw.carray, str_tuple, flags=apsw.SQLITE_CARRAY_BLOB)
+        self.assertRaises(TypeError, apsw.carray, bin_tuple, flags=apsw.SQLITE_CARRAY_TEXT)
+
+        # does it work?
+        self.assertEqual(
+            sorted(str_tuple),
+            self.db.execute("select value from carray(?) order by value", (apsw.carray(str_tuple),)).get,
+        )
+
+        self.assertEqual(
+            sorted(bin_tuple),
+            self.db.execute("select value from carray(?) order by value", (apsw.carray(bin_tuple),)).get,
+        )
+
+        # inconsistencies in tuple members
+        for bad in (
+            (3 + 4j,),
+            ("one", 3 + 4j),
+            (b"hello", 3 + 4j),
+            ("one", b"one"),
+            (b"one", "one"),
+        ):
+            self.assertRaises(TypeError, apsw.carray, bad)
+
+        # no nulls
+        for bad in (
+            "\0",
+            "one\0",
+            "\0two",
+        ):
+            self.assertRaisesRegex(ValueError, ".*embedded nulls.*", apsw.carray, ("one", bad, "three"))
 
     def testMultiArray(self):
         # multiple c array in same query to make sure they don't get
