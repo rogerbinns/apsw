@@ -83,6 +83,71 @@ class CArray(unittest.TestCase):
         # current limitation - needs to be at least one item
         self.assertRaises(ValueError, apsw.carray, b"\0" * 8, start=2, stop=2, flags=apsw.SQLITE_CARRAY_INT32)
 
+    def testMultiArray(self):
+        # multiple c array in same query to make sure they don't get
+        # confused with each other
+
+        a = apsw.carray(array.array("l", [96, 12, 423, -17, 6]))
+        b = apsw.carray(array.array("d", [1.3, 0.3, 47.0, 64.2, -17, 0.3, 1.8]))
+
+        self.assertEqual(
+            [
+                (-17, -17.0),
+                (-17, 0.3),
+                (-17, 0.3),
+                (-17, 1.3),
+                (-17, 1.8),
+                (-17, 47.0),
+                (-17, 64.2),
+                (6, -17.0),
+                (6, 0.3),
+                (6, 0.3),
+                (6, 1.3),
+                (6, 1.8),
+                (6, 47.0),
+                (6, 64.2),
+                (12, -17.0),
+                (12, 0.3),
+                (12, 0.3),
+                (12, 1.3),
+                (12, 1.8),
+                (12, 47.0),
+                (12, 64.2),
+                (96, -17.0),
+                (96, 0.3),
+                (96, 0.3),
+                (96, 1.3),
+                (96, 1.8),
+                (96, 47.0),
+                (96, 64.2),
+                (423, -17.0),
+                (423, 0.3),
+                (423, 0.3),
+                (423, 1.3),
+                (423, 1.8),
+                (423, 47.0),
+                (423, 64.2),
+            ],
+            self.db.execute(
+                "SELECT a.value, b.value FROM carray(?) AS a, carray(?) AS b ORDER BY a.value, b.value", (a, b)
+            ).get,
+        )
+
+    def testNumpy(self):
+        try:
+            import numpy as np
+        except ImportError:
+            return
+
+        # multi-dimensional - only has to be contiguous - order doesn't matter
+        for order in "CF":
+            self.assertEqual(
+                [1, 2, 3, 4, 5, 6],
+                self.db.execute(
+                    "select value from carray(?) order by value",
+                    (apsw.carray(np.array([[3, 2, 1], [6, 5, 4]], order=order)),),
+                ).get,
+            )
 
     def testOffsets(self):
         arr = array.array("l", range(20))
@@ -92,7 +157,7 @@ class CArray(unittest.TestCase):
                 "select value from carray(?) order by value", (apsw.carray(arr, start=start, stop=stop),)
             ).get
 
-        self.assertEqual([1,2,3], get(1, 4))
+        self.assertEqual([1, 2, 3], get(1, 4))
         self.assertEqual(19, get(19, -1))
         self.assertEqual(list(arr), get(0, -1))
         self.assertEqual(list(arr)[1:], get(1, -1))
@@ -100,6 +165,7 @@ class CArray(unittest.TestCase):
 
         # 0 length limitation
         self.assertRaises(ValueError, apsw.carray, arr, start=20, stop=20)
+
 
 has_carray = False
 

@@ -40,7 +40,7 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
   int res = -1;
 
-  res = PyObject_GetBuffer(object, &self->view, PyBUF_FORMAT | PyBUF_C_CONTIGUOUS);
+  res = PyObject_GetBuffer(object, &self->view, PyBUF_FORMAT | PyBUF_ANY_CONTIGUOUS);
   if (res != 0)
     goto error;
 
