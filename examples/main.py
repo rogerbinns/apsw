@@ -1511,6 +1511,71 @@ print(f'{connection.data_version()=}')
 con2.execute("create table more(x,y,z)")
 print(f'{connection.pragma("schema_version")=}')
 
+### carray: The CARRAY extension
+# The `extension <https://sqlite.org/carray.html>`__ makes it easy to
+# provide an array of numbers, strings, or binary blobs during a
+# query.  You can avoid temporary tables, formatting SQL with
+# corresponding numbers of ``?``, and the array will be used without
+# calling back into Python code or acquiring the GIL.
+#
+# Arrays of numbers can come from binary data, :class:`array.array`,
+# `numpy arrays
+# <https://numpy.org/doc/stable/reference/generated/numpy.array.html>`__
+# etc.  Arrays of :class:`str` and :class:`blobs
+# <collections.abc.Buffer>` are supplied as :class:`tuples <tuple>`.
+# All data in the array has to be the same type.
+#
+# Use :meth:`apsw.carray` to wrap your data, and provide it as a
+# binding.  Note that it has ``start`` and ``stop`` parameters so you
+# can use a subset of the source data.  The format of the data is
+# detected, or an explicit ``flags`` parameter can be used.
+
+# We'll use the array module
+import array
+
+# A packed array of 32 bit integers
+ids = array.array("i", [1, 73, 9457, 62])
+
+# Simple usage.  You would normally use joins, IN etc
+print(
+    "ordered integers",
+    connection.execute(
+        "SELECT value FROM CARRAY(?) ORDER BY value",
+        (apsw.carray(ids),),
+    ).get
+)
+
+# Using strings and blobs is just as easy
+strings = ("zero", "one", "two", "three", "four")
+blobs = (b"\xf3\x72\x94", b"\xf4\x8f\xbf", b"\xf7\xbf\xbf\xbf")
+
+print(
+    "ordered strings",
+    connection.execute(
+        "SELECT value FROM CARRAY(?) ORDER BY value",
+        (apsw.carray(strings),),
+    ).get
+)
+
+# We'll use the start parameter to skip entries
+print(
+    "ordered strings start=2",
+    connection.execute(
+        "SELECT value FROM CARRAY(?) ORDER BY value",
+        (apsw.carray(strings, start=2),),
+    ).get
+)
+
+# Find the longest blob
+print(
+    "longest blob",
+    connection.execute(
+        "SELECT value FROM CARRAY(?) ORDER BY LENGTH(value) DESC LIMIT 1",
+        (apsw.carray(blobs),),
+    ).get
+)
+
+
 ### cleanup:  Cleanup
 # As a general rule you do not need to do any cleanup.  Standard
 # Python garbage collection will take of everything.  Even if the
