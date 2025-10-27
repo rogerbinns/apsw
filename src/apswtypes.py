@@ -22,7 +22,7 @@ class CArrayBinding:
 
 Binding = SQLiteValue | zeroblob | PyObjectBinding | CArrayBinding
 """An individual binding can be any of the SQLiteValues.
-zeroblob, pyobject, or carray"""
+zeroblob, :meth:`pyobject`, or :meth:`carray`"""
 
 Bindings = Sequence[Binding] | Mapping[str, Binding]
 """Query bindings are either a sequence of Binding, or a dict mapping string names

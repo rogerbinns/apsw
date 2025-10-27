@@ -5,19 +5,23 @@ from typing import Any
 
 
 def process(module: ast.Module, source: str) -> list[tuple[str, str, str]]:
+    # each result tuple is name, value (code), description (english)
     res = []
     body = module.body
     i = 0
 
     while i < len(body):
-        if isinstance(body[i], ast.If):
-            if not isinstance(body[i].body[0], ast.ClassDef):
-                i += 1
-                continue
-            klass = body[i].body[0]
-            code = ast.unparse(klass).split("\n")
-            code[0] = code[0].replace("class ", "").replace("(", "\\(")
-            res.append((klass.name, "\n".join(code), f"{klass.name} Protocol"))
+        if  isinstance(body[i], ast.ClassDef):
+            klass = body[i]
+            comment = klass.body[0].value.value
+            code = ast.unparse(klass.body[1:]).split("\n")
+            if code == ["..."]:
+                code = []
+            if klass.bases:
+                assert klass.bases[0].id == "Protocol"
+                comment = "(Protocol) " + comment
+
+            res.append((klass.name, "\n".join(code), comment))
             i += 1
             continue
         if not isinstance(body[i], ast.Assign):
@@ -107,26 +111,44 @@ def output(doc: list[tuple[str, str, str]]) -> str:
     pattern = r"\b(?P<name>" + "|".join(std_other | std_collections_abc | std_typing | in_doc) + r")\b"
     res = ""
     for name, value, descr in doc:
-        value = nomunge(pattern, sub, value)
-        # I can't find a way of making *:class:`foo` work - the *
-        # makes the :class: not be understood, even with a zero width
-        # space.  So force a real space
-        value = value.replace("*", "* ")
+        is_protocol = descr.startswith("(Protocol)")
+        if not is_protocol:
+            value = nomunge(pattern, sub, value)
+            # I can't find a way of making *:class:`foo` work - the *
+            # makes the :class: not be understood, even with a zero width
+            # space.  So force a real space
+            value = value.replace("*", "* ")
         descr = nomunge(pattern, sub, descr)
         # easiest to fix in post ...
         descr = descr.replace(
             ":meth:`:class:`FTS5ExtensionApi`\​.query_phrase`", ":meth:`FTS5ExtensionApi.query_phrase`"
         )
-        res += f"""
+        if not is_protocol:
+            res += f"""
 .. class:: {name}
 
-{valuefmt(value, indent="    | ")}
+{valuefmt(value, indent="    | ") if value else ""}
 
 {valuefmt(descr, indent="    ")}
 
 """
+        else:
+            res += f"""
+
+.. class:: {name}
+
+{valuefmt(descr, indent="    ")}
+
+    .. code-block:: python
+
+{indent_lines(value, indent="        ")}
+
+"""
     return res
 
+def indent_lines(text, indent):
+    lines = text.splitlines()
+    return "\n".join(indent + line for line in lines) + '\n'
 
 def valuefmt(value: str, indent: str) -> str:
     return indent + f"\n{indent}".join(value.split("\n"))
