@@ -224,18 +224,7 @@ class CArray(unittest.TestCase):
         self.assertRaises(ValueError, apsw.carray, arr, start=20, stop=20)
 
 
-has_carray = False
-
-if hasattr(apsw, "carray"):
-    # the table valued function doesn't show up in the module or
-    # function lists so figure it out the hard way
-    feature_check_db = apsw.Connection("")
-    try:
-        feature_check_db.execute("select * from carray(?)", (apsw.carray(array.array("l", [1, 2, 3])),)).get
-        has_carray = True
-    except apsw.SQLError:
-        pass
-    feature_check_db.close()
+has_carray = hasattr(apsw, "carray")
 
 if has_carray:
     __all__ = ("CArray",)
