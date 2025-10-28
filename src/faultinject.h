@@ -148,6 +148,8 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef sqlite3_blob_write
 #undef sqlite3_busy_handler
 #undef sqlite3_busy_timeout
+#undef sqlite3_carray_bind
+#undef sqlite3_carray_bind_apsw
 #undef sqlite3_clear_bindings
 #undef sqlite3_close
 #undef sqlite3_close_v2
@@ -2288,6 +2290,36 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_sqlite3_busy_timeout = (typeof (_res_sqlite3_busy_timeout))18;                                                                                      \
     }                                                                                                                                                            \
     _res_sqlite3_busy_timeout;                                                                                                                                   \
+})
+#define sqlite3_carray_bind(...) \
+({                                                                                                                                                            \
+    __auto_type _res_sqlite3_carray_bind = 0 ? sqlite3_carray_bind(__VA_ARGS__) : 0;                                                                          \
+                                                                                                                                                              \
+    _res_sqlite3_carray_bind = (typeof (_res_sqlite3_carray_bind))APSW_FaultInjectControl("sqlite3_carray_bind", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                              \
+    if ((typeof (_res_sqlite3_carray_bind))0x1FACADE == _res_sqlite3_carray_bind)                                                                             \
+       _res_sqlite3_carray_bind = sqlite3_carray_bind(__VA_ARGS__);                                                                                           \
+    else if ((typeof(_res_sqlite3_carray_bind))0x2FACADE == _res_sqlite3_carray_bind)                                                                         \
+    {                                                                                                                                                         \
+        sqlite3_carray_bind(__VA_ARGS__);                                                                                                                     \
+        _res_sqlite3_carray_bind = (typeof (_res_sqlite3_carray_bind))18;                                                                                     \
+    }                                                                                                                                                         \
+    _res_sqlite3_carray_bind;                                                                                                                                 \
+})
+#define sqlite3_carray_bind_apsw(...) \
+({                                                                                                                                                                           \
+    __auto_type _res_sqlite3_carray_bind_apsw = 0 ? sqlite3_carray_bind_apsw(__VA_ARGS__) : 0;                                                                               \
+                                                                                                                                                                             \
+    _res_sqlite3_carray_bind_apsw = (typeof (_res_sqlite3_carray_bind_apsw))APSW_FaultInjectControl("sqlite3_carray_bind_apsw", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                             \
+    if ((typeof (_res_sqlite3_carray_bind_apsw))0x1FACADE == _res_sqlite3_carray_bind_apsw)                                                                                  \
+       _res_sqlite3_carray_bind_apsw = sqlite3_carray_bind_apsw(__VA_ARGS__);                                                                                                \
+    else if ((typeof(_res_sqlite3_carray_bind_apsw))0x2FACADE == _res_sqlite3_carray_bind_apsw)                                                                              \
+    {                                                                                                                                                                        \
+        sqlite3_carray_bind_apsw(__VA_ARGS__);                                                                                                                               \
+        _res_sqlite3_carray_bind_apsw = (typeof (_res_sqlite3_carray_bind_apsw))18;                                                                                          \
+    }                                                                                                                                                                        \
+    _res_sqlite3_carray_bind_apsw;                                                                                                                                           \
 })
 #define sqlite3_clear_bindings(...) \
 ({                                                                                                                                                                     \
