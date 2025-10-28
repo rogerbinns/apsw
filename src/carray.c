@@ -279,6 +279,14 @@ CArrayBind_dealloc(PyObject *self_)
   Py_TpFree(self_);
 }
 
+#ifdef APSW_MODIFIED_CARRAY
+static void
+CArrayBind_bind_destructor(void *pCtx)
+{
+  Py_DECREF((PyObject *)pCtx);
+}
+#endif
+
 static PyTypeObject CArrayBindType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.carray",
   .tp_basicsize = sizeof(CArrayBind),

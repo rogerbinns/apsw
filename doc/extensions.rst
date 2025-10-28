@@ -18,7 +18,14 @@ CARRAY
 ======
 
 `Runtime array of values extension <https://sqlite.org/carray.html>`__ used
-with :meth:`apsw.carray`.
+with :meth:`apsw.carray` for providing bulk numbers, strings, and blobs.
+
+.. note::
+
+    When APSW downloads the amalgamation, a :source:`patch
+    <tools/carray.patch>` is applied.  Without the patch, the
+    extension has to make a duplicate copy of all the data each time
+    the binding happens.
 
 Session
 =======
