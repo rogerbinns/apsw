@@ -1,0 +1,90 @@
+# This is the patch made to carray in the amalgamation.  It
+# adds a parameter that is provided to the destructor (if
+# not null) instead of a pointer to the array data.
+#
+# This is necessary because we have multiple PyObject that
+# can reference the same array data, and there is no practical
+# way of getting back from the array data to the corresponding
+# PyObject.  As a result we had to use SQLITE_TRANSIENT which
+# meant ALL the data was duplicated, which can be a lot especially
+# with strings and blobs.
+#
+# With this minor change no duplication needs be done and
+# the destructor turns into a DECREF.
+#
+# setup.py applies this patch when we download SQLite.
+# A #define lets us know if the amalgamation has been
+# patched.
+#
+# https://sqlite.org/forum/forumpost/c066073abd559b8e
+
+diff --git a/sqlite3.c b/sqlite3-changed.c
+index f3a60e93..72050186 100644
+--- a/sqlite3.c
++++ b/sqlite3-changed.c
+@@ -230074,10 +230074,11 @@ typedef struct carray_bind carray_bind;
+ struct carray_bind {
+   void *aData;                /* The data */
+   int nData;                  /* Number of elements */
+   int mFlags;                 /* Control flags */
+   void (*xDel)(void*);        /* Destructor for aData */
++  void *pCtx;                 /* Destructor context to xDel if not NULL */
+ };
+
+
+ /* carray_cursor is a subclass of sqlite3_vtab_cursor which will
+ ** serve as the underlying representation of a cursor that scans
+@@ -230406,26 +230407,28 @@ static sqlite3_module carrayModule = {
+ ** Destructor for the carray_bind object
+ */
+ static void carrayBindDel(void *pPtr){
+   carray_bind *p = (carray_bind*)pPtr;
+   if( p->xDel!=SQLITE_STATIC ){
+-     p->xDel(p->aData);
++     p->xDel(p->pCtx?p->pCtx:p->aData);
+   }
+   sqlite3_free(p);
+ }
+
+ /*
+ ** Invoke this interface in order to bind to the single-argument
+ ** version of CARRAY().
+ */
+-SQLITE_API int sqlite3_carray_bind(
++#define APSW_MODIFIED_CARRAY
++SQLITE_API int sqlite3_carray_bind_apsw(
+   sqlite3_stmt *pStmt,
+   int idx,
+   void *aData,
+   int nData,
+   int mFlags,
+   void (*xDestroy)(void*)
++  , void *pCtx
+ ){
+   carray_bind *pNew = 0;
+   int i;
+   int rc = SQLITE_OK;
+
+@@ -230498,19 +230501,21 @@ SQLITE_API int sqlite3_carray_bind(
+       }
+     }else{
+       memcpy(pNew->aData, aData, sz);
+     }
+     pNew->xDel = sqlite3_free;
++    pNew->pCtx = NULL;
+   }else{
+     pNew->aData = aData;
+     pNew->xDel = xDestroy;
++    pNew->pCtx = pCtx;
+   }
+   return sqlite3_bind_pointer(pStmt, idx, pNew, "carray-bind", carrayBindDel);
+
+  carray_bind_error:
+   if( xDestroy!=SQLITE_STATIC && xDestroy!=SQLITE_TRANSIENT ){
+-    xDestroy(aData);
++    xDestroy(pCtx?pCtx:aData);
+   }
+   sqlite3_free(pNew);
+   return rc;
+ }
+
