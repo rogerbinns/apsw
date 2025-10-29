@@ -263,7 +263,7 @@ add_apsw_constants(PyObject *module)
     }
 
 #ifdef SQLITE_ENABLE_CARRAY
-    /* Datatypes for the CARRAY table-valued funtion */
+    /* Datatypes for the CARRAY table-valued function */
     the_dict = Py_BuildValue(
         "{siissiissiissiissiis}",
         "SQLITE_CARRAY_BLOB", SQLITE_CARRAY_BLOB, SQLITE_CARRAY_BLOB, "SQLITE_CARRAY_BLOB",
@@ -749,7 +749,7 @@ add_apsw_constants(PyObject *module)
 
     /* Standard File Control Opcodes */
     the_dict = Py_BuildValue(
-        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
+        "{siissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiissiis}",
         "SQLITE_FCNTL_BEGIN_ATOMIC_WRITE", SQLITE_FCNTL_BEGIN_ATOMIC_WRITE, SQLITE_FCNTL_BEGIN_ATOMIC_WRITE, "SQLITE_FCNTL_BEGIN_ATOMIC_WRITE",
         "SQLITE_FCNTL_BLOCK_ON_CONNECT", SQLITE_FCNTL_BLOCK_ON_CONNECT, SQLITE_FCNTL_BLOCK_ON_CONNECT, "SQLITE_FCNTL_BLOCK_ON_CONNECT",
         "SQLITE_FCNTL_BUSYHANDLER", SQLITE_FCNTL_BUSYHANDLER, SQLITE_FCNTL_BUSYHANDLER, "SQLITE_FCNTL_BUSYHANDLER",
@@ -761,6 +761,7 @@ add_apsw_constants(PyObject *module)
         "SQLITE_FCNTL_COMMIT_PHASETWO", SQLITE_FCNTL_COMMIT_PHASETWO, SQLITE_FCNTL_COMMIT_PHASETWO, "SQLITE_FCNTL_COMMIT_PHASETWO",
         "SQLITE_FCNTL_DATA_VERSION", SQLITE_FCNTL_DATA_VERSION, SQLITE_FCNTL_DATA_VERSION, "SQLITE_FCNTL_DATA_VERSION",
         "SQLITE_FCNTL_EXTERNAL_READER", SQLITE_FCNTL_EXTERNAL_READER, SQLITE_FCNTL_EXTERNAL_READER, "SQLITE_FCNTL_EXTERNAL_READER",
+        "SQLITE_FCNTL_FILESTAT", SQLITE_FCNTL_FILESTAT, SQLITE_FCNTL_FILESTAT, "SQLITE_FCNTL_FILESTAT",
         "SQLITE_FCNTL_FILE_POINTER", SQLITE_FCNTL_FILE_POINTER, SQLITE_FCNTL_FILE_POINTER, "SQLITE_FCNTL_FILE_POINTER",
         "SQLITE_FCNTL_GET_LOCKPROXYFILE", SQLITE_FCNTL_GET_LOCKPROXYFILE, SQLITE_FCNTL_GET_LOCKPROXYFILE, "SQLITE_FCNTL_GET_LOCKPROXYFILE",
         "SQLITE_FCNTL_HAS_MOVED", SQLITE_FCNTL_HAS_MOVED, SQLITE_FCNTL_HAS_MOVED, "SQLITE_FCNTL_HAS_MOVED",
@@ -1149,6 +1150,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_COMMIT_PHASETWO", SQLITE_FCNTL_COMMIT_PHASETWO)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_DATA_VERSION", SQLITE_FCNTL_DATA_VERSION)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_EXTERNAL_READER", SQLITE_FCNTL_EXTERNAL_READER)
+        || PyModule_AddIntConstant(module, "SQLITE_FCNTL_FILESTAT", SQLITE_FCNTL_FILESTAT)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_FILE_POINTER", SQLITE_FCNTL_FILE_POINTER)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_GET_LOCKPROXYFILE", SQLITE_FCNTL_GET_LOCKPROXYFILE)
         || PyModule_AddIntConstant(module, "SQLITE_FCNTL_HAS_MOVED", SQLITE_FCNTL_HAS_MOVED)
