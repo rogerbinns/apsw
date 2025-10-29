@@ -289,12 +289,14 @@ static int allow_missing_dict_bindings = 0;
   :ref:`runtime value <pyobject>`.
 */
 
-/** .. method:: carray(object: Buffer | tuple[str] | tuple[Buffer], *, start: int = 0, stop: int = -1, flags: int = -1) -> CArrayBinding
+/** .. method:: carray(object: Buffer | tuple[str, ...] | tuple[Buffer, ...], *, start: int = 0, stop: int = -1, flags: int = -1) -> CArrayBinding
 
   Indicates a Python object is being provided as a runtime array for the
   `Carray extension <https://sqlite.org/carray.html>`__.  This is to provide
   bulk numbers (int or float), strings, or blobs to a query,  The array will
-  be used without calling back into Python code or acquiring the GIL.
+  be used without calling back into Python code or acquiring the GIL.  It takes
+  about 5% of the CPU time using Carray versus passing each value in one at a
+  time via Python.
 
   See the :ref:`example <example_carray>`.
 
