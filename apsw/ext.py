@@ -2557,14 +2557,14 @@ generate_series_sqlite.primary_key = 0  # type: ignore[attr-defined]
 def generate_series(start, stop, step=None):
     """Behaves like Postgres and SQL Server
 
-    `Postgres doc
-    <https://www.postgresql.org/docs/current/functions-srf.html>`__
-    `SQL server doc
-    <https://learn.microsoft.com/en-us/sql/t-sql/functions/generate-series-transact-sql>`__
+    * `Postgres doc
+      <https://www.postgresql.org/docs/current/functions-srf.html>`__
+    * `SQL server doc
+      <https://learn.microsoft.com/en-us/sql/t-sql/functions/generate-series-transact-sql>`__
 
     Operates on floating point as well as integer.  If step is not
     specified then it is 1 if *stop* is greater than *start* and -1 if
-    *stop* is less than *start*.
+    *stop* is less than *start*.  A ``step`` of zero is not allowed.
 
     To use::
 
