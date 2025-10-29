@@ -2483,11 +2483,19 @@ def make_virtual_module(
     )
 
 
-def generate_series_sqlite(start=None, stop=0xFFFFFFFF, step=1):
+def generate_series_sqlite(
+    start: apsw.SQLiteValue = None, stop: apsw.SQLiteValue = 0xFFFF_FFFF_FFFF_FFFF, step: apsw.SQLiteValue = 1
+):
     """Behaves like SQLite's `generate_series <https://sqlite.org/series.html>`__
 
-    Only integers are supported.  If *step* is negative
-    then values are generated from *stop* to *start*
+    A step of ``0`` is treated as ``1``.  The SQLite version has had
+    minor changes over the years, mainly dealing with corner cases,
+    negative steps, and start versus stop that could have infinite
+    results.
+
+    Unless you need exact matching of the SQLite version,
+    :meth:`generate_series` is recommended as it matches other
+    databases.
 
     To use::
 
@@ -2498,28 +2506,47 @@ def generate_series_sqlite(start=None, stop=0xFFFFFFFF, step=1):
 
         db.execute("SELECT value FROM generate_series(1, 10))
 
-    .. seealso::
-
-        :meth:`generate_series`
-
+    Values are limited to integers.  If a non-int is passed as
+    a parameter then it is converted following the same way
+    :code:`SELECT CAST(value AS INTEGER)` converts ``value``, which
+    falls back to zero.  (That truncates floats, ignores leading
+    whitespace, and consumes the first sign plus digits of strings and
+    blobs treated as though they were ascii.)
     """
-    if start is None:
-        raise ValueError("You must specify a value for start")
-    istart = int(start)
-    istop = int(stop)
-    istep = int(step)
-    if istart != start or istop != stop or istep != step:
-        raise TypeError("generate_series_sqlite only works with integers")
+    if start is None or stop is None or step is None:
+        # any nulls result in no rows
+        return
+
+    def convert(val: Any):
+        if isinstance(val, bytes):
+            val = val.decode("ascii", errors="replace")
+        else:
+            val = str(val)
+        mo = re.match(r"\s*([+-]?[0-9]+).*", val, re.ASCII)
+        if mo:
+            return int(mo.group(1))
+        return 0
+
+    start, stop, step = convert(start), convert(stop), convert(step)
+
     if step == 0:
         step = 1
-    if step > 0:
-        while start <= stop:
-            yield (start,)
+
+    if start < stop and step < 0:
+        return
+
+    if stop < start and step > 0:
+        return
+
+    while True:
+        yield (start,)
+        if start + step <= stop and step > 0:
             start += step
-    elif step < 0:
-        while stop >= start:
-            yield (stop,)
-            stop += step
+            continue
+        if start + step >= stop and step < 0:
+            start += step
+            continue
+        break
 
 
 generate_series_sqlite.columns = ("value",)  # type: ignore[attr-defined]

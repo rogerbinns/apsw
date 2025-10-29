@@ -56,6 +56,10 @@ to a query.   See the :ref:`example <example_carray>`.
 ``SQLITE_SCM_`` constants (``BRANCH``, ``TAGS``, ``DATETIME``) are available
 on the module if built with the :attr:`amalgamation <using_amalgamation>`.
 
+:func:`apsw.ext.generate_series_sqlite` updated to exactly match SQLite's
+behaviour. (:func:`apsw.ext.generate_series` is recommended as it
+matches other databases.)
+
 This is the final release supporting Python 3.9.
 
 3.50.4.0
