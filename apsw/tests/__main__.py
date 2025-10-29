@@ -11102,6 +11102,11 @@ shell.write(shell.stdout, "hello world\\n")
 
     def testExtStuff(self):
         "Various apsw.ext functions"
+        # testing note: 28 October 2025
+        # I updated generate_series_sqlite to match it's behaviour which involved all sorts
+        # of permutations compared against the sqlite shell.  that can't be added here
+        # because we don't have a shell to run to compare.  I also check regular generate_series
+        # against mssql and postgres and it remains correct.
         apsw.ext.make_virtual_module(self.db, "g1", apsw.ext.generate_series)
         vals = {row[0] for row in self.db.execute("select value from g1 where start=1 and stop=10")}
         self.assertEqual(vals, {i for i in range(1, 10 + 1)})
@@ -11120,15 +11125,15 @@ shell.write(shell.stdout, "hello world\\n")
         vals = {row[0] for row in self.db.execute("select value from g2 where start=1 and stop=10")}
         self.assertEqual(vals, {i for i in range(1, 10 + 1)})
         vals = {row[0] for row in self.db.execute("select value from g2 where start=1 and stop=10 and step=-1")}
-        self.assertEqual(vals, {i for i in range(1, 10 + 1)})
+        self.assertEqual(vals, set())
         vals = {row[0] for row in self.db.execute("select value from g2(1, 10, 2)")}
         self.assertEqual(vals, {i for i in range(1, 10 + 1, 2)})
         self.assertEqual(
             self.db.execute("select *,start,stop from g2(1,10) where step=0").get,
             self.db.execute("select *,start,stop from g2(1,10) where step=1").get,
         )
-        self.assertRaises(ValueError, self.db.execute, "select * from g2 where stop=10 and step=1")
-        self.assertRaises(TypeError, self.db.execute, "select * from g2(0.1, 1, 1)")
+        self.assertEqual(None, self.db.execute("select * from g2 where stop=10 and step=1").get)
+        self.assertEqual([0, 1], self.db.execute("select * from g2(0.1, 1, 1)").get)
 
         # https://github.com/rogerbinns/apsw/issues/412
         apsw.ext.make_virtual_module(self.db, "genseries", apsw.ext.generate_series)
