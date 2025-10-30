@@ -195,7 +195,7 @@ def generate_names_code(source: str, show_status: bool = False) -> list[str]:
     if current:
         codepoint_ranges.append((current[0], current[-1]))
 
-    # forward declatation because we are included first
+    # forward declaration because we are included first
     code.append("static PyObject *name_expand(const unsigned char *name, unsigned skip);")
     code.append("static PyObject *regular_codepoint_to_name(Py_UCS4 codepoint)")
     code.append("{")
@@ -248,32 +248,13 @@ def generate_names_code(source: str, show_status: bool = False) -> list[str]:
     hex_id = ("%04X", "")
     for cprange, pattern in sorted(numbered, key=lambda x: int(x[0].split("..")[0], 16)):
         number_format, adjust = {
-            "3400..4DBF": hex_id,
-            "4E00..9FFF": hex_id,
-            "F900..FA6D": hex_id,
-            "FA70..FAD9": hex_id,
             "FE00..FE0F": ("%d", " - 0xFE00 + 1"),
-            "13460..143FA": hex_id,
-            "17000..187F7": hex_id,
             "18800..18AFF": ("%03d", " - 0x18800 + 1"),
-            "18B00..18CD5": hex_id,
-            "18CFF..18CFF": hex_id,
-            "18D00..18D08": hex_id,
-            "1B170..1B2FB": hex_id,
-            "20000..2A6DF": hex_id,
-            "2A700..2B739": hex_id,
-            "2B740..2B81D": hex_id,
-            "2B820..2CEA1": hex_id,
-            "2CEB0..2EBE0": hex_id,
-            "2EBF0..2EE5D": hex_id,
-            "2F800..2FA1D": hex_id,
-            "30000..3134A": hex_id,
-            "31350..323AF": hex_id,
             "E0100..E01EF": ("%d", " - 0xE0100 + 17"),
-        }[cprange]
+        }.get(cprange, hex_id)
         start, end = [int(x, 16) for x in cprange.split("..")]
         code2.append(f"  if(codepoint >= 0x{start:04X} && codepoint <= 0x{end:04X})")
-        assert pattern.endswith("-*")
+        assert pattern.endswith("-*"), f"{cprange=} {pattern=}"
         if (number_format, adjust) == hex_id:
             # py <=3.11 doesn't have %X (upper case) so we have to implement
             code2.append(f'    return name_with_hex_suffix("{pattern[:-1]}", codepoint);')
