@@ -2966,8 +2966,7 @@ def extended_testing_file(name: str) -> typing.Union[pathlib.Path, None]:
     if name not in sources:
         # make it a fatal error to give an unknown name
         sys.exit(f"unknown source { name= }")
-
-    location = pathlib.Path(__file__).parent.parent.parent / "apsw-extended-testing" / name
+    location = pathlib.Path(__file__).parent.parent.parent.parent / "apsw-extended-testing" / name
 
     return location if location.exists() else None
 
