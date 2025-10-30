@@ -1402,6 +1402,9 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
             print(f"{ len(fails)//4 } tests failed, {passed:,} passed:", file=sys.stderr)
             for fail in fails:
                 print(fail, file=sys.stderr)
+            if len(fails)//4 > 5:
+                # also print at bottom since the top will have scrolled off the screen
+                print(f"{ len(fails)//4 } tests failed, {passed:,} passed:", file=sys.stderr)
             sys.exit(2)
         else:
             print(f"{passed:,} passed")
