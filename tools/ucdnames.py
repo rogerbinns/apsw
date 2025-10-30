@@ -31,6 +31,7 @@ def generate_names_code(source: str, show_status: bool = False) -> list[str]:
     # be generated from if statement, not name tables
     numbered = [
         ("18800..18AFF", "TANGUT COMPONENT-*"),
+        ("18D80..18DF2", "TANGUT COMPONENT-*"),
         ("FE00..FE0F", "VARIATION SELECTOR-*"),
         ("E0100..E01EF", "VARIATION SELECTOR-*"),
     ]
@@ -250,6 +251,7 @@ def generate_names_code(source: str, show_status: bool = False) -> list[str]:
         number_format, adjust = {
             "FE00..FE0F": ("%d", " - 0xFE00 + 1"),
             "18800..18AFF": ("%03d", " - 0x18800 + 1"),
+            "18D80..18DF2": ("%03d", " - 0x18A7F"),
             "E0100..E01EF": ("%d", " - 0xE0100 + 17"),
         }.get(cprange, hex_id)
         start, end = [int(x, 16) for x in cprange.split("..")]
