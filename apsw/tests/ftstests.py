@@ -2075,6 +2075,18 @@ class Unicode(unittest.TestCase):
                         self.assertNotIn(codepoint, tested)
                         tested.add(codepoint)
 
+        # check a different way
+        with zipfile.ZipFile(testzip) as zip:
+            with zip.open("UnicodeData.txt") as src:
+                for line in src.read().decode().splitlines():
+                    line = line.split(";")
+                codepoint=int(line[0], 16)
+                name = line[1]
+                if name.startswith("<"):
+                    name = None
+                self.assertEqual(apsw.unicode.codepoint_name(codepoint), name, f"{codepoint=:04X}")
+
+
         for codepoint in range(0, sys.maxunicode + 1):
             if codepoint not in tested:
                 self.assertIsNone(apsw.unicode.codepoint_name(codepoint), f"{codepoint=:04X}")
