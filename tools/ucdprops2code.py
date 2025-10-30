@@ -404,8 +404,8 @@ def extract_version(filename: str, source: str):
     global ucd_version
     if filename == "emoji-data.txt":
         for line in source.splitlines():
-            if line.startswith("# Used with Emoji Version "):
-                mo = re.match(r".*Version (?P<version>[^\s]+)\s.*", line)
+            mo = re.match(r"# Version: (?P<version>[^\s]+)\s*", line)
+            if mo:
                 break
         else:
             raise ValueError("No matching version line found")
