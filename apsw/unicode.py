@@ -1414,8 +1414,12 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
             except ValueError:
                 codepoints.extend(ord(c) for c in t)
 
-        def uniname(cp):
-            return str(codepoint_name(cp))
+        def uniname(cp, none="(no name)"):
+            x = codepoint_name(cp)
+            if x is None:
+                return none
+            assert isinstance(x, str)
+            return x
 
         def deets(cp):
             cat = category(cp)
@@ -1436,7 +1440,7 @@ use the C library function wcswidth, or use the wcwidth Python package wcswidth 
                 if not mangle:
                     mangled.append("(nothing)")
                 else:
-                    mangled.append(", ".join(f"U+{ ord(v):04X} {uniname(ord(v))}" for v in mangle))
+                    mangled.append(", ".join(f"U+{ ord(v):04X} {uniname(ord(v), none="")}" for v in mangle))
             print(f"casefold: { mangled[0] }   stripped: { mangled[1] }")
             print(
                 f"Width: { text_width(chr(cp)) }  "
