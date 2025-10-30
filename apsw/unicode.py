@@ -687,6 +687,7 @@ def version_added(codepoint: int | str) -> str | None:
 
 version_dates = {
     # Extracted from https://www.unicode.org/history/publicationdates.html
+    "17.0": (2025, 9, 9),
     "16.0": (2024, 9, 10),
     "15.1": (2023, 9, 12),
     "15.0": (2022, 9, 13),
