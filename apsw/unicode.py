@@ -117,7 +117,7 @@ from typing import Iterator, Iterable, Any
 import re
 
 ### BEGIN UNICODE UPDATE SECTION ###
-unicode_version = "16.0"
+unicode_version = "17.0"
 """The `Unicode version <https://www.unicode.org/versions/enumeratedversions.html>`__
 that the rules and data tables implement"""
 
