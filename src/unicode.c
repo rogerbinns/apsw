@@ -942,7 +942,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* LB12a */
     if (it.lookahead & LB_GL)
     {
-      if (it.curchar & (LB_SP | LB_BA | LB_HY))
+      if (it.curchar & (LB_SP | LB_BA | LB_HY | LB_HH))
         break;
       it_advance();
       continue;
@@ -1021,10 +1021,10 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       {
         it_begin();
         it_advance();
-        if (it.lookahead & (LB_HY | LB_HYPHEN))
+        if (it.lookahead & (LB_HY | LB_HH))
         {
           it_advance();
-          if (it.lookahead & LB_AL)
+          if (it.lookahead & (LB_AL | LB_HL))
           {
             it_commit();
             continue;
@@ -1106,17 +1106,19 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
       break;
 
     /* LB 20a */
-    if (!it_has_accepted && it.curchar & (LB_HY | LB_HYPHEN) && it.lookahead & LB_AL)
+    /* SOT case */
+    if (!it_has_accepted && it.curchar & (LB_HY | LB_HH) && it.lookahead & (LB_AL | LB_HL))
     {
       it_advance();
       continue;
     }
+    /* non-SOT case */
     if (it.curchar & (LB_BK | LB_CR | LB_LF | LB_NL | LB_SP | LB_ZW | LB_CB | LB_GL)
-        && it.lookahead & (LB_HY | LB_HYPHEN))
+        && it.lookahead & (LB_HY | LB_HH))
     {
       it_begin();
       it_advance();
-      if (it.lookahead & LB_AL)
+      if (it.lookahead & (LB_AL | LB_HL))
       {
         it_advance();
         it_commit();
@@ -1126,7 +1128,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB21a - has to be before LB21 because both lookahead & LB_HY */
-    if (it.curchar & LB_HL && it.lookahead & (LB_HY | LB_BA) && !(it.lookahead & LB_EastAsianWidth_FWH))
+    if (it.curchar & LB_HL && it.lookahead & (LB_HY | LB_HH ))
     {
       it_begin();
       it_advance();
@@ -1139,7 +1141,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     }
 
     /* LB21 */
-    if (it.lookahead & (LB_BA | LB_HY | LB_NS))
+    if (it.lookahead & (LB_BA | LB_HH | LB_HY | LB_NS))
       continue;
     if (it.curchar & LB_BB)
       continue;
