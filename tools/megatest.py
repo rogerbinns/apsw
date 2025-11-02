@@ -236,6 +236,7 @@ def cmp(a, b):
 
 # Default versions we support
 PYVERS = (
+    "3.15.0a1",
     "3.14.0",
     "3.13.9",
     "3.12.12",
