@@ -1,5 +1,5 @@
-Full text search
-****************
+Full text search and Unicode
+****************************
 
 .. currentmodule:: apsw.fts5
 
