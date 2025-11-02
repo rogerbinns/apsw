@@ -456,7 +456,7 @@ def text_width_substr(text: str, width: int, offset: int = 0) -> tuple[int, str]
 
 def guess_paragraphs(text: str, tabsize: int = 8) -> str:
     """Given text that contains paragraphs containing newlines, guesses where the paragraphs end.
-    The returned :class:`str` will have ``\n`` removed where it was
+    The returned :class:`str` will have ``\\n`` (newline) removed where it was
     determined to not mark a paragraph end.
 
     .. code-block:: output
@@ -479,7 +479,7 @@ def guess_paragraphs(text: str, tabsize: int = 8) -> str:
            this line is part of the line above
 
         3. Optional numbers followed by punctuation then space
-        - are considered new paragraphs
+           - are considered new paragraphs
 
     """
     # regex to match what looks like an (optionally numbered) list

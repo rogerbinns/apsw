@@ -23,6 +23,7 @@ APSW |version| documentation
    jsonb
    example-fts
    textsearch
+   unicode
    example-session
    session
    vtable
