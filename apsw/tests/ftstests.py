@@ -2113,6 +2113,17 @@ class Unicode(unittest.TestCase):
             if age is not None:
                 self.assertIn(age, apsw.unicode.version_dates)
 
+    def testVersion(self):
+        # check we have it in the date list
+        self.assertIn(apsw.unicode.unicode_version, apsw.unicode.version_dates)
+        # and at least one codepoint with this version
+        va = apsw.unicode.version_added
+        version_expected = apsw.unicode.unicode_version
+        for cp in range(0, sys.maxunicode):
+            if version_expected == va(cp):
+                return
+        self.fail(f"No codepoint with version {version_expected} found")
+
     def testCLI(self):
         "Exercise command line interface"
         text = ""
