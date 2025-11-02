@@ -60,6 +60,11 @@ on the module if built with the :attr:`amalgamation <using_amalgamation>`.
 behaviour. (:func:`apsw.ext.generate_series` is recommended as it
 matches other databases.)
 
+Updated :mod:`apsw.unicode` to support `Unicode 17.0
+<https://www.unicode.org/versions/Unicode17.0.0/>`__ which adds 4,803
+new codepoints and updated line breaking, along with other small
+tweaks.
+
 This is the final release supporting Python 3.9.
 
 3.50.4.0
