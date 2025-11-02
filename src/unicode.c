@@ -1245,7 +1245,7 @@ line_next_break(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
     /* LB30b */
     if (it.curchar & LB_EB && it.lookahead & LB_EM)
       continue;
-    if ((it.curchar & LB_Extended_Pictographic)
+    if ((it.curchar & (LB_Extended_Pictographic | LB_OtherNotAssigned)) == (LB_Extended_Pictographic | LB_OtherNotAssigned)
         && it.lookahead & LB_EM)
       continue;
 
