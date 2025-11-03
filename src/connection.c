@@ -125,9 +125,6 @@ struct Connection
   /* if we are using one of our VFS since sqlite doesn't reference count them */
   PyObject *vfs;
 
-  /* used for nested with (contextmanager) statements */
-  long savepointlevel;
-
   /* informational attributes */
   PyObject *open_flags;
   PyObject *open_vfs;
@@ -138,6 +135,11 @@ struct Connection
   /* limit calls to callbacks */
   CALL_TRACK(xConnect);
   CALL_TRACK(xUpdate);
+
+  /* used for nested with (contextmanager) statements */
+  const char *transaction_mode;
+  long savepointlevel;
+  int savepoint_outer_is_transaction; /* ie use COMMIT/ROLLBACK not SAVEPOINT equivalents */
 
   int init_was_called;
 };
@@ -561,6 +563,8 @@ static int
 Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
   Connection *self = (Connection *)self_;
+  self->transaction_mode = "DEFERRED";
+
   PyObject *hooks = NULL, *hook = NULL, *iterator = NULL, *hookresult = NULL;
   const char *filename = NULL;
   int res = 0;
@@ -4392,6 +4396,79 @@ Connection_get_row_trace(PyObject *self_, PyObject *Py_UNUSED(unused))
   return Py_NewRef(ret);
 }
 
+/* All the things that can go wrong executing the context manager SQL.  */
+enum CMExecResult
+{
+  /* it worked */
+  OK,
+  /* not one of the later errors */
+  Error,
+  /* exectrace had an error */
+  TraceError,
+  /* BEGIN gave already in transaction */
+  AlreadyInTransaction,
+  /* RELEASE/ROLLBACK said no such savepoint */
+  NoSavepoint,
+};
+
+static enum CMExecResult
+connection_context_manager_exec(Connection *self, const char *sql, int continue_on_trace_error)
+{
+  enum CMExecResult retval = OK;
+
+  if (self->exectrace)
+  {
+    PyObject *result = NULL;
+
+    CHAIN_EXC_BEGIN
+    PyObject *vargs[] = { NULL, (PyObject *)self, PyUnicode_FromString(sql), Py_None };
+    if (vargs[2])
+    {
+      result = PyObject_Vectorcall(self->exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_DECREF(vargs[2]);
+      if (result)
+      {
+        int boolval = PyObject_IsTrueStrict(result);
+        if (boolval == 0)
+          PyErr_Format(ExcTraceAbort, "Aborted by false/null return value of exec tracer");
+      }
+    }
+    Py_XDECREF(result);
+    CHAIN_EXC_END;
+
+    if (!result)
+    {
+      retval = TraceError;
+      if (!continue_on_trace_error)
+        return retval;
+    }
+  }
+
+  char *errmsg = NULL;
+  int res = sqlite3_exec(self->db, sql, 0, 0, &errmsg);
+  if (res != SQLITE_OK)
+  {
+    /* in these two cases we won't create an exception */
+    if (errmsg && 0 == strcmp(errmsg, "cannot start a transaction within a transaction"))
+      retval = AlreadyInTransaction;
+    else if (errmsg && strstr(errmsg, "no such savepoint"))
+      retval = NoSavepoint;
+    else
+    {
+      CHAIN_EXC_BEGIN
+      make_exception_with_message(res, errmsg, -1);
+      retval = Error;
+      CHAIN_EXC_END;
+    }
+  }
+  sqlite3_free(errmsg);
+
+  if (retval != OK)
+    return retval;
+  /* See issue 526 for why we can't trust SQLite success code */
+  return PyErr_Occurred() ? Error : OK;
+}
+
 /** .. method:: __enter__() -> Connection
 
   You can use the database as a `context manager
@@ -4411,67 +4488,69 @@ Connection_get_row_trace(PyObject *self_, PyObject *Py_UNUSED(unused))
                 call_function2(db)
                 db.execute("...")
 
-  Behind the scenes `savepoints <https://sqlite.org/lang_savepoint.html>`__
-   are used to provide nested transactions.
+  If starting an `outermost transaction
+  <https://sqlite.org/lang_transaction.html>`__ then ``BEGIN`` uses
+  :attr:`transaction_mode` (default ``DEFERRED``).  Nested statements
+  use `savepoints <https://sqlite.org/lang_savepoint.html>`__.
 */
 static PyObject *
 Connection_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   Connection *self = (Connection *)self_;
   char *sql = 0;
-  int res;
+  enum CMExecResult res;
 
   CHECK_CLOSED(self, NULL);
 
   DBMUTEX_ENSURE(self->dbmutex);
 
-  sql = sqlite3_mprintf("SAVEPOINT \"_apsw-%ld\"", self->savepointlevel);
-  if (!sql)
-    return PyErr_NoMemory();
-
-  /* exec tracing - we allow it to prevent */
-  if (self->exectrace && !Py_IsNone(self->exectrace))
+  if (self->savepointlevel == 0)
   {
-    int result;
-    PyObject *retval = NULL;
-    PyObject *vargs[] = { NULL, (PyObject *)self, PyUnicode_FromString(sql), Py_None };
-    if (vargs[2])
-      retval = PyObject_Vectorcall(self->exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-    Py_XDECREF(vargs[2]);
-    if (!retval)
-      goto error;
-    result = PyObject_IsTrueStrict(retval);
-    Py_DECREF(retval);
-    if (result == -1)
+    self->savepoint_outer_is_transaction = 0;
+    if (0 == sqlite3_txn_state(self->db, NULL))
     {
-      assert(PyErr_Occurred());
-      goto error;
+      sql = sqlite3_mprintf("BEGIN %s", self->transaction_mode);
+      if (!sql)
+      {
+        PyErr_NoMemory();
+        goto error;
+      }
+      res = connection_context_manager_exec(self, sql, 0);
+      sqlite3_free(sql);
+      if (res == OK)
+      {
+        self->savepoint_outer_is_transaction = 1;
+        goto success;
+      }
+      if (res != AlreadyInTransaction)
+      {
+        assert(PyErr_Occurred());
+        return NULL;
+      }
     }
-    if (result == 0)
-    {
-      PyErr_Format(ExcTraceAbort, "Aborted by false/null return value of exec tracer");
-      goto error;
-    }
-    assert(result == 1);
   }
 
-  res = sqlite3_exec(self->db, sql, 0, 0, 0);
-  sqlite3_free(sql);
-  SET_EXC(res, self->db);
-  sqlite3_mutex_leave(self->dbmutex);
+  sql = sqlite3_mprintf("SAVEPOINT \"_apsw-%ld\"", self->savepointlevel);
+  if (!sql)
+  {
+    PyErr_NoMemory();
+    goto error;
+  };
 
-  /* sqlite3_trace_v2 callback could cause Python level error */
-  if (res || PyErr_Occurred())
-    return NULL;
+  res = connection_context_manager_exec(self, sql, 0);
 
+  if (res != OK)
+    goto error;
+
+success:
   self->savepointlevel++;
+  sqlite3_mutex_leave(self->dbmutex);
+  assert(!PyErr_Occurred());
   return Py_NewRef((PyObject *)self);
 
 error:
   sqlite3_mutex_leave(self->dbmutex);
   assert(PyErr_Occurred());
-  if (sql)
-    sqlite3_free(sql);
   return NULL;
 }
 
@@ -4484,72 +4563,15 @@ error:
 
 */
 
-/* A helper function.  Returns -1 on memory error, 0 on failure and 1 on success */
-#undef connection_trace_and_exec
-static int
-connection_trace_and_exec(Connection *self, int release, int sp, int continue_on_trace_error)
-{
-#include "faultinject.h"
-  char *sql;
-  int res;
-
-  sql = sqlite3_mprintf(release ? "RELEASE SAVEPOINT \"_apsw-%ld\"" : "ROLLBACK TO SAVEPOINT \"_apsw-%ld\"", sp);
-  if (!sql)
-  {
-    PyErr_NoMemory();
-    return -1;
-  }
-
-  if (self->exectrace && !Py_IsNone(self->exectrace))
-  {
-    PyObject *result = NULL;
-
-    CHAIN_EXC_BEGIN
-    PyObject *vargs[] = { NULL, (PyObject *)self, PyUnicode_FromString(sql), Py_None };
-    if (vargs[2])
-    {
-      result = PyObject_Vectorcall(self->exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-      Py_DECREF(vargs[2]);
-    }
-    Py_XDECREF(result);
-    CHAIN_EXC_END;
-
-    if (!result && !continue_on_trace_error)
-    {
-      sqlite3_free(sql);
-      return 0;
-    }
-  }
-
-  res = sqlite3_exec(self->db, sql, 0, 0, 0);
-  SET_EXC(res, self->db);
-  sqlite3_free(sql);
-
-  /* See issue 526 for why we can't trust SQLite success code */
-  return PyErr_Occurred() ? 0 : (res == SQLITE_OK);
-}
-
 static PyObject *
 Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   Connection *self = (Connection *)self_;
   PyObject *etype, *evalue, *etraceback;
-  long sp;
-  int res;
-  int return_null = 0;
+  enum CMExecResult res;
+  char *sql;
 
   CHECK_CLOSED(self, NULL);
-
-  /* the builtin python __exit__ implementations don't error if you
-     call __exit__ without corresponding enters */
-  if (self->savepointlevel == 0)
-    Py_RETURN_FALSE;
-
-  /* We always pop a level, irrespective of how this function returns
-     - (ie successful or error) */
-  if (self->savepointlevel)
-    self->savepointlevel--;
-  sp = self->savepointlevel;
 
   {
     Connection_exit_CHECK;
@@ -4560,46 +4582,61 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
     ARG_EPILOG(NULL, Connection_exit_USAGE, );
   }
 
+  /* this protects us too */
   DBMUTEX_ENSURE(self->dbmutex);
 
-  /* try the commit first because it may fail in which case we'll need
-     to roll it back - see issue 98 */
-  if (Py_IsNone(etype) && Py_IsNone(evalue) && Py_IsNone(etraceback))
+  if (self->savepointlevel > 0)
+    self->savepointlevel--;
+
+  /* savepoint - they always have to be released even on rollback */
+  if (self->savepointlevel || !self->savepoint_outer_is_transaction)
   {
-    res = connection_trace_and_exec(self, 1, sp, 0);
-    if (res == -1)
+    if (!Py_IsNone(etype) || !Py_IsNone(evalue) || !Py_IsNone(etraceback))
     {
-      sqlite3_mutex_leave(self->dbmutex);
-      return NULL;
+      sql = sqlite3_mprintf("ROLLBACK TO SAVEPOINT \"_apsw-%ld\"", self->savepointlevel);
+      if (!sql)
+      {
+        PyErr_NoMemory();
+        goto exit;
+      }
+      connection_context_manager_exec(self, sql, 1);
+      sqlite3_free(sql);
     }
-    if (res == 1)
+    sql = sqlite3_mprintf("RELEASE SAVEPOINT \"_apsw-%ld\"", self->savepointlevel);
+    if (!sql)
     {
-      sqlite3_mutex_leave(self->dbmutex);
-      Py_RETURN_FALSE;
+      PyErr_NoMemory();
+      goto exit;
     }
-    assert(res == 0);
-    assert(PyErr_Occurred());
-    return_null = 1;
+    res = connection_context_manager_exec(self, sql, 1);
+    sqlite3_free(sql);
+    if (res != OK)
+    {
+      CHAIN_EXC_BEGIN
+      PyErr_Format(exc_descriptors[0].cls,
+                   "You have done transaction control (eg COMMIT, ROLLBACK, savepoints) while using Connection "
+                   "context manager (\"with\") for transaction control, which gives error %s",
+                   sqlite3_errmsg(self->db));
+      CHAIN_EXC_END;
+    }
+  }
+  else
+  {
+    res = OK;
+    if (Py_IsNone(etype) || Py_IsNone(evalue) && Py_IsNone(etraceback))
+      res = connection_context_manager_exec(self, "COMMIT", 0);
+    else
+      res = Error;
+    /* the commit could fail - sqlite rolls back some but not others like busy error */
+    if (res != OK)
+      connection_context_manager_exec(self, "ROLLBACK", 0);
   }
 
-  res = connection_trace_and_exec(self, 0, sp, 1);
-  if (res == -1)
-  {
-    sqlite3_mutex_leave(self->dbmutex);
-    return NULL;
-  }
-  return_null = return_null || res == 0;
-  /* we have rolled back, but still need to release the savepoint */
-  res = connection_trace_and_exec(self, 1, sp, 1);
+exit:
   sqlite3_mutex_leave(self->dbmutex);
-  return_null = return_null || res == 0 || res == -1;
 
-  if (return_null)
-  {
-    assert(PyErr_Occurred());
+  if (PyErr_Occurred())
     return NULL;
-  }
-  assert(!PyErr_Occurred());
   Py_RETURN_FALSE;
 }
 
@@ -5518,6 +5555,57 @@ Connection_get_in_transaction(PyObject *self_, void *Py_UNUSED(unused))
   Py_RETURN_FALSE;
 }
 
+/** .. attribute:: transaction_mode
+   :type: str
+
+   The mode used for the outermost transaction when using the
+   :meth:`context manager (with) <__enter__>`.
+
+   The value will be one of ``DEFERRED`` (default), ``IMMEDIATE``,
+   or ``EXCLUSIVE``.  When setting it must be one of those values
+   in any case.
+ */
+static PyObject*
+Connection_get_transaction_mode(PyObject *self_, void *Py_UNUSED(unused))
+{
+  Connection *self = (Connection *)self_;
+  CHECK_CLOSED(self, NULL);
+  return PyUnicode_FromString(self->transaction_mode);
+}
+
+static int
+Connection_set_transaction_mode(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
+{
+  Connection *self = (Connection *)self_;
+  if (!PyUnicode_Check(value))
+  {
+    PyErr_Format(PyExc_TypeError, "transaction_mode expected a str not %s", Py_TypeName(value));
+    return -1;
+  }
+  Py_ssize_t size;
+  const char *utf8 = PyUnicode_AsUTF8AndSize(value, &size);
+  if (!utf8)
+    return -1;
+
+#define X(val)                                                                                                         \
+if (size == strlen(val) && 0 == sqlite3_stricmp(utf8, val))                                                                        \
+  self->transaction_mode = val
+
+  X("DEFERRED");
+  else X("IMMEDIATE");
+  else X("EXCLUSIVE");
+
+#undef X
+
+  else
+  {
+    PyErr_Format(PyExc_ValueError,
+                 "Unknown value for transaction_mode - it should be one of DEFERRED, IMMEDIATE, EXCLUSIVE");
+    return -1;
+  }
+  return 0;
+}
+
 /** .. attribute:: convert_binding
   :type: ConvertBinding | None
 
@@ -6240,6 +6328,8 @@ static PyGetSetDef Connection_getseters[] = {
   { "authorizer", Connection_get_authorizer_attr, Connection_set_authorizer_attr, Connection_authorizer_DOC },
   { "system_errno", Connection_get_system_errno, NULL, Connection_system_errno_DOC },
   { "is_interrupted", Connection_is_interrupted, NULL, Connection_is_interrupted_DOC },
+  { "transaction_mode", Connection_get_transaction_mode, Connection_set_transaction_mode,
+    Connection_transaction_mode_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
   { Connection_exec_trace_OLDNAME, Connection_get_exec_trace_attr, Connection_set_exec_trace_attr,
     Connection_exec_trace_OLDDOC },
