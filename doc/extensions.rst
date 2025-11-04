@@ -75,3 +75,8 @@ The RTree extension provides a `spatial table
 <https://sqlite.org/rtree.html>`__.  There are no additional APIs and
 the `documented SQL <https://sqlite.org/rtree.html>`__ works as is.
 
+Geopoly
+=======
+
+A Geojson `compatible interface to RTree
+<Mhttps://www.sqlite.org/geopoly.html>`__.
