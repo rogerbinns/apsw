@@ -4547,6 +4547,7 @@ Connection_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
   };
 
   res = connection_context_manager_exec(self, sql, 0, 0);
+  sqlite3_free(sql);
 
   if (res != OK)
     goto error;
