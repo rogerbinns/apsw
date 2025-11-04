@@ -128,6 +128,11 @@
 #undef sqlite3_cancel_auto_extension
 #define sqlite3_cancel_auto_extension *not used*
 
+#define sqlite3_carray_bind(one, two, three, four, five, six) ({              \
+    assert (sqlite3_mutex_held(sqlite3_db_mutex(sqlite3_db_handle((one)))));  \
+    sqlite3_carray_bind((one), (two), (three), (four), (five), (six));        \
+})
+
 #undef sqlite3_changes
 #define sqlite3_changes *not used*
 
@@ -335,9 +340,12 @@
     sqlite3_db_release_memory((one));                    \
 })
 
-#define sqlite3_db_status(one, two, three, four, five) ({      \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));        \
-    sqlite3_db_status((one), (two), (three), (four), (five));  \
+#undef sqlite3_db_status
+#define sqlite3_db_status *not used*
+
+#define sqlite3_db_status64(one, two, three, four, five) ({      \
+    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));          \
+    sqlite3_db_status64((one), (two), (three), (four), (five));  \
 })
 
 #define sqlite3_declare_vtab(one, two) ({                \
@@ -643,6 +651,9 @@
 
 #undef sqlite3_set_clientdata
 #define sqlite3_set_clientdata *not used*
+
+#undef sqlite3_set_errmsg
+#define sqlite3_set_errmsg *not used*
 
 #define sqlite3_set_last_insert_rowid(one, two) ({       \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \

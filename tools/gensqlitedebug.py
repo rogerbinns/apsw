@@ -54,8 +54,10 @@ functions_not_used = (
     "sqlite3_(get|set)_(auxdata|clientdata|table)",
     "sqlite3_keyword_check",
     "sqlite3_libversion_number",
+    "sqlite3_set_errmsg",
     # 64 should be used
     "sqlite3_malloc",
+    "sqlite3_db_status",
     # we use python reallocs
     "sqlite3_realloc.*",
     "sqlite3_msize",
@@ -172,6 +174,8 @@ functions_arg = (
     ("sqlite3_bind_(double|int64|zeroblob64)", 3, "sqlite3_db_handle((one))"),
     ("sqlite3_bind_(blob64|pointer)", 5, "sqlite3_db_handle((one))"),
     ("sqlite3_bind_text64", 6, "sqlite3_db_handle((one))"),
+    ("sqlite3_carray_bind", 6, "sqlite3_db_handle((one))"),
+    ("sqlite3_carray_bind_apsw", 7, "sqlite3_db_handle((one))"),
     ("sqlite3_clear_bindings", 1, "sqlite3_db_handle((one))"),
     ("sqlite3_column_count", 1, "sqlite3_db_handle((one))"),
     (
@@ -243,7 +247,7 @@ functions_arg_one = {
     ),
     5: (
         "sqlite3_create_module_v2",
-        "sqlite3_db_status",
+        "sqlite3_db_status64",
         "sqlite3_exec",
         "sqlite3_wal_checkpoint_v2",
     ),
