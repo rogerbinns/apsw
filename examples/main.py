@@ -926,7 +926,7 @@ try:
             """create table example(x,y,z);
                            insert into example values (3,4,5)"""
         )
-except apsw.ConstraintError:
+except apsw.ConstraintError as exc:
     print("commit was not allowed")
 
 connection.set_commit_hook(None)
