@@ -32,6 +32,11 @@ having to go through the intermediate JSON text format.
 Added :func:`apsw.ext.Function` for calling SQL functions directly
 from Python.
 
+When using ``with`` (:meth:`Connection context manager
+<Connection.__enter__>`) you can :attr:`set the outer transaction mode
+<Connection.transaction_mode>` to ``DEFERRED`` (default)  /
+``IMMEDIATE`` / ``EXCLUSIVE``. (:issue:`578`)
+
 :meth:`Changeset.apply` now takes ``filter_change`` parameter for
 allowing filtering on individual change level, taking advantage of
 `sqlite3changeset_apply_v3
