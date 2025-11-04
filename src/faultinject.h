@@ -109,7 +109,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef _PyTuple_Resize
 #undef allocfunccbinfo
 #undef apsw_strdup
-#undef connection_trace_and_exec
+#undef connection_context_manager_exec
 #undef convert_column_to_pyobject
 #undef convert_value_to_pyobject
 #undef convertutf8string
@@ -1706,20 +1706,20 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                 \
     _res_apsw_strdup;                                                                                                                 \
 })
-#define connection_trace_and_exec(...) \
-({                                                                                                                                                                              \
-    __auto_type _res_connection_trace_and_exec = 0 ? connection_trace_and_exec(__VA_ARGS__) : 0;                                                                                \
-                                                                                                                                                                                \
-    _res_connection_trace_and_exec = (typeof (_res_connection_trace_and_exec))APSW_FaultInjectControl("connection_trace_and_exec", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                                                                \
-    if ((typeof (_res_connection_trace_and_exec))0x1FACADE == _res_connection_trace_and_exec)                                                                                   \
-       _res_connection_trace_and_exec = connection_trace_and_exec(__VA_ARGS__);                                                                                                 \
-    else if ((typeof(_res_connection_trace_and_exec))0x2FACADE == _res_connection_trace_and_exec)                                                                               \
-    {                                                                                                                                                                           \
-        connection_trace_and_exec(__VA_ARGS__);                                                                                                                                 \
-        _res_connection_trace_and_exec = (typeof (_res_connection_trace_and_exec))18;                                                                                           \
-    }                                                                                                                                                                           \
-    _res_connection_trace_and_exec;                                                                                                                                             \
+#define connection_context_manager_exec(...) \
+({                                                                                                                                                                                                \
+    __auto_type _res_connection_context_manager_exec = 0 ? connection_context_manager_exec(__VA_ARGS__) : 0;                                                                                      \
+                                                                                                                                                                                                  \
+    _res_connection_context_manager_exec = (typeof (_res_connection_context_manager_exec))APSW_FaultInjectControl("connection_context_manager_exec", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                                  \
+    if ((typeof (_res_connection_context_manager_exec))0x1FACADE == _res_connection_context_manager_exec)                                                                                         \
+       _res_connection_context_manager_exec = connection_context_manager_exec(__VA_ARGS__);                                                                                                       \
+    else if ((typeof(_res_connection_context_manager_exec))0x2FACADE == _res_connection_context_manager_exec)                                                                                     \
+    {                                                                                                                                                                                             \
+        connection_context_manager_exec(__VA_ARGS__);                                                                                                                                             \
+        _res_connection_context_manager_exec = (typeof (_res_connection_context_manager_exec))18;                                                                                                 \
+    }                                                                                                                                                                                             \
+    _res_connection_context_manager_exec;                                                                                                                                                         \
 })
 #define convert_column_to_pyobject(...) \
 ({                                                                                                                                                                                 \
