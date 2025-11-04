@@ -4409,11 +4409,18 @@ enum CMExecResult
   AlreadyInTransaction,
   /* RELEASE/ROLLBACK said no such savepoint */
   NoSavepoint,
+  /* Rollback said no transaction active - we swallow these
+     because it meant the COMMIT did something, and could be
+     issue 526 */
+  RollbackNoTransaction,
 };
 
+#undef connection_context_manager_exec
 static enum CMExecResult
-connection_context_manager_exec(Connection *self, const char *sql, int continue_on_trace_error)
+connection_context_manager_exec(Connection *self, const char *sql, int continue_on_trace_error, int convert_exception)
 {
+#include "faultinject.h"
+
   enum CMExecResult retval = OK;
 
   if (self->exectrace)
@@ -4448,10 +4455,12 @@ connection_context_manager_exec(Connection *self, const char *sql, int continue_
   int res = sqlite3_exec(self->db, sql, 0, 0, &errmsg);
   if (res != SQLITE_OK)
   {
-    /* in these two cases we won't create an exception */
-    if (errmsg && 0 == strcmp(errmsg, "cannot start a transaction within a transaction"))
+    /* in these cases we won't create an exception */
+    if (convert_exception && errmsg  && 0 == strcmp(errmsg, "cannot start a transaction within a transaction"))
       retval = AlreadyInTransaction;
-    else if (errmsg && strstr(errmsg, "no such savepoint"))
+    else if (convert_exception && errmsg  && 0 == strcmp(errmsg, "cannot rollback - no transaction is active"))
+      retval = RollbackNoTransaction;
+    else if (convert_exception && errmsg && strstr(errmsg, "no such savepoint"))
       retval = NoSavepoint;
     else
     {
@@ -4515,7 +4524,7 @@ Connection_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
         PyErr_NoMemory();
         goto error;
       }
-      res = connection_context_manager_exec(self, sql, 0);
+      res = connection_context_manager_exec(self, sql, 0, 1);
       sqlite3_free(sql);
       if (res == OK)
       {
@@ -4525,7 +4534,7 @@ Connection_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
       if (res != AlreadyInTransaction)
       {
         assert(PyErr_Occurred());
-        return NULL;
+        goto error;
       }
     }
   }
@@ -4537,7 +4546,7 @@ Connection_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
     goto error;
   };
 
-  res = connection_context_manager_exec(self, sql, 0);
+  res = connection_context_manager_exec(self, sql, 0, 0);
 
   if (res != OK)
     goto error;
@@ -4599,7 +4608,7 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
         PyErr_NoMemory();
         goto exit;
       }
-      connection_context_manager_exec(self, sql, 1);
+      connection_context_manager_exec(self, sql, 1, 0);
       sqlite3_free(sql);
     }
     sql = sqlite3_mprintf("RELEASE SAVEPOINT \"_apsw-%ld\"", self->savepointlevel);
@@ -4608,7 +4617,7 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
       PyErr_NoMemory();
       goto exit;
     }
-    res = connection_context_manager_exec(self, sql, 1);
+    res = connection_context_manager_exec(self, sql, 1, 1);
     sqlite3_free(sql);
     if (res != OK)
     {
@@ -4623,13 +4632,19 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   else
   {
     res = OK;
+    int i_did_commit = 0;
     if (Py_IsNone(etype) || Py_IsNone(evalue) && Py_IsNone(etraceback))
-      res = connection_context_manager_exec(self, "COMMIT", 0);
+    {
+      res = connection_context_manager_exec(self, "COMMIT", 0, 0);
+      i_did_commit = 1;
+    }
     else
       res = Error;
-    /* the commit could fail - sqlite rolls back some but not others like busy error */
+    /* the commit could fail - sqlite rolls back some but not others like busy error
+       but we suppress no transaction active error if COMMIT possibly errored
+       but still cleared the transaction */
     if (res != OK)
-      connection_context_manager_exec(self, "ROLLBACK", 0);
+      connection_context_manager_exec(self, "ROLLBACK", 1, i_did_commit);
   }
 
 exit:
@@ -5565,7 +5580,7 @@ Connection_get_in_transaction(PyObject *self_, void *Py_UNUSED(unused))
    or ``EXCLUSIVE``.  When setting it must be one of those values
    in any case.
  */
-static PyObject*
+static PyObject *
 Connection_get_transaction_mode(PyObject *self_, void *Py_UNUSED(unused))
 {
   Connection *self = (Connection *)self_;
@@ -5577,6 +5592,9 @@ static int
 Connection_set_transaction_mode(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
   Connection *self = (Connection *)self_;
+
+  CHECK_CLOSED(self, -1);
+
   if (!PyUnicode_Check(value))
   {
     PyErr_Format(PyExc_TypeError, "transaction_mode expected a str not %s", Py_TypeName(value));
@@ -5588,7 +5606,7 @@ Connection_set_transaction_mode(PyObject *self_, PyObject *value, void *Py_UNUSE
     return -1;
 
 #define X(val)                                                                                                         \
-if (size == strlen(val) && 0 == sqlite3_stricmp(utf8, val))                                                                        \
+  if (size == strlen(val) && 0 == sqlite3_stricmp(utf8, val))                                                          \
   self->transaction_mode = val
 
   X("DEFERRED");
