@@ -8647,6 +8647,16 @@ class APSW(unittest.TestCase):
             except apsw.SQLError as exc:
                 self.assertIn("You have done transaction control", str(exc))
 
+        # transaction mode
+        for v in "deFerreD", "IMMEDiAte", "EXCLUSive":
+            setattr(self.db, "transaction_mode", v)
+            self.assertEqual(v.upper(), self.db.transaction_mode)
+
+        self.assertRaises(TypeError, setattr, self.db, 3)
+
+        for v in "\0deferred", "deferred\0", "":
+            self.assertRaises(ValueError, setattr, self.db, "transaction_mode", v)
+
 
     def fillWithRandomStuff(self, db, seed=1):
         "Fills a database with random content"
