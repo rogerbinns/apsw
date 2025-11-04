@@ -527,6 +527,7 @@ class apsw_build_ext(beparent):
                 "session",
                 "percentile",
                 "carray",
+                "geopoly",
             ]
             if not self.omit or "icu" not in self.omit.split(","):
                 if get_icu_config():

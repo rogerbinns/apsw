@@ -70,6 +70,11 @@ Updated :mod:`apsw.unicode` to support `Unicode 17.0
 new codepoints and updated line breaking, along with other small
 tweaks.
 
+The `Geopoly extension <https://www.sqlite.org/geopoly.html>`__
+(GeoJSON access to `RTree <https://www.sqlite.org/rtree.html>`__) is
+enabled when ``--enable-all-extensions`` is used with :ref:`setup.py
+<setup_py_flags>`.  This includes :ref:`PyPI <pypi>` builds.
+
 This is the final release supporting Python 3.9.
 
 3.50.4.0
