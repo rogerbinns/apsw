@@ -93,7 +93,7 @@ returns = {
             PyLong_FromLong PyLong_FromLongLong PyLong_FromSize_t
             PyLong_FromSsize_t PyLong_FromUnsignedLongLong PyLong_FromVoidPtr
             PyMapping_GetItemString PyMem_Calloc PyMem_Malloc PyMem_Realloc
-            PyMemoryView_FromMemory PyModule_AddStringConstant PyModule_Create2
+            PyMemoryView_FromMemory  PyModule_Create2
             PyNumber_Float PyNumber_Long PyObject_CallMethodNoArgs
             PyObject_CallObject PyObject_GetAttr PyObject_GetIter PyObject_Str
             PyObject_Vectorcall PyObject_VectorcallMethod PySequence_Fast
@@ -173,8 +173,8 @@ returns = {
             """.split(),
     # py functions that return a number (-1) to indicate failure
     "number": """Py_EnterRecursiveCall
-        PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyLong_AsLong
-        PyLong_AsLongLong PyList_Append PyDict_SetItemString
+        PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyModule_AddStringConstant
+        PyLong_AsLong  PyLong_AsLongLong PyList_Append PyDict_SetItemString
         PyObject_SetAttr _PyBytes_Resize PyDict_SetItem
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
         PyStructSequence_InitType2 PyList_Size PyLong_AsInt
@@ -184,7 +184,7 @@ returns = {
         PyObject_GetBufferContiguous PyObject_GetBuffer PyObject_GetBufferContiguousBounded
         _PyTuple_Resize
 
-        connection_context_manager_exec getfunctionargs
+        getfunctionargs
 
         jsonb_grow_buffer jsonb_add_tag jsonb_update_tag jsonb_append_data
         jsonb_add_tag_and_data jsonb_encode_internal jsonb_encode_object_key
