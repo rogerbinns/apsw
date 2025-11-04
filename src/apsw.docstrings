@@ -35,6 +35,56 @@
 #define Apsw_apsw_version_USAGE "apsw.apsw_version() -> str"
 #define Apsw_apsw_version_OLDDOC Apsw_apsw_version_USAGE "\n(Old less clear name apswversion)"
 
+#define  Apsw_carray_DOC "apsw.carray(object: Buffer | tuple[str, ...] | tuple[Buffer, ...], *, start: int = 0, stop: int = -1, flags: int = -1) -> CArrayBinding\n\n" \
+"Indicates a Python object is being provided as a runtime array for the\n" \
+"`Carray extension <https://sqlite.org/carray.html>`__.  This is to provide\n" \
+"bulk numbers (int or float), strings, or blobs to a query,  The array will\n" \
+"be used without calling back into Python code or acquiring the GIL.  It takes\n" \
+"about 5% of the CPU time using Carray versus passing each value in one at a\n" \
+"time via Python.\n" \
+"\n" \
+"See the :ref:`example <example_carray>`.\n" \
+"\n" \
+":param object: For numbers, any object that implements the buffer protocol as\n" \
+"   a single contiguous binary data like :class:`bytes`, :class:`bytearray`,\n" \
+"   :class:`array.array`, numpy.array etc.\n" \
+"\n" \
+"   Otherwise it should be a tuple of strings, or a tuple of binary data\n" \
+"   objects.  All elements must be the same type.\n" \
+":param start: Index of the first entry to bind\n" \
+":param stop: Index to stop at - ie one beyond the last entry bound.  Default\n" \
+"    is all remaining members.\n" \
+":param flags: Default auto detect.\n" \
+"\n" \
+"    For numbers, detection is done from the buffer\n" \
+"    `format code <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`__.\n" \
+"    Use :code:`memoryview(object).format` to see it..\n" \
+"\n" \
+"    .. list-table::\n" \
+"      :widths: auto\n" \
+"      :header-rows: 1\n" \
+"\n" \
+"      * - Format\n" \
+"        - Flag\n" \
+"      * - ``i``\n" \
+"        - ``SQLITE_CARRAY_INT32``\n" \
+"      * - ``l``\n" \
+"        - ``SQLITE_CARRAY_INT64``\n" \
+"      * - ``d``\n" \
+"        - ``SQLITE_CARRAY_DOUBLE``\n" \
+"\n" \
+"    You can explicitly provide the type such as :code:`apsw.SQLITE_CARRAY_INT32`.  If\n" \
+"    it is incorrect then the values will be nonsense.\n" \
+"\n" \
+"    If using a tuple of string or blobs, you can specify :code:`apsw.SQLITE_CARRAY_TEXT`\n" \
+"    and :code:`apsw.SQLITE_CARRAY_BLOB` respectively, but they would be detected anyway.\n" \
+"    A wrong value will fail.\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"  Carray support is only present if APSW was compiled with ``SQLITE_ENABLE_CARRAY`` such as\n" \
+"  PyPi builds.  The array must have at least one member and at most 2 billion.\n" 
+
 #define  Apsw_complete_DOC "apsw.complete(statement: str) -> bool\n\n" \
 "Returns True if the input string comprises one or more complete SQL\n" \
 "statements by looking for an unquoted trailing semi-colon.  It does\n" \
@@ -396,7 +446,7 @@
 ":meth:`VTTable.UpdateChangeRow`, :attr:`TableChange.new`,\n" \
 "and :class:`PreUpdate.update`.\n" 
 
-#define  Apsw_pyobject_DOC "apsw.pyobject(object: Any)\n\n" \
+#define  Apsw_pyobject_DOC "apsw.pyobject(object: Any) -> PyObjectBinding\n\n" \
 "Indicates a Python object is being provided as a\n" \
 ":ref:`runtime value <pyobject>`.\n" 
 
@@ -1015,14 +1065,15 @@
 } while(0)
 
 
-#define  Changeset_apply_DOC "Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None\n\n" \
+#define  Changeset_apply_DOC "Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None\n\n" \
 "Applies a changeset to a database.\n" \
 "\n" \
 ":param source: The changeset either as the bytes, or a stream\n" \
 ":param db: The connection to make the change on\n" \
 ":param filter: Callback to determine if changes to a table are done\n" \
+":param filter_change: Callback to determine if a particular change is made\n" \
 ":param conflict: Callback to handle a change that cannot be applied\n" \
-":param flags: `v2 API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.\n" \
+":param flags: `API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.\n" \
 ":param rebase: If ``True`` then return :class:`rebase <Rebaser>` information, else :class:`None`.\n" \
 "\n" \
 "Filter\n" \
@@ -1031,6 +1082,15 @@
 "Callback called with a table name, once per table that has a change.  It should return ``True``\n" \
 "if changes to that table should be applied, or ``False`` to ignore them.  If not supplied then\n" \
 "all tables have changes applied.\n" \
+"\n" \
+"Filter Change\n" \
+"-------------\n" \
+"\n" \
+"Callback called with each :class:`TableChange`.  It should return\n" \
+"``True`` if the change should be applied, or ``False`` to ignore it.\n" \
+"If not supplied then all changes are applied.\n" \
+"\n" \
+"**Note** You can only supply either ``filter`` or ``filter_change`` but not both.\n" \
 "\n" \
 "Conflict\n" \
 "--------\n" \
@@ -1050,16 +1110,20 @@
 "\n" \
 "Calls:\n" \
 "  * `sqlite3changeset_apply_v2 <https://sqlite.org/session/sqlite3changeset_apply.html>`__\n" \
-"  * `sqlite3changeset_apply_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
+"  * `sqlite3changeset_apply_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" \
+"  * `sqlite3changeset_apply_v3 <https://sqlite.org/session/sqlite3changeset_apply.html>`__\n" \
+"  * `sqlite3changeset_apply_v3_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
 
-#define Changeset_apply_KWNAMES "changeset", "db", "filter", "conflict", "flags", "rebase"
-#define Changeset_apply_USAGE "Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None"
+#define Changeset_apply_KWNAMES "changeset", "db", "filter", "filter_change", "conflict", "flags", "rebase"
+#define Changeset_apply_USAGE "Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None"
 
 #define Changeset_apply_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(db), Connection *)); \
   assert(__builtin_types_compatible_p(typeof(filter), PyObject *)); \
   assert(filter == NULL); \
+  assert(__builtin_types_compatible_p(typeof(filter_change), PyObject *)); \
+  assert(filter_change == NULL); \
   assert(__builtin_types_compatible_p(typeof(conflict), PyObject *)); \
   assert(conflict == NULL); \
   assert(__builtin_types_compatible_p(typeof(flags), int)); \
@@ -1861,8 +1925,10 @@
 "              call_function2(db)\n" \
 "              db.execute(\"...\")\n" \
 "\n" \
-"Behind the scenes `savepoints <https://sqlite.org/lang_savepoint.html>`__\n" \
-" are used to provide nested transactions.\n" 
+"If starting an `outermost transaction\n" \
+"<https://sqlite.org/lang_transaction.html>`__ then ``BEGIN`` uses\n" \
+":attr:`transaction_mode` (default ``DEFERRED``).  Nested statements\n" \
+"use `savepoints <https://sqlite.org/lang_savepoint.html>`__.\n" 
 
 #define  Connection_exec_trace_DOC ":type: Optional[ExecTracer]\n" \
 "\n" \
@@ -2734,7 +2800,7 @@
 "  * :func:`apsw.status` which does the same for SQLite as a whole\n" \
 "  * :ref:`Example <example_status>`\n" \
 "\n" \
-"Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__\n" 
+"Calls: `sqlite3_db_status64 <https://sqlite.org/c3ref/db_status.html>`__\n" 
 
 #define Connection_status_KWNAMES "op", "reset"
 #define Connection_status_USAGE "Connection.status(op: int, reset: bool = False) -> tuple[int, int]"
@@ -2867,6 +2933,15 @@
   assert(id == NULL); \
 } while(0)
 
+
+#define  Connection_transaction_mode_DOC ":type: str\n" \
+"\n" \
+"The mode used for the outermost transaction when using the\n" \
+":meth:`context manager (with) <__enter__>`.\n" \
+"\n" \
+"The value will be one of ``DEFERRED`` (default), ``IMMEDIATE``,\n" \
+"or ``EXCLUSIVE``.  When setting it must be one of those values\n" \
+"in any case.\n" 
 
 #define  Connection_txn_state_DOC "Connection.txn_state(schema: Optional[str] = None) -> int\n\n" \
 "Returns the current transaction state of the database, or a specific schema\n" \
@@ -4180,11 +4255,11 @@
 #define  TableChange_class_DOC "Represents a `changed row\n" \
 "<https://sqlite.org/session/changeset_iter.html>`__.  They come from\n" \
 ":meth:`changeset iteration <Changeset.iter>` and from the\n" \
-":meth:`conflict handler in apply <Changeset.apply>`.\n" \
+":meth:`filter_change and conflict handler in apply <Changeset.apply>`.\n" \
 "\n" \
-"A TableChange is only valid when your conflict handler is active, or\n" \
+"A TableChange is only valid when your filter or conflict handler is active, or\n" \
 "has just been provided by a changeset iterator.  It goes out of scope\n" \
-"after your conflict handler returns, or the iterator moves to the next\n" \
+"after your filter or conflict handler returns, or the iterator moves to the next\n" \
 "entry.  You will get :exc:`~apsw.InvalidContextError` if you try to\n" \
 "access fields when out of scope.  This means you can't save\n" \
 "TableChanges for later, and need to copy out any information you need.\n" 

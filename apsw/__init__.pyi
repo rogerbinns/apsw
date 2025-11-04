@@ -13,11 +13,22 @@ float, bytes (Buffer), and str (unicode text)"""
 SQLiteValues = tuple[SQLiteValue, ...]
 "A sequence of zero or more SQLiteValue"
 
-Bindings = Sequence[SQLiteValue | zeroblob] | Mapping[str, SQLiteValue | zeroblob]
-"""Query bindings are either a sequence of SQLiteValue, or a dict mapping names
-to SQLiteValues.  You can also provide zeroblob in Bindings. You can use
-dict subclasses or any type registered with :class:`collections.abc.Mapping`
-for named bindings"""
+class PyObjectBinding:
+    "Result of :meth:`pyobject`"
+    ...
+
+class CArrayBinding:
+    "Result of :meth:`carray`"
+    ...
+
+Binding = SQLiteValue | zeroblob | PyObjectBinding | CArrayBinding
+"""An individual binding can be any of the SQLiteValues.
+zeroblob, :meth:`pyobject`, or :meth:`carray`"""
+
+Bindings = Sequence[Binding] | Mapping[str, Binding]
+"""Query bindings are either a sequence of Binding, or a dict mapping string names
+to a Binding. You can use dict subclasses or any type registered with
+:class:`collections.abc.Mapping` for named bindings"""
 
 
 class AggregateClass(Protocol):
@@ -198,6 +209,57 @@ def apsw_version() -> str:
     ...
 
 apswversion = apsw_version ## OLD-NAME
+
+def carray(object: Buffer | tuple[str, ...] | tuple[Buffer, ...], *, start: int = 0, stop: int = -1, flags: int = -1) -> CArrayBinding:
+    """Indicates a Python object is being provided as a runtime array for the
+    `Carray extension <https://sqlite.org/carray.html>`__.  This is to provide
+    bulk numbers (int or float), strings, or blobs to a query,  The array will
+    be used without calling back into Python code or acquiring the GIL.  It takes
+    about 5% of the CPU time using Carray versus passing each value in one at a
+    time via Python.
+
+    See the :ref:`example <example_carray>`.
+
+    :param object: For numbers, any object that implements the buffer protocol as
+       a single contiguous binary data like :class:`bytes`, :class:`bytearray`,
+       :class:`array.array`, numpy.array etc.
+
+       Otherwise it should be a tuple of strings, or a tuple of binary data
+       objects.  All elements must be the same type.
+    :param start: Index of the first entry to bind
+    :param stop: Index to stop at - ie one beyond the last entry bound.  Default
+        is all remaining members.
+    :param flags: Default auto detect.
+
+        For numbers, detection is done from the buffer
+        `format code <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`__.
+        Use :code:`memoryview(object).format` to see it..
+
+        .. list-table::
+          :widths: auto
+          :header-rows: 1
+
+          * - Format
+            - Flag
+          * - ``i``
+            - ``SQLITE_CARRAY_INT32``
+          * - ``l``
+            - ``SQLITE_CARRAY_INT64``
+          * - ``d``
+            - ``SQLITE_CARRAY_DOUBLE``
+
+        You can explicitly provide the type such as :code:`apsw.SQLITE_CARRAY_INT32`.  If
+        it is incorrect then the values will be nonsense.
+
+        If using a tuple of string or blobs, you can specify :code:`apsw.SQLITE_CARRAY_TEXT`
+        and :code:`apsw.SQLITE_CARRAY_BLOB` respectively, but they would be detected anyway.
+        A wrong value will fail.
+
+    .. note::
+
+      Carray support is only present if APSW was compiled with ``SQLITE_ENABLE_CARRAY`` such as
+      PyPi builds.  The array must have at least one member and at most 2 billion."""
+    ...
 
 compile_options: tuple[str, ...]
 """A tuple of the options used to compile SQLite.  For example it
@@ -497,7 +559,7 @@ used with :meth:`VTCursor.ColumnNoChange`,
 :meth:`VTTable.UpdateChangeRow`, :attr:`TableChange.new`,
 and :class:`PreUpdate.update`."""
 
-def pyobject(object: Any):
+def pyobject(object: Any) -> PyObjectBinding:
     """Indicates a Python object is being provided as a
     :ref:`runtime value <pyobject>`."""
     ...
@@ -936,14 +998,15 @@ class Changeset:
     usage, or where changesets are larger than 2GB (the SQLite limit)."""
 
     @staticmethod
-    def apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None:
+    def apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None:
         """Applies a changeset to a database.
 
         :param source: The changeset either as the bytes, or a stream
         :param db: The connection to make the change on
         :param filter: Callback to determine if changes to a table are done
+        :param filter_change: Callback to determine if a particular change is made
         :param conflict: Callback to handle a change that cannot be applied
-        :param flags: `v2 API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.
+        :param flags: `API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.
         :param rebase: If ``True`` then return :class:`rebase <Rebaser>` information, else :class:`None`.
 
         Filter
@@ -952,6 +1015,15 @@ class Changeset:
         Callback called with a table name, once per table that has a change.  It should return ``True``
         if changes to that table should be applied, or ``False`` to ignore them.  If not supplied then
         all tables have changes applied.
+
+        Filter Change
+        -------------
+
+        Callback called with each :class:`TableChange`.  It should return
+        ``True`` if the change should be applied, or ``False`` to ignore it.
+        If not supplied then all changes are applied.
+
+        **Note** You can only supply either ``filter`` or ``filter_change`` but not both.
 
         Conflict
         --------
@@ -971,7 +1043,9 @@ class Changeset:
 
         Calls:
           * `sqlite3changeset_apply_v2 <https://sqlite.org/session/sqlite3changeset_apply.html>`__
-          * `sqlite3changeset_apply_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+          * `sqlite3changeset_apply_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
+          * `sqlite3changeset_apply_v3 <https://sqlite.org/session/sqlite3changeset_apply.html>`__
+          * `sqlite3changeset_apply_v3_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
         ...
 
     @staticmethod
@@ -1549,8 +1623,10 @@ class Connection:
                       call_function2(db)
                       db.execute("...")
 
-        Behind the scenes `savepoints <https://sqlite.org/lang_savepoint.html>`__
-         are used to provide nested transactions."""
+        If starting an `outermost transaction
+        <https://sqlite.org/lang_transaction.html>`__ then ``BEGIN`` uses
+        :attr:`transaction_mode` (default ``DEFERRED``).  Nested statements
+        use `savepoints <https://sqlite.org/lang_savepoint.html>`__."""
         ...
 
     exec_trace: Optional[ExecTracer]
@@ -2164,7 +2240,7 @@ class Connection:
           * :func:`apsw.status` which does the same for SQLite as a whole
           * :ref:`Example <example_status>`
 
-        Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__"""
+        Calls: `sqlite3_db_status64 <https://sqlite.org/c3ref/db_status.html>`__"""
         ...
 
     system_errno: int
@@ -2267,6 +2343,14 @@ class Connection:
           * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__
           * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__"""
         ...
+
+    transaction_mode: str
+    """The mode used for the outermost transaction when using the
+    :meth:`context manager (with) <__enter__>`.
+
+    The value will be one of ``DEFERRED`` (default), ``IMMEDIATE``,
+    or ``EXCLUSIVE``.  When setting it must be one of those values
+    in any case."""
 
     def txn_state(self, schema: Optional[str] = None) -> int:
         """Returns the current transaction state of the database, or a specific schema
@@ -3157,11 +3241,11 @@ class TableChange:
     """Represents a `changed row
     <https://sqlite.org/session/changeset_iter.html>`__.  They come from
     :meth:`changeset iteration <Changeset.iter>` and from the
-    :meth:`conflict handler in apply <Changeset.apply>`.
+    :meth:`filter_change and conflict handler in apply <Changeset.apply>`.
 
-    A TableChange is only valid when your conflict handler is active, or
+    A TableChange is only valid when your filter or conflict handler is active, or
     has just been provided by a changeset iterator.  It goes out of scope
-    after your conflict handler returns, or the iterator moves to the next
+    after your filter or conflict handler returns, or the iterator moves to the next
     entry.  You will get :exc:`~apsw.InvalidContextError` if you try to
     access fields when out of scope.  This means you can't save
     TableChanges for later, and need to copy out any information you need."""
@@ -4217,6 +4301,16 @@ SQLITE_CANTOPEN_NOTEMPDIR: int = 270
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_CANTOPEN_SYMLINK: int = 1550
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
+SQLITE_CARRAY_BLOB: int = 4
+"""For `Datatypes for the CARRAY table-valued function <https://sqlite.org/c3ref/c_carray_blob.html>'__"""
+SQLITE_CARRAY_DOUBLE: int = 2
+"""For `Datatypes for the CARRAY table-valued function <https://sqlite.org/c3ref/c_carray_blob.html>'__"""
+SQLITE_CARRAY_INT32: int = 0
+"""For `Datatypes for the CARRAY table-valued function <https://sqlite.org/c3ref/c_carray_blob.html>'__"""
+SQLITE_CARRAY_INT64: int = 1
+"""For `Datatypes for the CARRAY table-valued function <https://sqlite.org/c3ref/c_carray_blob.html>'__"""
+SQLITE_CARRAY_TEXT: int = 3
+"""For `Datatypes for the CARRAY table-valued function <https://sqlite.org/c3ref/c_carray_blob.html>'__"""
 SQLITE_CHANGESETAPPLY_FKNOACTION: int = 8
 """For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
 SQLITE_CHANGESETAPPLY_IGNORENOOP: int = 4
@@ -4244,6 +4338,8 @@ SQLITE_CHANGESET_OMIT: int = 0
 SQLITE_CHANGESET_REPLACE: int = 1
 """For `Constants Returned By The Conflict Handler <https://sqlite.org/session/c_changeset_abort.html>'__"""
 SQLITE_CHECKPOINT_FULL: int = 1
+"""For `Checkpoint Mode Values <https://sqlite.org/c3ref/c_checkpoint_full.html>'__"""
+SQLITE_CHECKPOINT_NOOP: int = -1
 """For `Checkpoint Mode Values <https://sqlite.org/c3ref/c_checkpoint_full.html>'__"""
 SQLITE_CHECKPOINT_PASSIVE: int = 0
 """For `Checkpoint Mode Values <https://sqlite.org/c3ref/c_checkpoint_full.html>'__"""
@@ -4431,11 +4527,13 @@ SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE: int = 5
 """For `Status Parameters for database connections <https://sqlite.org/c3ref/c_dbstatus_options.html>'__"""
 SQLITE_DBSTATUS_LOOKASIDE_USED: int = 0
 """For `Status Parameters for database connections <https://sqlite.org/c3ref/c_dbstatus_options.html>'__"""
-SQLITE_DBSTATUS_MAX: int = 12
+SQLITE_DBSTATUS_MAX: int = 13
 """For `Status Parameters for database connections <https://sqlite.org/c3ref/c_dbstatus_options.html>'__"""
 SQLITE_DBSTATUS_SCHEMA_USED: int = 2
 """For `Status Parameters for database connections <https://sqlite.org/c3ref/c_dbstatus_options.html>'__"""
 SQLITE_DBSTATUS_STMT_USED: int = 3
+"""For `Status Parameters for database connections <https://sqlite.org/c3ref/c_dbstatus_options.html>'__"""
+SQLITE_DBSTATUS_TEMPBUF_SPILL: int = 13
 """For `Status Parameters for database connections <https://sqlite.org/c3ref/c_dbstatus_options.html>'__"""
 SQLITE_DELETE: int = 9
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
@@ -4471,11 +4569,17 @@ SQLITE_EMPTY: int = 16
 """For `Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_ERROR: int = 1
 """For `Result Codes <https://sqlite.org/rescode.html>'__"""
+SQLITE_ERROR_KEY: int = 1281
+"""For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_ERROR_MISSING_COLLSEQ: int = 257
+"""For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
+SQLITE_ERROR_RESERVESIZE: int = 1025
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_ERROR_RETRY: int = 513
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_ERROR_SNAPSHOT: int = 769
+"""For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
+SQLITE_ERROR_UNABLE: int = 1537
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_FAIL: int = 3
 """For `Conflict resolution modes <https://sqlite.org/c3ref/c_fail.html>'__"""
@@ -4500,6 +4604,8 @@ SQLITE_FCNTL_COMMIT_PHASETWO: int = 22
 SQLITE_FCNTL_DATA_VERSION: int = 35
 """For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
 SQLITE_FCNTL_EXTERNAL_READER: int = 40
+"""For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
+SQLITE_FCNTL_FILESTAT: int = 45
 """For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
 SQLITE_FCNTL_FILE_POINTER: int = 7
 """For `Standard File Control Opcodes <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>'__"""
@@ -4657,6 +4763,8 @@ SQLITE_IOERR_ACCESS: int = 3338
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_IOERR_AUTH: int = 7178
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
+SQLITE_IOERR_BADKEY: int = 8970
+"""For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_IOERR_BEGIN_ATOMIC: int = 7434
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_IOERR_BLOCKED: int = 2826
@@ -4664,6 +4772,8 @@ SQLITE_IOERR_BLOCKED: int = 2826
 SQLITE_IOERR_CHECKRESERVEDLOCK: int = 3594
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_IOERR_CLOSE: int = 4106
+"""For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
+SQLITE_IOERR_CODEC: int = 9226
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_IOERR_COMMIT_ATOMIC: int = 7690
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
@@ -5020,6 +5130,13 @@ SQLITE_INDEX_CONSTRAINT_LT SQLITE_INDEX_CONSTRAINT_MATCH
 SQLITE_INDEX_CONSTRAINT_NE SQLITE_INDEX_CONSTRAINT_OFFSET
 SQLITE_INDEX_CONSTRAINT_REGEXP"""
 
+mapping_carray: dict[str | int, int | str]
+"""Datatypes for the CARRAY table-valued function mapping names to int and int to names.
+Doc at https://sqlite.org/c3ref/c_carray_blob.html
+
+SQLITE_CARRAY_BLOB SQLITE_CARRAY_DOUBLE SQLITE_CARRAY_INT32
+SQLITE_CARRAY_INT64 SQLITE_CARRAY_TEXT"""
+
 mapping_config: dict[str | int, int | str]
 """Configuration Options mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_config_covering_index_scan.html
@@ -5071,7 +5188,7 @@ SQLITE_DBSTATUS_DEFERRED_FKS SQLITE_DBSTATUS_LOOKASIDE_HIT
 SQLITE_DBSTATUS_LOOKASIDE_MISS_FULL
 SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE SQLITE_DBSTATUS_LOOKASIDE_USED
 SQLITE_DBSTATUS_MAX SQLITE_DBSTATUS_SCHEMA_USED
-SQLITE_DBSTATUS_STMT_USED"""
+SQLITE_DBSTATUS_STMT_USED SQLITE_DBSTATUS_TEMPBUF_SPILL"""
 
 mapping_device_characteristics: dict[str | int, int | str]
 """Device Characteristics mapping names to int and int to names.
@@ -5100,10 +5217,11 @@ SQLITE_CONSTRAINT_NOTNULL SQLITE_CONSTRAINT_PINNED
 SQLITE_CONSTRAINT_PRIMARYKEY SQLITE_CONSTRAINT_ROWID
 SQLITE_CONSTRAINT_TRIGGER SQLITE_CONSTRAINT_UNIQUE
 SQLITE_CONSTRAINT_VTAB SQLITE_CORRUPT_INDEX SQLITE_CORRUPT_SEQUENCE
-SQLITE_CORRUPT_VTAB SQLITE_ERROR_MISSING_COLLSEQ SQLITE_ERROR_RETRY
-SQLITE_ERROR_SNAPSHOT SQLITE_IOERR_ACCESS SQLITE_IOERR_AUTH
-SQLITE_IOERR_BEGIN_ATOMIC SQLITE_IOERR_BLOCKED
-SQLITE_IOERR_CHECKRESERVEDLOCK SQLITE_IOERR_CLOSE
+SQLITE_CORRUPT_VTAB SQLITE_ERROR_KEY SQLITE_ERROR_MISSING_COLLSEQ
+SQLITE_ERROR_RESERVESIZE SQLITE_ERROR_RETRY SQLITE_ERROR_SNAPSHOT
+SQLITE_ERROR_UNABLE SQLITE_IOERR_ACCESS SQLITE_IOERR_AUTH
+SQLITE_IOERR_BADKEY SQLITE_IOERR_BEGIN_ATOMIC SQLITE_IOERR_BLOCKED
+SQLITE_IOERR_CHECKRESERVEDLOCK SQLITE_IOERR_CLOSE SQLITE_IOERR_CODEC
 SQLITE_IOERR_COMMIT_ATOMIC SQLITE_IOERR_CONVPATH
 SQLITE_IOERR_CORRUPTFS SQLITE_IOERR_DATA SQLITE_IOERR_DELETE
 SQLITE_IOERR_DELETE_NOENT SQLITE_IOERR_DIR_CLOSE
@@ -5130,11 +5248,12 @@ SQLITE_FCNTL_BUSYHANDLER SQLITE_FCNTL_CHUNK_SIZE
 SQLITE_FCNTL_CKPT_DONE SQLITE_FCNTL_CKPT_START SQLITE_FCNTL_CKSM_FILE
 SQLITE_FCNTL_COMMIT_ATOMIC_WRITE SQLITE_FCNTL_COMMIT_PHASETWO
 SQLITE_FCNTL_DATA_VERSION SQLITE_FCNTL_EXTERNAL_READER
-SQLITE_FCNTL_FILE_POINTER SQLITE_FCNTL_GET_LOCKPROXYFILE
-SQLITE_FCNTL_HAS_MOVED SQLITE_FCNTL_JOURNAL_POINTER
-SQLITE_FCNTL_LAST_ERRNO SQLITE_FCNTL_LOCKSTATE
-SQLITE_FCNTL_LOCK_TIMEOUT SQLITE_FCNTL_MMAP_SIZE SQLITE_FCNTL_NULL_IO
-SQLITE_FCNTL_OVERWRITE SQLITE_FCNTL_PDB SQLITE_FCNTL_PERSIST_WAL
+SQLITE_FCNTL_FILESTAT SQLITE_FCNTL_FILE_POINTER
+SQLITE_FCNTL_GET_LOCKPROXYFILE SQLITE_FCNTL_HAS_MOVED
+SQLITE_FCNTL_JOURNAL_POINTER SQLITE_FCNTL_LAST_ERRNO
+SQLITE_FCNTL_LOCKSTATE SQLITE_FCNTL_LOCK_TIMEOUT
+SQLITE_FCNTL_MMAP_SIZE SQLITE_FCNTL_NULL_IO SQLITE_FCNTL_OVERWRITE
+SQLITE_FCNTL_PDB SQLITE_FCNTL_PERSIST_WAL
 SQLITE_FCNTL_POWERSAFE_OVERWRITE SQLITE_FCNTL_PRAGMA SQLITE_FCNTL_RBU
 SQLITE_FCNTL_RESERVE_BYTES SQLITE_FCNTL_RESET_CACHE
 SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE SQLITE_FCNTL_SET_LOCKPROXYFILE
@@ -5313,8 +5432,9 @@ mapping_wal_checkpoint: dict[str | int, int | str]
 """Checkpoint Mode Values mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_checkpoint_full.html
 
-SQLITE_CHECKPOINT_FULL SQLITE_CHECKPOINT_PASSIVE
-SQLITE_CHECKPOINT_RESTART SQLITE_CHECKPOINT_TRUNCATE"""
+SQLITE_CHECKPOINT_FULL SQLITE_CHECKPOINT_NOOP
+SQLITE_CHECKPOINT_PASSIVE SQLITE_CHECKPOINT_RESTART
+SQLITE_CHECKPOINT_TRUNCATE"""
 
 mapping_xshmlock_flags: dict[str | int, int | str]
 """Flags for the xShmLock VFS method mapping names to int and int to names.
