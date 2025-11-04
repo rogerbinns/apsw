@@ -5209,14 +5209,14 @@ class APSW(unittest.TestCase):
 
         def tracer(cur, sql, bindings):
             sql = sql.lower().split()[0]
-            if sql in ("savepoint", "release", "rollback"):
+            if sql in ("begin", "commit", "savepoint", "release", "rollback"):
                 traces.append(sql)
             return True
 
         self.testIssue98(tracer)
         self.assertTrue(len(traces) >= 3)
-        self.assertTrue("savepoint" in traces)
-        self.assertTrue("release" in traces)
+        self.assertTrue("begin" in traces)
+        self.assertTrue("commit" in traces)
         self.assertTrue("rollback" in traces)
 
     def testIssue142(self):
@@ -8554,15 +8554,15 @@ class APSW(unittest.TestCase):
         # improve coverage and various corner cases
         self.db.__enter__()
         self.assertRaises(TypeError, self.db.__exit__, 1)
+        self.db.__exit__(None, None, None)
         for i in range(10):
-            self.db.__exit__(None, None, None)
+            self.assertRaisesRegex(apsw.SQLError, ".*cannot commit.*", self.db.__exit__, None, None, None)
 
         # make an exit fail
         self.db.__enter__()
         self.db.cursor().execute("commit")
         # deliberately futz with the outstanding transaction
         self.assertRaises(apsw.SQLError, self.db.__exit__, None, None, None)
-        self.db.__exit__(None, None, None)  # extra exit should be harmless
 
         # exectracing
         traces = []
@@ -8580,9 +8580,9 @@ class APSW(unittest.TestCase):
             pass
 
         # check we saw the right things in the traces
-        self.assertTrue(len(traces) == 3)
+        self.assertTrue(len(traces) == 2)
         for s in traces:
-            self.assertTrue("SAVEPOINT" in s.upper())
+            self.assertTrue("SAVEPOINT" not in s.upper())
 
         def et(*args):
             return BadIsTrue()
@@ -8630,14 +8630,23 @@ class APSW(unittest.TestCase):
             self.assertRaises(ValueError, blob.read)
 
         # backup code
-        if not hasattr(self.db, "backup"):
-            return  # experimental
+        self.db.execute("COMMIT") # clear out pending transaction
+
         db2 = apsw.Connection(":memory:")
         with db2.backup("main", self.db, "main") as b:
             while not b.done:
                 b.step(1)
         self.assertEqual(b.done, True)
         self.assertDbIdentical(self.db, db2)
+
+        # coverage
+        with self.db:
+            try:
+                with self.db:
+                    self.db.execute("RELEASE SAVEPOINT \"_apsw-1\"")
+            except apsw.SQLError as exc:
+                self.assertIn("You have done transaction control", str(exc))
+
 
     def fillWithRandomStuff(self, db, seed=1):
         "Fills a database with random content"
