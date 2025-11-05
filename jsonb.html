@@ -1,0 +1,691 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSON (Javascript Object Notation) &mdash; APSW 3.51.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=7d76fbb9"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="Full Text Search Example/Tour" href="example-fts.html" />
+    <link rel="prev" title="JSON Example/Tour" href="example-json.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            APSW
+              <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">JSON (Javascript Object Notation)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-json">What is JSON?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#types">Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#what-is-not-in-json">What is not in JSON</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#json5">JSON5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-json">Using JSON</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#python">Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sqlite">SQLite</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#infinity-and-nan">Infinity and NaN</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#jsonb">JSONB</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw">APSW</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#notes">Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#json-as-a-sqlite-value-type">JSON as a SQLite value type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#jsonb-api">JSONB API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.jsonb_decode"><code class="docutils literal notranslate"><span class="pre">jsonb_decode()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.jsonb_detect"><code class="docutils literal notranslate"><span class="pre">jsonb_detect()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.jsonb_encode"><code class="docutils literal notranslate"><span class="pre">jsonb_encode()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unicode.html">Unicode Text Handling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">JSON (Javascript Object Notation)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/jsonb.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="example-json.html" class="btn btn-neutral float-left" title="JSON Example/Tour" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example-fts.html" class="btn btn-neutral float-right" title="Full Text Search Example/Tour" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="json-javascript-object-notation">
+<h1>JSON (Javascript Object Notation)<a class="headerlink" href="#json-javascript-object-notation" title="Link to this heading"></a></h1>
+<p>SQLite provides extensive functionality for working with JSON.  APSW
+complements that.</p>
+<section id="what-is-json">
+<h2>What is JSON?<a class="headerlink" href="#what-is-json" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://www.json.org/">Javascript Object Notation</a> (<span class="target" id="index-0"></span><a class="rfc reference external" href="https://datatracker.ietf.org/doc/html/rfc8259.html"><strong>RFC 8259</strong></a>)
+is a <strong>TEXT</strong> based format for representing data, encoded in <a class="reference external" href="https://en.wikipedia.org/wiki/UTF-8">UTF-8</a>.  It is deliberately
+constrained in what can be represented, and as a result is very widely
+supported across languages and platforms.</p>
+<section id="types">
+<h3>Types<a class="headerlink" href="#types" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Javascript</p></th>
+<th class="head"><p>Python</p></th>
+<th class="head"><p>Example</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>null</p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="kc">null</span>
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p>boolean</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p></td>
+<td><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="kc">true</span>
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p>string - surrounding double quotes with some characters backslash escaped
+such as double quote and forward slash, while Unicode codepoints can be
+backslash-u escaped allowing for the JSON text to be all ASCII.  Codepoint
+U+2603 is snowman ☃</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p></td>
+<td><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;hello \&quot; world \/ \u2603&quot;</span>
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p>number</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> and <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p></td>
+<td><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="mi">72</span>
+<span class="mf">-3.14E7</span>
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="row-even"><td><p>array - array contents can be any JSON types</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></p></td>
+<td><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="mf">3.2</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;hello&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p>object - keys must be strings, but values can be any JSON types</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p></td>
+<td><div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Orange&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;price&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">3.07</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;varieties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;fall&quot;</span><span class="p">,</span>
+<span class="w">                  </span><span class="p">{</span><span class="nt">&quot;long&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="nt">&quot;short&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3443</span><span class="p">}</span>
+<span class="w">               </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="what-is-not-in-json">
+<h3>What is not in JSON<a class="headerlink" href="#what-is-not-in-json" title="Link to this heading"></a></h3>
+<p>Versioning and extension mechanisms</p>
+<blockquote>
+<div><p>There is no version number, nor is there a way to extend the format
+to add additional functionality within the standard.</p>
+</div></blockquote>
+<p>Comments</p>
+<blockquote>
+<div><p>There is deliberately no syntax for comments.</p>
+</div></blockquote>
+<p>Whitespace sensitivity</p>
+<blockquote>
+<div><p>Although the examples above use indents and spacing for readability,
+JSON ignores all whitespace.  Machine generated JSON usually omits
+whitespace, while JSON intended for human consumption has whitespace
+added.</p>
+</div></blockquote>
+<p>Dates and times</p>
+<blockquote>
+<div><p>There is no native date or time representation.  The most common
+approach is to use <a class="reference external" href="https://en.wikipedia.org/wiki/ISO_8601">ISO8601</a> formatted strings which
+look like <code class="docutils literal notranslate"><span class="pre">2025-09-30T09:45:00Z</span></code> for UTC and
+<code class="docutils literal notranslate"><span class="pre">2025-09-30T01:15:00-07:00</span></code> with a timezone.</p>
+</div></blockquote>
+<p>Binary data</p>
+<blockquote>
+<div><p>Binary data can’t be included in a text format.  The most common approach
+is to use <a class="reference external" href="https://en.wikipedia.org/wiki/Base64">base 64</a> strings which
+look like <code class="docutils literal notranslate"><span class="pre">bGlnaHQgd29yaw==</span></code></p>
+</div></blockquote>
+<p>Infinity and NaN</p>
+<blockquote>
+<div><p>There is no explicit representation for infinity or for <a class="reference external" href="https://en.wikipedia.org/wiki/NaN">Not A Number</a> which arise from floating point
+calculations.  For example <code class="docutils literal notranslate"><span class="pre">1e500</span></code> (1 with 500 zeroes) multiplied by
+itself is too large to be  represented in the most common <a class="reference external" href="https://en.wikipedia.org/wiki/IEEE_754">64 bit
+floating point</a>, while
+subtracting infinity from itself produces <code class="docutils literal notranslate"><span class="pre">NaN</span></code>.</p>
+<p>Because infinity and NaN can occur in calculations, many JSON libraries
+will produce and accept them despite not being in the JSON standard.
+See below for how SQLite deals with infinity and NaN.</p>
+</div></blockquote>
+<p>String normalization</p>
+<blockquote>
+<div><p>Unicode allows different representations of what will appear as the same
+text.  For example an <code class="docutils literal notranslate"><span class="pre">e</span></code> with an accent can be represented as a single
+codepoint, or as two with the <code class="docutils literal notranslate"><span class="pre">e</span></code> and the combining accent separately.
+JSON makes no requirements on strings, with all implementations usually
+producing and accepting the strings as is.  You can read about the
+subject <a class="reference external" href="https://en.wikipedia.org/wiki/Unicode_equivalence">here</a>.</p>
+</div></blockquote>
+<p>Trailing commas</p>
+<blockquote>
+<div><p>Trailing commas will not be accepted or produced by JSON libraries.  For example
+a list like <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">2,</span> <span class="pre">3,]</span></code> or an object like <code class="docutils literal notranslate"><span class="pre">{&quot;one&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;two&quot;:</span> <span class="pre">2,}</span></code> are not
+valid.</p>
+</div></blockquote>
+<p>Explicit limits</p>
+<blockquote>
+<div><p>The standard does not say how long strings can be, or how many items
+can be in an array or object.  There is no limit on how many digits
+can be used in numbers nor a minimum or maximum precision.  It is
+common for implementations to have limits especially 64 bits for
+numbers.  String limits may be 1 or 2 billion characters, and arrays /
+objects be limited to a similar number of members.</p>
+<p>Python has a 64  bit limit on floating point numbers when using
+<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> but <a class="reference external" href="https://docs.python.org/3/library/decimal.html#module-decimal" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">decimal</span></code></a> is unlimited, and has no limit
+on integers, strings, arrays, or objects other than available memory.</p>
+<p>SQLite has an upper limit of 2GB for strings, uses signed 64 bit
+integers, and standard 64 bit floating point.</p>
+<p>If data is large, then other representations are more appropriate.</p>
+</div></blockquote>
+<p>Object (dict) key order or duplicates</p>
+<blockquote>
+<div><p>While arrays (list) are ordered, there is no specification for what
+order object keys are in, or that duplicates are not allowed.  This
+usually doesn’t matter, but there are security attacks where one
+component may use the first occurrence of a duplicate key, while
+another component uses the last occurrence.  For example the SQLite
+function extracting values will use the first occurrence of a key,
+while a dict created from the object will use the last occurrence.</p>
+<p>The Python <a class="reference external" href="https://docs.python.org/3/library/json.html#module-json" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">json</span></code></a> module, and APSW both let you see objects
+as lists of keys and values so you can do your own validation or
+other processing.</p>
+</div></blockquote>
+</section>
+</section>
+<section id="json5">
+<h2>JSON5<a class="headerlink" href="#json5" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://json5.org/">JSON5</a> is a superset of JSON intended to be
+more human readable and writable.  SQLite will accept JSON5 encoded
+text, but will never produce it.  While SQLite parses JSON5, you
+can’t get back JSON5 output from a JSON5 input.</p>
+<p>For example JSON5 allows comments, hexadecimal numbers, trailing
+commas, infinity and NaN, and omitting some quoting,</p>
+</section>
+<section id="using-json">
+<h2>Using JSON<a class="headerlink" href="#using-json" title="Link to this heading"></a></h2>
+<section id="python">
+<h3>Python<a class="headerlink" href="#python" title="Link to this heading"></a></h3>
+<p>The standard library <a class="reference external" href="https://docs.python.org/3/library/json.html#module-json" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">json</span></code></a> module provides all necessary
+functionality, including turning Python objects into JSON text, and
+JSON text into Python objects.  You can read and write JSON text, or a
+<a class="reference external" href="https://docs.python.org/3/glossary.html#term-file-object" title="(in Python v3.14)"><span class="xref std std-term">file object</span></a>.</p>
+<p>It deviates from the standard:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Infinity</span></code> and <code class="docutils literal notranslate"><span class="pre">NaN</span></code> are produced and consumed by default,
+although there is a  keyword argument to turn it off</p></li>
+<li><p>When producing JSON objects, keys that are numbers, None, or
+boolean are turned into their corresponding JSON text representation.
+When reading an object back, the reverse transformation is not
+done since there is no way to know if that is intended,</p></li>
+<li><p>Various corner cases in Unicode / UTF8 are accepted such as
+unpaired surrogates and UTF8 encoded surrogates.  This was done
+because other implementations at the time could produce this
+kind of encoding.  Attempting to encode the resulting strings as UTF-8
+again will result in exceptions.</p></li>
+</ul>
+<p>You can see a <a class="reference external" href="https://github.com/orgs/python/projects/6">full list of JSON issues</a>.</p>
+</section>
+<section id="sqlite">
+<h3>SQLite<a class="headerlink" href="#sqlite" title="Link to this heading"></a></h3>
+<p>SQLite has over <a class="reference external" href="https://sqlite.org/json1.html">30 functions</a> for
+consuming, extracting, iterating, and producing JSON.  You will need
+to ensure that what you get back is what is intended.  You can usually
+get back the JSON text representation of values, or the SQLite
+value.  For example a SQLite string is the same as a Python
+string, while the JSON text representation includes double quotes
+around it and various quoting inside. (<a class="reference internal" href="example-json.html#example-json-functions"><span class="std std-ref">Example</span></a>)</p>
+<p>You can store JSON text directly in the database, but there is no way
+to differentiate it from any other text value.  For example the number
+<code class="docutils literal notranslate"><span class="pre">2</span></code> in JSON is text <code class="docutils literal notranslate"><span class="pre">2</span></code>.  The <a class="reference external" href="https://sqlite.org/json1.html#jvalid">json_valid</a> function may help - for
+example as a <a class="reference external" href="https://sqlite.org/lang_createtable.html#check_constraints">CHECK constraint</a> on a
+column.</p>
+</section>
+<section id="infinity-and-nan">
+<h3>Infinity and NaN<a class="headerlink" href="#infinity-and-nan" title="Link to this heading"></a></h3>
+<p>SQLite accepts infinity but represents it as the floating point value
+<code class="docutils literal notranslate"><span class="pre">9e999</span></code> and accepts NaN representing it as <code class="docutils literal notranslate"><span class="pre">null</span></code> (None).  Unfortunately
+<code class="docutils literal notranslate"><span class="pre">9e999</span></code> is a valid value for <a class="reference external" href="https://docs.python.org/3/library/decimal.html#decimal.Decimal" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">decimal.Decimal</span></code></a> as well as
+<code class="docutils literal notranslate"><span class="pre">numpy.float128</span></code>, so you won’t be able to tell if infinity was the
+original value</p>
+</section>
+</section>
+<section id="jsonb">
+<span id="id1"></span><h2>JSONB<a class="headerlink" href="#jsonb" title="Link to this heading"></a></h2>
+<p>SQLite has a binary format for representing JSON - named JSONB.  It is
+<a class="reference external" href="https://sqlite.org/jsonb.html">specified here</a>.  It is
+significantly faster to use because JSON text requires finding
+matching quotes around strings, square brackets around arrays, curly
+braces around objects, and ensuring numeric values are valid.  JSONB
+has already done all that processing so accessing and extracting
+members is a lot quicker.  It also saves some space.</p>
+<p>In most cases using SQLite JSON text functions results in SQLite doing an
+internal conversion to JSONB (which is cached) and then operating on that.
+JSONB internally stores values as a binary tag and length, then the UTF8 text
+so producing JSON text again is quick.</p>
+<p>You can store JSONB to the database, and again can use the <a class="reference external" href="https://sqlite.org/json1.html#jvalid">json_valid</a> function as <a class="reference external" href="https://sqlite.org/lang_createtable.html#check_constraints">CHECK constraint</a> with the
+value <code class="docutils literal notranslate"><span class="pre">8</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>JSONB does not have a version number or any header explicitly
+identifying binary data as JSONB.  There is no checksum or similar
+validation.  As an example a single byte whose value is 0 through 12
+is valid JSONB.</p>
+<p>As byte sequences get longer, the likelihood they are valid JSONB
+decreases.  This table lists what proportion of all byte sequences
+of each length are also valid JSONB.</p>
+<table class="docutils align-default" id="id2">
+<caption><span class="caption-text">Valid JSONB sequences</span><a class="headerlink" href="#id2" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Sequence length</p></th>
+<th class="head"><p>Proportion valid JSONB</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1 byte</p></td>
+<td><p>3.52%</p></td>
+</tr>
+<tr class="row-odd"><td><p>2 bytes</p></td>
+<td><p>0.71%</p></td>
+</tr>
+<tr class="row-even"><td><p>3 bytes</p></td>
+<td><p>0.35%</p></td>
+</tr>
+<tr class="row-odd"><td><p>4 bytes</p></td>
+<td><p>0.18%</p></td>
+</tr>
+<tr class="row-even"><td><p>5 bytes</p></td>
+<td><p>0.10%</p></td>
+</tr>
+<tr class="row-odd"><td><p>6 bytes</p></td>
+<td><p>0.05%</p></td>
+</tr>
+<tr class="row-even"><td><p>7 bytes</p></td>
+<td><p>0.03%</p></td>
+</tr>
+<tr class="row-odd"><td><p>8 bytes</p></td>
+<td><p>0.02%</p></td>
+</tr>
+<tr class="row-even"><td><p>9 bytes</p></td>
+<td><p>0.01%</p></td>
+</tr>
+<tr class="row-odd"><td><p>10+ bytes</p></td>
+<td><p>very low</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="apsw">
+<span id="apsw-jsonb"></span><h3>APSW<a class="headerlink" href="#apsw" title="Link to this heading"></a></h3>
+<p>APSW provides 2 functions for working directly with JSONB, and a
+validation function.  This is for performance reasons so that there
+is no need for an intermediate step representing objects as JSON text.
+The validation function is stricter than SQLite’s equivalent to avoid
+false positives.</p>
+<p>Performance testing was done using SQLite’s randomjson code to create
+a large object with many nested values- your objects will be
+different.</p>
+<p><a class="reference internal" href="#apsw.jsonb_encode" title="apsw.jsonb_encode"><code class="xref py py-func docutils literal notranslate"><span class="pre">jsonb_encode()</span></code></a></p>
+<blockquote>
+<div><p>Converts a Python object directly to JSONB.  The alternative is
+two steps using <a class="reference external" href="https://docs.python.org/3/library/json.html#module-json" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">json</span></code></a> to convert to JSON text and then
+SQLite’s internal JSON text to JSONB.</p>
+<table class="docutils align-default" id="id3">
+<caption><span class="caption-text">Test results (CPU time)</span><a class="headerlink" href="#id3" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><p>0.13 seconds</p></td>
+<td><p>APSW Python object direct to JSONB</p></td>
+</tr>
+<tr class="row-even"><td><p>1.20 seconds</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/json.html#module-json" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">json</span></code></a> same Python object to JSON text</p></td>
+</tr>
+<tr class="row-odd"><td><p>0.80 seconds</p></td>
+<td><p>SQLite that JSON text to JSONB</p></td>
+</tr>
+</tbody>
+</table>
+<p>The same parameters as <a class="reference external" href="https://docs.python.org/3/library/json.html#json.dumps" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.dumps()</span></code></a> are available, with more
+providing control over how non-string object keys are converted,
+type matching, and direct conversion to JSONB types can be done.</p>
+</div></blockquote>
+<p><a class="reference internal" href="#apsw.jsonb_decode" title="apsw.jsonb_decode"><code class="xref py py-func docutils literal notranslate"><span class="pre">jsonb_decode()</span></code></a></p>
+<blockquote>
+<div><p>Converts JSONB directly back to a Python object.  The alternative
+is two steps using SQLite’s internal JSONB to JSON text and then
+<a class="reference external" href="https://docs.python.org/3/library/json.html#module-json" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">json</span></code></a> to convert the JSON text to a Python object.</p>
+<table class="docutils align-default" id="id4">
+<caption><span class="caption-text">Test results (CPU time)</span><a class="headerlink" href="#id4" title="Link to this table"></a></caption>
+<tbody>
+<tr class="row-odd"><td><p>0.48 seconds</p></td>
+<td><p>APSW JSONB direct to Python object</p></td>
+</tr>
+<tr class="row-even"><td><p>0.22 seconds</p></td>
+<td><p>SQLite same JSONB to JSON text</p></td>
+</tr>
+<tr class="row-odd"><td><p>1.35 seconds</p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/json.html#module-json" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">json</span></code></a> that JSON text to Python object</p></td>
+</tr>
+</tbody>
+</table>
+<p>The same parameters as <a class="reference external" href="https://docs.python.org/3/library/json.html#json.loads" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.loads()</span></code></a> are available, with an additional
+hook for arrays (lists).</p>
+</div></blockquote>
+<p><a class="reference internal" href="#apsw.jsonb_detect" title="apsw.jsonb_detect"><code class="xref py py-func docutils literal notranslate"><span class="pre">jsonb_detect()</span></code></a></p>
+<blockquote>
+<div><p>Returns a boolean if some binary data is valid JSONB.
+If this returns <code class="docutils literal notranslate"><span class="pre">True</span></code> then SQLite will always produce valid JSON from the
+JSONB.</p>
+<p>SQLite’s <a class="reference external" href="https://sqlite.org/json1.html#jvalid">json_valid</a>  only
+checks the various internal type and length fields are consistent
+and items seem reasonable.  It does not check all corner cases, or
+the UTF8 encoding, and so can produce invalid JSON even if
+json_valid said it was valid JSONB.</p>
+</div></blockquote>
+</section>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<p>Because SQLite has a 2GB limit on text or blobs (binary data), it
+can’t work with individual JSON text or JSONB data over that size.</p>
+</section>
+<section id="json-as-a-sqlite-value-type">
+<span id="jsontype"></span><h2>JSON as a SQLite value type<a class="headerlink" href="#json-as-a-sqlite-value-type" title="Link to this heading"></a></h2>
+<p>You can make SQLite automatically support JSON as though it was a
+natively supported type.  <a class="reference internal" href="example-json.html#example-json-quick"><span class="std std-ref">Example code</span></a>
+that does these steps.</p>
+<p><a class="reference internal" href="#jsonb"><span class="std std-ref">Store JSONB</span></a></p>
+<blockquote>
+<div><p>SQLite’s binary JSON representation is stored as a binary blob in the
+database.  This is necessary because JSON text can’t easily be
+distinguished from other text, while a blob is far less
+ambiguous.</p>
+<p>SQLite often operates on JSONB internally when using
+the <a class="reference external" href="https://sqlite.org/json1.html">JSON functions</a>, and its
+<code class="docutils literal notranslate"><span class="pre">json</span></code> function can turn JSONB into JSON text format if needed.</p>
+<p>SQLite’s functions provide full access to all the values inside JSON
+and JSONB for reading, iterating, qnd modifying.</p>
+</div></blockquote>
+<p>Convert bindings</p>
+<blockquote>
+<div><p>The <a class="reference internal" href="cursor.html#apsw.Cursor.convert_binding" title="apsw.Cursor.convert_binding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convert_binding</span></code></a> callback for SQLite unknown types
+can <a class="reference internal" href="#apsw.jsonb_encode" title="apsw.jsonb_encode"><code class="xref py py-func docutils literal notranslate"><span class="pre">encode</span> <span class="pre">them</span></code></a> as JSONB.</p>
+</div></blockquote>
+<p>Convert JSONB</p>
+<blockquote>
+<div><p>The <a class="reference internal" href="cursor.html#apsw.Cursor.convert_jsonb" title="apsw.Cursor.convert_jsonb"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convert_jsonb</span></code></a> callback is called when a blob would
+be returned and is also valid JSONB.  You can <a class="reference internal" href="#apsw.jsonb_decode" title="apsw.jsonb_decode"><code class="xref py py-func docutils literal notranslate"><span class="pre">decode</span> <span class="pre">it</span></code></a>
+or return the blob.  The cursor is provided so you can examine
+the <a class="reference internal" href="cursor.html#apsw.Cursor.description" title="apsw.Cursor.description"><code class="xref py py-attr docutils literal notranslate"><span class="pre">description</span></code></a> to help decide.</p>
+</div></blockquote>
+</section>
+<section id="jsonb-api">
+<h2>JSONB API<a class="headerlink" href="#jsonb-api" title="Link to this heading"></a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.jsonb_decode">
+<span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">jsonb_decode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.14)"><span class="pre">Buffer</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_pairs_hook</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.JSONBTypes" title="apsw.JSONBTypes"><span class="pre">JSONBTypes</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_hook</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.JSONBTypes" title="apsw.JSONBTypes"><span class="pre">JSONBTypes</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array_hook</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.JSONBTypes" title="apsw.JSONBTypes"><span class="pre">JSONBTypes</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parse_int</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parse_float</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#apsw.jsonb_decode" title="Link to this definition"></a></dt>
+<dd><p>Decodes JSONB binary data into a Python object.  It is like <a class="reference external" href="https://docs.python.org/3/library/json.html#json.loads" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.loads()</span></code></a>
+but operating on JSONB binary source instead of a JSON text source.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Binary data to decode</p></li>
+<li><p><strong>object_pairs_hook</strong> – Called after a JSON object has been
+decoded with a list of tuples, each consisting of a
+<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> and corresponding value, and should return a
+replacement value to use instead.</p></li>
+<li><p><strong>object_hook</strong> – Called after a JSON object has been decoded
+into a Python <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a> and should return a replacement
+value to use instead.</p></li>
+<li><p><strong>array_hook</strong> – Called after a JSON array has been decoded into
+a list, and should return a replacement value to use instead.</p></li>
+<li><p><strong>parse_int</strong> – Called with a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> of the integer, and
+should return a value to use.  The default is <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>.
+If the integer is hexadecimal then it will be called with a
+second parameter of 16.</p></li>
+<li><p><strong>parse_float</strong> – Called with a <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> of the float, and
+should return a value to use.  The default is <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Only one of <code class="docutils literal notranslate"><span class="pre">object_hook</span></code> or <code class="docutils literal notranslate"><span class="pre">object_pairs_hook</span></code> can be
+provided.  <code class="docutils literal notranslate"><span class="pre">object_pairs_hook</span></code> is useful when you want something
+other than a dict, care about the order of keys, want to convert
+them first (eg case, numbers, normalization), want to handle duplicate
+keys etc.</p>
+<p>The array, int, and float hooks let you use alternate implementations.
+For example if you are using <a class="reference external" href="https://numpy.org/doc/stable/user/basics.types.html">numpy</a> then you
+could use numpy arrays instead of lists, or numpy’s float128 to get
+higher precision floating numbers with greater exponent range than the
+builtin float type.</p>
+<p>If you use <a class="reference external" href="https://docs.python.org/3/library/types.html#types.MappingProxyType" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">types.MappingProxyType</span></code></a> as <code class="docutils literal notranslate"><span class="pre">object_hook</span></code> and
+<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> as <code class="docutils literal notranslate"><span class="pre">array_hook</span></code> then the overall returned value
+will be immutable (read only).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The data is always validated during decode.  There is no need to
+separately call <a class="reference internal" href="#apsw.jsonb_detect" title="apsw.jsonb_detect"><code class="xref py py-func docutils literal notranslate"><span class="pre">jsonb_detect()</span></code></a>.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.jsonb_detect">
+<span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">jsonb_detect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.14)"><span class="pre">Buffer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.jsonb_detect" title="Link to this definition"></a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if data is valid JSONB, otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code>.  If this returns
+<code class="docutils literal notranslate"><span class="pre">True</span></code> then SQLite will produce valid JSON from it.</p>
+<p>SQLite’s json_valid only checks the various internal type and length fields are consistent
+and items seem reasonable.  It does not check all corner cases, or the UTF8
+encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><a class="reference internal" href="#apsw.jsonb_decode" title="apsw.jsonb_decode"><code class="xref py py-func docutils literal notranslate"><span class="pre">jsonb_decode()</span></code></a> always validates the data as it decodes, so there is no
+need to call this function separately.  This function is useful for determining if
+some data is valid, and not some other binary format such as an image.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.jsonb_encode">
+<span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">jsonb_encode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipkeys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_circular</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.JSONBTypes" title="apsw.JSONBTypes"><span class="pre">JSONBTypes</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.14)"><span class="pre">Buffer</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_nan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.jsonb_encode" title="Link to this definition"></a></dt>
+<dd><p>Encodes a Python object as JSONB.  It is like <a class="reference external" href="https://docs.python.org/3/library/json.html#json.dumps" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.dumps()</span></code></a> except it produces
+JSONB bytes instead of JSON text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – Object to encode</p></li>
+<li><p><strong>skipkeys</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> and a non-string dict key is
+encountered then it is skipped.  Otherwise <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a>
+is raised.  Default <code class="docutils literal notranslate"><span class="pre">False</span></code>.  Like <a class="reference external" href="https://docs.python.org/3/library/json.html#json.dumps" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">json.dumps()</span></code></a> keys
+that are bool, int, float, and None are always converted to
+string.</p></li>
+<li><p><strong>sort_keys</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> then objects (dict) will be output
+with the keys sorted.  This produces deterministic output.
+Default <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+<li><p><strong>check_circular</strong> – Detects if containers contain themselves
+(even indirectly) and raises <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a>.  If <code class="docutils literal notranslate"><span class="pre">False</span></code>
+and there is a circular reference, you eventually get
+<a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RecursionError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">RecursionError</span></code></a> (or run out of memory or similar).</p></li>
+<li><p><strong>default</strong> – <p>Called if an object can’t be encoded, and should
+return an object that can be encoded.  If not provided a
+<a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TypeError</span></code></a> is raised.</p>
+<p>It can also return binary data in JSONB format.  For example
+<a class="reference external" href="https://docs.python.org/3/library/decimal.html#module-decimal" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">decimal</span></code></a> values can be encoded as a full precision JSONB
+float.  <a class="reference internal" href="ext.html#apsw.ext.make_jsonb" title="apsw.ext.make_jsonb"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.ext.make_jsonb()</span></code></a> can be used.</p>
+</p></li>
+<li><p><strong>default_key</strong> – Objects (dict) must have string keys.  If a
+non-string key is encountered, it is skipped if <code class="docutils literal notranslate"><span class="pre">skipkeys</span></code>
+is <code class="docutils literal notranslate"><span class="pre">True</span></code>.  Otherwise this is called.  If not supplied the
+default matches the standard library <a class="reference external" href="https://docs.python.org/3/library/json.html#module-json" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">json</span></code></a> which
+converts None, bool, int and float to their string JSON
+equivalents and uses those.  This callback is useful if
+you want to raise an exception, or use a different way
+of generating the key string.</p></li>
+<li><p><strong>allow_nan</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default) then following SQLite practise,
+infinity is converted to float <code class="docutils literal notranslate"><span class="pre">9e999</span></code> and NaN is converted
+to <code class="docutils literal notranslate"><span class="pre">None</span></code>.  If <code class="docutils literal notranslate"><span class="pre">False</span></code> a <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></a> is raised.</p></li>
+<li><p><strong>exact_types</strong> – By default subclasses of int, float, list (including
+tuple), dict (including <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.Mapping</span></code></a>), and
+<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> are converted the same as the parent class.  This
+is usually what you want.  However sometimes you are using a
+subclass and want them converted by the <code class="docutils literal notranslate"><span class="pre">default</span></code> function
+with an example being <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.IntEnum" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></a>.  If this parameter
+is <code class="docutils literal notranslate"><span class="pre">True</span></code> then only the exact types are directly converted
+and subclasses will be passed to <code class="docutils literal notranslate"><span class="pre">default</span></code> or <code class="docutils literal notranslate"><span class="pre">default_key</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>You will get a <a class="reference internal" href="exceptions.html#apsw.TooBigError" title="apsw.TooBigError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TooBigError</span></code></a> if the resulting JSONB
+will exceed 2GB because SQLite can’t handle it.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="example-json.html" class="btn btn-neutral float-left" title="JSON Example/Tour" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example-fts.html" class="btn btn-neutral float-right" title="Full Text Search Example/Tour" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Nov 05, 2025.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-2NR9GDCQLT', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

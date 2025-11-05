@@ -1,0 +1,701 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unicode Text Handling &mdash; APSW 3.51.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=7d76fbb9"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="Session Example/Tour" href="example-session.html" />
+    <link rel="prev" title="Full text search" href="textsearch.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            APSW
+              <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jsonb.html">JSON (Javascript Object Notation)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Unicode Text Handling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.unicode_version"><code class="docutils literal notranslate"><span class="pre">unicode_version</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.category"><code class="docutils literal notranslate"><span class="pre">category()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.is_extended_pictographic"><code class="docutils literal notranslate"><span class="pre">is_extended_pictographic()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.is_regional_indicator"><code class="docutils literal notranslate"><span class="pre">is_regional_indicator()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.casefold"><code class="docutils literal notranslate"><span class="pre">casefold()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.strip"><code class="docutils literal notranslate"><span class="pre">strip()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.split_lines"><code class="docutils literal notranslate"><span class="pre">split_lines()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.expand_tabs"><code class="docutils literal notranslate"><span class="pre">expand_tabs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.grapheme_length"><code class="docutils literal notranslate"><span class="pre">grapheme_length()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.grapheme_substr"><code class="docutils literal notranslate"><span class="pre">grapheme_substr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.grapheme_endswith"><code class="docutils literal notranslate"><span class="pre">grapheme_endswith()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.grapheme_startswith"><code class="docutils literal notranslate"><span class="pre">grapheme_startswith()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.grapheme_find"><code class="docutils literal notranslate"><span class="pre">grapheme_find()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.text_width"><code class="docutils literal notranslate"><span class="pre">text_width()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.text_width_substr"><code class="docutils literal notranslate"><span class="pre">text_width_substr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.guess_paragraphs"><code class="docutils literal notranslate"><span class="pre">guess_paragraphs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.text_wrap"><code class="docutils literal notranslate"><span class="pre">text_wrap()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.codepoint_name"><code class="docutils literal notranslate"><span class="pre">codepoint_name()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.version_added"><code class="docutils literal notranslate"><span class="pre">version_added()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.version_dates"><code class="docutils literal notranslate"><span class="pre">version_dates</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.grapheme_next_break"><code class="docutils literal notranslate"><span class="pre">grapheme_next_break()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.grapheme_next"><code class="docutils literal notranslate"><span class="pre">grapheme_next()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.grapheme_iter"><code class="docutils literal notranslate"><span class="pre">grapheme_iter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.grapheme_iter_with_offsets"><code class="docutils literal notranslate"><span class="pre">grapheme_iter_with_offsets()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.grapheme_iter_with_offsets_filtered"><code class="docutils literal notranslate"><span class="pre">grapheme_iter_with_offsets_filtered()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.word_next_break"><code class="docutils literal notranslate"><span class="pre">word_next_break()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.word_default_categories"><code class="docutils literal notranslate"><span class="pre">word_default_categories</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.word_next"><code class="docutils literal notranslate"><span class="pre">word_next()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.word_iter"><code class="docutils literal notranslate"><span class="pre">word_iter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.word_iter_with_offsets"><code class="docutils literal notranslate"><span class="pre">word_iter_with_offsets()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.sentence_next_break"><code class="docutils literal notranslate"><span class="pre">sentence_next_break()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.sentence_next"><code class="docutils literal notranslate"><span class="pre">sentence_next()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.sentence_iter"><code class="docutils literal notranslate"><span class="pre">sentence_iter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.sentence_iter_with_offsets"><code class="docutils literal notranslate"><span class="pre">sentence_iter_with_offsets()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.line_break_next_break"><code class="docutils literal notranslate"><span class="pre">line_break_next_break()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.line_break_next"><code class="docutils literal notranslate"><span class="pre">line_break_next()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.line_break_iter"><code class="docutils literal notranslate"><span class="pre">line_break_iter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.line_break_iter_with_offsets"><code class="docutils literal notranslate"><span class="pre">line_break_iter_with_offsets()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Unicode Text Handling</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/unicode.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="textsearch.html" class="btn btn-neutral float-left" title="Full text search" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example-session.html" class="btn btn-neutral float-right" title="Session Example/Tour" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-apsw.unicode">
+<span id="unicode-text-handling"></span><h1>Unicode Text Handling<a class="headerlink" href="#module-apsw.unicode" title="Link to this heading"></a></h1>
+<p><a class="reference internal" href="#module-apsw.unicode" title="apsw.unicode"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apsw.unicode</span></code></a> - Up to date Unicode aware methods and lookups</p>
+<p>This module helps with <a class="reference internal" href="textsearch.html"><span class="doc">Full text search</span></a> and general Unicode,
+addressing the following:</p>
+<ul class="simple">
+<li><p>The standard library <a class="reference external" href="https://docs.python.org/3/library/unicodedata.html#module-unicodedata" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">unicodedata</span></code></a> has limited information
+available (eg no information about emoji), and is only updated to
+new <a class="reference external" href="https://www.unicode.org/versions/enumeratedversions.html">Unicode versions</a> on a
+new Python version.</p></li>
+<li><p>Multiple consecutive codepoints can combine into a single user
+perceived character (grapheme cluster), such as combining accents,
+vowels and marks in some writing systems, variant selectors, joiners
+and linkers, etc.  That means you can’t use indexes into
+<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> safely without potentially breaking them.</p></li>
+<li><p>The standard library provides no help in splitting text into
+grapheme clusters, words, and sentences, or into breaking text into
+multiple lines.</p></li>
+<li><p>Text processing is performance sensitive - FTS5 easily handles
+hundreds of megabytes to gigabytes of text, and so should this
+module.  It also affects the latency of each query as that is
+tokenized, and results can highlight words and sentences.</p></li>
+</ul>
+<p>This module is independent of the main apsw module, and loading it
+does not load any database functionality.  The majority of the
+functionality is implemented in C for size and performance reasons.</p>
+<p>See <a class="reference internal" href="#apsw.unicode.unicode_version" title="apsw.unicode.unicode_version"><code class="xref py py-data docutils literal notranslate"><span class="pre">unicode_version</span></code></a> for the implemented version.</p>
+<p>Grapheme cluster, word, and sentence splitting</p>
+<blockquote>
+<div><p><a class="reference external" href="https://www.unicode.org/reports/tr29/">Unicode Technical Report #29</a> rules for finding
+grapheme clusters, words, and sentences are implemented.  Tr29
+specifies break points which can be found via
+<a class="reference internal" href="#apsw.unicode.grapheme_next_break" title="apsw.unicode.grapheme_next_break"><code class="xref py py-func docutils literal notranslate"><span class="pre">grapheme_next_break()</span></code></a>, <a class="reference internal" href="#apsw.unicode.word_next_break" title="apsw.unicode.word_next_break"><code class="xref py py-func docutils literal notranslate"><span class="pre">word_next_break()</span></code></a>, and
+<a class="reference internal" href="#apsw.unicode.sentence_next_break" title="apsw.unicode.sentence_next_break"><code class="xref py py-func docutils literal notranslate"><span class="pre">sentence_next_break()</span></code></a>.</p>
+<p>Building on those are iterators providing optional offsets and the
+text.  This is used for tokenization (getting character and word
+boundaries correct), and for result highlighting (showing
+words/sentences before and after match).</p>
+</div></blockquote>
+<p>Line break splitting</p>
+<blockquote>
+<div><p><a class="reference external" href="https://www.unicode.org/reports/tr14/">Unicode Technical Report #14</a> rules for finding where
+text cam be broken and resumed on the next line.  Tr14 specifies
+break points which can be found via <a class="reference internal" href="#apsw.unicode.line_break_next_break" title="apsw.unicode.line_break_next_break"><code class="xref py py-func docutils literal notranslate"><span class="pre">line_break_next_break()</span></code></a>.</p>
+<p>Building on those are iterators providing optional offsets and the
+text.  This is used for <a class="reference internal" href="#apsw.unicode.text_wrap" title="apsw.unicode.text_wrap"><code class="xref py py-func docutils literal notranslate"><span class="pre">text_wrap()</span></code></a>.</p>
+</div></blockquote>
+<p>Unicode lookups</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Category information <a class="reference internal" href="#apsw.unicode.category" title="apsw.unicode.category"><code class="xref py py-func docutils literal notranslate"><span class="pre">category()</span></code></a></p></li>
+<li><p>Is an emoji or similar <a class="reference internal" href="#apsw.unicode.is_extended_pictographic" title="apsw.unicode.is_extended_pictographic"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_extended_pictographic()</span></code></a></p></li>
+<li><p>Flag characters <a class="reference internal" href="#apsw.unicode.is_regional_indicator" title="apsw.unicode.is_regional_indicator"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_regional_indicator()</span></code></a></p></li>
+<li><p>Codepoint names <a class="reference internal" href="#apsw.unicode.codepoint_name" title="apsw.unicode.codepoint_name"><code class="xref py py-func docutils literal notranslate"><span class="pre">codepoint_name()</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<p>Case folding, accent removal</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="#apsw.unicode.casefold" title="apsw.unicode.casefold"><code class="xref py py-func docutils literal notranslate"><span class="pre">casefold()</span></code></a> is used to do case insensitive comparisons.</p></li>
+<li><p><a class="reference internal" href="#apsw.unicode.strip" title="apsw.unicode.strip"><code class="xref py py-func docutils literal notranslate"><span class="pre">strip()</span></code></a> is used to remove accents, marks, punctuation,
+joiners etc</p></li>
+</ul>
+</div></blockquote>
+<p>Helpers</p>
+<p>These are aware of grapheme cluster boundaries which Python’s builtin
+string operations are not.  The text width functions take into account
+how wide the text is when displayed on most terminals.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="#apsw.unicode.grapheme_length" title="apsw.unicode.grapheme_length"><code class="xref py py-func docutils literal notranslate"><span class="pre">grapheme_length()</span></code></a> to get the number of grapheme clusters
+in a string</p></li>
+<li><p><a class="reference internal" href="#apsw.unicode.grapheme_substr" title="apsw.unicode.grapheme_substr"><code class="xref py py-func docutils literal notranslate"><span class="pre">grapheme_substr()</span></code></a> to get substrings using grapheme cluster
+indexing</p></li>
+<li><p><a class="reference internal" href="#apsw.unicode.grapheme_startswith" title="apsw.unicode.grapheme_startswith"><code class="xref py py-func docutils literal notranslate"><span class="pre">grapheme_startswith()</span></code></a> and <a class="reference internal" href="#apsw.unicode.grapheme_endswith" title="apsw.unicode.grapheme_endswith"><code class="xref py py-func docutils literal notranslate"><span class="pre">grapheme_endswith()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.unicode.grapheme_find" title="apsw.unicode.grapheme_find"><code class="xref py py-func docutils literal notranslate"><span class="pre">grapheme_find()</span></code></a> to find a substring</p></li>
+<li><p><a class="reference internal" href="#apsw.unicode.split_lines" title="apsw.unicode.split_lines"><code class="xref py py-func docutils literal notranslate"><span class="pre">split_lines()</span></code></a> to split text into lines using all the
+Unicode hard line break codepoints</p></li>
+<li><p><a class="reference internal" href="#apsw.unicode.text_width" title="apsw.unicode.text_width"><code class="xref py py-func docutils literal notranslate"><span class="pre">text_width()</span></code></a> to count how wide the text is</p></li>
+<li><p><a class="reference internal" href="#apsw.unicode.expand_tabs" title="apsw.unicode.expand_tabs"><code class="xref py py-func docutils literal notranslate"><span class="pre">expand_tabs()</span></code></a> to expand tabs using text width</p></li>
+<li><p><a class="reference internal" href="#apsw.unicode.text_width_substr" title="apsw.unicode.text_width_substr"><code class="xref py py-func docutils literal notranslate"><span class="pre">text_width_substr()</span></code></a> to extract substrings based on text width</p></li>
+<li><p><a class="reference internal" href="#apsw.unicode.text_wrap" title="apsw.unicode.text_wrap"><code class="xref py py-func docutils literal notranslate"><span class="pre">text_wrap()</span></code></a> to wrap paragraphs using Unicode words, line
+breaking, and text width</p></li>
+<li><p><a class="reference internal" href="#apsw.unicode.guess_paragraphs" title="apsw.unicode.guess_paragraphs"><code class="xref py py-func docutils literal notranslate"><span class="pre">guess_paragraphs()</span></code></a> to establish paragraph boundaries for
+text that has line breaks in paragraphs like many plain text
+and similar markup formats.</p></li>
+</ul>
+</div></blockquote>
+<p>Size</p>
+<blockquote>
+<div><p>Using the <a class="reference external" href="https://icu.unicode.org/">ICU</a> <a class="reference external" href="https://pypi.org/project/PyICU/">extension</a> is 5MB of code that then
+links to shared libraries containing another 5MB of code, and 30MB
+of data.  This module is 0.5MB, 5 to 50% faster, and has no
+dependencies.  (ICU includes numerous extra customisations,
+formatting, locale helpers etc.)</p>
+</div></blockquote>
+<p>Performance</p>
+<blockquote>
+<div><p>There some pure Python alternatives, with less functionality.
+They take 5 to 15 times more CPU time to process the same text.
+Use <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">-m</span> <span class="pre">apsw.unicode</span> <span class="pre">benchmark</span> <span class="pre">--help</span></code>.</p>
+</div></blockquote>
+<dl class="py data">
+<dt class="sig sig-object py" id="apsw.unicode.unicode_version">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">unicode_version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'17.0'</span></em><a class="headerlink" href="#apsw.unicode.unicode_version" title="Link to this definition"></a></dt>
+<dd><p>The <a class="reference external" href="https://www.unicode.org/versions/enumeratedversions.html">Unicode version</a>
+that the rules and data tables implement</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.category">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">category</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codepoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#category"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.category" title="Link to this definition"></a></dt>
+<dd><p>Returns the <a class="reference external" href="https://en.wikipedia.org/wiki/Unicode_character_property#General_Category">general category</a> - eg <code class="docutils literal notranslate"><span class="pre">Lu</span></code> for Letter Uppercase</p>
+<p>See <a class="reference internal" href="textsearch.html#apsw.fts5.unicode_categories" title="apsw.fts5.unicode_categories"><code class="xref py py-data docutils literal notranslate"><span class="pre">apsw.fts5.unicode_categories</span></code></a> for descriptions mapping</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.is_extended_pictographic">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">is_extended_pictographic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#is_extended_pictographic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.is_extended_pictographic" title="Link to this definition"></a></dt>
+<dd><p>Returns True if any of the text has the extended pictographic property (Emoji and similar)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.is_regional_indicator">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">is_regional_indicator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#is_regional_indicator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.is_regional_indicator" title="Link to this definition"></a></dt>
+<dd><p>Returns True if any of the text is one of the 26 <a class="reference external" href="https://en.wikipedia.org/wiki/Regional_indicator_symbol">regional indicators</a> used in pairs to represent country flags</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.casefold">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">casefold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#casefold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.casefold" title="Link to this definition"></a></dt>
+<dd><p>Returns the text for equality comparison without case distinction</p>
+<p>Case folding maps text to a canonical form where case differences
+are removed allowing case insensitive comparison.  Unlike upper,
+lower, and title case, the result is not intended to be displayed
+to people.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.strip">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">strip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#strip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.strip" title="Link to this definition"></a></dt>
+<dd><p>Returns the text for less exact comparison with accents, punctuation, marks etc removed</p>
+<p>It will strip diacritics leaving the underlying characters so <code class="docutils literal notranslate"><span class="pre">áççéñțś</span></code> becomes <code class="docutils literal notranslate"><span class="pre">accents</span></code>,
+punctuation so <code class="docutils literal notranslate"><span class="pre">e.g.</span></code> becomes <code class="docutils literal notranslate"><span class="pre">eg</span></code> and <code class="docutils literal notranslate"><span class="pre">don't</span></code> becomes <code class="docutils literal notranslate"><span class="pre">dont</span></code>,  marks so <code class="docutils literal notranslate"><span class="pre">देवनागरी</span></code>
+becomes <code class="docutils literal notranslate"><span class="pre">दवनगर</span></code>, as well as all spacing, formatting, <a class="reference external" href="https://en.wikipedia.org/wiki/Variation_Selectors_%28Unicode_block%29">variation selectors</a> and similar codepoints.</p>
+<p>Codepoints are also converted to their compatibility representation.  For example
+the single codepoint Roman numeral <code class="docutils literal notranslate"><span class="pre">Ⅲ</span></code> becomes <code class="docutils literal notranslate"><span class="pre">III</span></code> (three separate regular upper case <cite>I</cite>),
+and <code class="docutils literal notranslate"><span class="pre">🄷🄴🄻🄻🄾</span></code> becomes <code class="docutils literal notranslate"><span class="pre">HELLO</span></code>.</p>
+<p>The resulting text should not be shown to people, and is intended for doing relaxed equality
+comparisons, at the expense of false positives when the accents, marks, punctuation etc were
+intended.</p>
+<p>You should do <a class="reference internal" href="#apsw.unicode.casefold" title="apsw.unicode.casefold"><code class="xref py py-func docutils literal notranslate"><span class="pre">case</span> <span class="pre">folding</span></code></a> after this.</p>
+<p>Emoji are preserved but variation selectors, <a class="reference external" href="https://en.wikipedia.org/wiki/Emoji#Skin_color">fitzpatrick</a>
+and <a class="reference external" href="https://en.wikipedia.org/wiki/Zero-width_joiner">joiners</a> are stripped.</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Regional_indicator_symbol">Regional indicators</a> are preserved.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.split_lines">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">split_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#split_lines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.split_lines" title="Link to this definition"></a></dt>
+<dd><p>Each line, using hard line break rules</p>
+<p>This is a iterator yielding a line at a time.  The end of line
+yielded will not include the hard line break characters.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.expand_tabs">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">expand_tabs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tabsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invalid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#expand_tabs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.expand_tabs" title="Link to this definition"></a></dt>
+<dd><p>Turns tabs into spaces aligning on tabsize boundaries, similar to <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str.expandtabs" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">str.expandtabs()</span></code></a></p>
+<p>This is aware of grapheme clusters and text width.  Codepoints
+that have an invalid width are also replaced by <code class="docutils literal notranslate"><span class="pre">invalid</span></code>.
+Control characters are an example of an invalid character.  Line
+breaks are replaced with newline.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.grapheme_length">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">grapheme_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#grapheme_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.grapheme_length" title="Link to this definition"></a></dt>
+<dd><p>Returns number of grapheme clusters in the text.  Unicode aware version of len</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.grapheme_substr">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">grapheme_substr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#grapheme_substr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.grapheme_substr" title="Link to this definition"></a></dt>
+<dd><p>Like <code class="docutils literal notranslate"><span class="pre">text[start:end]</span></code> but in grapheme cluster units</p>
+<p><code class="docutils literal notranslate"><span class="pre">start</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> can be negative to index from the end, or
+outside the bounds of the text but are never an invalid
+combination (you get empty string returned).</p>
+<p>To get one grapheme cluster, make stop one more than start.
+For example to get the 3rd last grapheme cluster:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">grapheme_substr</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.grapheme_endswith">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">grapheme_endswith</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">substring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#grapheme_endswith"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.grapheme_endswith" title="Link to this definition"></a></dt>
+<dd><p>Returns True if <cite>text</cite> ends with <cite>substring</cite> being aware of grapheme cluster boundaries</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.grapheme_startswith">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">grapheme_startswith</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">substring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#grapheme_startswith"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.grapheme_startswith" title="Link to this definition"></a></dt>
+<dd><p>Returns True if <cite>text</cite> starts with <cite>substring</cite> being aware of grapheme cluster boundaries</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.grapheme_find">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">grapheme_find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">substring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#grapheme_find"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.grapheme_find" title="Link to this definition"></a></dt>
+<dd><p>Returns the offset in text where substring can be found, being aware of grapheme clusters.
+The start and end of the substring have to be at a grapheme cluster boundary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – Where in text to start the search (default beginning)</p></li>
+<li><p><strong>end</strong> – Where to stop the search exclusive (default remaining text)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>offset into text, or -1 if not found or substring is zero length</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.text_width">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">text_width</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#text_width"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.text_width" title="Link to this definition"></a></dt>
+<dd><p>Returns how many columns the text would be if displayed in a terminal</p>
+<p>You should <a class="reference internal" href="#apsw.unicode.split_lines" title="apsw.unicode.split_lines"><code class="xref py py-func docutils literal notranslate"><span class="pre">split_lines()</span></code></a> first and then operate on each line
+separately.</p>
+<p>If the <cite>text</cite> contains new lines, control characters, and similar
+unrepresentable codepoints then minus 1 is returned.</p>
+<p>Terminals aren’t entirely consistent with each other, and Unicode
+has many kinds of codepoints, and combinations.  Consequently this
+is right the vast majority of the time, but not always.</p>
+<p>Note that web browsers do variable widths even in monospaced
+sections like <code class="docutils literal notranslate"><span class="pre">&lt;pre&gt;</span></code> so they won’t always agree with the terminal
+either.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.text_width_substr">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">text_width_substr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#text_width_substr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.text_width_substr" title="Link to this definition"></a></dt>
+<dd><p>Extracts substring width or less wide being aware of grapheme cluster boundaries.
+For example you could use this to get a substring that is 80 (or
+less) wide.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A tuple of how wide the substring is, and the substring</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.guess_paragraphs">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">guess_paragraphs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tabsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#guess_paragraphs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.guess_paragraphs" title="Link to this definition"></a></dt>
+<dd><p>Given text that contains paragraphs containing newlines, guesses where the paragraphs end.
+The returned <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> will have <code class="docutils literal notranslate"><span class="pre">\n</span></code> (newline) removed where it was
+determined to not mark a paragraph end.</p>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">If you have text like this, where paragraphs have newlines in</span>
+<span class="go">them, then each line gets wrapped separately by text_wrap.</span>
+<span class="go">This function tries to guess where the paragraphs end.</span>
+
+<span class="go">Blank lines like above are definite.</span>
+<span class="go">  Indented lines that continue preserving the indent</span>
+<span class="go">  are considered the same paragraph, and a change of indent</span>
+<span class="go">  (in or out) is a new paragraph.</span>
+<span class="go">    So this will be a new paragraph,</span>
+<span class="go">And this will be a new paragraph.</span>
+
+<span class="go"> * Punctuation/numbers at the start of line</span>
+<span class="go">   followed by indented text are considered the same</span>
+<span class="go">   paragraph</span>
+<span class="go">2. So this is a new paragraph, while</span>
+<span class="go">   this line is part of the line above</span>
+
+<span class="go">3. Optional numbers followed by punctuation then space</span>
+<span class="go">   - are considered new paragraphs</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.text_wrap">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">text_wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">70</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">tabsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyphen</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invalid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#text_wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.text_wrap" title="Link to this definition"></a></dt>
+<dd><p>Similar to <a class="reference external" href="https://docs.python.org/3/library/textwrap.html#textwrap.wrap" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">textwrap.wrap()</span></code></a> but Unicode grapheme cluster and line break aware</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Newlines in the text are treated as end of paragraph.  If your text has paragraphs
+with newlines in them, then call <a class="reference internal" href="#apsw.unicode.guess_paragraphs" title="apsw.unicode.guess_paragraphs"><code class="xref py py-func docutils literal notranslate"><span class="pre">guess_paragraphs()</span></code></a> first.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – string to process</p></li>
+<li><p><strong>width</strong> – width of yielded lines, if rendered using a monospace font such as to a terminal</p></li>
+<li><p><strong>tabsize</strong> – Tab stop spacing as tabs are expanded</p></li>
+<li><p><strong>hyphen</strong> – Used to show a segment was broken because it was wider than <code class="docutils literal notranslate"><span class="pre">width</span></code></p></li>
+<li><p><strong>combine_space</strong> – Leading space on each (indent) is always preserved.  Other spaces where
+multiple occur are combined into one space.</p></li>
+<li><p><strong>invalid</strong> – If invalid codepoints are encountered such as control characters and surrogates
+then they are replaced with this.</p></li>
+</ul>
+</dd>
+</dl>
+<p>This yields one line of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> at a time, which will be
+exactly <code class="docutils literal notranslate"><span class="pre">width</span></code> when output to a terminal.  It will be right
+padded with spaces if necessary and not have a trailing newline.</p>
+<p><a class="reference internal" href="ext.html#apsw.ext.format_query_table" title="apsw.ext.format_query_table"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.ext.format_query_table()</span></code></a> uses this method to ensure
+each column is the desired width.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.codepoint_name">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">codepoint_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codepoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#codepoint_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.codepoint_name" title="Link to this definition"></a></dt>
+<dd><p>Name or <code class="docutils literal notranslate"><span class="pre">None</span></code> if it doesn’t have one</p>
+<p>For example codepoint 65 is named <code class="docutils literal notranslate"><span class="pre">LATIN</span> <span class="pre">CAPITAL</span> <span class="pre">LETTER</span> <span class="pre">A</span></code>
+while codepoint U+D1234 is not assigned and would return
+<code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.version_added">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">version_added</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codepoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#version_added"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.version_added" title="Link to this definition"></a></dt>
+<dd><p>Returns the unicode version the codepoint was added</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="apsw.unicode.version_dates">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">version_dates</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'1.0':</span> <span class="pre">(1991,</span> <span class="pre">10,</span> <span class="pre">1),</span> <span class="pre">'1.1':</span> <span class="pre">(1993,</span> <span class="pre">6,</span> <span class="pre">1),</span> <span class="pre">'10.0':</span> <span class="pre">(2017,</span> <span class="pre">6,</span> <span class="pre">20),</span> <span class="pre">'11.0':</span> <span class="pre">(2018,</span> <span class="pre">6,</span> <span class="pre">5),</span> <span class="pre">'12.0':</span> <span class="pre">(2019,</span> <span class="pre">3,</span> <span class="pre">5),</span> <span class="pre">'12.1':</span> <span class="pre">(2019,</span> <span class="pre">5,</span> <span class="pre">7),</span> <span class="pre">'13.0':</span> <span class="pre">(2020,</span> <span class="pre">3,</span> <span class="pre">10),</span> <span class="pre">'14.0':</span> <span class="pre">(2021,</span> <span class="pre">9,</span> <span class="pre">14),</span> <span class="pre">'15.0':</span> <span class="pre">(2022,</span> <span class="pre">9,</span> <span class="pre">13),</span> <span class="pre">'15.1':</span> <span class="pre">(2023,</span> <span class="pre">9,</span> <span class="pre">12),</span> <span class="pre">'16.0':</span> <span class="pre">(2024,</span> <span class="pre">9,</span> <span class="pre">10),</span> <span class="pre">'17.0':</span> <span class="pre">(2025,</span> <span class="pre">9,</span> <span class="pre">9),</span> <span class="pre">'2.0':</span> <span class="pre">(1996,</span> <span class="pre">7,</span> <span class="pre">1),</span> <span class="pre">'2.1':</span> <span class="pre">(1998,</span> <span class="pre">5,</span> <span class="pre">1),</span> <span class="pre">'3.0':</span> <span class="pre">(1999,</span> <span class="pre">9,</span> <span class="pre">1),</span> <span class="pre">'3.1':</span> <span class="pre">(2001,</span> <span class="pre">3,</span> <span class="pre">1),</span> <span class="pre">'3.2':</span> <span class="pre">(2002,</span> <span class="pre">3,</span> <span class="pre">1),</span> <span class="pre">'4.0':</span> <span class="pre">(2003,</span> <span class="pre">4,</span> <span class="pre">1),</span> <span class="pre">'4.1':</span> <span class="pre">(2005,</span> <span class="pre">3,</span> <span class="pre">31),</span> <span class="pre">'5.0':</span> <span class="pre">(2006,</span> <span class="pre">7,</span> <span class="pre">14),</span> <span class="pre">'5.1':</span> <span class="pre">(2008,</span> <span class="pre">4,</span> <span class="pre">4),</span> <span class="pre">'5.2':</span> <span class="pre">(2009,</span> <span class="pre">10,</span> <span class="pre">1),</span> <span class="pre">'6.0':</span> <span class="pre">(2010,</span> <span class="pre">10,</span> <span class="pre">11),</span> <span class="pre">'6.1':</span> <span class="pre">(2012,</span> <span class="pre">1,</span> <span class="pre">31),</span> <span class="pre">'6.2':</span> <span class="pre">(2012,</span> <span class="pre">9,</span> <span class="pre">26),</span> <span class="pre">'6.3':</span> <span class="pre">(2013,</span> <span class="pre">9,</span> <span class="pre">30),</span> <span class="pre">'7.0':</span> <span class="pre">(2014,</span> <span class="pre">6,</span> <span class="pre">16),</span> <span class="pre">'8.0':</span> <span class="pre">(2015,</span> <span class="pre">6,</span> <span class="pre">17),</span> <span class="pre">'9.0':</span> <span class="pre">(2016,</span> <span class="pre">6,</span> <span class="pre">21)}</span></em><a class="headerlink" href="#apsw.unicode.version_dates" title="Link to this definition"></a></dt>
+<dd><p>Release date (year, month, day) for each unicode version
+intended for use with <a class="reference internal" href="#apsw.unicode.version_added" title="apsw.unicode.version_added"><code class="xref py py-meth docutils literal notranslate"><span class="pre">version_added()</span></code></a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.grapheme_next_break">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">grapheme_next_break</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#grapheme_next_break"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.grapheme_next_break" title="Link to this definition"></a></dt>
+<dd><p>Returns end of Grapheme cluster /  User Perceived Character</p>
+<p>For example regional indicators are in pairs, and a base codepoint
+can be combined with zero or more additional codepoints providing
+diacritics, marks, and variations.  Break points are defined in
+the <a class="reference external" href="https://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundary_Rules">TR29 spec</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – The text to examine</p></li>
+<li><p><strong>offset</strong> – The first codepoint to examine</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Index of first codepoint not part of the grapheme cluster
+starting at offset. You should extract <code class="docutils literal notranslate"><span class="pre">text[offset:span]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.grapheme_next">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">grapheme_next</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#grapheme_next"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.grapheme_next" title="Link to this definition"></a></dt>
+<dd><p>Returns span of next grapheme cluster</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.grapheme_iter">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">grapheme_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#grapheme_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.grapheme_iter" title="Link to this definition"></a></dt>
+<dd><p>Iterator providing text of each grapheme cluster</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.grapheme_iter_with_offsets">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">grapheme_iter_with_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#grapheme_iter_with_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.grapheme_iter_with_offsets" title="Link to this definition"></a></dt>
+<dd><p>Iterator providing start, end, text of each grapheme cluster</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.grapheme_iter_with_offsets_filtered">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">grapheme_iter_with_offsets_filtered</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emoji</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regional_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#grapheme_iter_with_offsets_filtered"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.grapheme_iter_with_offsets_filtered" title="Link to this definition"></a></dt>
+<dd><p>Iterator providing start, end, text of each grapheme cluster, providing it includes codepoints from categories, emoji, or regional indicator</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.word_next_break">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">word_next_break</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#word_next_break"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.word_next_break" title="Link to this definition"></a></dt>
+<dd><p>Returns end of next word or non-word</p>
+<p>Finds the next break point according to the <a class="reference external" href="https://www.unicode.org/reports/tr29/#Word_Boundary_Rules">TR29 spec</a>.
+Note that the segment returned may be a word, or a non-word
+(spaces, punctuation etc).  Use <a class="reference internal" href="#apsw.unicode.word_next" title="apsw.unicode.word_next"><code class="xref py py-func docutils literal notranslate"><span class="pre">word_next()</span></code></a> to get words.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – The text to examine</p></li>
+<li><p><strong>offset</strong> – The first codepoint to examine</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Next break point</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="apsw.unicode.word_default_categories">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">word_default_categories</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Ll',</span> <span class="pre">'Lm',</span> <span class="pre">'Lo',</span> <span class="pre">'Lt',</span> <span class="pre">'Lu',</span> <span class="pre">'Nd',</span> <span class="pre">'Nl',</span> <span class="pre">'No'}</span></em><a class="headerlink" href="#apsw.unicode.word_default_categories" title="Link to this definition"></a></dt>
+<dd><p>Default categories for selecting word segments - letters and numbers</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.word_next">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">word_next</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">word_default_categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emoji</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regional_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#word_next"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.word_next" title="Link to this definition"></a></dt>
+<dd><p>Returns span of next word</p>
+<p>A segment is considered a word if it contains at least one codepoint corresponding
+to any of the <cite>categories</cite>, plus:</p>
+<ul class="simple">
+<li><p>emoji (Extended_Pictographic in Unicode specs)</p></li>
+<li><p>regional indicator - two character sequence for flags like 🇧🇷🇨🇦</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.word_iter">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">word_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">word_default_categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emoji</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regional_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#word_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.word_iter" title="Link to this definition"></a></dt>
+<dd><p>Iterator providing text of each word</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.word_iter_with_offsets">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">word_iter_with_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">word_default_categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emoji</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regional_indicator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#word_iter_with_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.word_iter_with_offsets" title="Link to this definition"></a></dt>
+<dd><p>Iterator providing start, end, text of each word</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.sentence_next_break">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">sentence_next_break</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#sentence_next_break"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.sentence_next_break" title="Link to this definition"></a></dt>
+<dd><p>Returns end of sentence location.</p>
+<p>Finds the next break point according to the <a class="reference external" href="https://www.unicode.org/reports/tr29/#Sentence_Boundary_Rules">TR29 spec</a>.
+Note that the segment returned includes leading and trailing white space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – The text to examine</p></li>
+<li><p><strong>offset</strong> – The first codepoint to examine</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Next break point</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.sentence_next">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">sentence_next</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#sentence_next"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.sentence_next" title="Link to this definition"></a></dt>
+<dd><p>Returns span of next sentence</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.sentence_iter">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">sentence_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#sentence_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.sentence_iter" title="Link to this definition"></a></dt>
+<dd><p>Iterator providing text of each sentence</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.sentence_iter_with_offsets">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">sentence_iter_with_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#sentence_iter_with_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.sentence_iter_with_offsets" title="Link to this definition"></a></dt>
+<dd><p>Iterator providing start, end, text of each sentence</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.line_break_next_break">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">line_break_next_break</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="reference internal" href="_modules/apsw/unicode.html#line_break_next_break"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.line_break_next_break" title="Link to this definition"></a></dt>
+<dd><p>Returns next opportunity to break a line</p>
+<p>Finds the next break point according to the <a class="reference external" href="https://www.unicode.org/reports/tr14/#LB1">TR14 spec</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>text</strong> – The text to examine</p></li>
+<li><p><strong>offset</strong> – The first codepoint to examine</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Next break point</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.line_break_next">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">line_break_next</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#line_break_next"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.line_break_next" title="Link to this definition"></a></dt>
+<dd><p>Returns span of next line</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.line_break_iter">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">line_break_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#line_break_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.line_break_iter" title="Link to this definition"></a></dt>
+<dd><p>Iterator providing text of each line</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.unicode.line_break_iter_with_offsets">
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">line_break_iter_with_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#line_break_iter_with_offsets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.line_break_iter_with_offsets" title="Link to this definition"></a></dt>
+<dd><p>Iterator providing start, end, text of each line</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="textsearch.html" class="btn btn-neutral float-left" title="Full text search" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example-session.html" class="btn btn-neutral float-right" title="Session Example/Tour" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Nov 05, 2025.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-2NR9GDCQLT', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
