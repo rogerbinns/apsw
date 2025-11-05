@@ -4634,7 +4634,7 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   {
     res = OK;
     int i_did_commit = 0;
-    if (Py_IsNone(etype) || Py_IsNone(evalue) && Py_IsNone(etraceback))
+    if (Py_IsNone(etype) && Py_IsNone(evalue) && Py_IsNone(etraceback))
     {
       res = connection_context_manager_exec(self, "COMMIT", 0, 0);
       i_did_commit = 1;
