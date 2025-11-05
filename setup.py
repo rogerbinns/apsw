@@ -819,14 +819,14 @@ def patch_amalgamation() -> bool:
     patch_file_name = pathlib.Path(__file__).parent / "tools" / "carray.patch"
 
     try:
-        source_file_lines = source_file_name.read_text().splitlines()
-        patch_file_lines = patch_file_name.read_text().splitlines()
+        source_file_lines = source_file_name.read_text(encoding="utf8").splitlines()
+        patch_file_lines = patch_file_name.read_text(encoding="utf8").splitlines()
     except OSError:
         return False
 
     if apply_patch(patch_file_lines, source_file_lines):
         pathlib.Path(source_file_name).rename(str(source_file_name) + ".orig")
-        pathlib.Path(source_file_name).write_text("\n".join(source_file_lines) + "\n")
+        pathlib.Path(source_file_name).write_text("\n".join(source_file_lines) + "\n", encoding="utf8")
         print("  Patched amalgamation with apsw carray update")
         return True
 
