@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Full Text Search Example/Tour &mdash; APSW 3.50.4.0 documentation</title>
+  <title>Full Text Search Example/Tour &mdash; APSW 3.51.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9c22ebda"></script>
+      <script src="_static/documentation_options.js?v=7d76fbb9"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -24,7 +24,7 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="copyright" title="Copyright" href="copyright.html" />
     <link rel="next" title="Full text search" href="textsearch.html" />
-    <link rel="prev" title="Backup" href="backup.html" /> 
+    <link rel="prev" title="JSON (Javascript Object Notation)" href="jsonb.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -59,6 +59,8 @@
 <li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jsonb.html">JSON (Javascript Object Notation)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Full Text Search Example/Tour</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#is-fts5-available">Is FTS5 available?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#content-setup">Content setup</a></li>
@@ -89,6 +91,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unicode.html">Unicode Text Handling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
@@ -125,7 +128,7 @@
             <a href="_sources/example-fts.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
-        <a href="backup.html" class="btn btn-neutral float-left" title="Backup" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="jsonb.html" class="btn btn-neutral float-left" title="JSON (Javascript Object Notation)" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="textsearch.html" class="btn btn-neutral float-right" title="Full text search" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
   </div>
   <hr/>
@@ -667,11 +670,9 @@ although you can see the snippets below.</p>
 </section>
 <section id="auxiliary-functions">
 <span id="example-fts5-auxfunc"></span><span id="index-11"></span><h2>Auxiliary functions<a class="headerlink" href="#auxiliary-functions" title="Link to this heading"></a></h2>
-<p><cite>Auxiliary functions
-&lt;https://sqlite.org/fts5.html#_auxiliary_functions_&gt;__ are called
-for each matching row.  They can be used to provide `ranking
-(sorting)
-&lt;https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results&gt;`__</cite>
+<p><a class="reference external" href="https://sqlite.org/fts5.html#_auxiliary_functions_">Auxiliary functions</a> are called
+for each matching row.  They can be used to provide <a class="reference external" href="https://www.sqlite.org/fts5.html#sorting_by_auxiliary_function_results">ranking
+(sorting)</a>
 for determining better matches, or returning information about the
 match and row such as <a class="reference external" href="https://www.sqlite.org/fts5.html#the_highlight_function">highlights</a>, and
 <a class="reference external" href="https://www.sqlite.org/fts5.html#the_snippet_function">snippets</a>.</p>
@@ -1237,7 +1238,7 @@ takes the connection and list of string parameters.</p>
 <p>We’ll make one entirely our own, not building on any existing
 tokenizer.  Tokenizers operate on UTF8 and byte offsets.  The
 <a class="reference internal" href="textsearch.html#apsw.fts5.StringTokenizer" title="apsw.fts5.StringTokenizer"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.fts5.StringTokenizer()</span></code></a> decorator lets you operate on
-<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> instead and handles the mapping.
+<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> instead and handles the mapping.
 <a class="reference internal" href="textsearch.html#apsw.fts5.parse_tokenizer_args" title="apsw.fts5.parse_tokenizer_args"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.fts5.parse_tokenizer_args()</span></code></a> makes it easy to handle
 parameters.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">StringTokenizer</span>
@@ -1310,7 +1311,7 @@ parameters.</p>
 </section>
 <section id="apsw-fts5-regextokenizer">
 <span id="example-fts-apsw-regex"></span><span id="index-18"></span><h2>apsw.fts5.RegexTokenizer<a class="headerlink" href="#apsw-fts5-regextokenizer" title="Link to this heading"></a></h2>
-<p>We can use <a class="reference external" href="https://docs.python.org/3/library/re.html#module-re" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">regular</span> <span class="pre">expressions</span></code></a>.  Unlike the other
+<p>We can use <a class="reference external" href="https://docs.python.org/3/library/re.html#module-re" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">regular</span> <span class="pre">expressions</span></code></a>.  Unlike the other
 tokenizers the pattern is not passed as a SQL level parameter
 because there would be a confusing amount of backslashes, square
 brackets and other quoting going on.</p>
@@ -1564,7 +1565,7 @@ finding good matches, and increase the size of the index.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="backup.html" class="btn btn-neutral float-left" title="Backup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="jsonb.html" class="btn btn-neutral float-left" title="JSON (Javascript Object Notation)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="textsearch.html" class="btn btn-neutral float-right" title="Full text search" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
@@ -1572,7 +1573,7 @@ finding good matches, and increase the size of the index.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 31, 2025.
+      <span class="lastupdated">Last updated on Nov 05, 2025.
       </span></p>
   </div>
 

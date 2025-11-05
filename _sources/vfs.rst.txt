@@ -128,7 +128,7 @@ VFS class
       * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__
       * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__
 
-.. method:: VFS.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any
+.. method:: VFS.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> typing.Any
 
     Called when there has been an exception in a :class:`VFS` routine,
     and it can't be reported to the caller as usual.

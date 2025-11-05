@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APSW 3.50.4.0 documentation &mdash; APSW 3.50.4.0 documentation</title>
+  <title>APSW 3.51.0.0 documentation &mdash; APSW 3.51.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9c22ebda"></script>
+      <script src="_static/documentation_options.js?v=7d76fbb9"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -58,8 +58,11 @@
 <li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jsonb.html">JSON (Javascript Object Notation)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unicode.html">Unicode Text Handling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
@@ -91,7 +94,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">APSW 3.50.4.0 documentation</li>
+      <li class="breadcrumb-item active">APSW 3.51.0.0 documentation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -104,9 +107,9 @@
            <div itemprop="articleBody">
              
   <section id="apsw-version-documentation">
-<h1>APSW 3.50.4.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Link to this heading"></a></h1>
+<h1>APSW 3.51.0.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Link to this heading"></a></h1>
 <p class="centered">
-<strong>APSW 3.50.4.0 released 31 July 2025</strong></p><div class="toctree-wrapper compound">
+<strong>APSW 3.51.0.0 released 6 November 2025</strong></p><div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="about.html#what-apsw-does">What APSW does</a></li>
@@ -179,6 +182,7 @@
 <li class="toctree-l2"><a class="reference internal" href="example.html#sql-statement-tracing-in-a-block">SQL statement tracing in a block</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#formatting-query-results-table">Formatting query results table</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#caching">Caching</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example.html#the-carray-extension">The CARRAY extension</a></li>
 <li class="toctree-l2"><a class="reference internal" href="example.html#cleanup">Cleanup</a></li>
 </ul>
 </li>
@@ -193,9 +197,14 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html#carray">CARRAY</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html#session">Session</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html#math-functions">Math functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html#percentile-media">Percentile (media)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#fts5">FTS5</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#icu">ICU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extensions.html#rtree">RTree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html#geopoly">Geopoly</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a><ul>
@@ -226,6 +235,23 @@
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="backup.html#important-details">Important details</a></li>
 <li class="toctree-l2"><a class="reference internal" href="backup.html#backup-class">Backup class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example-json.html">JSON Example/Tour</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="example-json.html#quick-start">Quick start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-json.html#sqlite-json-functions">SQLite JSON functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-json.html#customising-conversion">Customising conversion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-json.html#cleanup">Cleanup</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="jsonb.html">JSON (Javascript Object Notation)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="jsonb.html#what-is-json">What is JSON?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jsonb.html#json5">JSON5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jsonb.html#using-json">Using JSON</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jsonb.html#jsonb">JSONB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jsonb.html#notes">Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jsonb.html#json-as-a-sqlite-value-type">JSON as a SQLite value type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="jsonb.html#jsonb-api">JSONB API</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a><ul>
@@ -270,7 +296,47 @@
 <li class="toctree-l2"><a class="reference internal" href="textsearch.html#module-apsw.fts5aux">FTS5 Auxiliary functions module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="textsearch.html#fts5tokenizer-class">FTS5Tokenizer class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="textsearch.html#fts5extensionapi-class">FTS5ExtensionApi class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="textsearch.html#module-apsw.unicode">Unicode Text Handling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="unicode.html">Unicode Text Handling</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.unicode_version"><code class="docutils literal notranslate"><span class="pre">unicode_version</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.category"><code class="docutils literal notranslate"><span class="pre">category()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.is_extended_pictographic"><code class="docutils literal notranslate"><span class="pre">is_extended_pictographic()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.is_regional_indicator"><code class="docutils literal notranslate"><span class="pre">is_regional_indicator()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.casefold"><code class="docutils literal notranslate"><span class="pre">casefold()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.strip"><code class="docutils literal notranslate"><span class="pre">strip()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.split_lines"><code class="docutils literal notranslate"><span class="pre">split_lines()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.expand_tabs"><code class="docutils literal notranslate"><span class="pre">expand_tabs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.grapheme_length"><code class="docutils literal notranslate"><span class="pre">grapheme_length()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.grapheme_substr"><code class="docutils literal notranslate"><span class="pre">grapheme_substr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.grapheme_endswith"><code class="docutils literal notranslate"><span class="pre">grapheme_endswith()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.grapheme_startswith"><code class="docutils literal notranslate"><span class="pre">grapheme_startswith()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.grapheme_find"><code class="docutils literal notranslate"><span class="pre">grapheme_find()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.text_width"><code class="docutils literal notranslate"><span class="pre">text_width()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.text_width_substr"><code class="docutils literal notranslate"><span class="pre">text_width_substr()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.guess_paragraphs"><code class="docutils literal notranslate"><span class="pre">guess_paragraphs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.text_wrap"><code class="docutils literal notranslate"><span class="pre">text_wrap()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.codepoint_name"><code class="docutils literal notranslate"><span class="pre">codepoint_name()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.version_added"><code class="docutils literal notranslate"><span class="pre">version_added()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.version_dates"><code class="docutils literal notranslate"><span class="pre">version_dates</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.grapheme_next_break"><code class="docutils literal notranslate"><span class="pre">grapheme_next_break()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.grapheme_next"><code class="docutils literal notranslate"><span class="pre">grapheme_next()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.grapheme_iter"><code class="docutils literal notranslate"><span class="pre">grapheme_iter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.grapheme_iter_with_offsets"><code class="docutils literal notranslate"><span class="pre">grapheme_iter_with_offsets()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.grapheme_iter_with_offsets_filtered"><code class="docutils literal notranslate"><span class="pre">grapheme_iter_with_offsets_filtered()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.word_next_break"><code class="docutils literal notranslate"><span class="pre">word_next_break()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.word_default_categories"><code class="docutils literal notranslate"><span class="pre">word_default_categories</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.word_next"><code class="docutils literal notranslate"><span class="pre">word_next()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.word_iter"><code class="docutils literal notranslate"><span class="pre">word_iter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.word_iter_with_offsets"><code class="docutils literal notranslate"><span class="pre">word_iter_with_offsets()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.sentence_next_break"><code class="docutils literal notranslate"><span class="pre">sentence_next_break()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.sentence_next"><code class="docutils literal notranslate"><span class="pre">sentence_next()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.sentence_iter"><code class="docutils literal notranslate"><span class="pre">sentence_iter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.sentence_iter_with_offsets"><code class="docutils literal notranslate"><span class="pre">sentence_iter_with_offsets()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.line_break_next_break"><code class="docutils literal notranslate"><span class="pre">line_break_next_break()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.line_break_next"><code class="docutils literal notranslate"><span class="pre">line_break_next()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.line_break_iter"><code class="docutils literal notranslate"><span class="pre">line_break_iter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.line_break_iter_with_offsets"><code class="docutils literal notranslate"><span class="pre">line_break_iter_with_offsets()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a><ul>
@@ -391,7 +457,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 31, 2025.
+      <span class="lastupdated">Last updated on Nov 05, 2025.
       </span></p>
   </div>
 

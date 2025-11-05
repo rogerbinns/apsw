@@ -303,7 +303,7 @@ VTTable class
 
   `SQLite xBegin reference <https://sqlite.org/vtab.html#the_xbegin_method>`__
 
-.. method:: VTTable.BestIndex(constraints: Sequence[tuple[int, int]], orderbys: Sequence[tuple[int, int]]) -> Any
+.. method:: VTTable.BestIndex(constraints: Sequence[tuple[int, int]], orderbys: Sequence[tuple[int, int]]) -> typing.Any
 
   This is a complex method. To get going initially, just return
   *None* and you will be fine. You should also consider using
@@ -521,7 +521,7 @@ VTTable class
 
   `SQLite xDisconnect reference <https://sqlite.org/vtab.html#the_xdisconnect_method>`__
 
-.. method:: VTTable.FindFunction(name: str, nargs: int) -> None |  Callable | tuple[int, Callable]
+.. method:: VTTable.FindFunction(name: str, nargs: int) -> None |  typing.Callable | tuple[int, typing.Callable]
 
   Called to find if the virtual table has its own implementation of a
   particular scalar function. You do not have to provide this method.

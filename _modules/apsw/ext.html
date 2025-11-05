@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.50.4.0 documentation</title>
+  <title>apsw.ext &mdash; APSW 3.51.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9c22ebda"></script>
+      <script src="../../_static/documentation_options.js?v=7d76fbb9"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -56,8 +56,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../jsonb.html">JSON (Javascript Object Notation)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-fts.html">Full Text Search Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../unicode.html">Unicode Text Handling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-session.html">Session Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../session.html">Session extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../vtable.html">Virtual Tables</a></li>
@@ -322,8 +325,6 @@
 <a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.adapt_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">adapt_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
         <span class="s2">&quot;Returns SQLite representation of `value`&quot;</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="n">value</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">abstract_base_class</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">to_sqlite_value</span><span class="p">()</span>
         <span class="n">adapter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adapters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
@@ -342,46 +343,11 @@
         <span class="k">return</span> <span class="n">converter</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="TypesConverterCursorFactory.wrap_bindings">
-<a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.wrap_bindings">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">wrap_bindings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="s2">&quot;Wraps bindings that are supplied to underlying execute&quot;</span>
-        <span class="k">if</span> <span class="n">bindings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bindings</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="n">TypesConverterCursorFactory</span><span class="o">.</span><span class="n">DictAdapter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
-        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_value</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">bindings</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="TypesConverterCursorFactory.wrap_sequence_bindings">
-<a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.wrap_sequence_bindings">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">wrap_sequence_bindings</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">sequenceofbindings</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-        <span class="s2">&quot;Wraps a sequence of bindings that are supplied to the underlying executemany&quot;</span>
-        <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">sequenceofbindings</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrap_bindings</span><span class="p">(</span><span class="n">binding</span><span class="p">)</span>  <span class="c1"># type: ignore[misc]</span></div>
-
-
-<div class="viewcode-block" id="TypesConverterCursorFactory.DictAdapter">
-<a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.DictAdapter">[docs]</a>
-    <span class="k">class</span><span class="w"> </span><span class="nc">DictAdapter</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">):</span>
-        <span class="s2">&quot;Used to wrap dictionaries supplied as bindings&quot;</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">TypesConverterCursorFactory</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">factory</span> <span class="o">=</span> <span class="n">factory</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">adapt_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="s2">&quot;Required by mapping, but not used&quot;</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="s2">&quot;Required by mapping, but not used&quot;</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+<div class="viewcode-block" id="TypesConverterCursorFactory.convert_binding">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.convert_binding">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert_binding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="s2">&quot;convert_binding callback&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">adapt_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor">
@@ -392,57 +358,103 @@
         <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">factory</span><span class="p">:</span> <span class="n">TypesConverterCursorFactory</span><span class="p">):</span>
             <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">factory</span> <span class="o">=</span> <span class="n">factory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">convert_binding</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">convert_binding</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">row_trace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rowtracer</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">_rowtracer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">convert_value</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span> <span class="n">values</span><span class="p">))</span>
-
-<div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor.execute">
-<a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.execute">[docs]</a>
-        <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">statements</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">bindings</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="o">*</span><span class="p">,</span>
-            <span class="n">can_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">prepare_flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">explain</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;Executes the statements doing conversions on supplied and returned values</span>
-
-<span class="sd">            See :meth:`apsw.Cursor.execute` for parameter details&quot;&quot;&quot;</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                <span class="n">statements</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">wrap_bindings</span><span class="p">(</span><span class="n">bindings</span><span class="p">),</span>
-                <span class="n">can_cache</span><span class="o">=</span><span class="n">can_cache</span><span class="p">,</span>
-                <span class="n">prepare_flags</span><span class="o">=</span><span class="n">prepare_flags</span><span class="p">,</span>
-                <span class="n">explain</span><span class="o">=</span><span class="n">explain</span><span class="p">,</span>
-            <span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="TypesConverterCursorFactory.TypeConverterCursor.executemany">
-<a class="viewcode-back" href="../../ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.executemany">[docs]</a>
-        <span class="k">def</span><span class="w"> </span><span class="nf">executemany</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">statements</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">sequenceofbindings</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">Bindings</span><span class="p">],</span>
-            <span class="o">*</span><span class="p">,</span>
-            <span class="n">can_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="n">prepare_flags</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="n">explain</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;Executes the statements against each item in sequenceofbindings, doing conversions on supplied and returned values</span>
-
-<span class="sd">            See :meth:`apsw.Cursor.executemany` for parameter details&quot;&quot;&quot;</span>
-            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
-                <span class="n">statements</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">wrap_sequence_bindings</span><span class="p">(</span><span class="n">sequenceofbindings</span><span class="p">),</span>  <span class="c1"># type: ignore[arg-type]</span>
-                <span class="n">can_cache</span><span class="o">=</span><span class="n">can_cache</span><span class="p">,</span>
-                <span class="n">prepare_flags</span><span class="o">=</span><span class="n">prepare_flags</span><span class="p">,</span>
-                <span class="n">explain</span><span class="o">=</span><span class="n">explain</span><span class="p">,</span>
-            <span class="p">)</span></div>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">convert_value</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cursor</span><span class="o">.</span><span class="n">get_description</span><span class="p">(),</span> <span class="n">values</span><span class="p">))</span></div>
 </div>
+
+
+
+<div class="viewcode-block" id="Function">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.Function">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Function</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides a direct Python way to call a SQL level function</span>
+
+<span class="sd">    An example::</span>
+
+<span class="sd">        json_extract = apsw.ext.Function(connection, &quot;json_extract&quot;)</span>
+<span class="sd">        value = json_extract(some_json, &#39;$.c[2].f&#39;)</span>
+
+<span class="sd">    :attr:`~apsw.Cursor.get` is used to return the results</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># This is tested in tests/jsonb.py because it was developed in</span>
+    <span class="c1"># conjunction with jsonb</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">convert_binding</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">convert_jsonb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">exec_trace</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param connection: Connection to use</span>
+<span class="sd">        :param name: SQL function name.</span>
+
+<span class="sd">        Converters and tracers are off by default for the call, and must be</span>
+<span class="sd">        provided if you want to use them,</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&quot;&quot;&#39;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">convert_binding</span> <span class="o">=</span> <span class="n">convert_binding</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">convert_jsonb</span> <span class="o">=</span> <span class="n">convert_jsonb</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">exec_trace</span> <span class="o">=</span> <span class="n">exec_trace</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span> <span class="o">=</span> <span class="n">cursor</span>
+
+<div class="viewcode-block" id="Function.__call__">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.Function.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
+        <span class="s2">&quot;Calls the function with zero or more parameters, returning the result&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SELECT &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot;(</span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">))</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">get</span></div>
 </div>
+
+
+
+<div class="viewcode-block" id="make_jsonb">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.make_jsonb">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_jsonb</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates JSONB (binary) from tag and value</span>
+
+<span class="sd">    The value will be converted to a :class:`str` and UTF8 encoded if</span>
+<span class="sd">    necessary.  JSONB format is `documented here</span>
+<span class="sd">    &lt;https://sqlite.org/jsonb.html&gt;`__.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Only tags 0 through 12 are valid</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">tag</span> <span class="o">&lt;=</span> <span class="mi">12</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;tag must be between 0 and 12 inclusive&quot;</span><span class="p">)</span>
+
+    <span class="c1"># we need the value as bytes</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+        <span class="c1"># all good</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># stringize and encode</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span>
+
+    <span class="n">len_value</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">len_value</span> <span class="o">&lt;=</span> <span class="mi">11</span><span class="p">:</span>
+        <span class="c1"># length is encoded in the same byte as the tag</span>
+        <span class="k">return</span> <span class="nb">bytes</span><span class="p">([(</span><span class="n">len_value</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">|</span> <span class="n">tag</span><span class="p">])</span> <span class="o">+</span> <span class="n">value</span>
+
+    <span class="c1"># The length is encoded after the tag</span>
+    <span class="k">if</span> <span class="n">len_value</span> <span class="o">&lt;=</span> <span class="mh">0xFF</span><span class="p">:</span>
+        <span class="n">bytes_len</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">elif</span> <span class="n">len_value</span> <span class="o">&lt;=</span> <span class="mh">0xFFFF</span><span class="p">:</span>
+        <span class="n">bytes_len</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">elif</span> <span class="n">len_value</span> <span class="o">&lt;=</span> <span class="mh">0xFFFF_FFFF</span><span class="p">:</span>
+        <span class="n">bytes_len</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="k">elif</span> <span class="n">len_value</span> <span class="o">&lt;=</span> <span class="mh">0xFFFF_FFFF_FFFF_FFFF</span><span class="p">:</span>
+        <span class="n">bytes_len</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Value is too large&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">bytes</span><span class="p">([((</span><span class="mi">11</span> <span class="o">+</span> <span class="n">bytes_len</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">|</span> <span class="n">tag</span><span class="p">])</span> <span class="o">+</span> <span class="n">len_value</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="n">bytes_len</span><span class="p">,</span> <span class="s2">&quot;big&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">value</span></div>
 
 
 
@@ -1286,6 +1298,7 @@
             <span class="s2">&quot;SQLITE_DBSTATUS_CACHE_WRITE&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBSTATUS_CACHE_WRITE</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
             <span class="s2">&quot;SQLITE_DBSTATUS_CACHE_SPILL&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBSTATUS_CACHE_SPILL</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
             <span class="s2">&quot;SQLITE_DBSTATUS_DEFERRED_FKS&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBSTATUS_DEFERRED_FKS</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">&quot;SQLITE_DBSTATUS_TEMPBUF_SPILL&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBSTATUS_TEMPBUF_SPILL</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
         <span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1357,6 +1370,7 @@
         <span class="s2">&quot;SQLITE_DBSTATUS_CACHE_WRITE&quot;</span><span class="p">:</span> <span class="s2">&quot;SQLite pager cache writes&quot;</span><span class="p">,</span>
         <span class="s2">&quot;SQLITE_DBSTATUS_CACHE_SPILL&quot;</span><span class="p">:</span> <span class="s2">&quot;SQLite pager cache writes during transaction&quot;</span><span class="p">,</span>
         <span class="s2">&quot;SQLITE_DBSTATUS_DEFERRED_FKS&quot;</span><span class="p">:</span> <span class="s2">&quot;SQLite unresolved foreign keys&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SQLITE_DBSTATUS_TEMPBUF_SPILL&quot;</span><span class="p">:</span> <span class="s2">&quot;SQLite temp spill from full memory to disk&quot;</span><span class="p">,</span>
         <span class="s2">&quot;ru_utime&quot;</span><span class="p">:</span> <span class="s2">&quot;Time in user mode&quot;</span><span class="p">,</span>
         <span class="s2">&quot;ru_stime&quot;</span><span class="p">:</span> <span class="s2">&quot;Time in system mode&quot;</span><span class="p">,</span>
         <span class="s2">&quot;ru_maxrss&quot;</span><span class="p">:</span> <span class="s2">&quot;Maximum resident set size&quot;</span><span class="p">,</span>
@@ -2685,11 +2699,19 @@
 
 <div class="viewcode-block" id="generate_series_sqlite">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.generate_series_sqlite">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">generate_series_sqlite</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mh">0xFFFFFFFF</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_series_sqlite</span><span class="p">(</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span> <span class="o">=</span> <span class="mh">0xFFFF_FFFF_FFFF_FFFF</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Behaves like SQLite&#39;s `generate_series &lt;https://sqlite.org/series.html&gt;`__</span>
 
-<span class="sd">    Only integers are supported.  If *step* is negative</span>
-<span class="sd">    then values are generated from *stop* to *start*</span>
+<span class="sd">    A step of ``0`` is treated as ``1``.  The SQLite version has had</span>
+<span class="sd">    minor changes over the years, mainly dealing with corner cases,</span>
+<span class="sd">    negative steps, and start versus stop that could have infinite</span>
+<span class="sd">    results.</span>
+
+<span class="sd">    Unless you need exact matching of the SQLite version,</span>
+<span class="sd">    :meth:`generate_series` is recommended as it matches other</span>
+<span class="sd">    databases.</span>
 
 <span class="sd">    To use::</span>
 
@@ -2700,28 +2722,47 @@
 
 <span class="sd">        db.execute(&quot;SELECT value FROM generate_series(1, 10))</span>
 
-<span class="sd">    .. seealso::</span>
-
-<span class="sd">        :meth:`generate_series`</span>
-
+<span class="sd">    Values are limited to integers.  If a non-int is passed as</span>
+<span class="sd">    a parameter then it is converted following the same way</span>
+<span class="sd">    :code:`SELECT CAST(value AS INTEGER)` converts ``value``, which</span>
+<span class="sd">    falls back to zero.  (That truncates floats, ignores leading</span>
+<span class="sd">    whitespace, and consumes the first sign plus digits of strings and</span>
+<span class="sd">    blobs treated as though they were ascii.)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;You must specify a value for start&quot;</span><span class="p">)</span>
-    <span class="n">istart</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-    <span class="n">istop</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
-    <span class="n">istep</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">istart</span> <span class="o">!=</span> <span class="n">start</span> <span class="ow">or</span> <span class="n">istop</span> <span class="o">!=</span> <span class="n">stop</span> <span class="ow">or</span> <span class="n">istep</span> <span class="o">!=</span> <span class="n">step</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;generate_series_sqlite only works with integers&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">stop</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">step</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># any nulls result in no rows</span>
+        <span class="k">return</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">mo</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s*([+-]?[0-9]+).*&quot;</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">ASCII</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mo</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">mo</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="n">convert</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">convert</span><span class="p">(</span><span class="n">stop</span><span class="p">),</span> <span class="n">convert</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">step</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">step</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">while</span> <span class="n">start</span> <span class="o">&lt;=</span> <span class="n">stop</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="p">(</span><span class="n">start</span><span class="p">,)</span>
+
+    <span class="k">if</span> <span class="n">start</span> <span class="o">&lt;</span> <span class="n">stop</span> <span class="ow">and</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">stop</span> <span class="o">&lt;</span> <span class="n">start</span> <span class="ow">and</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="p">(</span><span class="n">start</span><span class="p">,)</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">+</span> <span class="n">step</span> <span class="o">&lt;=</span> <span class="n">stop</span> <span class="ow">and</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">start</span> <span class="o">+=</span> <span class="n">step</span>
-    <span class="k">elif</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">while</span> <span class="n">stop</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="p">(</span><span class="n">stop</span><span class="p">,)</span>
-            <span class="n">stop</span> <span class="o">+=</span> <span class="n">step</span></div>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">+</span> <span class="n">step</span> <span class="o">&gt;=</span> <span class="n">stop</span> <span class="ow">and</span> <span class="n">step</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">+=</span> <span class="n">step</span>
+            <span class="k">continue</span>
+        <span class="k">break</span></div>
 
 
 
@@ -2735,14 +2776,14 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_series</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Behaves like Postgres and SQL Server</span>
 
-<span class="sd">    `Postgres doc</span>
-<span class="sd">    &lt;https://www.postgresql.org/docs/current/functions-srf.html&gt;`__</span>
-<span class="sd">    `SQL server doc</span>
-<span class="sd">    &lt;https://learn.microsoft.com/en-us/sql/t-sql/functions/generate-series-transact-sql&gt;`__</span>
+<span class="sd">    * `Postgres doc</span>
+<span class="sd">      &lt;https://www.postgresql.org/docs/current/functions-srf.html&gt;`__</span>
+<span class="sd">    * `SQL server doc</span>
+<span class="sd">      &lt;https://learn.microsoft.com/en-us/sql/t-sql/functions/generate-series-transact-sql&gt;`__</span>
 
 <span class="sd">    Operates on floating point as well as integer.  If step is not</span>
 <span class="sd">    specified then it is 1 if *stop* is greater than *start* and -1 if</span>
-<span class="sd">    *stop* is less than *start*.</span>
+<span class="sd">    *stop* is less than *start*.  A ``step`` of zero is not allowed.</span>
 
 <span class="sd">    To use::</span>
 
@@ -3169,7 +3210,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 31, 2025.
+      <span class="lastupdated">Last updated on Nov 05, 2025.
       </span></p>
   </div>
 

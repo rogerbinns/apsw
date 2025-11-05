@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>sqlite3 module differences &mdash; APSW 3.50.4.0 documentation</title>
+  <title>sqlite3 module differences &mdash; APSW 3.51.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9c22ebda"></script>
+      <script src="_static/documentation_options.js?v=7d76fbb9"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -59,8 +59,11 @@
 <li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jsonb.html">JSON (Javascript Object Notation)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unicode.html">Unicode Text Handling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
@@ -111,7 +114,7 @@
              
   <section id="sqlite3-module-differences">
 <span id="pysqlitediffs"></span><h1>sqlite3 module differences<a class="headerlink" href="#sqlite3-module-differences" title="Link to this heading"></a></h1>
-<p>The <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> standard module and APSW approached the problem of
+<p>The <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> standard module and APSW approached the problem of
 providing access to SQLite from Python from fundamentally different
 directions.</p>
 <p>APSW provides access in whatever way is normal for SQLite.  It makes
@@ -126,7 +129,7 @@ other databases.  Consequently it does hide some of SQLite’s nuances.</p>
 <p class="admonition-title">Note</p>
 <p>I suggest using APSW when you want to directly use SQLite and its
 functionality or are using your own code to deal with database
-independence rather than DBAPI.  Use <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> and DBAPI if
+independence rather than DBAPI.  Use <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> and DBAPI if
 your needs are simple, and you don’t want to use SQLite specific
 features, and want to easily switch to other databases.</p>
 </div>
@@ -154,7 +157,7 @@ used in the same thread.</p></li>
 <li><p>APSW on <a class="reference internal" href="install.html#pypi"><span class="std std-ref">PyPI</span></a> includes SQLite statically inside which
 does not interfere with any system SQLite, so you have the latest
 SQLite without disruptions.</p></li>
-<li><p>If you don’t use PyPI, APSW <a class="reference external" href="https://docs.python.org/3/extending/building.html#building" title="(in Python v3.13)"><span class="xref std std-ref">build instructions</span></a>
+<li><p>If you don’t use PyPI, APSW <a class="reference external" href="https://docs.python.org/3/extending/building.html#building" title="(in Python v3.14)"><span class="xref std std-ref">build instructions</span></a>
 include extensive customisation options for SQLite.</p></li>
 <li><p><strong>Nothing</strong> happens behind your back. By default sqlite3 tries to
 manage transactions (for DBAPI compliance) by processing your SQL for
@@ -190,9 +193,11 @@ work fine in APSW but is not allowed in sqlite3:</p>
 data such as selects, and you can have multiple statements.
 sqlite3’s <em>executescript</em> method doesn’t allow any form of
 data being returned (it silently ignores any returned data).</p></li>
+<li><p>Comprehensive <a class="reference internal" href="jsonb.html"><span class="doc">JSON (Javascript Object Notation)</span></a> support</p></li>
+<li><p>Easy conversion of types using <a class="reference internal" href="connection.html#apsw.Connection.convert_binding" title="apsw.Connection.convert_binding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convert_binding</span></code></a></p></li>
 <li><p>APSW has better <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">execution and row tracing</span></a>.  Both
 APSW and sqlite3  wrap <a class="reference external" href="https://www.sqlite.org/c3ref/trace_v2.html">sqlite3_trace_v2</a>.  sqlite3 only lets
-you see <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.set_trace_callback" title="(in Python v3.13)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">the</span> <span class="pre">text</span> <span class="pre">of</span> <span class="pre">executed</span> <span class="pre">statements</span></code></a>.  APSW provides <a class="reference internal" href="connection.html#apsw.Connection.trace_v2" title="apsw.Connection.trace_v2"><code class="xref py py-meth docutils literal notranslate"><span class="pre">a</span>
+you see <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.set_trace_callback" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">the</span> <span class="pre">text</span> <span class="pre">of</span> <span class="pre">executed</span> <span class="pre">statements</span></code></a>.  APSW provides <a class="reference internal" href="connection.html#apsw.Connection.trace_v2" title="apsw.Connection.trace_v2"><code class="xref py py-meth docutils literal notranslate"><span class="pre">a</span>
 <span class="pre">lot</span> <span class="pre">more</span> <span class="pre">information</span></code></a>, and allows for
 multiple callbacks.  And provides a <a class="reference internal" href="ext.html#apsw.ext.Trace" title="apsw.ext.Trace"><code class="xref py py-class docutils literal notranslate"><span class="pre">helpful</span> <span class="pre">context</span> <span class="pre">block</span>
 <span class="pre">tracer</span></code></a>.</p></li>
@@ -213,7 +218,7 @@ for the block</p></li>
 <li><p>sqlite3 swallows exceptions in your callbacks making it far harder
 to debug problems. That also prevents you from raising exceptions in
 your callbacks to be handled in your code that called SQLite.
-sqlite3 does let you turn on <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.enable_callback_tracebacks" title="(in Python v3.13)"><code class="xref py py-func docutils literal notranslate"><span class="pre">printing</span> <span class="pre">of</span> <span class="pre">tracebacks</span></code></a> but that is a poor substitute.</p>
+sqlite3 does let you turn on <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.enable_callback_tracebacks" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">printing</span> <span class="pre">of</span> <span class="pre">tracebacks</span></code></a> but that is a poor substitute.</p>
 <p>APSW does the right thing as demonstrated by this example.  APSW
 converts Python errors into SQLite errors, so SQLite is aware errors
 happened.</p>
@@ -308,7 +313,7 @@ libraries that abstract away the database layer.</p></li>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 31, 2025.
+      <span class="lastupdated">Last updated on Nov 05, 2025.
       </span></p>
   </div>
 

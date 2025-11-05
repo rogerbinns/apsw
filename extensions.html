@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Extensions &mdash; APSW 3.50.4.0 documentation</title>
+  <title>Extensions &mdash; APSW 3.51.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9c22ebda"></script>
+      <script src="_static/documentation_options.js?v=7d76fbb9"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -53,9 +53,14 @@
 <li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Extensions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#carray">CARRAY</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#session">Session</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#math-functions">Math functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#percentile-media">Percentile (media)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fts5">FTS5</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#icu">ICU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#rtree">RTree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#geopoly">Geopoly</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
@@ -64,8 +69,11 @@
 <li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jsonb.html">JSON (Javascript Object Notation)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unicode.html">Unicode Text Handling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
@@ -116,12 +124,39 @@
 functionality.  All extensions are disabled by default and you need to
 <a class="reference internal" href="install.html#setup-build-flags"><span class="std std-ref">take steps</span></a> to have them available at compilation
 time, to enable them and then to use them.</p>
-<p>If you get APSW from PyPI or are using SQLite from your Linux/BSD platform
-then they all enabled usually.</p>
+<p>If you get APSW from PyPI they are all enabled.  If APSW comes from
+your Linux/BSD platform then it will match your platform
+configuration.</p>
+<section id="carray">
+<h2>CARRAY<a class="headerlink" href="#carray" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://sqlite.org/carray.html">Runtime array of values extension</a> used
+with <a class="reference internal" href="apsw.html#apsw.carray" title="apsw.carray"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.carray()</span></code></a> for providing bulk numbers, strings, and blobs.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When APSW downloads the amalgamation, a <a class="extlink-source reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/carray.patch">patch</a> is applied.  Without the patch, the
+extension has to make a duplicate copy of all the data each time
+the binding happens.</p>
+</div>
+</section>
+<section id="session">
+<h2>Session<a class="headerlink" href="#session" title="Link to this heading"></a></h2>
+<p><a class="reference internal" href="session.html"><span class="doc">Session extension</span></a></p>
+</section>
+<section id="math-functions">
+<h2>Math functions<a class="headerlink" href="#math-functions" title="Link to this heading"></a></h2>
+<p>Several <a class="reference external" href="https://sqlite.org/lang_mathfunc.html">SQL functions</a></p>
+</section>
+<section id="percentile-media">
+<h2>Percentile (media)<a class="headerlink" href="#percentile-media" title="Link to this heading"></a></h2>
+<p>Several <a class="reference external" href="https://sqlite.org/percentile.html">SQL functions</a> related
+to <a class="reference external" href="https://en.wikipedia.org/wiki/Percentile">percentiles</a>.  Python
+has a <a class="reference external" href="https://docs.python.org/3/library/statistics.html#module-statistics" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">statistics</span></code></a> module with some of the same functions, but
+this extension is more convenient.</p>
+</section>
 <section id="fts5">
 <span id="ext-fts3"></span><h2>FTS5<a class="headerlink" href="#fts5" title="Link to this heading"></a></h2>
 <p><a class="reference external" href="https://www.sqlite.org/fts5.html">FTS5</a> is the full text search extension.
-APSW includes comprehensive <a class="reference internal" href="textsearch.html"><span class="doc">functionality</span></a>..</p>
+APSW includes comprehensive <a class="reference internal" href="textsearch.html"><span class="doc">functionality</span></a>.</p>
 </section>
 <section id="icu">
 <span id="ext-icu"></span><h2>ICU<a class="headerlink" href="#icu" title="Link to this heading"></a></h2>
@@ -134,6 +169,10 @@ shows how to use it.</p>
 <span id="ext-rtree"></span><h2>RTree<a class="headerlink" href="#rtree" title="Link to this heading"></a></h2>
 <p>The RTree extension provides a <a class="reference external" href="https://en.wikipedia.org/wiki/R-tree">spatial table</a> - see the <a class="reference external" href="https://sqlite.org/rtree.html">documentation</a>.  There are no additional APIs and
 the <a class="reference external" href="https://sqlite.org/rtree.html">documented SQL</a> works as is.</p>
+</section>
+<section id="geopoly">
+<h2>Geopoly<a class="headerlink" href="#geopoly" title="Link to this heading"></a></h2>
+<p>A Geojson <a class="reference external" href="Mhttps://www.sqlite.org/geopoly.html">compatible interface to RTree</a>.</p>
 </section>
 </section>
 
@@ -149,7 +188,7 @@ the <a class="reference external" href="https://sqlite.org/rtree.html">documente
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 31, 2025.
+      <span class="lastupdated">Last updated on Nov 05, 2025.
       </span></p>
   </div>
 

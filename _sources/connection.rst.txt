@@ -61,8 +61,10 @@ Connection class
                 call_function2(db)
                 db.execute("...")
 
-  Behind the scenes `savepoints <https://sqlite.org/lang_savepoint.html>`__
-   are used to provide nested transactions.
+  If starting an `outermost transaction
+  <https://sqlite.org/lang_transaction.html>`__ then ``BEGIN`` uses
+  :attr:`transaction_mode` (default ``DEFERRED``).  Nested statements
+  use `savepoints <https://sqlite.org/lang_savepoint.html>`__.
 
 .. method:: Connection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
 
@@ -106,7 +108,7 @@ Connection class
 
 .. index:: sqlite3_autovacuum_pages
 
-.. method:: Connection.autovacuum_pages(callable: Optional[Callable[[str, int, int, int], int]]) -> None
+.. method:: Connection.autovacuum_pages(callable: Optional[typing.Callable[[str, int, int, int], int]]) -> None
 
   Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
 
@@ -276,7 +278,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_collation_needed
 
-.. method:: Connection.collation_needed(callable: Optional[Callable[[Connection, str], None]]) -> None
+.. method:: Connection.collation_needed(callable: Optional[typing.Callable[[Connection, str], None]]) -> None
 
   *callable* will be called if a statement requires a `collation
   <https://en.wikipedia.org/wiki/Collation>`_ that hasn't been
@@ -337,6 +339,20 @@ If `entries` is present, then each list entry is a dict with the following infor
 
     Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__
 
+.. attribute:: Connection.convert_binding
+  :type: ConvertBinding | None
+
+  Called on a cursor when a binding is not a supported type.
+  This connection value is used when the cursor does not set
+  its own value.  See :attr:`Cursor.convert_binding`
+
+.. attribute:: Connection.convert_jsonb
+  :type: ConvertJSONB | None
+
+  Called on a cursor when a blob being returned is valid JSONB.
+  This connection value is used when the cursor does not set
+  its own value.  See :attr:`Cursor.convert_jsonb`
+
 .. index:: sqlite3_create_function_v2
 
 .. method:: Connection.create_aggregate_function(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None
@@ -386,7 +402,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_create_collation_v2
 
-.. method:: Connection.create_collation(name: str, callback: Optional[Callable[[str, str], int]]) -> None
+.. method:: Connection.create_collation(name: str, callback: Optional[typing.Callable[[str, str], int]]) -> None
 
   You can control how SQLite sorts (termed `collation
   <https://en.wikipedia.org/wiki/Collation>`_) when giving the
@@ -853,7 +869,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__
 
-.. method:: Connection.pragma(name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> Any
+.. method:: Connection.pragma(name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> typing.Any
 
   Issues the pragma (with the value if supplied) and returns the result with
   :attr:`the least amount of structure <Cursor.get>`.  For example
@@ -874,7 +890,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_preupdate_hook
 
-.. method:: Connection.preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None
+.. method:: Connection.preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[typing.Any] = None) -> None
 
  A callback just after a database row is updated.  You can have multiple hooks at once
  (managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for
@@ -1009,7 +1025,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_busy_handler
 
-.. method:: Connection.set_busy_handler(callable: Optional[Callable[[int], bool]]) -> None
+.. method:: Connection.set_busy_handler(callable: Optional[typing.Callable[[int], bool]]) -> None
 
    Sets the busy handler to callable. callable will be called with one
    integer argument which is the number of prior calls to the busy
@@ -1053,7 +1069,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_commit_hook
 
-.. method:: Connection.set_commit_hook(callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None
+.. method:: Connection.set_commit_hook(callable: Optional[CommitHook], *, id: Optional[typing.Any] = None) -> None
 
   *callable* will be called just before a commit.  It should return
   False for the commit to go ahead and True for it to be turned
@@ -1084,7 +1100,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_trace_v2
 
-.. method:: Connection.set_profile(callable: Optional[Callable[[str, int], None]]) -> None
+.. method:: Connection.set_profile(callable: Optional[typing.Callable[[str, int], None]]) -> None
 
   Sets a callable which is invoked at the end of execution of each
   statement and passed the statement string and how long it took to
@@ -1096,7 +1112,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_progress_handler
 
-.. method:: Connection.set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 100, *, id: Optional[Any] = None) -> None
+.. method:: Connection.set_progress_handler(callable: Optional[typing.Callable[[], bool]], nsteps: int = 100, *, id: Optional[typing.Any] = None) -> None
 
   Sets a callable which is invoked every *nsteps* SQLite inststructions.
   The callable should return True to abort or False to continue. (If
@@ -1120,7 +1136,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_rollback_hook
 
-.. method:: Connection.set_rollback_hook(callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None
+.. method:: Connection.set_rollback_hook(callable: Optional[typing.Callable[[], None]], *, id: Optional[typing.Any] = None) -> None
 
   Sets a callable which is invoked during a rollback.  If *callable*
   is *None* then any existing rollback hook is unregistered.
@@ -1138,7 +1154,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_update_hook
 
-.. method:: Connection.set_update_hook(callable: Optional[Callable[[int, str, str, int], None]]) -> None
+.. method:: Connection.set_update_hook(callable: Optional[typing.Callable[[int, str, str, int], None]]) -> None
 
   Calls *callable* whenever a row is updated, deleted or inserted.  If
   *callable* is *None* then any existing update hook is
@@ -1165,7 +1181,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_wal_hook
 
-.. method:: Connection.set_wal_hook(callable: Optional[Callable[[Connection, str, int], int]]) -> None
+.. method:: Connection.set_wal_hook(callable: Optional[typing.Callable[[Connection, str, int], int]]) -> None
 
  *callable* will be called just after data is committed in :ref:`wal`
  mode.  It should return *SQLITE_OK* or an error code.  The
@@ -1201,7 +1217,7 @@ libraries are using the pointer.  It is also a very good idea to call
 :meth:`sqlite_lib_version` and ensure it is the same as the other
 libraries.
 
-.. index:: sqlite3_db_status
+.. index:: sqlite3_db_status64
 
 .. method:: Connection.status(op: int, reset: bool = False) -> tuple[int, int]
 
@@ -1216,7 +1232,7 @@ libraries.
     * :func:`apsw.status` which does the same for SQLite as a whole
     * :ref:`Example <example_status>`
 
-  Calls: `sqlite3_db_status <https://sqlite.org/c3ref/db_status.html>`__
+  Calls: `sqlite3_db_status64 <https://sqlite.org/c3ref/db_status.html>`__
 
 .. index:: sqlite3_system_errno
 
@@ -1250,7 +1266,7 @@ libraries.
 
 .. index:: sqlite3_trace_v2, sqlite3_stmt_status
 
-.. method:: Connection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None, *, id: Optional[Any] = None) -> None
+.. method:: Connection.trace_v2(mask: int, callback: Optional[typing.Callable[[dict], None]] = None, *, id: Optional[typing.Any] = None) -> None
 
   Registers a trace callback.  Multiple traces can be active at once
   (implemented by APSW).  A callback of :class:`None` unregisters a
@@ -1326,6 +1342,16 @@ libraries.
   Calls:
     * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__
     * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__
+
+.. attribute:: Connection.transaction_mode
+   :type: str
+
+   The mode used for the outermost transaction when using the
+   :meth:`context manager (with) <__enter__>`.
+
+   The value will be one of ``DEFERRED`` (default), ``IMMEDIATE``,
+   or ``EXCLUSIVE``.  When setting it must be one of those values
+   in any case.
 
 .. index:: sqlite3_txn_state
 

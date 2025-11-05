@@ -53,7 +53,7 @@ Cursor class
 
     Cursors are iterators
 
-.. method:: Cursor.__next__(self: Cursor) -> Any
+.. method:: Cursor.__next__(self: Cursor) -> typing.Any
 
     Cursors are iterators
 
@@ -106,6 +106,37 @@ Cursor class
 
   :class:`Connection` this cursor is using
 
+.. attribute:: Cursor.convert_binding
+  :type: ConvertBinding | None
+
+  Called with the :class:`Cursor`, parameter number, and value when
+  an unsuppported type is used in a binding. Note that parameter
+  numbers start at 1.
+
+  If set to ``None`` then conversion is disabled for this cursor.
+
+  .. seealso::
+
+    * :attr:`bindings_count`
+    * :attr:`bindings_names`
+
+.. attribute:: Cursor.convert_jsonb
+  :type: ConvertJSONB | None
+
+  Called with the :class:`Cursor`, column number, and bytes value
+  when a blob value is valid JSONB.  The callback can :func:`decode the
+  <jsonb_decode>` or return the bytes as is.
+
+  If set to ``None`` then conversion is disabled for this cursor.
+
+  .. seealso::
+
+    You can consult the description to get further confirmation if
+    the value is intended to be JSONB.
+
+    * :attr:`Cursor.description_full`
+    * :attr:`Cursor.description`
+
 .. attribute:: Cursor.description
     :type: tuple[tuple[str, str, None, None, None, None, None], ...]
 
@@ -134,14 +165,13 @@ Calls:
   * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__
 
 .. attribute:: Cursor.exec_trace
-  :type: Optional[ExecTracer]
+  :type: ExecTracer | None
 
   Called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
   cursor.
 
-  If *callable* is *None* then any existing execution tracer is
-  unregistered.
+  If *callable* is *None* then execution tracing is disabled for the cursor..
 
   .. seealso::
 
@@ -229,7 +259,7 @@ Calls:
   in DBAPI.  See :meth:`get` which does the same thing, but with the least
   amount of structure to unpack.
 
-.. method:: Cursor.fetchone() -> Optional[Any]
+.. method:: Cursor.fetchone() -> Optional[typing.Any]
 
   Returns the next row of data or None if there are no more rows.
 
@@ -285,7 +315,7 @@ Calls:
      * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__
      * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__
 
-.. method:: Cursor.get_exec_trace() -> Optional[ExecTracer]
+.. method:: Cursor.get_exec_trace() -> ExecTracer | None
 
   Returns the currently installed :attr:`execution tracer
   <Cursor.exec_trace>`
@@ -294,7 +324,7 @@ Calls:
 
     * :ref:`tracing`
 
-.. method:: Cursor.get_row_trace() -> Optional[RowTracer]
+.. method:: Cursor.get_row_trace() -> RowTracer | None
 
   Returns the currently installed (via :meth:`~Cursor.set_row_trace`)
   row tracer.
@@ -331,14 +361,13 @@ Calls:
   Calls: `sqlite3_stmt_readonly <https://sqlite.org/c3ref/stmt_readonly.html>`__
 
 .. attribute:: Cursor.row_trace
-  :type: Optional[RowTracer]
+  :type: RowTracer | None
 
   Called with cursor and row being returned.  You can
   change the data that is returned or cause the row to be skipped
   altogether.
 
-  If *callable* is *None* then any existing row tracer is
-  unregistered.
+  If ``None`` then row tracing is disabled for this cursor.
 
   .. seealso::
 
@@ -346,11 +375,21 @@ Calls:
     * :ref:`rowtracer`
     * :attr:`Connection.row_trace`
 
-.. method:: Cursor.set_exec_trace(callable: Optional[ExecTracer]) -> None
+.. method:: Cursor.set_exec_trace(callable: ExecTracer | None) -> None
 
   Sets the :attr:`execution tracer <Cursor.exec_trace>`
 
-.. method:: Cursor.set_row_trace(callable: Optional[RowTracer]) -> None
+.. method:: Cursor.set_row_trace(callable: RowTracer | None) -> None
 
-  Sets the :attr:`row tracer <Cursor.row_trace>`
+  Sets the :attr:`row tracer <Cursor.row_trace>`.  If ``None``
+  then row tracing is disabled for this cursor.
+
+.. index:: sqlite3_sql
+
+.. attribute:: Cursor.sql
+  :type: str
+
+  The SQL being executed
+
+  Calls: `sqlite3_sql <https://sqlite.org/c3ref/expanded_sql.html>`__
 

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tips &mdash; APSW 3.50.4.0 documentation</title>
+  <title>Tips &mdash; APSW 3.51.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,7 +15,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9c22ebda"></script>
+      <script src="_static/documentation_options.js?v=7d76fbb9"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -83,8 +83,11 @@
 <li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jsonb.html">JSON (Javascript Object Notation)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unicode.html">Unicode Text Handling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
@@ -155,19 +158,19 @@ best performance and avoid common mistakes.</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>NULL</p></td>
-<td><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><code class="xref py py-data docutils literal notranslate"><span class="pre">None</span></code></a></p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">None</span></code></a></p></td>
 </tr>
 <tr class="row-odd"><td><p>Text (limit 1GB when encoded as bytes)</p></td>
-<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p></td>
 </tr>
 <tr class="row-even"><td><p>Integer (Signed 64 bit)</p></td>
-<td><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></p></td>
 </tr>
 <tr class="row-odd"><td><p>Float (<a class="reference external" href="https://en.wikipedia.org/wiki/Double-precision_floating-point_format">IEEE754 64 bit</a>)</p></td>
-<td><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p></td>
+<td><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference external" href="https://en.wikipedia.org/wiki/Binary_large_object">BLOB</a> (binary data, limit 1GB)</p></td>
-<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a> and similar such as <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytearray" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytearray</span></code></a> and <a class="reference external" href="https://docs.python.org/3/library/array.html#array.array" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">array.array</span></code></a>.  Anything
+<td><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a> and similar such as <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytearray" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytearray</span></code></a> and <a class="reference external" href="https://docs.python.org/3/library/array.html#array.array" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">array.array</span></code></a>.  Anything
 that implements the <a class="reference external" href="https://docs.python.org/3/c-api/buffer.html">buffer protocol</a> is
 accepted.</p></td>
 </tr>
@@ -309,7 +312,7 @@ the columns inside the SQL.</p>
 </pre></div>
 </div>
 <p>You can use <a class="reference internal" href="ext.html#apsw.ext.DataClassRowFactory" title="apsw.ext.DataClassRowFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.DataClassRowFactory</span></code></a> to get the row as
-<a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code></a>.  It is <strong>strongly</strong> recommended that you provide
+<a class="reference external" href="https://docs.python.org/3/library/dataclasses.html#module-dataclasses" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dataclasses</span></code></a>.  It is <strong>strongly</strong> recommended that you provide
 the SQL level names using <code class="docutils literal notranslate"><span class="pre">AS</span></code> since there is no guarantee what the
 names will be otherwise.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">apsw.ext</span>
@@ -362,7 +365,7 @@ will be signalled via an <a class="reference internal" href="exceptions.html"><s
 <p>APSW ensures you have <a class="reference internal" href="exceptions.html#augmentedstacktraces"><span class="std std-ref">detailed information</span></a> both in the stack trace as well as what data
 APSW/SQLite was operating on.</p>
 <p>SQLite has a <a class="reference external" href="https://www.sqlite.org/errlog.html">warning/error logging facility</a>.  Use <a class="reference internal" href="bestpractice.html"><span class="doc">best practice</span></a> to
-forward SQLite log messages to Python’s <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a>.</p>
+forward SQLite log messages to Python’s <a class="reference external" href="https://docs.python.org/3/library/logging.html#module-logging" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">logging</span></code></a>.</p>
 </section>
 <section id="managing-and-updating-your-schema">
 <span id="schema-upgrade"></span><h2>Managing and updating your schema<a class="headerlink" href="#managing-and-updating-your-schema" title="Link to this heading"></a></h2>
@@ -473,7 +476,7 @@ object to use as a cursor.</p>
 where you can provide additional parameters at the time of open for a
 database.  Opens can include the <a class="reference external" href="https://www.sqlite.org/c3ref/open.html">SQLITE_OPEN_URI</a> flag, which will
 also apply to <code class="docutils literal notranslate"><span class="pre">ATTACH</span></code> on that connection.</p>
-<p>You should use <a class="reference external" href="https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse" title="(in Python v3.13)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">urllib.parse</span></code></a> to correctly create strings handling
+<p>You should use <a class="reference external" href="https://docs.python.org/3/library/urllib.parse.html#module-urllib.parse" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">urllib.parse</span></code></a> to correctly create strings handling
 the necessary special characters and quoting.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">urllib.parse</span>
 
@@ -528,7 +531,7 @@ private to the connection.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 31, 2025.
+      <span class="lastupdated">Last updated on Nov 05, 2025.
       </span></p>
   </div>
 

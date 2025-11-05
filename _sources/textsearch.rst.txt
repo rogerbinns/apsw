@@ -48,7 +48,9 @@ what is available.  Highlights include:
 * :mod:`apsw.fts5query` module for generating, parsing, and modifying
   FTS5 queries
 * :mod:`apsw.fts5aux` module with auxiliary functions and helpers
-* :mod:`apsw.unicode` module supporting the latest version of Unicode:
+* :mod:`apsw.unicode` module supporting the latest version of Unicode
+  which can be used to ingest text into FTS5, and split, highlight, and
+  format text results coming out:
 
   * Splitting text into user perceived characters (grapheme clusters),
     words, sentences, and line breaks.
@@ -513,7 +515,7 @@ text into ascii text that sounds approximately similar::
 Available auxiliary functions
 =============================
 
-SQLite includes X builtin auxiliary functions, with APSW providing
+SQLite includes 3 builtin auxiliary functions, with APSW providing
 some more.
 
 .. list-table::
@@ -602,10 +604,3 @@ FTS5 Auxiliary functions module
 
 .. include:: fts.rst
 
-Unicode Text Handling
-=====================
-
-.. automodule:: apsw.unicode
-    :members:
-    :undoc-members:
-    :member-order: bysource

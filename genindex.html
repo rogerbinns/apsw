@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; APSW 3.50.4.0 documentation</title>
+  <title>Index &mdash; APSW 3.51.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9c22ebda"></script>
+      <script src="_static/documentation_options.js?v=7d76fbb9"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
@@ -56,8 +56,11 @@
 <li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jsonb.html">JSON (Javascript Object Notation)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unicode.html">Unicode Text Handling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
@@ -137,6 +140,8 @@
       <li><a href="ext.html#apsw.ext.DataClassRowFactory.__call__">__call__() (apsw.ext.DataClassRowFactory method)</a>
 
       <ul>
+        <li><a href="ext.html#apsw.ext.Function.__call__">(apsw.ext.Function method)</a>
+</li>
         <li><a href="ext.html#apsw.ext.TypesConverterCursorFactory.__call__">(apsw.ext.TypesConverterCursorFactory method)</a>
 </li>
         <li><a href="textsearch.html#apsw.FTS5Tokenizer.__call__">(apsw.FTS5Tokenizer method)</a>
@@ -188,6 +193,8 @@
 </li>
       <li><a href="ext.html#apsw.ext.VDBEInstruction.addr">addr (apsw.ext.VDBEInstruction attribute)</a>
 </li>
+      <li><a href="apsw.html#apsw.AggregateClass">AggregateClass (class in apsw)</a>
+</li>
       <li><a href="apsw.html#apsw.AggregateFactory">AggregateFactory (class in apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.AggregateFinal">AggregateFinal (class in apsw)</a>
@@ -235,6 +242,8 @@
         <li><a href="ext.html#module-apsw.ext">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     apsw.fts5
 
@@ -242,8 +251,6 @@
         <li><a href="textsearch.html#module-apsw.fts5">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="example-fts.html#index-19">apsw.fts5.RegexPreTokenizer (example code)</a>
 </li>
       <li><a href="example-fts.html#index-18">apsw.fts5.RegexTokenizer (example code)</a>
@@ -277,7 +284,7 @@
     apsw.unicode
 
       <ul>
-        <li><a href="textsearch.html#module-apsw.unicode">module</a>
+        <li><a href="unicode.html#module-apsw.unicode">module</a>
 </li>
       </ul></li>
       <li><a href="apsw.html#apsw.apsw_version">apsw_version() (in module apsw)</a>
@@ -336,6 +343,8 @@
       <li><a href="vtable.html#apsw.VTTable.BestIndex">BestIndex() (apsw.VTTable method)</a>
 </li>
       <li><a href="vtable.html#apsw.VTTable.BestIndexObject">BestIndexObject() (apsw.VTTable method)</a>
+</li>
+      <li><a href="apsw.html#apsw.Binding">Binding (class in apsw)</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryDetails.bindings">bindings (apsw.ext.QueryDetails attribute)</a>
 </li>
@@ -407,9 +416,13 @@
 </li>
       <li><a href="exceptions.html#apsw.CantOpenError">CantOpenError</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.casefold">casefold() (in module apsw.unicode)</a>
+      <li><a href="apsw.html#apsw.carray">carray() (in module apsw)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.category">category() (in module apsw.unicode)</a>
+      <li><a href="apsw.html#apsw.CArrayBinding">CArrayBinding (class in apsw)</a>
+</li>
+      <li><a href="unicode.html#apsw.unicode.casefold">casefold() (in module apsw.unicode)</a>
+</li>
+      <li><a href="unicode.html#apsw.unicode.category">category() (in module apsw.unicode)</a>
 </li>
       <li><a href="shell.html#index-3">cd (Shell command)</a>
 </li>
@@ -449,7 +462,7 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5.TokenizerArgument.choices">choices (apsw.fts5.TokenizerArgument attribute)</a>
 </li>
-      <li><a href="example-fts.html#index-25">Cleanup (example code)</a>, <a href="example-session.html#index-12">[1]</a>, <a href="example.html#index-39">[2]</a>
+      <li><a href="example-fts.html#index-25">Cleanup (example code)</a>, <a href="example-json.html#index-3">[1]</a>, <a href="example-session.html#index-12">[2]</a>, <a href="example.html#index-40">[3]</a>
 </li>
       <li><a href="shell.html#index-5">close (Shell command)</a>
 </li>
@@ -473,7 +486,7 @@
 </li>
       <li><a href="shell.html#apsw.shell.Shell.cmdloop">cmdloop() (apsw.shell.Shell method)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.codepoint_name">codepoint_name() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.codepoint_name">codepoint_name() (in module apsw.unicode)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.collation_needed">collation_needed() (apsw.Connection method)</a>
 </li>
@@ -550,8 +563,6 @@
 </li>
       <li><a href="apsw.html#apsw.CommitHook">CommitHook (class in apsw)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.compile_options">compile_options (in module apsw)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.complete">complete() (apsw.shell.Shell method)</a>
@@ -560,6 +571,8 @@
         <li><a href="apsw.html#apsw.complete">(in module apsw)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="shell.html#apsw.shell.Shell.complete_command">complete_command() (apsw.shell.Shell method)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.complete_sql">complete_sql() (apsw.shell.Shell method)</a>
@@ -646,10 +659,24 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5.FTS5TableStructure.contentless_unindexed">contentless_unindexed (apsw.fts5.FTS5TableStructure attribute)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.convert_binding">convert_binding (apsw.Connection attribute)</a>
+
+      <ul>
+        <li><a href="cursor.html#apsw.Cursor.convert_binding">(apsw.Cursor attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="ext.html#apsw.ext.TypesConverterCursorFactory.convert_binding">convert_binding() (apsw.ext.TypesConverterCursorFactory method)</a>
+</li>
       <li><a href="textsearch.html#apsw.fts5.convert_boolean">convert_boolean() (in module apsw.fts5)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.TokenizerArgument.convert_default">convert_default (apsw.fts5.TokenizerArgument attribute)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.convert_jsonb">convert_jsonb (apsw.Connection attribute)</a>
+
+      <ul>
+        <li><a href="cursor.html#apsw.Cursor.convert_jsonb">(apsw.Cursor attribute)</a>
+</li>
+      </ul></li>
       <li><a href="textsearch.html#apsw.fts5.convert_number_ranges">convert_number_ranges() (in module apsw.fts5)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.convert_string_to_python">convert_string_to_python() (in module apsw.fts5)</a>
@@ -659,6 +686,10 @@
       <li><a href="textsearch.html#apsw.fts5.convert_unicode_categories">convert_unicode_categories() (in module apsw.fts5)</a>
 </li>
       <li><a href="ext.html#apsw.ext.TypesConverterCursorFactory.convert_value">convert_value() (apsw.ext.TypesConverterCursorFactory method)</a>
+</li>
+      <li><a href="apsw.html#apsw.ConvertBinding">ConvertBinding (class in apsw)</a>
+</li>
+      <li><a href="apsw.html#apsw.ConvertJSONB">ConvertJSONB (class in apsw)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.TokenizerArgument.convertor">convertor (apsw.fts5.TokenizerArgument attribute)</a>
 </li>
@@ -715,6 +746,8 @@
       <li><a href="connection.html#apsw.Connection.cursor_factory">cursor_factory (apsw.Connection attribute)</a>
 </li>
       <li><a href="exceptions.html#apsw.CursorClosedError">CursorClosedError</a>
+</li>
+      <li><a href="example-json.html#index-2">Customising conversion (example code)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -871,14 +904,14 @@
       </ul></li>
       <li><a href="shell.html#index-14">exceptions (Shell command)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.exec_trace">exec_trace (apsw.Connection attribute)</a>
 
       <ul>
         <li><a href="cursor.html#apsw.Cursor.exec_trace">(apsw.Cursor attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     exectrace
 
@@ -897,8 +930,6 @@
       <ul>
         <li><a href="cursor.html#apsw.Cursor.execute">(apsw.Cursor method)</a>
 </li>
-        <li><a href="ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.execute">(apsw.ext.TypesConverterCursorFactory.TypeConverterCursor method)</a>
-</li>
       </ul></li>
       <li><a href="example.html#index-9">executemany (example code)</a>
 </li>
@@ -907,8 +938,6 @@
       <ul>
         <li><a href="cursor.html#apsw.Cursor.executemany">(apsw.Cursor method)</a>
 </li>
-        <li><a href="ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor.executemany">(apsw.ext.TypesConverterCursorFactory.TypeConverterCursor method)</a>
-</li>
       </ul></li>
       <li><a href="example.html#index-4">Executing SQL (example code)</a>
 </li>
@@ -916,7 +945,7 @@
 </li>
       <li><a href="shell.html#index-15">exit (Shell command)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.expand_tabs">expand_tabs() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.expand_tabs">expand_tabs() (in module apsw.unicode)</a>
 </li>
       <li><a href="cursor.html#apsw.Cursor.expanded_sql">expanded_sql (apsw.Cursor attribute)</a>
 
@@ -987,10 +1016,10 @@
 </li>
       <li><a href="ext.html#apsw.ext.QueryDetails.first_query">first_query (apsw.ext.QueryDetails attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="shell.html#apsw.shell.Shell.fixup_backslashes">fixup_backslashes() (apsw.shell.Shell method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="session.html#apsw.TableChange.fk_conflicts">fk_conflicts (apsw.TableChange attribute)</a>
 </li>
       <li><a href="apsw.html#apsw.fork_checker">fork_checker() (in module apsw)</a>
@@ -1032,6 +1061,8 @@
       <li><a href="shell.html#index-17">ftsq (Shell command)</a>
 </li>
       <li><a href="exceptions.html#apsw.FullError">FullError</a>
+</li>
+      <li><a href="ext.html#apsw.ext.Function">Function (class in apsw.ext)</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.function_name">function_name (apsw.ext.QueryAction attribute)</a>
 </li>
@@ -1136,27 +1167,27 @@
         <li><a href="changes.html#index-48">Cursor.get_row_trace</a>
 </li>
       </ul></li>
-      <li><a href="textsearch.html#apsw.unicode.grapheme_endswith">grapheme_endswith() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.grapheme_endswith">grapheme_endswith() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.grapheme_find">grapheme_find() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.grapheme_find">grapheme_find() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.grapheme_iter">grapheme_iter() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.grapheme_iter">grapheme_iter() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.grapheme_iter_with_offsets">grapheme_iter_with_offsets() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.grapheme_iter_with_offsets">grapheme_iter_with_offsets() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.grapheme_iter_with_offsets_filtered">grapheme_iter_with_offsets_filtered() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.grapheme_iter_with_offsets_filtered">grapheme_iter_with_offsets_filtered() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.grapheme_length">grapheme_length() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.grapheme_length">grapheme_length() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.grapheme_next">grapheme_next() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.grapheme_next">grapheme_next() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.grapheme_next_break">grapheme_next_break() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.grapheme_next_break">grapheme_next_break() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.grapheme_startswith">grapheme_startswith() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.grapheme_startswith">grapheme_startswith() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.grapheme_substr">grapheme_substr() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.grapheme_substr">grapheme_substr() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.guess_paragraphs">guess_paragraphs() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.guess_paragraphs">guess_paragraphs() (in module apsw.unicode)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1276,7 +1307,7 @@
         <li><a href="ext.html#apsw.ext.QueryDetails.is_explain">(apsw.ext.QueryDetails attribute)</a>
 </li>
       </ul></li>
-      <li><a href="textsearch.html#apsw.unicode.is_extended_pictographic">is_extended_pictographic() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.is_extended_pictographic">is_extended_pictographic() (in module apsw.unicode)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.Row.is_first">is_first (apsw.shell.Shell.Row attribute)</a>
 </li>
@@ -1290,7 +1321,7 @@
         <li><a href="ext.html#apsw.ext.QueryDetails.is_readonly">(apsw.ext.QueryDetails attribute)</a>
 </li>
       </ul></li>
-      <li><a href="textsearch.html#apsw.unicode.is_regional_indicator">is_regional_indicator() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.is_regional_indicator">is_regional_indicator() (in module apsw.unicode)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.Table.is_token">is_token() (apsw.fts5.Table method)</a>
 </li>
@@ -1306,9 +1337,17 @@
 </li>
       <li><a href="tips.html#index-1">JSON</a>
 </li>
+      <li><a href="example-fts.html#index-21">JSON tokenizer (example code)</a>
+</li>
+      <li><a href="jsonb.html#apsw.jsonb_decode">jsonb_decode() (in module apsw)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="example-fts.html#index-21">JSON tokenizer (example code)</a>
+      <li><a href="jsonb.html#apsw.jsonb_detect">jsonb_detect() (in module apsw)</a>
+</li>
+      <li><a href="jsonb.html#apsw.jsonb_encode">jsonb_encode() (in module apsw)</a>
+</li>
+      <li><a href="apsw.html#apsw.JSONBTypes">JSONBTypes (class in apsw)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.JSONTokenizer">JSONTokenizer() (in module apsw.fts5)</a>
 </li>
@@ -1346,13 +1385,13 @@
 </li>
       <li><a href="example.html#index-31">Limits (example code)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.line_break_iter">line_break_iter() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.line_break_iter">line_break_iter() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.line_break_iter_with_offsets">line_break_iter_with_offsets() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.line_break_iter_with_offsets">line_break_iter_with_offsets() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.line_break_next">line_break_next() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.line_break_next">line_break_next() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.line_break_next_break">line_break_next_break() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.line_break_next_break">line_break_next_break() (in module apsw.unicode)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -1391,6 +1430,8 @@
 </li>
       <li><a href="shell.html#apsw.shell.main">main() (in module apsw.shell)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.make_jsonb">make_jsonb() (in module apsw.ext)</a>
+</li>
       <li><a href="ext.html#apsw.ext.make_virtual_module">make_virtual_module() (in module apsw.ext)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.map_functions">map_functions (in module apsw.fts5)</a>
@@ -1404,6 +1445,8 @@
       <li><a href="apsw.html#apsw.mapping_authorizer_return_codes">mapping_authorizer_return_codes (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.mapping_bestindex_constraints">mapping_bestindex_constraints (in module apsw)</a>
+</li>
+      <li><a href="apsw.html#apsw.mapping_carray">mapping_carray (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.mapping_config">mapping_config (in module apsw)</a>
 </li>
@@ -1453,10 +1496,10 @@
 </li>
       <li><a href="apsw.html#apsw.mapping_status">mapping_status (in module apsw)</a>
 </li>
-      <li><a href="apsw.html#apsw.mapping_sync">mapping_sync (in module apsw)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apsw.html#apsw.mapping_sync">mapping_sync (in module apsw)</a>
+</li>
       <li><a href="apsw.html#apsw.mapping_trace_codes">mapping_trace_codes (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.mapping_txn_state">mapping_txn_state (in module apsw)</a>
@@ -1527,7 +1570,7 @@
 </li>
         <li><a href="shell.html#module-apsw.shell">apsw.shell</a>
 </li>
-        <li><a href="textsearch.html#module-apsw.unicode">apsw.unicode</a>
+        <li><a href="unicode.html#module-apsw.unicode">apsw.unicode</a>
 </li>
       </ul></li>
       <li><a href="ext.html#apsw.ext.QueryAction.module_name">module_name (apsw.ext.QueryAction attribute)</a>
@@ -1736,8 +1779,6 @@
 </li>
       <li><a href="textsearch.html#apsw.FTS5ExtensionApi.phrase_locations">phrase_locations() (apsw.FTS5ExtensionApi method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="textsearch.html#apsw.fts5.QueryInfo.phrases">phrases (apsw.fts5.QueryInfo attribute)</a>
 
       <ul>
@@ -1746,6 +1787,8 @@
         <li><a href="textsearch.html#apsw.fts5query.NEAR.phrases">(apsw.fts5query.NEAR attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="session.html#apsw.TableChange.pk_columns">pk_columns (apsw.TableChange attribute)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5query.PHRASE.plus">plus (apsw.fts5query.PHRASE attribute)</a>
@@ -1806,6 +1849,8 @@
 </li>
       <li><a href="apsw.html#apsw.pyobject">pyobject() (in module apsw)</a>
 </li>
+      <li><a href="apsw.html#apsw.PyObjectBinding">PyObjectBinding (class in apsw)</a>
+</li>
       <li>
     Python Enhancement Proposals
 
@@ -1859,10 +1904,10 @@
 </li>
       <li><a href="ext.html#apsw.ext.query_limit">query_limit (class in apsw.ext)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="textsearch.html#apsw.FTS5ExtensionApi.query_phrase">query_phrase() (apsw.FTS5ExtensionApi method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.QueryDetails.query_plan">query_plan (apsw.ext.QueryDetails attribute)</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryDetails.query_remaining">query_remaining (apsw.ext.QueryDetails attribute)</a>
@@ -1884,6 +1929,8 @@
       <li><a href="textsearch.html#apsw.fts5query.QueryTokens">QueryTokens (class in apsw.fts5query)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.QueryTokensTokenizer">QueryTokensTokenizer() (in module apsw.fts5)</a>
+</li>
+      <li><a href="example-json.html#index-0">Quick start (example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5query.quote">quote() (in module apsw.fts5query)</a>
 </li>
@@ -1987,6 +2034,13 @@
       </ul></li>
       <li><a href="ext.html#apsw.ext.result_string">result_string() (in module apsw.ext)</a>
 </li>
+      <li>
+    RFC
+
+      <ul>
+        <li><a href="jsonb.html#index-0">RFC 8259</a>
+</li>
+      </ul></li>
       <li><a href="vtable.html#apsw.VTTable.Rollback">Rollback() (apsw.VTTable method)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.Row.row">row (apsw.shell.Shell.Row attribute)</a>
@@ -2064,13 +2118,13 @@
 </li>
       <li><a href="blob.html#apsw.Blob.seek">seek() (apsw.Blob method)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.sentence_iter">sentence_iter() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.sentence_iter">sentence_iter() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.sentence_iter_with_offsets">sentence_iter_with_offsets() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.sentence_iter_with_offsets">sentence_iter_with_offsets() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.sentence_next">sentence_next() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.sentence_next">sentence_next() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.sentence_next_break">sentence_next_break() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.sentence_next_break">sentence_next_break() (in module apsw.unicode)</a>
 </li>
       <li><a href="shell.html#index-37">separator (Shell command)</a>
 </li>
@@ -2246,13 +2300,17 @@
         <li><a href="changes.html#index-10">apsw.soft_heap_limit</a>
 </li>
       </ul></li>
-      <li><a href="textsearch.html#apsw.unicode.split_lines">split_lines() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.split_lines">split_lines() (in module apsw.unicode)</a>
+</li>
+      <li><a href="cursor.html#apsw.Cursor.sql">sql (apsw.Cursor attribute)</a>
 </li>
       <li><a href="example-session.html#index-3">SQL equivalent of a changeset (example code)</a>
 </li>
       <li><a href="example.html#index-36">SQL statement tracing in a block (example code)</a>
 </li>
       <li><a href="exceptions.html#apsw.SQLError">SQLError</a>
+</li>
+      <li><a href="example-json.html#index-1">SQLite JSON functions (example code)</a>
 </li>
       <li><a href="connection.html#index-3">sqlite3_autovacuum_pages</a>
 </li>
@@ -2344,7 +2402,7 @@
 </li>
       <li><a href="connection.html#index-37">sqlite3_db_release_memory</a>
 </li>
-      <li><a href="connection.html#index-49">sqlite3_db_status</a>
+      <li><a href="connection.html#index-49">sqlite3_db_status64</a>
 </li>
       <li><a href="connection.html#index-20">sqlite3_deserialize</a>
 </li>
@@ -2435,6 +2493,8 @@
       <li><a href="apsw.html#index-16">sqlite3_sourceid</a>
 </li>
       <li><a href="apsw.html#apsw.sqlite3_sourceid">sqlite3_sourceid() (in module apsw)</a>
+</li>
+      <li><a href="cursor.html#index-8">sqlite3_sql</a>
 </li>
       <li><a href="apsw.html#index-18">sqlite3_status64</a>
 </li>
@@ -2527,6 +2587,10 @@
       <li><a href="session.html#index-21">sqlite3changeset_apply_v2</a>
 </li>
       <li><a href="session.html#index-21">sqlite3changeset_apply_v2_strm</a>
+</li>
+      <li><a href="session.html#index-21">sqlite3changeset_apply_v3</a>
+</li>
+      <li><a href="session.html#index-21">sqlite3changeset_apply_v3_strm</a>
 </li>
       <li><a href="session.html#index-22">sqlite3changeset_concat</a>
 </li>
@@ -2646,7 +2710,7 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5.StringTokenizer">StringTokenizer() (in module apsw.fts5)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.strip">strip() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.strip">strip() (in module apsw.unicode)</a>
 </li>
       <li><a href="apsw.html#apsw.strlike">strlike() (in module apsw)</a>
 </li>
@@ -2708,11 +2772,13 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5.Table.text_for_token">text_for_token() (apsw.fts5.Table method)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.text_width">text_width() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.text_width">text_width() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.text_width_substr">text_width_substr() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.text_width_substr">text_width_substr() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.text_wrap">text_wrap() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.text_wrap">text_wrap() (in module apsw.unicode)</a>
+</li>
+      <li><a href="example.html#index-39">The CARRAY extension (example code)</a>
 </li>
       <li><a href="exceptions.html#apsw.ThreadingViolationError">ThreadingViolationError</a>
 </li>
@@ -2787,6 +2853,8 @@
 </li>
       <li><a href="example.html#index-12">Tracing returned rows (example code)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.transaction_mode">transaction_mode (apsw.Connection attribute)</a>
+</li>
       <li><a href="example.html#index-8">Transactions (example code)</a>
 </li>
       <li><a href="example-fts.html#index-24">Transform tokenizer (example code)</a>
@@ -2803,8 +2871,6 @@
 </li>
       <li><a href="ext.html#apsw.ext.TypesConverterCursorFactory">TypesConverterCursorFactory (class in apsw.ext)</a>
 </li>
-      <li><a href="ext.html#apsw.ext.TypesConverterCursorFactory.DictAdapter">TypesConverterCursorFactory.DictAdapter (class in apsw.ext)</a>
-</li>
       <li><a href="ext.html#apsw.ext.TypesConverterCursorFactory.TypeConverterCursor">TypesConverterCursorFactory.TypeConverterCursor (class in apsw.ext)</a>
 </li>
   </ul></td>
@@ -2815,7 +2881,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="textsearch.html#apsw.fts5.unicode_categories">unicode_categories (in module apsw.fts5)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.unicode_version">unicode_version (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.unicode_version">unicode_version (in module apsw.unicode)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.UnicodeWordsTokenizer">UnicodeWordsTokenizer() (in module apsw.fts5)</a>
 </li>
@@ -2867,9 +2933,9 @@
 </li>
       <li><a href="shell.html#index-43">version (Shell command)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.version_added">version_added() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.version_added">version_added() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.version_dates">version_dates (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.version_dates">version_dates (in module apsw.unicode)</a>
 </li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo.version_valid_for">version_valid_for (apsw.ext.DatabaseFileInfo attribute)</a>
 </li>
@@ -2940,6 +3006,8 @@
 </li>
       <li><a href="shell.html#index-47">width (Shell command)</a>
 </li>
+      <li><a href="apsw.html#apsw.WindowClass">WindowClass (class in apsw)</a>
+</li>
       <li><a href="apsw.html#apsw.WindowFactory">WindowFactory (class in apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.WindowFinal">WindowFinal (class in apsw)</a>
@@ -2950,25 +3018,21 @@
 </li>
       <li><a href="apsw.html#apsw.WindowT">WindowT (class in apsw)</a>
 </li>
-      <li><a href="apsw.html#apsw.WindowValue">WindowValue (class in apsw)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="textsearch.html#apsw.unicode.word_default_categories">word_default_categories (in module apsw.unicode)</a>
+      <li><a href="apsw.html#apsw.WindowValue">WindowValue (class in apsw)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.word_iter">word_iter() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.word_default_categories">word_default_categories (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.word_iter_with_offsets">word_iter_with_offsets() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.word_iter">word_iter() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.word_next">word_next() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.word_iter_with_offsets">word_iter_with_offsets() (in module apsw.unicode)</a>
 </li>
-      <li><a href="textsearch.html#apsw.unicode.word_next_break">word_next_break() (in module apsw.unicode)</a>
+      <li><a href="unicode.html#apsw.unicode.word_next">word_next() (in module apsw.unicode)</a>
+</li>
+      <li><a href="unicode.html#apsw.unicode.word_next_break">word_next_break() (in module apsw.unicode)</a>
 </li>
       <li><a href="example-fts.html#index-8">Working with tokens (example code)</a>
-</li>
-      <li><a href="ext.html#apsw.ext.TypesConverterCursorFactory.wrap_bindings">wrap_bindings() (apsw.ext.TypesConverterCursorFactory method)</a>
-</li>
-      <li><a href="ext.html#apsw.ext.TypesConverterCursorFactory.wrap_sequence_bindings">wrap_sequence_bindings() (apsw.ext.TypesConverterCursorFactory method)</a>
 </li>
       <li><a href="blob.html#apsw.Blob.write">write() (apsw.Blob method)</a>
 
@@ -3079,7 +3143,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 31, 2025.
+      <span class="lastupdated">Last updated on Nov 05, 2025.
       </span></p>
   </div>
 

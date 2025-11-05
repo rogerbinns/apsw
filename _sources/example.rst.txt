@@ -68,10 +68,10 @@ Checking APSW and SQLite versions
 
 .. code-block:: output
 
-          Using APSW file /space/apsw/apsw/__init__.cpython-313-x86_64-linux-gnu.so
-             APSW version 3.50.4.0
-    SQLite header version 3050004
-       SQLite lib version 3.50.4
+          Using APSW file /space/apsw/apsw/__init__.cpython-314-x86_64-linux-gnu.so
+             APSW version 3.51.0.0
+    SQLite header version 3051000
+       SQLite lib version 3.51.0
        Using amalgamation True
 
 
@@ -190,13 +190,13 @@ correct way to supply values to queries.
    # a simple value
    event = "system started"
    # DO NOT DO THIS
-   query = f"insert into log values(0, '{ event }')"
+   query = f"insert into log values(0, '{event}')"
    print("query:", query)
    
    # BECAUSE ... a bad guy could provide a value like this
    event = "bad guy here') ; drop table important; -- comment"
    # which has effects like this
-   query = f"insert into log values(0, '{ event }')"
+   query = f"insert into log values(0, '{event}')"
    print("bad guy:", query)
    
 
@@ -467,7 +467,7 @@ are registered by calling :meth:`Connection.create_scalar_function`.
    
    def ilove7(*args: apsw.SQLiteValue) -> int:
        "A scalar function"
-       print(f"ilove7 got { args } but I love 7")
+       print(f"ilove7 got {args} but I love 7")
        return 7
    
    
@@ -795,7 +795,7 @@ conversion, both for types you define and for other types.
            self.y = y
    
        def __repr__(self) -> str:
-           return f"Point({ self.x }, { self.y })"
+           return f"Point({self.x}, {self.y})"
    
        def __eq__(self, other: object) -> bool:
            return (
@@ -806,7 +806,7 @@ conversion, both for types you define and for other types.
    
        def to_sqlite_value(self) -> str:
            # called to convert Point into something SQLite supports
-           return f"{ self.x };{ self.y }"
+           return f"{self.x};{self.y}"
    
        # This converter will be registered
        @classmethod
@@ -816,7 +816,7 @@ conversion, both for types you define and for other types.
    
    # Existing types
    def complex_to_sqlite_value(c: complex) -> str:
-       return f"{ c.real }+{ c.imag }"
+       return f"{c.real}+{c.imag}"
    
    
    def datetime_to_sqlite_value(dt: datetime.datetime) -> float:
@@ -867,7 +867,7 @@ conversion, both for types you define and for other types.
    print("querying data")
    for row in connection.execute("select * from conversion"):
        for i, value in enumerate(row):
-           print(f"column {i} = { value !r}")
+           print(f"column {i} = {value!r}")
    
    # clear registrar
    connection.cursor_factory = apsw.Cursor
@@ -876,11 +876,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 7, 31, 7, 21, 15, 885230))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 11, 5, 9, 18, 13, 418157))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2025, 7, 31, 14, 21, 15, 885230, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2025, 11, 5, 17, 18, 13, 418157, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Runtime Python objects (example code)
@@ -950,7 +950,7 @@ runtime.
 .. code-block:: output
 
     Bad binding argument type supplied - argument #1: type set
-    select ? {1, 2, <_io.StringIO object at 0x78d56014e8c0>, 'three', (4+5j)}
+    select ? {1, 2, 'three', <_io.StringIO object at 0x74d5ed587c70>, (4+5j)}
     select typeof(?) null
     make_set got ((3+4j), <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello')
     select make_set(?, ?, ?) {'hello', <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, (3+4j)}
@@ -1001,7 +1001,9 @@ across all the queries within the block
        ):
            pass
    
-   print(f"After {time.monotonic() - start:.3f} seconds, we hit {number=}")
+   print(
+       f"After {time.monotonic() - start:.3f} seconds, we hit {number=}"
+   )
    
    # We used the default "no exception" exception.  Lets have an explicit exception.
    # with both row and time limits ...
@@ -1026,7 +1028,7 @@ across all the queries within the block
 .. code-block:: output
 
     len(rows)=20
-    After 0.200 seconds, we hit number=310229
+    After 0.200 seconds, we hit number=308896
     exc=IndexError('query row limit hit')
 
 
@@ -1445,7 +1447,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9959779107,)
+    (9982365245,)
 
 
 .. index:: File Control (example code)
@@ -1554,7 +1556,7 @@ with  :meth:`Connection.set_commit_hook`.
                """create table example(x,y,z);
                               insert into example values (3,4,5)"""
            )
-   except apsw.ConstraintError:
+   except apsw.ConstraintError as exc:
        print("commit was not allowed")
    
    connection.set_commit_hook(None)
@@ -1564,8 +1566,7 @@ with  :meth:`Connection.set_commit_hook`.
 .. code-block:: output
 
     in commit hook
-    no commits out of hours
-    commit was not allowed
+    commits okay at this time
 
 
 .. index:: Update hook (example code)
@@ -1588,7 +1589,7 @@ information.  Register a hook using
    ) -> None:
        op: str = apsw.mapping_authorizer_function[type]
        print(
-           f"Updated: { op } db { db_name }, table { table_name }, rowid { rowid }"
+           f"Updated: {op} db {db_name}, table {table_name}, rowid {rowid}"
        )
    
    
@@ -1815,61 +1816,61 @@ useful instead.
     │ count(*) │ category │
     │ 65       │ Cc       │
     │ 43       │ Cf       │
-    │ 1449     │ Cn       │
+    │ 1432     │ Cn       │
     │ 6400     │ Co       │
     │ 2048     │ Cs       │
-    │ 1445     │ Ll       │
+    │ 1448     │ Ll       │
     │ 236      │ Lm       │
     │ 46126    │ Lo       │
     │ 31       │ Lt       │
-    │ 1127     │ Lu       │
+    │ 1132     │ Lu       │
     └──────────┴──────────┘
     
-    ┌─────────┬──────────────────────────────────────────┬─────────────────────────┐
-    │ st_size │                directory                 │          name           │
-    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 527465  │ /usr/lib/python3.13/pydoc_data/          │ topics.cpython-313.pyc  │
-    │         │ __pycache__                              │                         │
-    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 526924  │ /usr/lib/python3.13/pydoc_data           │ topics.py               │
-    ├─────────┼──────────────────────────────────────────┼─────────────────────────┤
-    │ 256658  │ /usr/lib/python3.13/tkinter/__pycache__  │ __init__.cpython-313.p- │
-    │         │                                          │ yc                      │
-    └─────────┴──────────────────────────────────────────┴─────────────────────────┘
+    ┌─────────┬────────────────────────────────────────────┬───────────────────────┐
+    │ st_size │                 directory                  │         name          │
+    ├─────────┼────────────────────────────────────────────┼───────────────────────┤
+    │ 558634  │ /usr/lib/python3.14/pydoc_data/__pycache__ │ topics.cpython-314.p- │
+    │         │                                            │ yc                    │
+    ├─────────┼────────────────────────────────────────────┼───────────────────────┤
+    │ 558057  │ /usr/lib/python3.14/pydoc_data             │ topics.py             │
+    ├─────────┼────────────────────────────────────────────┼───────────────────────┤
+    │ 229038  │ /usr/lib/python3.14                        │ _pydecimal.py         │
+    └─────────┴────────────────────────────────────────────┴───────────────────────┘
     
     ┌────────────┬────────────────────────────────┬───────────────┐
     │    date    │           directory            │     name      │
-    │ 2025-06-20 │ /usr/lib/python3.13/pydoc_data │ topics.py     │
-    │ 2025-06-20 │ /usr/lib/python3.13            │ _pydecimal.py │
-    │ 2025-06-20 │ /usr/lib/python3.13/tkinter    │ __init__.py   │
+    │ 2025-10-31 │ /usr/lib/python3.14/pydoc_data │ topics.py     │
+    │ 2025-10-31 │ /usr/lib/python3.14            │ _pydecimal.py │
+    │ 2025-10-31 │ /usr/lib/python3.14            │ turtle.py     │
     └────────────┴────────────────────────────────┴───────────────┘
     
     ┌────────────┬────────────┐
     │ extension  │ total_size │
-    │            │ 483963     │
-    │ .a         │ 96521266   │
+    │            │ 259613     │
+    │ .a         │ 25842524   │
     │ .allowlist │ 56         │
-    │ .bootstrap │ 1908       │
-    │ .c         │ 11288      │
+    │ .bootstrap │ 1063       │
+    │ .c         │ 5406       │
     │ .cfg       │ 341        │
     │ .csh       │ 937        │
     │ .css       │ 1325       │
     │ .fish      │ 2208       │
-    │ .in        │ 3502       │
-    │ .ini       │ 1670       │
-    │ .json      │ 2162       │
-    │ .local     │ 2128       │
-    │ .o         │ 15512      │
+    │ .in        │ 1444       │
+    │ .ini       │ 2037       │
+    │ .json      │ 60181      │
+    │ .local     │ 676        │
+    │ .o         │ 11096      │
+    │ .patch     │ 2682       │
     │ .ps1       │ 9031       │
-    │ .py        │ 11177310   │
-    │ .pyc       │ 11792159   │
+    │ .py        │ 11249489   │
+    │ .pyc       │ 12283707   │
     │ .rst       │ 9561       │
-    │ .sh        │ 2729       │
-    │ .so        │ 29503792   │
-    │ .sql       │ 9486       │
-    │ .stdlib    │ 13486      │
+    │ .sh        │ 2752       │
+    │ .so        │ 8745952    │
+    │ .sql       │ 9749       │
+    │ .stdlib    │ 7244       │
     │ .supp      │ 70         │
-    │ .txt       │ 13809      │
+    │ .txt       │ 13804      │
     └────────────┴────────────┘
     
 
@@ -1948,7 +1949,7 @@ for receiving parameters once a database is open.
                return super().xFileControl(op, ptr)
            # implement our own pragma
            p = apsw.VFSFcntlPragma(ptr)
-           print(f"pragma received { p.name } = { p.value }")
+           print(f"pragma received {p.name} = {p.value}")
            # what do we understand?
            if p.name == "my_custom_pragma":
                p.result = "orange"
@@ -2141,9 +2142,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.50.4.0)
-    -- SQLite version 3.50.4
-    -- Date: Thu Jul 31 07:21:16 2025
+    -- SQLite dump (by APSW 3.51.0.0)
+    -- SQLite version 3.51.0
+    -- Date: Wed Nov  5 09:18:14 2025
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2184,18 +2185,16 @@ for per connection statistics.
 .. code-block:: python
 
    current_usage, max_usage = apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
-   print(f"SQLite memory usage { current_usage } max { max_usage }")
+   print(f"SQLite memory usage {current_usage} max {max_usage}")
    schema_used, _ = connection.status(apsw.SQLITE_DBSTATUS_SCHEMA_USED)
-   print(
-       f"{ schema_used } bytes used to store schema for this connection"
-   )
+   print(f"{schema_used} bytes used to store schema for this connection")
    
 
 
 .. code-block:: output
 
-    SQLite memory usage 517928 max 2494992
-    5048 bytes used to store schema for this connection
+    SQLite memory usage 522192 max 2499320
+    5360 bytes used to store schema for this connection
 
 
 .. index:: Tracing (example code)
@@ -2263,16 +2262,16 @@ This shows using :meth:`Connection.trace_v2`
     code is  SQLITE_TRACE_STMT
     {'code': 1,
      'explain': 0,
-     'id': 356611224,
+     'id': 688274264,
      'readonly': True,
      'total_changes': 146,
      'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 356611224}
+    {'code': 4, 'id': 688274264}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 356611224,
-     'nanoseconds': 17000000,
+     'id': 688274264,
+     'nanoseconds': 16000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
@@ -2296,7 +2295,7 @@ Use :meth:`apsw.ext.ShowResourceUsage` to see what resources a
 block of code does.  We use the same query from above.
 
 Only statistics that have changed are shown in the summary. There are
-20 SQLite values tracked including caching, and 20 system values.
+21 SQLite values tracked including caching, and 20 system values.
 
 .. code-block:: python
 
@@ -2315,13 +2314,14 @@ Only statistics that have changed are shown in the summary. There are
 
 .. code-block:: output
 
-                           Total CPU consumption 0.020
-                                      Wall clock 1.320
-                       Maximum resident set size 768
-                            Page faults - no I/O 143
+                           Total CPU consumption 0.022
+                                      Wall clock 1.322
+                       Maximum resident set size 800
+                            Page faults - no I/O 171
+                    Involuntary context switches 37
                       Voluntary context switches 1
                              Time in system mode 0.002
-                               Time in user mode 0.018
+                               Time in user mode 0.020
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,353
@@ -2365,7 +2365,9 @@ code.  This also shows behind the scenes SQL.
    
        # pragma functions are virtual tables - see how many rows this processes even
        # though only one has 'pow'
-       connection.execute("SELECT narg FROM pragma_function_list WHERE name='pow'").get
+       connection.execute(
+           "SELECT narg FROM pragma_function_list WHERE name='pow'"
+       ).get
    
        # trigger that causes rollback
        connection.execute("""
@@ -2383,7 +2385,7 @@ code.  This also shows behind the scenes SQL.
 
 .. code-block:: output
 
-     > SAVEPOINT "_apsw-0"
+     > BEGIN DEFERRED
          Time: 0.000
       !BEGIN
      > create table multi(x)
@@ -2411,14 +2413,14 @@ code.  This also shows behind the scenes SQL.
        DEL 3 (2)
        DEL 4 (3)
          Time: 0.000  Changes: 4
-     > RELEASE SAVEPOINT "_apsw-0"
+     > COMMIT
       !COMMIT
          Time: 0.007
      > SELECT narg FROM pragma_function_list WHERE name='pow'
      V PRAGMA function_list
-         Time: 0.000  Rows: 211  VmStep: 1,481  Mem: 70.8KB
+         Time: 0.000  Rows: 215  VmStep: 1,509  Mem: 71.0KB
      < SELECT narg FROM pragma_function_list WHERE name='pow'
-         Time: 0.000  Rows: 1  VmStep: 644
+         Time: 0.000  Rows: 1  VmStep: 656
       !BEGIN
      > create trigger error after insert on multi
             begin
@@ -2432,7 +2434,7 @@ code.  This also shows behind the scenes SQL.
          UPD 6>106 (...)
       !ROLLBACK
      < insert into multi values(54)
-         Time: 0.000  Rows: 1  Changes: 1
+         Time: 0.000  Changes: 1
     
 
 
@@ -2571,12 +2573,12 @@ is no guarantee if they will go up or down.
    # See values before change
    print("Before values")
    print(f'{connection.pragma("schema_version")=}')
-   print(f'{connection.data_version()=}')
+   print(f"{connection.data_version()=}")
    
    print("\nAfter values")
    # add to table from previous section
    con2.execute("insert into dummy values(1, 2, 3)")
-   print(f'{connection.data_version()=}')
+   print(f"{connection.data_version()=}")
    
    # and add a table.  changing an existing table definition etc also
    # bump the schema version
@@ -2589,12 +2591,94 @@ is no guarantee if they will go up or down.
 
     SQLite cache = -2000  page_size =  4096
     Before values
-    connection.pragma("schema_version")=22
-    connection.data_version()=60
+    connection.pragma("schema_version")=23
+    connection.data_version()=61
     
     After values
-    connection.data_version()=60
-    connection.pragma("schema_version")=23
+    connection.data_version()=61
+    connection.pragma("schema_version")=24
+
+
+.. index:: The CARRAY extension (example code)
+
+.. _example_carray:
+
+The CARRAY extension
+--------------------
+
+The `extension <https://sqlite.org/carray.html>`__ makes it easy to
+provide an array of numbers, strings, or binary blobs during a
+query.  The array will be used without calling back into Python
+code or acquiring the GIL.
+
+Arrays of numbers can come from binary data, :class:`array.array`,
+`numpy arrays
+<https://numpy.org/doc/stable/reference/generated/numpy.array.html>`__
+etc.  Arrays of :class:`str` and :class:`blobs
+<collections.abc.Buffer>` are supplied as :class:`tuples <tuple>`.
+All data in the array has to be the same type.
+
+Use :meth:`apsw.carray` to wrap your data, and provide it as a
+binding.  Note that it has ``start`` and ``stop`` parameters so you
+can use a subset of the source data.  The format of the data is
+detected, or an explicit ``flags`` parameter can be used.
+
+.. code-block:: python
+
+   # We'll use the array module
+   import array
+   
+   # A packed array of 32 bit integers
+   ids = array.array("i", [1, 73, 9457, 62])
+   
+   # Simple usage.  You would normally use joins, IN etc
+   print(
+       "ordered integers",
+       connection.execute(
+           "SELECT value FROM CARRAY(?) ORDER BY value",
+           (apsw.carray(ids),),
+       ).get
+   )
+   
+   # Using strings and blobs is just as easy
+   strings = ("zero", "one", "two", "three", "four")
+   blobs = (b"\xf3\x72\x94", b"\xf4\x8f\xbf", b"\xf7\xbf\xbf\xbf")
+   
+   print(
+       "ordered strings",
+       connection.execute(
+           "SELECT value FROM CARRAY(?) ORDER BY value",
+           (apsw.carray(strings),),
+       ).get
+   )
+   
+   # We'll use the start parameter to skip entries
+   print(
+       "ordered strings start=2",
+       connection.execute(
+           "SELECT value FROM CARRAY(?) ORDER BY value",
+           (apsw.carray(strings, start=2),),
+       ).get
+   )
+   
+   # Find the longest blob
+   print(
+       "longest blob",
+       connection.execute(
+           "SELECT value FROM CARRAY(?) ORDER BY LENGTH(value) DESC LIMIT 1",
+           (apsw.carray(blobs),),
+       ).get
+   )
+   
+   
+
+
+.. code-block:: output
+
+    ordered integers [1, 62, 73, 9457]
+    ordered strings ['four', 'one', 'three', 'two', 'zero']
+    ordered strings start=2 ['four', 'three', 'two']
+    longest blob b'\xf7\xbf\xbf\xbf'
 
 
 .. index:: Cleanup (example code)

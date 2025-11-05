@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.unicode &mdash; APSW 3.50.4.0 documentation</title>
+  <title>apsw.unicode &mdash; APSW 3.51.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -14,7 +14,7 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9c22ebda"></script>
+      <script src="../../_static/documentation_options.js?v=7d76fbb9"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -56,8 +56,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../cursor.html">Cursors (executing SQL)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../blob.html">Blob Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../jsonb.html">JSON (Javascript Object Notation)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-fts.html">Full Text Search Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../unicode.html">Unicode Text Handling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-session.html">Session Example/Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../session.html">Session extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../vtable.html">Virtual Tables</a></li>
@@ -220,7 +223,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
 <span class="c1">### BEGIN UNICODE UPDATE SECTION ###</span>
-<span class="n">unicode_version</span> <span class="o">=</span> <span class="s2">&quot;16.0&quot;</span>
+<span class="n">unicode_version</span> <span class="o">=</span> <span class="s2">&quot;17.0&quot;</span>
 <span class="sd">&quot;&quot;&quot;The `Unicode version &lt;https://www.unicode.org/versions/enumeratedversions.html&gt;`__</span>
 <span class="sd">that the rules and data tables implement&quot;&quot;&quot;</span>
 
@@ -272,7 +275,7 @@
 
 
 <div class="viewcode-block" id="category">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.category">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.category">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">category</span><span class="p">(</span><span class="n">codepoint</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the `general category &lt;https://en.wikipedia.org/wiki/Unicode_character_property#General_Category&gt;`__ - eg ``Lu`` for Letter Uppercase</span>
 
@@ -342,7 +345,7 @@
 
 
 <div class="viewcode-block" id="is_extended_pictographic">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.is_extended_pictographic">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.is_extended_pictographic">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_extended_pictographic</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="s2">&quot;Returns True if any of the text has the extended pictographic property (Emoji and similar)&quot;</span>
     <span class="k">return</span> <span class="n">_unicode</span><span class="o">.</span><span class="n">has_category</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">_Category</span><span class="o">.</span><span class="n">Extended_Pictographic</span><span class="p">)</span></div>
@@ -350,7 +353,7 @@
 
 
 <div class="viewcode-block" id="is_regional_indicator">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.is_regional_indicator">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.is_regional_indicator">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">is_regional_indicator</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="s2">&quot;Returns True if any of the text is one of the 26 `regional indicators &lt;https://en.wikipedia.org/wiki/Regional_indicator_symbol&gt;`__ used in pairs to represent country flags&quot;</span>
     <span class="k">return</span> <span class="n">_unicode</span><span class="o">.</span><span class="n">has_category</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">_Category</span><span class="o">.</span><span class="n">Regional_Indicator</span><span class="p">)</span></div>
@@ -358,7 +361,7 @@
 
 
 <div class="viewcode-block" id="casefold">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.casefold">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.casefold">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">casefold</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the text for equality comparison without case distinction</span>
 
@@ -372,7 +375,7 @@
 
 
 <div class="viewcode-block" id="strip">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.strip">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.strip">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">strip</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the text for less exact comparison with accents, punctuation, marks etc removed</span>
 
@@ -401,7 +404,7 @@
 
 
 <div class="viewcode-block" id="split_lines">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.split_lines">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.split_lines">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">split_lines</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Each line, using hard line break rules</span>
 
@@ -423,7 +426,7 @@
 
 
 <div class="viewcode-block" id="expand_tabs">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.expand_tabs">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.expand_tabs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">expand_tabs</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tabsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">invalid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Turns tabs into spaces aligning on tabsize boundaries, similar to :meth:`str.expandtabs`</span>
 
@@ -462,7 +465,7 @@
 
 
 <div class="viewcode-block" id="grapheme_length">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.grapheme_length">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.grapheme_length">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">grapheme_length</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="s2">&quot;Returns number of grapheme clusters in the text.  Unicode aware version of len&quot;</span>
     <span class="k">return</span> <span class="n">_unicode</span><span class="o">.</span><span class="n">grapheme_length</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span></div>
@@ -470,7 +473,7 @@
 
 
 <div class="viewcode-block" id="grapheme_substr">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.grapheme_substr">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.grapheme_substr">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">grapheme_substr</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Like ``text[start:end]`` but in grapheme cluster units</span>
 
@@ -488,7 +491,7 @@
 
 
 <div class="viewcode-block" id="grapheme_endswith">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.grapheme_endswith">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.grapheme_endswith">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">grapheme_endswith</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">substring</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="s2">&quot;Returns True if `text` ends with `substring` being aware of grapheme cluster boundaries&quot;</span>
     <span class="c1"># match str.endswith</span>
@@ -509,7 +512,7 @@
 
 
 <div class="viewcode-block" id="grapheme_startswith">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.grapheme_startswith">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.grapheme_startswith">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">grapheme_startswith</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">substring</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="s2">&quot;Returns True if `text` starts with `substring` being aware of grapheme cluster boundaries&quot;</span>
     <span class="c1"># match str.startswith</span>
@@ -530,7 +533,7 @@
 
 
 <div class="viewcode-block" id="grapheme_find">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.grapheme_find">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.grapheme_find">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">grapheme_find</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">substring</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the offset in text where substring can be found, being aware of grapheme clusters.</span>
 <span class="sd">    The start and end of the substring have to be at a grapheme cluster boundary.</span>
@@ -545,7 +548,7 @@
 
 
 <div class="viewcode-block" id="text_width">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.text_width">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.text_width">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">text_width</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns how many columns the text would be if displayed in a terminal</span>
 
@@ -573,7 +576,7 @@
 
 
 <div class="viewcode-block" id="text_width_substr">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.text_width_substr">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.text_width_substr">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">text_width_substr</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts substring width or less wide being aware of grapheme cluster boundaries.</span>
 <span class="sd">    For example you could use this to get a substring that is 80 (or</span>
@@ -600,10 +603,10 @@
 
 
 <div class="viewcode-block" id="guess_paragraphs">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.guess_paragraphs">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.guess_paragraphs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">guess_paragraphs</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tabsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Given text that contains paragraphs containing newlines, guesses where the paragraphs end.</span>
-<span class="sd">    The returned :class:`str` will have ``\n`` removed where it was</span>
+<span class="sd">    The returned :class:`str` will have ``\\n`` (newline) removed where it was</span>
 <span class="sd">    determined to not mark a paragraph end.</span>
 
 <span class="sd">    .. code-block:: output</span>
@@ -626,7 +629,7 @@
 <span class="sd">           this line is part of the line above</span>
 
 <span class="sd">        3. Optional numbers followed by punctuation then space</span>
-<span class="sd">        - are considered new paragraphs</span>
+<span class="sd">           - are considered new paragraphs</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># regex to match what looks like an (optionally numbered) list</span>
@@ -709,7 +712,7 @@
 
 
 <div class="viewcode-block" id="text_wrap">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.text_wrap">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.text_wrap">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">text_wrap</span><span class="p">(</span>
     <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">70</span><span class="p">,</span>
@@ -822,7 +825,7 @@
 
 
 <div class="viewcode-block" id="codepoint_name">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.codepoint_name">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.codepoint_name">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">codepoint_name</span><span class="p">(</span><span class="n">codepoint</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Name or ``None`` if it doesn&#39;t have one</span>
 
@@ -835,7 +838,7 @@
 
 
 <div class="viewcode-block" id="version_added">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.version_added">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.version_added">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">version_added</span><span class="p">(</span><span class="n">codepoint</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="s2">&quot;Returns the unicode version the codepoint was added&quot;</span>
     <span class="k">return</span> <span class="n">_unicode</span><span class="o">.</span><span class="n">version_added</span><span class="p">(</span><span class="n">codepoint</span><span class="p">)</span></div>
@@ -844,6 +847,7 @@
 
 <span class="n">version_dates</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># Extracted from https://www.unicode.org/history/publicationdates.html</span>
+    <span class="s2">&quot;17.0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2025</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span>
     <span class="s2">&quot;16.0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
     <span class="s2">&quot;15.1&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2023</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span>
     <span class="s2">&quot;15.0&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2022</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">13</span><span class="p">),</span>
@@ -879,7 +883,7 @@
 
 
 <div class="viewcode-block" id="grapheme_next_break">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.grapheme_next_break">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.grapheme_next_break">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">grapheme_next_break</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns end of Grapheme cluster /  User Perceived Character</span>
 
@@ -901,7 +905,7 @@
 
 
 <div class="viewcode-block" id="grapheme_next">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.grapheme_next">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.grapheme_next">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">grapheme_next</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
     <span class="s2">&quot;Returns span of next grapheme cluster&quot;</span>
     <span class="n">end</span> <span class="o">=</span> <span class="n">grapheme_next_break</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
@@ -910,7 +914,7 @@
 
 
 <div class="viewcode-block" id="grapheme_iter">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.grapheme_iter">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.grapheme_iter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">grapheme_iter</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
     <span class="s2">&quot;Iterator providing text of each grapheme cluster&quot;</span>
     <span class="n">lt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
@@ -924,7 +928,7 @@
 
 
 <div class="viewcode-block" id="grapheme_iter_with_offsets">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.grapheme_iter_with_offsets">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.grapheme_iter_with_offsets">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">grapheme_iter_with_offsets</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
     <span class="s2">&quot;Iterator providing start, end, text of each grapheme cluster&quot;</span>
     <span class="n">lt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
@@ -938,7 +942,7 @@
 
 
 <div class="viewcode-block" id="grapheme_iter_with_offsets_filtered">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.grapheme_iter_with_offsets_filtered">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.grapheme_iter_with_offsets_filtered">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">grapheme_iter_with_offsets_filtered</span><span class="p">(</span>
     <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">categories</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">emoji</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">regional_indicator</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
@@ -958,7 +962,7 @@
 
 
 <div class="viewcode-block" id="word_next_break">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.word_next_break">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.word_next_break">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">word_next_break</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns end of next word or non-word</span>
 
@@ -1026,7 +1030,7 @@
 
 
 <div class="viewcode-block" id="word_next">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.word_next">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.word_next">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">word_next</span><span class="p">(</span>
     <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -1059,7 +1063,7 @@
 
 
 <div class="viewcode-block" id="word_iter">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.word_iter">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.word_iter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">word_iter</span><span class="p">(</span>
     <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -1084,7 +1088,7 @@
 
 
 <div class="viewcode-block" id="word_iter_with_offsets">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.word_iter_with_offsets">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.word_iter_with_offsets">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">word_iter_with_offsets</span><span class="p">(</span>
     <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -1109,7 +1113,7 @@
 
 
 <div class="viewcode-block" id="sentence_next_break">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.sentence_next_break">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.sentence_next_break">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">sentence_next_break</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns end of sentence location.</span>
 
@@ -1127,7 +1131,7 @@
 
 
 <div class="viewcode-block" id="sentence_next">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.sentence_next">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.sentence_next">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">sentence_next</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns span of next sentence&quot;&quot;&quot;</span>
     <span class="n">lt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
@@ -1141,7 +1145,7 @@
 
 
 <div class="viewcode-block" id="sentence_iter">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.sentence_iter">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.sentence_iter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">sentence_iter</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
     <span class="s2">&quot;Iterator providing text of each sentence&quot;</span>
     <span class="n">lt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
@@ -1155,7 +1159,7 @@
 
 
 <div class="viewcode-block" id="sentence_iter_with_offsets">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.sentence_iter_with_offsets">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.sentence_iter_with_offsets">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">sentence_iter_with_offsets</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
     <span class="s2">&quot;Iterator providing start, end, text of each sentence&quot;</span>
     <span class="n">lt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
@@ -1169,7 +1173,7 @@
 
 
 <div class="viewcode-block" id="line_break_next_break">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.line_break_next_break">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.line_break_next_break">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">line_break_next_break</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns next opportunity to break a line</span>
 
@@ -1186,7 +1190,7 @@
 
 
 <div class="viewcode-block" id="line_break_next">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.line_break_next">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.line_break_next">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">line_break_next</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns span of next line&quot;&quot;&quot;</span>
     <span class="n">lt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
@@ -1200,7 +1204,7 @@
 
 
 <div class="viewcode-block" id="line_break_iter">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.line_break_iter">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.line_break_iter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">line_break_iter</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
     <span class="s2">&quot;Iterator providing text of each line&quot;</span>
     <span class="n">lt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
@@ -1214,7 +1218,7 @@
 
 
 <div class="viewcode-block" id="line_break_iter_with_offsets">
-<a class="viewcode-back" href="../../textsearch.html#apsw.unicode.line_break_iter_with_offsets">[docs]</a>
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.line_break_iter_with_offsets">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">line_break_iter_with_offsets</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
     <span class="s2">&quot;Iterator providing start, end, text of each line&quot;</span>
     <span class="n">lt</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
@@ -1609,6 +1613,9 @@
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">fails</span><span class="p">)</span><span class="o">//</span><span class="mi">4</span><span class="w"> </span><span class="si">}</span><span class="s2"> tests failed, </span><span class="si">{</span><span class="n">passed</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> passed:&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">fail</span> <span class="ow">in</span> <span class="n">fails</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">fail</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fails</span><span class="p">)</span><span class="o">//</span><span class="mi">4</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="c1"># also print at bottom since the top will have scrolled off the screen</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">fails</span><span class="p">)</span><span class="o">//</span><span class="mi">4</span><span class="w"> </span><span class="si">}</span><span class="s2"> tests failed, </span><span class="si">{</span><span class="n">passed</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> passed:&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">passed</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> passed&quot;</span><span class="p">)</span>
@@ -1621,8 +1628,12 @@
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="n">codepoints</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">t</span><span class="p">)</span>
 
-        <span class="k">def</span><span class="w"> </span><span class="nf">uniname</span><span class="p">(</span><span class="n">cp</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">codepoint_name</span><span class="p">(</span><span class="n">cp</span><span class="p">))</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">uniname</span><span class="p">(</span><span class="n">cp</span><span class="p">,</span> <span class="n">none</span><span class="o">=</span><span class="s2">&quot;(no name)&quot;</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">codepoint_name</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">none</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">x</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">deets</span><span class="p">(</span><span class="n">cp</span><span class="p">):</span>
             <span class="n">cat</span> <span class="o">=</span> <span class="n">category</span><span class="p">(</span><span class="n">cp</span><span class="p">)</span>
@@ -1643,7 +1654,7 @@
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">mangle</span><span class="p">:</span>
                     <span class="n">mangled</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;(nothing)&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">mangled</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;U+</span><span class="si">{</span><span class="w"> </span><span class="nb">ord</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">:</span><span class="s2">04X</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">uniname</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">v</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">mangle</span><span class="p">))</span>
+                    <span class="n">mangled</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;U+</span><span class="si">{</span><span class="w"> </span><span class="nb">ord</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="si">:</span><span class="s2">04X</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">uniname</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">v</span><span class="p">),</span><span class="w"> </span><span class="n">none</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">mangle</span><span class="p">))</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;casefold: </span><span class="si">{</span><span class="w"> </span><span class="n">mangled</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="si">}</span><span class="s2">   stripped: </span><span class="si">{</span><span class="w"> </span><span class="n">mangled</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Width: </span><span class="si">{</span><span class="w"> </span><span class="n">text_width</span><span class="p">(</span><span class="nb">chr</span><span class="p">(</span><span class="n">cp</span><span class="p">))</span><span class="w"> </span><span class="si">}</span><span class="s2">  &quot;</span>
@@ -2030,7 +2041,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 31, 2025.
+      <span class="lastupdated">Last updated on Nov 05, 2025.
       </span></p>
   </div>
 

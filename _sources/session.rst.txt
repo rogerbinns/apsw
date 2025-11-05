@@ -155,7 +155,7 @@ Extension configuration
 
 .. index:: sqlite3session_config
 
-.. method:: session_config(op: int, *args: Any) -> Any
+.. method:: session_config(op: int, *args: typing.Any) -> typing.Any
 
  :param op: One of the `sqlite3session options <https://www.sqlite.org/session/c_session_config_strmsize.html>`__
  :param args: Zero or more arguments as appropriate for *op*
@@ -231,7 +231,7 @@ Session class
 
 .. index:: sqlite3session_object_config
 
-.. method:: Session.config(op: int, *args: Any) -> Any
+.. method:: Session.config(op: int, *args: typing.Any) -> typing.Any
 
   Set or get `configuration values <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__
 
@@ -314,7 +314,7 @@ Session class
 
 .. index:: sqlite3session_table_filter
 
-.. method:: Session.table_filter(callback: Callable[[str], bool]) -> None
+.. method:: Session.table_filter(callback: typing.Callable[[str], bool]) -> None
 
   Register a callback that says if changes to the named table should be
   recorded.  If your callback has an exception then ``False`` is
@@ -334,11 +334,11 @@ TableChange class
   Represents a `changed row
   <https://sqlite.org/session/changeset_iter.html>`__.  They come from
   :meth:`changeset iteration <Changeset.iter>` and from the
-  :meth:`conflict handler in apply <Changeset.apply>`.
+  :meth:`filter_change and conflict handler in apply <Changeset.apply>`.
 
-  A TableChange is only valid when your conflict handler is active, or
+  A TableChange is only valid when your filter or conflict handler is active, or
   has just been provided by a changeset iterator.  It goes out of scope
-  after your conflict handler returns, or the iterator moves to the next
+  after your filter or conflict handler returns, or the iterator moves to the next
   entry.  You will get :exc:`~apsw.InvalidContextError` if you try to
   access fields when out of scope.  This means you can't save
   TableChanges for later, and need to copy out any information you need.
@@ -441,17 +441,18 @@ Changeset class
   The streaming versions are useful when you are concerned about memory
   usage, or where changesets are larger than 2GB (the SQLite limit).
 
-.. index:: sqlite3changeset_apply_v2, sqlite3changeset_apply_v2_strm
+.. index:: sqlite3changeset_apply_v2, sqlite3changeset_apply_v2_strm, sqlite3changeset_apply_v3, sqlite3changeset_apply_v3_strm
 
-.. method:: Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None
+.. method:: Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[typing.Callable[[str], bool]] = None, filter_change: Optional[typing.Callable[[TableChange], bool]] = None, conflict: Optional[typing.Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None
 
   Applies a changeset to a database.
 
   :param source: The changeset either as the bytes, or a stream
   :param db: The connection to make the change on
   :param filter: Callback to determine if changes to a table are done
+  :param filter_change: Callback to determine if a particular change is made
   :param conflict: Callback to handle a change that cannot be applied
-  :param flags: `v2 API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.
+  :param flags: `API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.
   :param rebase: If ``True`` then return :class:`rebase <Rebaser>` information, else :class:`None`.
 
   Filter
@@ -460,6 +461,15 @@ Changeset class
   Callback called with a table name, once per table that has a change.  It should return ``True``
   if changes to that table should be applied, or ``False`` to ignore them.  If not supplied then
   all tables have changes applied.
+
+  Filter Change
+  -------------
+
+  Callback called with each :class:`TableChange`.  It should return
+  ``True`` if the change should be applied, or ``False`` to ignore it.
+  If not supplied then all changes are applied.
+
+  **Note** You can only supply either ``filter`` or ``filter_change`` but not both.
 
   Conflict
   --------
@@ -480,6 +490,8 @@ Changeset class
   Calls:
     * `sqlite3changeset_apply_v2 <https://sqlite.org/session/sqlite3changeset_apply.html>`__
     * `sqlite3changeset_apply_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
+    * `sqlite3changeset_apply_v3 <https://sqlite.org/session/sqlite3changeset_apply.html>`__
+    * `sqlite3changeset_apply_v3_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
 
 .. index:: sqlite3changeset_concat
 

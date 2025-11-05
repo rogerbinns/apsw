@@ -102,6 +102,10 @@ module:
   sqlite3's *executescript* method doesn't allow any form of
   data being returned (it silently ignores any returned data).
 
+* Comprehensive :doc:`jsonb` support
+
+* Easy conversion of types using :attr:`~Connection.convert_binding`
+
 * APSW has better :ref:`execution and row tracing <tracing>`.  Both
   APSW and sqlite3  wrap `sqlite3_trace_v2
   <https://www.sqlite.org/c3ref/trace_v2.html>`__.  sqlite3 only lets
