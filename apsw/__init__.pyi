@@ -232,21 +232,14 @@ def carray(object: Buffer | tuple[str, ...] | tuple[Buffer, ...], *, start: int 
     :param flags: Default auto detect.
 
         For numbers, detection is done from the buffer
-        `format code <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`__.
-        Use :code:`memoryview(object).format` to see it..
+        `format code <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`__
+        and itemsize.  You can use ``format`` and ``itemsize`` attributes of :code:`memoryview(object)`
+        to see what they are.
 
-        .. list-table::
-          :widths: auto
-          :header-rows: 1
-
-          * - Format
-            - Flag
-          * - ``i``
-            - ``SQLITE_CARRAY_INT32``
-          * - ``l``
-            - ``SQLITE_CARRAY_INT64``
-          * - ``d``
-            - ``SQLITE_CARRAY_DOUBLE``
+        Format ``i``, ``l``, ``q``
+            ``SQLITE_CARRAY_INT32`` or ``SQLITE_CARRAY_INT64`` based on itemsize
+        Format  ``d``
+            ``SQLITE_CARRAY_DOUBLE``
 
         You can explicitly provide the type such as :code:`apsw.SQLITE_CARRAY_INT32`.  If
         it is incorrect then the values will be nonsense.

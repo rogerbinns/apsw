@@ -57,21 +57,14 @@
 ":param flags: Default auto detect.\n" \
 "\n" \
 "    For numbers, detection is done from the buffer\n" \
-"    `format code <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`__.\n" \
-"    Use :code:`memoryview(object).format` to see it..\n" \
+"    `format code <https://docs.python.org/3/library/struct.html#byte-order-size-and-alignment>`__\n" \
+"    and itemsize.  You can use ``format`` and ``itemsize`` attributes of :code:`memoryview(object)`\n" \
+"    to see what they are.\n" \
 "\n" \
-"    .. list-table::\n" \
-"      :widths: auto\n" \
-"      :header-rows: 1\n" \
-"\n" \
-"      * - Format\n" \
-"        - Flag\n" \
-"      * - ``i``\n" \
-"        - ``SQLITE_CARRAY_INT32``\n" \
-"      * - ``l``\n" \
-"        - ``SQLITE_CARRAY_INT64``\n" \
-"      * - ``d``\n" \
-"        - ``SQLITE_CARRAY_DOUBLE``\n" \
+"    Format ``i``, ``l``, ``q``\n" \
+"        ``SQLITE_CARRAY_INT32`` or ``SQLITE_CARRAY_INT64`` based on itemsize\n" \
+"    Format  ``d``\n" \
+"        ``SQLITE_CARRAY_DOUBLE``\n" \
 "\n" \
 "    You can explicitly provide the type such as :code:`apsw.SQLITE_CARRAY_INT32`.  If\n" \
 "    it is incorrect then the values will be nonsense.\n" \
