@@ -82,20 +82,20 @@ edit the :file:`setup.apsw` file inside.
 
 .. downloads-begin
 
-* `apsw-3.50.4.0.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.50.4.0/apsw-3.50.4.0.zip>`__
+* `apsw-3.51.0.0.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.51.0.0/apsw-3.51.0.0.zip>`__
   (Source as zip, includes this HTML Help)
 
-* `apsw-3.50.4.0.tar.gz
-  <https://github.com/rogerbinns/apsw/releases/download/3.50.4.0/apsw-3.50.4.0.tar.gz>`__
+* `apsw-3.51.0.0.tar.gz
+  <https://github.com/rogerbinns/apsw/releases/download/3.51.0.0/apsw-3.51.0.0.tar.gz>`__
   (Source as tar.gz, includes this HTML Help)
 
-* `apsw-3.50.4.0.zip.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.50.4.0/apsw-3.50.4.0.zip.cosign-bundle>`__
+* `apsw-3.51.0.0.zip.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.51.0.0/apsw-3.51.0.0.zip.cosign-bundle>`__
   cosign signature for zip source
 
-* `apsw-3.50.4.0.tar.gz.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.50.4.0/apsw-3.50.4.0.tar.gz.cosign-bundle>`__
+* `apsw-3.51.0.0.tar.gz.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.51.0.0/apsw-3.51.0.0.tar.gz.cosign-bundle>`__
   cosign signature for tar.gz source
 
 .. downloads-end
@@ -127,18 +127,18 @@ Verify
 
   .. code-block:: console
 
-    $ cosign verify-blob apsw-3.50.4.0.zip                        \
+    $ cosign verify-blob apsw-3.51.0.0.zip                        \
         --new-bundle-format                                       \
-        --bundle apsw-3.50.4.0.zip.cosign-bundle                  \
+        --bundle apsw-3.51.0.0.zip.cosign-bundle                  \
         --certificate-identity=rogerb@rogerbinns.com              \
         --certificate-oidc-issuer=https://github.com/login/oauth
     Verified OK
 
-    $ python3 -m sigstore verify identity apsw-3.50.4.0.zip       \
-        --bundle apsw-3.50.4.0.zip.cosign-bundle                  \
+    $ python3 -m sigstore verify identity apsw-3.51.0.0.zip       \
+        --bundle apsw-3.51.0.0.zip.cosign-bundle                  \
         --cert-identity=rogerb@rogerbinns.com                     \
         --cert-oidc-issuer=https://github.com/login/oauth
-    OK: apsw-3.50.4.0.zip
+    OK: apsw-3.51.0.0.zip
 
   .. verify-end
 
@@ -409,18 +409,24 @@ happen or doesn't happen again.  Use ``python3 -m apsw.tests`` to
 run all the tests.  You can provide a ``-v`` option to see each test
 as it is run.
 
+Test output will look similar to this.
+
 .. code-block:: output
 
   $ python3 -m apsw.tests
-                  Python  /space/apsw/.venv/bin/python3 sys.version_info(major=3, minor=13, micro=3, releaselevel='final', serial=0) 64bit ELF
-  Testing with APSW file  /space/apsw/apsw/__init__.cpython-313-x86_64-linux-gnu.so
-            APSW version  3.50.0.0
-      SQLite lib version  3.50.0
-  SQLite headers version  3050000
+                  Python  /space/apsw/.venv/bin/python3 sys.version_info(major=3, minor=14, micro=0, releaselevel='final', serial=0) 64bit ELF
+  Testing with APSW file  /space/apsw/apsw/__init__.cpython-314-x86_64-linux-gnu.so
+            APSW version  3.51.0.0
+      SQLite lib version  3.51.0
+  SQLite headers version  3051000
       Using amalgamation  True
-  ......................................................................................................................................................................................
+      SQLITE_SCM_BRANCH  trunk
+        SQLITE_SCM_TAGS  release major-release version-3.51.0
+    SQLITE_SCM_DATETIME  2025-11-04T19:38:17.314Z
+
+  ................................................................................................................................................................................................................
   ----------------------------------------------------------------------
-  Ran 182 tests in 57.382s
+  Ran 208 tests in 44.591s
 
   OK
 
