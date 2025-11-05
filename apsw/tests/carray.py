@@ -50,7 +50,7 @@ class CArray(unittest.TestCase):
 
         # auto-detection
         numbers = tuple(range(20))
-        for format in "ild":
+        for format in "ildq":
             arr = array.array(format, numbers)
             self.assertEqual(
                 list(arr), self.db.execute("select value from carray(?) order by value", (apsw.carray(arr),)).get
