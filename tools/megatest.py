@@ -287,8 +287,8 @@ if __name__ == "__main__":
     )
     parser.add_argument("--bits", default=",".join(str(b) for b in BITS), help="Bits [%(default)s]")
     parser.add_argument("--config", default=",".join(str(c) for c in CONFIG), help="Config [%(default)s]")
-    parser.add_argument("--gil", action="store_true", help="Only test GIL build")
-    parser.add_argument("--no-gil", action="store_false", dest="gil", help="Only test non-GIL build")
+    parser.add_argument("--gil", action="store_true", dest="gil", default=None, help="Only test GIL build")
+    parser.add_argument("--no-gil", action="store_false", dest="gil", default=None, help="Only test non-GIL build")
     parser.add_argument(
         "--tasks",
         type=int,
