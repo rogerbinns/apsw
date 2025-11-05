@@ -44,13 +44,13 @@ allowing filtering on individual change level, taking advantage of
 
 Updated :meth:`Connection.status` to use 64 bit API, and
 :func:`apsw.ext.ShowResourceUsage` to show `TEMPBUF_SPILL
-<https://sqlite.org/c3ref/c_dbstatus_options.html>`__.
-(`cache_size <https://sqlite.org/pragma.html#pragma_cache_size>`__
-controls the amount of memory available.)
+<https://sqlite.org/c3ref/c_dbstatus_options.html>`__.  (pragma
+`cache_size <https://sqlite.org/pragma.html#pragma_cache_size>`__
+controls the amount of temp/cache memory available.)
 
 The `percentile extension <https://sqlite.org/percentile.html>`__ is
 enabled when enabling all extensions, which is standard for pypi
-downloads.  It enables several percentile, median and related SQL
+downloads.  It enables several percentile, median, and related SQL
 functions.
 
 The `carray extension <https://sqlite.org/carray.html>`__ is enabled
@@ -62,18 +62,18 @@ to a query.   See the :ref:`example <example_carray>`.
 on the module if built with the :attr:`amalgamation <using_amalgamation>`.
 
 :func:`apsw.ext.generate_series_sqlite` updated to exactly match SQLite's
-behaviour. (:func:`apsw.ext.generate_series` is recommended as it
-matches other databases.)
+behaviour. :func:`apsw.ext.generate_series` is recommended as it
+matches other databases.
 
 Updated :mod:`apsw.unicode` to support `Unicode 17.0
 <https://www.unicode.org/versions/Unicode17.0.0/>`__ which adds 4,803
-new codepoints and updated line breaking, along with other small
+new codepoints, and updated line breaking, along with other small
 tweaks.
 
 The `Geopoly extension <https://www.sqlite.org/geopoly.html>`__
 (GeoJSON access to `RTree <https://www.sqlite.org/rtree.html>`__) is
 enabled when ``--enable-all-extensions`` is used with :ref:`setup.py
-<setup_py_flags>`.  This includes :ref:`PyPI <pypi>` builds.
+<setup_py_flags>`.  This includes pypi builds.
 
 This is the final release supporting Python 3.9.
 
