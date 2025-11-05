@@ -178,11 +178,23 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
     if (flags == -1)
     {
       /* try to auto-detect format */
-      if (0 == strcmp(self->view.format, "i"))
-        flags = SQLITE_CARRAY_INT32;
-      else if (0 == strcmp(self->view.format, "l"))
-        flags = SQLITE_CARRAY_INT64;
-      else if (0 == strcmp(self->view.format, "d"))
+      if (0 == strcmp(self->view.format, "i") || 0 == strcmp(self->view.format, "l")
+          || 0 == strcmp(self->view.format, "q"))
+      {
+        switch (self->view.itemsize)
+        {
+        case 8:
+          flags = SQLITE_CARRAY_INT64;
+          break;
+        case 4:
+          flags = SQLITE_CARRAY_INT32;
+          break;
+        default:
+          PyErr_Format(PyExc_ValueError, "int size %d not supported", self->view.itemsize);
+          goto error;
+        }
+      }
+      else if (0 == strcmp(self->view.format, "d") && self->view.itemsize == 8)
         flags = SQLITE_CARRAY_DOUBLE;
       else
       {
