@@ -736,7 +736,7 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
       return -1;
     }
 
-    int res = APSWCursor_dobinding(self, arg, converted);
+    res = APSWCursor_dobinding(self, arg, converted);
     Py_DECREF(converted);
     return res;
   }
