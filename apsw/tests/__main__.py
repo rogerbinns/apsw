@@ -11352,7 +11352,7 @@ shell.write(shell.stdout, "hello world\\n")
 
     def testExtAnalyzePages(self) -> None:
         "analyze pages"
-        if "dbstat" not in self.db.pragma("module_list"):
+        if "dbstat" not in (self.db.pragma("module_list") or tuple()):
             return
 
         self.assertRaises(ValueError, apsw.ext.analyze_pages, self.db, -1)
