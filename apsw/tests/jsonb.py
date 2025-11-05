@@ -613,7 +613,7 @@ class JSONB(unittest.TestCase):
         # I can't get this to fail with debug builds presumably
         # because something is disabled, no matter how big I make the
         # recursion.
-        if "d" in sys.abiflags:
+        if "d" in getattr(sys, "abiflags", ""):
             # give up
             return
 
