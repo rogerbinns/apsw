@@ -1,3 +1,15 @@
+#ifndef APSW_USE_SQLITE_AMALGAMATION
+/* this is to get struct iovec as per carray instructions */
+#if defined(_WIN32) || defined(__RTP__) || defined(_WRS_KERNEL)
+struct iovec
+{
+  void *iov_base; /* Starting address */
+  size_t iov_len; /* Number of bytes to transfer */
+};
+#else
+#include <sys/uio.h>
+#endif
+#endif
 
 /* The destructor API does a callback on the void * passed in, but we
 could have multiple PyObject owners referencing the same array so the
