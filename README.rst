@@ -16,7 +16,12 @@ Python from SQLite.  APSW glues together the complete `SQLite C API
 <https://sqlite.org/c3ref/intro.html>`__ and `Python's C API
 <https://docs.python.org/3/c-api/index.html>`__, staying up to date
 with both SQLite and Python.  This includes `full text search
-<https://rogerbinns.github.io/apsw/textsearch.html>`__.
+<https://rogerbinns.github.io/apsw/textsearch.html>`__, `session
+<https://rogerbinns.github.io/apsw/session.html>`__, `virtual tables
+<https://rogerbinns.github.io/apsw/vtable.html>`__, `VFS (virtual file
+system) <https://rogerbinns.github.io/apsw/vfs.html>`__, `JSON
+<https://rogerbinns.github.io/apsw/jsonb.html>`__, and `CArray
+<https://rogerbinns.github.io/apsw/apsw.html#apsw.carray>`__.
 
 
 It is recommended to use the builtin `sqlite3 module

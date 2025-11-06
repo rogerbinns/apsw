@@ -46,8 +46,9 @@ module:
   search (FTS5) <textsearch>`, :doc:`session`, :ref:`virtual tables
   <virtualtables>`, :ref:`VFS`, :ref:`BLOB I/O <blobio>`,
   :ref:`backups <backup>`, :meth:`logging <apsw.ext.log_sqlite>`,
-  :meth:`file control <Connection.file_control>`, and :meth:`tracing
-  <apsw.Connection.trace_v2>`.
+  :meth:`file control <Connection.file_control>`, `CArray
+  <https://rogerbinns.github.io/apsw/apsw.html#apsw.carray>`__, and
+  :meth:`tracing <apsw.Connection.trace_v2>`.
 
 * APSW includes :mod:`apsw.bestpractice` which configures SQLite
   for best performance, and catches common mistakes.
