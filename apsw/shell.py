@@ -864,7 +864,7 @@ Enter ".help" for instructions
         if self.bail:
             raise
 
-    @dataclasses.dataclass(**({"slots": True, "frozen": True} if sys.version_info >= (3, 10) else {}))
+    @dataclasses.dataclass(slots=True, frozen=True)
     class _qd:
         query: str | None
         remaining: str | None
@@ -3464,7 +3464,7 @@ Enter ".help" for instructions
         return [v for v in sorted(completions) if v.startswith(token) and v != token]
 
     ### Output helpers
-    @dataclasses.dataclass(**({"slots": True, "frozen": True} if sys.version_info >= (3, 10) else {}))
+    @dataclasses.dataclass(slots=True, frozen=True)
     class Row:
         "Returned by :class:`Shell.PositionRow`"
 

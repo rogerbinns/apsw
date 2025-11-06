@@ -10844,9 +10844,8 @@ shell.write(shell.stdout, "hello world\\n")
 
     def testBestPractice(self) -> None:
         "apsw.bestpractice module"
-        if sys.version_info >= (3, 10):
-            with self.assertNoLogs():
-                apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
+        with self.assertNoLogs():
+            apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
         apsw.bestpractice.apply(apsw.bestpractice.recommended)
         with self.assertLogs() as l:
             apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
@@ -10863,14 +10862,12 @@ shell.write(shell.stdout, "hello world\\n")
         con = apsw.Connection("")
         # now fail
         apsw.config(apsw.SQLITE_CONFIG_LOG, None)
-        if sys.version_info >= (3, 10):
-            with self.assertNoLogs():
-                self.assertRaises(apsw.SQLError, con.execute, dqs)
+        with self.assertNoLogs():
+            self.assertRaises(apsw.SQLError, con.execute, dqs)
 
         # can't optimize or WAL readonly databases
-        if sys.version_info >= (3, 10):
-            with self.assertNoLogs():
-                apsw.Connection(self.db.filename, flags=apsw.SQLITE_OPEN_READONLY)
+        with self.assertNoLogs():
+            apsw.Connection(self.db.filename, flags=apsw.SQLITE_OPEN_READONLY)
 
     def testExtTracing(self) -> None:
         "apsw.ext Tracing and Resource usage"
@@ -11224,13 +11221,9 @@ shell.write(shell.stdout, "hello world\\n")
             (stuff_stat_struct, apsw.ext.VTColumnAccess.By_Attr, None),
         ):
             if func is stuff_stat_struct:
-                if sys.version_info < (3, 10):
-                    a = apsw.ext.VTColumnAccess.By_Attr
-                    n = names = tuple(member for member in dir(next(func())) if member.startswith("st_"))
-                else:
-                    n, a = apsw.ext.get_column_names(next(func()))
-                    names = n
-                    self.assertEqual(names, os.stat(".").__match_args__)
+                n, a = apsw.ext.get_column_names(next(func()))
+                names = n
+                self.assertEqual(names, os.stat(".").__match_args__)
             else:
                 n, a = apsw.ext.get_column_names(next(func()))
             self.assertEqual(access, a)
@@ -12103,10 +12096,6 @@ def setup():
     memdb = apsw.Connection(":memory:")
     if not getattr(memdb, "enableloadextension", None):
         del APSW.testLoadExtension
-
-    # earlier py versions make recursion error fatal
-    if sys.version_info < (3, 10):
-        del APSW.testIssue425
 
     # Fork checker is becoming less usefull on newer Pythons because
     # multiprocessing really doesn't want you to use fork and does

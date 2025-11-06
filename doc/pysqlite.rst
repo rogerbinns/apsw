@@ -39,8 +39,8 @@ module:
 
 * APSW stays up to date with Python, including releases under
   development as well as older still supported releases.  The current
-  APSW release brings the most recent SQLite to Python 3.9 all the way
-  through Python 3.14.
+  APSW release brings the most recent SQLite to Python 3.10 all the way
+  through Python 3.15.
 
 * APSW gives all functionality of SQLite including :doc:`full text
   search (FTS5) <textsearch>`, :doc:`session`, :ref:`virtual tables

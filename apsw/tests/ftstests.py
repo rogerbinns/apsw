@@ -31,25 +31,6 @@ import apsw.fts5aux
 import apsw.fts5query
 import apsw.unicode
 
-try:
-    itertools.pairwise
-except AttributeError:
-    # Py <= 3.9 doesn't have it.  We monkeypatch because only
-    # referenced in this test code
-
-    # from the docs
-    def pairwise(iterable):
-        # pairwise('ABCDEFG') → AB BC CD DE EF FG
-
-        iterator = iter(iterable)
-        a = next(iterator, None)
-
-        for b in iterator:
-            yield a, b
-            a = b
-
-    itertools.pairwise = pairwise
-
 
 class BecauseWindowsTempfile:
     "Work around Windows preventing concurrent access to a file opened for writing"
@@ -1526,8 +1507,7 @@ class FTS5Table(unittest.TestCase):
         # key tokens
         def token_check(rowid, expected, **kwargs):
             kt = t.key_tokens(rowid, **kwargs)
-            zip_kwargs = {"strict": True} if sys.version_info >= (3, 10) else {}
-            for got, expected in zip(kt, expected, **zip_kwargs):
+            for got, expected in zip(kt, expected, strict=True):
                 # float values
                 self.assertAlmostEqual(got[0], expected[0])
                 self.assertEqual(got[1], expected[1])
@@ -2889,11 +2869,9 @@ class FTS5Query(unittest.TestCase):
 
     def testWalk(self):
         "walk and related functions"
-        if sys.version_info >= (3, 10):
-            # py 3.9 is unable to type check and give a nicer error
-            self.assertRaises(TypeError, list, apsw.fts5query.walk({1: 2}))
-            self.assertRaises(TypeError, apsw.fts5query.extract_with_column_filters, {1: 2}, 1)
-            self.assertRaises(TypeError, apsw.fts5query.applicable_columns, {1: 2}, 2, 3)
+        self.assertRaises(TypeError, list, apsw.fts5query.walk({1: 2}))
+        self.assertRaises(TypeError, apsw.fts5query.extract_with_column_filters, {1: 2}, 1)
+        self.assertRaises(TypeError, apsw.fts5query.applicable_columns, {1: 2}, 2, 3)
 
         def n(v):
             # turns instance into class basename

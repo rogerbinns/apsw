@@ -106,13 +106,8 @@ from __future__ import annotations
 import sys
 
 import dataclasses
-from wsgiref.simple_server import sys_version
 
-try:
-    from typing import Union, Any, Sequence, NoReturn, Literal, Iterator, TypeAlias
-except ImportError:
-    # TypeAlias is not in Python <= 3.9
-    pass
+from typing import Union, Any, Sequence, NoReturn, Literal, Iterator, TypeAlias
 
 import apsw
 
@@ -583,15 +578,8 @@ _walk_attrs = {
     COLUMNFILTER: ("query",),
 }
 
-if sys.version_info >= (3, 10):
-
-    def _is_QUERY(obj):
-        return isinstance(obj, QUERY)
-else:
-    # py 3.9 can't do the above so we always return True.  Providing a
-    # non-query will result in an inscrutable error lower in walk
-    def _is_QUERY(obj):
-        return True
+def _is_QUERY(obj):
+    return isinstance(obj, QUERY)
 
 
 def walk(start: QUERY) -> Iterator[tuple[tuple[QUERY, ...], QUERY]]:

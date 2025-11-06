@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import abc
 import collections
-import collections.abc
 import contextvars
 import dataclasses
 import enum
@@ -24,11 +23,10 @@ import types
 from dataclasses import dataclass, is_dataclass, make_dataclass
 from fractions import Fraction
 from typing import Any, Callable, Generator, Iterable, Iterator, Literal, Sequence, TextIO, Union
+from types import NoneType
 
 import apsw
 import apsw.unicode
-
-NoneType = types.NoneType if sys.version_info > (3, 10) else type(None)
 
 
 def result_string(code: int) -> str:
