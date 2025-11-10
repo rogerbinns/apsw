@@ -1949,6 +1949,32 @@ static PyMethodDef module_methods[] = {
   { 0, 0, 0, 0 } /* Sentinel */
 };
 
+/* This next section until PyInit_apsw is to catch attempts to overwrite the async context vars */
+static int module_is_initialized;
+
+static int
+setattr_no_write(PyObject *module, PyObject *name, PyObject *value)
+{
+  if (module_is_initialized
+      && (PyObject_RichCompareBool(name, apst.async_loop, Py_EQ) == 1
+          || (!PyErr_Occurred() && PyObject_RichCompareBool(name, apst.async_timeout, Py_EQ) == 1)
+          || (!PyErr_Occurred() && PyObject_RichCompareBool(name, apst.async_run_from_thread, Py_EQ) == 1)))
+  {
+
+    PyErr_Format(PyExc_AttributeError,
+                 "Do not overwrite apsw.%S.  It is a context var - use its set method in the context", name);
+    return -1;
+  }
+
+  return PyErr_Occurred() ? -1 : PyObject_GenericSetAttr(module, name, value);
+}
+
+static PyTypeObject ApswModuleType = {
+  PyVarObject_HEAD_INIT(NULL, 0).tp_name = "APSWModule",
+  .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_setattro = setattr_no_write,
+};
+
 static struct PyModuleDef apswmoduledef = { PyModuleDef_HEAD_INIT, "apsw", NULL, -1, module_methods, 0, 0, 0, 0 };
 
 PyMODINIT_FUNC
@@ -1965,6 +1991,18 @@ PyInit_apsw(void)
   {
     PyErr_Format(PyExc_EnvironmentError, "SQLite was compiled without thread safety and cannot be used.");
     goto fail;
+  }
+  module_is_initialized = 0;
+  if (ApswModuleType.tp_base == NULL)
+  {
+    ApswModuleType.tp_base = &PyModule_Type;
+    ApswModuleType.tp_basicsize = PyModule_Type.tp_basicsize;
+
+    if (PyType_Ready(&ApswModuleType) < 0)
+    {
+      ApswModuleType.tp_base = NULL;
+      goto fail;
+    }
   }
 
   if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0
@@ -2001,6 +2039,11 @@ PyInit_apsw(void)
   m = apswmodule = PyModule_Create2(&apswmoduledef, PYTHON_API_VERSION);
 
   if (m == NULL)
+    goto fail;
+
+  Py_SET_TYPE(apswmodule, &ApswModuleType);
+
+  if (PyModule_AddFunctions(m, apswmoduledef.m_methods) < 0)
     goto fail;
 
   the_connections = PyList_New(0);
@@ -2110,6 +2153,75 @@ PyInit_apsw(void)
 
 #endif
 
+  /** .. attribute:: async_loop
+    :type: contextvars.ContextVar
+
+    The event loop parameter for  :attr:`async_run_from_thread`
+
+    .. seealso::
+
+      * :ref:`async_vars`
+      * :attr:`async_loop`
+      * :attr:`async_run_from_thread`
+  */
+
+  if (!async_loop_context_var)
+    if (NULL == (async_loop_context_var = PyContextVar_New("apsw.async_loop", NULL)))
+      goto fail;
+
+  if (PyModule_AddObjectRef(m, "async_loop", async_loop_context_var))
+    goto fail;
+
+  /** .. attribute:: async_timeout
+    :type: contextvars.ContextVar[int | float | None]
+
+    How long to wait while blocked in the background SQLite worker thread
+    for an async response, in seconds.  The default is ``None`` which means
+    wait forever.
+
+    .. seealso::
+
+      * :ref:`async_vars`
+      * :attr:`async_loop`
+      * :attr:`async_run_from_thread`
+  */
+  if (!async_timeout_context_var)
+    if (NULL == (async_timeout_context_var = PyContextVar_New("apsw.async_timeout", Py_None)))
+      goto fail;
+
+  if (PyModule_AddObject(m, "async_timeout", Py_NewRef(async_timeout_context_var)))
+    goto fail;
+
+  /** .. attribute:: async_run_from_thread
+    :type: contextvars.ContextVar[Callable[[Coroutine, Any, int | float | None], Any]]
+
+    Called from a background worker thread to run a coroutine in an event
+    loop, and block until getting a result with a timeout.  It should
+    return the result, or raise an exception.
+
+    The three parameters are:
+
+    #. The :class:`~typing.Coroutine` to execute to completion
+    #. The event loop to run it on, from :attr:`async_loop`
+    #. The timeout to block waiting, from :attr:`async_timeout`
+
+    If this is not set, then :mod:`asyncio` is used.
+
+    .. seealso::
+
+      * :ref:`async_vars`
+      * :attr:`async_loop`
+      * :attr:`async_timeout`
+
+  */
+
+  if (!async_run_from_thread_context_var)
+    if (NULL == (async_run_from_thread_context_var = PyContextVar_New("apsw.async_run_from_thread", NULL)))
+      goto fail;
+
+  if (PyModule_AddObject(m, "async_run_from_thread", Py_NewRef(async_timeout_context_var)))
+    goto fail;
+
   /** .. attribute:: no_change
     :type: object
 
@@ -2190,6 +2302,7 @@ modules etc. For example::
 
   if (!PyErr_Occurred())
   {
+    module_is_initialized = 1;
     return m;
   }
 
