@@ -46,6 +46,8 @@ release UPDATE INSERT DELETE
 <apsw.no_change>
 
 null true false
+
+async_loop async_timeout async_run_from_thread
 """
 
 

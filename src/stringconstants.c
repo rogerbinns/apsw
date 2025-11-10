@@ -43,6 +43,9 @@
 #undef UpdateDeleteRow
 #undef UpdateInsertRow
 #undef add_note
+#undef async_loop
+#undef async_run_from_thread
+#undef async_timeout
 #undef can_cache
 #undef close
 #undef connection_hooks
@@ -132,6 +135,9 @@ static struct _apsw_string_table
     PyObject *UpdateDeleteRow;
     PyObject *UpdateInsertRow;
     PyObject *add_note;
+    PyObject *async_loop;
+    PyObject *async_run_from_thread;
+    PyObject *async_timeout;
     PyObject *can_cache;
     PyObject *close;
     PyObject *connection_hooks;
@@ -222,6 +228,9 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.UpdateDeleteRow);
     Py_CLEAR(apst.UpdateInsertRow);
     Py_CLEAR(apst.add_note);
+    Py_CLEAR(apst.async_loop);
+    Py_CLEAR(apst.async_run_from_thread);
+    Py_CLEAR(apst.async_timeout);
     Py_CLEAR(apst.can_cache);
     Py_CLEAR(apst.close);
     Py_CLEAR(apst.connection_hooks);
@@ -313,6 +322,9 @@ init_apsw_strings()
         || (!apst.UpdateDeleteRow && 0 == (apst.UpdateDeleteRow = PyUnicode_FromString("UpdateDeleteRow")))
         || (!apst.UpdateInsertRow && 0 == (apst.UpdateInsertRow = PyUnicode_FromString("UpdateInsertRow")))
         || (!apst.add_note && 0 == (apst.add_note = PyUnicode_FromString("add_note")))
+        || (!apst.async_loop && 0 == (apst.async_loop = PyUnicode_FromString("async_loop")))
+        || (!apst.async_run_from_thread && 0 == (apst.async_run_from_thread = PyUnicode_FromString("async_run_from_thread")))
+        || (!apst.async_timeout && 0 == (apst.async_timeout = PyUnicode_FromString("async_timeout")))
         || (!apst.can_cache && 0 == (apst.can_cache = PyUnicode_FromString("can_cache")))
         || (!apst.close && 0 == (apst.close = PyUnicode_FromString("close")))
         || (!apst.connection_hooks && 0 == (apst.connection_hooks = PyUnicode_FromString("connection_hooks")))

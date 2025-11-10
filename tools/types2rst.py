@@ -55,6 +55,7 @@ std_typing = {
     "Sequence",
     "Iterable",
     "Protocol",
+    "Coroutine",
 }
 
 # stuff in collections.abc
