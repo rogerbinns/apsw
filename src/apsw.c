@@ -1956,11 +1956,8 @@ static int
 setattr_no_write(PyObject *module, PyObject *name, PyObject *value)
 {
   if (module_is_initialized
-      && (PyObject_RichCompareBool(name, apst.async_loop, Py_EQ) == 1
-          || (!PyErr_Occurred() && PyObject_RichCompareBool(name, apst.async_timeout, Py_EQ) == 1)
-          || (!PyErr_Occurred() && PyObject_RichCompareBool(name, apst.async_run_from_thread, Py_EQ) == 1)))
+      && (PyObject_RichCompareBool(name, apst.async_run_coro, Py_EQ) == 1))
   {
-
     PyErr_Format(PyExc_AttributeError,
                  "Do not overwrite apsw.%S.  It is a context var - use its set method in the context", name);
     return -1;
@@ -2153,73 +2150,20 @@ PyInit_apsw(void)
 
 #endif
 
-  /** .. attribute:: async_loop
-    :type: contextvars.ContextVar
+  /** .. attribute:: async_run_coro
+    :type: contextvars.ContextVar[Callable[[typing.Coroutine], Any]]
 
-    The event loop parameter for  :attr:`async_run_from_thread`
-
-    .. seealso::
-
-      * :ref:`async_vars`
-      * :attr:`async_loop`
-      * :attr:`async_run_from_thread`
+    When APSW encounters a :class:`~typing.Coroutine` this called to run
+    it and block until getting the result.  The callable would typically
+    have the coroutine run in the event loop.  See :doc:`async` for
+    details.
   */
 
-  if (!async_loop_context_var)
-    if (NULL == (async_loop_context_var = PyContextVar_New("apsw.async_loop", NULL)))
+  if (!async_run_coro_context_var)
+    if (NULL == (async_run_coro_context_var = PyContextVar_New("apsw.async_run_coro", NULL)))
       goto fail;
 
-  if (PyModule_AddObjectRef(m, "async_loop", async_loop_context_var))
-    goto fail;
-
-  /** .. attribute:: async_timeout
-    :type: contextvars.ContextVar[int | float | None]
-
-    How long to wait while blocked in the background SQLite worker thread
-    for an async response, in seconds.  The default is ``None`` which means
-    wait forever.
-
-    .. seealso::
-
-      * :ref:`async_vars`
-      * :attr:`async_loop`
-      * :attr:`async_run_from_thread`
-  */
-  if (!async_timeout_context_var)
-    if (NULL == (async_timeout_context_var = PyContextVar_New("apsw.async_timeout", Py_None)))
-      goto fail;
-
-  if (PyModule_AddObject(m, "async_timeout", Py_NewRef(async_timeout_context_var)))
-    goto fail;
-
-  /** .. attribute:: async_run_from_thread
-    :type: contextvars.ContextVar[Callable[[Coroutine, Any, int | float | None], Any]]
-
-    Called from a background worker thread to run a coroutine in an event
-    loop, and block until getting a result with a timeout.  It should
-    return the result, or raise an exception.
-
-    The three parameters are:
-
-    #. The :class:`~typing.Coroutine` to execute to completion
-    #. The event loop to run it on, from :attr:`async_loop`
-    #. The timeout to block waiting, from :attr:`async_timeout`
-
-    If this is not set, then :mod:`asyncio` is used.
-
-    .. seealso::
-
-      * :ref:`async_vars`
-      * :attr:`async_loop`
-      * :attr:`async_timeout`
-
-  */
-
-  if (!async_run_from_thread_context_var)
-    if (NULL == (async_run_from_thread_context_var = PyContextVar_New("apsw.async_run_from_thread", NULL)))
-      goto fail;
-
-  if (PyModule_AddObject(m, "async_run_from_thread", Py_NewRef(async_timeout_context_var)))
+  if (PyModule_AddObjectRef(m, "async_run_coro", async_run_coro_context_var))
     goto fail;
 
   /** .. attribute:: no_change

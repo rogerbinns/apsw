@@ -1,5 +1,5 @@
-Async support
-*************
+Async support (AIO)
+*******************
 
 .. currentmodule:: apsw
 
@@ -14,20 +14,29 @@ awaitable.  Calls back out from SQLite in the background thread block
 the thread while they are sent to the event loop, until they complete
 or a timeout happens.
 
-.. danger:: DEADLOCK
-
-    If SQLite has called out to an async function, and that function
-    then waits on an async call back into SQLite, you will get a
-    deadlock because neither side can make any progress.  The
-    :attr:`async_timeout` sets how long SQLite waits before
-    raising a timeout exception.  It is recommended to always
-    set it.
-
 Connection
 ==========
 
-Use ``async`` param to connection, default pointing to
-apsw.async.asyncio_controller.  ``async_timeout`` also recommended
+Use ``async`` param to connection with controller from
+:mod:`apsw.aio` or your own.
+
+Callbacks
+=========
+
+use async def instead of def and you are all set.  the async controller
+set above will ensure the callbacks execute in your event loop.
+
+.. danger:: DEADLOCKS
+
+    If you make an async call into SQLite, and SQLite has then called
+    back to an async function, and that function then is waiting on an
+    async call back into SQLite, you will get a deadlock because
+    neither side can make any progress.  The SQLite worker thread
+    blocks until it gets a result.
+
+    If using a VFS, this affects calling superclass functions and
+    then processing their results.
+
 
 Async Framework Support
 =======================
@@ -37,15 +46,14 @@ work with APSW.
 
 * :mod:`asyncio` standard library module
 * `trio <https://trio.readthedocs.io>`__
+* anyio
 
 Calling into SQLite
 -------------------
 
-need to implement protocol, see apsw.async.asyncio_controller for done
-with asyncio
+need to implement protocol, see :class:`apsw.aio.AsyncIO`` for done
+with :mod:`asyncio`
 
-
-.. _async_vars:
 
 Calling out from SQLite
 -----------------------
@@ -55,37 +63,9 @@ In order to control behaviour, the :mod:`apsw` module exposes some
 Typical context is the current thread, but you can also use them
 nested, and asynchronous frameworks correctly track them.
 
-.. code-block:: python
+apsw.aio module
+===============
 
-     cv = contextvars.ContextVar("mode", default = "slow")
-
-     cv.get() # now "slow"
-
-     with cv.set("loud"):
-        cv.get() # now "loud"
-
-        with cv.set("fast"):
-          cv.get() # now "fast"
-
-        cv.get() # back to "loud"
-
-    cv.get() # now back to "slow"
-
-You need to :meth:`contextvars.ContextVar.set` the value in each
-thread or other context as appropriate.
-
-The :attr:`async_run_from_thread` value is called from a background
-worker thread to run a coroutine in an event loop, and block until
-getting a result with a timeout.  It should return the result, or
-raise an exception.
-
-The three parameters are:
-
-#. The :class:`~typing.Coroutine` to execute to completion
-#. The loop to run it on, from :attr:`async_loop`
-#. The timeout to block waiting, from :attr:`async_timeout`
-
-If not set then it uses :func:`asyncio.run_coroutine_threadsafe`,
-to run the coroutine, and :meth:`concurrent.futures.Future.result`
-with the timeout to get the result, or exception.
-
+.. automodule:: apsw.aio
+    :members:
+    :undoc-members:
