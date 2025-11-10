@@ -7,6 +7,7 @@ import threading
 import contextvars
 import time
 
+import apsw
 
 deadline: contextvars.ContextVar[int | float | None] = contextvars.ContextVar("apsw.aio.deadline", default=None)
 """Set to a value from :func:`time.monotonic()` for an operation to complete by
@@ -42,47 +43,41 @@ class AsyncIO:
     def worker_thread_run(self):
         "Does the enqueued work processing in the worker thread"
 
-        try:
-            while (item := self.queue.get()) is not None:
-                future, meth, args, kwargs, this_deadline = item
+        while (item := self.queue.get()) is not None:
+            future, meth, args, kwargs, this_deadline = item
 
-                # cancelled?
-                if future.done():
-                    continue
+            # cancelled?
+            if future.done():
+                continue
 
-                with (
-                    apsw.async_run_coro.set(self.async_run_coro),
-                    _current_future.set(future),
-                    deadline.set(this_deadline),
-                ):
-                    try:
-                        # should we even start?
-                        if this_deadline is not None and time.monotonic() > this_deadline:
-                            raise TimeoutError()
+            with (
+                apsw.async_run_coro.set(self.async_run_coro),
+                _current_future.set(future),
+                deadline.set(this_deadline),
+            ):
+                try:
+                    # should we even start?
+                    if this_deadline is not None and time.monotonic() > this_deadline:
+                        raise TimeoutError()
+                    future.get_loop().call_soon_threadsafe(self.set_future_result, future, meth(*args, **kwargs))
 
-                        future.loop().call_soon_threadsafe(self.set_future_result, future, meth(*args, **kwargs))
-
-                    except Exception as exc:
-                        future.loop().call_soon_threadsafe(self.set_future_exception, future, exc)
-
-        # ::TODO:: only in py3.13
-        except queue.ShutDown:
-            pass
+                except Exception as exc:
+                    future.get_loop().call_soon_threadsafe(self.set_future_exception, future, exc)
 
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
-        if (this_deadline := deadline.get() is not None) and time.monotonic() > this_deadline:
+        if (this_deadline := deadline.get()) is not None and time.monotonic() > this_deadline:
             raise TimeoutError()
-        return self.run_coroutine_threadsafe(coro, _current_future.get().loop()).result(this_deadline)
+        return self.run_coroutine_threadsafe(coro, _current_future.get().get_loop()).result(this_deadline)
 
     def set_future_result(self, future, result):
-        "Update future with result"
+        "Update future with result in the event loop"
         # you get an exception if cancelled
         if not future.done():
             future.set_result(result)
 
     def set_future_exception(self, future, exc):
-        "Update future with exception"
+        "Update future with exception in the event loop"
         if not future.done():
             future.set_exception(exc)
 
@@ -107,5 +102,3 @@ class AsyncIO:
     def close(self):
         "Called from connection destructor, so the worker thread can be stopped"
         self.queue.put(None)
-        # shutdown only in 3.13+
-        self.queue.shutdown()
