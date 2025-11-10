@@ -40,10 +40,10 @@ _current_future = contextvars.ContextVar("apsw.aio._current_future")
 class AsyncIO:
     """Uses :mod:`asyncio` for async concurrency"""
 
-    def worker_thread_run(self):
+    def worker_thread_run(self, q):
         "Does the enqueued work processing in the worker thread"
 
-        while (item := self.queue.get()) is not None:
+        while (item := q.get()) is not None:
             future, meth, args, kwargs, this_deadline = item
 
             # cancelled?
@@ -91,14 +91,17 @@ class AsyncIO:
 
         self.queue = queue.SimpleQueue()
 
-        threading.Thread(name="asyncio apsw background worker", target=self.worker_thread_run).start()
+        threading.Thread(name="asyncio apsw background worker", target=self.worker_thread_run, args=(self.queue,)).start()
 
     def call(self, meth, args, kwargs):
         "enqueues async work to worker thread"
+        # ::TODO:: if self.queue is None then connection was closed
         future = self.get_running_loop().create_future()
         self.queue.put((future, meth, args, kwargs, deadline.get()))
         return future
 
     def close(self):
         "Called from connection destructor, so the worker thread can be stopped"
+        # no guarantee of what thread will call this
         self.queue.put(None)
+        self.queue = None
