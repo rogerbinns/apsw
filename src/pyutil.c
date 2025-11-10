@@ -294,3 +294,171 @@ PyErr_AddExceptionNoteV(const char *format, ...)
 #endif
 #endif
 }
+
+/* Automatically handle coroutines (async) in callbacks
+
+If a callback returns a coroutine, we ship it back to the event loop
+(set in a context var) and get the result of that.
+
+*/
+static void AddTraceBackHere(const char *filename, int lineno, const char *functionname, const char *localsformat, ...);
+
+/* asyncio.run_coroutine_threadsafe method initialized on first use.
+asyncio is expensive to import so wait until it is used */
+static PyObject *asyncio_run_coroutine_threadsafe;
+
+/* PyContextVar where the top level caller needs to stash the event loop to use */
+static PyObject *async_loop_context_var;
+
+/* timeout parameter to concurrent.futures.Future.result() */
+static PyObject *async_timeout_context_var;
+
+/* how coroutine is submitted to loop (callable) */
+static PyObject *async_run_from_thread_context_var;
+
+static PyObject *
+asyncio_run_coroutine(PyObject *coro, PyObject *loop, PyObject *timeout)
+{
+  static PyObject *asyncio_run_coroutine_threadsafe;
+
+  if (!asyncio_run_coroutine_threadsafe)
+  {
+    PyObject *asyncio = PyImport_ImportModule("asyncio");
+    if (!asyncio)
+    {
+      assert(PyErr_Occurred());
+      return NULL;
+    }
+    asyncio_run_coroutine_threadsafe = PyObject_GetAttrString(asyncio, "run_coroutine_threadsafe");
+    Py_DECREF(asyncio);
+    if (!asyncio_run_coroutine_threadsafe)
+      return NULL;
+  }
+
+  PyObject *vargs_run[] = { NULL, coro, loop };
+  PyObject *future
+      = PyObject_Vectorcall(asyncio_run_coroutine_threadsafe, vargs_run + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  if (!future)
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "asyncio_run_coroutine.submit_async", "{s: O, s: O}", "coroutine", coro,
+                     "loop", loop);
+    return NULL;
+  }
+
+  PyObject *vargs_result[] = { NULL, future, timeout };
+  PyObject *result = PyObject_VectorcallMethod(apst.result, vargs_result + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  if (!result)
+    AddTraceBackHere(__FILE__, __LINE__, "asyncio_run_coroutine.future_result", "{s: O, s: O, s: O}", "coroutine", coro,
+                     "loop", loop, "future", future);
+  Py_DECREF(future);
+  return result;
+}
+
+/* returns 0 on success, something else on error */
+static int
+run_get_async(PyObject **runner, PyObject **loop, PyObject **timeout, PyObject *coro)
+{
+  int res;
+
+  if (0 != PyContextVar_Get(async_run_from_thread_context_var, NULL, timeout))
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "run_get_async.run_from_thread", "{s: O}", "coro", coro);
+    return -1;
+  }
+
+  res = PyContextVar_Get(async_loop_context_var, NULL, loop);
+  if (res == 0 && !*loop)
+  {
+    PyErr_Format(PyExc_RuntimeError,
+                 "A coroutine (async) was passed as a callback to APSW, but apsw.async_loop "
+                 "has not been set to the loop to use. See the APSW async documentation for more details.");
+    AddTraceBackHere(__FILE__, __LINE__, "run_get_async.loop", "{s: O}", "coro", coro);
+    return -1;
+  }
+
+  if (0 != PyContextVar_Get(async_timeout_context_var, NULL, timeout))
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "run_get_async.timeout", "{s: O}", "coro", coro);
+    return -1;
+  }
+
+  return 0;
+}
+
+static PyObject *
+run_in_event_loop(PyObject *coro)
+{
+  assert(coro);
+
+  PyObject *runner = NULL, *loop = NULL, *timeout = NULL, *result = NULL;
+
+  if (run_get_async(&runner, &loop, &timeout, coro))
+    goto error;
+
+  if (runner)
+  {
+    PyObject *vargs_run[] = { NULL, coro, loop, timeout };
+    result = PyObject_Vectorcall(runner, vargs_run + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  }
+  else
+    result = asyncio_run_coroutine(coro, loop, timeout);
+
+  if (result)
+  {
+    Py_XDECREF(runner);
+    Py_DECREF(loop);
+    Py_DECREF(timeout);
+    return result;
+  }
+
+  AddTraceBackHere(__FILE__, __LINE__, "run_in_event_loop.returned_exception", "{s: O, s: O, s: O, s: O}", "coroutine",
+                   coro, "loop", loop, "timeout", OBJ(timeout), "runner", OBJ(runner));
+
+error:
+  Py_XDECREF(runner);
+  Py_XDECREF(loop);
+  Py_XDECREF(timeout);
+  Py_XDECREF(result);
+  return NULL;
+}
+
+static PyObject *
+PyObject_VectorcallMethod_AutoAsync(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames)
+{
+  PyObject *result = PyObject_VectorcallMethod(name, args, nargsf, kwnames);
+  if (result && PyCoro_CheckExact(result))
+  {
+    PyObject *new_result = run_in_event_loop(result);
+    Py_DECREF(result);
+    result = new_result;
+  }
+  return result;
+}
+
+static PyObject *
+PyObject_Vectorcall_AutoAsync(PyObject *callable, PyObject *const *args, size_t nargsf, PyObject *kwnames)
+{
+  PyObject *result = PyObject_Vectorcall(callable, args, nargsf, kwnames);
+  if (result && PyCoro_CheckExact(result))
+  {
+    PyObject *new_result = run_in_event_loop(result);
+    Py_DECREF(result);
+    result = new_result;
+  }
+  return result;
+}
+
+static PyObject *
+PyObject_VectorcallMethod_NoAsync(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames)
+{
+  return PyObject_VectorcallMethod(name, args, nargsf, kwnames);
+}
+
+static PyObject *
+PyObject_Vectorcall_NoAsync(PyObject *callable, PyObject *const *args, size_t nargsf, PyObject *kwnames)
+{
+  return PyObject_Vectorcall(callable, args, nargsf, kwnames);
+}
+
+#define PyObject_VectorcallMethod PyObject_VectorcallMethod_AutoAsync
+#define PyObject_Vectorcall PyObject_Vectorcall_AutoAsync
