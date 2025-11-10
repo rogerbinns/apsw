@@ -30,6 +30,7 @@ APSW |version| documentation
    vfs
    shell
    ext
+   async
 
    exceptions
    execution
