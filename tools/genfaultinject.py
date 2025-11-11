@@ -96,8 +96,9 @@ returns = {
             PyMemoryView_FromMemory  PyModule_Create2
             PyNumber_Float PyNumber_Long PyObject_CallMethodNoArgs
             PyObject_CallObject PyObject_GetAttr PyObject_GetIter PyObject_Str
-            PyObject_Vectorcall PyObject_VectorcallMethod PySequence_Fast
-            PySequence_GetItem PySequence_GetSlice PySequence_List
+            PyObject_Vectorcall_AutoAsync PyObject_VectorcallMethod_AutoAsync
+            PyObject_Vectorcall_NoAsync PyObject_VectorcallMethod_NoAsync
+            PySequence_Fast PySequence_GetItem PySequence_GetSlice PySequence_List
             PySequence_SetItem PySequence_Tuple PySet_New PyStructSequence_New
             PyStructSequence_NewType PyTuple_New PyTuple_Pack
             PyType_FromModuleAndSpec PyType_GenericNew PyUnicode_AsUTF8

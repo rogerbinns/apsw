@@ -47,7 +47,7 @@ release UPDATE INSERT DELETE
 
 null true false
 
-async_loop async_timeout async_run_from_thread
+async_run_coro
 """
 
 

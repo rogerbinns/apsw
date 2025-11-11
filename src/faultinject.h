@@ -69,8 +69,10 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyObject_IsTrueStrict
 #undef PyObject_SetAttr
 #undef PyObject_Str
-#undef PyObject_Vectorcall
-#undef PyObject_VectorcallMethod
+#undef PyObject_VectorcallMethod_AutoAsync
+#undef PyObject_VectorcallMethod_NoAsync
+#undef PyObject_Vectorcall_AutoAsync
+#undef PyObject_Vectorcall_NoAsync
 #undef PySequence_Fast
 #undef PySequence_GetItem
 #undef PySequence_GetSlice
@@ -1067,35 +1069,65 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                    \
     _res_PyObject_Str;                                                                                                                   \
 })
-#define PyObject_Vectorcall(...) \
-({                                                                                                                                                            \
-    __auto_type _res_PyObject_Vectorcall = 0 ? PyObject_Vectorcall(__VA_ARGS__) : 0;                                                                          \
-                                                                                                                                                              \
-    _res_PyObject_Vectorcall = (typeof (_res_PyObject_Vectorcall))APSW_FaultInjectControl("PyObject_Vectorcall", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                                              \
-    if ((typeof (_res_PyObject_Vectorcall))0x1FACADE == _res_PyObject_Vectorcall)                                                                             \
-       _res_PyObject_Vectorcall = PyObject_Vectorcall(__VA_ARGS__);                                                                                           \
-    else if ((typeof(_res_PyObject_Vectorcall))0x2FACADE == _res_PyObject_Vectorcall)                                                                         \
-    {                                                                                                                                                         \
-        PyObject_Vectorcall(__VA_ARGS__);                                                                                                                     \
-        _res_PyObject_Vectorcall = (typeof (_res_PyObject_Vectorcall))18;                                                                                     \
-    }                                                                                                                                                         \
-    _res_PyObject_Vectorcall;                                                                                                                                 \
+#define PyObject_VectorcallMethod_AutoAsync(...) \
+({                                                                                                                                                                                                            \
+    __auto_type _res_PyObject_VectorcallMethod_AutoAsync = 0 ? PyObject_VectorcallMethod_AutoAsync(__VA_ARGS__) : 0;                                                                                          \
+                                                                                                                                                                                                              \
+    _res_PyObject_VectorcallMethod_AutoAsync = (typeof (_res_PyObject_VectorcallMethod_AutoAsync))APSW_FaultInjectControl("PyObject_VectorcallMethod_AutoAsync", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                                              \
+    if ((typeof (_res_PyObject_VectorcallMethod_AutoAsync))0x1FACADE == _res_PyObject_VectorcallMethod_AutoAsync)                                                                                             \
+       _res_PyObject_VectorcallMethod_AutoAsync = PyObject_VectorcallMethod_AutoAsync(__VA_ARGS__);                                                                                                           \
+    else if ((typeof(_res_PyObject_VectorcallMethod_AutoAsync))0x2FACADE == _res_PyObject_VectorcallMethod_AutoAsync)                                                                                         \
+    {                                                                                                                                                                                                         \
+        PyObject_VectorcallMethod_AutoAsync(__VA_ARGS__);                                                                                                                                                     \
+        _res_PyObject_VectorcallMethod_AutoAsync = (typeof (_res_PyObject_VectorcallMethod_AutoAsync))18;                                                                                                     \
+    }                                                                                                                                                                                                         \
+    _res_PyObject_VectorcallMethod_AutoAsync;                                                                                                                                                                 \
 })
-#define PyObject_VectorcallMethod(...) \
-({                                                                                                                                                                              \
-    __auto_type _res_PyObject_VectorcallMethod = 0 ? PyObject_VectorcallMethod(__VA_ARGS__) : 0;                                                                                \
-                                                                                                                                                                                \
-    _res_PyObject_VectorcallMethod = (typeof (_res_PyObject_VectorcallMethod))APSW_FaultInjectControl("PyObject_VectorcallMethod", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                                                                \
-    if ((typeof (_res_PyObject_VectorcallMethod))0x1FACADE == _res_PyObject_VectorcallMethod)                                                                                   \
-       _res_PyObject_VectorcallMethod = PyObject_VectorcallMethod(__VA_ARGS__);                                                                                                 \
-    else if ((typeof(_res_PyObject_VectorcallMethod))0x2FACADE == _res_PyObject_VectorcallMethod)                                                                               \
-    {                                                                                                                                                                           \
-        PyObject_VectorcallMethod(__VA_ARGS__);                                                                                                                                 \
-        _res_PyObject_VectorcallMethod = (typeof (_res_PyObject_VectorcallMethod))18;                                                                                           \
-    }                                                                                                                                                                           \
-    _res_PyObject_VectorcallMethod;                                                                                                                                             \
+#define PyObject_VectorcallMethod_NoAsync(...) \
+({                                                                                                                                                                                                      \
+    __auto_type _res_PyObject_VectorcallMethod_NoAsync = 0 ? PyObject_VectorcallMethod_NoAsync(__VA_ARGS__) : 0;                                                                                        \
+                                                                                                                                                                                                        \
+    _res_PyObject_VectorcallMethod_NoAsync = (typeof (_res_PyObject_VectorcallMethod_NoAsync))APSW_FaultInjectControl("PyObject_VectorcallMethod_NoAsync", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                                        \
+    if ((typeof (_res_PyObject_VectorcallMethod_NoAsync))0x1FACADE == _res_PyObject_VectorcallMethod_NoAsync)                                                                                           \
+       _res_PyObject_VectorcallMethod_NoAsync = PyObject_VectorcallMethod_NoAsync(__VA_ARGS__);                                                                                                         \
+    else if ((typeof(_res_PyObject_VectorcallMethod_NoAsync))0x2FACADE == _res_PyObject_VectorcallMethod_NoAsync)                                                                                       \
+    {                                                                                                                                                                                                   \
+        PyObject_VectorcallMethod_NoAsync(__VA_ARGS__);                                                                                                                                                 \
+        _res_PyObject_VectorcallMethod_NoAsync = (typeof (_res_PyObject_VectorcallMethod_NoAsync))18;                                                                                                   \
+    }                                                                                                                                                                                                   \
+    _res_PyObject_VectorcallMethod_NoAsync;                                                                                                                                                             \
+})
+#define PyObject_Vectorcall_AutoAsync(...) \
+({                                                                                                                                                                                          \
+    __auto_type _res_PyObject_Vectorcall_AutoAsync = 0 ? PyObject_Vectorcall_AutoAsync(__VA_ARGS__) : 0;                                                                                    \
+                                                                                                                                                                                            \
+    _res_PyObject_Vectorcall_AutoAsync = (typeof (_res_PyObject_Vectorcall_AutoAsync))APSW_FaultInjectControl("PyObject_Vectorcall_AutoAsync", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                            \
+    if ((typeof (_res_PyObject_Vectorcall_AutoAsync))0x1FACADE == _res_PyObject_Vectorcall_AutoAsync)                                                                                       \
+       _res_PyObject_Vectorcall_AutoAsync = PyObject_Vectorcall_AutoAsync(__VA_ARGS__);                                                                                                     \
+    else if ((typeof(_res_PyObject_Vectorcall_AutoAsync))0x2FACADE == _res_PyObject_Vectorcall_AutoAsync)                                                                                   \
+    {                                                                                                                                                                                       \
+        PyObject_Vectorcall_AutoAsync(__VA_ARGS__);                                                                                                                                         \
+        _res_PyObject_Vectorcall_AutoAsync = (typeof (_res_PyObject_Vectorcall_AutoAsync))18;                                                                                               \
+    }                                                                                                                                                                                       \
+    _res_PyObject_Vectorcall_AutoAsync;                                                                                                                                                     \
+})
+#define PyObject_Vectorcall_NoAsync(...) \
+({                                                                                                                                                                                    \
+    __auto_type _res_PyObject_Vectorcall_NoAsync = 0 ? PyObject_Vectorcall_NoAsync(__VA_ARGS__) : 0;                                                                                  \
+                                                                                                                                                                                      \
+    _res_PyObject_Vectorcall_NoAsync = (typeof (_res_PyObject_Vectorcall_NoAsync))APSW_FaultInjectControl("PyObject_Vectorcall_NoAsync", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                      \
+    if ((typeof (_res_PyObject_Vectorcall_NoAsync))0x1FACADE == _res_PyObject_Vectorcall_NoAsync)                                                                                     \
+       _res_PyObject_Vectorcall_NoAsync = PyObject_Vectorcall_NoAsync(__VA_ARGS__);                                                                                                   \
+    else if ((typeof(_res_PyObject_Vectorcall_NoAsync))0x2FACADE == _res_PyObject_Vectorcall_NoAsync)                                                                                 \
+    {                                                                                                                                                                                 \
+        PyObject_Vectorcall_NoAsync(__VA_ARGS__);                                                                                                                                     \
+        _res_PyObject_Vectorcall_NoAsync = (typeof (_res_PyObject_Vectorcall_NoAsync))18;                                                                                             \
+    }                                                                                                                                                                                 \
+    _res_PyObject_Vectorcall_NoAsync;                                                                                                                                                 \
 })
 #define PySequence_Fast(...) \
 ({                                                                                                                                                \
