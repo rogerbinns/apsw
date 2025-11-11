@@ -1,7 +1,7 @@
 import sys
 
 from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
-from collections.abc import Mapping, Buffer
+from collections.abc import Mapping, Buffer, Awaitable
 import array
 import types
 
@@ -178,3 +178,24 @@ JSONBTypes = (
 """Used by :func:`apsw.jsonb_encode`. Mapping (dict) keys must be str
 in JSONB.  Like the builtin JSON module, None/int/float/bool keys will be
 stringized."""
+
+class AsyncConnectionController(Protocol):
+    """Manages a worker thread and marshalling async requests to it
+
+    See :mod:`apsw.aio` for some implementations.
+    """
+
+    def send(self, call: Callable[[], Any]) -> Awaitable[Any]:
+        """Called from outside the worker thread to send to worker thread
+
+        The controller must send ``call`` to the worker thread where it should be
+        called without parameters :code:`call()` with the returned Awaitable
+        tracking the call result.
+        """
+        ...
+
+    def close(self):
+        """Called after the connection has closed
+
+        This allows shutting down the worker thread and similar housekeeping"""
+        ...
