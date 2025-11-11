@@ -13,11 +13,15 @@
 
 #define VLA_PYO(name, size) VLA(name, size, PyObject *)
 
+/* if async is in use then we should only acquire the mutex in the worker thread */
+#define ASYNC_CHECK(CONN) assert(!(CONN)->async_controller || PyThread_tss_get((CONN)->async_tss_key))
+
 /* use this most of the time where an exception is raised if we can't get the db mutex */
-#define DBMUTEX_ENSURE(mutex)                                                                                          \
+#define DBMUTEX_ENSURE(CONN)                                                                                           \
   do                                                                                                                   \
   {                                                                                                                    \
-    if (sqlite3_mutex_try(mutex) != SQLITE_OK)                                                                         \
+    ASYNC_CHECK(CONN);                                                                                                 \
+    if (sqlite3_mutex_try((CONN)->dbmutex) != SQLITE_OK)                                                               \
     {                                                                                                                  \
       make_thread_exception(NULL);                                                                                     \
       return NULL;                                                                                                     \

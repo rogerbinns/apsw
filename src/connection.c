@@ -89,6 +89,11 @@ struct Connection
   sqlite3_mutex *dbmutex;           /* what we lock */
   struct StatementCache *stmtcache; /* prepared statement cache */
 
+  /* set if we are operating in async mode */
+  PyObject *async_controller;
+  /* how we tell if in the worker thread or not */
+  Py_tss_t *async_tss_key;
+
   fts5_api *fts5_api_cached;
 
   PyObject *dependents; /* tracking cursors & blobs etc as weakrefs belonging to this connection */
@@ -506,7 +511,7 @@ Connection_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_EPILOG(NULL, Connection_close_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   if (Connection_close_internal(self, force))
   {
     assert(PyErr_Occurred());
@@ -762,7 +767,7 @@ Connection_blob_open(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
     ARG_EPILOG(NULL, Connection_blob_open_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_blob_open(self->db, database, table, column, rowid, writeable, &blob);
 
   SET_EXC(res, self->db);
@@ -969,7 +974,7 @@ Connection_set_busy_timeout(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     ARG_MANDATORY ARG_int(milliseconds);
     ARG_EPILOG(NULL, Connection_set_busy_timeout_USAGE, );
   }
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_busy_timeout(self->db, milliseconds);
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
@@ -1050,7 +1055,7 @@ Connection_db_names(PyObject *self_, PyObject *Py_UNUSED(unused))
 
   CHECK_CLOSED(self, NULL);
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = PyList_New(0);
   if (!res)
     goto error;
@@ -1119,7 +1124,7 @@ Connection_set_last_insert_rowid(PyObject *self_, PyObject *const *fast_args, Py
     ARG_EPILOG(NULL, Connection_set_last_insert_rowid_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   sqlite3_set_last_insert_rowid(self->db, rowid);
   sqlite3_mutex_leave(self->dbmutex);
 
@@ -1258,7 +1263,7 @@ Connection_set_update_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize
     ARG_EPILOG(NULL, Connection_set_update_hook_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   if (!callable)
     sqlite3_update_hook(self->db, NULL, NULL);
   else
@@ -1335,7 +1340,7 @@ Connection_set_rollback_hook(PyObject *self_, PyObject *const *fast_args, Py_ssi
     ARG_EPILOG(NULL, Connection_set_rollback_hook_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
 
   unsigned before_hooks = generic_hooks_active(self->rollback_hooks, self->rollback_hooks_count);
 
@@ -1530,7 +1535,7 @@ Connection_update_trace_v2(Connection *self)
 
   int res;
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_trace_v2(self->db, mask, mask ? tracehook_cb : NULL, self);
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
@@ -1824,7 +1829,7 @@ Connection_set_commit_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize
     ARG_EPILOG(NULL, Connection_set_commit_hook_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
 
   unsigned before_hooks = generic_hooks_active(self->commit_hooks, self->commit_hooks_count);
 
@@ -1939,7 +1944,7 @@ Connection_set_wal_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Connection_set_wal_hook_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   if (!callable)
     sqlite3_wal_hook(self->db, NULL, NULL);
   else
@@ -2121,7 +2126,7 @@ Connection_set_progress_handler(PyObject *self_, PyObject *const *fast_args, Py_
     }
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   if (active)
     sqlite3_progress_handler(self->db, min_steps, progresshandlercb, self);
   else
@@ -2205,7 +2210,7 @@ Connection_internal_set_authorizer(Connection *self, PyObject *callable)
 
   assert(!Py_IsNone(callable));
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_set_authorizer(self->db, callable ? authorizercb : NULL, callable ? self : NULL);
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
@@ -2340,7 +2345,7 @@ Connection_autovacuum_pages(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     ARG_EPILOG(NULL, Connection_autovacuum_pages_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   if (!callable)
   {
     res = sqlite3_autovacuum_pages(self->db, NULL, NULL, NULL);
@@ -2424,7 +2429,7 @@ Connection_collation_needed(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     ARG_EPILOG(NULL, Connection_collation_needed_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   if (callable)
     res = sqlite3_collation_needed(self->db, self, collationneeded_cb);
   else
@@ -2520,7 +2525,7 @@ Connection_set_busy_handler(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     ARG_EPILOG(NULL, Connection_set_busy_handler_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
 
   if (callable)
     res = sqlite3_busy_handler(self->db, busyhandlercb, self);
@@ -2585,7 +2590,7 @@ Connection_serialize(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
   case so this code can't do anything about errors.  See commit
   history for prior attempt */
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   serialization = sqlite3_serialize(self->db, name, &size, 0);
   sqlite3_mutex_leave(self->dbmutex);
 
@@ -2657,7 +2662,7 @@ Connection_deserialize(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     PyErr_NoMemory();
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   if (res == SQLITE_OK)
     res = sqlite3_deserialize(self->db, name, (unsigned char *)newcontents, len, len,
                               SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE);
@@ -2703,7 +2708,7 @@ Connection_enable_load_extension(PyObject *self_, PyObject *const *fast_args, Py
     ARG_EPILOG(NULL, Connection_enable_load_extension_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_enable_load_extension(self->db, enable);
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
@@ -2749,7 +2754,7 @@ Connection_load_extension(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     ARG_EPILOG(NULL, Connection_load_extension_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   Py_BEGIN_ALLOW_THREADS res = sqlite3_load_extension(self->db, filename, entrypoint, &errmsg);
   Py_END_ALLOW_THREADS;
   sqlite3_mutex_leave(self->dbmutex);
@@ -3555,7 +3560,7 @@ Connection_create_window_function(PyObject *self_, PyObject *const *fast_args, P
     cbinfo->windowfactory = Py_NewRef(factory);
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_create_window_function(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo, cbinfo ? cbw_step : NULL,
                                        cbinfo ? cbw_final : NULL, cbinfo ? cbw_value : NULL,
                                        cbinfo ? cbw_inverse : NULL, apsw_free_func);
@@ -3631,7 +3636,7 @@ Connection_create_scalar_function(PyObject *self_, PyObject *const *fast_args, P
     ARG_EPILOG(NULL, Connection_create_scalar_function_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
 
   if (!callable)
   {
@@ -3729,7 +3734,7 @@ Connection_create_aggregate_function(PyObject *self_, PyObject *const *fast_args
     ARG_EPILOG(NULL, Connection_create_aggregate_function_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
 
   if (!factory)
     cbinfo = 0;
@@ -3869,7 +3874,7 @@ Connection_create_collation(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     ARG_EPILOG(NULL, Connection_create_collation_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_create_collation_v2(self->db, name, SQLITE_UTF8, callback ? callback : NULL,
                                     callback ? collation_cb : NULL, callback ? collation_destroy : NULL);
 
@@ -3956,7 +3961,7 @@ Connection_file_control(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Connection_file_control_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_file_control(self->db, dbname, op, pointer);
 
   if (res != SQLITE_OK && res != SQLITE_NOTFOUND)
@@ -4004,7 +4009,7 @@ Connection_vfsname(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
 
   /* because it is diagnostic and we can tell from vfsname changing and
   because SQLite shell itself ignores the return code, we do the same */
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   sqlite3_file_control(self->db, dbname, SQLITE_FCNTL_VFSNAME, &vfsname);
   sqlite3_mutex_leave(self->dbmutex);
 
@@ -4065,7 +4070,7 @@ Connection_wal_autocheckpoint(PyObject *self_, PyObject *const *fast_args, Py_ss
     ARG_EPILOG(NULL, Connection_wal_autocheckpoint_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_wal_autocheckpoint(self->db, n);
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
@@ -4110,7 +4115,7 @@ Connection_wal_checkpoint(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     ARG_EPILOG(NULL, Connection_wal_checkpoint_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_wal_checkpoint_v2(self->db, dbname, mode, &nLog, &nCkpt);
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
@@ -4190,7 +4195,7 @@ Connection_create_module(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
   /* SQLite is really finnicky.  Note that it calls the destructor on
      failure  */
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_create_module_v2(self->db, name, vti ? vti->sqlite3_module_def : NULL, vti, apswvtabFree);
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
@@ -4296,7 +4301,7 @@ Connection_overload_function(PyObject *self_, PyObject *const *fast_args, Py_ssi
     ARG_EPILOG(NULL, Connection_overload_function_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_overload_function(self->db, name, nargs);
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
@@ -4511,7 +4516,7 @@ Connection_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
 
   CHECK_CLOSED(self, NULL);
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
 
   if (self->savepointlevel == 0)
   {
@@ -4593,7 +4598,7 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   }
 
   /* this protects us too */
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
 
   if (self->savepointlevel > 0)
     self->savepointlevel--;
@@ -4713,7 +4718,7 @@ Connection_config(PyObject *self_, PyObject *args)
     if (!PyArg_ParseTuple(args, "ii", &opdup, &val))
       return NULL;
 
-    DBMUTEX_ENSURE(self->dbmutex);
+    DBMUTEX_ENSURE(self);
     res = sqlite3_db_config(self->db, opdup, val, &current);
     SET_EXC(res, self->db);
     sqlite3_mutex_leave(self->dbmutex);
@@ -4762,7 +4767,7 @@ Connection_status(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_EPILOG(NULL, Connection_status_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_db_status64(self->db, op, &current, &highwater, reset);
   SET_EXC(res, NULL);
   sqlite3_mutex_leave(self->dbmutex);
@@ -4799,7 +4804,7 @@ Connection_readonly(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
     ARG_EPILOG(NULL, Connection_readonly_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_db_readonly(self->db, name);
   sqlite3_mutex_leave(self->dbmutex);
 
@@ -4834,7 +4839,7 @@ Connection_db_filename(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Connection_db_filename_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_db_filename(self->db, name);
   retval = convertutf8string(res);
   sqlite3_mutex_leave(self->dbmutex);
@@ -4866,7 +4871,7 @@ Connection_txn_state(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
     ARG_EPILOG(NULL, Connection_txn_state_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_txn_state(self->db, schema);
   sqlite3_mutex_leave(self->dbmutex);
 
@@ -5159,7 +5164,7 @@ Connection_table_exists(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Connection_table_exists_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_table_column_metadata(self->db, dbname, table_name, NULL, NULL, NULL, NULL, NULL, NULL);
   if (res != SQLITE_OK && res != SQLITE_ERROR)
     SET_EXC(res, self->db);
@@ -5214,7 +5219,7 @@ Connection_column_metadata(PyObject *self_, PyObject *const *fast_args, Py_ssize
     ARG_EPILOG(NULL, Connection_column_metadata_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_table_column_metadata(self->db, dbname, table_name, column_name, &datatype, &collseq, &notnull,
                                       &primarykey, &autoinc);
 
@@ -5240,7 +5245,7 @@ Connection_cache_flush(PyObject *self_, PyObject *Py_UNUSED(unused))
 
   CHECK_CLOSED(self, NULL);
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_db_cacheflush(self->db);
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
@@ -5265,7 +5270,7 @@ Connection_release_memory(PyObject *self_, PyObject *Py_UNUSED(unused))
 
   CHECK_CLOSED(self, NULL);
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_db_release_memory(self->db);
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
@@ -5303,7 +5308,7 @@ Connection_drop_modules(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Connection_drop_modules_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
 
   if (keep != Py_None)
   {
@@ -5428,7 +5433,7 @@ Connection_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   if (!bytes)
     return NULL;
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   res = sqlite3_file_control(self->db, schema, opcode, &fp);
   if (res != SQLITE_OK || !fp || !fp->pMethods || !fp->pMethods->xRead)
   {
@@ -5471,7 +5476,7 @@ Connection_getmainfilename(PyObject *self_, void *Py_UNUSED(unused))
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   PyObject *res = convertutf8string(sqlite3_db_filename(self->db, "main"));
   sqlite3_mutex_leave(self->dbmutex);
   return res;
@@ -5489,7 +5494,7 @@ Connection_getjournalfilename(PyObject *self_, void *Py_UNUSED(unused))
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   PyObject *res = convertutf8string(sqlite3_filename_journal(sqlite3_db_filename(self->db, "main")));
   sqlite3_mutex_leave(self->dbmutex);
   return res;
@@ -5507,7 +5512,7 @@ Connection_getwalfilename(PyObject *self_, void *Py_UNUSED(unused))
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   PyObject *res = convertutf8string(sqlite3_filename_wal(sqlite3_db_filename(self->db, "main")));
   sqlite3_mutex_leave(self->dbmutex);
   return res;
@@ -5905,7 +5910,7 @@ Connection_data_version(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
     ARG_OPTIONAL ARG_optional_str(schema);
     ARG_EPILOG(NULL, Connection_data_version_USAGE, );
   }
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   int res, data_version = -1;
   res = sqlite3_file_control(self->db, schema ? schema : "main", SQLITE_FCNTL_DATA_VERSION, &data_version);
 
@@ -5938,7 +5943,7 @@ Connection_setlk_timeout(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Connection_setlk_timeout_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   int res = sqlite3_setlk_timeout(self->db, ms, flags);
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
@@ -5996,7 +6001,7 @@ Connection_fts5_tokenizer(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     return NULL;
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
 
   /* vla can't be size zero */
   VLA(argv, argc + 1, const char *);
@@ -6098,7 +6103,7 @@ Connection_register_fts5_tokenizer(PyObject *self_, PyObject *const *fast_args, 
     ARG_EPILOG(NULL, Connection_register_fts5_tokenizer_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   fts5_api *api = Connection_fts5_api(self);
   sqlite3_mutex_leave(self->dbmutex);
   if (!api)
@@ -6151,7 +6156,7 @@ Connection_fts5_tokenizer_available(PyObject *self_, PyObject *const *fast_args,
     ARG_EPILOG(NULL, Connection_fts5_tokenizer_available_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   fts5_api *api = Connection_fts5_api(self);
 
   if (api)
@@ -6197,7 +6202,7 @@ Connection_register_fts5_function(PyObject *self_, PyObject *const *fast_args, P
     ARG_EPILOG(NULL, Connection_register_fts5_function_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
   fts5_api *api = Connection_fts5_api(self);
 
   if (api)
@@ -6287,7 +6292,7 @@ Connection_preupdate_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     ARG_EPILOG(NULL, Connection_preupdate_hook_USAGE, );
   }
 
-  DBMUTEX_ENSURE(self->dbmutex);
+  DBMUTEX_ENSURE(self);
 
   unsigned before_hooks = generic_hooks_active(self->preupdate_hooks, self->preupdate_hooks_count);
 
@@ -6421,7 +6426,7 @@ Connection_tp_str(PyObject *self_)
   Connection *self = (Connection *)self_;
   if (self->dbmutex)
   {
-    DBMUTEX_ENSURE(self->dbmutex);
+    DBMUTEX_ENSURE(self);
     PyObject *res
         = PyUnicode_FromFormat("<apsw.Connection object \"%s\" at %p>", sqlite3_db_filename(self->db, "main"), self);
     sqlite3_mutex_leave(self->dbmutex);

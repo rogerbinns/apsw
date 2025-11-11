@@ -408,7 +408,7 @@ APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
   if (self->description_cache[fmtnum])
     return Py_NewRef(self->description_cache[fmtnum]);
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  DBMUTEX_ENSURE(self->connection);
 
   ncols = self->statement->vdbestatement ? sqlite3_column_count(self->statement->vdbestatement) : 0;
   result = PyTuple_New(ncols);
@@ -1386,7 +1386,7 @@ APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_OPTIONAL ARG_bool(force);
     ARG_EPILOG(NULL, Cursor_close_USAGE, );
   }
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  DBMUTEX_ENSURE(self->connection);
   /* Manual IN_QUERY_CHECK to give better error message */
   if (self->in_query)
   {
@@ -1975,7 +1975,7 @@ APSWCursor_expanded_sql(PyObject *self_, void *Py_UNUSED(unused))
   if (!self->statement)
     Py_RETURN_NONE;
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  DBMUTEX_ENSURE(self->connection);
   es = sqlite3_expanded_sql(self->statement->vdbestatement);
   if (es)
   {
@@ -2007,7 +2007,7 @@ APSWCursor_sql(PyObject *self_, void *Py_UNUSED(unused))
   if (!self->statement)
     Py_RETURN_NONE;
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  DBMUTEX_ENSURE(self->connection);
   res = convertutf8string(sqlite3_sql(self->statement->vdbestatement));
   sqlite3_mutex_leave(self->connection->dbmutex);
 
@@ -2053,7 +2053,7 @@ APSWCursor_get(PyObject *self_, void *Py_UNUSED(unused))
   if (self->status == C_DONE)
     Py_RETURN_NONE;
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  DBMUTEX_ENSURE(self->connection);
   self->in_query = 1;
 
   do

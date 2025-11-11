@@ -279,7 +279,7 @@ APSWBlob_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
   if (!buffy)
     return NULL;
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  DBMUTEX_ENSURE(self->connection);
   thebuffer = PyBytes_AS_STRING(buffy);
   res = sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset);
   SET_EXC(res, self->connection->db);
@@ -371,7 +371,7 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     goto errorexit;
   }
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  DBMUTEX_ENSURE(self->connection);
   res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset);
 
   MakeExistingException(); /* vfs errors could cause this */
@@ -507,7 +507,7 @@ APSWBlob_write(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
     goto finally;
   }
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  DBMUTEX_ENSURE(self->connection);
   res = sqlite3_blob_write(self->pBlob, data_buffer.buf, data_buffer.len, self->curoffset);
   SET_EXC(res, self->connection->db);
   sqlite3_mutex_leave(self->connection->dbmutex);
@@ -563,7 +563,7 @@ APSWBlob_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
     ARG_EPILOG(NULL, Blob_close_USAGE, );
   }
   if (self->connection)
-    DBMUTEX_ENSURE(self->connection->dbmutex);
+    DBMUTEX_ENSURE(self->connection);
   setexc = APSWBlob_close_internal(self, !!force);
 
   if (setexc)
@@ -613,7 +613,7 @@ APSWBlob_exit(PyObject *self_, PyObject *Py_UNUSED(args))
   CHECK_BLOB_CLOSED;
 
   if (self->connection)
-    DBMUTEX_ENSURE(self->connection->dbmutex);
+    DBMUTEX_ENSURE(self->connection);
   setexc = APSWBlob_close_internal(self, 0);
   if (setexc)
     return NULL;
@@ -647,7 +647,7 @@ APSWBlob_reopen(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   /* no matter what happens we always reset current offset */
   self->curoffset = 0;
 
-  DBMUTEX_ENSURE(self->connection->dbmutex);
+  DBMUTEX_ENSURE(self->connection);
   res = sqlite3_blob_reopen(self->pBlob, rowid);
 
   MakeExistingException(); /* a vfs error could cause this */
