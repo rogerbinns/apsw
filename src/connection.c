@@ -92,7 +92,7 @@ struct Connection
   /* set if we are operating in async mode */
   PyObject *async_controller;
   /* how we tell if in the worker thread or not */
-  Py_tss_t *async_tss_key;
+  Py_tss_t async_tss_key;
 
   fts5_api *fts5_api_cached;
 
@@ -270,6 +270,9 @@ generic_hooks_update(struct generichook_entry **hooks, unsigned *hooks_count, Py
 static void
 Connection_internal_cleanup(Connection *self)
 {
+  if(self->async_controller)
+      PyThread_tss_delete(&self->async_tss_key);
+  Py_CLEAR(self->async_controller);
   Py_CLEAR(self->cursor_factory);
   Py_CLEAR(self->busyhandler);
   Py_CLEAR(self->updatehook);
@@ -6380,6 +6383,7 @@ static int
 Connection_tp_traverse(PyObject *self_, visitproc visit, void *arg)
 {
   Connection *self = (Connection *)self_;
+  Py_VISIT(self->async_controller);
   Py_VISIT(self->busyhandler);
   Py_VISIT(self->updatehook);
   Py_VISIT(self->walhook);
