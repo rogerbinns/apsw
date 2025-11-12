@@ -100,7 +100,7 @@ class AsyncIO:
         if not future.done():
             future.set_exception(exc)
 
-    def __init__(self):
+    def __init__(self, *, thread_name: str = "asyncio apsw background worker"):
         # we don't top level import because it is expensive, and trio/anyio etc could
         # be in use instead.  we only need two methods
         import asyncio
@@ -110,9 +110,7 @@ class AsyncIO:
 
         self.queue = queue.SimpleQueue()
 
-        threading.Thread(
-            name="asyncio apsw background worker", target=self.worker_thread_run, args=(self.queue,)
-        ).start()
+        threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
     def send(self, call):
         "enqueues async work to worker thread"
