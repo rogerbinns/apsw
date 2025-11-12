@@ -230,6 +230,9 @@ static void apsw_write_unraisable(PyObject *hookobject);
 /* Augment tracebacks */
 #include "traceback.c"
 
+/* aio/async stuff */
+#include "async.c"
+
 /* various utility functions and macros */
 #include "util.c"
 
@@ -2008,7 +2011,7 @@ PyInit_apsw(void)
       || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0
       || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_type) < 0
       || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0
-      || PyType_Ready(&PyObjectBindType) < 0
+      || PyType_Ready(&PyObjectBindType) < 0 || PyType_Ready(&BoxedCallType) < 0
 #ifdef SQLITE_ENABLE_CARRAY
       || PyType_Ready(&CArrayBindType) < 0
 #endif

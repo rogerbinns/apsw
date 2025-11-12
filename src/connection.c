@@ -726,6 +726,77 @@ finally:
   return res;
 }
 
+/** .. method:: as_async(controller: AsyncConnectionController, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100) -> Awaitable[AsyncConnection]
+  :staticmethod:
+
+  Uses the controller to start a :class:`Connection` with the parameters
+  in a background worker thread.  The resulting :class:`AsyncConnection`
+  is the same as regular :class:`Connection` but with most methods and
+  attributes and related objects configured for async operation.
+
+  See :mod:`apsw.aio` for some controller implementations and :doc:`async`
+  for more details.
+*/
+static PyObject *
+Connection_as_async(PyObject *klass_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  PyTypeObject *klass = (PyTypeObject *)klass_;
+
+  PyObject *controller = NULL;
+  const char *filename;
+  int flags =SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+  const char *vfs = 0;
+  int statementcachesize = 100;
+
+  {
+    Connection_as_async_CHECK;
+    ARG_PROLOG(5, Connection_as_async_KWNAMES);
+    ARG_MANDATORY ARG_pyobject(controller);
+    ARG_MANDATORY ARG_str(filename);
+    ARG_OPTIONAL ARG_int(flags);
+    ARG_OPTIONAL ARG_optional_str(vfs);
+    ARG_OPTIONAL ARG_int(statementcachesize);
+    ARG_EPILOG(NULL, Connection_as_async_USAGE, );
+  }
+
+  /* we do the memory allocation (new) of the Connection here, but
+    send the __init__ to be run in the worker thread via the controller */
+
+  PyObject *args = NULL;
+  BoxedCall *boxed_call = make_boxed_call(0);
+  if(!boxed_call)
+    goto error;
+
+  args = Py_BuildValue("sis", filename, flags, vfs);
+  if(!args)
+    goto error;
+
+  Connection *connection = (Connection *)klass->tp_new(klass, NULL, NULL);
+  connection->async_tss_key = (Py_tss_t)Py_tss_NEEDS_INIT;
+  if (0!=PyThread_tss_create(&connection->async_tss_key))
+    goto error;
+  connection->async_controller = Py_NewRef(controller);
+
+  boxed_call->ConnectionInit.connection = (PyObject*)connection;
+  boxed_call->ConnectionInit.args = args;
+  boxed_call->call_type = ConnectionInit;
+
+  PyObject *vargs[] = { NULL, controller };
+  PyObject *result = PyObject_VectorcallMethod_NoAsync(apst.send, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+
+  if(!result)
+    async_shutdown_controller(controller);
+  else
+    return result;
+
+      error : assert(PyErr_Occurred());
+  Py_XDECREF((PyObject *)connection);
+  Py_XDECREF(args);
+  Py_XDECREF(boxed_call);
+
+  return NULL;
+  }
+
 /** .. method:: blob_open(database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob
 
    Opens a blob for :ref:`incremental I/O <blobio>`.
@@ -6447,6 +6518,7 @@ static PyMemberDef Connection_members[] = {
 };
 
 static PyMethodDef Connection_methods[] = {
+  { "as_async", (PyCFunction)Connection_as_async,  METH_CLASS | METH_FASTCALL | METH_KEYWORDS, Connection_as_async_DOC },
   { "cursor", (PyCFunction)Connection_cursor, METH_NOARGS, Connection_cursor_DOC },
   { "close", (PyCFunction)Connection_close, METH_FASTCALL | METH_KEYWORDS, Connection_close_DOC },
   { "set_busy_timeout", (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
