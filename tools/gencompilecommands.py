@@ -34,10 +34,17 @@ def generate(options):
     )
 
     out = []
-    for f in ("src/unicode.c", "src/apsw.c"):
-        out.append({"directory": os.getcwd(), "file": f, "arguments": cmd + ["-c", f]})
+    for f in glob.glob("src/*.c"):
+        match f:
+            case "src/unicode.c" | "src/_unicodedb.c":
+                comp_file = "src/unicode.c"
+            case _:
+                comp_file = "src/apsw.c"
 
-    print(json.dumps(out, indent=2))
+        out.append({"directory": os.getcwd(), "file": f, "arguments": cmd + ["-c", comp_file]})
+
+
+    print(json.dumps(out, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":
