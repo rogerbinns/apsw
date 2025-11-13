@@ -270,7 +270,7 @@ generic_hooks_update(struct generichook_entry **hooks, unsigned *hooks_count, Py
 static void
 Connection_internal_cleanup(Connection *self)
 {
-  if(self->async_controller)
+  if (self->async_controller)
   {
     async_shutdown_controller(self->async_controller);
     Py_CLEAR(self->async_controller);
@@ -756,7 +756,7 @@ Connection_as_async(PyObject *klass_, PyObject *const *fast_args, Py_ssize_t fas
 
   PyObject *controller = NULL;
   const char *filename;
-  int flags =SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+  int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
   const char *vfs = 0;
   int statementcachesize = 100;
 
@@ -773,26 +773,28 @@ Connection_as_async(PyObject *klass_, PyObject *const *fast_args, Py_ssize_t fas
 
   /* we do the memory allocation (new) of the Connection here, but
     send the __init__ to be run in the worker thread via the controller */
+  Connection *connection = NULL;
 
   PyObject *args = NULL;
   BoxedCall *boxed_call = make_boxed_call(0);
-  if(!boxed_call)
+  if (!boxed_call)
     goto error;
 
   args = Py_BuildValue("sis", filename, flags, vfs);
-  if(!args)
+  if (!args)
     goto error;
 
-  Connection *connection = (Connection *)klass->tp_new(klass, NULL, NULL);
+  connection = (Connection *)klass->tp_new(klass, NULL, NULL);
   connection->async_tss_key = (Py_tss_t)Py_tss_NEEDS_INIT;
-  if (0!=PyThread_tss_create(&connection->async_tss_key))
+  if (0 != PyThread_tss_create(&connection->async_tss_key))
     goto error;
   connection->async_controller = Py_NewRef(controller);
 
-  boxed_call->ConnectionInit.connection = (PyObject*)connection;
-  connection = NULL;
-  boxed_call->ConnectionInit.args = args;
   boxed_call->call_type = ConnectionInit;
+  boxed_call->ConnectionInit.connection = (PyObject *)connection;
+  boxed_call->ConnectionInit.args = args;
+  // now owned by boxed_call
+  connection = NULL;
 
   PyObject *vargs[] = { NULL, controller, (PyObject *)boxed_call };
   PyObject *result = PyObject_VectorcallMethod_NoAsync(apst.send, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -809,7 +811,7 @@ error:
   Py_XDECREF(boxed_call);
 
   return NULL;
-  }
+}
 
 /** .. method:: blob_open(database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob
 
@@ -3724,7 +3726,7 @@ Connection_create_scalar_function(PyObject *self_, PyObject *const *fast_args, P
     ARG_EPILOG(NULL, Connection_create_scalar_function_USAGE, );
   }
 
-  ASYNC_OBJECT_METHOD(self, self_, create_scalar_function);
+  ASYNC_FASTCALL(self, Connection_create_scalar_function);
 
   DBMUTEX_ENSURE(self);
 
@@ -6536,7 +6538,7 @@ static PyMemberDef Connection_members[] = {
 };
 
 static PyMethodDef Connection_methods[] = {
-  { "as_async", (PyCFunction)Connection_as_async,  METH_CLASS | METH_FASTCALL | METH_KEYWORDS, Connection_as_async_DOC },
+  { "as_async", (PyCFunction)Connection_as_async, METH_CLASS | METH_FASTCALL | METH_KEYWORDS, Connection_as_async_DOC },
   { "cursor", (PyCFunction)Connection_cursor, METH_NOARGS, Connection_cursor_DOC },
   { "close", (PyCFunction)Connection_close, METH_FASTCALL | METH_KEYWORDS, Connection_close_DOC },
   { "set_busy_timeout", (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
@@ -6714,6 +6716,16 @@ static PyTypeObject ConnectionType = {
   .tp_new = PyType_GenericNew,
   .tp_str = Connection_tp_str,
 };
+
+static PyObject *
+async_get_controller_from_connection(PyObject *connection_)
+{
+  /* won't work for subclasses but PyObject isinstance can raise exceptions */
+  assert(Py_TYPE(connection_) == &ConnectionType);
+  Connection *connection = (Connection *)connection_;
+  assert(connection->async_controller);
+  return connection->async_controller;
+}
 
 #ifdef SQLITE_ENABLE_PREUPDATE_HOOK
 

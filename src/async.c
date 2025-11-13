@@ -1,4 +1,9 @@
 
+/* some forward declarations we can't have here because they don't know the
+   contents of struct Connection */
+static PyObject *async_get_controller_from_connection(PyObject *connection);
+static int Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs);
+
 /* used for getting call details im a non-worker thread that can be invoked in the worker thread */
 typedef struct
 {
@@ -9,8 +14,7 @@ typedef struct
   {
     Dormant = 0,
     ConnectionInit,
-    GetAttr,
-    VectorCall,
+    FastCallWithKeywords,
   } call_type;
 
   union
@@ -21,22 +25,18 @@ typedef struct
       PyObject *args;
     } ConnectionInit;
 
+    /* note this must be the largest member of the union because
+       we allocate more after fast_args*/
     struct
     {
+      PyCFunctionFastWithKeywords function;
       PyObject *object;
-      PyObject *name;
-    } GetAttr;
-
-    struct
-    {
-      PyObject *object;
-      PyObject *method_name;
       PyObject *fast_kwnames;
       Py_ssize_t fast_nargs; /* length of args ignoring first entry */
       /* entry 1 is not used so we can PY_VECTORCALL_ARGUMENTS_OFFSET
          and is followed by fast_nargs additional pointers */
       PyObject *fast_args[1];
-    } VectorCall;
+    } FastCallWithKeywords;
   };
 } BoxedCall;
 
@@ -55,12 +55,11 @@ BoxedCall_clear(PyObject *self_)
     Py_DECREF(self->ConnectionInit.args);
     break;
 
-  case VectorCall:
-    Py_DECREF(self->VectorCall.object);
-    Py_DECREF(self->VectorCall.method_name);
-    Py_XDECREF(self->VectorCall.fast_kwnames);
-    for (Py_ssize_t i = 0; i < self->VectorCall.fast_nargs; i++)
-      Py_DECREF(self->VectorCall.fast_args[1 + i]);
+  case FastCallWithKeywords:
+    Py_DECREF(self->FastCallWithKeywords.object);
+    Py_XDECREF(self->FastCallWithKeywords.fast_kwnames);
+    for (Py_ssize_t i = 0; i < self->FastCallWithKeywords.fast_nargs; i++)
+      Py_DECREF(self->FastCallWithKeywords.fast_args[1 + i]);
     break;
 
   default:
@@ -84,22 +83,21 @@ BoxedCall_call(PyObject *self_, PyObject *args, PyObject *kwargs)
 
   if (kwargs || (args && PyTuple_GET_SIZE(args)) || self->call_type == Dormant)
   {
-    PyErr_Format(PyExc_RuntimeError, "calls take no parameters and can only be called once");
+    PyErr_Format(PyExc_RuntimeError, "BoxedCall takes no parameters and can only be called once");
     goto finally;
   }
 
   switch (self->call_type)
   {
   case ConnectionInit:
-    if (0
-        == Py_TYPE(self->ConnectionInit.connection)
-               ->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, NULL))
+    if(0==Connection_init(self->ConnectionInit.connection, self->ConnectionInit.args, NULL))
       result = Py_NewRef(self->ConnectionInit.connection);
     break;
-  case VectorCall:
-    result = PyObject_VectorcallMethod_NoAsync(self->VectorCall.method_name, self->VectorCall.fast_args + 1,
-                                               self->VectorCall.fast_nargs | PY_VECTORCALL_ARGUMENTS_OFFSET,
-                                               self->VectorCall.fast_kwnames);
+  case FastCallWithKeywords:
+    result = self->FastCallWithKeywords.function(self->FastCallWithKeywords.object,
+                                                 self->FastCallWithKeywords.fast_args + 1,
+                                                 self->FastCallWithKeywords.fast_nargs | PY_VECTORCALL_ARGUMENTS_OFFSET,
+                                                 self->FastCallWithKeywords.fast_kwnames);
     break;
   default:
     assert(0);
@@ -127,13 +125,17 @@ make_boxed_call(Py_ssize_t fast_nargs)
   BoxedCall *box = (BoxedCall *)_PyObject_NewVar(&BoxedCallType, fast_nargs);
   if (box)
     box->call_type = Dormant;
+
+  /* verify union member size constraints */
+  assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->ConnectionInit));
+
   return box;
 }
 
 static void
 async_shutdown_controller(PyObject *controller)
 {
-  /* exceptions are always done as unraiseable */
+  /* exceptions are always done as unraisable */
   if (controller)
   {
     PY_ERR_FETCH(saved_err);
@@ -150,34 +152,24 @@ async_shutdown_controller(PyObject *controller)
 }
 
 static PyObject *
-do_async_get_attr(PyObject *controller, PyObject *object, PyObject *attr_name)
-{
-  BoxedCall *boxed_call = make_boxed_call(0);
-  if (!boxed_call)
-    return NULL;
-  // ::TODO:: the rest of this
-  assert(0);
-  return NULL;
-}
-
-static PyObject *
-do_async_vector_method_call(PyObject *controller, PyObject *object, PyObject *method_name, PyObject *const *fast_args,
-                            Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+do_async_fastcall(PyObject *connection, PyCFunctionFastWithKeywords function, PyObject *object,
+                  PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   Py_ssize_t actual_nargs = PyVectorcall_NARGS(fast_nargs);
   BoxedCall *boxed_call = make_boxed_call(actual_nargs);
   if (!boxed_call)
     return NULL;
 
-  boxed_call->call_type = VectorCall;
-  boxed_call->VectorCall.object = Py_NewRef(object);
-  boxed_call->VectorCall.method_name = Py_NewRef(method_name);
-  boxed_call->VectorCall.fast_kwnames = Py_XNewRef(fast_kwnames);
-  memcpy(boxed_call->VectorCall.fast_args + 1, fast_args, sizeof(PyObject *) * actual_nargs);
+  boxed_call->call_type = FastCallWithKeywords;
+  boxed_call->FastCallWithKeywords.function = function;
+  boxed_call->FastCallWithKeywords.object = Py_NewRef(object);
+  boxed_call->FastCallWithKeywords.fast_kwnames = Py_XNewRef(fast_kwnames);
+  boxed_call->FastCallWithKeywords.fast_nargs = actual_nargs;
+  memcpy(boxed_call->FastCallWithKeywords.fast_args + 1, fast_args, sizeof(PyObject *) * actual_nargs);
   for (size_t i = 0; i < actual_nargs; i++)
-    Py_INCREF(boxed_call->VectorCall.fast_args[1 + i]);
+    Py_INCREF(boxed_call->FastCallWithKeywords.fast_args[1 + i]);
 
-  PyObject *vargs[] = { NULL, controller, (PyObject *)boxed_call };
+  PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), (PyObject *)boxed_call };
   PyObject *result = PyObject_VectorcallMethod_NoAsync(apst.send, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_DECREF(boxed_call);
 
@@ -187,17 +179,9 @@ do_async_vector_method_call(PyObject *controller, PyObject *object, PyObject *me
 /* all threads are workers in sync mode, else check tss key */
 #define IN_WORKER_THREAD(CONN) (!(CONN)->async_controller || PyThread_tss_get((&(CONN)->async_tss_key)))
 
-#define ASYNC_GET_ATTR(CONN, object, name)                                                                             \
+#define ASYNC_FASTCALL(CONN, FUNCTION)                                                                                 \
   do                                                                                                                   \
   {                                                                                                                    \
     if (!IN_WORKER_THREAD(CONN))                                                                                       \
-      return make_async_get_attr((CONN)->async_controller, (object), apst.name);                                       \
-  } while (0)
-
-#define ASYNC_OBJECT_METHOD(CONN, OBJECT, METHOD)                                                                      \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    if (!IN_WORKER_THREAD(CONN))                                                                                       \
-      return do_async_vector_method_call((CONN)->async_controller, (OBJECT), apst.METHOD, fast_args, fast_nargs,       \
-                                         fast_kwnames);                                                                \
+      return do_async_fastcall((PyObject *)(CONN), FUNCTION, self_, fast_args, fast_nargs, fast_kwnames);              \
   } while (0)
