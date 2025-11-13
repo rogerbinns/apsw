@@ -40,43 +40,76 @@ _current_future = contextvars.ContextVar("apsw.aio._current_future")
 class AsyncIO:
     """Uses :mod:`asyncio` for async concurrency"""
 
+    def configure(self, db: apsw.Connection):
+        "Setup database, just after it is created"
+        db.set_progress_handler(self.progress_deadline_checker, 500, id=self)
+
+    def send(self, call):
+        "Enqueues call to worker thread"
+        try:
+            future = self.get_running_loop().create_future()
+            self.queue.put((future, call, deadline.get()))
+            return future
+        except AttributeError:
+            if self.queue is None:
+                raise apsw.ConnectionClosedError()
+            raise
+
+    def close(self):
+        "Called from connection destructor, so the worker thread can be stopped"
+
+        # No guarantee of what thread will call this
+
+        # How we tell the worker to exit
+        self.queue.put(None)
+
+        # queue.SimpleQueue doesn't have a shutdown method like the more
+        # complex ones so we just set it to None which send above detects
+        self.queue = None
+
+
+    # The methods above are callbacks from ASyncConnection.  The ones below
+    # are our internal workings.
+
     def progress_deadline_checker(self):
-        # ::TODO:: we have no handle on the db so can't install this
-        # protocol probably needs a set_db method done just before running
-        # connection hooks
+        "Periodic check if the deadline has passed"
         if (this_deadline := deadline.get()) is not None and time.monotonic() > this_deadline:
             raise TimeoutError()
         return False
 
+
     def worker_thread_run(self, q):
-        "Does the enqueued work processing in the worker thread"
+        "Does the enqueued call processing in the worker thread"
 
-        while (item := q.get()) is not None:
-            future, call, this_deadline = item
+        with apsw.async_run_coro.set(self.async_run_coro):
 
-            # cancelled?
-            if future.done():
-                continue
+            while (item := q.get()) is not None:
+                future, call, this_deadline = item
 
-            with (
-                apsw.async_run_coro.set(self.async_run_coro),
-                _current_future.set(future),
-                deadline.set(this_deadline),
-            ):
-                try:
-                    # should we even start?
-                    if this_deadline is not None:
-                        if time.monotonic() > this_deadline:
-                            raise TimeoutError()
+                # cancelled?
+                if future.done():
+                    continue
 
-                    future.get_loop().call_soon_threadsafe(self.set_future_result, future, call())
+                with (
+                    _current_future.set(future),
+                    deadline.set(this_deadline),
+                ):
 
-                except BaseException as exc:
-                    # BaseException is deliberately used because we
-                    # want those to be returned as garbage collection
-                    # will cause us to be terminated. CancelledError
-                    # is a notable example
-                    future.get_loop().call_soon_threadsafe(self.set_future_exception, future, exc)
+                    try:
+                        # should we even start?
+                        if this_deadline is not None:
+                            if time.monotonic() > this_deadline:
+                                raise TimeoutError()
+                        future.get_loop().call_soon_threadsafe(self.set_future_result, future, call())
+
+                    except BaseException as exc:
+                        # BaseException is deliberately used because we
+                        # want those to be returned as garbage collection
+                        # will cause us to be terminated. CancelledError
+                        # is a notable example
+                        future.get_loop().call_soon_threadsafe(self.set_future_exception, future, exc)
+
+                del future
 
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
@@ -112,19 +145,6 @@ class AsyncIO:
 
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
-    def send(self, call):
-        "enqueues async work to worker thread"
-        if not self.queue:
-            raise apsw.ConnectionClosedError()
-        future = self.get_running_loop().create_future()
-        self.queue.put((future, call, deadline.get()))
-        return future
-
-    def close(self):
-        "Called from connection destructor, so the worker thread can be stopped"
-        # no guarantee of what thread will call this
-        self.queue.put(None)
-        self.queue = None
 
 
 # some notes about trio
