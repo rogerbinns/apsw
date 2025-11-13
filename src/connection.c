@@ -271,8 +271,11 @@ static void
 Connection_internal_cleanup(Connection *self)
 {
   if(self->async_controller)
-      PyThread_tss_delete(&self->async_tss_key);
-  Py_CLEAR(self->async_controller);
+  {
+    async_shutdown_controller(self->async_controller);
+    Py_CLEAR(self->async_controller);
+    PyThread_tss_delete(&self->async_tss_key);
+  }
   Py_CLEAR(self->cursor_factory);
   Py_CLEAR(self->busyhandler);
   Py_CLEAR(self->updatehook);
@@ -528,6 +531,7 @@ static void
 Connection_dealloc(PyObject *self_)
 {
   Connection *self = (Connection *)self_;
+  Connection_internal_cleanup(self);
   PyObject_GC_UnTrack(self_);
   APSW_CLEAR_WEAKREFS;
 
@@ -593,6 +597,14 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
     ARG_EPILOG(-1, Connection_init_USAGE, Py_XDECREF(fast_kwnames));
   }
   flags |= SQLITE_OPEN_EXRESCODE;
+
+  if (self->async_controller)
+  {
+    assert(PyThread_tss_is_created(&self->async_tss_key));
+    /* default value is NULL so we set it to non-NULL in this worker thread */
+    if (0 != PyThread_tss_set(&self->async_tss_key, (void *)1))
+      return -1;
+  }
 
   self->cursor_factory = Py_NewRef((PyObject *)&APSWCursorType);
   self->tracehooks = PyMem_Malloc(sizeof(struct tracehook_entry) * 1);
@@ -778,18 +790,20 @@ Connection_as_async(PyObject *klass_, PyObject *const *fast_args, Py_ssize_t fas
   connection->async_controller = Py_NewRef(controller);
 
   boxed_call->ConnectionInit.connection = (PyObject*)connection;
+  connection = NULL;
   boxed_call->ConnectionInit.args = args;
   boxed_call->call_type = ConnectionInit;
 
-  PyObject *vargs[] = { NULL, controller };
-  PyObject *result = PyObject_VectorcallMethod_NoAsync(apst.send, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  PyObject *vargs[] = { NULL, controller, (PyObject *)boxed_call };
+  PyObject *result = PyObject_VectorcallMethod_NoAsync(apst.send, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
-  if(!result)
-    async_shutdown_controller(controller);
-  else
+  Py_CLEAR(boxed_call);
+
+  if (result)
     return result;
 
-      error : assert(PyErr_Occurred());
+error:
+  assert(PyErr_Occurred());
   Py_XDECREF((PyObject *)connection);
   Py_XDECREF(args);
   Py_XDECREF(boxed_call);
@@ -3710,6 +3724,8 @@ Connection_create_scalar_function(PyObject *self_, PyObject *const *fast_args, P
     ARG_EPILOG(NULL, Connection_create_scalar_function_USAGE, );
   }
 
+  ASYNC_OBJECT_METHOD(self, self_, create_scalar_function);
+
   DBMUTEX_ENSURE(self);
 
   if (!callable)
@@ -6499,11 +6515,13 @@ static PyObject *
 Connection_tp_str(PyObject *self_)
 {
   Connection *self = (Connection *)self_;
+
   if (self->dbmutex)
   {
     DBMUTEX_ENSURE(self);
     PyObject *res
-        = PyUnicode_FromFormat("<apsw.Connection object \"%s\" at %p>", sqlite3_db_filename(self->db, "main"), self);
+        = PyUnicode_FromFormat("<apsw.%sConnection object \"%s\" at %p>", (self->async_controller) ? "Async" : "",
+                               sqlite3_db_filename(self->db, "main"), self);
     sqlite3_mutex_leave(self->dbmutex);
     return res;
   }
