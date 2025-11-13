@@ -517,6 +517,7 @@ def do_argparse(item):
             "Optional[VTModule]",
             "Optional[SQLiteValue]",
             "Optional[Any]",
+            "AsyncConnectionController",
         }:
             type = "PyObject *"
             kind = "pyobject"

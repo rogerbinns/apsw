@@ -185,6 +185,16 @@ class AsyncConnectionController(Protocol):
     See :mod:`apsw.aio` for some implementations.
     """
 
+    def configure(self, connection: Connection):
+        """
+        Called in the worker thead once the connection is available
+
+        This is called before the :attr:`Connection.connection_hooks` are
+        run.  If you need to keep a reference to the connection then use
+        :mod:`weakref`, otherwise it won't end up garbage collected.
+        """
+        ...
+
     def send(self, call: Callable[[], Any]) -> Awaitable[Any]:
         """Called from outside the worker thread to send to worker thread
 

@@ -748,6 +748,11 @@ finally:
 
   See :mod:`apsw.aio` for some controller implementations and :doc:`async`
   for more details.
+
+  .. note::
+
+    It is recommended to call ``close`` on the connection when done
+    as that ensures the worker thread will exit.
 */
 static PyObject *
 Connection_as_async(PyObject *klass_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)

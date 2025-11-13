@@ -47,7 +47,7 @@ release UPDATE INSERT DELETE
 
 null true false
 
-async_run_coro
+async_run_coro send
 """
 
 

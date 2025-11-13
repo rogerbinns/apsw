@@ -60,6 +60,7 @@
 #undef snull
 #undef release
 #undef result
+#undef send
 #undef step
 #undef strue
 #undef value
@@ -150,6 +151,7 @@ static struct _apsw_string_table
     PyObject *snull;
     PyObject *release;
     PyObject *result;
+    PyObject *send;
     PyObject *step;
     PyObject *strue;
     PyObject *value;
@@ -241,6 +243,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.snull);
     Py_CLEAR(apst.release);
     Py_CLEAR(apst.result);
+    Py_CLEAR(apst.send);
     Py_CLEAR(apst.step);
     Py_CLEAR(apst.strue);
     Py_CLEAR(apst.value);
@@ -333,6 +336,7 @@ init_apsw_strings()
         || (!apst.snull && 0 == (apst.snull = PyUnicode_FromString("null")))
         || (!apst.release && 0 == (apst.release = PyUnicode_FromString("release")))
         || (!apst.result && 0 == (apst.result = PyUnicode_FromString("result")))
+        || (!apst.send && 0 == (apst.send = PyUnicode_FromString("send")))
         || (!apst.step && 0 == (apst.step = PyUnicode_FromString("step")))
         || (!apst.strue && 0 == (apst.strue = PyUnicode_FromString("true")))
         || (!apst.value && 0 == (apst.value = PyUnicode_FromString("value")))

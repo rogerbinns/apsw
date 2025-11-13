@@ -90,7 +90,7 @@ BoxedCall_call(PyObject *self_, PyObject *args, PyObject *kwargs)
   switch (self->call_type)
   {
   case ConnectionInit:
-    if(0==Connection_init(self->ConnectionInit.connection, self->ConnectionInit.args, NULL))
+    if (0 == Connection_init(self->ConnectionInit.connection, self->ConnectionInit.args, NULL))
       result = Py_NewRef(self->ConnectionInit.connection);
     break;
   case FastCallWithKeywords:
@@ -100,6 +100,7 @@ BoxedCall_call(PyObject *self_, PyObject *args, PyObject *kwargs)
                                                  self->FastCallWithKeywords.fast_kwnames);
     break;
   default:
+    // ::TODO:: delete this default once the code is complete
     assert(0);
   }
 
