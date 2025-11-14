@@ -532,6 +532,7 @@ cursor_mutex_get(APSWCursor *self)
      GIL is released, but we do eventually have to give up */
 
   assert(!PyErr_Occurred());
+  assert(IN_WORKER_THREAD(self->connection));
 
   int res;
   int attempt = 0;
@@ -1156,6 +1157,8 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
+  ASYNC_FASTCALL(self->connection, APSWCursor_execute);
+
   if (0 != cursor_mutex_get(self))
     return NULL;
 
@@ -1481,6 +1484,21 @@ error:
   return NULL;
 }
 
+/** .. method:: __anext__(self: Cursor) -> Any
+
+    Cursors are iterators
+*/
+static PyObject *
+APSWCursor_anext(PyObject *self_)
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
+  ASYNC_UNARY(self->connection, APSWCursor_next, self_);
+
+  return PyErr_Format(PyExc_TypeError, "You can't use the cursor as async in a non-async context");
+}
+
 /** .. method:: __iter__(self: Cursor) -> Cursor
 
     Cursors are iterators
@@ -1491,6 +1509,25 @@ APSWCursor_iter(PyObject *self_)
 {
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
+
+  // ::TODO:: if not work thread then whine connection is async
+  // and cursors must be used async too
+
+  return Py_NewRef(self_);
+}
+
+/** .. method:: __aiter__(self: Cursor) -> Cursor
+
+    Cursors are async iterators
+*/
+static PyObject *
+APSWCursor_aiter(PyObject *self_)
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
+  // ::TODO:: if in work thread then whine about
+  // not being async connection
 
   return Py_NewRef(self_);
 }
@@ -2176,6 +2213,11 @@ static PyGetSetDef APSWCursor_getset[] = {
   { NULL, NULL, NULL, NULL, NULL }
 };
 
+static PyAsyncMethods cursor_async_methods = {
+  .am_aiter = APSWCursor_aiter,
+  .am_anext = APSWCursor_anext,
+};
+
 static PyTypeObject APSWCursorType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Cursor",
   .tp_basicsize = sizeof(APSWCursor),
@@ -2191,6 +2233,7 @@ static PyTypeObject APSWCursorType = {
   .tp_init = APSWCursor_init,
   .tp_new = PyType_GenericNew,
   .tp_str = APSWCursor_tp_str,
+  .tp_as_async = &cursor_async_methods,
 };
 
 static int

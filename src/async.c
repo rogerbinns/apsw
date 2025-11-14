@@ -15,6 +15,7 @@ typedef struct
     Dormant = 0,
     ConnectionInit,
     FastCallWithKeywords,
+    Unary,
   } call_type;
 
   union
@@ -37,6 +38,12 @@ typedef struct
          and is followed by fast_nargs additional pointers */
       PyObject *fast_args[1];
     } FastCallWithKeywords;
+
+    struct
+    {
+      unaryfunc function;
+      PyObject *arg;
+    } Unary;
   };
 } BoxedCall;
 
@@ -60,6 +67,10 @@ BoxedCall_clear(PyObject *self_)
     Py_XDECREF(self->FastCallWithKeywords.fast_kwnames);
     for (Py_ssize_t i = 0; i < self->FastCallWithKeywords.fast_nargs; i++)
       Py_DECREF(self->FastCallWithKeywords.fast_args[1 + i]);
+    break;
+
+  case Unary:
+    Py_DECREF(self->Unary.arg);
     break;
 
   default:
@@ -98,6 +109,9 @@ BoxedCall_call(PyObject *self_, PyObject *args, PyObject *kwargs)
                                                  self->FastCallWithKeywords.fast_args + 1,
                                                  self->FastCallWithKeywords.fast_nargs | PY_VECTORCALL_ARGUMENTS_OFFSET,
                                                  self->FastCallWithKeywords.fast_kwnames);
+    break;
+  case Unary:
+    result = self->Unary.function(self->Unary.arg);
     break;
   default:
     // ::TODO:: delete this default once the code is complete
@@ -152,6 +166,22 @@ async_shutdown_controller(PyObject *controller)
   }
 }
 
+/* Note this steals the ref from boxed_call */
+static PyObject *
+async_send_boxed_call(PyObject *connection, BoxedCall *boxed_call)
+{
+  /*
+    in a debug mode we can set the thread local, call boxed_call, unset the
+    thread call
+  */
+
+  PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), (PyObject *)boxed_call };
+  PyObject *result = PyObject_VectorcallMethod_NoAsync(apst.send, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  Py_DECREF(boxed_call);
+
+  return result;
+}
+
 static PyObject *
 do_async_fastcall(PyObject *connection, PyCFunctionFastWithKeywords function, PyObject *object,
                   PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -170,11 +200,21 @@ do_async_fastcall(PyObject *connection, PyCFunctionFastWithKeywords function, Py
   for (size_t i = 0; i < actual_nargs; i++)
     Py_INCREF(boxed_call->FastCallWithKeywords.fast_args[1 + i]);
 
-  PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), (PyObject *)boxed_call };
-  PyObject *result = PyObject_VectorcallMethod_NoAsync(apst.send, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-  Py_DECREF(boxed_call);
+  return async_send_boxed_call(connection, boxed_call);
+}
 
-  return result;
+static PyObject *
+do_async_unary(PyObject *connection, unaryfunc function, PyObject *arg)
+{
+  BoxedCall *boxed_call = make_boxed_call(0);
+  if (!boxed_call)
+    return NULL;
+
+  boxed_call->call_type = Unary;
+  boxed_call->Unary.function = function;
+  boxed_call->Unary.arg = Py_NewRef(arg);
+
+  return async_send_boxed_call(connection, boxed_call);
 }
 
 /* all threads are workers in sync mode, else check tss key */
@@ -185,4 +225,11 @@ do_async_fastcall(PyObject *connection, PyCFunctionFastWithKeywords function, Py
   {                                                                                                                    \
     if (!IN_WORKER_THREAD(CONN))                                                                                       \
       return do_async_fastcall((PyObject *)(CONN), FUNCTION, self_, fast_args, fast_nargs, fast_kwnames);              \
+  } while (0)
+
+#define ASYNC_UNARY(CONN, FUNCTION, ARG)                                                                               \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!IN_WORKER_THREAD(CONN))                                                                                       \
+      return do_async_unary((PyObject *)(CONN), FUNCTION, (ARG));                                                      \
   } while (0)

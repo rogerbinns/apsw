@@ -517,6 +517,8 @@ Connection_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_EPILOG(NULL, Connection_close_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_close);
+
   DBMUTEX_ENSURE(self);
   if (Connection_close_internal(self, force))
   {
@@ -798,13 +800,10 @@ Connection_as_async(PyObject *klass_, PyObject *const *fast_args, Py_ssize_t fas
   boxed_call->call_type = ConnectionInit;
   boxed_call->ConnectionInit.connection = (PyObject *)connection;
   boxed_call->ConnectionInit.args = args;
-  // now owned by boxed_call
+
+  PyObject *result = async_send_boxed_call((PyObject *)connection, boxed_call);
   connection = NULL;
-
-  PyObject *vargs[] = { NULL, controller, (PyObject *)boxed_call };
-  PyObject *result = PyObject_VectorcallMethod_NoAsync(apst.send, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-
-  Py_CLEAR(boxed_call);
+  boxed_call = NULL;
 
   if (result)
     return result;
