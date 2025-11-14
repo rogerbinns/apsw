@@ -77,6 +77,9 @@ struct APSWCursor
   PyObject *exectrace;
   PyObject *rowtrace;
 
+  /* async */
+  PyObject *pending_boxed_call;
+
   /* weak reference support */
   PyObject *weakreflist;
 
@@ -230,6 +233,8 @@ APSWCursor_close_internal(APSWCursor *self, int force)
     assert(!PyErr_Occurred());
   }
 
+  Py_CLEAR(self->pending_boxed_call);
+
   /* Remove from connection dependents list.  Has to be done before we decref self->connection
      otherwise connection could dealloc and we'd still be in list */
   if (self->connection)
@@ -313,6 +318,7 @@ APSWCursor_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->convert_binding);
   Py_VISIT(self->convert_jsonb);
+  Py_VISIT(self->pending_boxed_call);
   return 0;
 }
 
@@ -1157,7 +1163,18 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
-  ASYNC_FASTCALL(self->connection, APSWCursor_execute);
+  if(!IN_WORKER_THREAD(self->connection)
+  {
+    /* in async mode we need to box up these parameters
+       stash them, and return self.  then anext needs
+       arrange for the stashed call followed by next
+       to be sent as a unit */
+    Py_CLEAR(self->pending_boxed_call);
+    self->pending_boxed_call = make_boxed_fastcall(APSWCursor_execute, self_, fast_args, fast_nargs, fast_kwnames);
+    if(!self->pending_boxed_call)
+      return NULL;
+    return Py_NewRef(self);
+  }
 
   if (0 != cursor_mutex_get(self))
     return NULL;
@@ -1494,8 +1511,16 @@ APSWCursor_anext(PyObject *self_)
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
-  ASYNC_UNARY(self->connection, APSWCursor_next, self_);
+  // check not in worker
+  if(!IN_WORKER_THREAD(self->connection)
+  {
+    make boxed unary
+    set its do_first to pending_boxed_call
+    pending_boxed_call = null
+    return async_send_boxed_call
+    //ASYNC_UNARY(self->connection, APSWCursor_next, self_);
 
+  }
   return PyErr_Format(PyExc_TypeError, "You can't use the cursor as async in a non-async context");
 }
 
