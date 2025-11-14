@@ -64,8 +64,12 @@ class AsyncIO:
         self.queue.put(None)
 
         # queue.SimpleQueue doesn't have a shutdown method like the more
-        # complex ones so we just set it to None which send above detects
+        # complex ones so we just set it to None which send detects
         self.queue = None
+
+    def discard(self, future):
+        # asyncio warns about futures not examined, so examine it
+        future.cancel()
 
 
     # The methods above are callbacks from ASyncConnection.  The ones below

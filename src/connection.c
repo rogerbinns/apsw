@@ -801,7 +801,7 @@ Connection_as_async(PyObject *klass_, PyObject *const *fast_args, Py_ssize_t fas
   boxed_call->ConnectionInit.connection = (PyObject *)connection;
   boxed_call->ConnectionInit.args = args;
 
-  PyObject *result = async_send_boxed_call((PyObject *)connection, boxed_call);
+  PyObject *result = async_send_boxed_call((PyObject *)connection, (PyObject*)boxed_call);
   connection = NULL;
   boxed_call = NULL;
 

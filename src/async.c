@@ -10,7 +10,7 @@ typedef struct BoxedCall
   PyObject_HEAD
 
   /* the iterators need two calls in one */
-  struct BoxedCall *do_first;
+  unaryfunc and_then;
 
   /* discriminated union */
   enum
@@ -55,8 +55,6 @@ BoxedCall_clear(PyObject *self_)
 {
   BoxedCall *self = (BoxedCall *)self_;
 
-  Py_CLEAR(self->do_first);
-
   switch (self->call_type)
   {
   case Dormant:
@@ -96,14 +94,6 @@ BoxedCall_internal_call(BoxedCall *self)
 {
   PyObject *result = NULL;
 
-  if (self->do_first)
-  {
-    result = BoxedCall_internal_call(self->do_first);
-    if (!result)
-      return result;
-    Py_CLEAR(result);
-  }
-
   switch (self->call_type)
   {
   case ConnectionInit:
@@ -123,9 +113,19 @@ BoxedCall_internal_call(BoxedCall *self)
     // ::TODO:: delete this default once the code is complete
     assert(0);
   }
-  if (!result)
+  if (result && self->and_then)
+  {
+    PyObject *result2 = self->and_then(result);
+    Py_DECREF(result);
+    result = result2;
+  }
+
+  if (!result && PyErr_Occurred() && !PyErr_ExceptionMatches(PyExc_StopAsyncIteration)
+      && !PyErr_ExceptionMatches(PyExc_StopIteration))
     AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.BoxedCall.__call__", "{s:i}", "call_type", (int)self->call_type);
-  BoxedCall_clear(self);
+  BoxedCall_clear((PyObject *)self);
+
+  return result;
 }
 
 static PyObject *
@@ -136,7 +136,7 @@ BoxedCall_call(PyObject *self_, PyObject *args, PyObject *kwargs)
   if (kwargs || (args && PyTuple_GET_SIZE(args)) || self->call_type == Dormant)
     return PyErr_Format(PyExc_RuntimeError, "BoxedCall takes no parameters and can only be called once");
 
-  return BoxedCall_internal_call(self_);
+  return BoxedCall_internal_call(self);
 }
 
 static PyTypeObject BoxedCallType = {
@@ -156,11 +156,12 @@ make_boxed_call(Py_ssize_t fast_nargs)
   if (box)
   {
     box->call_type = Dormant;
-    box->do_first = NULL;
+    box->and_then = NULL;
   }
 
   /* verify union member size constraints */
   assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->ConnectionInit));
+  assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->Unary));
 
   return box;
 }
@@ -180,6 +181,8 @@ async_shutdown_controller(PyObject *controller)
       AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.controller_shutdown", "{s: O}", "controller", controller);
       apsw_write_unraisable(NULL);
     }
+    else
+      Py_DECREF(result);
     PY_ERR_RESTORE(saved_err);
   }
 }
@@ -200,6 +203,24 @@ async_send_boxed_call(PyObject *connection, PyObject *boxed_call)
   return result;
 }
 
+void
+async_send_discard(PyObject *connection, PyObject *object)
+{
+  PY_ERR_FETCH(saved_err);
+  PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), object };
+  PyObject *result
+      = PyObject_VectorcallMethod_NoAsync(apst.discard, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  if (!result)
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.controller_discard", "{s: O,s:O}", "controller", vargs[1], "object",
+                     object);
+    apsw_write_unraisable(NULL);
+  }
+  else
+    Py_DECREF(result);
+  PY_ERR_RESTORE(saved_err);
+}
+
 static PyObject *
 make_boxed_fastcall(PyCFunctionFastWithKeywords function, PyObject *object, PyObject *const *fast_args,
                     Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -217,6 +238,8 @@ make_boxed_fastcall(PyCFunctionFastWithKeywords function, PyObject *object, PyOb
   memcpy(boxed_call->FastCallWithKeywords.fast_args + 1, fast_args, sizeof(PyObject *) * actual_nargs);
   for (size_t i = 0; i < actual_nargs; i++)
     Py_INCREF(boxed_call->FastCallWithKeywords.fast_args[1 + i]);
+
+  return (PyObject *)boxed_call;
 }
 
 static PyObject *

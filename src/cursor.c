@@ -78,7 +78,7 @@ struct APSWCursor
   PyObject *rowtrace;
 
   /* async */
-  PyObject *pending_boxed_call;
+  PyObject *pending_iterator;
 
   /* weak reference support */
   PyObject *weakreflist;
@@ -209,6 +209,15 @@ resetcursor(APSWCursor *self, int force)
   return res;
 }
 
+static void APSWCursor_discard_pending_iterator(APSWCursor *self)
+{
+  if(self->pending_iterator)
+  {
+    async_send_discard((PyObject *)self->connection, self->pending_iterator);
+    Py_CLEAR(self->pending_iterator);
+  }
+}
+
 static int
 APSWCursor_close_internal(APSWCursor *self, int force)
 {
@@ -233,7 +242,7 @@ APSWCursor_close_internal(APSWCursor *self, int force)
     assert(!PyErr_Occurred());
   }
 
-  Py_CLEAR(self->pending_boxed_call);
+  APSWCursor_discard_pending_iterator(self);
 
   /* Remove from connection dependents list.  Has to be done before we decref self->connection
      otherwise connection could dealloc and we'd still be in list */
@@ -283,6 +292,23 @@ APSWCursor_dealloc(PyObject *self_)
   Py_TpFree(self_);
 }
 
+static PyObject *APSWCursor_next(PyObject *self_);
+
+/* We need to raise AsyncStopIteration whereas regular next just
+   returns NULL */
+static PyObject *APSWCursor_async_next(PyObject *self_)
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
+  assert(IN_WORKER_THREAD(self->connection));
+
+  PyObject *result = APSWCursor_next(self_);
+  if(!result &&!PyErr_Occurred())
+    PyErr_SetNone(PyExc_StopAsyncIteration);
+  return result;
+}
+
 /** .. method:: __init__(connection: Connection)
 
  Use :meth:`Connection.cursor` to make a new cursor.
@@ -318,7 +344,7 @@ APSWCursor_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->convert_binding);
   Py_VISIT(self->convert_jsonb);
-  Py_VISIT(self->pending_boxed_call);
+  Py_VISIT(self->pending_iterator);
   return 0;
 }
 
@@ -1163,17 +1189,19 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
-  if(!IN_WORKER_THREAD(self->connection)
+  if (!IN_WORKER_THREAD(self->connection))
   {
     /* in async mode we need to box up these parameters
        stash them, and return self.  then anext needs
        arrange for the stashed call followed by next
        to be sent as a unit */
-    Py_CLEAR(self->pending_boxed_call);
-    self->pending_boxed_call = make_boxed_fastcall(APSWCursor_execute, self_, fast_args, fast_nargs, fast_kwnames);
-    if(!self->pending_boxed_call)
+    APSWCursor_discard_pending_iterator(self);
+    PyObject *boxed_call = make_boxed_fastcall(APSWCursor_execute, self_, fast_args, fast_nargs, fast_kwnames);
+    if (!boxed_call)
       return NULL;
-    return Py_NewRef(self);
+    ((BoxedCall *)boxed_call)->and_then = APSWCursor_async_next;
+    self->pending_iterator = async_send_boxed_call((PyObject*)self->connection, boxed_call);
+    return self->pending_iterator ? Py_NewRef(self) : NULL;
   }
 
   if (0 != cursor_mutex_get(self))
@@ -1406,6 +1434,8 @@ APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_OPTIONAL ARG_bool(force);
     ARG_EPILOG(NULL, Cursor_close_USAGE, );
   }
+
+
   DBMUTEX_ENSURE(self->connection);
   /* Manual IN_QUERY_CHECK to give better error message */
   if (self->in_query)
@@ -1512,14 +1542,20 @@ APSWCursor_anext(PyObject *self_)
   CHECK_CURSOR_CLOSED(NULL);
 
   // check not in worker
-  if(!IN_WORKER_THREAD(self->connection)
+  if (!IN_WORKER_THREAD(self->connection))
   {
-    make boxed unary
-    set its do_first to pending_boxed_call
-    pending_boxed_call = null
-    return async_send_boxed_call
-    //ASYNC_UNARY(self->connection, APSWCursor_next, self_);
-
+    if (self->pending_iterator)
+    {
+      PyObject *res = self->pending_iterator;
+      /* kick off getting next row in background */
+      self->pending_iterator = do_async_unary((PyObject*)self->connection, APSWCursor_async_next, self_);
+      if (self->pending_iterator)
+        return res;
+      Py_DECREF(res);
+      return NULL;
+    }
+    // it should be impossible to reach here as we'll keep doing stop iteration at the end
+    Py_UNREACHABLE();
   }
   return PyErr_Format(PyExc_TypeError, "You can't use the cursor as async in a non-async context");
 }

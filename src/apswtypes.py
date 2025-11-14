@@ -190,8 +190,7 @@ class AsyncConnectionController(Protocol):
         Called in the worker thead once the connection is available
 
         This is called before the :attr:`Connection.connection_hooks` are
-        run.  If you need to keep a reference to the connection then use
-        :mod:`weakref`, otherwise it won't end up garbage collected.
+        run.
         """
         ...
 
@@ -207,5 +206,18 @@ class AsyncConnectionController(Protocol):
     def close(self):
         """Called after the connection has closed
 
-        This allows shutting down the worker thread and similar housekeeping"""
+        This allows shutting down the worker thread and similar housekeeping.
+        !!!Exceptions unraisable"""
+        ...
+
+    def discard(self, obj: Any):
+        """An awaitable won't be resolved
+
+        Query results iteration works "one ahead" behind the scenes, and could
+        also stop before reading all result rows.  This leaves behind an
+        object from :meth:`send` that won't be resolved.  Some frameworks
+        like :mod:`asyncio` issue a warning if that happens.
+
+        This method is called so you can mark it as resolved.
+        """
         ...
