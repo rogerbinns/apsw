@@ -67,8 +67,8 @@ class AsyncIO:
         # complex ones so we just set it to None which send detects
         self.queue = None
 
-    def discard(self, future):
-        # asyncio warns about futures not examined, so examine it
+    def cancel(self, future):
+        # asyncio warns about futures not resolved
         future.cancel()
 
 

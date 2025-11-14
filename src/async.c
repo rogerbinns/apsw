@@ -209,7 +209,7 @@ async_send_discard(PyObject *connection, PyObject *object)
   PY_ERR_FETCH(saved_err);
   PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), object };
   PyObject *result
-      = PyObject_VectorcallMethod_NoAsync(apst.discard, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      = PyObject_VectorcallMethod_NoAsync(apst.cancel, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!result)
   {
     AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.controller_discard", "{s: O,s:O}", "controller", vargs[1], "object",

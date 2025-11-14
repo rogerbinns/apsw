@@ -210,7 +210,7 @@ class AsyncConnectionController(Protocol):
         !!!Exceptions unraisable"""
         ...
 
-    def discard(self, obj: Any):
+    def cancel(self, obj: Any):
         """An awaitable won't be resolved
 
         Query results iteration works "one ahead" behind the scenes, and could
@@ -218,6 +218,6 @@ class AsyncConnectionController(Protocol):
         object from :meth:`send` that won't be resolved.  Some frameworks
         like :mod:`asyncio` issue a warning if that happens.
 
-        This method is called so you can mark it as resolved.
+        This method is called so you can mark it as done.
         """
         ...
