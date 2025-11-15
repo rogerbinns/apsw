@@ -888,6 +888,8 @@ if __name__ == "__main__":
                     "VFSFile.excepthook",
                     "Cursor.__next__",
                     "Cursor.__iter__",
+                    "Cursor.__anext__",
+                    "Cursor.__aiter__",
                     "VFS.excepthook",
                     "Connection.execute",
                     "Connection.executemany",

@@ -1217,6 +1217,66 @@
 } while(0)
 
 
+#define  Connection_aenter_DOC "Connection.__aenter__() -> Connection\n\n" \
+":async:\n" \
+"\n" \
+"Async version of :meth:`__enter__` context\n" \
+"manager.  You must use this with async connections.\n" 
+
+#define Connection_aenter_KWNAMES NULL
+#define Connection_aenter_USAGE "Connection.__aenter__() -> Connection"
+
+#define Connection_aenter_CHECK do { \
+} while(0)
+
+
+#define  Connection_aexit_DOC "Connection.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None\n\n" \
+":async:\n" \
+"\n" \
+"Async version of :meth:`__exit__` context manager.  You must use this\n" \
+"with async connections.\n" 
+
+#define Connection_aexit_KWNAMES "etype", "evalue", "etraceback"
+#define Connection_aexit_USAGE "Connection.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None"
+
+#define Connection_aexit_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(evalue), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(etraceback), PyObject *)); \
+} while(0)
+
+
+#define  Connection_as_async_DOC "Connection.as_async(controller: AsyncConnectionController, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100) -> Awaitable[AsyncConnection]\n\n" \
+":staticmethod:\n" \
+"\n" \
+"Uses the controller to start a :class:`Connection` with the parameters\n" \
+"in a background worker thread.  The resulting :class:`AsyncConnection`\n" \
+"is the same as regular :class:`Connection` but with most methods and\n" \
+"attributes and related objects configured for async operation.\n" \
+"\n" \
+"See :mod:`apsw.aio` for some controller implementations and :doc:`async`\n" \
+"for more details.\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"  It is recommended to call ``close`` on the connection when done\n" \
+"  as that ensures the worker thread will exit.\n" 
+
+#define Connection_as_async_KWNAMES "controller", "filename", "flags", "vfs", "statementcachesize"
+#define Connection_as_async_USAGE "Connection.as_async(controller: AsyncConnectionController, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100) -> Awaitable[AsyncConnection]"
+
+#define Connection_as_async_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(controller), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(filename), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(flags), int)); \
+  assert(flags == (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)); \
+  assert(__builtin_types_compatible_p(typeof(vfs), const char *)); \
+  assert(vfs == 0); \
+  assert(__builtin_types_compatible_p(typeof(statementcachesize), int)); \
+  assert(statementcachesize == (100)); \
+} while(0)
+
+
 #define  Connection_authorizer_DOC ":type: Optional[Authorizer]\n" \
 "\n" \
 "While `preparing <https://sqlite.org/c3ref/prepare.html>`_\n" \
@@ -1961,14 +2021,14 @@
 "\n" \
 "See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_executemany>`.\n" 
 
-#define  Connection_exit_DOC "Connection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]\n\n" \
+#define  Connection_exit_DOC "Connection.__exit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None\n\n" \
 "Implements context manager in conjunction with\n" \
 ":meth:`~Connection.__enter__`.  If no exception happened then\n" \
 "the pending transaction is committed, while an exception results in a\n" \
 "rollback.\n" 
 
 #define Connection_exit_KWNAMES "etype", "evalue", "etraceback"
-#define Connection_exit_USAGE "Connection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]"
+#define Connection_exit_USAGE "Connection.__exit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None"
 
 #define Connection_exit_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
@@ -3033,6 +3093,16 @@
   assert(mode == (SQLITE_CHECKPOINT_PASSIVE)); \
 } while(0)
 
+
+#define  Cursor_aiter_DOC "Cursor.__aiter__(self: Cursor) -> Cursor\n\n" \
+":async:\n" \
+"\n" \
+"Cursors are async iterators\n" 
+
+#define  Cursor_anext_DOC "Cursor.__anext__(self: Cursor) -> Any\n\n" \
+":async:\n" \
+"\n" \
+"Cursors are iterators\n" 
 
 #define  Cursor_bindings_count_DOC ":type: int\n" \
 "\n" \

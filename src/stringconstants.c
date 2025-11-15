@@ -45,6 +45,7 @@
 #undef add_note
 #undef async_run_coro
 #undef can_cache
+#undef cancel
 #undef close
 #undef connection_hooks
 #undef cursor
@@ -136,6 +137,7 @@ static struct _apsw_string_table
     PyObject *add_note;
     PyObject *async_run_coro;
     PyObject *can_cache;
+    PyObject *cancel;
     PyObject *close;
     PyObject *connection_hooks;
     PyObject *cursor;
@@ -228,6 +230,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.add_note);
     Py_CLEAR(apst.async_run_coro);
     Py_CLEAR(apst.can_cache);
+    Py_CLEAR(apst.cancel);
     Py_CLEAR(apst.close);
     Py_CLEAR(apst.connection_hooks);
     Py_CLEAR(apst.cursor);
@@ -321,6 +324,7 @@ init_apsw_strings()
         || (!apst.add_note && 0 == (apst.add_note = PyUnicode_FromString("add_note")))
         || (!apst.async_run_coro && 0 == (apst.async_run_coro = PyUnicode_FromString("async_run_coro")))
         || (!apst.can_cache && 0 == (apst.can_cache = PyUnicode_FromString("can_cache")))
+        || (!apst.cancel && 0 == (apst.cancel = PyUnicode_FromString("cancel")))
         || (!apst.close && 0 == (apst.close = PyUnicode_FromString("close")))
         || (!apst.connection_hooks && 0 == (apst.connection_hooks = PyUnicode_FromString("connection_hooks")))
         || (!apst.cursor && 0 == (apst.cursor = PyUnicode_FromString("cursor")))
