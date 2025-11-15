@@ -77,9 +77,12 @@ BoxedCall_clear(PyObject *self_)
     break;
 
   case FastCallWithKeywords:
+    Py_ssize_t total_args
+        = PyVectorcall_NARGS(self->FastCallWithKeywords.fast_nargs)
+          + (self->FastCallWithKeywords.fast_kwnames ? PyTuple_GET_SIZE(self->FastCallWithKeywords.fast_kwnames) : 0);
     Py_DECREF(self->FastCallWithKeywords.object);
     Py_XDECREF(self->FastCallWithKeywords.fast_kwnames);
-    for (Py_ssize_t i = 0; i < self->FastCallWithKeywords.fast_nargs; i++)
+    for (Py_ssize_t i = 0; i < total_args; i++)
       Py_DECREF(self->FastCallWithKeywords.fast_args[1 + i]);
     break;
 
@@ -172,19 +175,19 @@ static PyTypeObject BoxedCallType = {
 };
 
 static BoxedCall *
-make_boxed_call(Py_ssize_t fast_nargs)
+make_boxed_call(Py_ssize_t total_args)
 {
-  BoxedCall *box = (BoxedCall *)_PyObject_NewVar(&BoxedCallType, fast_nargs);
+  BoxedCall *box = (BoxedCall *)_PyObject_NewVar(&BoxedCallType, total_args);
   if (box)
   {
     box->call_type = Dormant;
     box->and_then = NULL;
-  }
 
-  /* verify union member size constraints */
-  assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->ConnectionInit));
-  assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->Unary));
-  assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->Binary));
+    /* verify union member size constraints */
+    assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->ConnectionInit));
+    assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->Unary));
+    assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->Binary));
+  }
 
   return box;
 }
@@ -269,8 +272,9 @@ static PyObject *
 make_boxed_fastcall(PyCFunctionFastWithKeywords function, PyObject *object, PyObject *const *fast_args,
                     Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
-  Py_ssize_t actual_nargs = PyVectorcall_NARGS(fast_nargs);
-  BoxedCall *boxed_call = make_boxed_call(actual_nargs);
+  Py_ssize_t total_args = PyVectorcall_NARGS(fast_nargs) + (fast_kwnames ? PyTuple_GET_SIZE(fast_kwnames) : 0);
+
+  BoxedCall *boxed_call = make_boxed_call(total_args);
   if (!boxed_call)
     return NULL;
 
@@ -278,9 +282,9 @@ make_boxed_fastcall(PyCFunctionFastWithKeywords function, PyObject *object, PyOb
   boxed_call->FastCallWithKeywords.function = function;
   boxed_call->FastCallWithKeywords.object = Py_NewRef(object);
   boxed_call->FastCallWithKeywords.fast_kwnames = Py_XNewRef(fast_kwnames);
-  boxed_call->FastCallWithKeywords.fast_nargs = actual_nargs;
-  memcpy(boxed_call->FastCallWithKeywords.fast_args + 1, fast_args, sizeof(PyObject *) * actual_nargs);
-  for (size_t i = 0; i < actual_nargs; i++)
+  boxed_call->FastCallWithKeywords.fast_nargs = fast_nargs;
+  memcpy(boxed_call->FastCallWithKeywords.fast_args + 1, fast_args, sizeof(PyObject *) * total_args);
+  for (size_t i = 0; i < total_args; i++)
     Py_INCREF(boxed_call->FastCallWithKeywords.fast_args[1 + i]);
 
   return (PyObject *)boxed_call;
