@@ -867,7 +867,7 @@ class Trace:
         text = text.strip()
         return text[: self.truncate] + "..." if len(text) > self.truncate else text
 
-    def __enter__(self):
+    def __enter_core(self):
         if not self.file:
             return self
 
@@ -877,21 +877,31 @@ class Trace:
         # interleaving of queries
         self.last_emitted = None
 
-        self.db.trace_v2(
+        yield self.db.trace_v2(
             apsw.SQLITE_TRACE_STMT | apsw.SQLITE_TRACE_ROW | apsw.SQLITE_TRACE_PROFILE, self._sqlite_trace, id=self
         )
 
         if self.updates:
             if hasattr(self.db, "preupdate_hook"):
-                self.db.preupdate_hook(self._preupdate, id=self)
+                yield self.db.preupdate_hook(self._preupdate, id=self)
             else:
                 self.updates = False
 
         if self.transaction:
-            self.db.set_commit_hook(self._commit, id=self)
-            self.db.set_rollback_hook(self._rollback, id=self)
+            yield self.db.set_commit_hook(self._commit, id=self)
+            yield self.db.set_rollback_hook(self._rollback, id=self)
             self.transaction_state: str | None = None
 
+        return self
+
+    def __enter__(self):
+        for v in self.__enter_core():
+            pass
+        return self
+
+    async def __aenter__(self):
+        for v in self.__enter_core():
+            await v
         return self
 
     def _commit(self):
@@ -1010,13 +1020,21 @@ class Trace:
 
             self.last_emitted = event["id"], event["sql"]
 
-    def __exit__(self, *_):
-        self.db.trace_v2(0, None, id=self)
+    def __exit_core(self):
+        yield self.db.trace_v2(0, None, id=self)
         if self.updates:
-            self.db.preupdate_hook(None, id=self)
+            yield self.db.preupdate_hook(None, id=self)
         if self.transaction:
-            self.db.set_commit_hook(None, id=self)
-            self.db.set_rollback_hook(None, id=self)
+            yield self.db.set_commit_hook(None, id=self)
+            yield self.db.set_rollback_hook(None, id=self)
+
+    def __exit__(self, *_):
+        for v in self.__exit_core():
+            pass
+
+    async def __aexit__(self, *_):
+        for v in self.__exit_core():
+            await v
 
 
 class ShowResourceUsage:

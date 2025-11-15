@@ -1789,6 +1789,8 @@ Connection_trace_v2(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
   if (mask & ~(SQLITE_TRACE_STMT | SQLITE_TRACE_PROFILE | SQLITE_TRACE_ROW | SQLITE_TRACE_CLOSE))
     return PyErr_Format(PyExc_ValueError, "mask includes unknown trace values");
 
+  ASYNC_FASTCALL(self, Connection_trace_v2);
+
   /* always clear out any matching id */
   for (unsigned i = 1; i < self->tracehooks_count; i++)
   {
