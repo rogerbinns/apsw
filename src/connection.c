@@ -92,7 +92,7 @@ struct Connection
   /* set if we are operating in async mode */
   PyObject *async_controller;
   /* how we tell if in the worker thread or not */
-  Py_tss_t async_tss_key;
+  unsigned long async_thread_id;
 
   fts5_api *fts5_api_cached;
 
@@ -274,7 +274,6 @@ Connection_internal_cleanup(Connection *self)
   {
     async_shutdown_controller(self->async_controller);
     Py_CLEAR(self->async_controller);
-    PyThread_tss_delete(&self->async_tss_key);
   }
   Py_CLEAR(self->cursor_factory);
   Py_CLEAR(self->busyhandler);
@@ -602,11 +601,16 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
   if (self->async_controller)
   {
-    assert(PyThread_tss_is_created(&self->async_tss_key));
-    /* default value is NULL so we set it to non-NULL in this worker thread */
-    if (0 != PyThread_tss_set(&self->async_tss_key, (void *)1))
-      return -1;
+    self->async_thread_id = PyThread_get_thread_ident();
   }
+#ifdef APSW_DEBUG
+  else if (async_check)
+  {
+    /* 0 is most likely to match a real thread id */
+    self->async_thread_id = 0;
+    self->async_controller = async_dummy_controller;
+  }
+#endif
 
   self->cursor_factory = Py_NewRef((PyObject *)&APSWCursorType);
   self->tracehooks = PyMem_Malloc(sizeof(struct tracehook_entry) * 1);
@@ -792,9 +796,6 @@ Connection_as_async(PyObject *klass_, PyObject *const *fast_args, Py_ssize_t fas
     goto error;
 
   connection = (Connection *)klass->tp_new(klass, NULL, NULL);
-  connection->async_tss_key = (Py_tss_t)Py_tss_NEEDS_INIT;
-  if (0 != PyThread_tss_create(&connection->async_tss_key))
-    goto error;
   connection->async_controller = Py_NewRef(controller);
 
   boxed_call->call_type = ConnectionInit;
@@ -6730,6 +6731,15 @@ async_get_controller_from_connection(PyObject *connection_)
   assert(connection->async_controller);
   return connection->async_controller;
 }
+
+#ifdef APSW_DEBUG
+static void
+async_fake_worker_thread(PyObject *connection_, int value)
+{
+  Connection *connection = (Connection *)connection_;
+  connection->async_thread_id = value ? PyThread_get_thread_ident() : 0;
+}
+#endif
 
 #ifdef SQLITE_ENABLE_PREUPDATE_HOOK
 

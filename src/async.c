@@ -4,6 +4,10 @@
 static PyObject *async_get_controller_from_connection(PyObject *connection);
 static int Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs);
 
+#ifdef APSW_DEBUG
+static void async_fake_worker_thread(PyObject *connection_, int value);
+#endif
+
 /* used for getting call details im a non-worker thread that can be invoked in the worker thread */
 typedef struct BoxedCall
 {
@@ -196,6 +200,18 @@ async_send_boxed_call(PyObject *connection, PyObject *boxed_call)
     thread call
   */
 
+#ifdef APSW_DEBUG
+  if (async_get_controller_from_connection(connection) == async_dummy_controller)
+  {
+
+    async_fake_worker_thread(connection, 1);
+    PyObject *myresult = BoxedCall_internal_call((BoxedCall *)boxed_call);
+    async_fake_worker_thread(connection, 0);
+    Py_DECREF(boxed_call);
+    return myresult;
+  }
+#endif
+
   PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), boxed_call };
   PyObject *result = PyObject_VectorcallMethod_NoAsync(apst.send, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_DECREF(boxed_call);
@@ -264,8 +280,8 @@ do_async_unary(PyObject *connection, unaryfunc function, PyObject *arg)
   return async_send_boxed_call(connection, (PyObject *)boxed_call);
 }
 
-/* all threads are workers in sync mode, else check tss key */
-#define IN_WORKER_THREAD(CONN) (!(CONN)->async_controller || PyThread_tss_get((&(CONN)->async_tss_key)))
+/* all threads are workers in sync mode, else check threadid */
+#define IN_WORKER_THREAD(CONN) (!(CONN)->async_controller || PyThread_get_thread_ident() == (((CONN)->async_thread_id)))
 
 #define ASYNC_FASTCALL(CONN, FUNCTION)                                                                                 \
   do                                                                                                                   \
