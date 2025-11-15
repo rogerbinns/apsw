@@ -304,8 +304,15 @@ static PyObject *APSWCursor_async_next(PyObject *self_)
   assert(IN_WORKER_THREAD(self->connection));
 
   PyObject *result = APSWCursor_next(self_);
-  if(!result &&!PyErr_Occurred())
-    PyErr_SetNone(PyExc_StopAsyncIteration);
+  if(!result && !PyErr_Occurred())
+  {
+    PyObject *klass = PyExc_StopAsyncIteration;
+#ifdef APSW_DEBUG
+    if(self->connection->async_controller == async_dummy_controller)
+      klass = PyExc_StopIteration;
+#endif
+    PyErr_SetNone(klass);
+  }
   return result;
 }
 
@@ -1453,6 +1460,35 @@ APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   Py_RETURN_NONE;
 }
 
+/** .. method:: __anext__(self: Cursor) -> Any
+
+    Cursors are iterators
+*/
+static PyObject *
+APSWCursor_anext(PyObject *self_)
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
+  // check not in worker
+  if (!IN_WORKER_THREAD(self->connection))
+  {
+    if (self->pending_iterator)
+    {
+      PyObject *res = self->pending_iterator;
+      /* kick off getting next row in background */
+      self->pending_iterator = do_async_unary((PyObject*)self->connection, APSWCursor_async_next, self_);
+      if (self->pending_iterator)
+        return res;
+      Py_DECREF(res);
+      return NULL;
+    }
+    // it should be impossible to reach here as we'll keep doing stop iteration at the end
+    Py_UNREACHABLE();
+  }
+  return PyErr_Format(PyExc_TypeError, "You can't use the cursor as async in a non-async context");
+}
+
 /** .. method:: __next__(self: Cursor) -> Any
 
     Cursors are iterators
@@ -1467,6 +1503,12 @@ APSWCursor_next(PyObject *self_)
   int i;
 
   CHECK_CURSOR_CLOSED(NULL);
+
+#ifdef APSW_DEBUG
+  if(self->connection->async_controller==async_dummy_controller && !IN_WORKER_THREAD(self->connection))
+    return APSWCursor_anext(self_);
+#endif
+
   if (0 != cursor_mutex_get(self))
     return NULL;
 
@@ -1531,34 +1573,6 @@ error:
   return NULL;
 }
 
-/** .. method:: __anext__(self: Cursor) -> Any
-
-    Cursors are iterators
-*/
-static PyObject *
-APSWCursor_anext(PyObject *self_)
-{
-  APSWCursor *self = (APSWCursor *)self_;
-  CHECK_CURSOR_CLOSED(NULL);
-
-  // check not in worker
-  if (!IN_WORKER_THREAD(self->connection))
-  {
-    if (self->pending_iterator)
-    {
-      PyObject *res = self->pending_iterator;
-      /* kick off getting next row in background */
-      self->pending_iterator = do_async_unary((PyObject*)self->connection, APSWCursor_async_next, self_);
-      if (self->pending_iterator)
-        return res;
-      Py_DECREF(res);
-      return NULL;
-    }
-    // it should be impossible to reach here as we'll keep doing stop iteration at the end
-    Py_UNREACHABLE();
-  }
-  return PyErr_Format(PyExc_TypeError, "You can't use the cursor as async in a non-async context");
-}
 
 /** .. method:: __iter__(self: Cursor) -> Cursor
 
@@ -1571,6 +1585,10 @@ APSWCursor_iter(PyObject *self_)
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
+#ifdef APSW_DEBUG
+  if(self->connection->async_controller==async_dummy_controller)
+    return Py_NewRef(self);
+#endif
   if (!IN_WORKER_THREAD(self->connection))
   {
     PyErr_SetString(PyExc_TypeError, "You must use async iteration for async connections");
