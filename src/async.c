@@ -76,7 +76,7 @@ BoxedCall_clear(PyObject *self_)
     Py_DECREF(self->ConnectionInit.args);
     break;
 
-  case FastCallWithKeywords:
+  case FastCallWithKeywords: {
     Py_ssize_t total_args
         = PyVectorcall_NARGS(self->FastCallWithKeywords.fast_nargs)
           + (self->FastCallWithKeywords.fast_kwnames ? PyTuple_GET_SIZE(self->FastCallWithKeywords.fast_kwnames) : 0);
@@ -85,7 +85,7 @@ BoxedCall_clear(PyObject *self_)
     for (Py_ssize_t i = 0; i < total_args; i++)
       Py_DECREF(self->FastCallWithKeywords.fast_args[1 + i]);
     break;
-
+  }
   case Unary:
     Py_DECREF(self->Unary.arg);
     break;
