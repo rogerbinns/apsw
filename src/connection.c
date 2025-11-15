@@ -4674,7 +4674,7 @@ error:
   return NULL;
 }
 
-/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
+/** .. method:: __exit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None
 
   Implements context manager in conjunction with
   :meth:`~Connection.__enter__`.  If no exception happened then
@@ -4764,6 +4764,53 @@ exit:
   if (PyErr_Occurred())
     return NULL;
   Py_RETURN_FALSE;
+}
+
+/** .. method:: __aenter__() -> Connection
+  :async:
+
+  Async version of :meth:`__enter__` context
+  manager.  You must use this with async connections.
+*/
+static PyObject *
+Connection_aenter(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  Connection *self = (Connection *)self_;
+  CHECK_CLOSED(self, NULL);
+
+  /* unused could be NULL so make sure we pass something */
+  ASYNC_BINARY(self, Connection_enter, self_, Py_None);
+
+  PyErr_SetString(PyExc_TypeError, "Using async method in sync context");
+  return NULL;
+}
+
+/** .. method:: __aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None
+  :async:
+
+  Async version of :meth:`__exit__` context manager.  You must use this
+  with async connections.
+*/
+
+static PyObject *
+Connection_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  Connection *self = (Connection *)self_;
+  PyObject *etype, *evalue, *etraceback;
+
+  CHECK_CLOSED(self, NULL);
+  {
+    Connection_aexit_CHECK;
+    ARG_PROLOG(3, Connection_aexit_KWNAMES);
+    ARG_MANDATORY ARG_pyobject(etype);
+    ARG_MANDATORY ARG_pyobject(evalue);
+    ARG_MANDATORY ARG_pyobject(etraceback);
+    ARG_EPILOG(NULL, Connection_aexit_USAGE, );
+  }
+
+  ASYNC_FASTCALL(self, Connection_exit);
+  PyErr_SetString(PyExc_TypeError, "Using async method in sync context");
+  return NULL;
 }
 
 /** .. method:: config(op: int, *args: int) -> int
@@ -6621,6 +6668,8 @@ static PyMethodDef Connection_methods[] = {
   { "get_row_trace", (PyCFunction)Connection_get_row_trace, METH_NOARGS, Connection_get_row_trace_DOC },
   { "__enter__", (PyCFunction)Connection_enter, METH_NOARGS, Connection_enter_DOC },
   { "__exit__", (PyCFunction)Connection_exit, METH_FASTCALL | METH_KEYWORDS, Connection_exit_DOC },
+  { "__aenter__", (PyCFunction)Connection_aenter, METH_NOARGS, Connection_aenter_DOC },
+  { "__aexit__", (PyCFunction)Connection_aexit, METH_FASTCALL | METH_KEYWORDS, Connection_aexit_DOC },
   { "wal_autocheckpoint", (PyCFunction)Connection_wal_autocheckpoint, METH_FASTCALL | METH_KEYWORDS,
     Connection_wal_autocheckpoint_DOC },
   { "wal_checkpoint", (PyCFunction)Connection_wal_checkpoint, METH_FASTCALL | METH_KEYWORDS,
