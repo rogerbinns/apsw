@@ -23,12 +23,12 @@ def generate(options):
     # Our values
     cmd.extend(
         [
-            "-DAPSW_USE_SQLITE_AMALGAMATION",
             "-DAPSW_USE_SQLITE_CFG_H",
             "-Isqlite3",
             "-Isrc",
             "-DSQLITE_ENABLE_FTS5",
             "-DSQLITE_ENABLE_SESSION",
+            "-DSQLITE_ENABLE_CARRAY",
             "-UNDEBUG",
         ]
     )
