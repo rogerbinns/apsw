@@ -1072,6 +1072,9 @@ Connection_set_busy_timeout(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     ARG_MANDATORY ARG_int(milliseconds);
     ARG_EPILOG(NULL, Connection_set_busy_timeout_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_set_busy_timeout);
+
   DBMUTEX_ENSURE(self);
   res = sqlite3_busy_timeout(self->db, milliseconds);
   SET_EXC(res, self->db);
@@ -4818,6 +4821,8 @@ Connection_config(PyObject *self_, PyObject *args)
     if (!PyArg_ParseTuple(args, "ii", &opdup, &val))
       return NULL;
 
+    ASYNC_BINARY(self, Connection_config, self_, args);
+
     DBMUTEX_ENSURE(self);
     res = sqlite3_db_config(self->db, opdup, val, &current);
     SET_EXC(res, self->db);
@@ -4903,6 +4908,8 @@ Connection_readonly(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
     ARG_MANDATORY ARG_str(name);
     ARG_EPILOG(NULL, Connection_readonly_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_readonly);
 
   DBMUTEX_ENSURE(self);
   res = sqlite3_db_readonly(self->db, name);
@@ -5099,6 +5106,8 @@ Connection_pragma(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_OPTIONAL ARG_optional_str(schema);
     ARG_EPILOG(NULL, Connection_pragma_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_pragma);
 
   PyObject *value_format = NULL, *res = NULL, *cursor = NULL, *query_py = NULL;
   const char *value_str = NULL;
@@ -6526,15 +6535,21 @@ Connection_tp_str(PyObject *self_)
 {
   Connection *self = (Connection *)self_;
 
+  int is_async = !!self->async_controller;
+
   if (self->dbmutex)
   {
-    DBMUTEX_ENSURE(self);
-    PyObject *res
-        = PyUnicode_FromFormat("<apsw.%sConnection object \"%s\" at %p>", (self->async_controller) ? "Async" : "",
-                               sqlite3_db_filename(self->db, "main"), self);
-    sqlite3_mutex_leave(self->dbmutex);
-    return res;
+    if (IN_WORKER_THREAD(self))
+    {
+      DBMUTEX_ENSURE(self);
+      PyObject *res = PyUnicode_FromFormat("<apsw.%sConnection object \"%s\" at %p>", is_async ? "Async" : "",
+                                           sqlite3_db_filename(self->db, "main"), self);
+      sqlite3_mutex_leave(self->dbmutex);
+      return res;
+    }
+    return PyUnicode_FromFormat("<apsw.AsyncConnection object (not worker thread) at %p>", self);
   }
+
   return PyUnicode_FromFormat("<apsw.Connection object (closed) at %p>", self);
 }
 

@@ -23,6 +23,7 @@ typedef struct BoxedCall
     ConnectionInit,
     FastCallWithKeywords,
     Unary,
+    Binary,
   } call_type;
 
   union
@@ -51,6 +52,12 @@ typedef struct BoxedCall
       unaryfunc function;
       PyObject *arg;
     } Unary;
+
+    struct
+    {
+      binaryfunc function;
+      PyObject *args[2];
+    } Binary;
   };
 } BoxedCall;
 
@@ -80,7 +87,13 @@ BoxedCall_clear(PyObject *self_)
     Py_DECREF(self->Unary.arg);
     break;
 
+  case Binary:
+    Py_DECREF(self->Binary.args[0]);
+    Py_DECREF(self->Binary.args[1]);
+    break;
+
   default:
+    // ::TODO:: delete this default once the code is complete
     assert(0);
   }
   self->call_type = Dormant;
@@ -113,6 +126,11 @@ BoxedCall_internal_call(BoxedCall *self)
   case Unary:
     result = self->Unary.function(self->Unary.arg);
     break;
+
+  case Binary:
+    result = self->Binary.function(self->Binary.args[0], self->Binary.args[1]);
+    break;
+
   default:
     // ::TODO:: delete this default once the code is complete
     assert(0);
@@ -166,6 +184,7 @@ make_boxed_call(Py_ssize_t fast_nargs)
   /* verify union member size constraints */
   assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->ConnectionInit));
   assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->Unary));
+  assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->Binary));
 
   return box;
 }
@@ -289,6 +308,21 @@ do_async_unary(PyObject *connection, unaryfunc function, PyObject *arg)
   return async_send_boxed_call(connection, (PyObject *)boxed_call);
 }
 
+static PyObject *
+do_async_binary(PyObject *connection, binaryfunc function, PyObject *arg1, PyObject *arg2)
+{
+  BoxedCall *boxed_call = make_boxed_call(0);
+  if (!boxed_call)
+    return NULL;
+
+  boxed_call->call_type = Binary;
+  boxed_call->Binary.function = function;
+  boxed_call->Binary.args[0] = Py_NewRef(arg1);
+  boxed_call->Binary.args[1] = Py_NewRef(arg2);
+
+  return async_send_boxed_call(connection, (PyObject *)boxed_call);
+}
+
 /* all threads are workers in sync mode, else check threadid */
 #define IN_WORKER_THREAD(CONN) (!(CONN)->async_controller || PyThread_get_thread_ident() == (((CONN)->async_thread_id)))
 
@@ -304,4 +338,11 @@ do_async_unary(PyObject *connection, unaryfunc function, PyObject *arg)
   {                                                                                                                    \
     if (!IN_WORKER_THREAD(CONN))                                                                                       \
       return do_async_unary((PyObject *)(CONN), FUNCTION, (ARG));                                                      \
+  } while (0)
+
+#define ASYNC_BINARY(CONN, FUNCTION, ARG1, ARG2)                                                                       \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!IN_WORKER_THREAD(CONN))                                                                                       \
+      return do_async_binary((PyObject *)(CONN), FUNCTION, (ARG1), (ARG2));                                            \
   } while (0)

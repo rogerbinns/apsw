@@ -1207,6 +1207,10 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     if (!boxed_call)
       return NULL;
     ((BoxedCall *)boxed_call)->and_then = APSWCursor_async_next;
+#ifdef APSW_DEBUG
+    if (self->connection->async_controller == async_dummy_controller)
+      ((BoxedCall *)boxed_call)->and_then = NULL;
+#endif
     self->pending_iterator = async_send_boxed_call((PyObject*)self->connection, boxed_call);
     return self->pending_iterator ? Py_NewRef(self) : NULL;
   }
