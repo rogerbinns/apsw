@@ -173,6 +173,10 @@ make_boxed_call(Py_ssize_t fast_nargs)
 static void
 async_shutdown_controller(PyObject *controller)
 {
+#ifdef APSW_DEBUG
+  if (controller == async_dummy_controller)
+    return;
+#endif
   /* exceptions are always done as unraisable */
   if (controller)
   {
@@ -222,8 +226,13 @@ async_send_boxed_call(PyObject *connection, PyObject *boxed_call)
 void
 async_send_discard(PyObject *connection, PyObject *object)
 {
-  PY_ERR_FETCH(saved_err);
   PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), object };
+#ifdef APSW_DEBUG
+  if (vargs[1] == async_dummy_controller)
+    return;
+#endif
+  PY_ERR_FETCH(saved_err);
+
   PyObject *result
       = PyObject_VectorcallMethod_NoAsync(apst.cancel, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!result)

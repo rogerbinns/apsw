@@ -134,6 +134,9 @@ MakeExistingException(void)
 /* allows us to run with async checks in sync mode */
 static int async_check = 0;
 static PyObject *async_dummy_controller = (PyObject *)7;
+#define REAL_CONTROLLER(c) ((c) == async_dummy_controller ? NULL : (c))
+#else
+#define REAL_CONTROLLER(c) (c)
 #endif
 
 #ifdef APSW_FAULT_INJECT

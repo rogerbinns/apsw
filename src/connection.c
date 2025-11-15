@@ -272,6 +272,9 @@ Connection_internal_cleanup(Connection *self)
 {
   if (self->async_controller)
   {
+#ifdef APSW_DEBUG
+    self->async_controller = REAL_CONTROLLER(self->async_controller);
+#endif
     async_shutdown_controller(self->async_controller);
     Py_CLEAR(self->async_controller);
   }
@@ -6477,7 +6480,7 @@ static int
 Connection_tp_traverse(PyObject *self_, visitproc visit, void *arg)
 {
   Connection *self = (Connection *)self_;
-  Py_VISIT(self->async_controller);
+  Py_VISIT(REAL_CONTROLLER(self->async_controller));
   Py_VISIT(self->busyhandler);
   Py_VISIT(self->updatehook);
   Py_VISIT(self->walhook);

@@ -1571,8 +1571,11 @@ APSWCursor_iter(PyObject *self_)
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
-  // ::TODO:: if not work thread then whine connection is async
-  // and cursors must be used async too
+  if (!IN_WORKER_THREAD(self->connection))
+  {
+    PyErr_SetString(PyExc_TypeError, "You must use async iteration for async connections");
+    return NULL;
+  }
 
   return Py_NewRef(self_);
 }
@@ -1587,9 +1590,11 @@ APSWCursor_aiter(PyObject *self_)
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
-  // ::TODO:: if in work thread then whine about
-  // not being async connection
-
+  if (IN_WORKER_THREAD(self->connection))
+  {
+    PyErr_SetString(PyExc_TypeError, "async iteration only works on async connections");
+    return NULL;
+  }
   return Py_NewRef(self_);
 }
 
