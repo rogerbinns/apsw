@@ -77,8 +77,17 @@ struct APSWCursor
   PyObject *exectrace;
   PyObject *rowtrace;
 
-  /* async */
-  PyObject *pending_iterator;
+  /* async prefetch */
+  enum
+  {
+    Prefetch_On, /* try to get more */
+    Prefetch_Off /* results exhausted */
+  } prefetch_state;
+
+  int prefetch_slots_allocated;
+  int prefetch_slots_desired;
+
+  PyObject **prefetch_slots;
 
   /* weak reference support */
   PyObject *weakreflist;
@@ -209,12 +218,16 @@ resetcursor(APSWCursor *self, int force)
   return res;
 }
 
-static void APSWCursor_discard_pending_iterator(APSWCursor *self)
+static void
+APSWCursor_discard_prefetch(APSWCursor *self)
 {
-  if(self->pending_iterator)
+  for (int i = 0; i < self->prefetch_slots_allocated; i++)
   {
-    async_send_discard((PyObject *)self->connection, self->pending_iterator);
-    Py_CLEAR(self->pending_iterator);
+    if (self->prefetch_slots[i])
+    {
+      async_send_discard((PyObject *)self->connection, self->prefetch_slots[i]);
+      self->prefetch_slots[i] = 0;
+    }
   }
 }
 
@@ -242,7 +255,9 @@ APSWCursor_close_internal(APSWCursor *self, int force)
     assert(!PyErr_Occurred());
   }
 
-  APSWCursor_discard_pending_iterator(self);
+  APSWCursor_discard_prefetch(self);
+  PyMem_Free(self->prefetch_slots);
+  self->prefetch_slots = 0;
 
   /* Remove from connection dependents list.  Has to be done before we decref self->connection
      otherwise connection could dealloc and we'd still be in list */
@@ -292,30 +307,6 @@ APSWCursor_dealloc(PyObject *self_)
   Py_TpFree(self_);
 }
 
-static PyObject *APSWCursor_next(PyObject *self_);
-
-/* We need to raise AsyncStopIteration whereas regular next just
-   returns NULL */
-static PyObject *APSWCursor_async_next(PyObject *self_)
-{
-  APSWCursor *self = (APSWCursor *)self_;
-  CHECK_CURSOR_CLOSED(NULL);
-
-  assert(IN_WORKER_THREAD(self->connection));
-
-  PyObject *result = APSWCursor_next(self_);
-  if(!result && !PyErr_Occurred())
-  {
-    PyObject *klass = PyExc_StopAsyncIteration;
-#ifdef APSW_DEBUG
-    if(self->connection->async_controller == async_dummy_controller)
-      klass = PyExc_StopIteration;
-#endif
-    PyErr_SetNone(klass);
-  }
-  return result;
-}
-
 /** .. method:: __init__(connection: Connection)
 
  Use :meth:`Connection.cursor` to make a new cursor.
@@ -351,7 +342,8 @@ APSWCursor_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->convert_binding);
   Py_VISIT(self->convert_jsonb);
-  Py_VISIT(self->pending_iterator);
+  for (int i = 0; i < self->prefetch_slots_allocated; i++)
+    Py_VISIT(self->prefetch_slots[i]);
   return 0;
 }
 
@@ -1196,24 +1188,9 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
-  if (!IN_WORKER_THREAD(self->connection))
-  {
-    /* in async mode we need to box up these parameters
-       stash them, and return self.  then anext needs
-       arrange for the stashed call followed by next
-       to be sent as a unit */
-    APSWCursor_discard_pending_iterator(self);
-    PyObject *boxed_call = make_boxed_fastcall(APSWCursor_execute, self_, fast_args, fast_nargs, fast_kwnames);
-    if (!boxed_call)
-      return NULL;
-    ((BoxedCall *)boxed_call)->and_then = APSWCursor_async_next;
-#ifdef APSW_DEBUG
-    if (self->connection->async_controller == async_dummy_controller)
-      ((BoxedCall *)boxed_call)->and_then = NULL;
-#endif
-    self->pending_iterator = async_send_boxed_call((PyObject*)self->connection, boxed_call);
-    return self->pending_iterator ? Py_NewRef(self) : NULL;
-  }
+  ASYNC_FASTCALL(self->connection, APSWCursor_execute);
+  APSWCursor_discard_prefetch(self);
+  self->prefetch_state = Prefetch_On;
 
   if (0 != cursor_mutex_get(self))
     return NULL;
@@ -1464,36 +1441,6 @@ APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   Py_RETURN_NONE;
 }
 
-/** .. method:: __anext__(self: Cursor) -> Any
-    :async:
-
-    Cursors are iterators
-*/
-static PyObject *
-APSWCursor_anext(PyObject *self_)
-{
-  APSWCursor *self = (APSWCursor *)self_;
-  CHECK_CURSOR_CLOSED(NULL);
-
-  // check not in worker
-  if (!IN_WORKER_THREAD(self->connection))
-  {
-    if (self->pending_iterator)
-    {
-      PyObject *res = self->pending_iterator;
-      /* kick off getting next row in background */
-      self->pending_iterator = do_async_unary((PyObject*)self->connection, APSWCursor_async_next, self_);
-      if (self->pending_iterator)
-        return res;
-      Py_DECREF(res);
-      return NULL;
-    }
-    // it should be impossible to reach here as we'll keep doing stop iteration at the end
-    Py_UNREACHABLE();
-  }
-  return PyErr_Format(PyExc_TypeError, "You can't use the cursor as async in a non-async context");
-}
-
 /** .. method:: __next__(self: Cursor) -> Any
 
     Cursors are iterators
@@ -1508,11 +1455,6 @@ APSWCursor_next(PyObject *self_)
   int i;
 
   CHECK_CURSOR_CLOSED(NULL);
-
-#ifdef APSW_DEBUG
-  if(self->connection->async_controller==async_dummy_controller && !IN_WORKER_THREAD(self->connection))
-    return APSWCursor_anext(self_);
-#endif
 
   if (0 != cursor_mutex_get(self))
     return NULL;
@@ -1578,6 +1520,114 @@ error:
   return NULL;
 }
 
+static PyObject *
+APSWCursor_async_next_wrap(PyObject *self_)
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
+  assert(IN_WORKER_THREAD(self->connection));
+
+  PyObject *result = APSWCursor_next(self_);
+
+  /* We need to raise AsyncStopIteration whereas regular next just
+   returns NULL */
+
+  if (!result && !PyErr_Occurred())
+  {
+    self->prefetch_state = Prefetch_Off;
+    PyObject *klass = PyExc_StopAsyncIteration;
+#ifdef APSW_DEBUG
+    if (self->connection->async_controller == async_dummy_controller)
+      klass = PyExc_StopIteration;
+#endif
+    PyErr_SetNone(klass);
+  }
+
+  return result;
+}
+
+/** .. method:: __anext__(self: Cursor) -> Any
+    :async:
+
+    Cursors are iterators
+*/
+static PyObject *
+APSWCursor_anext(PyObject *self_)
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
+  if (IN_WORKER_THREAD(self->connection))
+    return PyErr_Format(PyExc_TypeError, "You can't use the cursor as async in a non-async context");
+
+  /* first move all entries down so slot zero will be occupied
+     if any exist */
+  for (int i = 0; i < self->prefetch_slots_allocated; i++)
+  {
+    if (self->prefetch_slots[i])
+      continue;
+    /* this will shuffle along all remaining slots */
+    for (int x = i + 1; x < self->prefetch_slots_allocated; x++)
+    {
+      if (self->prefetch_slots[x])
+      {
+        self->prefetch_slots[i] = self->prefetch_slots[x];
+        i++;
+        self->prefetch_slots[x] = NULL;
+      }
+    }
+    break;
+  }
+
+  /* ignore changes if any slots occupied */
+  if (self->prefetch_slots_allocated && !self->prefetch_slots[0]
+      && self->prefetch_slots_desired != self->prefetch_slots_allocated)
+  {
+    assert(self->prefetch_slots_desired > 0);
+    self->prefetch_slots = PyMem_Calloc(self->prefetch_slots_desired, sizeof(PyObject *));
+    if (!self->prefetch_slots)
+      return NULL;
+    self->prefetch_slots_allocated = self->prefetch_slots_desired;
+  }
+
+  /* we will be returning one item so grab slot[0] if available at exhaustion */
+  if (self->prefetch_state == Prefetch_Off && self->prefetch_slots_allocated && self->prefetch_slots[0])
+  {
+    PyObject *retval = self->prefetch_slots[0];
+    self->prefetch_slots[0] = NULL;
+    return retval;
+  }
+
+  PyObject *one_item = do_async_unary((PyObject *)self->connection, APSWCursor_async_next_wrap, (PyObject *)self);
+  if (!one_item)
+    return NULL;
+
+  if (self->prefetch_state == Prefetch_Off || !self->prefetch_slots_allocated)
+    return one_item;
+
+  /* fill all empty slots */
+  for (int i = 0; i < self->prefetch_slots_allocated; i++)
+  {
+    if (!self->prefetch_slots[i])
+    {
+      one_item = one_item ? one_item
+                          : do_async_unary((PyObject *)self->connection, APSWCursor_async_next_wrap, (PyObject *)self);
+      if (!one_item)
+        return NULL;
+      self->prefetch_slots[i] = one_item;
+      one_item = NULL;
+    }
+  }
+
+  if (!one_item)
+  {
+    one_item = self->prefetch_slots[0];
+    self->prefetch_slots[0] = NULL;
+  }
+
+  return NULL;
+}
 
 /** .. method:: __iter__(self: Cursor) -> Cursor
 
@@ -1619,6 +1669,9 @@ APSWCursor_aiter(PyObject *self_)
     PyErr_SetString(PyExc_TypeError, "async iteration only works on async connections");
     return NULL;
   }
+  self->prefetch_state = Prefetch_On;
+  // ::TODO:: read the context var
+  self->prefetch_slots_desired = 0;
   return Py_NewRef(self_);
 }
 
