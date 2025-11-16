@@ -4808,6 +4808,10 @@ Connection_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_EPILOG(NULL, Connection_aexit_USAGE, );
   }
 
+  (void)etype;
+  (void)evalue;
+  (void)etraceback;
+
   ASYNC_FASTCALL(self, Connection_exit);
   PyErr_SetString(PyExc_TypeError, "Using async method in sync context");
   return NULL;
