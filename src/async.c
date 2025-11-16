@@ -13,9 +13,6 @@ typedef struct BoxedCall
 {
   PyObject_HEAD
 
-  /* the iterators need two calls in one */
-  unaryfunc and_then;
-
   /* discriminated union */
   enum
   {
@@ -138,12 +135,6 @@ BoxedCall_internal_call(BoxedCall *self)
     // ::TODO:: delete this default once the code is complete
     assert(0);
   }
-  if (result && self->and_then)
-  {
-    PyObject *result2 = self->and_then(result);
-    Py_DECREF(result);
-    result = result2;
-  }
 
   if (!result && PyErr_Occurred() && !PyErr_ExceptionMatches(PyExc_StopAsyncIteration)
       && !PyErr_ExceptionMatches(PyExc_StopIteration))
@@ -181,7 +172,6 @@ make_boxed_call(Py_ssize_t total_args)
   if (box)
   {
     box->call_type = Dormant;
-    box->and_then = NULL;
 
     /* verify union member size constraints */
     assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->ConnectionInit));
@@ -221,11 +211,6 @@ async_shutdown_controller(PyObject *controller)
 static PyObject *
 async_send_boxed_call(PyObject *connection, PyObject *boxed_call)
 {
-  /*
-    in a debug mode we can set the thread local, call boxed_call, unset the
-    thread call
-  */
-
 #ifdef APSW_DEBUG
   if (async_get_controller_from_connection(connection) == async_dummy_controller)
   {
