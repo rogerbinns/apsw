@@ -1217,18 +1217,25 @@
 } while(0)
 
 
+#define  Connection_aclose_DOC "Connection.aclose(force: bool = False) -> None\n\n" \
+":async:\n" \
+"\n" \
+"The async version of :meth:`close`\n" 
+
+#define Connection_aclose_KWNAMES "force"
+#define Connection_aclose_USAGE "Connection.aclose(force: bool = False) -> None"
+
+#define Connection_aclose_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(force), int)); \
+  assert(force == 0); \
+} while(0)
+
+
 #define  Connection_aenter_DOC "Connection.__aenter__() -> Connection\n\n" \
 ":async:\n" \
 "\n" \
 "Async version of :meth:`__enter__` context\n" \
 "manager.  You must use this with async connections.\n" 
-
-#define Connection_aenter_KWNAMES NULL
-#define Connection_aenter_USAGE "Connection.__aenter__() -> Connection"
-
-#define Connection_aenter_CHECK do { \
-} while(0)
-
 
 #define  Connection_aexit_DOC "Connection.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None\n\n" \
 ":async:\n" \
@@ -3091,6 +3098,20 @@
   assert(dbname == 0); \
   assert(__builtin_types_compatible_p(typeof(mode), int)); \
   assert(mode == (SQLITE_CHECKPOINT_PASSIVE)); \
+} while(0)
+
+
+#define  Cursor_aclose_DOC "Cursor.aclose(force: bool = False) -> None\n\n" \
+":async:\n" \
+"\n" \
+"asynv version of :meth:`close`\n" 
+
+#define Cursor_aclose_KWNAMES "force"
+#define Cursor_aclose_USAGE "Cursor.aclose(force: bool = False) -> None"
+
+#define Cursor_aclose_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(force), int)); \
+  assert(force == 0); \
 } while(0)
 
 
