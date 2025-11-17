@@ -48,7 +48,7 @@ class AsyncIO:
         "Enqueues call to worker thread"
         try:
             future = self.get_running_loop().create_future()
-            self.queue.put((future, call, deadline.get()))
+            self.queue.put((future, call, apsw.async_cursor_prefetch.get(), deadline.get()))
             return future
         except AttributeError:
             if self.queue is None:
@@ -88,7 +88,7 @@ class AsyncIO:
         with apsw.async_run_coro.set(self.async_run_coro):
 
             while (item := q.get()) is not None:
-                future, call, this_deadline = item
+                future, call, this_prefetch, this_deadline = item
 
                 # cancelled?
                 if future.done():
@@ -97,6 +97,7 @@ class AsyncIO:
                 with (
                     _current_future.set(future),
                     deadline.set(this_deadline),
+                    apsw.async_cursor_prefetch.set(this_prefetch),
                 ):
 
                     try:

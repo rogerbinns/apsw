@@ -256,6 +256,7 @@ APSWCursor_close_internal(APSWCursor *self, int force)
   }
 
   APSWCursor_discard_prefetch(self);
+  self->prefetch_slots_allocated = 0;
   PyMem_Free(self->prefetch_slots);
   self->prefetch_slots = 0;
 
@@ -1188,9 +1189,8 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
-  ASYNC_FASTCALL(self->connection, APSWCursor_execute);
   APSWCursor_discard_prefetch(self);
-  self->prefetch_state = Prefetch_On;
+  ASYNC_FASTCALL(self->connection, APSWCursor_execute);
 
   if (0 != cursor_mutex_get(self))
     return NULL;
@@ -1303,6 +1303,9 @@ APSWCursor_executemany(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     ARG_OPTIONAL ARG_int(explain);
     ARG_EPILOG(NULL, Cursor_executemany_USAGE, );
   }
+
+  APSWCursor_discard_prefetch(self);
+  ASYNC_FASTCALL(self->connection, APSWCursor_executemany);
 
   if (0 != cursor_mutex_get(self))
     return NULL;
@@ -1423,6 +1426,11 @@ APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_EPILOG(NULL, Cursor_close_USAGE, );
   }
 
+  if (!IN_WORKER_THREAD(self->connection))
+  {
+    PyErr_SetString(PyExc_TypeError, "You must use aclose (async version of close)");
+    return NULL;
+  }
 
   DBMUTEX_ENSURE(self->connection);
   /* Manual IN_QUERY_CHECK to give better error message */
@@ -1439,6 +1447,34 @@ APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     return NULL;
 
   Py_RETURN_NONE;
+}
+
+/** .. method:: aclose(force: bool = False) -> None
+  :async:
+
+  asynv version of :meth:`close`
+
+*/
+static PyObject *
+APSWCursor_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  int force = 0;
+
+  {
+    Cursor_aclose_CHECK;
+    ARG_PROLOG(1, Cursor_aclose_KWNAMES);
+    ARG_OPTIONAL ARG_bool(force);
+    ARG_EPILOG(NULL, Cursor_aclose_USAGE, );
+  }
+
+  if (!self->connection)
+    return PyErr_Format(ExcCursorClosed, "The cursor is already closed");
+
+  ASYNC_FASTCALL(self->connection, APSWCursor_close);
+
+  PyErr_SetString(PyExc_TypeError, "Using async method in sync context");
+  return NULL;
 }
 
 /** .. method:: __next__(self: Cursor) -> Any
@@ -1536,12 +1572,7 @@ APSWCursor_async_next_wrap(PyObject *self_)
   if (!result && !PyErr_Occurred())
   {
     self->prefetch_state = Prefetch_Off;
-    PyObject *klass = PyExc_StopAsyncIteration;
-#ifdef APSW_DEBUG
-    if (self->connection->async_controller == async_dummy_controller)
-      klass = PyExc_StopIteration;
-#endif
-    PyErr_SetNone(klass);
+    PyErr_SetNone(PyExc_StopAsyncIteration);
   }
 
   return result;
@@ -1561,8 +1592,7 @@ APSWCursor_anext(PyObject *self_)
   if (IN_WORKER_THREAD(self->connection))
     return PyErr_Format(PyExc_TypeError, "You can't use the cursor as async in a non-async context");
 
-  /* first move all entries down so slot zero will be occupied
-     if any exist */
+  /* move all entries down so slot zero will be occupied if any exist */
   for (int i = 0; i < self->prefetch_slots_allocated; i++)
   {
     if (self->prefetch_slots[i])
@@ -1580,53 +1610,45 @@ APSWCursor_anext(PyObject *self_)
     break;
   }
 
-  /* ignore changes if any slots occupied */
-  if (self->prefetch_slots_allocated && !self->prefetch_slots[0]
-      && self->prefetch_slots_desired != self->prefetch_slots_allocated)
+  /* do we need to change the number of slots?  */
+  if (self->prefetch_slots_desired != self->prefetch_slots_allocated
+      /* but only if none occupied */
+      && !(self->prefetch_slots_allocated && !self->prefetch_slots[0]))
   {
-    assert(self->prefetch_slots_desired > 0);
+    assert(self->prefetch_slots_desired >= 0);
+    /* always returns a pointer even for size zero */
     self->prefetch_slots = PyMem_Calloc(self->prefetch_slots_desired, sizeof(PyObject *));
     if (!self->prefetch_slots)
       return NULL;
     self->prefetch_slots_allocated = self->prefetch_slots_desired;
+    if (!self->prefetch_slots_allocated)
+      self->prefetch_state = Prefetch_Off;
   }
 
-  /* we will be returning one item so grab slot[0] if available at exhaustion */
-  if (self->prefetch_state == Prefetch_Off && self->prefetch_slots_allocated && self->prefetch_slots[0])
+  if (self->prefetch_state == Prefetch_On)
   {
-    PyObject *retval = self->prefetch_slots[0];
-    self->prefetch_slots[0] = NULL;
-    return retval;
-  }
-
-  PyObject *one_item = do_async_unary((PyObject *)self->connection, APSWCursor_async_next_wrap, (PyObject *)self);
-  if (!one_item)
-    return NULL;
-
-  if (self->prefetch_state == Prefetch_Off || !self->prefetch_slots_allocated)
-    return one_item;
-
-  /* fill all empty slots */
-  for (int i = 0; i < self->prefetch_slots_allocated; i++)
-  {
-    if (!self->prefetch_slots[i])
+    /* fill all empty slots */
+    for (int i = 0; i < self->prefetch_slots_allocated; i++)
     {
-      one_item = one_item ? one_item
-                          : do_async_unary((PyObject *)self->connection, APSWCursor_async_next_wrap, (PyObject *)self);
-      if (!one_item)
-        return NULL;
-      self->prefetch_slots[i] = one_item;
-      one_item = NULL;
+      if (!self->prefetch_slots[i])
+      {
+        self->prefetch_slots[i]
+            = do_async_unary((PyObject *)self->connection, APSWCursor_async_next_wrap, (PyObject *)self);
+        if (!self->prefetch_slots[i])
+          return NULL;
+      }
     }
   }
 
-  if (!one_item)
+  /* take first entry if there is one */
+  if (self->prefetch_slots_allocated && self->prefetch_slots[0])
   {
-    one_item = self->prefetch_slots[0];
+    PyObject *result = self->prefetch_slots[0];
     self->prefetch_slots[0] = NULL;
+    return result;
   }
 
-  return NULL;
+  return do_async_unary((PyObject *)self->connection, APSWCursor_async_next_wrap, (PyObject *)self);
 }
 
 /** .. method:: __iter__(self: Cursor) -> Cursor
@@ -1669,9 +1691,30 @@ APSWCursor_aiter(PyObject *self_)
     PyErr_SetString(PyExc_TypeError, "async iteration only works on async connections");
     return NULL;
   }
-  self->prefetch_state = Prefetch_On;
-  // ::TODO:: read the context var
-  self->prefetch_slots_desired = 0;
+  self->prefetch_state = Prefetch_Off;
+  PyObject *desired = NULL;
+  if (0 != PyContextVar_Get(async_cursor_prefetch_context_var, NULL, &desired))
+    return NULL;
+  if (!desired || Py_IsNone(desired))
+  {
+    self->prefetch_slots_desired = 0;
+    Py_XDECREF(desired);
+  }
+  else
+  {
+    int value = PyLong_AsInt(desired);
+    Py_DECREF(desired);
+    if (value == -1 && PyErr_Occurred())
+      return NULL;
+    if (value < 0)
+      value = 0;
+    else if (value > 128)
+      value = 128;
+    /* the +1 is because we use one slot for the current anext call */
+    self->prefetch_slots_desired = value ? value + 1 : 0;
+  }
+
+  self->prefetch_state = self->prefetch_slots_desired ? Prefetch_On : Prefetch_Off;
   return Py_NewRef(self_);
 }
 
@@ -2316,6 +2359,7 @@ static PyMethodDef APSWCursor_methods[] = {
   { "get_connection", (PyCFunction)APSWCursor_get_connection, METH_NOARGS, Cursor_get_connection_DOC },
   { "get_description", (PyCFunction)APSWCursor_get_description, METH_NOARGS, Cursor_get_description_DOC },
   { "close", (PyCFunction)APSWCursor_close, METH_FASTCALL | METH_KEYWORDS, Cursor_close_DOC },
+  { "aclose", (PyCFunction)APSWCursor_aclose, METH_FASTCALL | METH_KEYWORDS, Cursor_aclose_DOC },
   { "fetchall", (PyCFunction)APSWCursor_fetchall, METH_NOARGS, Cursor_fetchall_DOC },
   { "fetchone", (PyCFunction)APSWCursor_fetchone, METH_NOARGS, Cursor_fetchone_DOC },
 #ifndef APSW_OMIT_OLD_NAMES

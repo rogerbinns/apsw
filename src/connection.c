@@ -519,7 +519,11 @@ Connection_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_EPILOG(NULL, Connection_close_USAGE, );
   }
 
-  ASYNC_FASTCALL(self, Connection_close);
+  if (!IN_WORKER_THREAD(self))
+  {
+    PyErr_SetString(PyExc_TypeError, "You must use aclose (async version of close)");
+    return NULL;
+  }
 
   DBMUTEX_ENSURE(self);
   if (Connection_close_internal(self, force))
@@ -529,6 +533,35 @@ Connection_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   }
 
   Py_RETURN_NONE;
+}
+
+/** .. method:: aclose(force: bool = False) -> None
+  :async:
+
+  The async version of :meth:`close`
+*/
+static PyObject *
+Connection_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  Connection *self = (Connection *)self_;
+  int force = 0;
+
+  {
+    Connection_aclose_CHECK;
+    ARG_PROLOG(1, Connection_aclose_KWNAMES);
+    ARG_OPTIONAL ARG_bool(force);
+    ARG_EPILOG(NULL, Connection_aclose_USAGE, );
+  }
+
+  if (IN_WORKER_THREAD(self))
+  {
+    PyErr_SetString(PyExc_TypeError, "You must use close (sync version of aclose)");
+    return NULL;
+  }
+
+  ASYNC_FASTCALL(self, Connection_close);
+  Py_UNREACHABLE();
+  return NULL;
 }
 
 static void
@@ -6617,6 +6650,7 @@ static PyMethodDef Connection_methods[] = {
   { "as_async", (PyCFunction)Connection_as_async, METH_CLASS | METH_FASTCALL | METH_KEYWORDS, Connection_as_async_DOC },
   { "cursor", (PyCFunction)Connection_cursor, METH_NOARGS, Connection_cursor_DOC },
   { "close", (PyCFunction)Connection_close, METH_FASTCALL | METH_KEYWORDS, Connection_close_DOC },
+  { "aclose", (PyCFunction)Connection_aclose, METH_FASTCALL | METH_KEYWORDS, Connection_aclose_DOC },
   { "set_busy_timeout", (PyCFunction)Connection_set_busy_timeout, METH_FASTCALL | METH_KEYWORDS,
     Connection_set_busy_timeout_DOC },
   { "interrupt", (PyCFunction)Connection_interrupt, METH_NOARGS, Connection_interrupt_DOC },

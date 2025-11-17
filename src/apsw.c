@@ -1968,10 +1968,11 @@ static int
 setattr_no_write(PyObject *module, PyObject *name, PyObject *value)
 {
   if (module_is_initialized
-      && (PyObject_RichCompareBool(name, apst.async_run_coro, Py_EQ) == 1))
+      && (PyObject_RichCompareBool(name, apst.async_run_coro, Py_EQ) == 1
+          || PyObject_RichCompareBool(name, apst.async_cursor_prefetch, Py_EQ) == 1))
   {
     PyErr_Format(PyExc_AttributeError,
-                 "Do not overwrite apsw.%S.  It is a context var - use its set method in the context", name);
+                 "Do not overwrite apsw.%S.  It is a context var - use its set method in your context", name);
     return -1;
   }
 
@@ -2176,6 +2177,21 @@ PyInit_apsw(void)
       goto fail;
 
   if (PyModule_AddObjectRef(m, "async_run_coro", async_run_coro_context_var))
+    goto fail;
+
+  /** .. attribute:: async_cursor_prefetch
+    :type: contextvars.ContextVar[int | None]
+
+    When looping on a :class:`Cursor` in async mode, subsequent rows can
+    be fetched ahead while you are processing the current row.  This controls
+    how many rows are fetched ahead.  The default is None. See :doc:`async` for details.
+  */
+
+  if (!async_cursor_prefetch_context_var)
+    if (NULL == (async_cursor_prefetch_context_var = PyContextVar_New("apsw.async_cursor_prefetch", Py_None)))
+      goto fail;
+
+  if (PyModule_AddObjectRef(m, "async_cursor_prefetch", async_cursor_prefetch_context_var))
     goto fail;
 
   /** .. attribute:: no_change

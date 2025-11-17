@@ -269,7 +269,7 @@ make_boxed_fastcall(PyCFunctionFastWithKeywords function, PyObject *object, PyOb
   boxed_call->FastCallWithKeywords.fast_kwnames = Py_XNewRef(fast_kwnames);
   boxed_call->FastCallWithKeywords.fast_nargs = fast_nargs;
   memcpy(boxed_call->FastCallWithKeywords.fast_args + 1, fast_args, sizeof(PyObject *) * total_args);
-  for (size_t i = 0; i < total_args; i++)
+  for (Py_ssize_t i = 0; i < total_args; i++)
     Py_INCREF(boxed_call->FastCallWithKeywords.fast_args[1 + i]);
 
   return (PyObject *)boxed_call;
