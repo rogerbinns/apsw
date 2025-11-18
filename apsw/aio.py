@@ -5,9 +5,15 @@ from __future__ import annotations
 import queue
 import threading
 import contextvars
+import contextlib
+import sys
 import time
 
 import apsw
+
+from typing import TypeVar, Any
+T = TypeVar("T")
+
 
 deadline: contextvars.ContextVar[int | float | None] = contextvars.ContextVar("apsw.aio.deadline", default=None)
 """Set to a value based one :func:`time.monotonic()` for an operation to complete by
@@ -29,6 +35,39 @@ idea to set a deadline because it will unblock deadlocks.
           # do other operations
           ...
 """
+
+def contextvar_set(var: contextvars.ContextVar[T], value: T)-> contextvars.Token[T]:
+    """wrapper for setting a contextvar during a with block
+
+    Python 3.14 lets you do::
+
+        with var.set(value):
+            # code here
+            pass
+
+    This wrapper provides the same functionality for all
+    Python versions::
+
+        with contextvar_set(value):
+            # code here
+            pass
+
+    """
+    if sys.version_info >=(3,14):
+        return var.set(value)
+
+    @contextlib.contextmanager
+    def _contextvar_set_wrapper():
+        token = var.set(value)
+        try:
+            yield
+        finally:
+            var.reset(token)
+
+    return _contextvar_set_wrapper()
+
+
+
 
 # ::TODO:: if sys.version < 3.11 then concurrent.futures.TimeoutError needs to be turned into exceptions.TimeoutError
 
@@ -88,7 +127,7 @@ class AsyncIO:
     def worker_thread_run(self, q):
         "Does the enqueued call processing in the worker thread"
 
-        with apsw.async_run_coro.set(self.async_run_coro):
+        with contextvar_set(apsw.async_run_coro, self.async_run_coro):
 
             while (item := q.get()) is not None:
                 future, call, this_prefetch, this_deadline = item
@@ -98,9 +137,9 @@ class AsyncIO:
                     continue
 
                 with (
-                    _current_future.set(future),
-                    deadline.set(this_deadline),
-                    apsw.async_cursor_prefetch.set(this_prefetch),
+                    contextvar_set(_current_future, future),
+                    contextvar_set(deadline, this_deadline),
+                    contextvar_set(apsw.async_cursor_prefetch, this_prefetch),
                 ):
 
                     try:
