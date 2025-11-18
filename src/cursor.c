@@ -1397,6 +1397,8 @@ error_out:
   are none left will allow the connection to be garbage collected if
   it has no other references.
 
+  It is safe to call the method multiple times.
+
   A cursor is open if there are remaining statements to execute (if
   your query included multiple statements), or if you called
   :meth:`~Cursor.executemany` and not all of the sequence of bindings
@@ -1452,7 +1454,7 @@ APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
 /** .. method:: aclose(force: bool = False) -> None
   :async:
 
-  asynv version of :meth:`close`
+  Async version of :meth:`close`
 
 */
 static PyObject *
@@ -1461,6 +1463,8 @@ APSWCursor_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   APSWCursor *self = (APSWCursor *)self_;
   int force = 0;
 
+  CHECK_CURSOR_CLOSED(NULL);
+
   {
     Cursor_aclose_CHECK;
     ARG_PROLOG(1, Cursor_aclose_KWNAMES);
@@ -1468,16 +1472,57 @@ APSWCursor_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_EPILOG(NULL, Cursor_aclose_USAGE, );
   }
 
-  if (!self->connection)
-    return PyErr_Format(ExcCursorClosed, "The cursor is already closed");
+  if (IN_WORKER_THREAD(self->connection))
+  {
+    PyErr_SetString(PyExc_TypeError, "async method used on sync connections");
+    return NULL;
+  }
 
-  ASYNC_FASTCALL(self->connection, APSWCursor_close);
-
-  PyErr_SetString(PyExc_TypeError, "Using async method in sync context");
-  return NULL;
+  return do_async_fastcall((PyObject *)self->connection, APSWCursor_close, self_, fast_args, fast_nargs, fast_kwnames);
 }
 
-/** .. method:: __next__(self: Cursor) -> Any
+/** .. method:: __aenter__() -> Self
+
+  If you use the cursor as a context manager then it will be closed on
+  exit.
+*/
+static PyObject *
+APSWCursor_aenter(PyObject *self_)
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
+  if (IN_WORKER_THREAD(self->connection))
+  {
+    PyErr_SetString(PyExc_TypeError, "async context manager only works on async connections");
+    return NULL;
+  }
+
+  return async_return_value((PyObject *)self->connection, self_);
+}
+
+/** .. method:: __aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None
+
+  Close the cursor on exit of context
+*/
+static PyObject *
+APSWCursor_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  APSWCursor *self = (APSWCursor *)self_;
+
+  CHECK_CURSOR_CLOSED(NULL);
+
+  if (IN_WORKER_THREAD(self->connection))
+  {
+    PyErr_SetString(PyExc_TypeError, "async context manager only works on async connections");
+    return NULL;
+  }
+
+  /* the sanitizer doesn't like NULL as a pointer even when accessing 0 bytes of it, so we pass in 8 instead */
+  return do_async_fastcall((PyObject *)self->connection, APSWCursor_close, self_, (PyObject *const *)8, 0, NULL);
+}
+
+/** .. method:: __next__() -> Any
 
     Cursors are iterators
 */
@@ -1578,7 +1623,7 @@ APSWCursor_async_next_wrap(PyObject *self_)
   return result;
 }
 
-/** .. method:: __anext__(self: Cursor) -> Any
+/** .. method:: __anext__() -> Any
     :async:
 
     Cursors are iterators
@@ -1675,7 +1720,7 @@ APSWCursor_iter(PyObject *self_)
   return Py_NewRef(self_);
 }
 
-/** .. method:: __aiter__(self: Cursor) -> Cursor
+/** .. method:: __aiter__() -> Cursor
     :async:
 
     Cursors are async iterators
@@ -2360,6 +2405,8 @@ static PyMethodDef APSWCursor_methods[] = {
   { "get_description", (PyCFunction)APSWCursor_get_description, METH_NOARGS, Cursor_get_description_DOC },
   { "close", (PyCFunction)APSWCursor_close, METH_FASTCALL | METH_KEYWORDS, Cursor_close_DOC },
   { "aclose", (PyCFunction)APSWCursor_aclose, METH_FASTCALL | METH_KEYWORDS, Cursor_aclose_DOC },
+  { "__aenter__", (PyCFunction)APSWCursor_aenter, METH_NOARGS, Cursor_aenter_DOC },
+  { "__aexit__", (PyCFunction)APSWCursor_aexit, METH_FASTCALL | METH_KEYWORDS, Cursor_aexit_DOC },
   { "fetchall", (PyCFunction)APSWCursor_fetchall, METH_NOARGS, Cursor_fetchall_DOC },
   { "fetchone", (PyCFunction)APSWCursor_fetchone, METH_NOARGS, Cursor_fetchone_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
