@@ -71,6 +71,9 @@ class AsyncIO:
         # asyncio warns about futures not resolved
         future.cancel()
 
+    async def async_value(self, value):
+        return value
+
 
     # The methods above are callbacks from ASyncConnection.  The ones below
     # are our internal workings.

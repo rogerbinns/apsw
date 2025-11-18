@@ -44,7 +44,9 @@
 #undef UpdateInsertRow
 #undef add_note
 #undef async_cursor_prefetch
+#undef async_exception
 #undef async_run_coro
+#undef async_value
 #undef can_cache
 #undef cancel
 #undef close
@@ -137,7 +139,9 @@ static struct _apsw_string_table
     PyObject *UpdateInsertRow;
     PyObject *add_note;
     PyObject *async_cursor_prefetch;
+    PyObject *async_exception;
     PyObject *async_run_coro;
+    PyObject *async_value;
     PyObject *can_cache;
     PyObject *cancel;
     PyObject *close;
@@ -231,7 +235,9 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.UpdateInsertRow);
     Py_CLEAR(apst.add_note);
     Py_CLEAR(apst.async_cursor_prefetch);
+    Py_CLEAR(apst.async_exception);
     Py_CLEAR(apst.async_run_coro);
+    Py_CLEAR(apst.async_value);
     Py_CLEAR(apst.can_cache);
     Py_CLEAR(apst.cancel);
     Py_CLEAR(apst.close);
@@ -326,7 +332,9 @@ init_apsw_strings()
         || (!apst.UpdateInsertRow && 0 == (apst.UpdateInsertRow = PyUnicode_FromString("UpdateInsertRow")))
         || (!apst.add_note && 0 == (apst.add_note = PyUnicode_FromString("add_note")))
         || (!apst.async_cursor_prefetch && 0 == (apst.async_cursor_prefetch = PyUnicode_FromString("async_cursor_prefetch")))
+        || (!apst.async_exception && 0 == (apst.async_exception = PyUnicode_FromString("async_exception")))
         || (!apst.async_run_coro && 0 == (apst.async_run_coro = PyUnicode_FromString("async_run_coro")))
+        || (!apst.async_value && 0 == (apst.async_value = PyUnicode_FromString("async_value")))
         || (!apst.can_cache && 0 == (apst.can_cache = PyUnicode_FromString("can_cache")))
         || (!apst.cancel && 0 == (apst.cancel = PyUnicode_FromString("cancel")))
         || (!apst.close && 0 == (apst.close = PyUnicode_FromString("close")))

@@ -230,6 +230,13 @@ async_send_boxed_call(PyObject *connection, PyObject *boxed_call)
   return result;
 }
 
+static PyObject *
+async_return_value(PyObject *connection, PyObject *value)
+{
+  PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), value };
+  return PyObject_VectorcallMethod_NoAsync(apst.async_value, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+}
+
 void
 async_send_discard(PyObject *connection, PyObject *object)
 {
