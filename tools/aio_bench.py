@@ -106,5 +106,5 @@ sqlite3 SQLite version: {sqlite3.sqlite_version}
 
 for prefetch in (1, 10, 20, 50, 100):
     run_aiosqlite3(prefetch)
-    run_apsw(prefetch - 1)  ### NOTE
+    run_apsw(prefetch)
     print()
