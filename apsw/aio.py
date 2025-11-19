@@ -37,35 +37,39 @@ idea to set a deadline because it will unblock deadlocks.
           ...
 """
 
-def contextvar_set(var: contextvars.ContextVar[T], value: T)-> contextvars.Token[T]:
-    """wrapper for setting a contextvar during a with block
+if sys.version_info >= (3, 14):
 
-    Python 3.14 lets you do::
+    def contextvar_set(var: contextvars.ContextVar[T], value: T) -> contextvars.Token[T]:
+        """wrapper for setting a contextvar during a with block
 
-        with var.set(value):
-            # code here
-            pass
+        Python 3.14 lets you do::
 
-    This wrapper provides the same functionality for all
-    Python versions::
+            with var.set(value):
+                # code here
+                pass
 
-        with contextvar_set(value):
-            # code here
-            pass
+        This wrapper provides the same functionality for all
+        Python versions::
 
-    """
-    if sys.version_info >=(3,14):
+            with contextvar_set(value):
+                # code here
+                pass
+
+        """
         return var.set(value)
 
-    @contextlib.contextmanager
-    def _contextvar_set_wrapper():
-        token = var.set(value)
-        try:
-            yield
-        finally:
-            var.reset(token)
+else:
 
-    return _contextvar_set_wrapper()
+    def contextvar_set(var: contextvars.ContextVar[T], value: T) -> contextvars.Token[T]:
+        @contextlib.contextmanager
+        def _contextvar_set_wrapper():
+            token = var.set(value)
+            try:
+                yield
+            finally:
+                var.reset(token)
+
+        return _contextvar_set_wrapper()
 
 
 
