@@ -4,6 +4,13 @@
   See the accompanying LICENSE file.
 */
 
+#if PY_VERSION_HEX < 0x030b0000
+typedef PyObject *(*PyCFunctionFastWithKeywords)(PyObject *self,
+                                      PyObject *const *args,
+                                      Py_ssize_t nargs,
+                                      PyObject *kwnames);
+#endif
+
 /* used in calls to AddTraceBackHere where O format takes non-null but
    we often have null so convert to None.  This can't be done as a portable
    macro because v would end up double evaluated */
