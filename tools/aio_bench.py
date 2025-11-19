@@ -29,6 +29,10 @@ source = """select * from foo limit 1000"""
 length = "select count(*) from foo"
 
 
+def get_times():
+    return time.monotonic(), time.process_time(), resource.getrusage(resource.RUSAGE_THREAD).ru_utime
+
+
 async def apsw_bench(prefetch: int):
     async with contextlib.aclosing(await apsw.Connection.as_async(apsw.aio.AsyncIO(), ":memory:")) as con:
         apsw.async_cursor_prefetch.set(prefetch)
@@ -71,31 +75,8 @@ async def sqlite3_bench(prefetch: int):
                 async for row in cursor:
                     data.append(row)
 
-            async with con.executemany(insert, data) as cursor:
+            async with con.executemany(insert, data):
                 pass
-
-
-def run_apsw(prefetch: int):
-    b4 = time.monotonic(), time.process_time(), resource.getrusage(resource.RUSAGE_THREAD).ru_utime
-    asyncio.run(apsw_bench(prefetch))
-    after = time.monotonic(), time.process_time(), resource.getrusage(resource.RUSAGE_THREAD).ru_utime
-    print(f"apsw {prefetch=}")
-    show_times(b4, after)
-
-
-def run_aiosqlite3(prefetch: int):
-    b4 = time.monotonic(), time.process_time(), resource.getrusage(resource.RUSAGE_THREAD).ru_utime
-    asyncio.run(sqlite3_bench(prefetch))
-    after = time.monotonic(), time.process_time(), resource.getrusage(resource.RUSAGE_THREAD).ru_utime
-    print(f"aiosqlite {prefetch=}")
-    show_times(b4, after)
-
-
-def show_times(one, two):
-    print(f"""\
-            Wall clock: {two[0] - one[0]:7.3f}
-         CPU (process): {two[1] - one[1]:7.3f}
-CPU (main thread only): {two[2] - one[2]:7.3f}""")
 
 
 print(f"""\
@@ -104,7 +85,21 @@ sqlite3 SQLite version: {sqlite3.sqlite_version}
 
 """)
 
-for prefetch in (1, 10, 20, 50, 100):
-    run_aiosqlite3(prefetch)
-    run_apsw(prefetch)
-    print()
+print(f"{'Library':10s} {'Prefetch':>10s} {'Wall':>10s} {'CpuTotal':>10s} {'CpuThread':>10s}")
+
+
+def show(library, prefetch, start, end):
+    print(
+        f"{library:10s} {prefetch:>10} {end[0] - start[0]:10.3f} {end[1] - start[1]:10.3f} {end[2] - start[2]:10.3f}"
+    )
+
+
+for prefetch in (1, 2, 3, 16, 64, 512, 1024, 16384, 65536, 1_000_000):
+    start = get_times()
+    asyncio.run(sqlite3_bench(prefetch))
+    end = get_times()
+    show("aiosqlite", prefetch, start, end)
+    start = get_times()
+    asyncio.run(apsw_bench(prefetch))
+    end = get_times()
+    show("apsw", prefetch, start, end)
