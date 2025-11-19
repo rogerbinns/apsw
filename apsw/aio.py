@@ -11,6 +11,7 @@ import time
 
 import apsw
 
+import types
 from typing import TypeVar, Any
 T = TypeVar("T")
 
@@ -112,6 +113,11 @@ class AsyncIO:
 
     async def async_value(self, value):
         return value
+
+    async def async_exception(self, exc: BaseException, tb: types.TracebackType | None):
+        if tb is not None:
+            exc.with_traceback(tb)
+        raise exc
 
 
     # The methods above are callbacks from ASyncConnection.  The ones below

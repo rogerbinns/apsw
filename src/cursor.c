@@ -77,17 +77,17 @@ struct APSWCursor
   PyObject *exectrace;
   PyObject *rowtrace;
 
-  /* async prefetch */
+  /* async iteration */
   enum
   {
-    Prefetch_On, /* try to get more */
-    Prefetch_Off /* results exhausted */
-  } prefetch_state;
+    AIter_On,        /* try to get more */
+    AIter_Exception, /* last entry is tuple of (exception, traceback) */
+    AIter_End,       /* no more items */
+  } aiter_state;
 
-  int prefetch_slots_allocated;
-  int prefetch_slots_desired;
+  int aiter_slots_allocated;
 
-  PyObject **prefetch_slots;
+  PyObject **aiter_slots;
 
   /* weak reference support */
   PyObject *weakreflist;
@@ -218,19 +218,6 @@ resetcursor(APSWCursor *self, int force)
   return res;
 }
 
-static void
-APSWCursor_discard_prefetch(APSWCursor *self)
-{
-  for (int i = 0; i < self->prefetch_slots_allocated; i++)
-  {
-    if (self->prefetch_slots[i])
-    {
-      async_send_discard((PyObject *)self->connection, self->prefetch_slots[i]);
-      self->prefetch_slots[i] = 0;
-    }
-  }
-}
-
 static int
 APSWCursor_close_internal(APSWCursor *self, int force)
 {
@@ -255,10 +242,11 @@ APSWCursor_close_internal(APSWCursor *self, int force)
     assert(!PyErr_Occurred());
   }
 
-  APSWCursor_discard_prefetch(self);
-  self->prefetch_slots_allocated = 0;
-  PyMem_Free(self->prefetch_slots);
-  self->prefetch_slots = 0;
+  for (int i = 0; i < self->aiter_slots_allocated; i++)
+    Py_CLEAR(self->aiter_slots[i]);
+  self->aiter_slots_allocated = 0;
+  PyMem_Free(self->aiter_slots);
+  self->aiter_slots = 0;
 
   /* Remove from connection dependents list.  Has to be done before we decref self->connection
      otherwise connection could dealloc and we'd still be in list */
@@ -343,8 +331,8 @@ APSWCursor_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->convert_binding);
   Py_VISIT(self->convert_jsonb);
-  for (int i = 0; i < self->prefetch_slots_allocated; i++)
-    Py_VISIT(self->prefetch_slots[i]);
+  for (int i = 0; i < self->aiter_slots_allocated; i++)
+    Py_VISIT(self->aiter_slots[i]);
   return 0;
 }
 
@@ -1189,7 +1177,9 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
-  APSWCursor_discard_prefetch(self);
+  for (int i = 0; i < self->aiter_slots_allocated; i++)
+    Py_CLEAR(self->aiter_slots[0]);
+  self->aiter_state = AIter_End;
   ASYNC_FASTCALL(self->connection, APSWCursor_execute);
 
   if (0 != cursor_mutex_get(self))
@@ -1304,7 +1294,9 @@ APSWCursor_executemany(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Cursor_executemany_USAGE, );
   }
 
-  APSWCursor_discard_prefetch(self);
+  for (int i = 0; i < self->aiter_slots_allocated; i++)
+    Py_CLEAR(self->aiter_slots[0]);
+  self->aiter_state = AIter_End;
   ASYNC_FASTCALL(self->connection, APSWCursor_executemany);
 
   if (0 != cursor_mutex_get(self))
@@ -1601,26 +1593,108 @@ error:
   return NULL;
 }
 
+PyObject *
+aiter_take_slot0(APSWCursor *self)
+{
+  PyObject *res = self->aiter_slots[0];
+  memmove(self->aiter_slots, self->aiter_slots + 1, sizeof(PyObject *) * (self->aiter_slots_allocated - 1));
+  self->aiter_slots[self->aiter_slots_allocated - 1] = NULL;
+  return res;
+}
+
 static PyObject *
-APSWCursor_async_next_wrap(PyObject *self_)
+APSWCursor_async_next_fill(PyObject *self_)
 {
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
   assert(IN_WORKER_THREAD(self->connection));
 
-  PyObject *result = APSWCursor_next(self_);
-
-  /* We need to raise AsyncStopIteration whereas regular next just
-   returns NULL */
-
-  if (!result && !PyErr_Occurred())
+  /* keep appending to the slots while there is space */
+  while (!self->aiter_slots[self->aiter_slots_allocated - 1] && self->aiter_state == AIter_On)
   {
-    self->prefetch_state = Prefetch_Off;
-    PyErr_SetNone(PyExc_StopAsyncIteration);
+    /* the GIL is released during next so the slot contents could change */
+    PyObject *next_value = APSWCursor_next(self_);
+    if (!next_value)
+    {
+      if (!PyErr_Occurred())
+      {
+        self->aiter_state = AIter_End;
+        if (!self->aiter_slots[0])
+        {
+          PyErr_SetNone(PyExc_StopAsyncIteration);
+          return NULL;
+        }
+        break;
+      }
+      else
+      {
+        self->aiter_state = AIter_End;
+        if (!self->aiter_slots[0])
+        {
+          return NULL;
+        }
+        PY_ERR_FETCH(exc);
+        PY_ERR_NORMALIZE(exc);
+#if PY_VERSION_HEX < 0x030c0000
+        next_value = PyTuple_Pack(2, exc, exctraceback);
+#else
+        next_value = PyTuple_Pack(2, exc, Py_None);
+#endif
+        PY_ERR_CLEAR(exc);
+        if (!next_value)
+          return NULL;
+        self->aiter_state = AIter_Exception;
+      }
+    }
+
+    for (int i = 0; i < self->aiter_slots_allocated; i++)
+    {
+      if (!self->aiter_slots[i])
+      {
+        self->aiter_slots[i] = next_value;
+        break;
+      }
+    }
   }
 
-  return result;
+  PyObject *result = aiter_take_slot0(self);
+  if (!result)
+  {
+    PyErr_SetNone(PyExc_StopAsyncIteration);
+    return NULL;
+  }
+
+  /* is it an exception? */
+  if (self->aiter_slots[0] || self->aiter_state != AIter_Exception)
+    return result;
+
+  /* reify the exception */
+  assert(PyTuple_CheckExact(result));
+
+#if PY_VERSION_HEX >= 0x030c0000
+  PyObject *exc = PyTuple_GetItem(result, 0);
+  Py_DECREF(result);
+  PY_ERR_RESTORE(exc);
+  return NULL;
+
+#else
+
+  /* declares names */
+  PY_ERR_FETCH_IF(0, exc);
+  exc = PyTuple_GetItem(result, 0);
+  if (exc)
+    exctype = Py_NewRef(Py_TYPE(exc));
+  exctraceback = PyTuple_GetItem(result, 1);
+  if (!exc || !exctype || !exctraceback)
+  {
+    PyErr_SetString(PyExc_RuntimeError, "Internal error restoring exception");
+    PY_ERR_CLEAR(exc);
+    return NULL;
+  }
+  PY_ERR_RESTORE(exc);
+  return NULL;
+#endif
 }
 
 /** .. method:: __anext__() -> Any
@@ -1637,63 +1711,43 @@ APSWCursor_anext(PyObject *self_)
   if (IN_WORKER_THREAD(self->connection))
     return PyErr_Format(PyExc_TypeError, "You can't use the cursor as async in a non-async context");
 
-  /* move all entries down so slot zero will be occupied if any exist */
-  for (int i = 0; i < self->prefetch_slots_allocated; i++)
+  if (!self->aiter_slots)
   {
-    if (self->prefetch_slots[i])
-      continue;
-    /* this will shuffle along all remaining slots */
-    for (int x = i + 1; x < self->prefetch_slots_allocated; x++)
-    {
-      if (self->prefetch_slots[x])
-      {
-        self->prefetch_slots[i] = self->prefetch_slots[x];
-        i++;
-        self->prefetch_slots[x] = NULL;
-      }
-    }
-    break;
+    PyErr_SetString(PyExc_RuntimeError, "__anext__  called without calling __aiter__");
+    return NULL;
   }
 
-  /* do we need to change the number of slots?  */
-  if (self->prefetch_slots_desired != self->prefetch_slots_allocated
-      /* but only if none occupied */
-      && !(self->prefetch_slots_allocated && !self->prefetch_slots[0]))
+  /* any pending entries? */
+  if (self->aiter_slots[0])
   {
-    assert(self->prefetch_slots_desired >= 0);
-    /* always returns a pointer even for size zero */
-    self->prefetch_slots = PyMem_Calloc(self->prefetch_slots_desired, sizeof(PyObject *));
-    if (!self->prefetch_slots)
+    PyObject *result = aiter_take_slot0(self);
+    if (self->aiter_state == AIter_Exception && !self->aiter_slots[0])
+    {
+      self->aiter_state = AIter_End;
+      PyObject *new_result = async_return_exception((PyObject *)self->connection, result);
+      Py_DECREF(result);
+      return new_result;
+    }
+    PyObject *new_result = async_return_value((PyObject *)self->connection, result);
+    Py_DECREF(result);
+    return new_result;
+  }
+
+  if (self->aiter_state == AIter_End)
+  {
+    PyObject *exc = PyObject_CallNoArgs(PyExc_StopAsyncIteration);
+    if (!exc)
       return NULL;
-    self->prefetch_slots_allocated = self->prefetch_slots_desired;
-    if (!self->prefetch_slots_allocated)
-      self->prefetch_state = Prefetch_Off;
-  }
-
-  if (self->prefetch_state == Prefetch_On)
-  {
-    /* fill all empty slots */
-    for (int i = 0; i < self->prefetch_slots_allocated; i++)
-    {
-      if (!self->prefetch_slots[i])
-      {
-        self->prefetch_slots[i]
-            = do_async_unary((PyObject *)self->connection, APSWCursor_async_next_wrap, (PyObject *)self);
-        if (!self->prefetch_slots[i])
-          return NULL;
-      }
-    }
-  }
-
-  /* take first entry if there is one */
-  if (self->prefetch_slots_allocated && self->prefetch_slots[0])
-  {
-    PyObject *result = self->prefetch_slots[0];
-    self->prefetch_slots[0] = NULL;
+    PyObject *tuple = PyTuple_Pack(2, exc, Py_None);
+    PyObject *result = NULL;
+    if (tuple)
+      result = async_return_exception((PyObject *)self->connection, tuple);
+    Py_XDECREF(tuple);
+    Py_DECREF(exc);
     return result;
   }
 
-  return do_async_unary((PyObject *)self->connection, APSWCursor_async_next_wrap, (PyObject *)self);
+  return do_async_unary((PyObject *)self->connection, APSWCursor_async_next_fill, (PyObject *)self);
 }
 
 /** .. method:: __iter__(self: Cursor) -> Cursor
@@ -1736,30 +1790,43 @@ APSWCursor_aiter(PyObject *self_)
     PyErr_SetString(PyExc_TypeError, "async iteration only works on async connections");
     return NULL;
   }
-  self->prefetch_state = Prefetch_Off;
+  /* safety */
+  self->aiter_state = AIter_End;
+
+  for (int i = 0; i > self->aiter_slots_allocated; i++)
+    Py_CLEAR(self->aiter_slots[i]);
+
+  int slots_desired = 1;
+
   PyObject *desired = NULL;
   if (0 != PyContextVar_Get(async_cursor_prefetch_context_var, NULL, &desired))
     return NULL;
-  if (!desired || Py_IsNone(desired))
-  {
-    self->prefetch_slots_desired = 0;
+  assert(desired);
+  if (Py_IsNone(desired))
     Py_XDECREF(desired);
-  }
   else
   {
-    int value = PyLong_AsInt(desired);
+    slots_desired = PyLong_AsInt(desired);
     Py_DECREF(desired);
-    if (value == -1 && PyErr_Occurred())
+    if (slots_desired == -1 && PyErr_Occurred())
       return NULL;
-    if (value < 0)
-      value = 0;
-    else if (value > 128)
-      value = 128;
-    /* the +1 is because we use one slot for the current anext call */
-    self->prefetch_slots_desired = value ? value + 1 : 0;
+    if (slots_desired < 1)
+      slots_desired = 1;
+    else if (slots_desired > 128)
+      slots_desired = 128;
   }
 
-  self->prefetch_state = self->prefetch_slots_desired ? Prefetch_On : Prefetch_Off;
+  if (slots_desired != self->aiter_slots_allocated)
+  {
+    PyObject **new_slots = PyMem_Resize(self->aiter_slots, PyObject *, slots_desired);
+    if (!new_slots)
+      return NULL;
+    self->aiter_slots = new_slots;
+    self->aiter_slots_allocated = slots_desired;
+    memset(self->aiter_slots, 0, sizeof(PyObject *) * slots_desired);
+  }
+
+  self->aiter_state = AIter_On;
   return Py_NewRef(self_);
 }
 

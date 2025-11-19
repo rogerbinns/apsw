@@ -237,6 +237,17 @@ async_return_value(PyObject *connection, PyObject *value)
   return PyObject_VectorcallMethod_NoAsync(apst.async_value, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 }
 
+static PyObject *
+async_return_exception(PyObject *connection, PyObject *tuple)
+{
+  assert(PyTuple_CheckExact(tuple) && PyTuple_GET_SIZE(tuple) == 2);
+  PyObject *exc = PyTuple_GetItem(tuple, 0), *traceback = PyTuple_GetItem(tuple, 1);
+  if (PyErr_Occurred())
+    return NULL;
+  PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), exc, traceback };
+  return PyObject_VectorcallMethod_NoAsync(apst.async_exception, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+}
+
 void
 async_send_discard(PyObject *connection, PyObject *object)
 {

@@ -2180,11 +2180,11 @@ PyInit_apsw(void)
     goto fail;
 
   /** .. attribute:: async_cursor_prefetch
-    :type: contextvars.ContextVar[int | None]
+    :type: contextvars.ContextVar[int]
 
     When looping on a :class:`Cursor` in async mode, subsequent rows can
-    be fetched ahead while you are processing the current row.  This controls
-    how many rows are fetched ahead.  The default is None. See :doc:`async` for details.
+    be fetched ahead nt row.  This controls how many rows are fetched
+    ahead.  The default is 1. See :doc:`async` for details.
   */
 
   if (!async_cursor_prefetch_context_var)
