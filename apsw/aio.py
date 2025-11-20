@@ -111,19 +111,6 @@ class AsyncIO:
         # complex ones so we just set it to None which send detects
         self.queue = None
 
-    def cancel(self, future):
-        # asyncio warns about futures not resolved
-        future.cancel()
-
-    async def async_value(self, value):
-        return value
-
-    async def async_exception(self, exc: BaseException, tb: types.TracebackType | None):
-        if tb is not None:
-            exc.with_traceback(tb)
-        raise exc
-
-
     # The methods above are callbacks from ASyncConnection.  The ones below
     # are our internal workings.
 
