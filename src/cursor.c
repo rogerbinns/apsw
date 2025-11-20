@@ -563,7 +563,7 @@ cursor_mutex_get(APSWCursor *self)
   /* happy path - get it immediately */
   res = sqlite3_mutex_try(self->connection->dbmutex);
   if (res == SQLITE_OK)
-    goto checks;
+    return 0;
 
   /*  the delays we do with the GIL released trying to get the mutex.
       there is no inherent right answer for how long it could take
@@ -587,7 +587,6 @@ cursor_mutex_get(APSWCursor *self)
     Py_END_ALLOW_THREADS;
 
   /* shenanigans could have happened while GIL was released */
-  checks:
     if (!self->connection)
     {
       if (!PyErr_Occurred())
@@ -1617,7 +1616,6 @@ APSWCursor_async_next_fill(PyObject *self_)
   /* keep appending to the slots while there is space */
   while (self->aiter_slots_inuse < self->aiter_slots_allocated && self->aiter_state == AIter_On)
   {
-    /* the GIL is released during next so the slot contents could change */
     PyObject *next_value = APSWCursor_next(self_);
     if (!next_value)
     {
@@ -1658,6 +1656,7 @@ APSWCursor_async_next_fill(PyObject *self_)
 
   if(!self->aiter_slots_inuse)
   {
+    assert(self->aiter_state == AIter_End);
     PyErr_SetNone(PyExc_StopAsyncIteration);
     return NULL;
   }
