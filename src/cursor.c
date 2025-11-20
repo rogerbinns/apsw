@@ -1493,7 +1493,7 @@ APSWCursor_aenter(PyObject *self_)
     return NULL;
   }
 
-  return async_return_value((PyObject *)self->connection, self_);
+  return async_return_value(self_);
 }
 
 /** .. method:: __aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None
@@ -1636,16 +1636,18 @@ APSWCursor_async_next_fill(PyObject *self_)
         {
           return NULL;
         }
-        PY_ERR_FETCH(exc);
-        PY_ERR_NORMALIZE(exc);
 #if PY_VERSION_HEX < 0x030c0000
-        next_value = PyTuple_Pack(2, exc, exctraceback);
-#else
-        next_value = PyTuple_Pack(2, exc, Py_None);
-#endif
-        PY_ERR_CLEAR(exc);
+        next_value = PyTuple_New(3);
         if (!next_value)
           return NULL;
+        PyObject *exc_one = NULL, *exc_two = NULL, *exc_three = NULL;
+        PyErr_Fetch(&exc_one, &exc_two, &exc_three);
+        PyTuple_SET_ITEM(next_value, 0, exc_one);
+        PyTuple_SET_ITEM(next_value, 1, exc_two);
+        PyTuple_SET_ITEM(next_value, 2, exc_three);
+#else
+        next_value = PyErr_GetRaisedException();
+#endif
         self->aiter_state = AIter_Exception;
       }
     }
@@ -1722,28 +1724,17 @@ APSWCursor_anext(PyObject *self_)
     if (self->aiter_state == AIter_Exception && !self->aiter_slots_inuse)
     {
       self->aiter_state = AIter_End;
-      PyObject *new_result = async_return_exception((PyObject *)self->connection, result);
+      PyObject *new_result = async_return_exception(result);
       Py_DECREF(result);
       return new_result;
     }
-    PyObject *new_result = async_return_value((PyObject *)self->connection, result);
+    PyObject *new_result = async_return_value(result);
     Py_DECREF(result);
     return new_result;
   }
 
   if (self->aiter_state == AIter_End)
-  {
-    PyObject *exc = PyObject_CallNoArgs(PyExc_StopAsyncIteration);
-    if (!exc)
-      return NULL;
-    PyObject *tuple = PyTuple_Pack(2, exc, Py_None);
-    PyObject *result = NULL;
-    if (tuple)
-      result = async_return_exception((PyObject *)self->connection, tuple);
-    Py_XDECREF(tuple);
-    Py_DECREF(exc);
-    return result;
-  }
+    return async_return_stopasynciteration();
 
   return do_async_unary((PyObject *)self->connection, APSWCursor_async_next_fill, (PyObject *)self);
 }

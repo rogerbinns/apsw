@@ -8,6 +8,94 @@ static int Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs);
 static void async_fake_worker_thread(PyObject *connection_, int value);
 #endif
 
+/* used to return values and exceptions.  I originally did this by
+   calling into the controller which was time consuming and fragile */
+typedef struct
+{
+  PyObject_HEAD
+
+  enum
+  {
+    Value,
+    Exception,
+    StopAsyncIteration
+  } value_type;
+
+  PyObject *one;
+#if PY_VERSION_HEX < 0x030c0000
+  PyObject *two;
+  PyObject *three;
+#endif
+} AwaitableWrapper;
+
+static PyObject *
+AwaitableWrapper_await(PyObject *self)
+{
+  return Py_NewRef(self);
+}
+
+static PyObject *
+AwaitableWrapper_next(PyObject *self_)
+{
+  AwaitableWrapper *self = (AwaitableWrapper *)self_;
+  switch (self->value_type)
+  {
+  case Exception: {
+    /* exception restoring steals references */
+#if PY_VERSION_HEX < 0x030c0000
+    PyErr_Restore(self->one, self->two, self->three);
+    self->one = self->two = self->three = NULL;
+#else
+    PyErr_SetRaisedException(self->one);
+    self->one = NULL;
+#endif
+    break;
+  }
+  case Value:
+    /* the constructor of stop iteration gets run which
+       treats self->one as args, so we have to wrap to
+       prevent that */
+    PyObject *real_value = PyTuple_Pack(1, self->one);
+    if (!real_value)
+      break;
+    PyErr_SetObject(PyExc_StopIteration, real_value);
+    Py_DECREF(real_value);
+    break;
+  case StopAsyncIteration:
+    PyErr_SetNone(PyExc_StopAsyncIteration);
+  }
+  self->value_type = StopAsyncIteration;
+  return NULL;
+}
+
+static void
+AwaitableWrapper_dealloc(PyObject *self_)
+{
+  AwaitableWrapper *self = (AwaitableWrapper *)self_;
+  Py_CLEAR(self->one);
+#if PY_VERSION_HEX < 0x030c0000
+  Py_CLEAR(self->two);
+  Py_CLEAR(self->three);
+#endif
+  Py_TpFree(self_);
+}
+
+static PyAsyncMethods AwaitableWrapper_async_methods = {
+  .am_await = AwaitableWrapper_await,
+};
+
+static PyTypeObject AwaitableWrapperType = {
+  .ob_base = PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.aio.AwaitableWrapper",
+  .tp_basicsize = sizeof(AwaitableWrapper),
+  .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_new = PyType_GenericNew,
+  .tp_iter = PyObject_SelfIter,
+  .tp_iternext = AwaitableWrapper_next,
+  .tp_dealloc = AwaitableWrapper_dealloc,
+  .tp_as_async = &AwaitableWrapper_async_methods,
+  // ::TODO:: add tp_traverse
+};
+
 /* used for getting call details im a non-worker thread that can be invoked in the worker thread */
 typedef struct BoxedCall
 {
@@ -231,44 +319,53 @@ async_send_boxed_call(PyObject *connection, PyObject *boxed_call)
 }
 
 static PyObject *
-async_return_value(PyObject *connection, PyObject *value)
+async_return_value(PyObject *value)
 {
-  PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), value };
-  return PyObject_VectorcallMethod_NoAsync(apst.async_value, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  AwaitableWrapper *wrap = (AwaitableWrapper *)_PyObject_New(&AwaitableWrapperType);
+  if (wrap)
+  {
+    wrap->value_type = Value;
+    wrap->one = Py_NewRef(value);
+#if PY_VERSION_HEX < 0x030c0000
+    wrap->two = NULL;
+    wrap->three = NULL;
+#endif
+  }
+  return (PyObject *)wrap;
 }
 
 static PyObject *
-async_return_exception(PyObject *connection, PyObject *tuple)
+async_return_exception(PyObject *value)
 {
-  assert(PyTuple_CheckExact(tuple) && PyTuple_GET_SIZE(tuple) == 2);
-  PyObject *exc = PyTuple_GetItem(tuple, 0), *traceback = PyTuple_GetItem(tuple, 1);
-  if (PyErr_Occurred())
-    return NULL;
-  PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), exc, traceback };
-  return PyObject_VectorcallMethod_NoAsync(apst.async_exception, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  AwaitableWrapper *wrap = (AwaitableWrapper *)_PyObject_New(&AwaitableWrapperType);
+  if (wrap)
+  {
+    wrap->value_type = Exception;
+#if PY_VERSION_HEX < 0x030c0000
+    wrap->one = Py_XNewRef(PyTuple_GET_ITEM(value, 0));
+    wrap->two = Py_XNewRef(PyTuple_GET_ITEM(value, 1));
+    wrap->three = Py_XNewRef(PyTuple_GET_ITEM(value, 2));
+#else
+    wrap->one = Py_NewRef(value);
+#endif
+  }
+  return (PyObject *)wrap;
 }
 
-void
-async_send_discard(PyObject *connection, PyObject *object)
+static PyObject *
+async_return_stopasynciteration(void)
 {
-  PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), object };
-#ifdef APSW_DEBUG
-  if (vargs[1] == async_dummy_controller)
-    return;
-#endif
-  PY_ERR_FETCH(saved_err);
-
-  PyObject *result
-      = PyObject_VectorcallMethod_NoAsync(apst.cancel, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-  if (!result)
+  AwaitableWrapper *wrap = (AwaitableWrapper *)_PyObject_New(&AwaitableWrapperType);
+  if (wrap)
   {
-    AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.controller_discard", "{s: O,s:O}", "controller", vargs[1], "object",
-                     object);
-    apsw_write_unraisable(NULL);
+    wrap->value_type = StopAsyncIteration;
+    wrap->one = NULL;
+#if PY_VERSION_HEX < 0x030c0000
+    wrap->two = NULL;
+    wrap->three = NULL;
+#endif
   }
-  else
-    Py_DECREF(result);
-  PY_ERR_RESTORE(saved_err);
+  return (PyObject *)wrap;
 }
 
 static PyObject *
