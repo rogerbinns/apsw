@@ -11,7 +11,7 @@ static void async_fake_worker_thread(PyObject *connection_, int value);
 /* used for getting call details im a non-worker thread that can be invoked in the worker thread */
 typedef struct BoxedCall
 {
-  PyObject_HEAD
+  PyObject_VAR_HEAD
 
   /* discriminated union */
   enum
