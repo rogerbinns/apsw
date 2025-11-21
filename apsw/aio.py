@@ -198,3 +198,41 @@ class AsyncIO:
 # trio.open_memory_channel instead of SimpleQueue maybe, but more convoluted
 # there is no Future equivalent.  need to use a dataclass with trio.Event to
 # signal completion, and token from above, result and exception
+
+
+# This will move to the test code.  It runs a worker thread but returns
+# the direct result of the call
+class Test:
+    class Request:
+        call: Callable
+        event: threading.Event
+        result: Any
+        is_exception: bool
+
+    def __init__(self):
+        self.queue = queue.SimpleQueue()
+        threading.Thread(daemon=True, target=self.worker_thread_run, args=(self.queue,)).start()
+
+    def close(self):
+        self.queue.put(None)
+        self.queue = None
+
+    def send(self, call):
+        req = Test.Request()
+        req.event = threading.Event()
+        req.call = call
+        self.queue.put(req)
+        req.event.wait()
+        if req.is_exception:
+            raise req.result
+        return req.result
+
+    def worker_thread_run(self, q):
+        while (req := q.get()) is not None:
+            try:
+                req.result = req.call()
+                req.is_exception = False
+            except BaseException as exc:
+                req.result = exc
+                req.is_exception = True
+            req.event.set()
