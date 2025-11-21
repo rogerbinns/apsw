@@ -6066,6 +6066,40 @@ Connection_is_interrupted(PyObject *self_, void *Py_UNUSED(unused))
   return Py_NewRef(sqlite3_is_interrupted(self->db) ? Py_True : Py_False);
 }
 
+/** .. attribute:: is_async
+  :type: bool
+
+  `True` if this connection is operating in async mode.
+*/
+static PyObject *
+Connection_is_async(PyObject *self_, void *Py_UNUSED(unused))
+{
+  Connection *self = (Connection *)self_;
+  CHECK_CLOSED(self, NULL);
+
+  if (self->async_controller)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+/** .. attribute:: async_controller
+  :type: AsyncConnectionController
+
+  The controller in effect in async mode.
+*/
+static PyObject *
+Connection_async_controller(PyObject *self_, void *Py_UNUSED(unused))
+{
+  Connection *self = (Connection *)self_;
+  CHECK_CLOSED(self, NULL);
+
+  if (self->async_controller)
+    return Py_NewRef(self->async_controller);
+
+  PyErr_SetString(PyExc_TypeError, "The connection is not in async mode");
+  return NULL;
+}
+
 /** .. method:: data_version(schema: Optional[str] = None) -> int
 
   Unlike `pragma data_version
@@ -6536,6 +6570,8 @@ static PyGetSetDef Connection_getseters[] = {
   { "is_interrupted", Connection_is_interrupted, NULL, Connection_is_interrupted_DOC },
   { "transaction_mode", Connection_get_transaction_mode, Connection_set_transaction_mode,
     Connection_transaction_mode_DOC },
+  { "is_async", Connection_is_async, NULL, Connection_is_async_DOC },
+  { "async_controller", Connection_async_controller, NULL, Connection_async_controller_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
   { Connection_exec_trace_OLDNAME, Connection_get_exec_trace_attr, Connection_set_exec_trace_attr,
     Connection_exec_trace_OLDDOC },

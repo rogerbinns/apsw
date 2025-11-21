@@ -1284,6 +1284,10 @@
 } while(0)
 
 
+#define  Connection_async_controller_DOC ":type: AsyncConnectionController\n" \
+"\n" \
+"The controller in effect in async mode.\n" 
+
 #define  Connection_authorizer_DOC ":type: Optional[Authorizer]\n" \
 "\n" \
 "While `preparing <https://sqlite.org/c3ref/prepare.html>`_\n" \
@@ -2235,6 +2239,10 @@
 "\n" \
 "Calls: `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`__\n" 
 
+#define  Connection_is_async_DOC ":type: bool\n" \
+"\n" \
+"`True` if this connection is operating in async mode.\n" 
+
 #define  Connection_is_interrupted_DOC ":type: bool\n" \
 "\n" \
 "Indicates if this connection has been interrupted.\n" \
@@ -3104,7 +3112,7 @@
 #define  Cursor_aclose_DOC "Cursor.aclose(force: bool = False) -> None\n\n" \
 ":async:\n" \
 "\n" \
-"asynv version of :meth:`close`\n" 
+"Async version of :meth:`close`\n" 
 
 #define Cursor_aclose_KWNAMES "force"
 #define Cursor_aclose_USAGE "Cursor.aclose(force: bool = False) -> None"
@@ -3115,12 +3123,19 @@
 } while(0)
 
 
-#define  Cursor_aiter_DOC "Cursor.__aiter__(self: Cursor) -> Cursor\n\n" \
+#define  Cursor_aenter_DOC "Cursor.__aenter__() -> Self\n\n" \
+"If you use the cursor as a context manager then it will be closed on\n" \
+"exit.\n" 
+
+#define  Cursor_aexit_DOC "Cursor.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None\n\n" \
+"Close the cursor on exit of context\n" 
+
+#define  Cursor_aiter_DOC "Cursor.__aiter__() -> Cursor\n\n" \
 ":async:\n" \
 "\n" \
 "Cursors are async iterators\n" 
 
-#define  Cursor_anext_DOC "Cursor.__anext__(self: Cursor) -> Any\n\n" \
+#define  Cursor_anext_DOC "Cursor.__anext__() -> Any\n\n" \
 ":async:\n" \
 "\n" \
 "Cursors are iterators\n" 
@@ -3152,6 +3167,8 @@
 "Cursors are automatically garbage collected and when there\n" \
 "are none left will allow the connection to be garbage collected if\n" \
 "it has no other references.\n" \
+"\n" \
+"It is safe to call the method multiple times.\n" \
 "\n" \
 "A cursor is open if there are remaining statements to execute (if\n" \
 "your query included multiple statements), or if you called\n" \
@@ -3461,7 +3478,7 @@
 #define  Cursor_iter_DOC "Cursor.__iter__(self: Cursor) -> Cursor\n\n" \
 "Cursors are iterators\n" 
 
-#define  Cursor_next_DOC "Cursor.__next__(self: Cursor) -> Any\n\n" \
+#define  Cursor_next_DOC "Cursor.__next__() -> Any\n\n" \
 "Cursors are iterators\n" 
 
 #define  Cursor_row_trace_DOC ":type: RowTracer | None\n" \
