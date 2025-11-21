@@ -1750,10 +1750,6 @@ APSWCursor_iter(PyObject *self_)
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
-#ifdef APSW_DEBUG
-  if(self->connection->async_controller==async_dummy_controller)
-    return Py_NewRef(self);
-#endif
   if (!IN_WORKER_THREAD(self->connection))
   {
     PyErr_SetString(PyExc_TypeError, "You must use async iteration for async connections");

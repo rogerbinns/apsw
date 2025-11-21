@@ -4,10 +4,6 @@
 static PyObject *async_get_controller_from_connection(PyObject *connection);
 static int Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs);
 
-#ifdef APSW_DEBUG
-static void async_fake_worker_thread(PyObject *connection_, int value);
-#endif
-
 /* used to return values and exceptions.  I originally did this by
    calling into the controller which was time consuming and fragile */
 typedef struct
@@ -273,10 +269,6 @@ make_boxed_call(Py_ssize_t total_args)
 static void
 async_shutdown_controller(PyObject *controller)
 {
-#ifdef APSW_DEBUG
-  if (controller == async_dummy_controller)
-    return;
-#endif
   /* exceptions are always done as unraisable */
   if (controller)
   {
@@ -299,18 +291,6 @@ async_shutdown_controller(PyObject *controller)
 static PyObject *
 async_send_boxed_call(PyObject *connection, PyObject *boxed_call)
 {
-#ifdef APSW_DEBUG
-  if (async_get_controller_from_connection(connection) == async_dummy_controller)
-  {
-
-    async_fake_worker_thread(connection, 1);
-    PyObject *myresult = BoxedCall_internal_call((BoxedCall *)boxed_call);
-    async_fake_worker_thread(connection, 0);
-    Py_DECREF(boxed_call);
-    return myresult;
-  }
-#endif
-
   PyObject *vargs[] = { NULL, async_get_controller_from_connection(connection), boxed_call };
   PyObject *result = PyObject_VectorcallMethod_NoAsync(apst.send, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_DECREF(boxed_call);

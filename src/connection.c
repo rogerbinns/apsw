@@ -272,9 +272,6 @@ Connection_internal_cleanup(Connection *self)
 {
   if (self->async_controller)
   {
-#ifdef APSW_DEBUG
-    self->async_controller = REAL_CONTROLLER(self->async_controller);
-#endif
     async_shutdown_controller(self->async_controller);
     Py_CLEAR(self->async_controller);
   }
@@ -636,17 +633,7 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   flags |= SQLITE_OPEN_EXRESCODE;
 
   if (self->async_controller)
-  {
     self->async_thread_id = PyThread_get_thread_ident();
-  }
-#ifdef APSW_DEBUG
-  else if (async_check)
-  {
-    /* 0 is most likely to match a real thread id */
-    self->async_thread_id = 0;
-    self->async_controller = async_dummy_controller;
-  }
-#endif
 
   self->cursor_factory = Py_NewRef((PyObject *)&APSWCursorType);
   self->tracehooks = PyMem_Malloc(sizeof(struct tracehook_entry) * 1);
@@ -6575,7 +6562,7 @@ static int
 Connection_tp_traverse(PyObject *self_, visitproc visit, void *arg)
 {
   Connection *self = (Connection *)self_;
-  Py_VISIT(REAL_CONTROLLER(self->async_controller));
+  Py_VISIT(self->async_controller);
   Py_VISIT(self->busyhandler);
   Py_VISIT(self->updatehook);
   Py_VISIT(self->walhook);
@@ -6838,15 +6825,6 @@ async_get_controller_from_connection(PyObject *connection_)
   assert(connection->async_controller);
   return connection->async_controller;
 }
-
-#ifdef APSW_DEBUG
-static void
-async_fake_worker_thread(PyObject *connection_, int value)
-{
-  Connection *connection = (Connection *)connection_;
-  connection->async_thread_id = value ? PyThread_get_thread_ident() : 0;
-}
-#endif
 
 #ifdef SQLITE_ENABLE_PREUPDATE_HOOK
 

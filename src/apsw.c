@@ -130,15 +130,6 @@ MakeExistingException(void)
   return 0;
 }
 
-#ifdef APSW_DEBUG
-/* allows us to run with async checks in sync mode */
-static int async_check = 0;
-static PyObject *async_dummy_controller = (PyObject *)7;
-#define REAL_CONTROLLER(c) ((c) == async_dummy_controller ? NULL : (c))
-#else
-#define REAL_CONTROLLER(c) (c)
-#endif
-
 #ifdef APSW_FAULT_INJECT
 
 #include "faultinject.h"
@@ -2275,13 +2266,6 @@ modules etc. For example::
 
   if (!PyErr_Occurred())
   {
-#ifdef APSW_DEBUG
-    if (getenv("APSW_ASYNC_CHECK"))
-    {
-      async_check = 1;
-      fprintf(stderr, "APSW debug build: async checking in sync mode is on\n");
-    }
-#endif
     module_is_initialized = 1;
     return m;
   }
