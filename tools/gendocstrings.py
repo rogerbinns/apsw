@@ -40,6 +40,7 @@ docstrings_skip = {
     "apsw.SQLITE_VERSION_NUMBER",
     "apsw.async_run_coro",
     "apsw.async_cursor_prefetch",
+    "apsw.async_controller",
 }
 
 virtual_table_classes = {"VTCursor", "VTModule", "VTTable"}

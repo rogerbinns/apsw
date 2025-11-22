@@ -209,15 +209,3 @@ class AsyncConnectionController(Protocol):
         This allows shutting down the worker thread and similar housekeeping.
         !!!Exceptions unraisable"""
         ...
-
-    def cancel(self, obj: Any):
-        """An awaitable won't be resolved
-
-        Query results iteration works "one ahead" behind the scenes, and could
-        also stop before reading all result rows.  This leaves behind an
-        object from :meth:`send` that won't be resolved.  Some frameworks
-        like :mod:`asyncio` issue a warning if that happens.
-
-        This method is called so you can mark it as done.
-        """
-        ...

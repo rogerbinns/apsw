@@ -770,7 +770,7 @@ finally:
 /** .. method:: as_async(*args, **kwargs) -> Awaitable[AsyncConnection]
   :staticmethod:
 
-  Uses the :attribute:`async_controller` to start a :class:`Connection`
+  Uses the :attr:`async_controller` to start a :class:`Connection`
   with the parameters in a background worker thread.  The resulting
   :class:`AsyncConnection` is the same as regular :class:`Connection`
   but with most methods and attributes and related objects configured
