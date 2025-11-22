@@ -1959,7 +1959,8 @@ static int
 setattr_no_write(PyObject *module, PyObject *name, PyObject *value)
 {
   if (module_is_initialized
-      && (PyObject_RichCompareBool(name, apst.async_run_coro, Py_EQ) == 1
+      && (PyObject_RichCompareBool(name, apst.async_controller, Py_EQ) == 1
+          || PyObject_RichCompareBool(name, apst.async_run_coro, Py_EQ) == 1
           || PyObject_RichCompareBool(name, apst.async_cursor_prefetch, Py_EQ) == 1))
   {
     PyErr_Format(PyExc_AttributeError,
@@ -2154,6 +2155,18 @@ PyInit_apsw(void)
     goto fail;
 
 #endif
+
+  /** .. attribute:: async_controller
+    :type: type[AsyncConnectionController]
+
+    Call this to get a controller for :meth:`Connection.as_async`.
+  */
+  if (!async_controller_context_var)
+    if (NULL == (async_controller_context_var = PyContextVar_New("apsw.async_controller", NULL)))
+      goto fail;
+
+  if (PyModule_AddObjectRef(m, "async_controller", async_controller_context_var))
+    goto fail;
 
   /** .. attribute:: async_run_coro
     :type: contextvars.ContextVar[Callable[[typing.Coroutine], Any]]

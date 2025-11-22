@@ -767,63 +767,53 @@ finally:
   return res;
 }
 
-/** .. method:: as_async(controller: AsyncConnectionController, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100) -> Awaitable[AsyncConnection]
+/** .. method:: as_async(*args, **kwargs) -> Awaitable[AsyncConnection]
   :staticmethod:
 
-  Uses the controller to start a :class:`Connection` with the parameters
-  in a background worker thread.  The resulting :class:`AsyncConnection`
-  is the same as regular :class:`Connection` but with most methods and
-  attributes and related objects configured for async operation.
+  Uses the :attribute:`async_controller` to start a :class:`Connection`
+  with the parameters in a background worker thread.  The resulting
+  :class:`AsyncConnection` is the same as regular :class:`Connection`
+  but with most methods and attributes and related objects configured
+  for async operation.
 
   See :mod:`apsw.aio` for some controller implementations and :doc:`async`
   for more details.
-
-  .. note::
-
-    It is recommended to call ``close`` on the connection when done
-    as that ensures the worker thread will exit.
 */
 static PyObject *
-Connection_as_async(PyObject *klass_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)
 {
   PyTypeObject *klass = (PyTypeObject *)klass_;
-
-  PyObject *controller = NULL;
-  const char *filename;
-  int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-  const char *vfs = 0;
-  int statementcachesize = 100;
-
-  {
-    Connection_as_async_CHECK;
-    ARG_PROLOG(5, Connection_as_async_KWNAMES);
-    ARG_MANDATORY ARG_pyobject(controller);
-    ARG_MANDATORY ARG_str(filename);
-    ARG_OPTIONAL ARG_int(flags);
-    ARG_OPTIONAL ARG_optional_str(vfs);
-    ARG_OPTIONAL ARG_int(statementcachesize);
-    ARG_EPILOG(NULL, Connection_as_async_USAGE, );
-  }
 
   /* we do the memory allocation (new) of the Connection here, but
     send the __init__ to be run in the worker thread via the controller */
   Connection *connection = NULL;
 
-  PyObject *args = NULL;
   BoxedCall *boxed_call = make_boxed_call(0);
   if (!boxed_call)
     goto error;
 
-  args = Py_BuildValue("sis", filename, flags, vfs);
-  if (!args)
-    goto error;
-
   connection = (Connection *)klass->tp_new(klass, NULL, NULL);
-  connection->async_controller = Py_NewRef(controller);
-
+  if (!connection)
+    goto error;
   boxed_call->call_type = ConnectionInit;
   boxed_call->ConnectionInit.connection = (PyObject *)connection;
-  boxed_call->ConnectionInit.args = args;
+  boxed_call->ConnectionInit.args = Py_NewRef(args);
+  boxed_call->ConnectionInit.kwargs = Py_XNewRef(kwargs);
+  connection->async_controller = NULL;
+
+  PyContextVar_Get(async_controller_context_var, NULL, &connection->async_controller);
+  if (!connection->async_controller)
+  {
+    if (!PyErr_Occurred())
+      PyErr_Format(PyExc_RuntimeError, "An async connection has been requested but apsw.async_controller "
+                                       "has not been set. See the APSW async documentation for more details.");
+    goto error;
+  }
+
+  PyObject *actual_controller = PyObject_CallNoArgs(connection->async_controller);
+  Py_SETREF(connection->async_controller, actual_controller);
+  if (!connection->async_controller)
+    goto error;
 
   PyObject *result = async_send_boxed_call((PyObject *)connection, (PyObject*)boxed_call);
   connection = NULL;
@@ -835,7 +825,6 @@ Connection_as_async(PyObject *klass_, PyObject *const *fast_args, Py_ssize_t fas
 error:
   assert(PyErr_Occurred());
   Py_XDECREF((PyObject *)connection);
-  Py_XDECREF(args);
   Py_XDECREF(boxed_call);
 
   return NULL;
@@ -6670,7 +6659,7 @@ static PyMemberDef Connection_members[] = {
 };
 
 static PyMethodDef Connection_methods[] = {
-  { "as_async", (PyCFunction)Connection_as_async, METH_CLASS | METH_FASTCALL | METH_KEYWORDS, Connection_as_async_DOC },
+  { "as_async", (PyCFunction)Connection_as_async, METH_CLASS | METH_VARARGS | METH_KEYWORDS, Connection_as_async_DOC },
   { "cursor", (PyCFunction)Connection_cursor, METH_NOARGS, Connection_cursor_DOC },
   { "close", (PyCFunction)Connection_close, METH_FASTCALL | METH_KEYWORDS, Connection_close_DOC },
   { "aclose", (PyCFunction)Connection_aclose, METH_FASTCALL | METH_KEYWORDS, Connection_aclose_DOC },

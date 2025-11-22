@@ -47,7 +47,7 @@ release UPDATE INSERT DELETE
 
 null true false
 
-async_run_coro async_cursor_prefetch send
+async_controller async_run_coro async_cursor_prefetch send
 """
 
 

@@ -2,7 +2,9 @@
 /* some forward declarations we can't have here because they don't know the
    contents of struct Connection */
 static PyObject *async_get_controller_from_connection(PyObject *connection);
-static int Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs);
+
+static PyObject *async_cursor_prefetch_context_var;
+static PyObject *async_controller_context_var;
 
 /* used to return values and exceptions.  I originally did this by
    calling into the controller which was time consuming and fragile */
@@ -113,6 +115,7 @@ typedef struct BoxedCall
     {
       PyObject *connection;
       PyObject *args;
+      PyObject *kwargs;
     } ConnectionInit;
 
     /* note this must be the largest member of the union because
@@ -155,6 +158,7 @@ BoxedCall_clear(PyObject *self_)
   case ConnectionInit:
     Py_DECREF(self->ConnectionInit.connection);
     Py_DECREF(self->ConnectionInit.args);
+    Py_XDECREF(self->ConnectionInit.args);
     break;
 
   case FastCallWithKeywords: {
@@ -198,7 +202,7 @@ BoxedCall_internal_call(BoxedCall *self)
   switch (self->call_type)
   {
   case ConnectionInit:
-    if (0 == Connection_init(self->ConnectionInit.connection, self->ConnectionInit.args, NULL))
+    if (0 == Py_TYPE(self->ConnectionInit.connection)->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, self->ConnectionInit.kwargs))
       result = Py_NewRef(self->ConnectionInit.connection);
     break;
   case FastCallWithKeywords:

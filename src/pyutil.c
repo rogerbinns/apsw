@@ -310,8 +310,8 @@ If a callback returns a coroutine, we ship it back to the event loop
 */
 static void AddTraceBackHere(const char *filename, int lineno, const char *functionname, const char *localsformat, ...);
 
+
 static PyObject *async_run_coro_context_var;
-static PyObject *async_cursor_prefetch_context_var;
 
 static PyObject *
 apsw_run_in_event_loop(PyObject *coro)
