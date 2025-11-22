@@ -13,6 +13,7 @@ import apsw
 
 import types
 from typing import TypeVar, Any
+
 T = TypeVar("T")
 
 
@@ -72,8 +73,6 @@ else:
         return _contextvar_set_wrapper()
 
 
-
-
 # ::TODO:: if sys.version < 3.11 then concurrent.futures.TimeoutError needs to be turned into exceptions.TimeoutError
 
 # contextvars have to be top level.  this is used to track the currently
@@ -120,12 +119,10 @@ class AsyncIO:
             raise TimeoutError()
         return False
 
-
     def worker_thread_run(self, q):
         "Does the enqueued call processing in the worker thread"
 
         with contextvar_set(apsw.async_run_coro, self.async_run_coro):
-
             while (item := q.get()) is not None:
                 future, call, this_prefetch, this_deadline = item
 
@@ -138,7 +135,6 @@ class AsyncIO:
                     contextvar_set(deadline, this_deadline),
                     contextvar_set(apsw.async_cursor_prefetch, this_prefetch),
                 ):
-
                     try:
                         # should we even start?
                         if this_deadline is not None:
@@ -190,7 +186,6 @@ class AsyncIO:
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
-
 # some notes about trio
 # trio.lowlevel.current_trio_token()
 # trio.from_thread.run (coroutine, token=...)  -- have their own deadline system
@@ -198,41 +193,6 @@ class AsyncIO:
 # trio.open_memory_channel instead of SimpleQueue maybe, but more convoluted
 # there is no Future equivalent.  need to use a dataclass with trio.Event to
 # signal completion, and token from above, result and exception
-
-
-# This will move to the test code.  It runs a worker thread but returns
-# the direct result of the call
-class Test:
-    class Request:
-        call: Callable
-        event: threading.Event
-        result: Any
-        is_exception: bool
-
-    def __init__(self):
-        self.queue = queue.SimpleQueue()
-        threading.Thread(daemon=True, target=self.worker_thread_run, args=(self.queue,)).start()
-
-    def close(self):
-        self.queue.put(None)
-        self.queue = None
-
-    def send(self, call):
-        req = Test.Request()
-        req.event = threading.Event()
-        req.call = call
-        self.queue.put(req)
-        req.event.wait()
-        if req.is_exception:
-            raise req.result
-        return req.result
-
-    def worker_thread_run(self, q):
-        while (req := q.get()) is not None:
-            try:
-                req.result = req.call()
-                req.is_exception = False
-            except BaseException as exc:
-                req.result = exc
-                req.is_exception = True
-            req.event.set()
+# trio.current_effective_deadline
+# trio.lowlevel.current_clock  - meth current_time()
+# trio.testing.MockClock
