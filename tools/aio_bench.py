@@ -34,7 +34,7 @@ def get_times():
 
 
 async def apsw_bench(prefetch: int):
-    async with contextlib.aclosing(await apsw.Connection.as_async(apsw.aio.AsyncIO(), ":memory:")) as con:
+    async with contextlib.aclosing(await apsw.Connection.as_async(":memory:")) as con:
         apsw.async_cursor_prefetch.set(prefetch)
 
         for sql in setup:
@@ -99,7 +99,8 @@ for prefetch in (1, 2, 3, 16, 64, 512, 1024, 16384, 65536, 1_000_000):
     asyncio.run(sqlite3_bench(prefetch))
     end = get_times()
     show("aiosqlite", prefetch, start, end)
-    start = get_times()
-    asyncio.run(apsw_bench(prefetch))
-    end = get_times()
-    show("apsw", prefetch, start, end)
+    with apsw.aio.contextvar_set(apsw.async_controller, apsw.aio.AsyncIO):
+        start = get_times()
+        asyncio.run(apsw_bench(prefetch))
+        end = get_times()
+        show("apsw", prefetch, start, end)
