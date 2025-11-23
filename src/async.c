@@ -158,7 +158,7 @@ BoxedCall_clear(PyObject *self_)
   case ConnectionInit:
     Py_DECREF(self->ConnectionInit.connection);
     Py_DECREF(self->ConnectionInit.args);
-    Py_XDECREF(self->ConnectionInit.args);
+    Py_XDECREF(self->ConnectionInit.kwargs);
     break;
 
   case FastCallWithKeywords: {

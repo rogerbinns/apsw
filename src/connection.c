@@ -796,7 +796,7 @@ Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)
   if (!connection)
     goto error;
   boxed_call->call_type = ConnectionInit;
-  boxed_call->ConnectionInit.connection = (PyObject *)connection;
+  boxed_call->ConnectionInit.connection = Py_NewRef((PyObject *)connection);
   boxed_call->ConnectionInit.args = Py_NewRef(args);
   boxed_call->ConnectionInit.kwargs = Py_XNewRef(kwargs);
   connection->async_controller = NULL;
@@ -816,7 +816,7 @@ Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)
     goto error;
 
   PyObject *result = async_send_boxed_call((PyObject *)connection, (PyObject*)boxed_call);
-  connection = NULL;
+  /* send_boxed took the reference */
   boxed_call = NULL;
 
   if (result)
