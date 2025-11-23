@@ -8,7 +8,7 @@ import functools
 import inspect
 import threading
 import unittest
-import importlib
+import importlib.resources
 import json
 
 import queue
@@ -45,20 +45,32 @@ def get_meta(
 
     # explicit?
     for k in "sync async dual value".split():
-        if member in section.get(k, tuple):
+        if member in section.get(k, tuple()):
             return k
 
     # defaults
-    match "member":
+    match member:
         case "__enter__" | "__exit__":
             return "sync"
-        case "__aenter__" | "__aexit__":
+        case "__aenter__" | "__aexit__" | "aclose":
             return "async"
+        case "__repr__" | "__str__":
+            return "value"
         case _:
             return "dual" if kind == "function" else "value"
 
 
 skip = set(dir(object())) - {"__repr__", "__str__"}
+
+
+def hardended_hasattr(object, name):
+    if name in {"__repr__", "__str__"}:
+        return False
+    try:
+        return inspect.getattr_static(object, name) or hasattr(object, name)
+    except AttributeError:
+        return False
+
 
 def is_open(con):
     try:
@@ -86,35 +98,45 @@ class Async(unittest.TestCase):
         for name in "async_controller", "async_run_coro", "async_cursor_prefetch":
             self.assertRaisesRegex(AttributeError, ".*Do not overwrite apsw.*context", setattr, apsw, name, 3)
 
-    def classifyOne(self, send, is_attr, object, klass, member):
+    def classifyOne(self, send, is_attr, object, klass, member, value=None):
+        # send is None for async access, callable for sync
         if is_attr:
             try:
                 if send:
-                    send(functools.partial, getattr, object, member)
+                    if value is not None:
+                        send(functools.partial, setattr, object, member, value)
+                    else:
+                        send(functools.partial, getattr, object, member)
                 else:
-                    v = getattr(object, member)
+                    v = getattr(object, member) if value is None else setattr(object, member, value)
                     if hasattr(v, "__await__"):
                         return "async"
                 return "value"
             except TypeError as exc:
-                if exc.args == "sync blah async":
-                    return None
+                if not send and exc.args[0] == "Using sync method in async context X2":
+                    return "exception"
+                if send and exc.args[0] == "Using async method in sync context X1":
+                    return "exception"
                 raise
 
         match (klass, member):
+            case (_, "__aexit__") | (_, "__exit__"):
+                args = (None, None, None)
             case _:
                 args = tuple()
 
         try:
             if send:
-                send(functools.partial, getattr(object, member), *args)
+                sync_await(send(functools.partial(getattr(object, member), *args)))
             else:
-                if (hasattr(getattr(object, member)(*args)), "__await__"):
+                if hasattr(getattr(object, member)(*args), "__await__"):
                     return "async"
             return "value"
         except TypeError as exc:
-            if exc.args == "sync blah async":
-                return None
+            if not send and exc.args[0] == "Using sync method in async context X2":
+                return "exception"
+            if send and exc.args[0] == "Using async method in sync context X1":
+                return "exception"
             raise
 
     def testMetaJson(self):
@@ -129,9 +151,9 @@ class Async(unittest.TestCase):
             if not is_open(con):
                 con = sync_await(apsw.Connection.as_async(""))
 
-            is_attr = inspect.getattr_static(object, member) or hasattr(object, member)
+            is_attr = hardended_hasattr(object, name)
 
-            print(f"Connection {member=} {is_attr=}")
+            print(f"Connection {name=} {is_attr=}")
 
             kind_sync = self.classifyOne(con.async_controller.send, is_attr, con, "Connection", name)
 
@@ -140,15 +162,30 @@ class Async(unittest.TestCase):
 
             kind_async = self.classifyOne(None, is_attr, con, "Connection", name)
 
+            if is_attr:
+                # check writable
+                try:
+                    kind_async_setattr = self.classifyOne(None, is_attr, con, "Connection", name, lambda *args: False)
+                    self.assertEqual(kind_async, kind_async_setattr)
+                except AttributeError as exc:
+                    if "objects is not writable" in str(exc):
+                        pass
+                    else:
+                        raise
+
             match (kind_sync, kind_async):
                 case ("value", "value"):
-                    kind = value
+                    kind = "value"
+                case ("exception", "async"):
+                    kind = "async"
+                case ("value", "exception"):
+                    kind = "sync"
                 case _:
                     raise ValueError(f"{kind_sync=} {kind_async=}")
 
-            expected_kind = get_meta("Connection", member, "attribute" if is_attr else "function")
+            expected_kind = get_meta("Connection", name, "attribute" if is_attr else "function")
 
-            self.assertEqual(kind, expected_kind, f"Connection {member=}")
+            self.assertEqual(kind, expected_kind, f"Connection {name=}")
 
 
 class SimpleController:
