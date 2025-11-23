@@ -550,15 +550,8 @@ Connection_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_EPILOG(NULL, Connection_aclose_USAGE, );
   }
 
-  if (IN_WORKER_THREAD(self))
-  {
-    PyErr_SetString(PyExc_TypeError, "You must use close (sync version of aclose)");
-    return NULL;
-  }
-
   ASYNC_FASTCALL(self, Connection_close);
-  Py_UNREACHABLE();
-  return NULL;
+  return error_async_in_sync_context();
 }
 
 static void
@@ -4630,6 +4623,9 @@ Connection_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
 
   CHECK_CLOSED(self, NULL);
 
+  if(!IN_WORKER_THREAD(self))
+    return error_sync_in_async_context();
+
   DBMUTEX_ENSURE(self);
 
   if (self->savepointlevel == 0)
@@ -4711,6 +4707,9 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
     ARG_EPILOG(NULL, Connection_exit_USAGE, );
   }
 
+  if(!IN_WORKER_THREAD(self))
+    return error_sync_in_async_context();
+
   /* this protects us too */
   DBMUTEX_ENSURE(self);
 
@@ -4790,8 +4789,7 @@ Connection_aenter(PyObject *self_, PyObject *Py_UNUSED(unused))
   /* unused could be NULL so make sure we pass something */
   ASYNC_BINARY(self, Connection_enter, self_, Py_None);
 
-  PyErr_SetString(PyExc_TypeError, "Using async method in sync context");
-  return NULL;
+  return error_async_in_sync_context();
 }
 
 /** .. method:: __aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None
@@ -4822,8 +4820,8 @@ Connection_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   (void)etraceback;
 
   ASYNC_FASTCALL(self, Connection_exit);
-  PyErr_SetString(PyExc_TypeError, "Using async method in sync context");
-  return NULL;
+
+  return error_async_in_sync_context();
 }
 
 /** .. method:: config(op: int, *args: int) -> int
@@ -5643,10 +5641,11 @@ Connection_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
 */
 
 static PyObject *
-Connection_getmainfilename(PyObject *self_, void *Py_UNUSED(unused))
+Connection_getmainfilename(PyObject *self_, void *unused)
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
+  ASYNC_ATTR_GET(self, Connection_getmainfilename, self_, unused);
   DBMUTEX_ENSURE(self);
   PyObject *res = convertutf8string(sqlite3_db_filename(self->db, "main"));
   sqlite3_mutex_leave(self->dbmutex);
