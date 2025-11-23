@@ -107,6 +107,7 @@ typedef struct BoxedCall
     FastCallWithKeywords,
     Unary,
     Binary,
+    AttrGet,
   } call_type;
 
   union
@@ -473,3 +474,18 @@ do_async_attr_get(PyObject *connection, getter function, PyObject *arg1, void *a
       return do_async_attr_get((PyObject *)(CONN), FUNCTION, (ARG1), (ARG2));                                          \
   } while (0)
 
+
+  /* standard error routines - these return NULL so they can be returned themselves */
+  static PyObject *
+  error_async_in_sync_context(void)
+  {
+    PyErr_SetString(PyExc_TypeError, "Using async method in sync context X1");  // remove X1 and X2 once we are sure all routines use these
+    return NULL;
+  }
+
+    static PyObject *
+  error_sync_in_async_context(void)
+  {
+    PyErr_SetString(PyExc_TypeError, "Using sync method in async context X2");
+    return NULL;
+  }
