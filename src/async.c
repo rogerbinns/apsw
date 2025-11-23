@@ -142,6 +142,13 @@ typedef struct BoxedCall
       binaryfunc function;
       PyObject *args[2];
     } Binary;
+
+    struct
+    {
+      getter function;
+      PyObject *arg1;
+      void *arg2;
+    } AttrGet;
   };
 } BoxedCall;
 
@@ -178,6 +185,10 @@ BoxedCall_clear(PyObject *self_)
   case Binary:
     Py_DECREF(self->Binary.args[0]);
     Py_DECREF(self->Binary.args[1]);
+    break;
+
+  case AttrGet:
+    Py_DECREF(self->AttrGet.arg1);
     break;
 
   default:
@@ -217,6 +228,10 @@ BoxedCall_internal_call(BoxedCall *self)
 
   case Binary:
     result = self->Binary.function(self->Binary.args[0], self->Binary.args[1]);
+    break;
+
+  case AttrGet:
+    result = self->AttrGet.function(self->AttrGet.arg1, self->AttrGet.arg2);
     break;
 
   default:
@@ -265,6 +280,7 @@ make_boxed_call(Py_ssize_t total_args)
     assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->ConnectionInit));
     assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->Unary));
     assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->Binary));
+    assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->AttrGet));
   }
 
   return box;
@@ -411,6 +427,21 @@ do_async_binary(PyObject *connection, binaryfunc function, PyObject *arg1, PyObj
   return async_send_boxed_call(connection, (PyObject *)boxed_call);
 }
 
+static PyObject *
+do_async_attr_get(PyObject *connection, getter function, PyObject *arg1, void *arg2)
+{
+  BoxedCall *boxed_call = make_boxed_call(0);
+  if (!boxed_call)
+    return NULL;
+
+  boxed_call->call_type = AttrGet;
+  boxed_call->AttrGet.function = function;
+  boxed_call->AttrGet.arg1 = Py_NewRef(arg1);
+  boxed_call->AttrGet.arg2 = arg2;
+
+  return async_send_boxed_call(connection, (PyObject *)boxed_call);
+}
+
 /* all threads are workers in sync mode, else check threadid */
 #define IN_WORKER_THREAD(CONN) (!(CONN)->async_controller || PyThread_get_thread_ident() == (((CONN)->async_thread_id)))
 
@@ -434,3 +465,11 @@ do_async_binary(PyObject *connection, binaryfunc function, PyObject *arg1, PyObj
     if (!IN_WORKER_THREAD(CONN))                                                                                       \
       return do_async_binary((PyObject *)(CONN), FUNCTION, (ARG1), (ARG2));                                            \
   } while (0)
+
+#define ASYNC_ATTR_GET(CONN, FUNCTION, ARG1, ARG2)                                                                     \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!IN_WORKER_THREAD(CONN))                                                                                       \
+      return do_async_attr_get((PyObject *)(CONN), FUNCTION, (ARG1), (ARG2));                                          \
+  } while (0)
+
