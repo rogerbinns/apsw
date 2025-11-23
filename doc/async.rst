@@ -51,9 +51,12 @@ Configuration is via contextvars
 ================================
 
 Configuration uses :mod:`contextvars`.  These let you provide thread
-local and async context specific values.  The recommended way of using
-them is as a context manager which will change the value inside,
-and restore it on exit.
+local and async context specific values.   It saves having to provide
+a parameter to every function in a call chain, instead letting those
+that care reach out and find the current value for them.
+
+The recommended way of using them is as a context manager which will
+change the value inside, and restore it on exit.
 
 .. code-block:: python
 
@@ -85,18 +88,9 @@ and restore it on exit.
 
 :attr:`apsw.async_cursor_prefetch`
 
-    Sets how many rows are fetched at once when using a cursor.
-
-    .. code-block:: python
-
-        with apsw.async_cursor_prefetch.set(1):
-            # only get one row at  a time here
-            async for row in cursor:
-                ..
-                with apsw.async_cursor_prefetch.set(64):
-                    # and 64 here
-                    async for row in other_cursor:
-                        ..
+    Sets how many rows are fetched at once when using a cursor.  This
+    improves performance by avoiding a round trip through the worker
+    thread for each row.
 
 The :mod:`apsw.aio` controllers also use contextvars.  For example
 :attr:`apsw.aio.deadline` is used with :mod:`asyncio` to set a deadline
