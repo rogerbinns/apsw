@@ -176,7 +176,7 @@ fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in
 	-rm -rf sqlite3
 	mkdir sqlite3
 	set -e ; cd sqlite3 ; curl --output - $(FOSSIL_URL) | tar xfz - --strip-components=1
-	set -e ; cd sqlite3 ; ./configure --quiet --all --disable-tcl ; $(MAKE) sqlite3.c sqlite3
+	set -e ; cd sqlite3 ; ./configure --quiet --all --column-metadata --disable-tcl $(CONFIGURE_OPTS) ; $(MAKE) sqlite3.c sqlite3 libsqlite3.so ; ln -s libsqlite3.so libsqlite3.so.0
 	$(PYTHON) setup.py patch
 
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.
