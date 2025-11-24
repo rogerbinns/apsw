@@ -2450,6 +2450,8 @@ Connection_autovacuum_pages(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     ARG_EPILOG(NULL, Connection_autovacuum_pages_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_autovacuum_pages);
+
   DBMUTEX_ENSURE(self);
   if (!callable)
   {
@@ -6015,6 +6017,13 @@ Connection_set_authorizer_attr(PyObject *self_, PyObject *value, void *Py_UNUSED
     PyErr_Format(PyExc_TypeError, "authorizer expected a Callable or None not %s", Py_TypeName(value));
     return -1;
   }
+
+  if(!IN_WORKER_THREAD(self))
+    {
+      error_sync_in_async_context();
+      return -1;
+    }
+
   void *res = Connection_internal_set_authorizer(self, (!Py_IsNone(value)) ? value : NULL);
   if (res)
     return 0;
