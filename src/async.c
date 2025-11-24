@@ -479,13 +479,13 @@ do_async_attr_get(PyObject *connection, getter function, PyObject *arg1, void *a
   static PyObject *
   error_async_in_sync_context(void)
   {
-    PyErr_SetString(PyExc_TypeError, "Using async method in sync context X1");  // remove X1 and X2 once we are sure all routines use these
+    PyErr_SetString(PyExc_TypeError, "Using async in sync context X1");  // remove X1 and X2 once we are sure all routines use these
     return NULL;
   }
 
     static PyObject *
   error_sync_in_async_context(void)
   {
-    PyErr_SetString(PyExc_TypeError, "Using sync method in async context X2");
+    PyErr_SetString(PyExc_TypeError, "Using sync in async context X2");
     return NULL;
   }
