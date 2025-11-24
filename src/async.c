@@ -185,7 +185,7 @@ BoxedCall_clear(PyObject *self_)
 
   case Binary:
     Py_DECREF(self->Binary.args[0]);
-    Py_DECREF(self->Binary.args[1]);
+    Py_XDECREF(self->Binary.args[1]);
     break;
 
   case AttrGet:
@@ -423,7 +423,7 @@ do_async_binary(PyObject *connection, binaryfunc function, PyObject *arg1, PyObj
   boxed_call->call_type = Binary;
   boxed_call->Binary.function = function;
   boxed_call->Binary.args[0] = Py_NewRef(arg1);
-  boxed_call->Binary.args[1] = Py_NewRef(arg2);
+  boxed_call->Binary.args[1] = Py_XNewRef(arg2);
 
   return async_send_boxed_call(connection, (PyObject *)boxed_call);
 }
