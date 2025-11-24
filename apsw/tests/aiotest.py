@@ -63,13 +63,8 @@ def get_meta(
 skip = set(dir(object())) - {"__repr__", "__str__"}
 
 
-def hardended_hasattr(object, name):
-    if name in {"__repr__", "__str__"}:
-        return False
-    try:
-        return inspect.getattr_static(object, name) or hasattr(object, name)
-    except AttributeError:
-        return False
+def is_method(object, name):
+    return inspect.ismethoddescriptor(getattr(type(object), name))
 
 
 def is_open(con):
@@ -104,9 +99,9 @@ class Async(unittest.TestCase):
             try:
                 if send:
                     if value is not None:
-                        send(functools.partial, setattr, object, member, value)
+                        send(functools.partial(setattr, object, member, value))
                     else:
-                        send(functools.partial, getattr, object, member)
+                        send(functools.partial(getattr, object, member))
                 else:
                     v = getattr(object, member) if value is None else setattr(object, member, value)
                     if hasattr(v, "__await__"):
@@ -122,6 +117,8 @@ class Async(unittest.TestCase):
         match (klass, member):
             case (_, "__aexit__") | (_, "__exit__"):
                 args = (None, None, None)
+            case ("Connection", "autovacuum_pages"):
+                args = (lambda *args: 1/0,)
             case _:
                 args = tuple()
 
@@ -133,9 +130,9 @@ class Async(unittest.TestCase):
                     return "async"
             return "value"
         except TypeError as exc:
-            if not send and exc.args[0] == "Using sync method in async context X2":
+            if not send and exc.args[0] == "Using sync in async context X2":
                 return "exception"
-            if send and exc.args[0] == "Using async method in sync context X1":
+            if send and exc.args[0] == "Using async in sync context X1":
                 return "exception"
             raise
 
@@ -145,13 +142,13 @@ class Async(unittest.TestCase):
         con = sync_await(apsw.Connection.as_async(""))
 
         for name in dir(con):
-            if name in skip:
+            if name in skip or name in {"as_async"}:
                 continue
 
             if not is_open(con):
                 con = sync_await(apsw.Connection.as_async(""))
 
-            is_attr = hardended_hasattr(object, name)
+            is_attr = not is_method(con, name)
 
             print(f"Connection {name=} {is_attr=}")
 
@@ -163,15 +160,20 @@ class Async(unittest.TestCase):
             kind_async = self.classifyOne(None, is_attr, con, "Connection", name)
 
             if is_attr:
-                # check writable
+                # check writable (mutex assertions)
                 try:
-                    kind_async_setattr = self.classifyOne(None, is_attr, con, "Connection", name, lambda *args: False)
-                    self.assertEqual(kind_async, kind_async_setattr)
+                    setattr(con, name, lambda *args: False)
                 except AttributeError as exc:
                     if "objects is not writable" in str(exc):
                         pass
                     else:
                         raise
+                except TypeError as exc:
+                    if exc.args[0] in {"Using sync in async context X2", "Using async in sync context X1"}:
+                        pass
+                    else:
+                        raise
+
 
             match (kind_sync, kind_async):
                 case ("value", "value"):
@@ -180,6 +182,8 @@ class Async(unittest.TestCase):
                     kind = "async"
                 case ("value", "exception"):
                     kind = "sync"
+                case ("value", "async"):
+                    kind = "dual"
                 case _:
                     raise ValueError(f"{kind_sync=} {kind_async=}")
 
