@@ -114,13 +114,34 @@ class Async(unittest.TestCase):
                     return "exception"
                 raise
 
-        match (klass, member):
-            case (_, "__aexit__") | (_, "__exit__"):
-                args = (None, None, None)
-            case ("Connection", "autovacuum_pages"):
-                args = (lambda *args: 1/0,)
-            case _:
-                args = tuple()
+        if member in {"__aexit__", "__exit__"}:
+            args = (None, None, None)
+        else:
+            match klass:
+                case "Connection":
+                    match member:
+                        case "autovacuum_pages" | "collation_needed":
+                            args = (lambda *args: 1 / 0,)
+                        case "backup":
+                            args = "main", apsw.Connection(""), "main"
+                        case "blob_open":
+                            args = "main", "dummy", "column", 73, False
+                        case "column_metadata":
+                            args = "main", "dummy", "column"
+                        case "config":
+                            args = apsw.SQLITE_DBCONFIG_ENABLE_FKEY, -1
+                        case (
+                            "create_aggregate_function"
+                            | "create_collation"
+                            | "create_module"
+                            | "create_scalar_function"
+                            | "create_window_function"
+                        ):
+                            args = "foo", lambda *args: 1 / 0
+                        case _:
+                            args = tuple()
+                case _:
+                    1 / 0
 
         try:
             if send:
@@ -139,14 +160,28 @@ class Async(unittest.TestCase):
     def testMetaJson(self):
         apsw.async_controller.set(SimpleController)
 
-        con = sync_await(apsw.Connection.as_async(""))
+        con = None
+
+        def ensure_con():
+            # various operations result in the database being closed
+            # so this ensures it remains open
+            nonlocal con
+            if con is None or not is_open(con):
+                con = sync_await(apsw.Connection.as_async(""))
+                sync_await(
+                    con.execute("""
+                    create table dummy(column);
+                    insert into dummy(rowid, column) values(73, x'aabbcc');
+                    """)
+                )
+
+        ensure_con()
 
         for name in dir(con):
-            if name in skip or name in {"as_async"}:
+            if name in skip or name in {"as_async"} or ("Connection", name) in old_names:
                 continue
 
-            if not is_open(con):
-                con = sync_await(apsw.Connection.as_async(""))
+            ensure_con()
 
             is_attr = not is_method(con, name)
 
@@ -154,8 +189,7 @@ class Async(unittest.TestCase):
 
             kind_sync = self.classifyOne(con.async_controller.send, is_attr, con, "Connection", name)
 
-            if not is_open(con):
-                con = sync_await(apsw.Connection.as_async(""))
+            ensure_con()
 
             kind_async = self.classifyOne(None, is_attr, con, "Connection", name)
 
@@ -173,7 +207,6 @@ class Async(unittest.TestCase):
                         pass
                     else:
                         raise
-
 
             match (kind_sync, kind_async):
                 case ("value", "value"):
@@ -270,6 +303,59 @@ class RawController:
                 req.result = exc
                 req.is_exception = True
             req.event.set()
+
+
+# generated from tools/renames.json
+old_names = {
+    ("apsw", "apswversion"),
+    ("apsw", "enablesharedcache"),
+    ("apsw", "exceptionfor"),
+    ("apsw", "memoryhighwater"),
+    ("apsw", "memoryused"),
+    ("apsw", "releasememory"),
+    ("apsw", "softheaplimit"),
+    ("apsw", "sqlitelibversion"),
+    ("apsw", "vfsnames"),
+    ("Backup", "pagecount"),
+    ("Blob", "readinto"),
+    ("Connection", "blobopen"),
+    ("Connection", "cacheflush"),
+    ("Connection", "collationneeded"),
+    ("Connection", "createaggregatefunction"),
+    ("Connection", "createcollation"),
+    ("Connection", "createmodule"),
+    ("Connection", "createscalarfunction"),
+    ("Connection", "enableloadextension"),
+    ("Connection", "exectrace"),
+    ("Connection", "filecontrol"),
+    ("Connection", "getautocommit"),
+    ("Connection", "getexectrace"),
+    ("Connection", "getrowtrace"),
+    ("Connection", "loadextension"),
+    ("Connection", "overloadfunction"),
+    ("Connection", "rowtrace"),
+    ("Connection", "setauthorizer"),
+    ("Connection", "setbusyhandler"),
+    ("Connection", "setbusytimeout"),
+    ("Connection", "setcommithook"),
+    ("Connection", "setexectrace"),
+    ("Connection", "setprofile"),
+    ("Connection", "setprogresshandler"),
+    ("Connection", "setrollbackhook"),
+    ("Connection", "setrowtrace"),
+    ("Connection", "setupdatehook"),
+    ("Connection", "setwalhook"),
+    ("Connection", "sqlite3pointer"),
+    ("Connection", "totalchanges"),
+    ("Cursor", "exectrace"),
+    ("Cursor", "getconnection"),
+    ("Cursor", "getdescription"),
+    ("Cursor", "getexectrace"),
+    ("Cursor", "getrowtrace"),
+    ("Cursor", "rowtrace"),
+    ("Cursor", "setexectrace"),
+    ("Cursor", "setrowtrace"),
+}
 
 
 __all__ = ("Async",)

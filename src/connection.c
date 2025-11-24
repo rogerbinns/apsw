@@ -517,10 +517,7 @@ Connection_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   }
 
   if (!IN_WORKER_THREAD(self))
-  {
-    PyErr_SetString(PyExc_TypeError, "You must use aclose (async version of close)");
-    return NULL;
-  }
+    return error_sync_in_async_context();
 
   DBMUTEX_ENSURE(self);
   if (Connection_close_internal(self, force))
@@ -867,6 +864,8 @@ Connection_blob_open(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
     ARG_EPILOG(NULL, Connection_blob_open_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_blob_open);
+
   DBMUTEX_ENSURE(self);
   res = sqlite3_blob_open(self->db, database, table, column, rowid, writeable, &blob);
 
@@ -941,6 +940,8 @@ Connection_backup(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
 
   if (sourceconnection->db == self->db)
     return PyErr_Format(PyExc_ValueError, "source and destination are the same");
+
+  ASYNC_FASTCALL(self, Connection_backup);
 
   DBMUTEXES_ENSURE(sourceconnection->dbmutex, "Backup source Connection is busy in another thread", self->dbmutex,
                    "Backup destination Connection is busy in another thread");
@@ -2536,6 +2537,8 @@ Connection_collation_needed(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     ARG_EPILOG(NULL, Connection_collation_needed_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_collation_needed);
+
   DBMUTEX_ENSURE(self);
   if (callable)
     res = sqlite3_collation_needed(self->db, self, collationneeded_cb);
@@ -3657,6 +3660,8 @@ Connection_create_window_function(PyObject *self_, PyObject *const *fast_args, P
     ARG_EPILOG(NULL, Connection_create_window_function_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_create_window_function);
+
   if (!factory)
     cbinfo = NULL;
   else
@@ -3843,6 +3848,8 @@ Connection_create_aggregate_function(PyObject *self_, PyObject *const *fast_args
     ARG_EPILOG(NULL, Connection_create_aggregate_function_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_create_aggregate_function);
+
   DBMUTEX_ENSURE(self);
 
   if (!factory)
@@ -3982,6 +3989,8 @@ Connection_create_collation(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     ARG_MANDATORY ARG_optional_Callable(callback);
     ARG_EPILOG(NULL, Connection_create_collation_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_create_collation);
 
   DBMUTEX_ENSURE(self);
   res = sqlite3_create_collation_v2(self->db, name, SQLITE_UTF8, callback ? callback : NULL,
@@ -4285,6 +4294,8 @@ Connection_create_module(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
     ARG_OPTIONAL ARG_bool(read_only);
     ARG_EPILOG(NULL, Connection_create_module_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_create_module);
 
   if (!Py_IsNone(datasource))
   {
@@ -4783,13 +4794,12 @@ exit:
   manager.  You must use this with async connections.
 */
 static PyObject *
-Connection_aenter(PyObject *self_, PyObject *Py_UNUSED(unused))
+Connection_aenter(PyObject *self_, PyObject *unused)
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
 
-  /* unused could be NULL so make sure we pass something */
-  ASYNC_BINARY(self, Connection_enter, self_, Py_None);
+  ASYNC_BINARY(self, Connection_enter, self_, unused);
 
   return error_async_in_sync_context();
 }
@@ -5390,6 +5400,8 @@ Connection_column_metadata(PyObject *self_, PyObject *const *fast_args, Py_ssize
     ARG_EPILOG(NULL, Connection_column_metadata_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_column_metadata);
+
   DBMUTEX_ENSURE(self);
   res = sqlite3_table_column_metadata(self->db, dbname, table_name, column_name, &datatype, &collseq, &notnull,
                                       &primarykey, &autoinc);
@@ -5409,12 +5421,14 @@ Connection_column_metadata(PyObject *self_, PyObject *const *fast_args, Py_ssize
   -* sqlite3_db_cacheflush
 */
 static PyObject *
-Connection_cache_flush(PyObject *self_, PyObject *Py_UNUSED(unused))
+Connection_cache_flush(PyObject *self_, PyObject *unused)
 {
   Connection *self = (Connection *)self_;
   int res;
 
   CHECK_CLOSED(self, NULL);
+
+  ASYNC_BINARY(self, Connection_cache_flush, self_, unused);
 
   DBMUTEX_ENSURE(self);
   res = sqlite3_db_cacheflush(self->db);

@@ -1,5 +1,14 @@
 {
     "Connection": {
-        "value": ["as_async", "async_controller"]
+        "value": [
+            "as_async",
+            "async_controller",
+            "cache_stats",
+            "changes",
+            "cursor"
+        ],
+        "sync": [
+            "close"
+        ]
     }
 }
