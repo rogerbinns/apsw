@@ -214,7 +214,9 @@ BoxedCall_internal_call(BoxedCall *self)
   switch (self->call_type)
   {
   case ConnectionInit:
-    if (0 == Py_TYPE(self->ConnectionInit.connection)->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, self->ConnectionInit.kwargs))
+    if (0
+        == Py_TYPE(self->ConnectionInit.connection)
+               ->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, self->ConnectionInit.kwargs))
       result = Py_NewRef(self->ConnectionInit.connection);
     break;
   case FastCallWithKeywords:
@@ -474,18 +476,18 @@ do_async_attr_get(PyObject *connection, getter function, PyObject *arg1, void *a
       return do_async_attr_get((PyObject *)(CONN), FUNCTION, (ARG1), (ARG2));                                          \
   } while (0)
 
+/* standard error routines - these return NULL so they can be returned themselves */
+static PyObject *
+error_async_in_sync_context(void)
+{
+  PyErr_SetString(PyExc_TypeError,
+                  "Using async in sync context X1"); // remove X1 and X2 once we are sure all routines use these
+  return NULL;
+}
 
-  /* standard error routines - these return NULL so they can be returned themselves */
-  static PyObject *
-  error_async_in_sync_context(void)
-  {
-    PyErr_SetString(PyExc_TypeError, "Using async in sync context X1");  // remove X1 and X2 once we are sure all routines use these
-    return NULL;
-  }
-
-    static PyObject *
-  error_sync_in_async_context(void)
-  {
-    PyErr_SetString(PyExc_TypeError, "Using sync in async context X2");
-    return NULL;
-  }
+static PyObject *
+error_sync_in_async_context(void)
+{
+  PyErr_SetString(PyExc_TypeError, "Using sync in async context X2");
+  return NULL;
+}
