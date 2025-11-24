@@ -136,8 +136,57 @@ class Async(unittest.TestCase):
                             | "create_module"
                             | "create_scalar_function"
                             | "create_window_function"
+                            | "register_fts5_function"
+                            | "register_fts5_tokenizer"
                         ):
                             args = "foo", lambda *args: 1 / 0
+                        case "db_filename" | "readonly" | "serialize" | "vfsname":
+                            args = ("main",)
+                        case "deserialize":
+                            args = "main", apsw.Connection("").serialize("main")
+                        case (
+                            "drop_modules"
+                            | "set_authorizer"
+                            | "set_busy_handler"
+                            | "set_commit_hook"
+                            | "set_exec_trace"
+                            | "set_profile"
+                            | "set_progress_handler"
+                            | "set_rollback_hook"
+                            | "set_row_trace"
+                            | "set_update_hook"
+                            | "set_wal_hook"
+                        ):
+                            args = (None,)
+                        case "enable_load_extension" | "set_busy_timeout" | "set_last_insert_rowid" | "wal_autocheckpoint":
+                            # some of these depend on True being subclass of int
+                            args = (True,)
+                        case "execute":
+                            args = ("select 3",)
+                        case "executemany":
+                            args = "select ?", ((i,) for i in range(10))
+                        case "file_control":
+                            args = "main", 12343, 0
+                        case "fts5_tokenizer" | "fts5_tokenizer_available":
+                            args = ("ascii",)
+                        case "limit":
+                            args = (apsw.SQLITE_LIMIT_COLUMN,)
+                        case "load_extension":
+                            args = ("this does not exist I hope",)
+                        case "overload_function":
+                            args = "dummy", 33
+                        case "pragma":
+                            args = ("user_version",)
+                        case "read":
+                            args = "main", 0, 0, 4096
+                        case "setlk_timeout":
+                            args = 1, 1
+                        case "status":
+                            args = (apsw.SQLITE_DBSTATUS_LOOKASIDE_USED,)
+                        case "table_exists":
+                            args = (None, "hello")
+                        case "trace_v2" | "vtab_config":
+                            args = (0,)
                         case _:
                             args = tuple()
                 case _:
@@ -156,6 +205,17 @@ class Async(unittest.TestCase):
             if send and exc.args[0] == "Using async in sync context X1":
                 return "exception"
             raise
+        except apsw.ExtensionLoadingError:
+            return "value"
+        except apsw.SQLError:
+            if (klass, member) == ("Connection", "read"):
+                return "value"
+            raise
+        except apsw.InvalidContextError:
+            if klass=="Connection" and member in {"vtab_config", "vtab_on_conflict"}:
+                return "value"
+            raise
+
 
     def testMetaJson(self):
         apsw.async_controller.set(SimpleController)
@@ -195,10 +255,15 @@ class Async(unittest.TestCase):
 
             if is_attr:
                 # check writable (mutex assertions)
+                match name:
+                    case "transaction_mode":
+                        value = "DEFERRED"
+                    case _:
+                        value = lambda *args: False
                 try:
-                    setattr(con, name, lambda *args: False)
+                    setattr(con, name, value)
                 except AttributeError as exc:
-                    if "objects is not writable" in str(exc):
+                    if "objects is not writable" in str(exc) or "readonly attribute" in str(exc):
                         pass
                     else:
                         raise
@@ -223,6 +288,10 @@ class Async(unittest.TestCase):
             expected_kind = get_meta("Connection", name, "attribute" if is_attr else "function")
 
             self.assertEqual(kind, expected_kind, f"Connection {name=}")
+
+            # screw up functionality
+            if name in {"cursor_factory", "exec_trace"}:
+                con = None
 
 
 class SimpleController:

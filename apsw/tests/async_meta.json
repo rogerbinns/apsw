@@ -1,14 +1,31 @@
 {
     "Connection": {
+        "dual": [
+            "filename",
+            "filename_journal",
+            "filename_wal"
+        ],
+        "sync": [
+            "close",
+            "vtab_config",
+            "vtab_on_conflict"
+        ],
         "value": [
             "as_async",
             "async_controller",
             "cache_stats",
             "changes",
-            "cursor"
-        ],
-        "sync": [
-            "close"
+            "cursor",
+            "get_autocommit",
+            "get_exec_trace",
+            "get_row_trace",
+            "interrupt",
+            "last_insert_rowid",
+            "limit",
+            "set_exec_trace",
+            "set_row_trace",
+            "sqlite3_pointer",
+            "total_changes"
         ]
     }
 }

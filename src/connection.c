@@ -1151,13 +1151,15 @@ Connection_get_autocommit(PyObject *self_, PyObject *Py_UNUSED(unused))
  -* sqlite3_db_name
 */
 static PyObject *
-Connection_db_names(PyObject *self_, PyObject *Py_UNUSED(unused))
+Connection_db_names(PyObject *self_, PyObject *unused)
 {
   Connection *self = (Connection *)self_;
   PyObject *res = NULL, *str = NULL;
   int i;
 
   CHECK_CLOSED(self, NULL);
+
+  ASYNC_BINARY(self, Connection_db_names, self_, unused);
 
   DBMUTEX_ENSURE(self);
   res = PyList_New(0);
@@ -1227,6 +1229,8 @@ Connection_set_last_insert_rowid(PyObject *self_, PyObject *const *fast_args, Py
     ARG_MANDATORY ARG_int64(rowid);
     ARG_EPILOG(NULL, Connection_set_last_insert_rowid_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_set_last_insert_rowid);
 
   DBMUTEX_ENSURE(self);
   sqlite3_set_last_insert_rowid(self->db, rowid);
@@ -1367,6 +1371,8 @@ Connection_set_update_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize
     ARG_EPILOG(NULL, Connection_set_update_hook_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_set_update_hook);
+
   DBMUTEX_ENSURE(self);
   if (!callable)
     sqlite3_update_hook(self->db, NULL, NULL);
@@ -1443,6 +1449,8 @@ Connection_set_rollback_hook(PyObject *self_, PyObject *const *fast_args, Py_ssi
     ARG_OPTIONAL ARG_pyobject(id);
     ARG_EPILOG(NULL, Connection_set_rollback_hook_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_set_rollback_hook);
 
   DBMUTEX_ENSURE(self);
 
@@ -1675,6 +1683,8 @@ Connection_set_profile(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     ARG_MANDATORY ARG_optional_Callable(callable);
     ARG_EPILOG(NULL, Connection_set_profile_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_set_profile);
 
   Py_CLEAR(self->tracehooks[0].callback);
 
@@ -1935,6 +1945,8 @@ Connection_set_commit_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize
     ARG_EPILOG(NULL, Connection_set_commit_hook_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_set_commit_hook);
+
   DBMUTEX_ENSURE(self);
 
   unsigned before_hooks = generic_hooks_active(self->commit_hooks, self->commit_hooks_count);
@@ -2050,6 +2062,8 @@ Connection_set_wal_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Connection_set_wal_hook_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_set_wal_hook);
+
   DBMUTEX_ENSURE(self);
   if (!callable)
     sqlite3_wal_hook(self->db, NULL, NULL);
@@ -2164,6 +2178,8 @@ Connection_set_progress_handler(PyObject *self_, PyObject *const *fast_args, Py_
 
   if (callable && nsteps <= 0)
     return PyErr_Format(PyExc_ValueError, "nsteps must be a positive number");
+
+  ASYNC_FASTCALL(self, Connection_set_progress_handler);
 
   /* clear out any matching id */
   for (unsigned i = 0; i < self->progresshandler_count; i++)
@@ -2349,6 +2365,8 @@ Connection_set_authorizer(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     ARG_MANDATORY ARG_optional_Callable(callable);
     ARG_EPILOG(NULL, Connection_set_authorizer_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_set_authorizer);
 
   void *res = Connection_internal_set_authorizer(self, callable);
   if (!res)
@@ -2635,6 +2653,8 @@ Connection_set_busy_handler(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     ARG_EPILOG(NULL, Connection_set_busy_handler_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_set_busy_handler);
+
   DBMUTEX_ENSURE(self);
 
   if (callable)
@@ -2694,6 +2714,8 @@ Connection_serialize(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
     ARG_EPILOG(NULL, Connection_serialize_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_serialize);
+
   /* sqlite3_serialize does not use the same error pattern as other
   SQLite APIs.  I originally coded this as though error codes/strings
   were done behind the scenes.  However that turns out not to be the
@@ -2752,6 +2774,8 @@ Connection_deserialize(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     ARG_MANDATORY ARG_Buffer(contents);
     ARG_EPILOG(NULL, Connection_deserialize_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_deserialize);
 
   if (0 != PyObject_GetBufferContiguous(contents, &contents_buffer, PyBUF_SIMPLE))
   {
@@ -2818,6 +2842,8 @@ Connection_enable_load_extension(PyObject *self_, PyObject *const *fast_args, Py
     ARG_EPILOG(NULL, Connection_enable_load_extension_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_enable_load_extension);
+
   DBMUTEX_ENSURE(self);
   res = sqlite3_enable_load_extension(self->db, enable);
   SET_EXC(res, self->db);
@@ -2863,6 +2889,8 @@ Connection_load_extension(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     ARG_OPTIONAL ARG_optional_str(entrypoint);
     ARG_EPILOG(NULL, Connection_load_extension_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_load_extension);
 
   DBMUTEX_ENSURE(self);
   Py_BEGIN_ALLOW_THREADS res = sqlite3_load_extension(self->db, filename, entrypoint, &errmsg);
@@ -4079,6 +4107,8 @@ Connection_file_control(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Connection_file_control_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_file_control);
+
   DBMUTEX_ENSURE(self);
   res = sqlite3_file_control(self->db, dbname, op, pointer);
 
@@ -4122,6 +4152,8 @@ Connection_vfsname(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_MANDATORY ARG_str(dbname);
     ARG_EPILOG(NULL, Connection_vfsname_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_vfsname);
 
   const char *vfsname = NULL;
 
@@ -4188,6 +4220,8 @@ Connection_wal_autocheckpoint(PyObject *self_, PyObject *const *fast_args, Py_ss
     ARG_EPILOG(NULL, Connection_wal_autocheckpoint_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_wal_autocheckpoint);
+
   DBMUTEX_ENSURE(self);
   res = sqlite3_wal_autocheckpoint(self->db, n);
   SET_EXC(res, self->db);
@@ -4232,6 +4266,8 @@ Connection_wal_checkpoint(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     ARG_OPTIONAL ARG_int(mode);
     ARG_EPILOG(NULL, Connection_wal_checkpoint_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_wal_checkpoint);
 
   DBMUTEX_ENSURE(self);
   res = sqlite3_wal_checkpoint_v2(self->db, dbname, mode, &nLog, &nCkpt);
@@ -4354,6 +4390,9 @@ Connection_vtab_config(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Connection_vtab_config_USAGE, );
   }
 
+  if(!IN_WORKER_THREAD(self))
+    return error_sync_in_async_context();
+
   if (!CALL_CHECK(xConnect))
     return PyErr_Format(ExcInvalidContext,
                         "You can only call vtab_config while in a virtual table Create/Connect call");
@@ -4389,6 +4428,9 @@ Connection_vtab_on_conflict(PyObject *self_, PyObject *Py_UNUSED(unused))
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
 
+  if(!IN_WORKER_THREAD(self))
+    return error_sync_in_async_context();
+
   if (!CALL_CHECK(xUpdate))
     return PyErr_Format(ExcInvalidContext, "You can only call vtab_on_conflict while in a virtual table Update call");
 
@@ -4420,6 +4462,8 @@ Connection_overload_function(PyObject *self_, PyObject *const *fast_args, Py_ssi
     ARG_MANDATORY ARG_int(nargs);
     ARG_EPILOG(NULL, Connection_overload_function_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_overload_function);
 
   DBMUTEX_ENSURE(self);
   res = sqlite3_overload_function(self->db, name, nargs);
@@ -4944,6 +4988,8 @@ Connection_status(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_EPILOG(NULL, Connection_status_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_status);
+
   DBMUTEX_ENSURE(self);
   res = sqlite3_db_status64(self->db, op, &current, &highwater, reset);
   SET_EXC(res, NULL);
@@ -5018,6 +5064,8 @@ Connection_db_filename(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Connection_db_filename_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_db_filename);
+
   DBMUTEX_ENSURE(self);
   res = sqlite3_db_filename(self->db, name);
   retval = convertutf8string(res);
@@ -5049,6 +5097,8 @@ Connection_txn_state(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
     ARG_OPTIONAL ARG_optional_str(schema);
     ARG_EPILOG(NULL, Connection_txn_state_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_txn_state);
 
   DBMUTEX_ENSURE(self);
   res = sqlite3_txn_state(self->db, schema);
@@ -5345,6 +5395,8 @@ Connection_table_exists(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
     ARG_EPILOG(NULL, Connection_table_exists_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_table_exists);
+
   DBMUTEX_ENSURE(self);
   res = sqlite3_table_column_metadata(self->db, dbname, table_name, NULL, NULL, NULL, NULL, NULL, NULL);
   if (res != SQLITE_OK && res != SQLITE_ERROR)
@@ -5448,12 +5500,14 @@ Connection_cache_flush(PyObject *self_, PyObject *unused)
   -* sqlite3_db_release_memory
 */
 static PyObject *
-Connection_release_memory(PyObject *self_, PyObject *Py_UNUSED(unused))
+Connection_release_memory(PyObject *self_, PyObject *unused)
 {
   Connection *self = (Connection *)self_;
   int res;
 
   CHECK_CLOSED(self, NULL);
+
+  ASYNC_BINARY(self, Connection_release_memory, self_, unused);
 
   DBMUTEX_ENSURE(self);
   res = sqlite3_db_release_memory(self->db);
@@ -5492,6 +5546,8 @@ Connection_drop_modules(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
     ARG_MANDATORY ARG_pyobject(keep);
     ARG_EPILOG(NULL, Connection_drop_modules_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_drop_modules);
 
   DBMUTEX_ENSURE(self);
 
@@ -5614,6 +5670,8 @@ Connection_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   if (offset < 0)
     return PyErr_Format(PyExc_ValueError, "offset needs to non-negative, not %lld", offset);
 
+  ASYNC_FASTCALL(self, Connection_read);
+
   bytes = PyBytes_FromStringAndSize(NULL, amount);
   if (!bytes)
     return NULL;
@@ -5676,10 +5734,11 @@ Connection_getmainfilename(PyObject *self_, void *unused)
   -* sqlite3_filename_journal
 */
 static PyObject *
-Connection_getjournalfilename(PyObject *self_, void *Py_UNUSED(unused))
+Connection_getjournalfilename(PyObject *self_, void *unused)
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
+  ASYNC_ATTR_GET(self, Connection_getjournalfilename, self_, unused);
   DBMUTEX_ENSURE(self);
   PyObject *res = convertutf8string(sqlite3_filename_journal(sqlite3_db_filename(self->db, "main")));
   sqlite3_mutex_leave(self->dbmutex);
@@ -5694,10 +5753,11 @@ Connection_getjournalfilename(PyObject *self_, void *Py_UNUSED(unused))
   -* sqlite3_filename_wal
 */
 static PyObject *
-Connection_getwalfilename(PyObject *self_, void *Py_UNUSED(unused))
+Connection_getwalfilename(PyObject *self_, void *unused)
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
+  ASYNC_ATTR_GET(self, Connection_getwalfilename, self_, unused);
   DBMUTEX_ENSURE(self);
   PyObject *res = convertutf8string(sqlite3_filename_wal(sqlite3_db_filename(self->db, "main")));
   sqlite3_mutex_leave(self->dbmutex);
@@ -6032,11 +6092,11 @@ Connection_set_authorizer_attr(PyObject *self_, PyObject *value, void *Py_UNUSED
     return -1;
   }
 
-  if(!IN_WORKER_THREAD(self))
-    {
-      error_sync_in_async_context();
-      return -1;
-    }
+  if (!IN_WORKER_THREAD(self))
+  {
+    error_sync_in_async_context();
+    return -1;
+  }
 
   void *res = Connection_internal_set_authorizer(self, (!Py_IsNone(value)) ? value : NULL);
   if (res)
@@ -6137,6 +6197,9 @@ Connection_data_version(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
     ARG_OPTIONAL ARG_optional_str(schema);
     ARG_EPILOG(NULL, Connection_data_version_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_data_version);
+
   DBMUTEX_ENSURE(self);
   int res, data_version = -1;
   res = sqlite3_file_control(self->db, schema ? schema : "main", SQLITE_FCNTL_DATA_VERSION, &data_version);
@@ -6169,6 +6232,8 @@ Connection_setlk_timeout(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
     ARG_MANDATORY ARG_int(flags);
     ARG_EPILOG(NULL, Connection_setlk_timeout_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_setlk_timeout);
 
   DBMUTEX_ENSURE(self);
   int res = sqlite3_setlk_timeout(self->db, ms, flags);
@@ -6210,6 +6275,8 @@ Connection_fts5_tokenizer(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     ARG_OPTIONAL ARG_optional_list_str(args);
     ARG_EPILOG(NULL, Connection_fts5_tokenizer_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_fts5_tokenizer);
 
   if (args)
     tmptuple = NULL;
@@ -6330,6 +6397,8 @@ Connection_register_fts5_tokenizer(PyObject *self_, PyObject *const *fast_args, 
     ARG_EPILOG(NULL, Connection_register_fts5_tokenizer_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_register_fts5_tokenizer);
+
   DBMUTEX_ENSURE(self);
   fts5_api *api = Connection_fts5_api(self);
   sqlite3_mutex_leave(self->dbmutex);
@@ -6383,6 +6452,8 @@ Connection_fts5_tokenizer_available(PyObject *self_, PyObject *const *fast_args,
     ARG_EPILOG(NULL, Connection_fts5_tokenizer_available_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_fts5_tokenizer_available);
+
   DBMUTEX_ENSURE(self);
   fts5_api *api = Connection_fts5_api(self);
 
@@ -6428,6 +6499,8 @@ Connection_register_fts5_function(PyObject *self_, PyObject *const *fast_args, P
     ARG_MANDATORY ARG_Callable(function);
     ARG_EPILOG(NULL, Connection_register_fts5_function_USAGE, );
   }
+
+  ASYNC_FASTCALL(self, Connection_register_fts5_function);
 
   DBMUTEX_ENSURE(self);
   fts5_api *api = Connection_fts5_api(self);
