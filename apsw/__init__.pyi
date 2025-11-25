@@ -2,7 +2,7 @@
 import sys
 
 from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
-from collections.abc import Mapping, Buffer
+from collections.abc import Mapping, Buffer, Awaitable
 import array
 import types
 
@@ -180,6 +180,37 @@ JSONBTypes = (
 in JSONB.  Like the builtin JSON module, None/int/float/bool keys will be
 stringized."""
 
+class AsyncConnectionController(Protocol):
+    """Manages a worker thread and marshalling async requests to it
+
+    See :mod:`apsw.aio` for some implementations.
+    """
+
+    def configure(self, connection: Connection):
+        """
+        Called in the worker thead once the connection is available
+
+        This is called before the :attr:`Connection.connection_hooks` are
+        run.
+        """
+        ...
+
+    def send(self, call: Callable[[], Any]) -> Awaitable[Any]:
+        """Called from outside the worker thread to send to worker thread
+
+        The controller must send ``call`` to the worker thread where it should be
+        called without parameters :code:`call()` with the returned Awaitable
+        tracking the call result.
+        """
+        ...
+
+    def close(self):
+        """Called after the connection has closed
+
+        This allows shutting down the worker thread and similar housekeeping.
+        !!!Exceptions unraisable"""
+        ...
+
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
 against.  For example SQLite 3.44.1 will have the value *3440100*.
@@ -209,6 +240,20 @@ def apsw_version() -> str:
     ...
 
 apswversion = apsw_version ## OLD-NAME
+
+async_controller: type[AsyncConnectionController]
+"""Call this to get a controller for :meth:`Connection.as_async`."""
+
+async_cursor_prefetch: contextvars.ContextVar[int]
+"""When looping on a :class:`Cursor` in async mode, subsequent rows can
+be fetched ahead nt row.  This controls how many rows are fetched
+ahead.  The default is 1. See :doc:`async` for details."""
+
+async_run_coro: contextvars.ContextVar[Callable[[typing.Coroutine], Any]]
+"""When APSW encounters a :class:`~typing.Coroutine` this called to run
+it and block until getting the result.  The callable would typically
+have the coroutine run in the event loop.  See :doc:`async` for
+details."""
 
 def carray(object: Buffer | tuple[str, ...] | tuple[Buffer, ...], *, start: int = 0, stop: int = -1, flags: int = -1) -> CArrayBinding:
     """Indicates a Python object is being provided as a runtime array for the
@@ -1088,6 +1133,42 @@ class Connection:
     """This object wraps a `sqlite3 pointer
     <https://sqlite.org/c3ref/sqlite3.html>`_."""
 
+    def aclose(self, force: bool = False) -> None:
+        """:async:
+
+        The async version of :meth:`close`"""
+        ...
+
+    def __aenter__(self) -> Connection:
+        """:async:
+
+        Async version of :meth:`__enter__` context
+        manager.  You must use this with async connections."""
+        ...
+
+    def __aexit__(self, etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None:
+        """:async:
+
+        Async version of :meth:`__exit__` context manager.  You must use this
+        with async connections."""
+        ...
+
+    def as_async(self, *args, **kwargs) -> Awaitable[AsyncConnection]:
+        """:staticmethod:
+
+        Uses the :attr:`async_controller` to start a :class:`Connection`
+        with the parameters in a background worker thread.  The resulting
+        :class:`AsyncConnection` is the same as regular :class:`Connection`
+        but with most methods and attributes and related objects configured
+        for async operation.
+
+        See :mod:`apsw.aio` for some controller implementations and :doc:`async`
+        for more details."""
+        ...
+
+    async_controller: AsyncConnectionController
+    """The controller in effect in async mode."""
+
     authorizer: Optional[Authorizer]
     """While `preparing <https://sqlite.org/c3ref/prepare.html>`_
     statements, SQLite will call any defined authorizer to see if a
@@ -1659,7 +1740,7 @@ class Connection:
         See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_executemany>`."""
         ...
 
-    def __exit__(self, etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]:
+    def __exit__(self, etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None:
         """Implements context manager in conjunction with
         :meth:`~Connection.__enter__`.  If no exception happened then
         the pending transaction is committed, while an exception results in a
@@ -1811,6 +1892,9 @@ class Connection:
 
         Calls: `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`__"""
         ...
+
+    is_async: bool
+    """`True` if this connection is operating in async mode."""
 
     is_interrupted: bool
     """Indicates if this connection has been interrupted.
@@ -2406,6 +2490,33 @@ class Connection:
 class Cursor:
     """"""
 
+    def aclose(self, force: bool = False) -> None:
+        """:async:
+
+        Async version of :meth:`close`"""
+        ...
+
+    def __aenter__(self) -> Self:
+        """If you use the cursor as a context manager then it will be closed on
+        exit."""
+        ...
+
+    def __aexit__(self, etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None:
+        """Close the cursor on exit of context"""
+        ...
+
+    def __aiter__(self) -> Cursor:
+        """:async:
+
+        Cursors are async iterators"""
+        ...
+
+    def __anext__(self) -> Any:
+        """:async:
+
+        Cursors are iterators"""
+        ...
+
     bindings_count: int
     """How many bindings are in the statement.  The ``?`` form
     results in the largest number.  For example you could do
@@ -2429,6 +2540,8 @@ class Cursor:
         Cursors are automatically garbage collected and when there
         are none left will allow the connection to be garbage collected if
         it has no other references.
+
+        It is safe to call the method multiple times.
 
         A cursor is open if there are remaining statements to execute (if
         your query included multiple statements), or if you called
@@ -2680,7 +2793,7 @@ class Cursor:
         """Cursors are iterators"""
         ...
 
-    def __next__(self: Cursor) -> Any:
+    def __next__(self) -> Any:
         """Cursors are iterators"""
         ...
 

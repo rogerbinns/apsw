@@ -1253,36 +1253,17 @@
 } while(0)
 
 
-#define  Connection_as_async_DOC "Connection.as_async(controller: AsyncConnectionController, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100) -> Awaitable[AsyncConnection]\n\n" \
+#define  Connection_as_async_DOC "Connection.as_async(*args, **kwargs) -> Awaitable[AsyncConnection]\n\n" \
 ":staticmethod:\n" \
 "\n" \
-"Uses the controller to start a :class:`Connection` with the parameters\n" \
-"in a background worker thread.  The resulting :class:`AsyncConnection`\n" \
-"is the same as regular :class:`Connection` but with most methods and\n" \
-"attributes and related objects configured for async operation.\n" \
+"Uses the :attr:`async_controller` to start a :class:`Connection`\n" \
+"with the parameters in a background worker thread.  The resulting\n" \
+":class:`AsyncConnection` is the same as regular :class:`Connection`\n" \
+"but with most methods and attributes and related objects configured\n" \
+"for async operation.\n" \
 "\n" \
 "See :mod:`apsw.aio` for some controller implementations and :doc:`async`\n" \
-"for more details.\n" \
-"\n" \
-".. note::\n" \
-"\n" \
-"  It is recommended to call ``close`` on the connection when done\n" \
-"  as that ensures the worker thread will exit.\n" 
-
-#define Connection_as_async_KWNAMES "controller", "filename", "flags", "vfs", "statementcachesize"
-#define Connection_as_async_USAGE "Connection.as_async(controller: AsyncConnectionController, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100) -> Awaitable[AsyncConnection]"
-
-#define Connection_as_async_CHECK do { \
-  assert(__builtin_types_compatible_p(typeof(controller), PyObject *)); \
-  assert(__builtin_types_compatible_p(typeof(filename), const char *)); \
-  assert(__builtin_types_compatible_p(typeof(flags), int)); \
-  assert(flags == (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)); \
-  assert(__builtin_types_compatible_p(typeof(vfs), const char *)); \
-  assert(vfs == 0); \
-  assert(__builtin_types_compatible_p(typeof(statementcachesize), int)); \
-  assert(statementcachesize == (100)); \
-} while(0)
-
+"for more details.\n" 
 
 #define  Connection_async_controller_DOC ":type: AsyncConnectionController\n" \
 "\n" \
