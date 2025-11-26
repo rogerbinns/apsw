@@ -4003,6 +4003,18 @@
 #define  Rebaser_class_DOC "This object wraps a `sqlite3_rebaser\n" \
 "<https://www.sqlite.org/session/rebaser.html>`__ object.\n" 
 
+#define  Rebaser_close_DOC "Rebaser.close() -> None\n\n" \
+"Releases the rebaser.\n" \
+"\n" \
+"Calls: `sqlite3rebaser_delete <https://sqlite.org/session/sqlite3rebaser_delete.html>`__\n" 
+
+#define Rebaser_close_KWNAMES NULL
+#define Rebaser_close_USAGE "Rebaser.close() -> None"
+
+#define Rebaser_close_CHECK do { \
+} while(0)
+
+
 #define  Rebaser_configure_DOC "Rebaser.configure(cr: Buffer) -> None\n\n" \
 "Tells the rebaser about conflict resolutions made in an earlier\n" \
 ":meth:`Changeset.apply`.\n" \

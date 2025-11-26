@@ -3081,6 +3081,12 @@ class Rebaser:
     """This object wraps a `sqlite3_rebaser
     <https://www.sqlite.org/session/rebaser.html>`__ object."""
 
+    def close(self) -> None:
+        """Releases the rebaser.
+
+        Calls: `sqlite3rebaser_delete <https://sqlite.org/session/sqlite3rebaser_delete.html>`__"""
+        ...
+
     def configure(self, cr: Buffer) -> None:
         """Tells the rebaser about conflict resolutions made in an earlier
         :meth:`Changeset.apply`.
