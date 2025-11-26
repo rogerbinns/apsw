@@ -1151,11 +1151,8 @@ Enter ".help" for instructions
         self.db_references.add(self.db)
         dbs = []
         for c in apsw.connections():
-            try:
-                c.filename
-            except apsw.ConnectionClosedError:
-                continue
-            dbs.append(c)
+            if c:
+                dbs.append(c)
 
         if len(cmd) == 0:
             co = self.colour
@@ -2386,23 +2383,27 @@ Enter ".help" for instructions
         if wipe:
             if not dbname:
                 raise self.Error("You must specify a filename with --wipe")
+            to_delete = {dbname, dbname + "-wal", dbname + "-journal", dbname + "-shm"}
             for c in apsw.connections():
                 try:
-                    if c.filename and os.path.samefile(c.filename, dbname):
+                    if c and c.filename and os.path.samefile(c.filename, dbname):
+                        to_delete.update({c.filename, c.filename_journal, c.filename_wal})
                         c.close()
-                except (apsw.ConnectionClosedError, FileNotFoundError):
+                        self.db_references.discard(c)
+                except FileNotFoundError:
                     pass
-            for suffix in "", "-journal", "-wal", "-shm":
+            for name in to_delete:
                 try:
-                    os.remove(dbname + suffix)
+                    os.remove(name)
                 except OSError:
                     pass
-        self.db_references.add(self.db)
         self.dbfilename = dbname if dbname is not None else ""
         self._db = apsw.Connection(
             self.dbfilename, vfs=vfs, flags=flags
         )
         self._apply_fts()
+        self.db_references.add(self.db)
+
 
     def command_output(self, cmd):
         """output FILENAME: Send output to FILENAME (or stdout)
