@@ -8889,7 +8889,7 @@ class APSW(unittest.TestCase):
         if shellclass is None:
             shellclass = apsw.shell.Shell
 
-        fh = [open(TESTFILEPREFIX + "test-shell-" + t, "w+", encoding="utf8") for t in ("in", "out", "err")]
+        fh = [io.StringIO() for _ in ("in", "out", "err")]
         kwargs = {"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}
 
         def reset():
