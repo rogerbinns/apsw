@@ -9687,8 +9687,10 @@ class APSW(unittest.TestCase):
         def chdir(path):
             before = os.getcwd()
             os.chdir(path)
-            yield
-            os.chdir(before)
+            try:
+                yield
+            finally:
+                os.chdir(before)
 
         def in_open_dbs(filename):
             count = 0
