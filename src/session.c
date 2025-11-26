@@ -895,6 +895,13 @@ APSWSession_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   return 0;
 }
 
+static int
+APSWSession_bool(PyObject *self_)
+{
+  APSWSession *self = (APSWSession *)self_;
+  return self->session ? 1 : 0;
+}
+
 /** .. class:: TableChange
 
   Represents a `changed row
@@ -2167,6 +2174,12 @@ APSWChangesetBuilder_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   return 0;
 }
 
+static int
+APSWChangesetBuilder_bool(PyObject *self_)
+{
+  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
+  return self->group ? 1 : 0;
+}
 
 /** .. class:: Rebaser
 
@@ -2324,6 +2337,36 @@ APSWRebaser_rebase_stream(PyObject *self_, PyObject *const *fast_args, Py_ssize_
   Py_RETURN_NONE;
 }
 
+/** .. method:: close() -> None
+
+  Releases the rebaser.
+
+  -* sqlite3rebaser_delete
+ */
+static PyObject *
+APSWRebaser_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  APSWRebaser *self = (APSWRebaser *)self_;
+  {
+    Rebaser_close_CHECK;
+    ARG_PROLOG(0, Rebaser_close_KWNAMES);
+    ARG_EPILOG(NULL, Rebaser_close_USAGE, );
+  }
+  if(self->rebaser)
+  {
+    sqlite3rebaser_delete(self->rebaser);
+    self->rebaser = NULL;
+  }
+  Py_RETURN_NONE;
+}
+
+static int
+APSWRebaser_bool(PyObject *self_)
+{
+  APSWRebaser *self = (APSWRebaser *)self_;
+  return self->rebaser ? 1 : 0;
+}
+
 static void
 APSWRebaser_dealloc(PyObject *self_)
 {
@@ -2360,6 +2403,10 @@ static PyGetSetDef APSWSession_getset[] = {
   { 0 },
 };
 
+static PyNumberMethods APSWSession_as_number = {
+  .nb_bool = APSWSession_bool,
+};
+
 static PyTypeObject APSWSessionType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Session",
   .tp_basicsize = sizeof(APSWSession),
@@ -2370,6 +2417,7 @@ static PyTypeObject APSWSessionType = {
   .tp_methods = APSWSession_methods,
   .tp_getset = APSWSession_getset,
   .tp_flags = Py_TPFLAGS_BASETYPE | Py_TPFLAGS_DEFAULT,
+  .tp_as_number = &APSWSession_as_number,
   .tp_weaklistoffset = offsetof(APSWSession, weakreflist),
   .tp_traverse = APSWSession_tp_traverse,
 };
@@ -2411,6 +2459,10 @@ static PyMethodDef APSWChangesetBuilder_methods[] = {
   { 0 },
 };
 
+static PyNumberMethods APSWChangesetBuilder_as_number = {
+  .nb_bool = APSWChangesetBuilder_bool,
+};
+
 static PyTypeObject APSWChangesetBuilderType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.ChangesetBuilder",
   .tp_basicsize = sizeof(APSWChangesetBuilder),
@@ -2420,6 +2472,7 @@ static PyTypeObject APSWChangesetBuilderType = {
   .tp_dealloc = APSWChangesetBuilder_dealloc,
   .tp_doc = ChangesetBuilder_class_DOC,
   .tp_weaklistoffset = offsetof(APSWChangesetBuilder, weakreflist),
+  .tp_as_number = &APSWChangesetBuilder_as_number,
   .tp_traverse = APSWChangesetBuilder_tp_traverse,
 };
 
@@ -2450,8 +2503,12 @@ static PyMethodDef APSWRebaser_methods[] = {
   { "configure", (PyCFunction)APSWRebaser_configure, METH_FASTCALL | METH_KEYWORDS, Rebaser_configure_DOC },
   { "rebase", (PyCFunction)APSWRebaser_rebase, METH_FASTCALL | METH_KEYWORDS, Rebaser_rebase_DOC },
   { "rebase_stream", (PyCFunction)APSWRebaser_rebase_stream, METH_FASTCALL | METH_KEYWORDS, Rebaser_rebase_stream_DOC },
-
+  { "close", (PyCFunction)APSWRebaser_close, METH_FASTCALL | METH_KEYWORDS, Rebaser_close_DOC },
   { 0 },
+};
+
+static PyNumberMethods APSWRebaser_as_number = {
+  .nb_bool = APSWRebaser_bool,
 };
 
 static PyTypeObject APSWRebaserType = {
@@ -2462,4 +2519,5 @@ static PyTypeObject APSWRebaserType = {
   .tp_new = PyType_GenericNew,
   .tp_init = APSWRebaser_init,
   .tp_dealloc = APSWRebaser_dealloc,
+  .tp_as_number = &APSWRebaser_as_number,
 };

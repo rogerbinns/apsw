@@ -360,6 +360,13 @@ APSWBackup_tp_str(PyObject *self_)
                               self->dest ? (PyObject *)self->dest : apst.closed, self);
 }
 
+static int
+APSWBackup_bool(PyObject *self_)
+{
+  APSWBackup *self = (APSWBackup *)self_;
+  return self->backup ? 1 : 0;
+}
+
 /** .. attribute:: done
   :type: bool
 
@@ -389,6 +396,10 @@ static PyMethodDef backup_methods[]
         { "close", (PyCFunction)APSWBackup_close, METH_FASTCALL | METH_KEYWORDS, Backup_close_DOC },
         { 0, 0, 0, 0 } };
 
+static PyNumberMethods backup_as_number = {
+  .nb_bool = APSWBackup_bool,
+};
+
 static PyTypeObject APSWBackupType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Backup",
   .tp_basicsize = sizeof(APSWBackup),
@@ -399,5 +410,6 @@ static PyTypeObject APSWBackupType = {
   .tp_methods = backup_methods,
   .tp_members = backup_members,
   .tp_getset = backup_getset,
+  .tp_as_number = &backup_as_number,
   .tp_str = APSWBackup_tp_str,
 };

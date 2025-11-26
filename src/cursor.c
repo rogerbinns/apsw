@@ -2125,6 +2125,13 @@ APSWCursor_tp_str(PyObject *self_)
                               self->connection ? (PyObject *)self->connection : apst.closed, self);
 }
 
+static int
+APSWCursor_bool(PyObject *self_)
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  return self->connection ? 1 : 0;
+}
+
 static PyMethodDef APSWCursor_methods[] = {
   { "execute", (PyCFunction)APSWCursor_execute, METH_FASTCALL | METH_KEYWORDS, Cursor_execute_DOC },
   { "executemany", (PyCFunction)APSWCursor_executemany, METH_FASTCALL | METH_KEYWORDS, Cursor_executemany_DOC },
@@ -2176,6 +2183,10 @@ static PyGetSetDef APSWCursor_getset[] = {
   { NULL, NULL, NULL, NULL, NULL }
 };
 
+static PyNumberMethods APSWCursor_as_number = {
+  .nb_bool = APSWCursor_bool,
+};
+
 static PyTypeObject APSWCursorType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Cursor",
   .tp_basicsize = sizeof(APSWCursor),
@@ -2189,6 +2200,7 @@ static PyTypeObject APSWCursorType = {
   .tp_methods = APSWCursor_methods,
   .tp_getset = APSWCursor_getset,
   .tp_init = APSWCursor_init,
+  .tp_as_number = &APSWCursor_as_number,
   .tp_new = PyType_GenericNew,
   .tp_str = APSWCursor_tp_str,
 };

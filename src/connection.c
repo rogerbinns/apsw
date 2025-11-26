@@ -6430,6 +6430,13 @@ Connection_tp_str(PyObject *self_)
   return PyUnicode_FromFormat("<apsw.Connection object (closed) at %p>", self);
 }
 
+static int
+Connection_bool(PyObject *self_)
+{
+  Connection *self = (Connection *)self_;
+  return self->db ? 1 : 0;
+}
+
 static PyMemberDef Connection_members[] = {
   /* name type offset flags doc */
   { "open_flags", T_OBJECT, offsetof(Connection, open_flags), READONLY, Connection_open_flags_DOC },
@@ -6600,6 +6607,10 @@ static PyMethodDef Connection_methods[] = {
   { 0, 0, 0, 0 } /* Sentinel */
 };
 
+static PyNumberMethods Connection_as_number = {
+  .nb_bool = Connection_bool,
+};
+
 static PyTypeObject ConnectionType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Connection",
   .tp_basicsize = sizeof(Connection),
@@ -6611,6 +6622,7 @@ static PyTypeObject ConnectionType = {
   .tp_methods = Connection_methods,
   .tp_members = Connection_members,
   .tp_getset = Connection_getseters,
+  .tp_as_number = &Connection_as_number,
   .tp_init = Connection_init,
   .tp_new = PyType_GenericNew,
   .tp_str = Connection_tp_str,

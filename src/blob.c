@@ -669,6 +669,13 @@ APSWBlob_tp_str(PyObject *self_)
                               self->connection ? (PyObject *)self->connection : apst.closed, self);
 }
 
+static int
+APSWBlob_bool(PyObject *self_)
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  return self->pBlob ? 1 : 0;
+}
+
 static PyMethodDef APSWBlob_methods[] = {
   { "length", (PyCFunction)APSWBlob_length, METH_NOARGS, Blob_length_DOC },
   { "read", (PyCFunction)APSWBlob_read, METH_FASTCALL | METH_KEYWORDS, Blob_read_DOC },
@@ -686,6 +693,10 @@ static PyMethodDef APSWBlob_methods[] = {
   { 0, 0, 0, 0 } /* Sentinel */
 };
 
+static PyNumberMethods APSWBlob_as_number = {
+  .nb_bool = APSWBlob_bool,
+};
+
 static PyTypeObject APSWBlobType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Blob",
   .tp_basicsize = sizeof(APSWBlob),
@@ -694,5 +705,6 @@ static PyTypeObject APSWBlobType = {
   .tp_doc = Blob_class_DOC,
   .tp_weaklistoffset = offsetof(APSWBlob, weakreflist),
   .tp_methods = APSWBlob_methods,
+  .tp_as_number = &APSWBlob_as_number,
   .tp_str = APSWBlob_tp_str,
 };
