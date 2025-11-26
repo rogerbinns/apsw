@@ -5984,6 +5984,7 @@ class APSW(unittest.TestCase):
                     "get_description",
                     "get_description_full",
                     "getdescription_dbapi",
+                    "bool",
                 ),
                 "req": {
                     "closed": "CHECK_CURSOR_CLOSED",
@@ -6008,6 +6009,7 @@ class APSW(unittest.TestCase):
                     "get_cursor_factory",
                     "set_cursor_factory",
                     "tp_str",
+                    "bool",
                 ),
                 "req": {
                     "closed": "CHECK_CLOSED",
@@ -6023,6 +6025,7 @@ class APSW(unittest.TestCase):
                     "get_change_patch_set_stream",
                     "dealloc",
                     "tp_traverse",
+                    "bool",
                 },
                 "req": {"closed": "CHECK_SESSION_CLOSED"},
                 "order": ("closed",),
@@ -6036,22 +6039,22 @@ class APSW(unittest.TestCase):
                 "order": ("scope",),
             },
             "APSWChangesetBuilder": {
-                "skip": {"dealloc", "close_internal", "close", "init", "tp_traverse"},
+                "skip": {"dealloc", "close_internal", "close", "init", "tp_traverse", "bool"},
                 "req": {"closed": "CHECK_BUILDER_CLOSED"},
                 "order": ("closed",),
             },
             "APSWRebaser": {
-                "skip": {"dealloc", "init"},
+                "skip": {"dealloc", "init", "bool", "close"},
                 "req": {"closed": "CHECK_REBASER_CLOSED"},
                 "order": ("closed",),
             },
             "APSWBlob": {
-                "skip": ("dealloc", "init", "close", "close_internal", "tp_str"),
+                "skip": ("dealloc", "init", "close", "close_internal", "tp_str", "bool"),
                 "req": {"closed": "CHECK_BLOB_CLOSED"},
                 "order": ("use", "closed"),
             },
             "APSWBackup": {
-                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count", "tp_str"),
+                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count", "tp_str", "bool"),
                 "req": {"closed": "CHECK_BACKUP_CLOSED"},
                 "order": ("use", "closed"),
             },
@@ -8687,6 +8690,31 @@ class APSW(unittest.TestCase):
                 list(c2.execute("select * from [%s] order by _ROWID_" % (table,))),
             )
 
+    def testBool(self):
+        "closable objects bool"
+        objects = [self.db]
+        self.db.execute("create table foo(bar); insert into foo(rowid, bar) values(73, x'aabbcc')")
+        objects.append(self.db.backup("temp", apsw.Connection(""), "main"))
+        objects.append(self.db.blob_open("main", "foo", "bar", 73, False))
+        objects.append(self.db.execute("select * from foo"))
+        if hasattr(apsw, "Session"):
+            objects.append(apsw.Session(self.db, "main"))
+            objects.append(apsw.ChangesetBuilder())
+            objects.append(apsw.Rebaser())
+
+        for obj in objects:
+            self.assertTrue(hasattr(obj, "__bool__"))
+            self.assertIs(obj.__bool__(), True)
+            self.assertIs(bool(obj), True)
+
+        objects.reverse()
+        for obj in objects:
+            obj.close()
+            self.assertIs(obj.__bool__(), False)
+            self.assertIs(bool(obj), False)
+
+
+
     def testBackup(self):
         "Verify hot backup functionality"
         # bad calls
@@ -8889,7 +8917,7 @@ class APSW(unittest.TestCase):
         if shellclass is None:
             shellclass = apsw.shell.Shell
 
-        fh = [open(TESTFILEPREFIX + "test-shell-" + t, "w+", encoding="utf8") for t in ("in", "out", "err")]
+        fh = [io.StringIO() for _ in ("in", "out", "err")]
         kwargs = {"stdin": fh[0], "stdout": fh[1], "stderr": fh[2]}
 
         def reset():
@@ -9687,8 +9715,10 @@ class APSW(unittest.TestCase):
         def chdir(path):
             before = os.getcwd()
             os.chdir(path)
-            yield
-            os.chdir(before)
+            try:
+                yield
+            finally:
+                os.chdir(before)
 
         def in_open_dbs(filename):
             count = 0

@@ -170,6 +170,11 @@ stubtest: ## Verifies type annotations with mypy
 	-env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/fts.py
 	-env PYTHONPATH=. $(PYTHON) -m mypy --allow-redefinition examples/session.py
 
+venv: ## Removes current venv and makes a new one
+	-rm -rf .venv
+	$(PYTHON) -m venv .venv
+	$(MAKE) dev-depends doc-depends PYTHON=.venv/bin/python
+
 # set this to a commit id to grab that instead
 FOSSIL_URL="https://sqlite.org/src/tarball/sqlite.tar.gz"
 fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in sqlite3 directory
