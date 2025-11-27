@@ -6592,6 +6592,8 @@ Connection_preupdate_hook(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     ARG_EPILOG(NULL, Connection_preupdate_hook_USAGE, );
   }
 
+  ASYNC_FASTCALL(self, Connection_preupdate_hook);
+
   DBMUTEX_ENSURE(self);
 
   unsigned before_hooks = generic_hooks_active(self->preupdate_hooks, self->preupdate_hooks_count);

@@ -1,4 +1,5 @@
 {
+    "Blob": {},
     "Connection": {
         "dual": [
             "filename",
@@ -26,6 +27,25 @@
             "set_row_trace",
             "sqlite3_pointer",
             "total_changes"
+        ]
+    },
+    "Cursor": {
+        "dual": [
+            "bindings_names",
+            "description",
+            "expanded_sql",
+            "get",
+            "sql"
+        ],
+        "sync": [
+            "close"
+        ],
+        "value": [
+            "get_connection",
+            "get_exec_trace",
+            "get_row_trace",
+            "set_exec_trace",
+            "set_row_trace"
         ]
     }
 }

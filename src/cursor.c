@@ -502,8 +502,13 @@ error:
 
 */
 static PyObject *
-APSWCursor_get_description(PyObject *self, PyObject *Py_UNUSED(unused))
+APSWCursor_get_description(PyObject *self_, PyObject *unused)
 {
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
+  ASYNC_BINARY(self->connection, APSWCursor_get_description, self_, unused);
+
   return APSWCursor_internal_get_description((APSWCursor *)self, 0);
 }
 
@@ -517,8 +522,11 @@ APSWCursor_get_description(PyObject *self, PyObject *Py_UNUSED(unused))
 */
 
 static PyObject *
-APSWCursor_getdescription_dbapi(PyObject *self, void *Py_UNUSED(unused))
+APSWCursor_getdescription_dbapi(PyObject *self_, void *unused)
 {
+  APSWCursor *self = (APSWCursor *)self_;
+  ASYNC_ATTR_GET(self->connection, APSWCursor_getdescription_dbapi, self_, unused);
+
   return APSWCursor_internal_get_description((APSWCursor *)self, 1);
 }
 
@@ -1424,10 +1432,7 @@ APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   }
 
   if (!IN_WORKER_THREAD(self->connection))
-  {
-    PyErr_SetString(PyExc_TypeError, "You must use aclose (async version of close)");
-    return NULL;
-  }
+    return error_sync_in_async_context();
 
   DBMUTEX_ENSURE(self->connection);
   /* Manual IN_QUERY_CHECK to give better error message */
@@ -1468,10 +1473,7 @@ APSWCursor_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   }
 
   if (IN_WORKER_THREAD(self->connection))
-  {
-    PyErr_SetString(PyExc_TypeError, "async method used on sync connections");
-    return NULL;
-  }
+    return error_async_in_sync_context();
 
   return do_async_fastcall((PyObject *)self->connection, APSWCursor_close, self_, fast_args, fast_nargs, fast_kwnames);
 }
@@ -1488,10 +1490,7 @@ APSWCursor_aenter(PyObject *self_)
   CHECK_CURSOR_CLOSED(NULL);
 
   if (IN_WORKER_THREAD(self->connection))
-  {
-    PyErr_SetString(PyExc_TypeError, "async context manager only works on async connections");
-    return NULL;
-  }
+    return error_async_in_sync_context();
 
   return async_return_value(self_);
 }
@@ -1508,11 +1507,7 @@ APSWCursor_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   CHECK_CURSOR_CLOSED(NULL);
 
   if (IN_WORKER_THREAD(self->connection))
-  {
-    PyErr_SetString(PyExc_TypeError, "async context manager only works on async connections");
-    return NULL;
-  }
-
+    return error_async_in_sync_context();
   /* the sanitizer doesn't like NULL as a pointer even when accessing 0 bytes of it, so we pass in 8 instead */
   return do_async_fastcall((PyObject *)self->connection, APSWCursor_close, self_, (PyObject *const *)8, 0, NULL);
 }
@@ -1531,6 +1526,9 @@ APSWCursor_next(PyObject *self_)
   int i;
 
   CHECK_CURSOR_CLOSED(NULL);
+
+  if (!IN_WORKER_THREAD(self->connection))
+    return error_sync_in_async_context();
 
   if (0 != cursor_mutex_get(self))
     return NULL;
@@ -1709,7 +1707,7 @@ APSWCursor_anext(PyObject *self_)
   CHECK_CURSOR_CLOSED(NULL);
 
   if (IN_WORKER_THREAD(self->connection))
-    return PyErr_Format(PyExc_TypeError, "You can't use the cursor as async in a non-async context");
+    return error_async_in_sync_context();
 
   if (!self->aiter_slots)
   {
@@ -1751,10 +1749,7 @@ APSWCursor_iter(PyObject *self_)
   CHECK_CURSOR_CLOSED(NULL);
 
   if (!IN_WORKER_THREAD(self->connection))
-  {
-    PyErr_SetString(PyExc_TypeError, "You must use async iteration for async connections");
-    return NULL;
-  }
+    return error_sync_in_async_context();
 
   return Py_NewRef(self_);
 }
@@ -1771,10 +1766,8 @@ APSWCursor_aiter(PyObject *self_)
   CHECK_CURSOR_CLOSED(NULL);
 
   if (IN_WORKER_THREAD(self->connection))
-  {
-    PyErr_SetString(PyExc_TypeError, "async iteration only works on async connections");
-    return NULL;
-  }
+    return error_async_in_sync_context();
+
   /* safety */
   self->aiter_state = AIter_End;
 
@@ -1939,10 +1932,12 @@ APSWCursor_get_connection(PyObject *self_, PyObject *Py_UNUSED(unused))
   amount of structure to unpack.
 */
 static PyObject *
-APSWCursor_fetchall(PyObject *self_, PyObject *Py_UNUSED(unused))
+APSWCursor_fetchall(PyObject *self_, PyObject *unused)
 {
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
+
+  ASYNC_BINARY(self->connection, APSWCursor_fetchall, self_, unused);
 
   return PySequence_List((PyObject *)self);
 }
@@ -1953,12 +1948,14 @@ APSWCursor_fetchall(PyObject *self_, PyObject *Py_UNUSED(unused))
 */
 
 static PyObject *
-APSWCursor_fetchone(PyObject *self_, PyObject *Py_UNUSED(unused))
+APSWCursor_fetchone(PyObject *self_, PyObject *unused)
 {
   PyObject *res;
   APSWCursor *self = (APSWCursor *)self_;
 
   CHECK_CURSOR_CLOSED(NULL);
+
+  ASYNC_BINARY(self->connection, APSWCursor_fetchone, self_, unused);
 
   res = APSWCursor_next(self_);
 
@@ -2186,10 +2183,14 @@ APSWCursor_bindings_count(PyObject *self_, void *Py_UNUSED(unused))
   -* sqlite3_bind_parameter_name
 */
 static PyObject *
-APSWCursor_bindings_names(PyObject *self_, void *Py_UNUSED(unused))
+APSWCursor_bindings_names(PyObject *self_, void *unused)
 {
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
+
+  ASYNC_ATTR_GET(self->connection, APSWCursor_bindings_names, self_, unused);
+
+  DBMUTEX_ENSURE(self->connection);
 
   int count = (self->statement) ? sqlite3_bind_parameter_count(self->statement->vdbestatement) : 0;
 
@@ -2207,9 +2208,11 @@ APSWCursor_bindings_names(PyObject *self_, void *Py_UNUSED(unused))
     PyTuple_SET_ITEM(res, i - 1, val);
   }
 
+  sqlite3_mutex_leave(self->connection->dbmutex);
   return res;
 error:
   Py_XDECREF(res);
+  sqlite3_mutex_leave(self->connection->dbmutex);
   return NULL;
 }
 
@@ -2286,13 +2289,15 @@ APSWCursor_has_vdbe(PyObject *self_, void *Py_UNUSED(unused))
   -* sqlite3_expanded_sql
 */
 static PyObject *
-APSWCursor_expanded_sql(PyObject *self_, void *Py_UNUSED(unused))
+APSWCursor_expanded_sql(PyObject *self_, void *unused)
 {
   APSWCursor *self = (APSWCursor *)self_;
   PyObject *res;
   const char *es;
 
   CHECK_CURSOR_CLOSED(NULL);
+
+  ASYNC_ATTR_GET(self->connection, APSWCursor_expanded_sql, self_, unused);
 
   if (!self->statement)
     Py_RETURN_NONE;
@@ -2319,12 +2324,14 @@ APSWCursor_expanded_sql(PyObject *self_, void *Py_UNUSED(unused))
   -* sqlite3_sql
 */
 static PyObject *
-APSWCursor_sql(PyObject *self_, void *Py_UNUSED(unused))
+APSWCursor_sql(PyObject *self_, void *unused)
 {
   APSWCursor *self = (APSWCursor *)self_;
   PyObject *res;
 
   CHECK_CURSOR_CLOSED(NULL);
+
+  ASYNC_ATTR_GET(self->connection, APSWCursor_sql, self_, unused);
 
   if (!self->statement)
     Py_RETURN_NONE;
@@ -2363,7 +2370,7 @@ APSWCursor_sql(PyObject *self_, void *Py_UNUSED(unused))
 */
 
 static PyObject *
-APSWCursor_get(PyObject *self_, void *Py_UNUSED(unused))
+APSWCursor_get(PyObject *self_, void *unused)
 {
   APSWCursor *self = (APSWCursor *)self_;
   PyObject *the_list = NULL, *the_row = NULL;
@@ -2371,6 +2378,8 @@ APSWCursor_get(PyObject *self_, void *Py_UNUSED(unused))
   int numcols, i;
 
   CHECK_CURSOR_CLOSED(NULL);
+
+  ASYNC_ATTR_GET(self->connection, APSWCursor_get, self_, unused);
 
   if (self->status == C_DONE)
     Py_RETURN_NONE;

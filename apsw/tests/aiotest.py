@@ -50,11 +50,11 @@ def get_meta(
 
     # defaults
     match member:
-        case "__enter__" | "__exit__":
+        case "__enter__" | "__exit__" | "__iter__" | "__next__":
             return "sync"
-        case "__aenter__" | "__aexit__" | "aclose":
+        case "__aenter__" | "__aexit__" | "aclose" | "__aiter__" | "__anext__":
             return "async"
-        case "__repr__" | "__str__":
+        case "__repr__" | "__str__" | "__bool__":
             return "value"
         case _:
             return "dual" if kind == "function" else "value"
@@ -77,8 +77,8 @@ def is_open(con):
 
 class Async(unittest.TestCase):
     def tearDown(self):
-        while apsw.connections():
-            c = apsw.connections()[0]
+        while c := apsw.connections():
+            c = c[0]
             try:
                 c.close()
             except:
@@ -145,7 +145,7 @@ class Async(unittest.TestCase):
                         case "deserialize":
                             args = "main", apsw.Connection("").serialize("main")
                         case (
-                            "drop_modules"
+                            "drop_modules" | "preupdate_hook"
                             | "set_authorizer"
                             | "set_busy_handler"
                             | "set_commit_hook"
@@ -158,7 +158,12 @@ class Async(unittest.TestCase):
                             | "set_wal_hook"
                         ):
                             args = (None,)
-                        case "enable_load_extension" | "set_busy_timeout" | "set_last_insert_rowid" | "wal_autocheckpoint":
+                        case (
+                            "enable_load_extension"
+                            | "set_busy_timeout"
+                            | "set_last_insert_rowid"
+                            | "wal_autocheckpoint"
+                        ):
                             # some of these depend on True being subclass of int
                             args = (True,)
                         case "execute":
@@ -189,6 +194,20 @@ class Async(unittest.TestCase):
                             args = (0,)
                         case _:
                             args = tuple()
+                case "Cursor":
+                    match member:
+                        case "execute":
+                            args = ("select 3",)
+                        case "executemany":
+                            args = "select ?", ((i,) for i in range(5))
+                        case "set_exec_trace" | "set_row_trace":
+                            args = None,
+                        case _:
+                            args = tuple()
+                case "Blob":
+                    match member:
+                        case _:
+                            args = tuple()
                 case _:
                     1 / 0
 
@@ -212,46 +231,86 @@ class Async(unittest.TestCase):
                 return "value"
             raise
         except apsw.InvalidContextError:
-            if klass=="Connection" and member in {"vtab_config", "vtab_on_conflict"}:
+            if klass == "Connection" and member in {"vtab_config", "vtab_on_conflict"}:
                 return "value"
             raise
-
 
     def testMetaJson(self):
         apsw.async_controller.set(SimpleController)
 
-        con = None
+        objects = {
+            "Connection": None,
+            "Cursor": None,
+            "Blob": None,
+            "Backup": None,
+            # ::TODO:: "Session": None,
+            # ::TODO:: changeset apply
+        }
 
-        def ensure_con():
-            # various operations result in the database being closed
-            # so this ensures it remains open
-            nonlocal con
-            if con is None or not is_open(con):
-                con = sync_await(apsw.Connection.as_async(""))
-                sync_await(
-                    con.execute("""
-                    create table dummy(column);
-                    insert into dummy(rowid, column) values(73, x'aabbcc');
-                    """)
-                )
+        def ensure_objects(klass):
+            # various operations result in the database etc being closed
+            # so this ensures they are open but also some things can't be
+            # done while active cursors etc are in play
+            if klass != "Connection":
+                ensure_objects("Connection")
 
-        ensure_con()
+            if not objects[klass]:
+                match klass:
+                    case "Connection":
+                        value = sync_await(apsw.Connection.as_async(""))
+                        sync_await(
+                            value.execute("""
+                                create table dummy(column);
+                                insert into dummy(rowid, column) values(73, x'aabbcc');
+                                """)
+                        )
+                    case "Cursor":
+                        value = sync_await(objects["Connection"].execute("SELECT ?, * from dummy", ("hello",)))
+                    case "Blob":
+                        value = sync_await(objects["Connection"].blob_open("main", "dummy", "column", 73, False))
+                    case "Backup":
+                        value = sync_await(objects["Connection"].backup("main", apsw.Connection(""), "main"))
+                    case "Session":
+                        value = sync_await(apsw.Session(objects["Connection"], "main"))
+                    case _:
+                        1 / 0
+                objects[klass] = value
 
-        for name in dir(con):
-            if name in skip or name in {"as_async"} or ("Connection", name) in old_names:
-                continue
+        def all_the_things():
+            res = []
+            for name in objects:
+                ensure_objects(name)
+                for attr in dir(objects[name]):
+                    if attr in skip or attr in {"as_async", "__next__"} or (name, attr) in old_names:
+                        continue
+                    res.append((name, attr))
+                self.tearDown()
+                for name in objects:
+                    objects[name] = None
+            return res
 
-            ensure_con()
+        last_klass = None
 
-            is_attr = not is_method(con, name)
+        for klass, name in all_the_things():
+            if klass != last_klass:
+                self.tearDown()
+                last_klass = klass
+                for k in objects:
+                    objects[k] = None
 
-            print(f"Connection {name=} {is_attr=}")
+            ensure_objects(klass)
 
-            kind_sync = self.classifyOne(con.async_controller.send, is_attr, con, "Connection", name)
+            is_attr = not is_method(objects[klass], name)
 
-            ensure_con()
+            print(f"{klass=} {name=} {is_attr=}")
 
-            kind_async = self.classifyOne(None, is_attr, con, "Connection", name)
+            kind_sync = self.classifyOne(
+                objects["Connection"].async_controller.send, is_attr, objects[klass], klass, name
+            )
+
+            ensure_objects(klass)
+
+            kind_async = self.classifyOne(None, is_attr, objects[klass], klass, name)
 
             if is_attr:
                 # check writable (mutex assertions)
@@ -261,7 +320,7 @@ class Async(unittest.TestCase):
                     case _:
                         value = lambda *args: False
                 try:
-                    setattr(con, name, value)
+                    setattr(objects[klass], name, value)
                 except AttributeError as exc:
                     if "objects is not writable" in str(exc) or "readonly attribute" in str(exc):
                         pass
@@ -282,16 +341,18 @@ class Async(unittest.TestCase):
                     kind = "sync"
                 case ("value", "async"):
                     kind = "dual"
+                case ("exception", "value"):
+                    kind = "async"
                 case _:
                     raise ValueError(f"{kind_sync=} {kind_async=}")
 
-            expected_kind = get_meta("Connection", name, "attribute" if is_attr else "function")
+            expected_kind = get_meta(klass, name, "attribute" if is_attr else "function")
 
-            self.assertEqual(kind, expected_kind, f"Connection {name=}")
+            self.assertEqual(kind, expected_kind, f"{klass=} {name=}")
 
             # screw up functionality
-            if name in {"cursor_factory", "exec_trace"}:
-                con = None
+            if name in {"cursor_factory", "exec_trace", "row_trace"}:
+                objects["Connection"] = None
 
 
 class SimpleController:
