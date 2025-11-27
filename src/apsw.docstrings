@@ -837,6 +837,16 @@
 ":meth:`~Blob.__enter__`.  Any exception that happened in the\n" \
 "*with* block is raised after closing the blob.\n" 
 
+#define Blob_exit_KWNAMES "etype", "evalue", "etraceback"
+#define Blob_exit_USAGE "Blob.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]"
+
+#define Blob_exit_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(evalue), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(etraceback), PyObject *)); \
+} while(0)
+
+
 #define  Blob_length_DOC "Blob.length() -> int\n\n" \
 "Returns the size of the blob in bytes.\n" \
 "\n" \

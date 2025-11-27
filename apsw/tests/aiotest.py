@@ -206,6 +206,16 @@ class Async(unittest.TestCase):
                             args = tuple()
                 case "Blob":
                     match member:
+                        case "read":
+                            args = 1,
+                        case "read_into":
+                            args = bytearray(10), 0, 1
+                        case "reopen":
+                            args = 74,
+                        case "seek":
+                            args = 1,
+                        case "write":
+                            args = b"a",
                         case _:
                             args = tuple()
                 case _:
@@ -243,7 +253,7 @@ class Async(unittest.TestCase):
             "Cursor": None,
             "Blob": None,
             "Backup": None,
-            # ::TODO:: "Session": None,
+            "Session": None,
             # ::TODO:: changeset apply
         }
 
@@ -261,17 +271,17 @@ class Async(unittest.TestCase):
                         sync_await(
                             value.execute("""
                                 create table dummy(column);
-                                insert into dummy(rowid, column) values(73, x'aabbcc');
+                                insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');
                                 """)
                         )
                     case "Cursor":
                         value = sync_await(objects["Connection"].execute("SELECT ?, * from dummy", ("hello",)))
                     case "Blob":
-                        value = sync_await(objects["Connection"].blob_open("main", "dummy", "column", 73, False))
+                        value = sync_await(objects["Connection"].blob_open("main", "dummy", "column", 73, True))
                     case "Backup":
                         value = sync_await(objects["Connection"].backup("main", apsw.Connection(""), "main"))
                     case "Session":
-                        value = sync_await(apsw.Session(objects["Connection"], "main"))
+                        value = sync_await(objects["Connection"].async_controller.send(functools.partial(apsw.Session, objects["Connection"], "main")))
                     case _:
                         1 / 0
                 objects[klass] = value

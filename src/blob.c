@@ -263,6 +263,8 @@ APSWBlob_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
     ARG_EPILOG(NULL, Blob_read_USAGE, );
   }
 
+  ASYNC_FASTCALL(self->connection, APSWBlob_read);
+
   if ((self->curoffset == sqlite3_blob_bytes(self->pBlob)) /* eof */
       || (length == 0))
     return PyBytes_FromStringAndSize(NULL, 0);
@@ -342,6 +344,8 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_OPTIONAL ARG_int64(length);
     ARG_EPILOG(NULL, Blob_read_into_USAGE, );
   }
+
+  ASYNC_FASTCALL(self->connection, APSWBlob_read_into);
 
   memset(&py3buffer, 0, sizeof(py3buffer));
   aswb = PyObject_GetBufferContiguous(buffer, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE);
@@ -490,6 +494,8 @@ APSWBlob_write(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
     ARG_EPILOG(NULL, Blob_write_USAGE, );
   }
 
+  ASYNC_FASTCALL(self->connection, APSWBlob_write);
+
   if (0 != PyObject_GetBufferContiguous(data, &data_buffer, PyBUF_SIMPLE))
   {
     assert(PyErr_Occurred());
@@ -562,8 +568,14 @@ APSWBlob_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
     ARG_OPTIONAL ARG_bool(force);
     ARG_EPILOG(NULL, Blob_close_USAGE, );
   }
+
   if (self->connection)
+  {
+    if (!IN_WORKER_THREAD(self->connection))
+      return error_sync_in_async_context();
     DBMUTEX_ENSURE(self->connection);
+  }
+
   setexc = APSWBlob_close_internal(self, !!force);
 
   if (setexc)
@@ -594,6 +606,9 @@ APSWBlob_enter(PyObject *self_, PyObject *Py_UNUSED(args))
   APSWBlob *self = (APSWBlob *)self_;
   CHECK_BLOB_CLOSED;
 
+  if (!IN_WORKER_THREAD(self->connection))
+    return error_sync_in_async_context();
+
   return Py_NewRef((PyObject *)self);
 }
 
@@ -605,15 +620,33 @@ APSWBlob_enter(PyObject *self_, PyObject *Py_UNUSED(args))
 */
 
 static PyObject *
-APSWBlob_exit(PyObject *self_, PyObject *Py_UNUSED(args))
+APSWBlob_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   APSWBlob *self = (APSWBlob *)self_;
   int setexc;
 
+  PyObject *etype, *evalue, *etraceback;
+
   CHECK_BLOB_CLOSED;
 
-  if (self->connection)
-    DBMUTEX_ENSURE(self->connection);
+  {
+    Blob_exit_CHECK;
+    ARG_PROLOG(3, Blob_exit_KWNAMES);
+    ARG_MANDATORY ARG_pyobject(etype);
+    ARG_MANDATORY ARG_pyobject(evalue);
+    ARG_MANDATORY ARG_pyobject(etraceback);
+    ARG_EPILOG(NULL, Blob_exit_USAGE, );
+  }
+
+  (void)etype;
+  (void)evalue;
+  (void)etraceback;
+
+  if (!IN_WORKER_THREAD(self->connection))
+    return error_sync_in_async_context();
+
+  DBMUTEX_ENSURE(self->connection);
+  /* note: this releases the mutex */
   setexc = APSWBlob_close_internal(self, 0);
   if (setexc)
     return NULL;
@@ -644,6 +677,9 @@ APSWBlob_reopen(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
     ARG_MANDATORY ARG_int64(rowid);
     ARG_EPILOG(NULL, Blob_reopen_USAGE, );
   }
+
+  ASYNC_FASTCALL(self->connection, APSWBlob_reopen);
+
   /* no matter what happens we always reset current offset */
   self->curoffset = 0;
 
@@ -686,7 +722,7 @@ static PyMethodDef APSWBlob_methods[] = {
   { "reopen", (PyCFunction)APSWBlob_reopen, METH_FASTCALL | METH_KEYWORDS, Blob_reopen_DOC },
   { "close", (PyCFunction)APSWBlob_close, METH_FASTCALL | METH_KEYWORDS, Blob_close_DOC },
   { "__enter__", (PyCFunction)APSWBlob_enter, METH_NOARGS, Blob_enter_DOC },
-  { "__exit__", (PyCFunction)APSWBlob_exit, METH_VARARGS, Blob_exit_DOC },
+  { "__exit__", (PyCFunction)APSWBlob_exit, METH_FASTCALL | METH_KEYWORDS, Blob_exit_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
   { Blob_read_into_OLDNAME, (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS, Blob_read_into_OLDDOC },
 #endif

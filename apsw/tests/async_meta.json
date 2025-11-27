@@ -1,5 +1,14 @@
 {
-    "Blob": {},
+    "Blob": {
+        "sync": [
+            "close"
+        ],
+        "value": [
+            "length",
+            "seek",
+            "tell"
+        ]
+    },
     "Connection": {
         "dual": [
             "filename",
