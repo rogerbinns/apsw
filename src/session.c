@@ -321,14 +321,23 @@ APSWSession_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
   CHECK_CLOSED(db, -1);
 
+  self->init_was_called = 1;
+
+  if (!IN_WORKER_THREAD(db))
+  {
+    error_sync_in_async_context();
+    return -1;
+  }
+
+  DBMUTEX_ENSURE(db);
   int rc = sqlite3session_create(db->db, schema, &self->session);
+  sqlite3_mutex_leave(db->dbmutex);
+
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
     return -1;
   }
-
-  self->init_was_called = 1;
 
   self->connection = db;
   Py_INCREF(self->connection);
@@ -395,6 +404,9 @@ APSWSession_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_EPILOG(NULL, Session_close_USAGE, );
   }
 
+  if(self->connection && !IN_WORKER_THREAD(self->connection))
+    return error_sync_in_async_context();
+
   APSWSession_close_internal(self);
   MakeExistingException();
 
@@ -428,6 +440,8 @@ APSWSession_attach(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_OPTIONAL ARG_optional_str(name);
     ARG_EPILOG(NULL, Session_attach_USAGE, );
   }
+
+  ASYNC_FASTCALL(self->connection, APSWSession_attach);
 
   int rc = sqlite3session_attach(self->session, name);
   SET_EXC(rc, NULL);
@@ -466,6 +480,8 @@ APSWSession_diff(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_MANDATORY ARG_str(table);
     ARG_EPILOG(NULL, Session_diff_USAGE, );
   }
+
+  ASYNC_FASTCALL(self->connection, APSWSession_diff);
 
   char *pErrMsg = NULL;
   int rc = sqlite3session_diff(self->session, from_schema, table, &pErrMsg);
@@ -528,6 +544,8 @@ APSWSession_changeset(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fa
     ARG_EPILOG(NULL, Session_changeset_USAGE, );
   }
 
+  ASYNC_FASTCALL(self->connection, APSWSession_changeset);
+
   return APSWSession_get_change_patch_set(self, 1);
 }
 
@@ -550,6 +568,7 @@ APSWSession_patchset(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
     ARG_PROLOG(0, Session_patchset_KWNAMES);
     ARG_EPILOG(NULL, Session_patchset_USAGE, );
   }
+  ASYNC_FASTCALL(self->connection, APSWSession_patchset);
 
   return APSWSession_get_change_patch_set(self, 0);
 }
@@ -637,6 +656,7 @@ APSWSession_changeset_stream(PyObject *self_, PyObject *const *fast_args, Py_ssi
     ARG_MANDATORY ARG_Callable(output);
     ARG_EPILOG(NULL, Session_changeset_stream_USAGE, );
   }
+  ASYNC_FASTCALL(self->connection, APSWSession_changeset_stream);
 
   return APSWSession_get_change_patch_set_stream(self, 1, output);
 }
@@ -659,6 +679,8 @@ APSWSession_patchset_stream(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     ARG_MANDATORY ARG_Callable(output);
     ARG_EPILOG(NULL, Session_patchset_stream_USAGE, );
   }
+
+  ASYNC_FASTCALL(self->connection, APSWSession_patchset_stream);
 
   return APSWSession_get_change_patch_set_stream(self, 0, output);
 }

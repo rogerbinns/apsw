@@ -200,7 +200,7 @@ class Async(unittest.TestCase):
                         case "execute":
                             args = ("select 3",)
                         case "executemany":
-                            args = "select ?", ((i,) for i in range(5))
+                            args = "insert into dummy values(?)", ((i,) for i in range(5))
                         case "set_exec_trace" | "set_row_trace":
                             args = (None,)
                 case "Blob":
@@ -318,6 +318,7 @@ class Async(unittest.TestCase):
             "aclose",
             "__exit__",
             "__aexit__",
+            "finish"
         }
 
         pre = {

@@ -167,6 +167,8 @@ APSWBackup_step(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
     ARG_EPILOG(NULL, Backup_step_USAGE, );
   }
 
+  ASYNC_FASTCALL(self->dest, APSWBackup_step);
+
   DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
                    "Backup destination Connection is busy in another thread");
 

@@ -1,9 +1,11 @@
 {
     "Backup": {
         "sync": [
-            "close"
+            "close",
+            "finish"
         ]
     },
+    "Session": {},
     "Blob": {
         "sync": [
             "close"
