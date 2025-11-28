@@ -1010,6 +1010,20 @@ class APSW(unittest.TestCase):
         # incomplete execution across executemany
         c.executemany("select * from foo; select ?", ((1,), (2,)))  # we don't read
         self.assertRaises(apsw.IncompleteExecutionError, c.executemany, "begin", (1, 2))
+        # this gets more complicated - if executemany doesn't consume the iterable
+        # and another execute is started, we also consider that incomplete
+        c.executemany("select ?", ((i,) for i in range(10)))
+        self.assertRaisesRegex(
+            apsw.IncompleteExecutionError, ".*executemany were not fully consumed.*", c.execute, "select 3"
+        )
+        c.executemany("select ?", ((i,) for i in range(10)))
+        self.assertRaisesRegex(
+            apsw.IncompleteExecutionError,
+            ".*executemany were not fully consumed.*",
+            c.executemany,
+            "select ?",
+            ((i,) for i in range(10)),
+        )
 
         # set type (pysqlite error with this)
         c.execute("create table xxset(x,y,z)")

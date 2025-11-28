@@ -183,6 +183,8 @@ resetcursor(APSWCursor *self, int force)
     if (next)
     {
       Py_DECREF(next);
+      if(!PyErr_Occurred())
+        PyErr_Format(ExcIncomplete, "Error: The values for executemany were not fully consumed");
       res = SQLITE_ERROR;
       assert(PyErr_Occurred());
     }
