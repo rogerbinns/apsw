@@ -20,6 +20,7 @@ all_pragmas = set(con.execute("pragma pragma_list").get)
 exclude_pragmas = {
     # deprecated
     "count_changes",
+    "default_cache_size",
     "empty_result_callbacks",
     "full_column_names",
     "legacy_file_format",
