@@ -525,6 +525,8 @@ static PyObject *
 APSWCursor_getdescription_dbapi(PyObject *self_, void *unused)
 {
   APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
   ASYNC_ATTR_GET(self->connection, APSWCursor_getdescription_dbapi, self_, unused);
 
   return APSWCursor_internal_get_description((APSWCursor *)self, 1);
@@ -545,8 +547,13 @@ name, table name, and origin name.
 */
 #ifdef SQLITE_ENABLE_COLUMN_METADATA
 static PyObject *
-APSWCursor_get_description_full(PyObject *self, void *Py_UNUSED(unused))
+APSWCursor_get_description_full(PyObject *self_, void *unused)
 {
+  APSWCursor *self = (APSWCursor *)self_;
+  CHECK_CURSOR_CLOSED(NULL);
+
+  ASYNC_ATTR_GET(self->connection, APSWCursor_get_description_full, self_, unused);
+
   return APSWCursor_internal_get_description((APSWCursor *)self, 2);
 }
 #endif

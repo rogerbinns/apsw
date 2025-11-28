@@ -1,4 +1,9 @@
 {
+    "Backup": {
+        "sync": [
+            "close"
+        ]
+    },
     "Blob": {
         "sync": [
             "close"
@@ -42,6 +47,7 @@
         "dual": [
             "bindings_names",
             "description",
+            "description_full",
             "expanded_sql",
             "get",
             "sql"

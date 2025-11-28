@@ -217,6 +217,9 @@ APSWBackup_finish(PyObject *self_, PyObject *Py_UNUSED(unused))
   if (!self->backup)
     Py_RETURN_NONE;
 
+  if (!IN_WORKER_THREAD(self->dest))
+    return error_sync_in_async_context();
+
   DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
                    "Backup destination Connection is busy in another thread");
 
@@ -251,6 +254,10 @@ APSWBackup_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_OPTIONAL ARG_bool(force);
     ARG_EPILOG(NULL, Backup_close_USAGE, );
   }
+
+  if (!IN_WORKER_THREAD(self->dest))
+    return error_sync_in_async_context();
+
   DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
                    "Backup destination Connection is busy in another thread");
   setexc = APSWBackup_close_internal(self, force);
@@ -306,6 +313,9 @@ APSWBackup_enter(PyObject *self_, PyObject *Py_UNUSED(ignored))
   APSWBackup *self = (APSWBackup *)self_;
   CHECK_BACKUP_CLOSED(NULL);
 
+  if (!IN_WORKER_THREAD(self->dest))
+    return error_sync_in_async_context();
+
   return Py_NewRef(self_);
 }
 
@@ -329,6 +339,10 @@ APSWBackup_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
     ARG_MANDATORY ARG_pyobject(etraceback);
     ARG_EPILOG(NULL, Backup_exit_USAGE, );
   }
+
+  if (!IN_WORKER_THREAD(self->dest))
+    return error_sync_in_async_context();
+
   /* If already closed then we are fine - CHECK_BACKUP_CLOSED not needed*/
   if (!self->backup)
     Py_RETURN_FALSE;

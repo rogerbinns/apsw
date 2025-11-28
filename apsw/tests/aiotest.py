@@ -117,6 +117,8 @@ class Async(unittest.TestCase):
         if member in {"__aexit__", "__exit__"}:
             args = (None, None, None)
         else:
+            args = tuple()
+
             match klass:
                 case "Connection":
                     match member:
@@ -145,7 +147,8 @@ class Async(unittest.TestCase):
                         case "deserialize":
                             args = "main", apsw.Connection("").serialize("main")
                         case (
-                            "drop_modules" | "preupdate_hook"
+                            "drop_modules"
+                            | "preupdate_hook"
                             | "set_authorizer"
                             | "set_busy_handler"
                             | "set_commit_hook"
@@ -192,8 +195,6 @@ class Async(unittest.TestCase):
                             args = (None, "hello")
                         case "trace_v2" | "vtab_config":
                             args = (0,)
-                        case _:
-                            args = tuple()
                 case "Cursor":
                     match member:
                         case "execute":
@@ -201,25 +202,21 @@ class Async(unittest.TestCase):
                         case "executemany":
                             args = "select ?", ((i,) for i in range(5))
                         case "set_exec_trace" | "set_row_trace":
-                            args = None,
-                        case _:
-                            args = tuple()
+                            args = (None,)
                 case "Blob":
                     match member:
                         case "read":
-                            args = 1,
+                            args = (1,)
                         case "read_into":
                             args = bytearray(10), 0, 1
                         case "reopen":
-                            args = 74,
+                            args = (74,)
                         case "seek":
-                            args = 1,
+                            args = (1,)
                         case "write":
-                            args = b"a",
+                            args = (b"a",)
                         case _:
                             args = tuple()
-                case _:
-                    1 / 0
 
         try:
             if send:
@@ -261,6 +258,12 @@ class Async(unittest.TestCase):
             # various operations result in the database etc being closed
             # so this ensures they are open but also some things can't be
             # done while active cursors etc are in play
+
+            if objects["Connection"] is None:
+                self.tearDown()
+                for k in objects:
+                    objects[k] = None
+
             if klass != "Connection":
                 ensure_objects("Connection")
 
@@ -281,7 +284,11 @@ class Async(unittest.TestCase):
                     case "Backup":
                         value = sync_await(objects["Connection"].backup("main", apsw.Connection(""), "main"))
                     case "Session":
-                        value = sync_await(objects["Connection"].async_controller.send(functools.partial(apsw.Session, objects["Connection"], "main")))
+                        value = sync_await(
+                            objects["Connection"].async_controller.send(
+                                functools.partial(apsw.Session, objects["Connection"], "main")
+                            )
+                        )
                     case _:
                         1 / 0
                 objects[klass] = value
@@ -301,12 +308,28 @@ class Async(unittest.TestCase):
 
         last_klass = None
 
+        # potentially screw up functioning
+        malfunction = {
+            "cursor_factory",
+            "exec_trace",
+            "row_trace",
+            "finish",
+            "close",
+            "aclose",
+            "__exit__",
+            "__aexit__",
+        }
+
+        pre = {
+            "__aexit__": "__aenter__",
+            "__exit__":"__enter__",
+            "__next__":"__iter__",
+            "__anext__":"__aiter__"
+        }
+
         for klass, name in all_the_things():
-            if klass != last_klass:
-                self.tearDown()
-                last_klass = klass
-                for k in objects:
-                    objects[k] = None
+            if klass != last_klass or name in malfunction:
+                objects["Connection"] = None
 
             ensure_objects(klass)
 
@@ -314,13 +337,26 @@ class Async(unittest.TestCase):
 
             print(f"{klass=} {name=} {is_attr=}")
 
-            kind_sync = self.classifyOne(
-                objects["Connection"].async_controller.send, is_attr, objects[klass], klass, name
-            )
+            ensure_objects(klass)
+
+            if name in pre:
+                self.classifyOne(None, is_attr, objects[klass], klass, pre[name])
+
+            kind_async = self.classifyOne(None, is_attr, objects[klass], klass, name)
+
+            if name in malfunction:
+                objects["Connection"] = None
 
             ensure_objects(klass)
 
-            kind_async = self.classifyOne(None, is_attr, objects[klass], klass, name)
+            if name in pre:
+                self.classifyOne(
+                    objects["Connection"].async_controller.send, is_attr, objects[klass], klass, pre[name]
+                )
+
+            kind_sync = self.classifyOne(
+                objects["Connection"].async_controller.send, is_attr, objects[klass], klass, name
+            )
 
             if is_attr:
                 # check writable (mutex assertions)
@@ -359,10 +395,6 @@ class Async(unittest.TestCase):
             expected_kind = get_meta(klass, name, "attribute" if is_attr else "function")
 
             self.assertEqual(kind, expected_kind, f"{klass=} {name=}")
-
-            # screw up functionality
-            if name in {"cursor_factory", "exec_trace", "row_trace"}:
-                objects["Connection"] = None
 
 
 class SimpleController:
