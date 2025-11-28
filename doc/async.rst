@@ -37,7 +37,7 @@ knows if it is async or not and behaves appropriately.
 You can use :attr:`Connection.is_async` to detect async mode.
 :attr:`Connection.async_controller` provides the :class:`controller
 <AsyncConnectionController>` currently in use, with its ``send``
-method letting you run any callable (use :class:`functools.partial`)
+method letting you run any callable (use :func:`functools.partial`)
 in the worker thread.
 
 Deadlocks
