@@ -179,7 +179,7 @@ class Shell:
 
     def _ensure_db(self):
         "The database isn't opened until first use.  This function ensures it is now open."
-        if not self._db:
+        if self._db is None:
             if not self.dbfilename:
                 self.dbfilename = ":memory:"
             self._db = apsw.Connection(
@@ -1137,6 +1137,7 @@ Enter ".help" for instructions
         """
         if len(cmd):
             raise self.Error("Unexpected arguments")
+        self.db_references.discard(self.db)
         self.db.close()
 
     def command_connection(self, cmd):
