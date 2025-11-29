@@ -10,8 +10,8 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
-next
-====
+3.51.1.0
+========
 
 All objects that can be closed implement :meth:`~object.__bool__`
 which returns ``True`` while open and ``False`` when closed -
