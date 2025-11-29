@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.shell &mdash; APSW 3.51.0.0 documentation</title>
+  <title>apsw.shell &mdash; APSW 3.51.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
@@ -14,9 +14,9 @@
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=7d76fbb9"></script>
-      <script src="../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/documentation_options.js?v=0ca3b1e0"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -290,7 +290,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_db</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;The database isn&#39;t opened until first use.  This function ensures it is now open.&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbfilename</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">dbfilename</span> <span class="o">=</span> <span class="s2">&quot;:memory:&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span>
@@ -990,7 +990,7 @@
             <span class="k">raise</span></div>
 
 
-    <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="o">**</span><span class="p">({</span><span class="s2">&quot;slots&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;frozen&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}))</span>
+    <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">class</span><span class="w"> </span><span class="nc">_qd</span><span class="p">:</span>
         <span class="n">query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
         <span class="n">remaining</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
@@ -1269,6 +1269,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Unexpected arguments&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_references</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">command_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
@@ -1283,11 +1284,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">db_references</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
         <span class="n">dbs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">connections</span><span class="p">():</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">c</span><span class="o">.</span><span class="n">filename</span>
-            <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ConnectionClosedError</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="n">dbs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">c</span><span class="p">:</span>
+                <span class="n">dbs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">co</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">colour</span>
@@ -2524,23 +2522,27 @@
         <span class="k">if</span> <span class="n">wipe</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">dbname</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;You must specify a filename with --wipe&quot;</span><span class="p">)</span>
+            <span class="n">to_delete</span> <span class="o">=</span> <span class="p">{</span><span class="n">dbname</span><span class="p">,</span> <span class="n">dbname</span> <span class="o">+</span> <span class="s2">&quot;-wal&quot;</span><span class="p">,</span> <span class="n">dbname</span> <span class="o">+</span> <span class="s2">&quot;-journal&quot;</span><span class="p">,</span> <span class="n">dbname</span> <span class="o">+</span> <span class="s2">&quot;-shm&quot;</span><span class="p">}</span>
             <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">connections</span><span class="p">():</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">filename</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">samefile</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">dbname</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">c</span> <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">filename</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">samefile</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">dbname</span><span class="p">):</span>
+                        <span class="n">to_delete</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">c</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">filename_journal</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">filename_wal</span><span class="p">})</span>
                         <span class="n">c</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">except</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ConnectionClosedError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">db_references</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
                     <span class="k">pass</span>
-            <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;-journal&quot;</span><span class="p">,</span> <span class="s2">&quot;-wal&quot;</span><span class="p">,</span> <span class="s2">&quot;-shm&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">to_delete</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">dbname</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
                     <span class="k">pass</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">db_references</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dbfilename</span> <span class="o">=</span> <span class="n">dbname</span> <span class="k">if</span> <span class="n">dbname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dbfilename</span><span class="p">,</span> <span class="n">vfs</span><span class="o">=</span><span class="n">vfs</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">flags</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_apply_fts</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_references</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">command_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;output FILENAME: Send output to FILENAME (or stdout)</span>
@@ -3649,7 +3651,7 @@
     <span class="c1">### Output helpers</span>
 <div class="viewcode-block" id="Shell.Row">
 <a class="viewcode-back" href="../../shell.html#apsw.shell.Shell.Row">[docs]</a>
-    <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="o">**</span><span class="p">({</span><span class="s2">&quot;slots&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;frozen&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span> <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}))</span>
+    <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">class</span><span class="w"> </span><span class="nc">Row</span><span class="p">:</span>
         <span class="s2">&quot;Returned by :class:`Shell.PositionRow`&quot;</span>
 
@@ -3864,7 +3866,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 05, 2025.
+      <span class="lastupdated">Last updated on Nov 29, 2025.
       </span></p>
   </div>
 

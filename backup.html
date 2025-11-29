@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Backup &mdash; APSW 3.51.0.0 documentation</title>
+  <title>Backup &mdash; APSW 3.51.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,9 +15,9 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=7d76fbb9"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/documentation_options.js?v=0ca3b1e0"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -145,7 +145,7 @@ come back and copy those changes too until the backup is complete.</p>
 <h2>Backup class<a class="headerlink" href="#backup-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.Backup">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">Backup</span></span><a class="headerlink" href="#apsw.Backup" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">Backup</span></span><a class="headerlink" href="#apsw.Backup" title="Link to this definition"></a></dt>
 <dd><p>You create a backup instance by calling <a class="reference internal" href="connection.html#apsw.Connection.backup" title="apsw.Connection.backup"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.backup()</span></code></a>.</p>
 </dd></dl>
 
@@ -179,7 +179,7 @@ It is safe to call this method multiple  times.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Backup.done">
-<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">done</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.Backup.done" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">done</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#apsw.Backup.done" title="Link to this definition"></a></dt>
 <dd><p>A boolean that is True if the copy completed in the last call to <a class="reference internal" href="#apsw.Backup.step" title="apsw.Backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a>.</p>
 </dd></dl>
 
@@ -196,7 +196,7 @@ an exception.  It is safe to call this method multiple times.</p>
 
 <dl class="py attribute" id="index-2">
 <dt class="sig sig-object py" id="apsw.Backup.page_count">
-<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">page_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.Backup.page_count" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">page_count</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.Backup.page_count" title="Link to this definition"></a></dt>
 <dd><p>Read only. How many pages were in the source database after the last
 step.  If you haven’t called <a class="reference internal" href="#apsw.Backup.step" title="apsw.Backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> or the backup
 object has been <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a> then zero is
@@ -206,7 +206,7 @@ returned.</p>
 
 <dl class="py attribute" id="index-3">
 <dt class="sig sig-object py" id="apsw.Backup.remaining">
-<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">remaining</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.Backup.remaining" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">remaining</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.Backup.remaining" title="Link to this definition"></a></dt>
 <dd><p>Read only. How many pages were remaining to be copied after the last
 step.  If you haven’t called <a class="reference internal" href="#apsw.Backup.step" title="apsw.Backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> or the backup
 object has been <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a> then zero is
@@ -252,7 +252,7 @@ again.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 05, 2025.
+      <span class="lastupdated">Last updated on Nov 29, 2025.
       </span></p>
   </div>
 

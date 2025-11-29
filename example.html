@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.51.0.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.51.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,9 +15,9 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=7d76fbb9"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/documentation_options.js?v=0ca3b1e0"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -202,9 +202,9 @@ and attribute documentation.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-314-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.51.0.0</span>
-<span class="go">SQLite header version 3051000</span>
-<span class="go">   SQLite lib version 3.51.0</span>
+<span class="go">         APSW version 3.51.1.0</span>
+<span class="go">SQLite header version 3051001</span>
+<span class="go">   SQLite lib version 3.51.1</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -838,11 +838,11 @@ conversion, both for types you define and for other types.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 11, 5, 9, 18, 13, 418157))</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 11, 28, 10, 45, 51, 313381))</span>
 <span class="go">querying data</span>
 <span class="go">column 0 = Point(5.2, 7.6)</span>
 <span class="go">column 1 = (3+4j)</span>
-<span class="go">column 2 = datetime.datetime(2025, 11, 5, 17, 18, 13, 418157, tzinfo=datetime.timezone.utc)</span>
+<span class="go">column 2 = datetime.datetime(2025, 11, 28, 18, 45, 51, 313381, tzinfo=datetime.timezone.utc)</span>
 </pre></div>
 </div>
 </section>
@@ -902,7 +902,7 @@ runtime.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Bad binding argument type supplied - argument #1: type set</span>
-<span class="go">select ? {1, 2, &#39;three&#39;, &lt;_io.StringIO object at 0x74d5ed587c70&gt;, (4+5j)}</span>
+<span class="go">select ? {1, 2, &lt;_io.StringIO object at 0x753729983c70&gt;, &#39;three&#39;, (4+5j)}</span>
 <span class="go">select typeof(?) null</span>
 <span class="go">make_set got ((3+4j), &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, &#39;hello&#39;)</span>
 <span class="go">select make_set(?, ?, ?) {&#39;hello&#39;, &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, (3+4j)}</span>
@@ -969,7 +969,7 @@ across all the queries within the block</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">len(rows)=20</span>
-<span class="go">After 0.200 seconds, we hit number=308896</span>
+<span class="go">After 0.200 seconds, we hit number=307329</span>
 <span class="go">exc=IndexError(&#39;query row limit hit&#39;)</span>
 </pre></div>
 </div>
@@ -1339,7 +1339,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9982365245,)</span>
+<span class="go">(9923950222,)</span>
 </pre></div>
 </div>
 </section>
@@ -1706,8 +1706,8 @@ useful instead.</p>
 <span class="go">│ .o         │ 11096      │</span>
 <span class="go">│ .patch     │ 2682       │</span>
 <span class="go">│ .ps1       │ 9031       │</span>
-<span class="go">│ .py        │ 11249489   │</span>
-<span class="go">│ .pyc       │ 12283707   │</span>
+<span class="go">│ .py        │ 11249525   │</span>
+<span class="go">│ .pyc       │ 12223522   │</span>
 <span class="go">│ .rst       │ 9561       │</span>
 <span class="go">│ .sh        │ 2752       │</span>
 <span class="go">│ .so        │ 8745952    │</span>
@@ -1953,9 +1953,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.51.0.0)</span>
-<span class="go">-- SQLite version 3.51.0</span>
-<span class="go">-- Date: Wed Nov  5 09:18:14 2025</span>
+<span class="go">-- SQLite dump (by APSW 3.51.1.0)</span>
+<span class="go">-- SQLite version 3.51.1</span>
+<span class="go">-- Date: Fri Nov 28 10:45:51 2025</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -2052,16 +2052,16 @@ for per connection statistics.</p>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">code is  SQLITE_TRACE_STMT</span>
 <span class="go">{&#39;code&#39;: 1,</span>
 <span class="go"> &#39;explain&#39;: 0,</span>
-<span class="go"> &#39;id&#39;: 688274264,</span>
+<span class="go"> &#39;id&#39;: 393889112,</span>
 <span class="go"> &#39;readonly&#39;: True,</span>
 <span class="go"> &#39;total_changes&#39;: 146,</span>
 <span class="go"> &#39;trigger&#39;: False}</span>
 <span class="go">code is  SQLITE_TRACE_ROW</span>
-<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 688274264}</span>
+<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 393889112}</span>
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;id&#39;: 688274264,</span>
-<span class="go"> &#39;nanoseconds&#39;: 16000000,</span>
+<span class="go"> &#39;id&#39;: 393889112,</span>
+<span class="go"> &#39;nanoseconds&#39;: 17000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
@@ -2093,14 +2093,16 @@ block of code does.  We use the same query from above.</p>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.3</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.022</span>
-<span class="go">                       Wall clock 1.322</span>
-<span class="go">        Maximum resident set size 800</span>
-<span class="go">             Page faults - no I/O 171</span>
-<span class="go">     Involuntary context switches 37</span>
-<span class="go">       Voluntary context switches 1</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">            Total CPU consumption 0.024</span>
+<span class="go">                       Wall clock 1.326</span>
+<span class="go">           Block input operations 8</span>
+<span class="go">             Page faults with I/O 1</span>
+<span class="go">        Maximum resident set size 1,380</span>
+<span class="go">             Page faults - no I/O 299</span>
+<span class="go">     Involuntary context switches 449</span>
+<span class="go">       Voluntary context switches 2</span>
 <span class="go">              Time in system mode 0.002</span>
-<span class="go">                Time in user mode 0.020</span>
+<span class="go">                Time in user mode 0.022</span>
 <span class="go">           SQLite full table scan 1,365</span>
 <span class="go">           SQLite sort operations 2</span>
 <span class="go">             SQLite vm operations 1,015,353</span>
@@ -2160,13 +2162,13 @@ code.  This also shows behind the scenes SQL.</p>
 <span class="go">    Time: 0.000</span>
 <span class="go">&gt; insert into multi values(?)</span>
 <span class="go">  INS 1 (0)</span>
-<span class="go">    Time: 0.000  Rows: 1  Changes: 1</span>
+<span class="go">    Time: 0.000  Changes: 1</span>
 <span class="go">&gt; insert into multi values(?)</span>
 <span class="go">  INS 2 (1)</span>
 <span class="go">    Time: 0.000  Changes: 1</span>
 <span class="go">&gt; insert into multi values(?)</span>
 <span class="go">  INS 3 (2)</span>
-<span class="go">    Time: 0.000  Changes: 1</span>
+<span class="go">    Time: 0.001  Changes: 1</span>
 <span class="go">&gt; insert into multi values(?)</span>
 <span class="go">  INS 4 (3)</span>
 <span class="go">    Time: 0.000  Changes: 1</span>
@@ -2188,7 +2190,7 @@ code.  This also shows behind the scenes SQL.</p>
 <span class="go">V PRAGMA function_list</span>
 <span class="go">    Time: 0.000  Rows: 215  VmStep: 1,509  Mem: 71.0KB</span>
 <span class="go">&lt; SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;</span>
-<span class="go">    Time: 0.000  Rows: 1  VmStep: 656</span>
+<span class="go">    Time: 0.000  Rows: 2  VmStep: 656</span>
 <span class="go"> !BEGIN</span>
 <span class="go">&gt; create trigger error after insert on multi</span>
 <span class="go">       begin</span>
@@ -2202,7 +2204,7 @@ code.  This also shows behind the scenes SQL.</p>
 <span class="go">    UPD 6&gt;106 (...)</span>
 <span class="go"> !ROLLBACK</span>
 <span class="go">&lt; insert into multi values(54)</span>
-<span class="go">    Time: 0.000  Changes: 1</span>
+<span class="go">    Time: 0.000  Rows: 1  Changes: 1</span>
 </pre></div>
 </div>
 </section>
@@ -2437,7 +2439,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 05, 2025.
+      <span class="lastupdated">Last updated on Nov 29, 2025.
       </span></p>
   </div>
 

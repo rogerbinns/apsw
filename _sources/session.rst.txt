@@ -631,6 +631,14 @@ Rebaser class
 
   Calls: `sqlite3rebaser_create <https://sqlite.org/session/sqlite3rebaser_create.html>`__
 
+.. index:: sqlite3rebaser_delete
+
+.. method:: Rebaser.close() -> None
+
+  Releases the rebaser.
+
+  Calls: `sqlite3rebaser_delete <https://sqlite.org/session/sqlite3rebaser_delete.html>`__
+
 .. index:: sqlite3rebaser_configure
 
 .. method:: Rebaser.configure(cr: collections.abc.Buffer) -> None

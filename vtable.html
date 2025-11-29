@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Virtual Tables &mdash; APSW 3.51.0.0 documentation</title>
+  <title>Virtual Tables &mdash; APSW 3.51.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
@@ -15,9 +15,9 @@
     <link rel="shortcut icon" href="_static/favicon.ico"/>
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=7d76fbb9"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/documentation_options.js?v=0ca3b1e0"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -205,7 +205,7 @@ and a <a class="reference internal" href="#apsw.VTCursor" title="apsw.VTCursor">
 <h2>IndexInfo class<a class="headerlink" href="#indexinfo-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.IndexInfo">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">IndexInfo</span></span><a class="headerlink" href="#apsw.IndexInfo" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">IndexInfo</span></span><a class="headerlink" href="#apsw.IndexInfo" title="Link to this definition"></a></dt>
 <dd><p>IndexInfo represents the <a class="reference external" href="https://www.sqlite.org/c3ref/index_info.html">sqlite3_index_info</a> and associated
 methods used in the <a class="reference internal" href="#apsw.VTTable.BestIndexObject" title="apsw.VTTable.BestIndexObject"><code class="xref py py-meth docutils literal notranslate"><span class="pre">VTTable.BestIndexObject()</span></code></a> method.</p>
 <p>Naming is identical to the C structure rather than Pythonic.  You can
@@ -219,14 +219,14 @@ representation of this object as a <a class="reference external" href="https://d
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.colUsed">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">colUsed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.14)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#apsw.IndexInfo.colUsed" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">colUsed</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.14)"><span class="pre">set</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#apsw.IndexInfo.colUsed" title="Link to this definition"></a></dt>
 <dd><p>(Read-only) Columns used by the statement.  Note that a set is returned, not
 the underlying integer.</p>
 </dd></dl>
 
 <dl class="py attribute" id="index-0">
 <dt class="sig sig-object py" id="apsw.IndexInfo.distinct">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">distinct</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.distinct" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">distinct</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.IndexInfo.distinct" title="Link to this definition"></a></dt>
 <dd><p>(Read-only) How the query planner would like output ordered
 if the query is using group by or distinct.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/vtab_distinct.html">sqlite3_vtab_distinct</a></p>
@@ -234,13 +234,13 @@ if the query is using group by or distinct.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.estimatedCost">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">estimatedCost</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></em><a class="headerlink" href="#apsw.IndexInfo.estimatedCost" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">estimatedCost</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#apsw.IndexInfo.estimatedCost" title="Link to this definition"></a></dt>
 <dd><p>Estimated cost of using this index</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.estimatedRows">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">estimatedRows</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.estimatedRows" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">estimatedRows</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.IndexInfo.estimatedRows" title="Link to this definition"></a></dt>
 <dd><p>Estimated number of rows returned</p>
 </dd></dl>
 
@@ -309,37 +309,37 @@ if the query is using group by or distinct.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.idxFlags">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxFlags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.idxFlags" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxFlags</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.IndexInfo.idxFlags" title="Link to this definition"></a></dt>
 <dd><p>Mask of <a class="reference internal" href="apsw.html#apsw.mapping_virtual_table_scan_flags" title="apsw.mapping_virtual_table_scan_flags"><code class="xref py py-attr docutils literal notranslate"><span class="pre">SQLITE_INDEX_SCAN</span> <span class="pre">flags</span></code></a></p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.idxNum">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxNum</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.idxNum" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxNum</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.IndexInfo.idxNum" title="Link to this definition"></a></dt>
 <dd><p>Number used to identify the index</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.idxStr">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxStr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></em><a class="headerlink" href="#apsw.IndexInfo.idxStr" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">idxStr</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#apsw.IndexInfo.idxStr" title="Link to this definition"></a></dt>
 <dd><p>Name used to identify the index</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.nConstraint">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">nConstraint</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.nConstraint" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">nConstraint</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.IndexInfo.nConstraint" title="Link to this definition"></a></dt>
 <dd><p>(Read-only) Number of constraint entries</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.nOrderBy">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">nOrderBy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#apsw.IndexInfo.nOrderBy" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">nOrderBy</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.IndexInfo.nOrderBy" title="Link to this definition"></a></dt>
 <dd><p>(Read-only) Number of order by  entries</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.IndexInfo.orderByConsumed">
-<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">orderByConsumed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></em><a class="headerlink" href="#apsw.IndexInfo.orderByConsumed" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">IndexInfo.</span></span><span class="sig-name descname"><span class="pre">orderByConsumed</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#apsw.IndexInfo.orderByConsumed" title="Link to this definition"></a></dt>
 <dd><p>True if index output is already ordered</p>
 </dd></dl>
 
@@ -368,7 +368,7 @@ method will have all of the values at once.</p>
 <h2>VTModule class<a class="headerlink" href="#vtmodule-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTModule">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VTModule</span></span><a class="headerlink" href="#apsw.VTModule" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VTModule</span></span><a class="headerlink" href="#apsw.VTModule" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <div class="admonition note">
@@ -458,7 +458,7 @@ a <em>table_suffix</em> of <code class="code docutils literal notranslate"><span
 <h2>VTTable class<a class="headerlink" href="#vttable-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTTable">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VTTable</span></span><a class="headerlink" href="#apsw.VTTable" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VTTable</span></span><a class="headerlink" href="#apsw.VTTable" title="Link to this definition"></a></dt>
 <dd><div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>There is no actual <em>VTTable</em> class - it is shown this way for
@@ -854,7 +854,7 @@ is ignored.</p>
 <h2>VTCursor class<a class="headerlink" href="#vtcursor-class" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.VTCursor">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VTCursor</span></span><a class="headerlink" href="#apsw.VTCursor" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">VTCursor</span></span><a class="headerlink" href="#apsw.VTCursor" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <div class="admonition note">
@@ -978,7 +978,7 @@ appropriate indexed and constrained row.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2025, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Nov 05, 2025.
+      <span class="lastupdated">Last updated on Nov 29, 2025.
       </span></p>
   </div>
 
