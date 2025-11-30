@@ -329,7 +329,7 @@ APSWSession_init(PyObject *self_, PyObject *args, PyObject *kwargs)
     return -1;
   }
 
-  DBMUTEX_ENSURE(db);
+  DBMUTEX_ENSURE_RETURN(db, -1);
   int rc = sqlite3session_create(db->db, schema, &self->session);
   sqlite3_mutex_leave(db->dbmutex);
 
@@ -367,6 +367,8 @@ APSWSession_close_internal(APSWSession *self)
 {
   if (self->session)
   {
+    assert(IN_WORKER_THREAD(self->connection));
+    assert(sqlite3_mutex_held(self->connection->dbmutex));
     sqlite3session_delete(self->session);
     self->session = NULL;
   }
@@ -382,7 +384,12 @@ static void
 APSWSession_dealloc(PyObject *self_)
 {
   APSWSession *self = (APSWSession *)self_;
+  sqlite3_mutex *mutex = self->connection ? self->connection->dbmutex : NULL;
+  if (mutex)
+    DBMUTEX_FORCE(mutex);
   APSWSession_close_internal(self);
+  if (mutex)
+    sqlite3_mutex_leave(mutex);
   Py_TpFree(self_);
 }
 
@@ -404,10 +411,16 @@ APSWSession_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_EPILOG(NULL, Session_close_USAGE, );
   }
 
-  if(self->connection && !IN_WORKER_THREAD(self->connection))
+  if (self->connection && !IN_WORKER_THREAD(self->connection))
     return error_sync_in_async_context();
 
-  APSWSession_close_internal(self);
+  if (self->connection)
+  {
+    DBMUTEX_ENSURE(self->connection);
+    sqlite3_mutex *mutex = self->connection->dbmutex;
+    APSWSession_close_internal(self);
+    sqlite3_mutex_leave(mutex);
+  }
   MakeExistingException();
 
   if (PyErr_Occurred())
@@ -443,7 +456,9 @@ APSWSession_attach(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
 
   ASYNC_FASTCALL(self->connection, APSWSession_attach);
 
+  DBMUTEX_ENSURE(self->connection);
   int rc = sqlite3session_attach(self->session, name);
+  sqlite3_mutex_leave(self->connection->dbmutex);
   SET_EXC(rc, NULL);
   if (PyErr_Occurred())
     return NULL;
@@ -483,8 +498,10 @@ APSWSession_diff(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
 
   ASYNC_FASTCALL(self->connection, APSWSession_diff);
 
+  DBMUTEX_ENSURE(self->connection);
   char *pErrMsg = NULL;
   int rc = sqlite3session_diff(self->session, from_schema, table, &pErrMsg);
+  sqlite3_mutex_leave(self->connection->dbmutex);
 
   assert((rc == SQLITE_OK && !pErrMsg) || (rc != SQLITE_OK));
 
@@ -513,6 +530,7 @@ APSWSession_get_change_patch_set(APSWSession *self, int changeset)
   int nChangeset = 0;
   void *pChangeset = NULL;
 
+  assert(sqlite3_mutex_held(self->connection->dbmutex));
   int rc = changeset ? sqlite3session_changeset(self->session, &nChangeset, &pChangeset)
                      : sqlite3session_patchset(self->session, &nChangeset, &pChangeset);
 
@@ -546,7 +564,11 @@ APSWSession_changeset(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fa
 
   ASYNC_FASTCALL(self->connection, APSWSession_changeset);
 
-  return APSWSession_get_change_patch_set(self, 1);
+  DBMUTEX_ENSURE(self->connection);
+  PyObject *retval = APSWSession_get_change_patch_set(self, 1);
+  sqlite3_mutex_leave(self->connection->dbmutex);
+
+  return retval;
 }
 
 /** .. method:: patchset() -> bytes
@@ -570,7 +592,10 @@ APSWSession_patchset(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
   }
   ASYNC_FASTCALL(self->connection, APSWSession_patchset);
 
-  return APSWSession_get_change_patch_set(self, 0);
+  DBMUTEX_ENSURE(self->connection);
+  PyObject *retval = APSWSession_get_change_patch_set(self, 0);
+  sqlite3_mutex_leave(self->connection->dbmutex);
+  return retval;
 }
 
 static int
@@ -629,6 +654,7 @@ APSWSession_xInput(void *pIn, void *pData, int *pnData)
 static PyObject *
 APSWSession_get_change_patch_set_stream(APSWSession *self, int changeset, PyObject *xOutput)
 {
+  assert(sqlite3_mutex_held(self->connection->dbmutex));
   int rc = changeset ? sqlite3session_changeset_strm(self->session, APSWSession_xOutput, xOutput)
                      : sqlite3session_patchset_strm(self->session, APSWSession_xOutput, xOutput);
   SET_EXC(rc, NULL);
@@ -658,7 +684,10 @@ APSWSession_changeset_stream(PyObject *self_, PyObject *const *fast_args, Py_ssi
   }
   ASYNC_FASTCALL(self->connection, APSWSession_changeset_stream);
 
-  return APSWSession_get_change_patch_set_stream(self, 1, output);
+  DBMUTEX_ENSURE(self->connection);
+  PyObject *retval = APSWSession_get_change_patch_set_stream(self, 1, output);
+  sqlite3_mutex_leave(self->connection->dbmutex);
+  return retval;
 }
 
 /** .. method:: patchset_stream(output: SessionStreamOutput) -> None
@@ -682,7 +711,10 @@ APSWSession_patchset_stream(PyObject *self_, PyObject *const *fast_args, Py_ssiz
 
   ASYNC_FASTCALL(self->connection, APSWSession_patchset_stream);
 
-  return APSWSession_get_change_patch_set_stream(self, 0, output);
+  DBMUTEX_ENSURE(self->connection);
+  PyObject *retval = APSWSession_get_change_patch_set_stream(self, 0, output);
+  sqlite3_mutex_leave(self->connection->dbmutex);
+  return retval;
 }
 
 /** .. method:: table_filter(callback: Callable[[str], bool]) -> None
@@ -801,7 +833,10 @@ APSWSession_get_enabled(PyObject *self_, void *Py_UNUSED(unused))
   APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
 
+  DBMUTEX_ENSURE(self->connection);
   int res = sqlite3session_enable(self->session, -1);
+  sqlite3_mutex_leave(self->connection->dbmutex);
+
   if (res)
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
@@ -816,7 +851,9 @@ APSWSession_set_enabled(PyObject *self_, PyObject *value, void *Py_UNUSED(unused
   int enabled = PyObject_IsTrueStrict(value);
   if (enabled == -1)
     return -1;
+  DBMUTEX_ENSURE_RETURN(self->connection, -1);
   sqlite3session_enable(self->session, enabled);
+  sqlite3_mutex_leave(self->connection->dbmutex);
   return 0;
 }
 
@@ -833,7 +870,9 @@ APSWSession_get_indirect(PyObject *self_, void *Py_UNUSED(unused))
   APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
 
+  DBMUTEX_ENSURE(self->connection);
   int res = sqlite3session_indirect(self->session, -1);
+  sqlite3_mutex_leave(self->connection->dbmutex);
   if (res)
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
@@ -848,7 +887,11 @@ APSWSession_set_indirect(PyObject *self_, PyObject *value, void *Py_UNUSED(unuse
   int enabled = PyObject_IsTrueStrict(value);
   if (enabled == -1)
     return -1;
+
+  DBMUTEX_ENSURE_RETURN(self->connection, -1);
   sqlite3session_indirect(self->session, enabled);
+  sqlite3_mutex_leave(self->connection->dbmutex);
+
   return 0;
 }
 
@@ -865,7 +908,10 @@ APSWSession_get_empty(PyObject *self_, void *Py_UNUSED(unused))
   APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
 
+  DBMUTEX_ENSURE(self->connection);
   int res = sqlite3session_isempty(self->session);
+  sqlite3_mutex_leave(self->connection->dbmutex);
+
   if (res)
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
@@ -1784,6 +1830,7 @@ APSWChangeset_apply(PyObject *Py_UNUSED(static_method), PyObject *const *fast_ar
 
   CHECK_CLOSED(db, NULL);
 
+  DBMUTEX_ENSURE(db);
   struct applyInfoContext aic = { .xFilter = filter, .xFilter_change = filter_change, .xConflict = conflict };
 
   int res = SQLITE_ERROR;
@@ -1819,6 +1866,8 @@ APSWChangeset_apply(PyObject *Py_UNUSED(static_method), PyObject *const *fast_ar
                                              rebase ? &nRebase : NULL, flags);
     PyBuffer_Release(&changeset_buffer);
   }
+
+  sqlite3_mutex_leave(db->dbmutex);
 
   if (res != SQLITE_OK)
   {
@@ -1956,6 +2005,7 @@ APSWChangesetBuilder_close_internal(APSWChangesetBuilder *self)
   }
   if (self->connection)
   {
+    assert(sqlite3_mutex_held(self->connection->dbmutex));
     Connection_remove_dependent(self->connection, (PyObject *)self);
     Py_CLEAR(self->connection);
   }
@@ -1965,7 +2015,15 @@ static void
 APSWChangesetBuilder_dealloc(PyObject *self_)
 {
   APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
+  sqlite3_mutex *mutex = NULL;
+  if (self->connection)
+  {
+    mutex = self->connection->dbmutex;
+    DBMUTEX_FORCE(mutex);
+  }
   APSWChangesetBuilder_close_internal(self);
+  if (mutex)
+    sqlite3_mutex_leave(mutex);
   Py_TpFree(self_);
 }
 
