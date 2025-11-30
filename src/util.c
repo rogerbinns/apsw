@@ -13,17 +13,19 @@
 
 #define VLA_PYO(name, size) VLA(name, size, PyObject *)
 
-/* use this most of the time where an exception is raised if we can't get the db mutex */
-#define DBMUTEX_ENSURE(CONN)                                                                                           \
+#define DBMUTEX_ENSURE_RETURN(CONN, RETVAL)                                                                            \
   do                                                                                                                   \
   {                                                                                                                    \
     assert(IN_WORKER_THREAD(CONN));                                                                                    \
     if (sqlite3_mutex_try((CONN)->dbmutex) != SQLITE_OK)                                                               \
     {                                                                                                                  \
       make_thread_exception(NULL);                                                                                     \
-      return NULL;                                                                                                     \
+      return (RETVAL);                                                                                                 \
     }                                                                                                                  \
   } while (0)
+
+/* use this most of the time where an exception is raised if we can't get the db mutex */
+#define DBMUTEX_ENSURE(CONN) DBMUTEX_ENSURE_RETURN((CONN), NULL)
 
 #define DBMUTEXES_ENSURE(mutex1, msg1, mutex2, msg2)                                                                   \
   do                                                                                                                   \
