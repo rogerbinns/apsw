@@ -63,7 +63,7 @@ functions_not_used = (
     "sqlite3_msize",
     "sqlite3_prepare(|_v2)",
     "sqlite3_(snprintf|vmprintf|vsnprintf)",
-    # v2 should be used
+    # v2/3 should be used
     "sqlite3changeset_apply(|_strm)",
     # try should be used not enter
     "sqlite3_mutex_(alloc|enter|free|notheld)",
@@ -94,8 +94,6 @@ functions_special = (
 
 # these do not have a per database mutex
 functions_global = (
-    # the session ones do, but we have special handling
-    "sqlite3session_.*",
     # these don't have the db mutex
     "sqlite3_errstr",
     "sqlite3_libversion",
@@ -159,6 +157,7 @@ functions_global = (
     # session extension
     "sqlite3change(group|set)_.*",
     "sqlite3rebaser_.*",
+    "sqlite3session_(attach|changeset|changeset_size|changeset_strm|config|delete|diff|enable|indirect|isempty|memory_used|object_config|patchset|patchset_strm|table_filter)",
 )
 
 # name pattern, number of args, how to get sqlite3* ideally avoiding
@@ -199,6 +198,7 @@ functions_arg = (
     ("sqlite3_result_error", 3, "sqlite3_context_db_handle((one))"),
     ("sqlite3_result_(blob64|pointer)", 4, "sqlite3_context_db_handle((one))"),
     ("sqlite3_result_text64", 5, "sqlite3_context_db_handle((one))"),
+    ("sqlite3changegroup_schema", 3, "(two)"),
 )
 
 # the first parameter is sqlite3*.  key is number of args taken
@@ -236,6 +236,7 @@ functions_arg_one = {
         "sqlite3_preupdate_hook",
         "sqlite3_preupdate_old",
         "sqlite3_preupdate_new",
+        "sqlite3session_create",
     ),
     4: (
         "sqlite3_autovacuum_pages",
@@ -262,6 +263,7 @@ functions_arg_one = {
     9: (
         "sqlite3_create_function_v2",
         "sqlite3_table_column_metadata",
+        "sqlite3sessionchangeset_apply_v3",
     ),
     10: ("sqlite3_create_window_function",),
 }

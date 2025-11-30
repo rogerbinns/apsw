@@ -875,5 +875,10 @@
 #undef sqlite3changeset_apply_strm
 #define sqlite3changeset_apply_strm *not used*
 
+#define sqlite3session_create(one, two, three) ({        \
+    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
+    sqlite3session_create((one), (two), (three));        \
+})
+
 
 #endif
