@@ -73,8 +73,6 @@ else:
         return _contextvar_set_wrapper()
 
 
-# ::TODO:: if sys.version < 3.11 then concurrent.futures.TimeoutError needs to be turned into exceptions.TimeoutError
-
 # contextvars have to be top level.  this is used to track the currently
 # processing future
 _current_future = contextvars.ContextVar("apsw.aio._current_future")
@@ -85,6 +83,7 @@ class AsyncIO:
 
     def configure(self, db: apsw.Connection):
         "Setup database, just after it is created"
+        1 / 0  # not implemeted yet
         db.set_progress_handler(self.progress_deadline_checker, 500, id=self)
 
     def send(self, call):
@@ -160,7 +159,12 @@ class AsyncIO:
         else:
             timeout = None
 
-        return self.run_coroutine_threadsafe(coro, _current_future.get().get_loop()).result(timeout)
+        try:
+            return self.run_coroutine_threadsafe(coro, _current_future.get().get_loop()).result(timeout)
+        except concurrent.futures.TimeoutError:
+            if sys.version_info < (3, 11):
+                raise TimeoutError
+            raise
 
     def set_future_result(self, future, result):
         "Update future with result in the event loop"
