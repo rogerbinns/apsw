@@ -32,6 +32,8 @@ def sync_await(obj):
 # async  - can only be used on async connections (sync gives exception)
 # dual   - returns awaitable in async, value in sync
 # value  - returns a value in sync or async
+#
+# for attributes dual means awaitable get and worker thread set
 def get_meta(
     klass: str, member: str, kind: Literal["function" | "attribute"]
 ) -> Literal["sync" | "async" | "dual" | "value"]:
@@ -215,8 +217,15 @@ class Async(unittest.TestCase):
                             args = (1,)
                         case "write":
                             args = (b"a",)
-                        case _:
-                            args = tuple()
+
+                case "Session":
+                    match member:
+                        case "changeset_stream" | "patchset_stream" | "table_filter":
+                            args = lambda x: None,
+                        case "config":
+                            args = apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1
+                        case "diff":
+                            args = "main", "dummy2"
 
         try:
             if send:
@@ -251,13 +260,16 @@ class Async(unittest.TestCase):
             "Blob": None,
             "Backup": None,
             "Session": None,
-            # ::TODO:: changeset apply
+            # Changeset.apply is too difficult to include
         }
+
+        changeset = None
 
         def ensure_objects(klass):
             # various operations result in the database etc being closed
             # so this ensures they are open but also some things can't be
             # done while active cursors etc are in play
+            nonlocal changeset
 
             if objects["Connection"] is None:
                 self.tearDown()
@@ -274,6 +286,7 @@ class Async(unittest.TestCase):
                         sync_await(
                             value.execute("""
                                 create table dummy(column);
+                                create table dummy2(column);
                                 insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');
                                 """)
                         )
@@ -289,6 +302,13 @@ class Async(unittest.TestCase):
                                 functools.partial(apsw.Session, objects["Connection"], "main")
                             )
                         )
+                        sync_await(value.attach())
+                        sync_await(objects["Connection"].execute("""
+                        insert into dummy values('hello'), (3.1415), (null), (4);
+                        """))
+                        if changeset is None:
+                            changeset = sync_await(objects["Connection"].async_controller.send(value.changeset))
+
                     case _:
                         1 / 0
                 objects[klass] = value
@@ -364,6 +384,8 @@ class Async(unittest.TestCase):
                 match name:
                     case "transaction_mode":
                         value = "DEFERRED"
+                    case "enabled" | "indirect":
+                        value = True
                     case _:
                         value = lambda *args: False
                 try:

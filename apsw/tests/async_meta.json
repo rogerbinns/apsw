@@ -5,7 +5,6 @@
             "finish"
         ]
     },
-    "Session": {},
     "Blob": {
         "sync": [
             "close"
@@ -14,6 +13,11 @@
             "length",
             "seek",
             "tell"
+        ]
+    },
+    "Changeset": {
+        "dual": [
+            "apply"
         ]
     },
     "Connection": {
@@ -63,6 +67,20 @@
             "get_row_trace",
             "set_exec_trace",
             "set_row_trace"
+        ]
+    },
+    "Session": {
+        "dual": [
+            "enabled",
+            "indirect",
+            "is_empty"
+        ],
+        "sync": [
+            "close"
+        ],
+        "value": [
+            "config",
+            "table_filter"
         ]
     }
 }

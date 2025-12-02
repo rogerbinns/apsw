@@ -367,7 +367,6 @@ APSWSession_close_internal(APSWSession *self)
 {
   if (self->session)
   {
-    assert(IN_WORKER_THREAD(self->connection));
     assert(sqlite3_mutex_held(self->connection->dbmutex));
     sqlite3session_delete(self->session);
     self->session = NULL;
@@ -828,10 +827,12 @@ APSWSession_config(PyObject *self_, PyObject *args)
     -* sqlite3session_enable
 */
 static PyObject *
-APSWSession_get_enabled(PyObject *self_, void *Py_UNUSED(unused))
+APSWSession_get_enabled(PyObject *self_, void *unused)
 {
   APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
+
+  ASYNC_ATTR_GET(self->connection, APSWSession_get_enabled, self_, unused);
 
   DBMUTEX_ENSURE(self->connection);
   int res = sqlite3session_enable(self->session, -1);
@@ -847,6 +848,12 @@ APSWSession_set_enabled(PyObject *self_, PyObject *value, void *Py_UNUSED(unused
 {
   APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(-1);
+
+  if (!IN_WORKER_THREAD(self->connection))
+  {
+    error_sync_in_async_context();
+    return -1;
+  }
 
   int enabled = PyObject_IsTrueStrict(value);
   if (enabled == -1)
@@ -865,10 +872,12 @@ APSWSession_set_enabled(PyObject *self_, PyObject *value, void *Py_UNUSED(unused
     -* sqlite3session_indirect
 */
 static PyObject *
-APSWSession_get_indirect(PyObject *self_, void *Py_UNUSED(unused))
+APSWSession_get_indirect(PyObject *self_, void *unused)
 {
   APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
+
+  ASYNC_ATTR_GET(self->connection, APSWSession_get_indirect, self_, unused);
 
   DBMUTEX_ENSURE(self->connection);
   int res = sqlite3session_indirect(self->session, -1);
@@ -888,6 +897,12 @@ APSWSession_set_indirect(PyObject *self_, PyObject *value, void *Py_UNUSED(unuse
   if (enabled == -1)
     return -1;
 
+  if (!IN_WORKER_THREAD(self->connection))
+  {
+    error_sync_in_async_context();
+    return -1;
+  }
+
   DBMUTEX_ENSURE_RETURN(self->connection, -1);
   sqlite3session_indirect(self->session, enabled);
   sqlite3_mutex_leave(self->connection->dbmutex);
@@ -903,10 +918,12 @@ APSWSession_set_indirect(PyObject *self_, PyObject *value, void *Py_UNUSED(unuse
     -* sqlite3session_isempty
 */
 static PyObject *
-APSWSession_get_empty(PyObject *self_, void *Py_UNUSED(unused))
+APSWSession_get_empty(PyObject *self_, void *unused)
 {
   APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(NULL);
+
+  ASYNC_ATTR_GET(self->connection, APSWSession_get_empty, self_, unused);
 
   DBMUTEX_ENSURE(self->connection);
   int res = sqlite3session_isempty(self->session);
@@ -1829,6 +1846,8 @@ APSWChangeset_apply(PyObject *Py_UNUSED(static_method), PyObject *const *fast_ar
     return PyErr_Format(PyExc_ValueError, "You can't specify both filter and filter_change");
 
   CHECK_CLOSED(db, NULL);
+
+  ASYNC_FASTCALL(db, APSWChangeset_apply);
 
   DBMUTEX_ENSURE(db);
   struct applyInfoContext aic = { .xFilter = filter, .xFilter_change = filter_change, .xConflict = conflict };
