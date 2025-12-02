@@ -8,6 +8,7 @@ import contextvars
 import contextlib
 import sys
 import time
+import concurrent.futures
 
 import apsw
 
@@ -190,13 +191,94 @@ class AsyncIO:
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
+class Trio:
+    """Uses `Trio <https://trio.readthedocs.io/>`__ for async concurrency"""
+
+    # I couldn't see a way of using trio's own thread starting machinery
+    # because they prefer a thread pool of workers whereas we need a
+    # specific thread for the lifetime of the connection.
+    #
+    # trio's memory channels are async which would require two
+    # levels of await
+    #
+    # consequently we use the same normal thread and SimpleQueue
+    # as AsyncIO
+
+    class _Future:
+        # private internal representation of a call providing an
+        # awaitable result
+        token: Any
+        call: Callable
+        event: Any
+        result: Any
+        is_exception: bool
+        prefetch: int
+        # ::TODO:: clock, timeout, cancellation
+
+        async def result(self):
+            await self.event.wait()
+            if self.is_exception:
+                raise self.result
+            return self.result
+
+        def __await__(self):
+            return self.result().__await__()
+
+    def configure(self, db: apsw.Connection):
+        1 / 0
+
+    def send(self, call):
+        future = Trio._Future()
+        future.token = self.current_trio_token()
+        future.call = call
+        future.event = self.event()
+        future.prefetch = apsw.async_cursor_prefetch.get()
+        future.is_exception = False
+
+        self.queue.put(future)
+        return future
+
+    def close(self):
+        self.queue.put(None)
+        self.queue = None
+
+    async def set_event(self, event):
+        event.set()
+
+    def worker_thread_run(self, q):
+        with contextvar_set(apsw.async_run_coro, self.async_run_coro):
+            while (future := q.get()) is not None:
+                with (
+                    contextvar_set(_current_future, future),
+                    contextvar_set(apsw.async_cursor_prefetch, future.prefetch),
+                ):
+                    try:
+                        future.result = future.call()
+                    except BaseException as exc:
+                        future.result = exc
+                        future.is_exception = True
+
+                    self.from_thread_run(self.set_event, future.event, trio_token=future.token)
+                    del future
+
+    async def async_async_run_coro(self, coro):
+        return await coro
+
+    def async_run_coro(self, coro):
+        return self.from_thread_run(self.async_async_run_coro, coro, trio_token=_current_future.get().token)
+
+    def __init__(self, *, thread_name: str = "trio apsw background worker"):
+        import trio
+
+        self.from_thread_run = trio.from_thread.run
+        self.current_trio_token = trio.lowlevel.current_trio_token
+        self.event = trio.Event
+
+        self.queue = queue.SimpleQueue()
+        threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
+
+
 # some notes about trio
-# trio.lowlevel.current_trio_token()
-# trio.from_thread.run (coroutine, token=...)  -- have their own deadline system
-# have their own thread starting method
-# trio.open_memory_channel instead of SimpleQueue maybe, but more convoluted
-# there is no Future equivalent.  need to use a dataclass with trio.Event to
-# signal completion, and token from above, result and exception
 # trio.current_effective_deadline
 # trio.lowlevel.current_clock  - meth current_time()
 # trio.testing.MockClock
