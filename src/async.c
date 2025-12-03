@@ -50,14 +50,13 @@ AwaitableWrapper_next(PyObject *self_)
     break;
   }
   case Value:
-    /* the constructor of stop iteration gets run which
-       treats self->one as args, so we have to wrap to
-       prevent that */
-    PyObject *real_value = PyTuple_Pack(1, self->one);
-    if (!real_value)
-      break;
-    PyErr_SetObject(PyExc_StopIteration, real_value);
-    Py_DECREF(real_value);
+    /* PyErr_SetObject has more complex code to instantiate the exception */
+    PyObject *real_value = PyObject_CallOneArg(PyExc_StopIteration, self->one);
+    if (real_value)
+    {
+      PyErr_SetObject(PyExc_StopIteration, real_value);
+      Py_DECREF(real_value);
+    }
     break;
   case StopAsyncIteration:
     PyErr_SetNone(PyExc_StopAsyncIteration);
@@ -91,7 +90,6 @@ static PyTypeObject AwaitableWrapperType = {
   .tp_iternext = AwaitableWrapper_next,
   .tp_dealloc = AwaitableWrapper_dealloc,
   .tp_as_async = &AwaitableWrapper_async_methods,
-  // ::TODO:: add tp_traverse
 };
 
 /* used for getting call details im a non-worker thread that can be invoked in the worker thread */
@@ -268,7 +266,6 @@ static PyTypeObject BoxedCallType = {
   .tp_itemsize = sizeof(PyObject *),
   .tp_free = PyObject_Free,
   .tp_call = BoxedCall_call,
-  // ::TODO:: add tp_traverse
 };
 
 static BoxedCall *
