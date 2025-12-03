@@ -79,6 +79,23 @@ else:
 _current_future = contextvars.ContextVar("apsw.aio._current_future")
 
 
+# These were originally members of AsyncIO and we were low single
+# digit percent slower than aiosqlite for message round trip.  Making
+# them a module function makes us slightly faster!  They are called
+# for every message.
+def _asyncio_set_future_result(future, result):
+    "Update future with result in the event loop"
+    # you get an exception if cancelled
+    if not future.done():
+        future.set_result(result)
+
+
+def _asyncio_set_future_exception(future, exc):
+    "Update future with exception in the event loop"
+    if not future.done():
+        future.set_exception(exc)
+
+
 class AsyncIO:
     """Uses :mod:`asyncio` for async concurrency"""
 
@@ -130,25 +147,23 @@ class AsyncIO:
                 if future.done():
                     continue
 
-                with (
-                    contextvar_set(_current_future, future),
-                    contextvar_set(deadline, this_deadline),
-                    contextvar_set(apsw.async_cursor_prefetch, this_prefetch),
-                ):
-                    try:
-                        # should we even start?
-                        if this_deadline is not None:
-                            if time.monotonic() > this_deadline:
-                                raise TimeoutError()
-                        future.get_loop().call_soon_threadsafe(self.set_future_result, future, call())
+                # we don't restore these because the queue is not
+                # re-entrant, so there is no point
+                _current_future.set(future)
+                deadline.set(this_deadline)
+                apsw.async_cursor_prefetch.set(this_prefetch)
 
-                    except BaseException as exc:
-                        # BaseException is deliberately used because we
-                        # want those to be returned as garbage collection
-                        # will cause us to be terminated. CancelledError
-                        # is a notable example
-                        future.get_loop().call_soon_threadsafe(self.set_future_exception, future, exc)
+                try:
+                    # should we even start?
+                    if this_deadline is not None:
+                        if time.monotonic() > this_deadline:
+                            raise TimeoutError()
+                    future.get_loop().call_soon_threadsafe(_asyncio_set_future_result, future, call())
 
+                except BaseException as exc:
+                    # BaseException is deliberately used because CancelledError
+                    # is a subclass of it
+                    future.get_loop().call_soon_threadsafe(_asyncio_set_future_exception, future, exc)
                 del future
 
     def async_run_coro(self, coro):
@@ -166,17 +181,6 @@ class AsyncIO:
             if sys.version_info < (3, 11):
                 raise TimeoutError
             raise
-
-    def set_future_result(self, future, result):
-        "Update future with result in the event loop"
-        # you get an exception if cancelled
-        if not future.done():
-            future.set_result(result)
-
-    def set_future_exception(self, future, exc):
-        "Update future with exception in the event loop"
-        if not future.done():
-            future.set_exception(exc)
 
     def __init__(self, *, thread_name: str = "asyncio apsw background worker"):
         # we don't top level import because it is expensive, and trio/anyio etc could
