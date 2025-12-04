@@ -48,6 +48,7 @@ release UPDATE INSERT DELETE
 null true false
 
 async_controller async_run_coro async_cursor_prefetch send
+apsw.aio Auto
 """
 
 
@@ -63,6 +64,7 @@ def mangle(name):
         "null": "snull",
         "true": "strue",
         "false": "sfalse",
+        "apsw.aio": "apsw_aio",
     }.get(name, name)
 
 

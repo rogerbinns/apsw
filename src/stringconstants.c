@@ -10,6 +10,7 @@
 #undef s0_0
 #undef s9e999
 #undef no_change
+#undef Auto
 #undef Begin
 #undef BestIndex
 #undef BestIndexObject
@@ -43,6 +44,7 @@
 #undef UpdateDeleteRow
 #undef UpdateInsertRow
 #undef add_note
+#undef apsw_aio
 #undef async_controller
 #undef async_cursor_prefetch
 #undef async_run_coro
@@ -103,6 +105,7 @@ static struct _apsw_string_table
     PyObject *s0_0;
     PyObject *s9e999;
     PyObject *no_change;
+    PyObject *Auto;
     PyObject *Begin;
     PyObject *BestIndex;
     PyObject *BestIndexObject;
@@ -136,6 +139,7 @@ static struct _apsw_string_table
     PyObject *UpdateDeleteRow;
     PyObject *UpdateInsertRow;
     PyObject *add_note;
+    PyObject *apsw_aio;
     PyObject *async_controller;
     PyObject *async_cursor_prefetch;
     PyObject *async_run_coro;
@@ -197,6 +201,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.s0_0);
     Py_CLEAR(apst.s9e999);
     Py_CLEAR(apst.no_change);
+    Py_CLEAR(apst.Auto);
     Py_CLEAR(apst.Begin);
     Py_CLEAR(apst.BestIndex);
     Py_CLEAR(apst.BestIndexObject);
@@ -230,6 +235,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.UpdateDeleteRow);
     Py_CLEAR(apst.UpdateInsertRow);
     Py_CLEAR(apst.add_note);
+    Py_CLEAR(apst.apsw_aio);
     Py_CLEAR(apst.async_controller);
     Py_CLEAR(apst.async_cursor_prefetch);
     Py_CLEAR(apst.async_run_coro);
@@ -292,6 +298,7 @@ init_apsw_strings()
         || (!apst.s0_0 && 0 == (apst.s0_0 = PyUnicode_FromString("0.0")))
         || (!apst.s9e999 && 0 == (apst.s9e999 = PyUnicode_FromString("9e999")))
         || (!apst.no_change && 0 == (apst.no_change = PyUnicode_FromString("<apsw.no_change>")))
+        || (!apst.Auto && 0 == (apst.Auto = PyUnicode_FromString("Auto")))
         || (!apst.Begin && 0 == (apst.Begin = PyUnicode_FromString("Begin")))
         || (!apst.BestIndex && 0 == (apst.BestIndex = PyUnicode_FromString("BestIndex")))
         || (!apst.BestIndexObject && 0 == (apst.BestIndexObject = PyUnicode_FromString("BestIndexObject")))
@@ -325,6 +332,7 @@ init_apsw_strings()
         || (!apst.UpdateDeleteRow && 0 == (apst.UpdateDeleteRow = PyUnicode_FromString("UpdateDeleteRow")))
         || (!apst.UpdateInsertRow && 0 == (apst.UpdateInsertRow = PyUnicode_FromString("UpdateInsertRow")))
         || (!apst.add_note && 0 == (apst.add_note = PyUnicode_FromString("add_note")))
+        || (!apst.apsw_aio && 0 == (apst.apsw_aio = PyUnicode_FromString("apsw.aio")))
         || (!apst.async_controller && 0 == (apst.async_controller = PyUnicode_FromString("async_controller")))
         || (!apst.async_cursor_prefetch && 0 == (apst.async_cursor_prefetch = PyUnicode_FromString("async_cursor_prefetch")))
         || (!apst.async_run_coro && 0 == (apst.async_run_coro = PyUnicode_FromString("async_run_coro")))
