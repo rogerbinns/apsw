@@ -16,6 +16,11 @@ import sqlite3
 import trio
 import anyio
 
+try:
+    import uvloop
+except ImportError:
+    uvloop = None
+
 setup = """
 create table foo(one, two, three, four, five);
 insert into foo values(1, 2, 3, 4, 5);
@@ -87,31 +92,38 @@ sqlite3 SQLite version: {sqlite3.sqlite_version}
 
 """)
 
-print(f"{'Library':19s} {'Prefetch':>10s} {'Wall':>10s} {'CpuProcess':>15s} {'CpuMainThread':>15s}")
+print(f"{'Library':>25s} {'Prefetch':>10s} {'Wall':>10s} {'CpuProcess':>15s} {'CpuMainThread':>15s}")
 
 
 def show(library, prefetch, start, end):
     print(
-        f"{library:19s} {prefetch:>10} {end[0] - start[0]:10.3f} {end[1] - start[1]:15.3f} {end[2] - start[2]:15.3f}"
+        f"{library:>25s} {prefetch:>10} {end[0] - start[0]:10.3f} {end[1] - start[1]:15.3f} {end[2] - start[2]:15.3f}"
     )
 
 
 for prefetch in (1, 2, 16, 64, 512, 1_000_000):
     for name in ["AsyncIO",  "Trio", "AnyIO/asyncio", "AnyIO/trio"]:
-        with apsw.aio.contextvar_set(apsw.async_controller, apsw.aio.Auto): # getattr(apsw.aio, name.split("/")[0])):
-            start = get_times()
-            match name:
-                case "AsyncIO":
-                    asyncio.run(apsw_bench(prefetch))
-                case "Trio":
-                    trio.run(apsw_bench, prefetch)
-                case "AnyIO/asyncio":
-                    anyio.run(apsw_bench, prefetch, backend="asyncio")
-                case "AnyIO/trio":
-                    anyio.run(apsw_bench, prefetch, backend="trio")
-            end = get_times()
-            show(f"apsw {name}", prefetch, start, end)
-    start = get_times()
-    asyncio.run(sqlite3_bench(prefetch))
-    end = get_times()
-    show("aiosqlite", prefetch, start, end)
+        with apsw.aio.contextvar_set(apsw.async_controller, getattr(apsw.aio, name.split("/")[0])):
+            for loop_factory in [False] + ([True] if uvloop else []):
+                used_loop_factory = False
+                start = get_times()
+                match name:
+                    case "AsyncIO":
+                        asyncio.run(apsw_bench(prefetch), loop_factory=uvloop.new_event_loop if loop_factory else None)
+                        used_loop_factory = True
+                    case "Trio":
+                        trio.run(apsw_bench, prefetch)
+                    case "AnyIO/asyncio":
+                        anyio.run(apsw_bench, prefetch, backend="asyncio", backend_options={"uvloop": loop_factory})
+                        used_loop_factory = True
+                    case "AnyIO/trio":
+                        anyio.run(apsw_bench, prefetch, backend="trio")
+                end = get_times()
+                show(f"apsw {name}{' uvloop' if loop_factory else ''}", prefetch, start, end)
+                if not used_loop_factory:
+                    break
+    for loop_factory in [False] + ([True] if uvloop else []):
+        start = get_times()
+        asyncio.run(sqlite3_bench(prefetch), loop_factory=uvloop.new_event_loop if loop_factory else None)
+        end = get_times()
+        show(f"aiosqlite{' uvloop' if loop_factory else ''}", prefetch, start, end)
