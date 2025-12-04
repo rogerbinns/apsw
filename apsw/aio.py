@@ -373,20 +373,18 @@ class AnyIO:
                 self.from_thread_run(_set_event, future.event, token=future.token)
                 del future
 
-# ::TODO:: make this the default
-def Auto():
-    if "anyio" in sys.modules:
-        try:
-            import anyio
-            anyio.get_current_task()
-            # anyio deliberately avoids detection - it is an API adapter
-            # not a wrapper, and they don't want to be a middleman.
-            import inspect
-            for frame in inspect.stack():
-                if "/anyio/" in frame.filename.replace("\\", "/"):
-                    return AnyIO()
-        except:
-            pass
+def Auto()   -> Trio | AsyncIO | AnyIO:
+    """
+    Automatically detects the current async framework and returns the appropriate
+    controller.  This is the default for :attr:`apsw.async_controller`.
+
+    It uses the same logic as the `sniffio <https://sniffio.readthedocs.io>`__ package
+    but only knows about the controllers implemented in this module.
+
+    :exc:`RuntimeError` is raised if the framework can't be detected.
+
+    :rtype: Trio | AsyncIO | AnyIO
+    """
     if "trio" in sys.modules:
         try:
             import trio
@@ -399,6 +397,13 @@ def Auto():
             import asyncio
             asyncio.get_running_loop()
             return AsyncIO()
+        except:
+            pass
+    if "anyio" in sys.modules:
+        try:
+            import anyio
+            anyio.get_current_task()
+            return AnyIO()
         except:
             pass
     raise RuntimeError("Unable to determine current Async environment")

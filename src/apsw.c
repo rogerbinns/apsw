@@ -2159,10 +2159,14 @@ PyInit_apsw(void)
   /** .. attribute:: async_controller
     :type: type[AsyncConnectionController]
 
-    Call this to get a controller for :meth:`Connection.as_async`.
+    This sets the controller for :meth:`Connection.as_async`.  It will use
+    :func:`apsw.aio.Auto` if not explicitly set.
   */
+  /* we can't PyImport_ImportModuleAttr here to set apsw.aio.Auto as the
+     default because calling that results in a RecursionError because apsw
+     is in the middle of being imported */
   if (!async_controller_context_var)
-    if (NULL == (async_controller_context_var = PyContextVar_New("apsw.async_controller", NULL)))
+    if (NULL == (async_controller_context_var = PyContextVar_New("apsw.async_controller", Py_None)))
       goto fail;
 
   if (PyModule_AddObjectRef(m, "async_controller", async_controller_context_var))

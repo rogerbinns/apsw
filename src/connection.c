@@ -791,14 +791,17 @@ Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)
   boxed_call->ConnectionInit.kwargs = Py_XNewRef(kwargs);
   connection->async_controller = NULL;
 
-  PyContextVar_Get(async_controller_context_var, NULL, &connection->async_controller);
-  if (!connection->async_controller)
+  if(!PyContextVar_Get(async_controller_context_var, NULL, &connection->async_controller))
   {
-    if (!PyErr_Occurred())
-      PyErr_Format(PyExc_RuntimeError, "An async connection has been requested but apsw.async_controller "
-                                       "has not been set. See the APSW async documentation for more details.");
-    goto error;
+    if(Py_IsNone(connection->async_controller))
+    {
+      Py_DECREF(Py_None);
+      connection->async_controller = PyImport_ImportModuleAttr(apst.apsw_aio, apst.Auto);
+    }
+    if(!connection->async_controller)
+      goto error;
   }
+  else goto error;
 
   PyObject *actual_controller = PyObject_CallNoArgs(connection->async_controller);
   Py_SETREF(connection->async_controller, actual_controller);
