@@ -195,7 +195,7 @@ class AsyncIO:
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
-async def _trio_set_event(event):
+async def _set_event(event):
     event.set()
 
 
@@ -272,7 +272,7 @@ class Trio:
                     future.result = exc
                     future.is_exception = True
 
-                self.from_thread_run(_trio_set_event, future.event, trio_token=future.token)
+                self.from_thread_run(_set_event, future.event, trio_token=future.token)
                 del future
 
     async def async_async_run_coro(self, coro):
@@ -290,3 +290,117 @@ class Trio:
 
         self.queue = queue.SimpleQueue()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
+
+
+class AnyIO:
+    # much like Trio we can't use anyio's own thread and queue machinery because they
+    # don't support running async code in a persistent worker thread.  this code
+    # is almost identical to Trio above but uses anyio's primitives
+
+    class _Future:
+        # Private internal representation of a call providing an
+        # awaitable result.  One of these is made for each call.
+        __slots__ = (
+            # needed to call back into trio
+            "token",
+            # anyio.Event used to signal ready
+            "event",
+            # result value or exception
+            "result",
+            # is it an exception?
+            "is_exception",
+            # cursor prefect value
+            "prefetch",
+            # call to make
+            "call",
+        )
+
+        async def aresult(self):
+            await self.event.wait()
+            if self.is_exception:
+                raise self.result
+            return self.result
+
+        def __await__(self):
+            return self.aresult().__await__()
+
+    def configure(self, db: apsw.Connection):
+        1 / 0
+
+    def send(self, call):
+        future = AnyIO._Future()
+        future.token = self.current_anyio_token()
+        future.event = self.event()
+        future.prefetch = apsw.async_cursor_prefetch.get()
+        future.is_exception = False
+        future.call = call
+
+        self.queue.put(future)
+        return future
+
+    def close(self):
+        self.queue.put(None)
+        self.queue = None
+
+    async def async_async_run_coro(self, coro):
+        return await coro
+
+    def async_run_coro(self, coro):
+        return self.run_sync(self.async_async_run_coro, coro, token=_current_future.get().token)
+
+    def __init__(self, *, thread_name: str = "anyio apsw background worker"):
+        import anyio
+
+        self.current_anyio_token = anyio.lowlevel.current_token
+        self.event = anyio.Event
+        self.run_sync = anyio.from_thread.run_sync
+        self.from_thread_run = anyio.from_thread.run
+
+        self.queue = queue.SimpleQueue()
+        threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
+
+    def worker_thread_run(self, q):
+        with contextvar_set(apsw.async_run_coro, self.async_run_coro):
+            while (future := q.get()) is not None:
+                _current_future.set(future)
+                apsw.async_cursor_prefetch.set(future.prefetch)
+                try:
+                    future.result = future.call()
+                except BaseException as exc:
+                    future.result = exc
+                    future.is_exception = True
+
+                self.from_thread_run(_set_event, future.event, token=future.token)
+                del future
+
+# ::TODO:: make this the default
+def Auto():
+    if "anyio" in sys.modules:
+        try:
+            import anyio
+            anyio.get_current_task()
+            # anyio deliberately avoids detection - it is an API adapter
+            # not a wrapper, and they don't want to be a middleman.
+            import inspect
+            for frame in inspect.stack():
+                if "/anyio/" in frame.filename.replace("\\", "/"):
+                    return AnyIO()
+        except:
+            pass
+    if "trio" in sys.modules:
+        try:
+            import trio
+            trio.lowlevel.current_trio_token()
+            return Trio()
+        except:
+            pass
+    if "asyncio" in sys.modules:
+        try:
+            import asyncio
+            asyncio.get_running_loop()
+            return AsyncIO()
+        except:
+            pass
+    raise RuntimeError("Unable to determine current Async environment")
+
+

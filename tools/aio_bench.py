@@ -14,6 +14,7 @@ import contextlib
 import resource
 import sqlite3
 import trio
+import anyio
 
 setup = """
 create table foo(one, two, three, four, five);
@@ -86,24 +87,28 @@ sqlite3 SQLite version: {sqlite3.sqlite_version}
 
 """)
 
-print(f"{'Library':14s} {'Prefetch':>10s} {'Wall':>10s} {'CpuProcess':>15s} {'CpuMainThread':>15s}")
+print(f"{'Library':19s} {'Prefetch':>10s} {'Wall':>10s} {'CpuProcess':>15s} {'CpuMainThread':>15s}")
 
 
 def show(library, prefetch, start, end):
     print(
-        f"{library:14s} {prefetch:>10} {end[0] - start[0]:10.3f} {end[1] - start[1]:15.3f} {end[2] - start[2]:15.3f}"
+        f"{library:19s} {prefetch:>10} {end[0] - start[0]:10.3f} {end[1] - start[1]:15.3f} {end[2] - start[2]:15.3f}"
     )
 
 
 for prefetch in (1, 2, 16, 64, 512, 1_000_000):
-    for name in ["AsyncIO",  "Trio"]:
-        with apsw.aio.contextvar_set(apsw.async_controller, getattr(apsw.aio, name)):
+    for name in ["AsyncIO",  "Trio", "AnyIO/asyncio", "AnyIO/trio"]:
+        with apsw.aio.contextvar_set(apsw.async_controller, apsw.aio.Auto): # getattr(apsw.aio, name.split("/")[0])):
             start = get_times()
             match name:
                 case "AsyncIO":
                     asyncio.run(apsw_bench(prefetch))
                 case "Trio":
                     trio.run(apsw_bench, prefetch)
+                case "AnyIO/asyncio":
+                    anyio.run(apsw_bench, prefetch, backend="asyncio")
+                case "AnyIO/trio":
+                    anyio.run(apsw_bench, prefetch, backend="trio")
             end = get_times()
             show(f"apsw {name}", prefetch, start, end)
     start = get_times()
