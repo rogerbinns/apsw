@@ -50,6 +50,7 @@ AwaitableWrapper_next(PyObject *self_)
     break;
   }
   case Value:
+  {
     /* PyErr_SetObject has more complex code to instantiate the exception */
     PyObject *real_value = PyObject_CallOneArg(PyExc_StopIteration, self->one);
     if (real_value)
@@ -58,6 +59,7 @@ AwaitableWrapper_next(PyObject *self_)
       Py_DECREF(real_value);
     }
     break;
+  }
   case StopAsyncIteration:
     PyErr_SetNone(PyExc_StopAsyncIteration);
   }
