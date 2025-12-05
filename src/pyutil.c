@@ -383,3 +383,16 @@ PyObject_Vectorcall_NoAsync(PyObject *callable, PyObject *const *args, size_t na
 /* make them auto async by default */
 #define PyObject_VectorcallMethod PyObject_VectorcallMethod_AutoAsync
 #define PyObject_Vectorcall PyObject_Vectorcall_AutoAsync
+
+#if PY_VERSION_HEX < 0x030e0000
+static PyObject *
+PyImport_ImportModuleAttr(PyObject *mod_name, PyObject *attr_name)
+{
+  PyObject *mod = PyImport_Import(mod_name), *attr = NULL;
+  if(mod)
+    attr = PyObject_GetAttr(mod, attr_name);
+  Py_XDECREF(mod);
+  assert((attr && !PyErr_Occurred()) || (!attr && PyErr_Occurred()));
+  return attr;
+}
+#endif
