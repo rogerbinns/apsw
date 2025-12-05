@@ -18,23 +18,22 @@ from typing import TypeVar, Any
 T = TypeVar("T")
 
 
-deadline: contextvars.ContextVar[int | float | None] = contextvars.ContextVar("apsw.aio.deadline", default=None)
-"""Set to a value based one :func:`time.monotonic()` for an operation to complete by
+timeout: contextvars.ContextVar[int | float | None] = contextvars.ContextVar("apsw.aio.timeout", default=None)
+"""Timeout in seconds to use for :class:`AsyncIO`
 
 This makes a best effort to ensure a database operation including any
-callbacks has completed by the time, else :exc:`TimeoutError` will be
-raised.  The default (``None``) is no deadline.  It is generally a good
-idea to set a deadline because it will unblock deadlocks.
+callbacks has completed within the time, else :exc:`TimeoutError` will be
+raised.  The default (``None``) is no timeout.
 
 .. code-block:: python
 
-    # 10 seconds from now
-    async with apsw.aio.deadline.set(time.monotonic() + 10):
+    # 10 seconds
+    async with apsw.aio.timeout.set(10):
        # do operations
        ...
        # you can use it nested - these operations could take a
        # minute
-       async with apsw.aio.deadline.set(time.monotonic() + 60):
+       with apsw.aio.timeout.set(60):
           # do other operations
           ...
 """
@@ -78,6 +77,9 @@ else:
 # processing future
 _current_future = contextvars.ContextVar("apsw.aio._current_future")
 
+# deadline (time.monotonic based) based on the timeout at submission time
+_deadline = contextvars.ContextVar("apsw.aio._deadline")
+
 
 # These were originally members of AsyncIO and we were low single
 # digit percent slower than aiosqlite for message round trip.  Making
@@ -107,8 +109,11 @@ class AsyncIO:
     def send(self, call):
         "Enqueues call to worker thread"
         try:
-            future = self.get_running_loop().create_future()
-            self.queue.put((future, call, apsw.async_cursor_prefetch.get(), deadline.get()))
+            future = asyncio.get_running_loop().create_future()
+            this_deadline = timeout.get()
+            if this_deadline is not None:
+                this_deadline += time.monotonic()
+            self.queue.put((future, call, apsw.async_cursor_prefetch.get(), this_deadline))
             return future
         except AttributeError:
             if self.queue is None:
@@ -127,12 +132,9 @@ class AsyncIO:
         # complex ones so we just set it to None which send detects
         self.queue = None
 
-    # The methods above are callbacks from ASyncConnection.  The ones below
-    # are our internal workings.
-
     def progress_deadline_checker(self):
         "Periodic check if the deadline has passed"
-        if (this_deadline := deadline.get()) is not None and time.monotonic() > this_deadline:
+        if (this_deadline := _deadline.get()) is not None and time.monotonic() > this_deadline:
             raise TimeoutError()
         return False
 
@@ -150,7 +152,7 @@ class AsyncIO:
                 # we don't restore these because the queue is not
                 # re-entrant, so there is no point
                 _current_future.set(future)
-                deadline.set(this_deadline)
+                _deadline.set(this_deadline)
                 apsw.async_cursor_prefetch.set(this_prefetch)
 
                 try:
@@ -168,7 +170,7 @@ class AsyncIO:
 
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
-        if (this_deadline := deadline.get()) is not None:
+        if (this_deadline := _deadline.get()) is not None:
             timeout = this_deadline - time.monotonic()
             if timeout < 0:
                 raise TimeoutError()
@@ -176,19 +178,19 @@ class AsyncIO:
             timeout = None
 
         try:
-            return self.run_coroutine_threadsafe(coro, _current_future.get().get_loop()).result(timeout)
+            # yes we really need the timeout twice.  when the wait_for one fires the
+            # exception, isn't propagated to us
+            return asyncio.run_coroutine_threadsafe(
+                asyncio.wait_for(coro, timeout), _current_future.get().get_loop()
+            ).result(timeout)
         except concurrent.futures.TimeoutError:
             if sys.version_info < (3, 11):
                 raise TimeoutError
             raise
 
     def __init__(self, *, thread_name: str = "asyncio apsw background worker"):
-        # we don't top level import because it is expensive, and trio/anyio etc could
-        # be in use instead.  we only need two methods
+        global asyncio
         import asyncio
-
-        self.get_running_loop = asyncio.get_running_loop
-        self.run_coroutine_threadsafe = asyncio.run_coroutine_threadsafe
 
         self.queue = queue.SimpleQueue()
 
@@ -248,8 +250,8 @@ class Trio:
 
     def send(self, call):
         future = Trio._Future()
-        future.token = self.current_trio_token()
-        future.event = self.event()
+        future.token = trio.lowlevel.current_trio_token()
+        future.event = trio.Event()
         future.prefetch = apsw.async_cursor_prefetch.get()
         future.is_exception = False
         future.call = call
@@ -272,21 +274,19 @@ class Trio:
                     future.result = exc
                     future.is_exception = True
 
-                self.from_thread_run(_set_event, future.event, trio_token=future.token)
+                trio.from_thread.run(_set_event, future.event, trio_token=future.token)
                 del future
 
-    async def async_async_run_coro(self, coro):
-        return await coro
+    async def async_async_run_coro(self, coro, seconds):
+        with trio.fail_after(seconds):
+            return await coro
 
     def async_run_coro(self, coro):
-        return self.from_thread_run(self.async_async_run_coro, coro, trio_token=_current_future.get().token)
+        return trio.from_thread.run_sync(self.async_async_run_coro, coro, None, trio_token=_current_future.get().token)
 
     def __init__(self, *, thread_name: str = "trio apsw background worker"):
+        global trio
         import trio
-
-        self.from_thread_run = trio.from_thread.run
-        self.current_trio_token = trio.lowlevel.current_trio_token
-        self.event = trio.Event
 
         self.queue = queue.SimpleQueue()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
@@ -329,8 +329,8 @@ class AnyIO:
 
     def send(self, call):
         future = AnyIO._Future()
-        future.token = self.current_anyio_token()
-        future.event = self.event()
+        future.token = anyio.lowlevel.current_token()
+        future.event = anyio.Event()
         future.prefetch = apsw.async_cursor_prefetch.get()
         future.is_exception = False
         future.call = call
@@ -346,15 +346,11 @@ class AnyIO:
         return await coro
 
     def async_run_coro(self, coro):
-        return self.run_sync(self.async_async_run_coro, coro, token=_current_future.get().token)
+        return anyio.from_thread.run_sync(self.async_async_run_coro, coro, token=_current_future.get().token)
 
     def __init__(self, *, thread_name: str = "anyio apsw background worker"):
+        global anyio
         import anyio
-
-        self.current_anyio_token = anyio.lowlevel.current_token
-        self.event = anyio.Event
-        self.run_sync = anyio.from_thread.run_sync
-        self.from_thread_run = anyio.from_thread.run
 
         self.queue = queue.SimpleQueue()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
@@ -370,16 +366,21 @@ class AnyIO:
                     future.result = exc
                     future.is_exception = True
 
-                self.from_thread_run(_set_event, future.event, token=future.token)
+                anyio.from_thread.run(_set_event, future.event, token=future.token)
                 del future
 
-def Auto()   -> Trio | AsyncIO | AnyIO:
-    """
-    Automatically detects the current async framework and returns the appropriate
-    controller.  This is the default for :attr:`apsw.async_controller`.
 
-    It uses the same logic as the `sniffio <https://sniffio.readthedocs.io>`__ package
-    but only knows about the controllers implemented in this module.
+def Auto() -> Trio | AsyncIO | AnyIO:
+    """
+    Automatically detects the current async framework and returns the
+    appropriate controller.  This is the default for
+    :attr:`apsw.async_controller`.
+
+    It uses the same logic as the `sniffio
+    <https://sniffio.readthedocs.io>`__ package and only knows about
+    the controllers implemented in this module.  :class:`AnyIO` won't
+    be returned in practise because it always runs an asyncio or trio
+    event loop.
 
     :exc:`RuntimeError` is raised if the framework can't be detected.
 
@@ -388,6 +389,7 @@ def Auto()   -> Trio | AsyncIO | AnyIO:
     if "trio" in sys.modules:
         try:
             import trio
+
             trio.lowlevel.current_trio_token()
             return Trio()
         except:
@@ -395,6 +397,7 @@ def Auto()   -> Trio | AsyncIO | AnyIO:
     if "asyncio" in sys.modules:
         try:
             import asyncio
+
             asyncio.get_running_loop()
             return AsyncIO()
         except:
@@ -402,10 +405,9 @@ def Auto()   -> Trio | AsyncIO | AnyIO:
     if "anyio" in sys.modules:
         try:
             import anyio
+
             anyio.get_current_task()
             return AnyIO()
         except:
             pass
     raise RuntimeError("Unable to determine current Async environment")
-
-
