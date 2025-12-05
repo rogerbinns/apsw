@@ -92,12 +92,16 @@ sqlite3 SQLite version: {sqlite3.sqlite_version}
 
 """)
 
-print(f"{'Library':>25s} {'Prefetch':>10s} {'Wall':>10s} {'CpuProcess':>15s} {'CpuMainThread':>15s}")
+print(f"{'Library':>25s} {'Prefetch':>8s} {'Wall':>6s} {'CpuTotal':>10s} {'CpuAsync':>10s} {'CpuWorker':>10s}")
 
 
 def show(library, prefetch, start, end):
+    wall = end[0] - start[0]
+    cpu_total = end[1]-start[1]
+    cpu_async = end[2] - start[2]
+    cpu_worker = cpu_total - cpu_async
     print(
-        f"{library:>25s} {prefetch:>10} {end[0] - start[0]:10.3f} {end[1] - start[1]:15.3f} {end[2] - start[2]:15.3f}"
+        f"{library:>25s} {prefetch:>8} {wall:6.3f} {cpu_total:10.3f} {cpu_async:>10.3f} {cpu_worker:>10.3f}"
     )
 
 
