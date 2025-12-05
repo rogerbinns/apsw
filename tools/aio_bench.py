@@ -92,7 +92,7 @@ sqlite3 SQLite version: {sqlite3.sqlite_version}
 
 """)
 
-print(f"{'Library':>25s} {'Prefetch':>8s} {'Wall':>6s} {'CpuTotal':>10s} {'CpuAsync':>10s} {'CpuWorker':>10s}")
+print(f"{'Library':>25s} {'Prefetch':>8s} {'Wall':>6s} {'CpuTotal':>10s} {'CpuLoop':>10s} {'CpuWorker':>10s}")
 
 
 def show(library, prefetch, start, end):
