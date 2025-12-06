@@ -196,11 +196,6 @@ class AsyncIO:
 
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
-
-async def _set_event(event):
-    event.set()
-
-
 class Trio:
     """Uses `Trio <https://trio.readthedocs.io/>`__ for async concurrency"""
 
@@ -274,7 +269,7 @@ class Trio:
                     future.result = exc
                     future.is_exception = True
 
-                trio.from_thread.run(_set_event, future.event, trio_token=future.token)
+                trio.from_thread.run_sync(future.event.set, trio_token=future.token)
                 del future
 
     async def async_async_run_coro(self, coro, seconds):
@@ -366,7 +361,7 @@ class AnyIO:
                     future.result = exc
                     future.is_exception = True
 
-                anyio.from_thread.run(_set_event, future.event, token=future.token)
+                anyio.from_thread.run_sync(future.event.set, token=future.token)
                 del future
 
 
