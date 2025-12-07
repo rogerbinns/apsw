@@ -26,7 +26,7 @@ This makes a best effort to ensure a database operation including any
 callbacks has completed within the timeout.  The default (``None``) is
 no timeout.
 
-:class:`AsyncIO` and :class:`AnyIO`
+:class:`AsyncIO`
 
     This is the only way to set a timeout.  :exc:`TimeoutError` will be
     raised if the timeout is exceeded.
@@ -306,100 +306,8 @@ class Trio:
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
-class AnyIO:
-    class _Future:
-        # Private internal representation of a call providing an
-        # awaitable result.  One of these is made for each call.
-        __slots__ = (
-            # needed to call back into trio
-            "token",
-            # anyio.Event used to signal ready
-            "event",
-            # result value or exception
-            "result",
-            # is it an exception?
-            "is_exception",
-            # cursor prefect value
-            "prefetch",
-            # call to make
-            "call",
-            #  timeout handling - always based on time.monotonic
-            "deadline",
-        )
 
-        async def aresult(self):
-            await self.event.wait()
-            if self.is_exception:
-                raise self.result
-            return self.result
-
-        def __await__(self):
-            return self.aresult().__await__()
-
-    def configure(self, db: apsw.Connection):
-        1 / 0
-
-    def send(self, call):
-        future = AnyIO._Future()
-        future.token = anyio.lowlevel.current_token()
-        future.event = anyio.Event()
-        future.prefetch = apsw.async_cursor_prefetch.get()
-        future.is_exception = False
-        future.call = call
-
-        future.deadline = timeout.get()
-        if future.deadline is not None:
-            future.deadline += time.monotonic()
-
-        self.queue.put(future)
-        return future
-
-    def close(self):
-        self.queue.put(None)
-        self.queue = None
-
-    async def async_async_run_coro(self, coro, timeout):
-        with anyio.fail_after(timeout):
-            return await coro
-
-    def async_run_coro(self, coro):
-        if (this_deadline := _deadline.get()) is not None:
-            timeout = this_deadline - time.monotonic()
-        else:
-            timeout = None
-
-        try:
-            print(f"async_run_coro start {timeout=}")
-            return anyio.from_thread.run(self.async_async_run_coro, coro, timeout, token=_current_future.get().token)
-        finally:
-            print(f"async_run_coro end {timeout=}")
-
-    def __init__(self, *, thread_name: str = "anyio apsw background worker"):
-        global anyio
-        import anyio
-
-        self.queue = queue.SimpleQueue()
-        threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
-
-    def worker_thread_run(self, q):
-        with contextvar_set(apsw.async_run_coro, self.async_run_coro):
-            while (future := q.get()) is not None:
-                _current_future.set(future)
-                apsw.async_cursor_prefetch.set(future.prefetch)
-                _deadline.set(future.deadline)
-
-                try:
-                    if future.deadline is not None and future.deadline < time.monotonic():
-                        raise TimeoutError()
-                    future.result = future.call()
-                except BaseException as exc:
-                    future.result = exc
-                    future.is_exception = True
-
-                anyio.from_thread.run_sync(future.event.set, token=future.token)
-
-
-def Auto() -> Trio | AsyncIO | AnyIO:
+def Auto() -> Trio | AsyncIO:
     """
     Automatically detects the current async framework and returns the
     appropriate controller.  This is the default for
@@ -413,7 +321,7 @@ def Auto() -> Trio | AsyncIO | AnyIO:
 
     :exc:`RuntimeError` is raised if the framework can't be detected.
 
-    :rtype: Trio | AsyncIO | AnyIO
+    :rtype: Trio | AsyncIO
     """
     if "trio" in sys.modules:
         try:
@@ -431,12 +339,5 @@ def Auto() -> Trio | AsyncIO | AnyIO:
             return AsyncIO()
         except:
             pass
-    if "anyio" in sys.modules:
-        try:
-            import anyio
 
-            anyio.get_current_task()
-            return AnyIO()
-        except:
-            pass
     raise RuntimeError("Unable to determine current Async environment")
