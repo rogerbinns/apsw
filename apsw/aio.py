@@ -9,6 +9,7 @@ import contextlib
 import sys
 import time
 import concurrent.futures
+import math
 
 import apsw
 
@@ -19,13 +20,28 @@ T = TypeVar("T")
 
 
 timeout: contextvars.ContextVar[int | float | None] = contextvars.ContextVar("apsw.aio.timeout", default=None)
-"""Timeout in seconds to use for :class:`AsyncIO`
+"""Timeout in seconds
 
 This makes a best effort to ensure a database operation including any
-callbacks has completed within the time, else :exc:`TimeoutError` will be
-raised.  The default (``None``) is no timeout.
+callbacks has completed within the timeout.  The default (``None``) is
+no timeout.
 
-.. code-block:: python
+:class:`AsyncIO` and :class:`AnyIO`
+
+    This is the only way to set a timeout.  :exc:`TimeoutError` will be
+    raised if the timeout is exceeded.
+
+:class:`Trio`
+
+    If this is set then it is used for the timeout.  `TooSlowError
+    <https://trio.readthedocs.io/en/stable/reference-core.html#trio.TooSlowError>`__
+    is raised.
+
+    Otherwise the `current effective deadline
+    <https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_effective_deadline>`__
+    where the call is made is used.
+
+    .. code-block:: python
 
     # 10 seconds
     async with apsw.aio.timeout.set(10):
@@ -166,7 +182,6 @@ class AsyncIO:
                     # BaseException is deliberately used because CancelledError
                     # is a subclass of it
                     future.get_loop().call_soon_threadsafe(_asyncio_set_future_exception, future, exc)
-                del future
 
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
@@ -196,17 +211,9 @@ class AsyncIO:
 
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
+
 class Trio:
     """Uses `Trio <https://trio.readthedocs.io/>`__ for async concurrency"""
-
-    # I couldn't see a way of using trio's own thread starting machinery
-    # because they prefer a thread pool of workers whereas we need a
-    # specific thread for the lifetime of the connection.  The memory
-    # channel is async so we'd need async code running in the worker
-    # thread which isn't allowed for.
-    #
-    # consequently we use the same normal thread and SimpleQueue
-    # as AsyncIO
 
     class _Future:
         # Private internal representation of a call providing an
@@ -224,12 +231,9 @@ class Trio:
             "prefetch",
             # call to make
             "call",
+            #  timeout handling - always based on time.monotonic
+            "deadline",
         )
-        # ::TODO:: clock, timeout, cancellation
-        #
-        # trio.current_effective_deadline
-        # trio.lowlevel.current_clock  - meth current_time()
-        # trio.testing.MockClock
 
         async def aresult(self):
             await self.event.wait()
@@ -250,7 +254,13 @@ class Trio:
         future.prefetch = apsw.async_cursor_prefetch.get()
         future.is_exception = False
         future.call = call
-
+        if (this_timeout := timeout.get()) is not None:
+            future.deadline = this_timeout + time.monotonic()
+        else:
+            future.deadline = trio.current_effective_deadline()
+            if future.deadline is not math.inf:
+                # adjust by whatever clock is being used
+                future.deadline += -trio.current_time() + time.monotonic()
         self.queue.put(future)
         return future
 
@@ -263,21 +273,30 @@ class Trio:
             while (future := q.get()) is not None:
                 _current_future.set(future)
                 apsw.async_cursor_prefetch.set(future.prefetch)
+                _deadline.set(future.deadline)
+
                 try:
+                    if future.deadline < time.monotonic():
+                        raise trio.TooSlowError()
                     future.result = future.call()
                 except BaseException as exc:
                     future.result = exc
                     future.is_exception = True
 
                 trio.from_thread.run_sync(future.event.set, trio_token=future.token)
-                del future
 
-    async def async_async_run_coro(self, coro, seconds):
-        with trio.fail_after(seconds):
+    async def async_async_run_coro(self, coro, timeout):
+        if timeout is math.inf:
+            return await coro
+        with trio.fail_after(timeout):
             return await coro
 
     def async_run_coro(self, coro):
-        return trio.from_thread.run_sync(self.async_async_run_coro, coro, None, trio_token=_current_future.get().token)
+        this_deadline = _deadline.get()
+        this_timeout = this_deadline if this_deadline is math.inf else this_deadline - time.monotonic()
+        return trio.from_thread.run(
+            self.async_async_run_coro, coro, this_timeout, trio_token=_current_future.get().token
+        )
 
     def __init__(self, *, thread_name: str = "trio apsw background worker"):
         global trio
@@ -288,10 +307,6 @@ class Trio:
 
 
 class AnyIO:
-    # much like Trio we can't use anyio's own thread and queue machinery because they
-    # don't support running async code in a persistent worker thread.  this code
-    # is almost identical to Trio above but uses anyio's primitives
-
     class _Future:
         # Private internal representation of a call providing an
         # awaitable result.  One of these is made for each call.
@@ -308,6 +323,8 @@ class AnyIO:
             "prefetch",
             # call to make
             "call",
+            #  timeout handling - always based on time.monotonic
+            "deadline",
         )
 
         async def aresult(self):
@@ -330,6 +347,10 @@ class AnyIO:
         future.is_exception = False
         future.call = call
 
+        future.deadline = timeout.get()
+        if future.deadline is not None:
+            future.deadline += time.monotonic()
+
         self.queue.put(future)
         return future
 
@@ -337,11 +358,21 @@ class AnyIO:
         self.queue.put(None)
         self.queue = None
 
-    async def async_async_run_coro(self, coro):
-        return await coro
+    async def async_async_run_coro(self, coro, timeout):
+        with anyio.fail_after(timeout):
+            return await coro
 
     def async_run_coro(self, coro):
-        return anyio.from_thread.run_sync(self.async_async_run_coro, coro, token=_current_future.get().token)
+        if (this_deadline := _deadline.get()) is not None:
+            timeout = this_deadline - time.monotonic()
+        else:
+            timeout = None
+
+        try:
+            print(f"async_run_coro start {timeout=}")
+            return anyio.from_thread.run(self.async_async_run_coro, coro, timeout, token=_current_future.get().token)
+        finally:
+            print(f"async_run_coro end {timeout=}")
 
     def __init__(self, *, thread_name: str = "anyio apsw background worker"):
         global anyio
@@ -355,14 +386,17 @@ class AnyIO:
             while (future := q.get()) is not None:
                 _current_future.set(future)
                 apsw.async_cursor_prefetch.set(future.prefetch)
+                _deadline.set(future.deadline)
+
                 try:
+                    if future.deadline is not None and future.deadline < time.monotonic():
+                        raise TimeoutError()
                     future.result = future.call()
                 except BaseException as exc:
                     future.result = exc
                     future.is_exception = True
 
                 anyio.from_thread.run_sync(future.event.set, token=future.token)
-                del future
 
 
 def Auto() -> Trio | AsyncIO | AnyIO:
