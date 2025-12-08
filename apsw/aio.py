@@ -52,6 +52,11 @@ no timeout.
        with apsw.aio.timeout.set(60):
           # do other operations
           ...
+
+`anyio <https://anyio.readthedocs.io/>`__
+
+    TODO: it looks like TimeoutError is raised if using trio, but double check
+
 """
 
 if sys.version_info >= (3, 14):
@@ -183,25 +188,27 @@ class AsyncIO:
                     # is a subclass of it
                     future.get_loop().call_soon_threadsafe(_asyncio_set_future_exception, future, exc)
 
+
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
-        if (this_deadline := _deadline.get()) is not None:
-            timeout = this_deadline - time.monotonic()
-            if timeout < 0:
-                raise TimeoutError()
-        else:
-            timeout = None
-
         try:
-            # yes we really need the timeout twice.  when the wait_for one fires the
-            # exception, isn't propagated to us
-            return asyncio.run_coroutine_threadsafe(
-                asyncio.wait_for(coro, timeout), _current_future.get().get_loop()
-            ).result(timeout)
-        except concurrent.futures.TimeoutError:
-            if sys.version_info < (3, 11):
-                raise TimeoutError
-            raise
+            if (this_deadline := _deadline.get()) is not None:
+                this_timeout = this_deadline - time.monotonic()
+            else:
+                this_timeout = None
+            print(f"AsyncIO.async_run_coro enter {this_timeout=}")
+            try:
+                # yes we really need the timeout twice.  when the wait_for one fires the
+                # exception isn't propagated to us
+                return asyncio.run_coroutine_threadsafe(
+                    _asyncio_loop_run_coro(coro, this_timeout), _current_future.get().get_loop()
+                ).result(this_timeout)
+            except concurrent.futures.TimeoutError:
+                if sys.version_info < (3, 11):
+                    raise TimeoutError
+                raise
+        finally:
+            print(f"AsyncIO.async_run_coro exit {this_timeout=}")
 
     def __init__(self, *, thread_name: str = "asyncio apsw background worker"):
         global asyncio
@@ -210,6 +217,11 @@ class AsyncIO:
         self.queue = queue.SimpleQueue()
 
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
+
+async def _asyncio_loop_run_coro(coro, this_timeout):
+    with contextvar_set(timeout, this_timeout):
+        return asyncio.wait_for(coro, this_timeout)
+
 
 
 class Trio:
@@ -286,17 +298,19 @@ class Trio:
                 trio.from_thread.run_sync(future.event.set, trio_token=future.token)
 
     async def async_async_run_coro(self, coro, timeout):
-        if timeout is math.inf:
-            return await coro
         with trio.fail_after(timeout):
             return await coro
 
     def async_run_coro(self, coro):
-        this_deadline = _deadline.get()
-        this_timeout = this_deadline if this_deadline is math.inf else this_deadline - time.monotonic()
-        return trio.from_thread.run(
-            self.async_async_run_coro, coro, this_timeout, trio_token=_current_future.get().token
-        )
+        try:
+            this_deadline = _deadline.get()
+            this_timeout = this_deadline if this_deadline is math.inf else this_deadline - time.monotonic()
+            print(f"trio.async_run_coro start {this_timeout=}")
+            return trio.from_thread.run(
+                self.async_async_run_coro, coro, this_timeout, trio_token=_current_future.get().token
+            )
+        finally:
+            print(f"trio.async_run_coro finish {this_timeout=}")
 
     def __init__(self, *, thread_name: str = "trio apsw background worker"):
         global trio
@@ -304,7 +318,6 @@ class Trio:
 
         self.queue = queue.SimpleQueue()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
-
 
 
 def Auto() -> Trio | AsyncIO:
