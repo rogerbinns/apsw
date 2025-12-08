@@ -18,6 +18,16 @@ import apsw
 import apsw.aio
 
 
+
+#### ::TODO::  tests to add
+#
+# close/aclose closes things and future close calls return None, not an exception
+#
+# contextvars are passed to sync callbacks and to async callbacks
+#
+# prefetch
+
+
 def sync_await(obj):
     it = obj.__await__()
     try:
