@@ -1,7 +1,102 @@
-Async support (AIO)
+Concurrency & Async
 *******************
 
 .. currentmodule:: apsw
+
+How SQLite works
+----------------
+
+- each db has mutex
+- acquired on call, released after
+- can be reacquired re-entrantly but only same thread
+- aims to do work as quickly as possible
+- pragma threads (eg for sorting)
+- cannot get same connection to be concurrent with multiple threads
+
+How Python works
+-----------------
+
+- GIL protects all python data structures with one lock, so only
+  one thread at a time can be accessing python objects.
+  GIL released during I/O operations etc so Python code can
+  run in other threads.
+
+- free threaded requires each python object in use to be locked
+  individually - ~50% performance hit but code in different
+  threads can run at the same time providing they don't
+  access the same python objects.
+
+- async has an event loop run by asyncio or trio in one thread.
+  multiple coroutines can be "running" at once, which means they are
+  waiting for their next thing to happen such as time to pass, network
+  I/O activity, work in a background thread to complete.  event loop
+  handles time, activity, cancellations etc.
+
+  methods need to be marked ``async`` to say they can be running at
+  same time as others, and ``await`` used to get result of waiting on
+  something.
+
+How APSW works
+--------------
+
+GIL (usual operation)
+
+   GIL protects APSW and Connection Python objects.  When making a SQLite
+   call the GIL is released and SQLite acquires its db mutex.  Means Python code
+   can run concurrently with SQLite connections.
+
+Free threaded
+
+   Requires expansive code updates to lock Connection / Cursor /Backup
+   etc objects, but also input objects like list for executemany so can't
+   be modified while in use.  Work ongoing.
+
+   Free threaded build is available on pypi but will re-enable GIL.  Can use
+   -Xgil and that won't happen, but you can get crashes if you use same
+   connection and objects concurrently across threads.
+
+Async
+
+   :meth:`Connection.as_async` gets async connection.  connection is run in
+   dedicated background worker thread.  calls in event loop get forwarded to
+   worker thread via controller returning async to event loop that completes
+   when worker thread finishes that call.
+
+   can also have async functions for any callback including virtual tables,
+   VFS, scalar/aggregate/window functions etc.  Uses async_run_coro to
+   get result, with typical (but not required) approach being async controller
+   handling that.
+
+   .. warning:: DEADLOCKS
+
+        async callback can't block on re-entrant call.  if need more queries
+        eg in vtable, then use sync function to make them
+
+
+
+
+
+
+
+
+aiosqlite comparison
+--------------------
+
+* About equal performance
+* aiosqlite exception in cursor iteration
+* doesn't support async callbacks
+* doesn't support contextvars for sync callbacks either
+
+
+
+
+
+OLD DOC TO REWRITE
+------------------
+
+
+
+
 
 APSW supports using async with SQLite.  This covers both calls into it
 such as to connections and cursors, and callbacks back out such as
