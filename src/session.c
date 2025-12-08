@@ -1816,7 +1816,7 @@ conflictReject(void *pCtx, int eConflict, sqlite3_changeset_iter *p)
 }
 
 static PyObject *
-APSWChangeset_apply(PyObject *Py_UNUSED(static_method), PyObject *const *fast_args, Py_ssize_t fast_nargs,
+APSWChangeset_apply(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
                     PyObject *fast_kwnames)
 {
   PyObject *changeset;
