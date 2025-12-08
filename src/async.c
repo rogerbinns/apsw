@@ -110,6 +110,9 @@ typedef struct BoxedCall
     AttrGet,
   } call_type;
 
+  /* PyContext to run call in */
+  PyObject *context;
+
   union
   {
     struct
@@ -161,7 +164,8 @@ BoxedCall_clear(PyObject *self_)
   switch (self->call_type)
   {
   case Dormant:
-    break;
+    assert(!self->context);
+    return;
 
   case ConnectionInit:
     Py_DECREF(self->ConnectionInit.connection);
@@ -196,6 +200,7 @@ BoxedCall_clear(PyObject *self_)
     // ::TODO:: delete this default once the code is complete
     assert(0);
   }
+  Py_CLEAR(self->context);
   self->call_type = Dormant;
 }
 
@@ -211,40 +216,50 @@ BoxedCall_internal_call(BoxedCall *self)
 {
   PyObject *result = NULL;
 
-  switch (self->call_type)
+  if (0 == PyContext_Enter(self->context))
   {
-  case ConnectionInit:
-    if (0
-        == Py_TYPE(self->ConnectionInit.connection)
-               ->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, self->ConnectionInit.kwargs))
-      result = Py_NewRef(self->ConnectionInit.connection);
-    break;
-  case FastCallWithKeywords:
-    result = self->FastCallWithKeywords.function(self->FastCallWithKeywords.object,
-                                                 self->FastCallWithKeywords.fast_args + 1,
-                                                 self->FastCallWithKeywords.fast_nargs | PY_VECTORCALL_ARGUMENTS_OFFSET,
-                                                 self->FastCallWithKeywords.fast_kwnames);
-    break;
-  case Unary:
-    result = self->Unary.function(self->Unary.arg);
-    break;
 
-  case Binary:
-    result = self->Binary.function(self->Binary.args[0], self->Binary.args[1]);
-    break;
+    switch (self->call_type)
+    {
+    case ConnectionInit:
+      if (0
+          == Py_TYPE(self->ConnectionInit.connection)
+                 ->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, self->ConnectionInit.kwargs))
+        result = Py_NewRef(self->ConnectionInit.connection);
+      break;
+    case FastCallWithKeywords:
+      result = self->FastCallWithKeywords.function(
+          self->FastCallWithKeywords.object, self->FastCallWithKeywords.fast_args + 1,
+          self->FastCallWithKeywords.fast_nargs | PY_VECTORCALL_ARGUMENTS_OFFSET,
+          self->FastCallWithKeywords.fast_kwnames);
+      break;
+    case Unary:
+      result = self->Unary.function(self->Unary.arg);
+      break;
 
-  case AttrGet:
-    result = self->AttrGet.function(self->AttrGet.arg1, self->AttrGet.arg2);
-    break;
+    case Binary:
+      result = self->Binary.function(self->Binary.args[0], self->Binary.args[1]);
+      break;
 
-  default:
-    // ::TODO:: delete this default once the code is complete
-    assert(0);
+    case AttrGet:
+      result = self->AttrGet.function(self->AttrGet.arg1, self->AttrGet.arg2);
+      break;
+
+    default:
+      // ::TODO:: delete this default once the code is complete
+      assert(0);
+    }
+
+    if (!result && PyErr_Occurred() && !PyErr_ExceptionMatches(PyExc_StopAsyncIteration)
+        && !PyErr_ExceptionMatches(PyExc_StopIteration))
+      AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.BoxedCall.__call__", "{s:i}", "call_type", (int)self->call_type);
+
+    /* The source for PyContext_Exit shows it can only fail due to
+       erroneous API use which isn't the case here, so we ignore its
+       errors or making its errors chain with any we are raising. */
+    PyContext_Exit(self->context);
   }
 
-  if (!result && PyErr_Occurred() && !PyErr_ExceptionMatches(PyExc_StopAsyncIteration)
-      && !PyErr_ExceptionMatches(PyExc_StopIteration))
-    AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.BoxedCall.__call__", "{s:i}", "call_type", (int)self->call_type);
   BoxedCall_clear((PyObject *)self);
 
   return result;
@@ -277,6 +292,13 @@ make_boxed_call(Py_ssize_t total_args)
   if (box)
   {
     box->call_type = Dormant;
+
+    box->context = PyContext_CopyCurrent();
+    if (!box->context)
+    {
+      BoxedCall_dealloc((PyObject *)box);
+      return NULL;
+    }
 
     /* verify union member size constraints */
     assert(sizeof(box->FastCallWithKeywords) >= sizeof(box->ConnectionInit));
