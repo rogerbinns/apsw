@@ -19,21 +19,22 @@ from typing import TypeVar, Any
 T = TypeVar("T")
 
 
-timeout: contextvars.ContextVar[int | float | None] = contextvars.ContextVar("apsw.aio.timeout", default=None)
-"""Timeout in seconds
+deadline: contextvars.ContextVar[int | float | None] = contextvars.ContextVar("apsw.aio.deadline", default=None)
+"""Deadline in seconds
 
-This makes a best effort to ensure a database operation including any
-callbacks has completed within the timeout.  The default (``None``) is
-no timeout.
+This makes a best effort to timeout a database operation including any
+callbacks if the deadline is passed.  The default (``None``) is
+no deadline.
 
 :class:`AsyncIO`
 
-    This is the only way to set a timeout.  :exc:`TimeoutError` will be
-    raised if the timeout is exceeded.
+    This is the only way to set a deadline.  :exc:`TimeoutError` will be
+    raised if the deadline is exceeded.  The time is measured using
+    :func:`time.monotonic`
 
 :class:`Trio`
 
-    If this is set then it is used for the timeout.  `TooSlowError
+    If this is set then it is used for the deadline.  `TooSlowError
     <https://trio.readthedocs.io/en/stable/reference-core.html#trio.TooSlowError>`__
     is raised.
 
@@ -41,15 +42,18 @@ no timeout.
     <https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_effective_deadline>`__
     where the call is made is used.
 
+    Time is measured using `current_clock <https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.current_clock>`__
+    in place when the connection is created.
+
     .. code-block:: python
 
     # 10 seconds
-    async with apsw.aio.timeout.set(10):
+    async with apsw.aio.timeout.deadline(time.monotonic() + 10):
        # do operations
        ...
        # you can use it nested - these operations could take a
        # minute
-       with apsw.aio.timeout.set(60):
+       with apsw.aio.timeout.set(time.monotonic() + 60):
           # do other operations
           ...
 
@@ -98,9 +102,6 @@ else:
 # processing future
 _current_future = contextvars.ContextVar("apsw.aio._current_future")
 
-# deadline (time.monotonic based) based on the timeout at submission time
-_deadline = contextvars.ContextVar("apsw.aio._deadline")
-
 
 # These were originally members of AsyncIO and we were low single
 # digit percent slower than aiosqlite for message round trip.  Making
@@ -131,10 +132,7 @@ class AsyncIO:
         "Enqueues call to worker thread"
         try:
             future = asyncio.get_running_loop().create_future()
-            this_deadline = timeout.get()
-            if this_deadline is not None:
-                this_deadline += time.monotonic()
-            self.queue.put((future, call, apsw.async_cursor_prefetch.get(), this_deadline))
+            self.queue.put((future, call))
             return future
         except AttributeError:
             if self.queue is None:
@@ -162,66 +160,61 @@ class AsyncIO:
     def worker_thread_run(self, q):
         "Does the enqueued call processing in the worker thread"
 
-        with contextvar_set(apsw.async_run_coro, self.async_run_coro):
-            while (item := q.get()) is not None:
-                future, call, this_prefetch, this_deadline = item
+        while (item := q.get()) is not None:
+            future, call = item
+            # cancelled?
+            if future.done():
+                continue
 
-                # cancelled?
-                if future.done():
-                    continue
-
-                # we don't restore these because the queue is not
+            # adopt caller's contextvars
+            with call:
+                # we don't restore this because the queue is not
                 # re-entrant, so there is no point
                 _current_future.set(future)
-                _deadline.set(this_deadline)
-                apsw.async_cursor_prefetch.set(this_prefetch)
+
+                finish = future.get_loop().call_soon_threadsafe
 
                 try:
                     # should we even start?
-                    if this_deadline is not None:
+                    if (this_deadline := deadline.get()) is not None:
                         if time.monotonic() > this_deadline:
                             raise TimeoutError()
-                    future.get_loop().call_soon_threadsafe(_asyncio_set_future_result, future, call())
+                    finish(_asyncio_set_future_result, future, call())
 
                 except BaseException as exc:
                     # BaseException is deliberately used because CancelledError
                     # is a subclass of it
-                    future.get_loop().call_soon_threadsafe(_asyncio_set_future_exception, future, exc)
-
+                    finish(_asyncio_set_future_exception, future, exc)
 
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
         try:
-            if (this_deadline := _deadline.get()) is not None:
-                this_timeout = this_deadline - time.monotonic()
-            else:
-                this_timeout = None
-            print(f"AsyncIO.async_run_coro enter {this_timeout=}")
-            try:
-                # yes we really need the timeout twice.  when the wait_for one fires the
-                # exception isn't propagated to us
-                return asyncio.run_coroutine_threadsafe(
-                    _asyncio_loop_run_coro(coro, this_timeout), _current_future.get().get_loop()
-                ).result(this_timeout)
-            except concurrent.futures.TimeoutError:
-                if sys.version_info < (3, 11):
-                    raise TimeoutError
-                raise
-        finally:
-            print(f"AsyncIO.async_run_coro exit {this_timeout=}")
+            if (this_timeout := deadline.get()) is not None:
+                this_timeout -= time.monotonic()
+
+            # yes we really need the timeout twice.  when the wait_for one fires the
+            # exception isn't propagated to us
+            return asyncio.run_coroutine_threadsafe(
+                _asyncio_loop_run_coro(coro, this_timeout, contextvars.copy_context()), _current_future.get().get_loop()
+            ).result(this_timeout)
+        except concurrent.futures.TimeoutError:
+            if sys.version_info < (3, 11):
+                raise TimeoutError
+            raise
 
     def __init__(self, *, thread_name: str = "asyncio apsw background worker"):
         global asyncio
         import asyncio
 
+        apsw.async_run_coro.set(self.async_run_coro)
+
         self.queue = queue.SimpleQueue()
 
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
-async def _asyncio_loop_run_coro(coro, this_timeout):
-    with contextvar_set(timeout, this_timeout):
-        return asyncio.wait_for(coro, this_timeout)
 
+async def _asyncio_loop_run_coro(coro, this_timeout, cvars):
+    return await cvars.run(asyncio.wait_for, coro, this_timeout)
 
 
 class Trio:
@@ -243,8 +236,8 @@ class Trio:
             "prefetch",
             # call to make
             "call",
-            #  timeout handling - always based on time.monotonic
-            "deadline",
+            #
+            "current_effective_deadline",
         )
 
         async def aresult(self):
@@ -263,16 +256,9 @@ class Trio:
         future = Trio._Future()
         future.token = trio.lowlevel.current_trio_token()
         future.event = trio.Event()
-        future.prefetch = apsw.async_cursor_prefetch.get()
         future.is_exception = False
         future.call = call
-        if (this_timeout := timeout.get()) is not None:
-            future.deadline = this_timeout + time.monotonic()
-        else:
-            future.deadline = trio.current_effective_deadline()
-            if future.deadline is not math.inf:
-                # adjust by whatever clock is being used
-                future.deadline += -trio.current_time() + time.monotonic()
+        future.current_effective_deadline = trio.current_effective_deadline()
         self.queue.put(future)
         return future
 
@@ -284,12 +270,8 @@ class Trio:
         with contextvar_set(apsw.async_run_coro, self.async_run_coro):
             while (future := q.get()) is not None:
                 _current_future.set(future)
-                apsw.async_cursor_prefetch.set(future.prefetch)
-                _deadline.set(future.deadline)
 
                 try:
-                    if future.deadline < time.monotonic():
-                        raise trio.TooSlowError()
                     future.result = future.call()
                 except BaseException as exc:
                     future.result = exc
@@ -302,6 +284,7 @@ class Trio:
             return await coro
 
     def async_run_coro(self, coro):
+        # ::TODO:: copy contextvars
         try:
             this_deadline = _deadline.get()
             this_timeout = this_deadline if this_deadline is math.inf else this_deadline - time.monotonic()
@@ -317,6 +300,7 @@ class Trio:
         import trio
 
         self.queue = queue.SimpleQueue()
+        self.clock = trio.lowlevel.current_clock()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
@@ -328,9 +312,8 @@ def Auto() -> Trio | AsyncIO:
 
     It uses the same logic as the `sniffio
     <https://sniffio.readthedocs.io>`__ package and only knows about
-    the controllers implemented in this module.  :class:`AnyIO` won't
-    be returned in practise because it always runs an asyncio or trio
-    event loop.
+    the controllers implemented in this module.  anyio always runs an
+    asyncio or trio event loop.
 
     :exc:`RuntimeError` is raised if the framework can't be detected.
 
