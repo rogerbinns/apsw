@@ -164,7 +164,6 @@ BoxedCall_clear(PyObject *self_)
   switch (self->call_type)
   {
   case Dormant:
-    assert(!self->context);
     return;
 
   case ConnectionInit:
@@ -200,7 +199,6 @@ BoxedCall_clear(PyObject *self_)
     // ::TODO:: delete this default once the code is complete
     assert(0);
   }
-  Py_CLEAR(self->context);
   self->call_type = Dormant;
 }
 
@@ -208,6 +206,7 @@ static void
 BoxedCall_dealloc(PyObject *self)
 {
   BoxedCall_clear(self);
+  Py_CLEAR(((BoxedCall *)self)->context);
   Py_TpFree(self);
 }
 
@@ -216,49 +215,40 @@ BoxedCall_internal_call(BoxedCall *self)
 {
   PyObject *result = NULL;
 
-  if (0 == PyContext_Enter(self->context))
+  switch (self->call_type)
   {
+  case ConnectionInit:
+    if (0
+        == Py_TYPE(self->ConnectionInit.connection)
+               ->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, self->ConnectionInit.kwargs))
+      result = Py_NewRef(self->ConnectionInit.connection);
+    break;
+  case FastCallWithKeywords:
+    result = self->FastCallWithKeywords.function(self->FastCallWithKeywords.object,
+                                                 self->FastCallWithKeywords.fast_args + 1,
+                                                 self->FastCallWithKeywords.fast_nargs | PY_VECTORCALL_ARGUMENTS_OFFSET,
+                                                 self->FastCallWithKeywords.fast_kwnames);
+    break;
+  case Unary:
+    result = self->Unary.function(self->Unary.arg);
+    break;
 
-    switch (self->call_type)
-    {
-    case ConnectionInit:
-      if (0
-          == Py_TYPE(self->ConnectionInit.connection)
-                 ->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, self->ConnectionInit.kwargs))
-        result = Py_NewRef(self->ConnectionInit.connection);
-      break;
-    case FastCallWithKeywords:
-      result = self->FastCallWithKeywords.function(
-          self->FastCallWithKeywords.object, self->FastCallWithKeywords.fast_args + 1,
-          self->FastCallWithKeywords.fast_nargs | PY_VECTORCALL_ARGUMENTS_OFFSET,
-          self->FastCallWithKeywords.fast_kwnames);
-      break;
-    case Unary:
-      result = self->Unary.function(self->Unary.arg);
-      break;
+  case Binary:
+    result = self->Binary.function(self->Binary.args[0], self->Binary.args[1]);
+    break;
 
-    case Binary:
-      result = self->Binary.function(self->Binary.args[0], self->Binary.args[1]);
-      break;
+  case AttrGet:
+    result = self->AttrGet.function(self->AttrGet.arg1, self->AttrGet.arg2);
+    break;
 
-    case AttrGet:
-      result = self->AttrGet.function(self->AttrGet.arg1, self->AttrGet.arg2);
-      break;
-
-    default:
-      // ::TODO:: delete this default once the code is complete
-      assert(0);
-    }
-
-    if (!result && PyErr_Occurred() && !PyErr_ExceptionMatches(PyExc_StopAsyncIteration)
-        && !PyErr_ExceptionMatches(PyExc_StopIteration))
-      AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.BoxedCall.__call__", "{s:i}", "call_type", (int)self->call_type);
-
-    /* The source for PyContext_Exit shows it can only fail due to
-       erroneous API use which isn't the case here, so we ignore its
-       errors or making its errors chain with any we are raising. */
-    PyContext_Exit(self->context);
+  default:
+    // ::TODO:: delete this default once the code is complete
+    assert(0);
   }
+
+  if (!result && PyErr_Occurred() && !PyErr_ExceptionMatches(PyExc_StopAsyncIteration)
+      && !PyErr_ExceptionMatches(PyExc_StopIteration))
+    AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.BoxedCall.__call__", "{s:i}", "call_type", (int)self->call_type);
 
   BoxedCall_clear((PyObject *)self);
 
@@ -276,6 +266,37 @@ BoxedCall_call(PyObject *self_, PyObject *args, PyObject *kwargs)
   return BoxedCall_internal_call(self);
 }
 
+static PyObject *
+BoxedCall_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  BoxedCall *self = (BoxedCall *)self_;
+  if (self->call_type == Dormant)
+  {
+    PyErr_SetString(PyExc_RuntimeError, "BoxedCall has already been called");
+    return NULL;
+  }
+  if (0 == PyContext_Enter(self->context))
+    return Py_NewRef(self_);
+  return NULL;
+}
+
+static PyObject *
+BoxedCall_exit(PyObject *self_, PyObject *const *Py_UNUSED(fast_args), Py_ssize_t Py_UNUSED(fast_nargs),
+               PyObject *Py_UNUSED(fast_kwnames))
+{
+  BoxedCall *self = (BoxedCall *)self_;
+
+  PyContext_Exit(self->context);
+
+  Py_RETURN_NONE;
+}
+
+static PyMethodDef BoxedCall_methods[] = {
+  { "__enter__", (PyCFunction)BoxedCall_enter, METH_NOARGS },
+  { "__exit__", (PyCFunction)BoxedCall_exit, METH_FASTCALL | METH_KEYWORDS },
+  { NULL },
+};
+
 static PyTypeObject BoxedCallType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.aio.BoxedCall",
   .tp_basicsize = sizeof(BoxedCall),
@@ -283,6 +304,7 @@ static PyTypeObject BoxedCallType = {
   .tp_itemsize = sizeof(PyObject *),
   .tp_free = PyObject_Free,
   .tp_call = BoxedCall_call,
+  .tp_methods = BoxedCall_methods,
 };
 
 static BoxedCall *
