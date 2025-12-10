@@ -4,6 +4,7 @@
 # mypy: ignore-errors
 # type: ignore
 
+import contextvars
 import functools
 import inspect
 import threading
@@ -18,14 +19,15 @@ import apsw
 import apsw.aio
 
 
-
 #### ::TODO::  tests to add
 #
 # close/aclose closes things and future close calls return None, not an exception
 #
-# contextvars are passed to sync callbacks and to async callbacks
+# prefetch exception sequencing
 #
-# prefetch
+# cancels
+#
+# anext call when previous one hasn't finished
 
 
 def sync_await(obj):
@@ -425,6 +427,100 @@ class Async(unittest.TestCase):
             expected_kind = get_meta(klass, name, "attribute" if is_attr else "function")
 
             self.assertEqual(kind, expected_kind, f"{klass=} {name=}")
+
+    async def atestContextVars(self, fw):
+        db = await apsw.Connection.as_async(":memory:")
+        await db.create_scalar_function("sync_cvar", sync_get_cvar)
+        await db.create_scalar_function("async_cvar", async_get_cvar)
+
+        cvar_inside = contextvars.ContextVar("inside")
+        with apsw.aio.contextvar_set(cvar_inside, "one"):
+            self.assertEqual("one", await (await db.execute("select sync_cvar('inside')")).get)
+            with apsw.aio.contextvar_set(cvar_inside, "two"):
+                self.assertEqual("two", await (await db.execute("select async_cvar('inside')")).get)
+                with apsw.aio.contextvar_set(cvar_outside, "three"):
+                    self.assertEqual(
+                        ("three", "two"),
+                        await (await db.execute("select sync_cvar('outside'), async_cvar('inside')")).get,
+                    )
+                    self.assertEqual(
+                        ("three", "two"),
+                        await (await db.execute("select async_cvar('outside'), sync_cvar('inside')")).get,
+                    )
+                    self.assertEqual(
+                        ("three", "two"),
+                        await (await db.execute("select async_cvar('outside'), async_cvar('inside')")).get,
+                    )
+                    self.assertEqual(
+                        ("three", "two"),
+                        await (await db.execute("select sync_cvar('outside'), sync_cvar('inside')")).get,
+                    )
+            self.assertEqual("one", await (await db.execute("select async_cvar('inside')")).get)
+
+        with self.assertRaises(LookupError):
+            await (await db.execute("select async_cvar('inside')")).get
+
+        with self.assertRaises(LookupError):
+            await (await db.execute("select sync_cvar('inside')")).get
+
+    def get_all_atests(self):
+        for n in dir(self):
+            if "atestA" <= n <= "atestZ":
+                fn = getattr(self, n)
+                desc = fn.__doc__ or fn.__name__
+                yield fn, desc
+
+    def testAsyncIO(self):
+        global asyncio
+        import asyncio
+
+        for fn, desc in self.get_all_atests():
+            with self.subTest(fw="asyncio", desc=desc):
+                asyncio.run(self.asyncTearDown(fn("asyncio")))
+
+    def testTrio(self):
+        global trio
+        try:
+            import trio
+        except ImportError:
+            return
+
+        for fn, desc in self.get_all_atests():
+            with self.subTest(fw="trio", desc=desc):
+                trio.run(self.asyncTearDown, fn("trio"))
+
+    def testAnyIO(self):
+        backends = ["asyncio"]
+        try:
+            import trio
+
+            backends.append("trio")
+        except ImportError:
+            pass
+        try:
+            global anyio
+            import anyio
+        except ImportError:
+            return
+
+        for be in backends:
+            for fn, desc in self.get_all_atests():
+                with self.subTest(fw=f"anyio/{be}", desc=desc):
+                    anyio.run(self.asyncTearDown, fn("anyio"), backend=be)
+
+
+cvar_outside = contextvars.ContextVar("outside")
+
+
+def sync_get_cvar(name):
+    for k in contextvars.copy_context():
+        if k.name == name:
+            return contextvars.copy_context()[k]
+    raise LookupError(f"{name=} not found")
+
+
+async def async_get_cvar(name):
+    return sync_get_cvar(name)
 
 
 class SimpleController:
