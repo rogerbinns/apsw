@@ -63,6 +63,10 @@ no deadline.
 
 """
 
+DEADLINE_PROGRESS_STEPS = 500
+"How many steps between checks to see if the deadline has been exceeded"
+
+
 if sys.version_info >= (3, 14):
 
     def contextvar_set(var: contextvars.ContextVar[T], value: T) -> contextvars.Token[T]:
@@ -125,8 +129,7 @@ class AsyncIO:
 
     def configure(self, db: apsw.Connection):
         "Setup database, just after it is created"
-        1 / 0  # not implemeted yet
-        db.set_progress_handler(self.progress_deadline_checker, 500, id=self)
+        db.set_progress_handler(self.progress_deadline_checker, DEADLINE_PROGRESS_STEPS, id=self)
 
     def send(self, call):
         "Enqueues call to worker thread"
@@ -189,13 +192,16 @@ class AsyncIO:
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
         try:
+            if _current_future.get().done():
+                raise asyncio.CancelledError()
+
             if (this_timeout := deadline.get()) is not None:
                 this_timeout -= time.monotonic()
 
             # yes we really need the timeout twice.  when the wait_for one fires the
             # exception isn't propagated to us
             return asyncio.run_coroutine_threadsafe(
-                _asyncio_loop_run_coro(coro, this_timeout, contextvars.copy_context()), _current_future.get().get_loop()
+                asyncio.wait_for(coro, this_timeout), _current_future.get().get_loop()
             ).result(this_timeout)
         except concurrent.futures.TimeoutError:
             if sys.version_info < (3, 11):
@@ -211,10 +217,6 @@ class AsyncIO:
         self.queue = queue.SimpleQueue()
 
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
-
-
-async def _asyncio_loop_run_coro(coro, this_timeout, cvars):
-    return await cvars.run(asyncio.wait_for, coro, this_timeout)
 
 
 class Trio:
@@ -236,12 +238,18 @@ class Trio:
             "prefetch",
             # call to make
             "call",
-            #
-            "current_effective_deadline",
+            # timeout handling
+            "deadline",
+            # cancel handling
+            "cancelled",
         )
 
         async def aresult(self):
-            await self.event.wait()
+            try:
+                await self.event.wait()
+            except trio.Cancelled:
+                self.cancelled = True
+                raise
             if self.is_exception:
                 raise self.result
             return self.result
@@ -250,7 +258,15 @@ class Trio:
             return self.aresult().__await__()
 
     def configure(self, db: apsw.Connection):
-        1 / 0
+        "Setup database, just after it is created"
+        db.set_progress_handler(self.progress_deadline_checker, DEADLINE_PROGRESS_STEPS, id=self)
+
+    def progress_deadline_checker(self):
+        "Periodic check if the deadline has passed"
+        future = _current_future.get()
+        if future.deadline is not math.inf and future.deadline < self.clock.current_time():
+            raise trio.TooSlowError("deadline exceeded in progress handler")
+        return False
 
     def send(self, call):
         future = Trio._Future()
@@ -258,7 +274,11 @@ class Trio:
         future.event = trio.Event()
         future.is_exception = False
         future.call = call
-        future.current_effective_deadline = trio.current_effective_deadline()
+        if (this_deadline := deadline.get()) is None:
+            future.deadline = trio.current_effective_deadline()
+        else:
+            future.deadline = this_deadline
+        future.cancelled = False
         self.queue.put(future)
         return future
 
@@ -267,11 +287,16 @@ class Trio:
         self.queue = None
 
     def worker_thread_run(self, q):
-        with contextvar_set(apsw.async_run_coro, self.async_run_coro):
-            while (future := q.get()) is not None:
+        while (future := q.get()) is not None:
+            if future.cancelled:
+                continue
+            with future.call:
                 _current_future.set(future)
 
                 try:
+                    if future.deadline is not math.inf and future.deadline < self.clock.current_time():
+                        raise trio.TooSlowError()
+
                     future.result = future.call()
                 except BaseException as exc:
                     future.result = exc
@@ -279,29 +304,25 @@ class Trio:
 
                 trio.from_thread.run_sync(future.event.set, trio_token=future.token)
 
-    async def async_async_run_coro(self, coro, timeout):
-        with trio.fail_after(timeout):
-            return await coro
-
     def async_run_coro(self, coro):
-        # ::TODO:: copy contextvars
-        try:
-            this_deadline = _deadline.get()
-            this_timeout = this_deadline if this_deadline is math.inf else this_deadline - time.monotonic()
-            print(f"trio.async_run_coro start {this_timeout=}")
-            return trio.from_thread.run(
-                self.async_async_run_coro, coro, this_timeout, trio_token=_current_future.get().token
-            )
-        finally:
-            print(f"trio.async_run_coro finish {this_timeout=}")
+        return trio.from_thread.run(
+            _trio_loop_run_coro, coro, _current_future.get().deadline, trio_token=_current_future.get().token
+        )
 
     def __init__(self, *, thread_name: str = "trio apsw background worker"):
         global trio
         import trio
 
+        apsw.async_run_coro.set(self.async_run_coro)
+
         self.queue = queue.SimpleQueue()
         self.clock = trio.lowlevel.current_clock()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
+
+
+async def _trio_loop_run_coro(coro, this_deadline):
+    with trio.fail_at(this_deadline):
+        return await coro
 
 
 def Auto() -> Trio | AsyncIO:
