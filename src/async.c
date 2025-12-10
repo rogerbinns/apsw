@@ -524,13 +524,13 @@ static PyObject *
 error_async_in_sync_context(void)
 {
   PyErr_SetString(PyExc_TypeError,
-                  "Using async in sync context X1"); // remove X1 and X2 once we are sure all routines use these
+                  "Using async in sync context");
   return NULL;
 }
 
 static PyObject *
 error_sync_in_async_context(void)
 {
-  PyErr_SetString(PyExc_TypeError, "Using sync in async context X2");
+  PyErr_SetString(PyExc_TypeError, "Using sync in async context");
   return NULL;
 }

@@ -123,9 +123,9 @@ class Async(unittest.TestCase):
                         return "async"
                 return "value"
             except TypeError as exc:
-                if not send and exc.args[0] == "Using sync method in async context X2":
+                if not send and exc.args[0] == "Using sync method in async context":
                     return "exception"
-                if send and exc.args[0] == "Using async method in sync context X1":
+                if send and exc.args[0] == "Using async method in sync context":
                     return "exception"
                 raise
 
@@ -248,9 +248,9 @@ class Async(unittest.TestCase):
                     return "async"
             return "value"
         except TypeError as exc:
-            if not send and exc.args[0] == "Using sync in async context X2":
+            if not send and exc.args[0] == "Using sync in async context":
                 return "exception"
-            if send and exc.args[0] == "Using async in sync context X1":
+            if send and exc.args[0] == "Using async in sync context":
                 return "exception"
             raise
         except apsw.ExtensionLoadingError:
