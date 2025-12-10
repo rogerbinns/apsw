@@ -79,14 +79,6 @@ def is_method(object, name):
     return inspect.ismethoddescriptor(getattr(type(object), name))
 
 
-def is_open(con):
-    try:
-        sync_await(con.filename)
-        return True
-    except apsw.ConnectionClosedError:
-        return False
-
-
 class Async(unittest.TestCase):
     def tearDown(self):
         while c := apsw.connections():
@@ -231,7 +223,7 @@ class Async(unittest.TestCase):
                 case "Session":
                     match member:
                         case "changeset_stream" | "patchset_stream" | "table_filter":
-                            args = lambda x: None,
+                            args = (lambda x: None,)
                         case "config":
                             args = apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1
                         case "diff":
@@ -313,9 +305,11 @@ class Async(unittest.TestCase):
                             )
                         )
                         sync_await(value.attach())
-                        sync_await(objects["Connection"].execute("""
+                        sync_await(
+                            objects["Connection"].execute("""
                         insert into dummy values('hello'), (3.1415), (null), (4);
-                        """))
+                        """)
+                        )
                         if changeset is None:
                             changeset = sync_await(objects["Connection"].async_controller.send(value.changeset))
 
@@ -348,15 +342,10 @@ class Async(unittest.TestCase):
             "aclose",
             "__exit__",
             "__aexit__",
-            "finish"
+            "finish",
         }
 
-        pre = {
-            "__aexit__": "__aenter__",
-            "__exit__":"__enter__",
-            "__next__":"__iter__",
-            "__anext__":"__aiter__"
-        }
+        pre = {"__aexit__": "__aenter__", "__exit__": "__enter__", "__next__": "__iter__", "__anext__": "__aiter__"}
 
         for klass, name in all_the_things():
             if klass != last_klass or name in malfunction:
@@ -366,7 +355,8 @@ class Async(unittest.TestCase):
 
             is_attr = not is_method(objects[klass], name)
 
-            print(f"{klass=} {name=} {is_attr=}")
+            if False:
+                print(f"{klass=} {name=} {is_attr=}")
 
             ensure_objects(klass)
 
@@ -381,9 +371,7 @@ class Async(unittest.TestCase):
             ensure_objects(klass)
 
             if name in pre:
-                self.classifyOne(
-                    objects["Connection"].async_controller.send, is_attr, objects[klass], klass, pre[name]
-                )
+                self.classifyOne(objects["Connection"].async_controller.send, is_attr, objects[klass], klass, pre[name])
 
             kind_sync = self.classifyOne(
                 objects["Connection"].async_controller.send, is_attr, objects[klass], klass, name
