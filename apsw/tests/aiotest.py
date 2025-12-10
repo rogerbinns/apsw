@@ -80,17 +80,26 @@ def is_method(object, name):
 
 
 class Async(unittest.TestCase):
+    async def asyncTearDown(self, coro):
+        try:
+            return await coro
+        finally:
+            for c in apsw.connections():
+                await c.aclose()
+
     def tearDown(self):
-        while c := apsw.connections():
-            c = c[0]
-            try:
-                c.close()
-            except:
-                pass
+        for c in apsw.connections():
             try:
                 c.aclose()
             except:
                 pass
+            try:
+                c.close()
+            except:
+                pass
+
+        if apsw.connections():
+            raise RuntimeError(f"Connections were left open {apsw.connections()=}")
 
     def testOverwrite(self):
         "make sure module contextvars can't be overwritten"
