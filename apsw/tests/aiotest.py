@@ -466,16 +466,14 @@ class Async(unittest.TestCase):
     def get_all_atests(self):
         for n in dir(self):
             if "atestA" <= n <= "atestZ":
-                fn = getattr(self, n)
-                desc = fn.__doc__ or fn.__name__
-                yield fn, desc
+                yield getattr(self, n)
 
     def testAsyncIO(self):
         global asyncio
         import asyncio
 
-        for fn, desc in self.get_all_atests():
-            with self.subTest(fw="asyncio", desc=desc):
+        for fn in self.get_all_atests():
+            with self.subTest(fw="asyncio", fn=fn):
                 asyncio.run(self.asyncTearDown(fn("asyncio")))
 
     def testTrio(self):
@@ -485,8 +483,8 @@ class Async(unittest.TestCase):
         except ImportError:
             return
 
-        for fn, desc in self.get_all_atests():
-            with self.subTest(fw="trio", desc=desc):
+        for fn in self.get_all_atests():
+            with self.subTest(fw="trio", fn=fn):
                 trio.run(self.asyncTearDown, fn("trio"))
 
     def testAnyIO(self):
@@ -504,8 +502,8 @@ class Async(unittest.TestCase):
             return
 
         for be in backends:
-            for fn, desc in self.get_all_atests():
-                with self.subTest(fw=f"anyio/{be}", desc=desc):
+            for fn in self.get_all_atests():
+                with self.subTest(fw=f"anyio/{be}", fn=fn):
                     anyio.run(self.asyncTearDown, fn("anyio"), backend=be)
 
 
