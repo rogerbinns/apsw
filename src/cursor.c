@@ -1472,8 +1472,6 @@ APSWCursor_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   APSWCursor *self = (APSWCursor *)self_;
   int force = 0;
 
-  CHECK_CURSOR_CLOSED(NULL);
-
   {
     Cursor_aclose_CHECK;
     ARG_PROLOG(1, Cursor_aclose_KWNAMES);
@@ -1481,10 +1479,9 @@ APSWCursor_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
     ARG_EPILOG(NULL, Cursor_aclose_USAGE, );
   }
 
-  if (IN_WORKER_THREAD(self->connection))
-    return error_async_in_sync_context();
-
-  return do_async_fastcall((PyObject *)self->connection, APSWCursor_close, self_, fast_args, fast_nargs, fast_kwnames);
+  if(self->connection)
+    ASYNC_FASTCALL(self->connection, APSWCursor_close);
+  return async_return_value(Py_None);
 }
 
 /** .. method:: __aenter__() -> Self

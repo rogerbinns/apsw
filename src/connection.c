@@ -548,7 +548,7 @@ Connection_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   }
 
   ASYNC_FASTCALL(self, Connection_close);
-  return error_async_in_sync_context();
+  return async_return_value(Py_None);
 }
 
 static void
