@@ -85,8 +85,12 @@ struct APSWCursor
     AIter_End,       /* no more items */
   } aiter_state;
 
+  /* these are deliberately only int because upper limit is in the thousands */
   int aiter_slots_allocated;
-  int aiter_slots_inuse;
+  /* next entry to consume */
+  int aiter_head;
+  /* next entry to fill */
+  int aiter_tail;
 
   PyObject **aiter_slots;
 
@@ -245,10 +249,12 @@ APSWCursor_close_internal(APSWCursor *self, int force)
     assert(!PyErr_Occurred());
   }
 
-  for (int i = 0; i < self->aiter_slots_inuse; i++)
-    Py_CLEAR(self->aiter_slots[i]);
+  while (self->aiter_head < self->aiter_tail)
+  {
+    Py_DECREF(self->aiter_slots[self->aiter_head]);
+    self->aiter_head++;
+  }
   self->aiter_slots_allocated = 0;
-  self->aiter_slots_inuse = 0;
   PyMem_Free(self->aiter_slots);
   self->aiter_slots = 0;
 
@@ -335,7 +341,7 @@ APSWCursor_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->convert_binding);
   Py_VISIT(self->convert_jsonb);
-  for (int i = 0; i < self->aiter_slots_inuse; i++)
+  for (int i = self->aiter_head; i < self->aiter_tail; i++)
     Py_VISIT(self->aiter_slots[i]);
   return 0;
 }
@@ -1195,10 +1201,12 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
-  for (int i = 0; i < self->aiter_slots_inuse; i++)
-    Py_CLEAR(self->aiter_slots[0]);
+  while (self->aiter_head < self->aiter_tail)
+  {
+    Py_DECREF(self->aiter_slots[self->aiter_head]);
+    self->aiter_head++;
+  }
   self->aiter_state = AIter_End;
-  self->aiter_slots_inuse = 0;
   ASYNC_FASTCALL(self->connection, APSWCursor_execute);
 
   if (0 != cursor_mutex_get(self))
@@ -1313,10 +1321,13 @@ APSWCursor_executemany(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Cursor_executemany_USAGE, );
   }
 
-  for (int i = 0; i < self->aiter_slots_inuse; i++)
-    Py_CLEAR(self->aiter_slots[0]);
+  while (self->aiter_head < self->aiter_tail)
+  {
+    Py_DECREF(self->aiter_slots[self->aiter_head]);
+    self->aiter_head++;
+  }
   self->aiter_state = AIter_End;
-  self->aiter_slots_inuse = 0;
+
   ASYNC_FASTCALL(self->connection, APSWCursor_executemany);
 
   if (0 != cursor_mutex_get(self))
@@ -1600,15 +1611,6 @@ error:
   return NULL;
 }
 
-PyObject *
-aiter_take_slot0(APSWCursor *self)
-{
-  PyObject *res = self->aiter_slots[0];
-  self->aiter_slots_inuse -= 1;
-  memmove(self->aiter_slots, self->aiter_slots + 1, sizeof(PyObject *) * self->aiter_slots_inuse);
-  return res;
-}
-
 static PyObject *
 APSWCursor_async_next_fill(PyObject *self_)
 {
@@ -1617,88 +1619,87 @@ APSWCursor_async_next_fill(PyObject *self_)
 
   assert(IN_WORKER_THREAD(self->connection));
 
-  /* keep appending to the slots while there is space */
-  while (self->aiter_slots_inuse < self->aiter_slots_allocated && self->aiter_state == AIter_On)
-  {
-    PyObject *next_value = APSWCursor_next(self_);
-    if (!next_value)
-    {
-      if (!PyErr_Occurred())
-      {
-        self->aiter_state = AIter_End;
-        if (!self->aiter_slots_inuse)
-        {
-          PyErr_SetNone(PyExc_StopAsyncIteration);
-          return NULL;
-        }
-        break;
-      }
-      else
-      {
-        self->aiter_state = AIter_End;
-        if (!self->aiter_slots_inuse)
-        {
-          return NULL;
-        }
-#if PY_VERSION_HEX < 0x030c0000
-        next_value = PyTuple_New(3);
-        if (!next_value)
-          return NULL;
-        PyObject *exc_one = NULL, *exc_two = NULL, *exc_three = NULL;
-        PyErr_Fetch(&exc_one, &exc_two, &exc_three);
-        PyTuple_SET_ITEM(next_value, 0, exc_one);
-        PyTuple_SET_ITEM(next_value, 1, exc_two);
-        PyTuple_SET_ITEM(next_value, 2, exc_three);
-#else
-        next_value = PyErr_GetRaisedException();
-#endif
-        self->aiter_state = AIter_Exception;
-      }
-    }
+again:
 
-    self->aiter_slots[self->aiter_slots_inuse] = next_value;
-    self->aiter_slots_inuse++;
+  /* if any pending entries then return those */
+  if (self->aiter_head < self->aiter_tail)
+  {
+    PyObject *result = self->aiter_slots[self->aiter_head];
+    self->aiter_head++;
+    if (self->aiter_state == AIter_Exception && self->aiter_head == self->aiter_tail)
+    {
+      self->aiter_state = AIter_End;
+#if PY_VERSION_HEX >= 0x030c0000
+      PyErr_SetRaisedException(result);
+      return NULL;
+#else
+      PyObject *exc_type = NULL, *exc_value = NULL, *exc_traceback = NULL;
+      exc_type = PyTuple_GetItem(result, 0);
+      if (exc_type)
+        exc_value = PyTuple_GetItem(result, 1);
+      if (exc_value)
+        exc_traceback = PyTuple_GetItem(result, 2);
+      Py_DECREF(result);
+      if (!exc_type || !exc_valuee || !exc_traceback)
+      {
+        Py_XDECREF(exc_type);
+        Py_XDECREF(exc_value);
+        Py_XDECREF(exc_traceback);
+        PyErr_SetString(PyExc_RuntimeError, "Internal error restoring exception");
+        return NULL;
+      }
+      PyErr_Restore(exc_type, exc_value, exc_traceback);
+      return NULL;
+#endif
+    }
+    return result;
   }
 
-  if(!self->aiter_slots_inuse)
+  if (self->aiter_state == AIter_End && self->aiter_head == self->aiter_tail)
   {
-    assert(self->aiter_state == AIter_End);
     PyErr_SetNone(PyExc_StopAsyncIteration);
     return NULL;
   }
 
-  PyObject *result = aiter_take_slot0(self);
+  self->aiter_head = self->aiter_tail = 0;
 
-  /* is it an exception? no other slots will be in use */
-  if (self->aiter_slots_inuse || self->aiter_state != AIter_Exception)
-    return result;
-
-  /* reify the exception */
-  assert(PyTuple_CheckExact(result));
-
-#if PY_VERSION_HEX >= 0x030c0000
-  PyObject *exc = PyTuple_GetItem(result, 0);
-  Py_DECREF(result);
-  PY_ERR_RESTORE(exc);
-  return NULL;
-
-#else
-
-  /* declares names */
-  PY_ERR_FETCH_IF(0, exc);
-  exc = PyTuple_GetItem(result, 0);
-  if (exc)
-    exctype = Py_NewRef(Py_TYPE(exc));
-  exctraceback = PyTuple_GetItem(result, 1);
-  if (!exc || !exctype || !exctraceback)
+  while (self->aiter_tail < self->aiter_slots_allocated && self->aiter_state == AIter_On)
   {
-    PyErr_SetString(PyExc_RuntimeError, "Internal error restoring exception");
-    PY_ERR_CLEAR(exc);
-    return NULL;
-  }
-  PY_ERR_RESTORE(exc);
-  return NULL;
+    PyObject *next_value = APSWCursor_next(self_);
+    if (!next_value)
+    {
+      /* stop iteration? */
+      if (!PyErr_Occurred())
+      {
+        self->aiter_state = AIter_End;
+        goto again;
+      }
+      /* actual exception */
+      self->aiter_state = AIter_End;
+      /* can we return it directly ? */
+      if (self->aiter_head == 0 && self->aiter_tail == 0)
+      {
+        return NULL;
+      }
+#if PY_VERSION_HEX < 0x030c0000
+      next_value = PyTuple_New(3);
+      if (!next_value)
+        return NULL;
+      PyObject *exc_one = NULL, *exc_two = NULL, *exc_three = NULL;
+      PyErr_Fetch(&exc_one, &exc_two, &exc_three);
+      PyTuple_SET_ITEM(next_value, 0, exc_one);
+      PyTuple_SET_ITEM(next_value, 1, exc_two);
+      PyTuple_SET_ITEM(next_value, 2, exc_three);
+#else
+      next_value = PyErr_GetRaisedException();
 #endif
+      self->aiter_state = AIter_Exception;
+    }
+
+    self->aiter_slots[self->aiter_tail] = next_value;
+    self->aiter_tail++;
+  }
+  goto again;
 }
 
 /** .. method:: __anext__() -> Any
@@ -1722,10 +1723,11 @@ APSWCursor_anext(PyObject *self_)
   }
 
   /* any pending entries? */
-  if (self->aiter_slots_inuse)
+  if (self->aiter_head < self->aiter_tail)
   {
-    PyObject *result = aiter_take_slot0(self);
-    if (self->aiter_state == AIter_Exception && !self->aiter_slots_inuse)
+    PyObject *result = self->aiter_slots[self->aiter_head];
+    self->aiter_head++;
+    if (self->aiter_state == AIter_Exception && self->aiter_head == self->aiter_tail)
     {
       self->aiter_state = AIter_End;
       PyObject *new_result = async_return_exception(result);
@@ -1777,9 +1779,9 @@ APSWCursor_aiter(PyObject *self_)
   /* safety */
   self->aiter_state = AIter_End;
 
-  for (int i = 0; i > self->aiter_slots_inuse; i++)
-    Py_CLEAR(self->aiter_slots[i]);
-  self->aiter_slots_inuse = 0;
+  for (int i = self->aiter_head; i < self->aiter_tail; i++)
+    Py_DECREF(self->aiter_slots[i]);
+  self->aiter_head = self->aiter_tail = 0;
 
   int slots_desired = 1;
 
@@ -1809,7 +1811,6 @@ APSWCursor_aiter(PyObject *self_)
       return NULL;
     self->aiter_slots = new_slots;
     self->aiter_slots_allocated = slots_desired;
-    memset(self->aiter_slots, 0, sizeof(PyObject *) * slots_desired);
   }
 
   self->aiter_state = AIter_On;
