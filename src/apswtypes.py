@@ -189,23 +189,29 @@ class AsyncConnectionController(Protocol):
         """
         Called in the worker thead once the connection is available
 
-        This is called before the :attr:`Connection.connection_hooks` are
-        run.
+        This must run the :attr:`Connection.connection_hooks`.
         """
         ...
 
     def send(self, call: Callable[[], Any]) -> Awaitable[Any]:
         """Called from outside the worker thread to send to worker thread
 
-        The controller must send ``call`` to the worker thread where it should be
-        called without parameters :code:`call()` with the returned Awaitable
-        tracking the call result.
+        This should return an awaitable, and forward ``call`` to the worker
+        thread.  In this worker thread::
+
+            with call:
+                result = call()
+
+        The result which could also be an exception.  The awaitable should
+        be made ready with the result.
         """
         ...
 
     def close(self):
         """Called after the connection has closed
 
-        This allows shutting down the worker thread and similar housekeeping.
-        !!!Exceptions unraisable"""
+        This allows shutting down the worker thread and similar
+        housekeeping.  Because of when this called, any exceptions are
+        :func:`unraisable <sys.unraisablehook>`.
+        """
         ...
