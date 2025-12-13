@@ -1799,9 +1799,8 @@ APSWCursor_aiter(PyObject *self_)
       return NULL;
     if (slots_desired < 1)
       slots_desired = 1;
-    // ::TODO:: put a sensible cap on this
-    //    else if (slots_desired > 65536)
-    //      slots_desired = 65536;
+    else if (slots_desired > 65536)
+      slots_desired = 65536;
   }
 
   if (slots_desired != self->aiter_slots_allocated)

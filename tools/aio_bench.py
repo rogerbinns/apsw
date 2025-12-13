@@ -103,7 +103,7 @@ def show(library, prefetch, start, end):
     )
 
 
-for prefetch in (1, 2, 16, 64, 512, 1_000_000):
+for prefetch in (1, 2, 16, 64, 512, 8192, 65536):
     for name in ["AsyncIO",  "Trio"]:
         for loop_factory in [False] + ([True] if uvloop else []):
             used_loop_factory = False
