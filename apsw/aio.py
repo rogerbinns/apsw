@@ -63,8 +63,12 @@ no deadline.
 
 """
 
-DEADLINE_PROGRESS_STEPS = 500
-"How many steps between checks to see if the deadline has been exceeded"
+DEADLINE_PROGRESS_STEPS = 50_000
+"""How many steps between checks to see if the deadline has been exceeded
+
+The smaller the number, the more frequent the checks, but also more
+time consumed making the checks.
+"""
 
 
 if sys.version_info >= (3, 14):
@@ -76,14 +80,14 @@ if sys.version_info >= (3, 14):
 
             with var.set(value):
                 # code here
-                pass
+                ...
 
         This wrapper provides the same functionality for all
         Python versions::
 
-            with contextvar_set(value):
+            with contextvar_set(var, value):
                 # code here
-                pass
+                ...
 
         """
         return var.set(value)
@@ -102,7 +106,7 @@ else:
         return _contextvar_set_wrapper()
 
 
-# contextvars have to be top level.  this is used to track the currently
+# contextvars should be top level.  this is used to track the currently
 # processing future
 _current_future = contextvars.ContextVar("apsw.aio._current_future")
 
@@ -136,7 +140,7 @@ class AsyncIO:
     def send(self, call):
         "Enqueues call to worker thread"
         try:
-            future = asyncio.get_running_loop().create_future()
+            future = self.loop.create_future()
             self.queue.put((future, call))
             return future
         except AttributeError:
@@ -158,7 +162,7 @@ class AsyncIO:
 
     def progress_deadline_checker(self):
         "Periodic check if the deadline has passed"
-        if (this_deadline := _deadline.get()) is not None and time.monotonic() > this_deadline:
+        if (this_deadline := deadline.get()) is not None and time.monotonic() > this_deadline:
             raise TimeoutError()
         return False
 
@@ -177,19 +181,17 @@ class AsyncIO:
                 # re-entrant, so there is no point
                 _current_future.set(future)
 
-                finish = future.get_loop().call_soon_threadsafe
-
                 try:
                     # should we even start?
                     if (this_deadline := deadline.get()) is not None:
                         if time.monotonic() > this_deadline:
                             raise TimeoutError()
-                    finish(_asyncio_set_future_result, future, call())
+                    self.loop.call_soon_threadsafe(_asyncio_set_future_result, future, call())
 
                 except BaseException as exc:
                     # BaseException is deliberately used because CancelledError
                     # is a subclass of it
-                    finish(_asyncio_set_future_exception, future, exc)
+                    self.loop.call_soon_threadsafe(_asyncio_set_future_exception, future, exc)
 
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
@@ -203,7 +205,7 @@ class AsyncIO:
             # yes we really need the timeout twice.  when the wait_for one fires the
             # exception isn't propagated to us
             return asyncio.run_coroutine_threadsafe(
-                asyncio.wait_for(coro, this_timeout), _current_future.get().get_loop()
+                asyncio.wait_for(coro, this_timeout), self.loop,
             ).result(this_timeout)
         except concurrent.futures.TimeoutError:
             if sys.version_info < (3, 11):
@@ -217,6 +219,7 @@ class AsyncIO:
         apsw.async_run_coro.set(self.async_run_coro)
 
         self.queue = queue.SimpleQueue()
+        self.loop = asyncio.get_running_loop()
 
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
