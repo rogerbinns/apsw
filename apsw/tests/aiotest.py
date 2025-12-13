@@ -6,13 +6,17 @@
 
 import contextlib
 import contextvars
+import threading
 import unittest
 
 import apsw
 import apsw.aio
+import apsw.bestpractice
 
 
 #### ::TODO::  tests to add
+#
+# timeouts
 #
 # cancels
 #
@@ -21,10 +25,14 @@ import apsw.aio
 # blob needs aenter / aexit
 # backup: aclose
 # cursor get/fetchall need to close the cursor (or maybe not?)
+#
+# multiple connections active at once (also backup with this)
 
 
 class Async(unittest.TestCase):
     async def asyncTearDown(self, coro):
+        # we need this one because the event loop must still be
+        # running in order to do aclose
         try:
             return await coro
         finally:
@@ -34,6 +42,13 @@ class Async(unittest.TestCase):
     def tearDown(self):
         if apsw.connections():
             raise RuntimeError(f"Connections were left open {apsw.connections()=}")
+
+        for thread in threading.enumerate():
+            if thread not in self.active_threads:
+                raise RuntimeError(f"Leaked thread {thread=}")
+
+    def setUp(self):
+        self.active_threads = list(threading.enumerate())
 
     def testOverwrite(self):
         "make sure module contextvars can't be overwritten"
@@ -123,7 +138,6 @@ class Async(unittest.TestCase):
         for prefetch in PREFETCH_VALUES:
             for limit in LIMITS:
                 apsw.async_cursor_prefetch.set(prefetch)
-                print(f"{prefetch=} {limit=}")
                 values = []
                 async for (y,) in await db.execute("select y from x order by y LIMIT ?", (limit,)):
                     values.append(y)
