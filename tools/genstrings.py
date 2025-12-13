@@ -48,7 +48,7 @@ release UPDATE INSERT DELETE
 null true false
 
 async_controller async_run_coro async_cursor_prefetch send
-apsw.aio Auto
+apsw.aio Auto configure
 """
 
 
