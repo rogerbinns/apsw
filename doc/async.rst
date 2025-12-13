@@ -12,6 +12,8 @@ How SQLite works
 - aims to do work as quickly as possible
 - pragma threads (eg for sorting)
 - cannot get same connection to be concurrent with multiple threads
+- inherently synchronous due to C implementation
+- get next row only API (network db give back batches of rows)
 
 How Python works
 -----------------
@@ -73,21 +75,45 @@ Async
         eg in vtable, then use sync function to make them
 
 
+Async usage
+-----------
+
+extract from rewrite section below
 
 
+Async Alternatives
+------------------
 
+run in thread
+=============
 
+can use regular mode and run expensive operations in thread each time - eg :func:`asyncio.to_thread`
+(can't be used with stdlib sqlite3 because everything has to be in same thread each time)
 
+aiosqlite
+=========
 
-aiosqlite comparison
---------------------
+excellent choice, use if meets your needs
 
+* asyncio only (no trio)
 * About equal performance
 * aiosqlite exception in cursor iteration
-* doesn't support async callbacks
-* doesn't support contextvars for sync callbacks either
+* doesn't directly support async callbacks, but you could wrap each callback to do so
+* doesn't support contextvars for sync callbacks
 
 
+
+Performance
+-----------
+
+explain aiobench, why prefetch size matters, give some output
+
+apsw.aio module
+---------------
+
+.. automodule:: apsw.aio
+    :members:
+    :undoc-members:
 
 
 
@@ -208,9 +234,3 @@ or provided.
 * curio https://curio.readthedocs.io/en/latest/reference.html#asynchronous-threads
 
 
-apsw.aio module
-===============
-
-.. automodule:: apsw.aio
-    :members:
-    :undoc-members:
