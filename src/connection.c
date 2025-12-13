@@ -699,33 +699,52 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
       goto pyexception;
   }
 
-  /* call connection hooks */
-  hooks = PyObject_GetAttr(apswmodule, apst.connection_hooks);
-  if (!hooks)
-    goto pyexception;
-
-  iterator = PyObject_GetIter(hooks);
-  if (!iterator)
-  {
-    AddTraceBackHere(__FILE__, __LINE__, "Connection.__init__", "{s: O}", "connection_hooks", OBJ(hooks));
-    goto pyexception;
-  }
-
   self->stmtcache = statementcache_init(self->db, statementcachesize);
   if (!self->stmtcache)
     goto pyexception;
 
-  while ((hook = PyIter_Next(iterator)))
+  /* async mode configure */
+  if (self->async_controller)
   {
-    PyObject *vargs[] = { NULL, (PyObject *)self };
-    hookresult = PyObject_Vectorcall(hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-    if (!hookresult)
+    PyObject *vargs[] = { NULL, self->async_controller, (PyObject *)self };
+    PyObject *result
+        = PyObject_VectorcallMethod_NoAsync(apst.configure, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    if (!result)
       goto pyexception;
-    Py_DECREF(hook);
-    hook = NULL;
-    Py_DECREF(hookresult);
+    Py_DECREF(result);
   }
+  else
+  {
+    /* call connection hooks */
+    hooks = PyObject_GetAttr(apswmodule, apst.connection_hooks);
+    if (!hooks)
+      goto pyexception;
 
+    iterator = PyObject_GetIter(hooks);
+    if (!iterator)
+    {
+      Py_DECREF(hooks);
+      AddTraceBackHere(__FILE__, __LINE__, "Connection.__init__", "{s: O}", "connection_hooks", OBJ(hooks));
+      goto pyexception;
+    }
+
+    while ((hook = PyIter_Next(iterator)))
+    {
+      PyObject *vargs[] = { NULL, (PyObject *)self };
+      hookresult = PyObject_Vectorcall(hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      if (!hookresult)
+      {
+        Py_DECREF(hooks);
+        Py_DECREF(iterator);
+        goto pyexception;
+      }
+      Py_DECREF(hook);
+      hook = NULL;
+      Py_DECREF(hookresult);
+    }
+    Py_DECREF(hooks);
+    Py_DECREF(iterator);
+  }
   if (!PyErr_Occurred())
   {
     res = 0;
@@ -795,7 +814,7 @@ Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)
   {
     if(Py_IsNone(connection->async_controller))
     {
-      Py_DECREF(Py_None);
+      Py_DECREF(connection->async_controller);
       connection->async_controller = PyImport_ImportModuleAttr(apst.apsw_aio, apst.Auto);
     }
     if(!connection->async_controller)

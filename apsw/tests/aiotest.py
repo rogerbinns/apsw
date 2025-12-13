@@ -168,6 +168,44 @@ class Async(unittest.TestCase):
 
                 self.assertEqual(values, list(range(min(450, error))))
 
+    async def atestConfigure(self, fw):
+        auto = apsw.aio.Auto()
+        auto.close()
+
+        class CT(type(auto)):
+            def configure1(self, db):
+                1 / 0
+
+            def configure2(self):
+                1 / 0
+
+            def configure99(inner_self, db):
+                self.assertIs(inner_self, db.async_controller)
+                super().configure(db)
+
+        with apsw.aio.contextvar_set(apsw.async_controller, CT):
+            with self.assertRaises(ZeroDivisionError):
+                CT.configure = CT.configure1
+                await apsw.Connection.as_async("")
+
+            with self.assertRaises(TypeError):
+                CT.configure = CT.configure2
+                await apsw.Connection.as_async("")
+
+            CT.configure = CT.configure99
+            await apsw.Connection.as_async("")
+
+        try:
+            # make sure bestpractice works
+            apsw.bestpractice.apply(apsw.bestpractice.recommended)
+            apsw.config(apsw.SQLITE_CONFIG_LOG, None)
+
+            await apsw.Connection.as_async("")
+            await apsw.Connection.as_async(":memory")
+
+        finally:
+            apsw.connection_hooks = []
+
     def get_all_atests(self):
         for n in dir(self):
             if "atestA" <= n <= "atestZ":

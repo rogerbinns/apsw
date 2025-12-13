@@ -129,6 +129,8 @@ class AsyncIO:
 
     def configure(self, db: apsw.Connection):
         "Setup database, just after it is created"
+        for hook in apsw.connection_hooks:
+            hook(db)
         db.set_progress_handler(self.progress_deadline_checker, DEADLINE_PROGRESS_STEPS, id=self)
 
     def send(self, call):
@@ -259,6 +261,8 @@ class Trio:
 
     def configure(self, db: apsw.Connection):
         "Setup database, just after it is created"
+        for hook in apsw.connection_hooks:
+            hook(db)
         db.set_progress_handler(self.progress_deadline_checker, DEADLINE_PROGRESS_STEPS, id=self)
 
     def progress_deadline_checker(self):
