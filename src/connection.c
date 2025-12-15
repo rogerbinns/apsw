@@ -733,17 +733,11 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
       PyObject *vargs[] = { NULL, (PyObject *)self };
       hookresult = PyObject_Vectorcall(hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       if (!hookresult)
-      {
-        Py_DECREF(hooks);
-        Py_DECREF(iterator);
         goto pyexception;
-      }
       Py_DECREF(hook);
       hook = NULL;
       Py_DECREF(hookresult);
     }
-    Py_DECREF(hooks);
-    Py_DECREF(iterator);
   }
   if (!PyErr_Occurred())
   {
