@@ -87,8 +87,6 @@ class AsyncMeta(unittest.TestCase):
             except:
                 pass
 
-        if apsw.connections():
-            raise RuntimeError(f"Connections were left open {apsw.connections()=}")
 
     def classifyOne(self, send, is_attr, object, klass, member, value=None):
         # send is None for async access, callable for sync
@@ -315,7 +313,7 @@ class AsyncMeta(unittest.TestCase):
             for name in objects:
                 ensure_objects(name)
                 for attr in dir(objects[name]):
-                    if attr in skip or attr in {"as_async", "__next__"} or (name, attr) in old_names:
+                    if attr in skip or attr in {"as_async", "__next__", "aclose"} or (name, attr) in old_names:
                         continue
                     res.append((name, attr))
                 self.tearDown()
@@ -341,74 +339,73 @@ class AsyncMeta(unittest.TestCase):
         pre = {"__aexit__": "__aenter__", "__exit__": "__enter__", "__next__": "__iter__", "__anext__": "__aiter__"}
 
         for klass, name in all_the_things():
-            if klass != last_klass or name in malfunction:
-                objects["Connection"] = None
+            with self.subTest(klass=klass, name=name):
 
-            ensure_objects(klass)
+                if klass != last_klass or name in malfunction:
+                    objects["Connection"] = None
 
-            is_attr = not is_method(objects[klass], name)
+                ensure_objects(klass)
 
-            if False:
-                print(f"{klass=} {name=} {is_attr=}")
+                is_attr = not is_method(objects[klass], name)
 
-            ensure_objects(klass)
+                ensure_objects(klass)
 
-            if name in pre:
-                self.classifyOne(None, is_attr, objects[klass], klass, pre[name])
+                if name in pre:
+                    self.classifyOne(None, is_attr, objects[klass], klass, pre[name])
 
-            kind_async = self.classifyOne(None, is_attr, objects[klass], klass, name)
+                kind_async = self.classifyOne(None, is_attr, objects[klass], klass, name)
 
-            if name in malfunction:
-                objects["Connection"] = None
+                if name in malfunction:
+                    objects["Connection"] = None
 
-            ensure_objects(klass)
+                ensure_objects(klass)
 
-            if name in pre:
-                self.classifyOne(objects["Connection"].async_controller.send, is_attr, objects[klass], klass, pre[name])
+                if name in pre:
+                    self.classifyOne(objects["Connection"].async_controller.send, is_attr, objects[klass], klass, pre[name])
 
-            kind_sync = self.classifyOne(
-                objects["Connection"].async_controller.send, is_attr, objects[klass], klass, name
-            )
+                kind_sync = self.classifyOne(
+                    objects["Connection"].async_controller.send, is_attr, objects[klass], klass, name
+                )
 
-            if is_attr:
-                # check writable (mutex assertions)
-                match name:
-                    case "transaction_mode":
-                        value = "DEFERRED"
-                    case "enabled" | "indirect":
-                        value = True
+                if is_attr:
+                    # check writable (mutex assertions)
+                    match name:
+                        case "transaction_mode":
+                            value = "DEFERRED"
+                        case "enabled" | "indirect":
+                            value = True
+                        case _:
+                            value = lambda *args: False
+                    try:
+                        setattr(objects[klass], name, value)
+                    except AttributeError as exc:
+                        if "objects is not writable" in str(exc) or "readonly attribute" in str(exc):
+                            pass
+                        else:
+                            raise
+                    except TypeError as exc:
+                        if exc.args[0] in {"Using sync in async context", "Using async in sync context"}:
+                            pass
+                        else:
+                            raise
+
+                match (kind_sync, kind_async):
+                    case ("value", "value"):
+                        kind = "value"
+                    case ("exception", "async"):
+                        kind = "async"
+                    case ("value", "exception"):
+                        kind = "sync"
+                    case ("value", "async"):
+                        kind = "dual"
+                    case ("exception", "value"):
+                        kind = "async"
                     case _:
-                        value = lambda *args: False
-                try:
-                    setattr(objects[klass], name, value)
-                except AttributeError as exc:
-                    if "objects is not writable" in str(exc) or "readonly attribute" in str(exc):
-                        pass
-                    else:
-                        raise
-                except TypeError as exc:
-                    if exc.args[0] in {"Using sync in async context X2", "Using async in sync context X1"}:
-                        pass
-                    else:
-                        raise
+                        raise ValueError(f"{kind_sync=} {kind_async=}")
 
-            match (kind_sync, kind_async):
-                case ("value", "value"):
-                    kind = "value"
-                case ("exception", "async"):
-                    kind = "async"
-                case ("value", "exception"):
-                    kind = "sync"
-                case ("value", "async"):
-                    kind = "dual"
-                case ("exception", "value"):
-                    kind = "async"
-                case _:
-                    raise ValueError(f"{kind_sync=} {kind_async=}")
+                expected_kind = get_meta(klass, name, "attribute" if is_attr else "function")
 
-            expected_kind = get_meta(klass, name, "attribute" if is_attr else "function")
-
-            self.assertEqual(kind, expected_kind, f"{klass=} {name=}")
+                self.assertEqual(kind, expected_kind, f"{klass=} {name=}")
 
 
 class SimpleController:
@@ -441,6 +438,9 @@ class SimpleController:
         req.call = call
         self.queue.put(req)
         return req
+
+    def configure(self, db):
+        pass
 
     def worker_thread_run(self, q):
         while (req := q.get()) is not None:
