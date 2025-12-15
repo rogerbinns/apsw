@@ -1501,7 +1501,7 @@ APSWCursor_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   exit.
 */
 static PyObject *
-APSWCursor_aenter(PyObject *self_)
+APSWCursor_aenter(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
