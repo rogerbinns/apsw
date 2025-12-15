@@ -227,40 +227,6 @@ class AsyncIO:
 class Trio:
     """Uses `Trio <https://trio.readthedocs.io/>`__ for async concurrency"""
 
-    class _Future:
-        # Private internal representation of a call providing an
-        # awaitable result.  One of these is made for each call.
-        __slots__ = (
-            # needed to call back into trio
-            "token",
-            # trio.Event used to signal ready
-            "event",
-            # result value or exception
-            "result",
-            # is it an exception?
-            "is_exception",
-            # cursor prefect value
-            "prefetch",
-            # call to make
-            "call",
-            # timeout handling
-            "deadline",
-            # cancel handling
-            "cancelled",
-        )
-
-        async def aresult(self):
-            try:
-                await self.event.wait()
-            except trio.Cancelled:
-                self.cancelled = True
-                raise
-            if self.is_exception:
-                raise self.result
-            return self.result
-
-        def __await__(self):
-            return self.aresult().__await__()
 
     def configure(self, db: apsw.Connection):
         "Setup database, just after it is created"
@@ -271,12 +237,14 @@ class Trio:
     def progress_deadline_checker(self):
         "Periodic check if the deadline has passed"
         future = _current_future.get()
+        if future._is_cancelled:
+            raise trio.Cancelled("cancelled in progress handler")
         if future.deadline is not math.inf and future.deadline < self.clock.current_time():
             raise trio.TooSlowError("deadline exceeded in progress handler")
         return False
 
     def send(self, call):
-        future = Trio._Future()
+        future = TrioFuture()
         future.token = trio.lowlevel.current_trio_token()
         future.event = trio.Event()
         future.is_exception = False
@@ -285,7 +253,7 @@ class Trio:
             future.deadline = trio.current_effective_deadline()
         else:
             future.deadline = this_deadline
-        future.cancelled = False
+        future._is_cancelled = False
         self.queue.put(future)
         return future
 
@@ -295,14 +263,14 @@ class Trio:
 
     def worker_thread_run(self, q):
         while (future := q.get()) is not None:
-            if future.cancelled:
+            if future._is_cancelled:
                 continue
             with future.call:
                 _current_future.set(future)
 
                 try:
                     if future.deadline is not math.inf and future.deadline < self.clock.current_time():
-                        raise trio.TooSlowError()
+                        raise trio.TooSlowError("Deadline exceeded in queue")
 
                     future.result = future.call()
                 except BaseException as exc:
@@ -312,9 +280,10 @@ class Trio:
                 trio.from_thread.run_sync(future.event.set, trio_token=future.token)
 
     def async_run_coro(self, coro):
-        return trio.from_thread.run(
-            _trio_loop_run_coro, coro, _current_future.get().deadline, trio_token=_current_future.get().token
-        )
+        future = _current_future.get()
+        if future._is_cancelled:
+            raise trio.Cancelled("Cancelled in async_run_coro")
+        return trio.from_thread.run(_trio_loop_run_coro, coro, future.deadline, trio_token=future.token)
 
     def __init__(self, *, thread_name: str = "trio apsw background worker"):
         global trio
@@ -326,6 +295,50 @@ class Trio:
         self.clock = trio.lowlevel.current_clock()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
+class TrioFuture:
+    "Returned for each :class:`Trio` request"
+
+    __slots__ = (
+        # needed to call back into trio
+        "token",
+        # trio.Event used to signal ready
+        "event",
+        # result value or exception
+        "result",
+        # is it an exception?
+        "is_exception",
+        # call to make
+        "call",
+        # timeout handling
+        "deadline",
+        # cancel handling
+        "_is_cancelled",
+    )
+
+    async def aresult(self):
+        ":meta private:"
+        try:
+            await self.event.wait()
+        except trio.Cancelled:
+            self._is_cancelled = True
+            raise
+        if self.is_exception:
+            raise self.result
+        return self.result
+
+    def __await__(self):
+        return self.aresult().__await__()
+
+    def cancel(self):
+        if not self.event.is_set():
+            self._is_cancelled = True
+        return self._is_cancelled
+
+    def cancelled(self):
+        return self._is_cancelled
+
+    def done(self):
+        return self.event.is_set() or self._is_cancelled
 
 async def _trio_loop_run_coro(coro, this_deadline):
     with trio.fail_at(this_deadline):

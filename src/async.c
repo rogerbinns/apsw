@@ -67,6 +67,26 @@ AwaitableWrapper_next(PyObject *self_)
   return NULL;
 }
 
+/* these methods are just to make it smell like a Future but do nothing */
+
+static PyObject *
+AwaitableWrapper_cancel(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused21))
+{
+  Py_RETURN_FALSE;
+}
+
+static PyObject *
+AwaitableWrapper_cancelled(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused21))
+{
+  Py_RETURN_FALSE;
+}
+
+static PyObject *
+AwaitableWrapper_done(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused21))
+{
+  Py_RETURN_TRUE;
+}
+
 static void
 AwaitableWrapper_dealloc(PyObject *self_)
 {
@@ -81,6 +101,13 @@ AwaitableWrapper_dealloc(PyObject *self_)
 
 static PyAsyncMethods AwaitableWrapper_async_methods = {
   .am_await = AwaitableWrapper_await,
+};
+
+static PyMethodDef AwaitableMethods[] = {
+  { "cancel", (PyCFunction)AwaitableWrapper_cancel, METH_NOARGS },
+  { "cancelled", (PyCFunction)AwaitableWrapper_cancelled, METH_NOARGS },
+  { "done", (PyCFunction)AwaitableWrapper_done, METH_NOARGS },
+  { 0 },
 };
 
 static PyTypeObject AwaitableWrapperType = {
