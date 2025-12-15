@@ -12215,6 +12215,7 @@ from .ftstests import *
 from .sessiontests import *
 from .jsonb import *
 from .carray import *
+from .aiotest import *
 
 if __name__ == "__main__":
     setup()
