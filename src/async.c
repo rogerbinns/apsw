@@ -221,10 +221,6 @@ BoxedCall_clear(PyObject *self_)
   case AttrGet:
     Py_DECREF(self->AttrGet.arg1);
     break;
-
-  default:
-    // ::TODO:: delete this default once the code is complete
-    assert(0);
   }
   self->call_type = Dormant;
 }
@@ -268,9 +264,8 @@ BoxedCall_internal_call(BoxedCall *self)
     result = self->AttrGet.function(self->AttrGet.arg1, self->AttrGet.arg2);
     break;
 
-  default:
-    // ::TODO:: delete this default once the code is complete
-    assert(0);
+  case Dormant:
+    PyErr_SetString(PyExc_RuntimeError, "Can only be called once");
   }
 
   if (!result && PyErr_Occurred() && !PyErr_ExceptionMatches(PyExc_StopAsyncIteration)
@@ -287,8 +282,8 @@ BoxedCall_call(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
   BoxedCall *self = (BoxedCall *)self_;
 
-  if (kwargs || (args && PyTuple_GET_SIZE(args)) || self->call_type == Dormant)
-    return PyErr_Format(PyExc_RuntimeError, "BoxedCall takes no parameters and can only be called once");
+  if (kwargs || (args && PyTuple_GET_SIZE(args)))
+    return PyErr_Format(PyExc_RuntimeError, "BoxedCall takes no parameters");
 
   return BoxedCall_internal_call(self);
 }
