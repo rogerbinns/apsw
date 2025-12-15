@@ -53,6 +53,7 @@ set +ex
 echo "Running $PYTHON $args"
 env PYTHONPATH=. $PYTHON $args
 res=$?
+if [ $res -eq 0] ; then $PYTHON -m apsw.tests.async_meta ; res = $? ; fi
 [ $res -eq 0 -a -z "$NO_FI" ] && echo "Running $PYTHON tools/fi.py $FI_ARGS" && env PYTHONPATH=. $PYTHON tools/fi.py $FI_ARGS
 $GCOVWRAPPER gcov $GCOVOPTS *.gcno > /dev/null
 
