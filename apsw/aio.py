@@ -7,14 +7,12 @@ import threading
 import contextvars
 import contextlib
 import sys
-import time
 import concurrent.futures
 import math
 
 import apsw
 
-import types
-from typing import TypeVar, Any
+from typing import TypeVar
 
 T = TypeVar("T")
 
@@ -30,7 +28,7 @@ no deadline.
 
     This is the only way to set a deadline.  :exc:`TimeoutError` will be
     raised if the deadline is exceeded.  The time is measured using
-    :func:`time.monotonic`
+    :func:`asyncio.loop.time`
 
 :class:`Trio`
 
@@ -48,12 +46,12 @@ no deadline.
     .. code-block:: python
 
     # 10 seconds
-    async with apsw.aio.timeout.deadline(time.monotonic() + 10):
+    async with apsw.aio.timeout.deadline(loop.time() + 10):
        # do operations
        ...
        # you can use it nested - these operations could take a
        # minute
-       with apsw.aio.timeout.set(time.monotonic() + 60):
+       with apsw.aio.timeout.set(loop.time() + 60):
           # do other operations
           ...
 
@@ -162,7 +160,7 @@ class AsyncIO:
 
     def progress_deadline_checker(self):
         "Periodic check if the deadline has passed"
-        if (this_deadline := deadline.get()) is not None and time.monotonic() > this_deadline:
+        if (this_deadline := deadline.get()) is not None and self.loop.time() > this_deadline:
             raise TimeoutError()
         return False
 
@@ -184,7 +182,7 @@ class AsyncIO:
                 try:
                     # should we even start?
                     if (this_deadline := deadline.get()) is not None:
-                        if time.monotonic() > this_deadline:
+                        if self.loop.time() > this_deadline:
                             raise TimeoutError()
                     self.loop.call_soon_threadsafe(_asyncio_set_future_result, future, call())
 
@@ -200,7 +198,7 @@ class AsyncIO:
                 raise asyncio.CancelledError()
 
             if (this_timeout := deadline.get()) is not None:
-                this_timeout -= time.monotonic()
+                this_timeout -= self.loop.time()
 
             # yes we really need the timeout twice.  when the wait_for one fires the
             # exception isn't propagated to us
