@@ -439,15 +439,23 @@ Connection_close_internal(Connection *self, int force)
 
   apsw_connection_remove(self);
 
-  /* This ensures any SQLITE_TRACE_CLOSE callbacks see a closed
-     database */
-  sqlite3 *tmp_db = self->db;
-  sqlite3_mutex *tmp_mutex = self->dbmutex;
+  /* caller should have acquired */
+  sqlite3_mutex_leave(self->dbmutex);
+
+  for (;;)
+  {
+    res = sqlite3_close(self->db);
+    if(res == SQLITE_BUSY)
+    {
+      /* we can be racing with a destructor such as cursor which is
+         why busy was returned, so let them finish their work */
+      Py_BEGIN_ALLOW_THREADS Py_END_ALLOW_THREADS;
+      continue;
+    }
+    break;
+  }
   self->db = 0;
   self->dbmutex = 0;
-  /* caller should have acquired */
-  sqlite3_mutex_leave(tmp_mutex);
-  res = sqlite3_close(tmp_db);
 
   if (res != SQLITE_OK)
   {
@@ -1566,11 +1574,18 @@ tracehook_cb(unsigned code, void *vconnection, void *one, void *two)
     break;
 
   case SQLITE_TRACE_CLOSE:
+    /* we have to set the db and mutex to NULL here - this fires during the
+       call to sqlite3_close, and we can't set to NULL before the call because
+       it could return BUSY and after is too late */
+    connection->db = NULL;
+    connection->dbmutex = NULL;
+
     /* Checking the refcount is subtle but important.  If the
        Connection is being closed because there are no more references to it
        then the ref count is zero when the callback fires and adding a
        reference resurrects a mostly destroyed object which then hits zero
        again and gets destroyed a second time.  Too difficult to handle. */
+
     param = Py_BuildValue("{s: i, s: O}", "code", code, "connection",
                           Py_REFCNT(connection) ? (PyObject *)connection : Py_None);
     break;

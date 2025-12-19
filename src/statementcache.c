@@ -94,7 +94,7 @@ statementcache_free_statement(StatementCache *sc, APSWStatement *s)
   res = s->vdbestatement ? sqlite3_finalize(s->vdbestatement) : SQLITE_OK;
 
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
-  if (sc->recycle_bin_next + 1 < SC_STATEMENT_RECYCLE_BIN_ENTRIES)
+  if (sc && sc->recycle_bin_next + 1 < SC_STATEMENT_RECYCLE_BIN_ENTRIES)
   {
     sc->recycle_bin[sc->recycle_bin_next++] = s;
   }
@@ -121,7 +121,7 @@ statementcache_finalize(StatementCache *sc, APSWStatement *statement)
   if (!statement)
     return res;
 
-  if (statement->hash != SC_SENTINEL_HASH)
+  if (sc && statement->hash != SC_SENTINEL_HASH)
   {
     APSWStatement *evictee = NULL;
 
