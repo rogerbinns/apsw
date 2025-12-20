@@ -209,6 +209,8 @@ class AsyncIO:
             if sys.version_info < (3, 11):
                 raise TimeoutError
             raise
+        finally:
+            coro.close()
 
     def __init__(self, *, thread_name: str = "asyncio apsw background worker"):
         global asyncio
@@ -278,10 +280,13 @@ class Trio:
                 trio.from_thread.run_sync(future.event.set, trio_token=future.token)
 
     def async_run_coro(self, coro):
-        future = _current_future.get()
-        if future._is_cancelled:
-            raise trio.Cancelled("Cancelled in async_run_coro")
-        return trio.from_thread.run(_trio_loop_run_coro, coro, future.deadline, trio_token=future.token)
+        try:
+            future = _current_future.get()
+            if future._is_cancelled:
+                raise trio.Cancelled("Cancelled in async_run_coro")
+            return trio.from_thread.run(_trio_loop_run_coro, coro, future.deadline, trio_token=future.token)
+        finally:
+            coro.close()
 
     def __init__(self, *, thread_name: str = "trio apsw background worker"):
         global trio
