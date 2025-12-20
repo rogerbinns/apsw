@@ -257,6 +257,34 @@ class Async(unittest.TestCase):
                 with self.assertRaises(asyncio.CancelledError):
                     await task3
 
+            case "trio":
+
+                class Retval:
+                    pass
+
+                retvals = [Retval(), Retval(), Retval()]
+
+                async def wait_on(index, f):
+                    try:
+                        retvals[index].value = await f
+                    except BaseException as exc:
+                        retvals[index].exception = exc
+                        raise
+
+                try:
+                    async with trio.open_nursery() as n:
+                        n.start_soon(wait_on, 0, db.execute("select func(4, 5), func(4, 4)"))
+                        n.start_soon(wait_on, 1, db.execute("select func(3,4)"))
+                        n.start_soon(wait_on, 2, db.pragma("user_version", 7))
+
+                        event.set()
+                except ExceptionGroup:
+                    pass
+
+                self.assertIsInstance(retvals[0].exception, ZeroDivisionError)
+                self.assertIsInstance(retvals[1].exception, trio.Cancelled)
+                self.assertIsInstance(retvals[2].exception, trio.Cancelled)
+
             case _:
                 raise NotImplementedError
 
