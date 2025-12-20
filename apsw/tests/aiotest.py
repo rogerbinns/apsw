@@ -220,6 +220,48 @@ class Async(unittest.TestCase):
         finally:
             apsw.connection_hooks = []
 
+    async def atestCancel(self, fw):
+        event = getattr(sys.modules[fw], "Event")()
+
+        async def func(x, y):
+            await event.wait()
+            if x == y:
+                1 / 0
+            return x + y
+
+        db = await apsw.Connection.as_async("")
+        await db.create_scalar_function("func", func)
+
+        match fw:
+            case "asyncio":
+
+                async def wait_on(f):
+                    return await f
+
+                try:
+                    async with asyncio.TaskGroup() as tg:
+                        task1 = tg.create_task(wait_on(db.execute("select func(4, 5), func(4, 4)")))
+                        task2 = tg.create_task(wait_on(db.execute("select func(3,4)")))
+                        task3 = tg.create_task(wait_on(db.pragma("user_version", 7)))
+
+                        asyncio.get_running_loop().call_soon(event.set)
+                except ExceptionGroup:
+                    pass
+
+                with self.assertRaises(ZeroDivisionError):
+                    await task1
+
+                with self.assertRaises(asyncio.CancelledError):
+                    await task2
+
+                with self.assertRaises(asyncio.CancelledError):
+                    await task3
+
+            case _:
+                raise NotImplementedError
+
+        self.assertEqual(0, await db.pragma("user_version"))
+
     def get_all_atests(self):
         for n in dir(self):
             if "atestA" <= n <= "atestZ":
