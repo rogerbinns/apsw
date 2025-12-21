@@ -8,6 +8,7 @@ import contextlib
 import contextvars
 import threading
 import unittest
+import sys
 
 import apsw
 import apsw.aio
@@ -221,7 +222,11 @@ class Async(unittest.TestCase):
             apsw.connection_hooks = []
 
     async def atestCancel(self, fw):
+        # ::TODO:: need to set ExceptionGroup to Exception in py3.10
         event = getattr(sys.modules[fw], "Event")()
+
+        async def set_event():
+            event.set()
 
         async def func(x, y):
             await event.wait()
@@ -244,7 +249,8 @@ class Async(unittest.TestCase):
                         task2 = tg.create_task(wait_on(db.execute("select func(3,4)")))
                         task3 = tg.create_task(wait_on(db.pragma("user_version", 7)))
 
-                        asyncio.get_running_loop().call_soon(event.set)
+                        tg.create_task(set_event())
+
                 except ExceptionGroup:
                     pass
 
@@ -277,13 +283,44 @@ class Async(unittest.TestCase):
                         n.start_soon(wait_on, 1, db.execute("select func(3,4)"))
                         n.start_soon(wait_on, 2, db.pragma("user_version", 7))
 
-                        event.set()
+                        n.start_soon(set_event)
+
                 except ExceptionGroup:
                     pass
 
                 self.assertIsInstance(retvals[0].exception, ZeroDivisionError)
                 self.assertIsInstance(retvals[1].exception, trio.Cancelled)
                 self.assertIsInstance(retvals[2].exception, trio.Cancelled)
+
+            case "anyio":
+
+                class Retval:
+                    pass
+
+                retvals = [Retval(), Retval(), Retval()]
+
+                async def wait_on(index, f):
+                    try:
+                        retvals[index].value = await f
+                    except BaseException as exc:
+                        retvals[index].exception = exc
+                        raise
+
+                try:
+                    async with anyio.create_task_group() as tg:
+                        tg.start_soon(wait_on, 0, db.execute("select func(4, 5), func(4, 4)"))
+                        tg.start_soon(wait_on, 1, db.execute("select func(3,4)"))
+                        tg.start_soon(wait_on, 2, db.pragma("user_version", 7))
+
+                        tg.start_soon(set_event)
+                except ExceptionGroup:
+                    pass
+
+                cancelled = anyio.get_cancelled_exc_class()
+
+                self.assertIsInstance(retvals[0].exception, ZeroDivisionError)
+                self.assertIsInstance(retvals[1].exception, cancelled)
+                self.assertIsInstance(retvals[2].exception, cancelled)
 
             case _:
                 raise NotImplementedError
