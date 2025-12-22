@@ -223,6 +223,7 @@ class Async(unittest.TestCase):
 
     async def atestCancel(self, fw):
         if sys.version_info < (3, 11):
+            global ExceptionGroup
             ExceptionGroup = Exception
 
         event = getattr(sys.modules[fw], "Event")()
