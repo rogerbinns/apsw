@@ -333,6 +333,123 @@ class Async(unittest.TestCase):
 
         self.assertEqual(0, await db.pragma("user_version"))
 
+    async def atestTimeout(self, fw):
+
+        Event = getattr(sys.modules[fw], "Event")
+        sleep = getattr(sys.modules[fw], "sleep")
+
+        entered = False
+        event = Event()
+
+        async def func(x):
+            nonlocal entered
+            entered = True
+            await sleep(3600)
+            return x + 1
+
+        async def block():
+            await event.wait()
+            return True
+
+        db = await apsw.Connection.as_async("")
+        await db.create_scalar_function("func", func)
+        await db.create_scalar_function("block", block)
+
+        def timeout_seq():
+            # the sequences we try to get func executing and then
+            # timeout, in seconds.  we also want to hit the
+            # enqueue timeout etc
+            yield -10
+            yield -1
+            yield 0
+            i=0.001
+            yield i
+            while i < 5:
+                i *= 2
+                yield i
+            raise Exception("Unable to find timeout value that works")
+
+        match fw:
+            case "asyncio":
+                time = asyncio.get_running_loop().time
+
+                # have task2 stuck in queue
+                task1 = db.execute("select block()")
+                with apsw.aio.contextvar_set(apsw.aio.deadline, time()-1):
+                    task2 = db.execute("select func(3)")
+                event.set()
+                await task1
+
+                with self.assertRaises(TimeoutError):
+                    await task2
+
+                # have timeout in the async func sleep
+                for timeout in timeout_seq():
+                    with apsw.aio.contextvar_set(apsw.aio.deadline, time()+timeout):
+                        task = db.execute("select func(3)")
+                    try:
+                        await task
+                    except TimeoutError:
+                        pass
+                    if entered:
+                        break
+
+            case "trio":
+                # we support both trio current_effective_deadline and
+                # out deadline context var.
+
+                # trio deadline first
+                time = trio.lowlevel.current_clock().current_time
+                task1 = db.execute("select block()")
+                with trio.fail_after(0):
+                    task2 = db.execute("select func(3)")
+                    event.set()
+                await task1
+
+                with self.assertRaisesRegex(trio.TooSlowError, "Deadline exceeded in queue"):
+                    await task2
+
+                # have timeout in the async func sleep
+                for timeout in timeout_seq():
+                    if timeout < 0:
+                        continue
+                    with trio.fail_after(timeout):
+                        task = db.execute("select func(3)")
+                    try:
+                        await task
+                    except trio.TooSlowError:
+                        pass
+                    if entered:
+                        break
+
+                # now with our deadline context var
+                event = Event()
+                entered = False
+
+                # have task2 stuck in queue
+                task1 = db.execute("select block()")
+                with apsw.aio.contextvar_set(apsw.aio.deadline, time()-1):
+                    task2 = db.execute("select func(3)")
+                event.set()
+                await task1
+
+                with self.assertRaises(trio.TooSlowError):
+                    await task2
+
+                # have timeout in the async func sleep
+                for timeout in timeout_seq():
+                    with apsw.aio.contextvar_set(apsw.aio.deadline, time()+timeout):
+                        task = db.execute("select func(3)")
+                    try:
+                        await task
+                    except trio.TooSlowError:
+                        pass
+                    if entered:
+                        break
+
+            case _:
+                raise NotImplementedError
+
     def get_all_atests(self):
         for n in dir(self):
             if "atestA" <= n <= "atestZ":
