@@ -375,7 +375,10 @@ APSWSession_close_internal(APSWSession *self)
   Py_CLEAR(self->table_filter);
 
   if (self->connection)
+  {
+    sqlite3_mutex_leave(self->connection->dbmutex);
     Connection_remove_dependent(self->connection, (PyObject *)self);
+  }
   Py_CLEAR(self->connection);
 }
 
@@ -387,8 +390,6 @@ APSWSession_dealloc(PyObject *self_)
   if (mutex)
     DBMUTEX_FORCE(mutex);
   APSWSession_close_internal(self);
-  if (mutex)
-    sqlite3_mutex_leave(mutex);
   Py_TpFree(self_);
 }
 
@@ -416,9 +417,7 @@ APSWSession_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   if (self->connection)
   {
     DBMUTEX_ENSURE(self->connection);
-    sqlite3_mutex *mutex = self->connection->dbmutex;
     APSWSession_close_internal(self);
-    sqlite3_mutex_leave(mutex);
   }
   MakeExistingException();
 
