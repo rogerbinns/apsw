@@ -118,6 +118,7 @@ static PyTypeObject AwaitableWrapperType = {
   .tp_iter = PyObject_SelfIter,
   .tp_iternext = AwaitableWrapper_next,
   .tp_dealloc = AwaitableWrapper_dealloc,
+  .tp_methods = AwaitableMethods,
   .tp_as_async = &AwaitableWrapper_async_methods,
 };
 
