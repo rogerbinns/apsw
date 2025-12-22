@@ -222,7 +222,9 @@ class Async(unittest.TestCase):
             apsw.connection_hooks = []
 
     async def atestCancel(self, fw):
-        # ::TODO:: need to set ExceptionGroup to Exception in py3.10
+        if sys.version_info < (3, 11):
+            ExceptionGroup = Exception
+
         event = getattr(sys.modules[fw], "Event")()
 
         async def set_event():
@@ -239,6 +241,9 @@ class Async(unittest.TestCase):
 
         match fw:
             case "asyncio":
+                if sys.version_info < (3, 11):
+                    # py 3.10 doesn't have TaskGroup
+                    return
 
                 async def wait_on(f):
                     return await f
