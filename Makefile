@@ -219,7 +219,7 @@ compile-win:  ## Builds and tests against all the Python versions on Windows
 # I did try to make this use venv but then the pip inside the venv and
 # other packages were skipped due to metadata issues
 compile-win-one:  ## Does one Windows build - set PYTHON variable
-	$(PYTHON) -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools
+	$(PYTHON) -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools trio anyio
 	$(PYTHON) -m pip uninstall -y apsw
 	copy tools\\setup-pypi.cfg setup.apsw
 	$(PYTHON)  -m pip --no-cache-dir wheel -v .
