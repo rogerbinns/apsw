@@ -1634,13 +1634,13 @@ again:
       return NULL;
 #else
       PyObject *exc_type = NULL, *exc_value = NULL, *exc_traceback = NULL;
-      exc_type = PyTuple_GetItem(result, 0);
+      exc_type = Py_XNewRef(PyTuple_GetItem(result, 0));
       if (exc_type)
-        exc_value = PyTuple_GetItem(result, 1);
+        exc_value = Py_XNewRef(PyTuple_GetItem(result, 1));
       if (exc_value)
-        exc_traceback = PyTuple_GetItem(result, 2);
+        exc_traceback = Py_XNewRef(PyTuple_GetItem(result, 2));
       Py_DECREF(result);
-      if (!exc_type || !exc_valuee || !exc_traceback)
+      if (!exc_type || !exc_value || !exc_traceback)
       {
         Py_XDECREF(exc_type);
         Py_XDECREF(exc_value);
