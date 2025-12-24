@@ -334,18 +334,50 @@ class Async(unittest.TestCase):
         self.assertEqual(0, await db.pragma("user_version"))
 
     async def atestTimeout(self, fw):
-
         Event = getattr(sys.modules[fw], "Event")
         sleep = getattr(sys.modules[fw], "sleep")
 
-        entered = False
+        match fw:
+            case "asyncio":
+                time = asyncio.get_running_loop().time
+                timeout_exc_class = TimeoutError
+            case "trio":
+                time = trio.lowlevel.current_clock().current_time
+                timeout_exc_class = trio.TooSlowError
+            case "anyio":
+                time = anyio.current_time
+                if "trio" in sys.modules:
+                    # this is where the underlying framework leaks
+                    # because we don't do an anyio specific controller
+                    timeout_exc_class = (TimeoutError, getattr(sys.modules["trio"], "TooSlowError"))
+                else:
+                    timeout_exc_class = TimeoutError
+            case _:
+                raise NotImplementedError
+
+        def check_timeout(exc):
+            # other exceptions can happen during timeout exceptions so
+            # check them all
+            got_timeout = False
+            while exc is not None:
+                if isinstance(exc, timeout_exc_class):
+                    got_timeout = True
+                    break
+                exc = exc.__cause__ or exc.__context__
+            if not got_timeout:
+                raise
+
         event = Event()
 
-        async def func(x):
-            nonlocal entered
-            entered = True
-            await sleep(3600)
-            return x + 1
+        timed_out = None
+
+        async def func():
+            nonlocal timed_out
+            try:
+                await sleep(3600)
+            except BaseException as exc:
+                timed_out = exc
+                raise
 
         async def block():
             await event.wait()
@@ -354,21 +386,53 @@ class Async(unittest.TestCase):
         db = await apsw.Connection.as_async("")
         await db.create_scalar_function("func", func)
         await db.create_scalar_function("block", block)
+        await db.create_scalar_function("sync_cvar", sync_get_cvar)
+        await db.create_scalar_function("async_cvar", async_get_cvar)
+
+        # deadline should work for all frameworks - check deadline is passed
+        # to both sync and async callbacks
+        v = time() + 3600
+        with apsw.aio.contextvar_set(apsw.aio.deadline, v):
+            self.assertEqual(v, await (await db.execute("select sync_cvar(?)", ("apsw.aio.deadline",))).get)
+            self.assertEqual(v, await (await db.execute("select async_cvar(?)", ("apsw.aio.deadline",))).get)
+
+        # block queue and check second item gets timed out
+        task1 = db.execute("select block()")
+        with apsw.aio.contextvar_set(apsw.aio.deadline, time()):
+            task2 = db.execute("select func()")
+            event.set()
+
+        try:
+            await task2
+            1 / 0  # should not be reached
+        except BaseException as exc:
+            check_timeout(exc)
 
         def timeout_seq():
             # the sequences we try to get func executing and then
-            # timeout, in seconds.  we also want to hit the
-            # enqueue timeout etc
+            # timeout, in seconds.
             yield -10
             yield -1
             yield 0
-            i=0.001
+            i = 0.001
             yield i
             while i < 5:
                 i *= 2
                 yield i
             raise Exception("Unable to find timeout value that works")
 
+        # have timeout in the async func sleep
+        for timeout in timeout_seq():
+            with apsw.aio.contextvar_set(apsw.aio.deadline, time() + timeout):
+                task = db.execute("select func()")
+            try:
+                await task
+            except BaseException as exc:
+                check_timeout(exc)
+            if timed_out:
+                break
+
+        return
         match fw:
             case "asyncio":
                 time = asyncio.get_running_loop().time
