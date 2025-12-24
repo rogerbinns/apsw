@@ -28,7 +28,7 @@ no deadline.
 
     This is the only way to set a deadline.  :exc:`TimeoutError` will be
     raised if the deadline is exceeded.  The time is measured using
-    :func:`asyncio.loop.time`
+    :meth:`asyncio.loop.time`
 
 :class:`Trio`
 
@@ -43,15 +43,26 @@ no deadline.
     Time is measured using `current_clock <https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.current_clock>`__
     in place when the connection is created.
 
-    .. code-block:: python
+**AnyIO**
 
-    # 10 seconds
-    async with apsw.aio.timeout.deadline(loop.time() + 10):
+    You can use `anyio.current_effective_deadline <https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline>` to
+    set this::
+
+        with anyio.fail_after(15):
+            with apsw.aio.deadline.set(anyio.current_effective_deadline):
+                # do operations that will pick up the fail after value
+                ,,,
+
+
+.. code-block:: python
+
+    # a minute
+    with apsw.aio.timeout.deadline.set(loop.time() + 60):
        # do operations
        ...
-       # you can use it nested - these operations could take a
-       # minute
-       with apsw.aio.timeout.set(loop.time() + 60):
+       # you can use it nested - these operations are 10
+       # seconds
+       with apsw.aio.timeout.set(loop.time() + 10):
           # do other operations
           ...
 

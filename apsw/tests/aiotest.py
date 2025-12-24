@@ -397,7 +397,7 @@ class Async(unittest.TestCase):
             self.assertEqual(v, await (await db.execute("select async_cvar(?)", ("apsw.aio.deadline",))).get)
 
         # block queue and check second item gets timed out
-        task1 = db.execute("select block()")
+        db.execute("select block()")
         with apsw.aio.contextvar_set(apsw.aio.deadline, time()):
             task2 = db.execute("select func()")
             event.set()
@@ -432,83 +432,42 @@ class Async(unittest.TestCase):
             if timed_out:
                 break
 
-        return
         match fw:
             case "asyncio":
-                time = asyncio.get_running_loop().time
-
-                # have task2 stuck in queue
-                task1 = db.execute("select block()")
-                with apsw.aio.contextvar_set(apsw.aio.deadline, time()-1):
-                    task2 = db.execute("select func(3)")
-                event.set()
-                await task1
-
-                with self.assertRaises(TimeoutError):
-                    await task2
-
-                # have timeout in the async func sleep
-                for timeout in timeout_seq():
-                    with apsw.aio.contextvar_set(apsw.aio.deadline, time()+timeout):
-                        task = db.execute("select func(3)")
-                    try:
-                        await task
-                    except TimeoutError:
-                        pass
-                    if entered:
-                        break
-
+                # nothing else to test
+                pass
             case "trio":
-                # we support both trio current_effective_deadline and
-                # out deadline context var.
+                # We support both trio current_effective_deadline and
+                # our deadline context var with the latter taking
+                # priority.  It has been been tested above.  Now
+                # check current_effective_deadline works
 
-                # trio deadline first
-                time = trio.lowlevel.current_clock().current_time
-                task1 = db.execute("select block()")
-                with trio.fail_after(0):
-                    task2 = db.execute("select func(3)")
-                    event.set()
-                await task1
+                async def current_effective_deadline():
+                    return trio.current_effective_deadline()
 
-                with self.assertRaisesRegex(trio.TooSlowError, "Deadline exceeded in queue"):
-                    await task2
+                await db.create_scalar_function("ced", current_effective_deadline)
 
-                # have timeout in the async func sleep
+                v = time() + 3600
+                with trio.fail_at(v):
+                    # sqlite worker thread should not have deadline set because using ced
+                    with self.assertRaises(LookupError):
+                        await (await db.execute("select sync_cvar(?)", ("apsw.aio.deadline",))).get
+                    with self.assertRaises(LookupError):
+                        await (await db.execute("select async_cvar(?)", ("apsw.aio.deadline",))).get
+                    # and this should be set
+                    self.assertEqual(v, await (await db.execute("select ced()")).get)
+
+            case "anyio":
+                timed_out = False
                 for timeout in timeout_seq():
-                    if timeout < 0:
-                        continue
-                    with trio.fail_after(timeout):
-                        task = db.execute("select func(3)")
                     try:
-                        await task
-                    except trio.TooSlowError:
-                        pass
-                    if entered:
-                        break
-
-                # now with our deadline context var
-                event = Event()
-                entered = False
-
-                # have task2 stuck in queue
-                task1 = db.execute("select block()")
-                with apsw.aio.contextvar_set(apsw.aio.deadline, time()-1):
-                    task2 = db.execute("select func(3)")
-                event.set()
-                await task1
-
-                with self.assertRaises(trio.TooSlowError):
-                    await task2
-
-                # have timeout in the async func sleep
-                for timeout in timeout_seq():
-                    with apsw.aio.contextvar_set(apsw.aio.deadline, time()+timeout):
-                        task = db.execute("select func(3)")
-                    try:
-                        await task
-                    except trio.TooSlowError:
-                        pass
-                    if entered:
+                        with anyio.fail_after(timeout):
+                            with apsw.aio.contextvar_set(apsw.aio.deadline, anyio.current_effective_deadline()):
+                                task = db.execute("select func()")
+                                await task
+                    except BaseException as exc:
+                        check_timeout(exc)
+                    if timed_out:
                         break
 
             case _:
@@ -542,8 +501,17 @@ class Async(unittest.TestCase):
                 trio.run(self.asyncTearDown, fn("trio"))
 
     def testAnyIO(self):
-        backends = ["asyncio"]
+        backends = []
         try:
+            global asyncio
+            import asyncio
+
+            backends.append("asyncio")
+        except ImportError:
+            pass
+
+        try:
+            global trio
             import trio
 
             backends.append("trio")
