@@ -558,7 +558,12 @@ class Async(unittest.TestCase):
         for be in backends:
             for fn in self.get_all_atests():
                 with self.subTest(fw=f"anyio/{be}", fn=fn):
-                    anyio.run(self.asyncTearDown, fn("anyio"), backend=be)
+                    match be:
+                        case "asyncio":
+                            backend_options = {"debug": True}
+                        case "trio":
+                            backend_options = {}
+                    anyio.run(self.asyncTearDown, fn("anyio"), backend=be, backend_options=backend_options)
 
 
 cvar_outside = contextvars.ContextVar("outside")
