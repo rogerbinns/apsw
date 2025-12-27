@@ -270,7 +270,6 @@ class AsyncIO:
 class Trio:
     """Uses `Trio <https://trio.readthedocs.io/>`__ for async concurrency"""
 
-
     def configure(self, db: apsw.Connection):
         "Setup database, just after it is created"
         for hook in apsw.connection_hooks:
@@ -306,21 +305,21 @@ class Trio:
 
     def worker_thread_run(self, q):
         while (future := q.get()) is not None:
-            if future._is_cancelled:
-                continue
-            with future.call:
-                _current_future.set(future)
+            if not future._is_cancelled:
+                with future.call:
+                    _current_future.set(future)
 
-                try:
-                    if future.deadline is not math.inf and future.deadline < self.clock.current_time():
-                        raise trio.TooSlowError("Deadline exceeded in queue")
+                    try:
+                        if future.deadline is not math.inf and future.deadline < self.clock.current_time():
+                            raise trio.TooSlowError("Deadline exceeded in queue")
 
-                    future.result = future.call()
-                except BaseException as exc:
-                    future.result = exc
-                    future.is_exception = True
+                        future.result = future.call()
+                    except BaseException as exc:
+                        future.result = exc
+                        future.is_exception = True
 
-                trio.from_thread.run_sync(future.event.set, trio_token=future.token)
+            # this ensures completion even if cancelled
+            trio.from_thread.run_sync(future.event.set, trio_token=future.token)
 
     def async_run_coro(self, coro):
         try:
@@ -368,6 +367,8 @@ class TrioFuture:
         except trio.Cancelled:
             self._is_cancelled = True
             raise
+        if self._is_cancelled:
+            raise Trio.Cancelled()
         if self.is_exception:
             raise self.result
         return self.result
@@ -378,6 +379,8 @@ class TrioFuture:
     def cancel(self):
         if not self.event.is_set():
             self._is_cancelled = True
+        if self._is_cancelled:
+            trio.from_thread.run_sync(self.event.set, trio_token=future.token)
         return self._is_cancelled
 
     def cancelled(self):
