@@ -12,7 +12,7 @@ import math
 
 import apsw
 
-from typing import TypeVar
+from typing import TypeVar, Protocol
 
 T = TypeVar("T")
 
@@ -114,9 +114,41 @@ else:
 
         return _contextvar_set_wrapper()
 
+class AsyncResult(Protocol):
+    """
+    All async results have these methods, no matter which API or
+    Controller is in use.  This is a :class:`~typing.Protocol` and
+    **not** a real class.  The actual class returned will vary
+    even for the same call.
+    """
+
+    def __await__(self) -> Generator[Any, None, Any]:
+        "awaitable, giving the call result or exception"
+        ...
+
+    def cancel(self) -> bool:
+        """Cancel the call
+
+        Attempts to stop the call if already in progress, or not start
+        it.  Returns ``True`` if marked for cancellation, or ``False``
+        if too late.
+        """
+        ...
+
+    def cancelled(self) -> bool:
+        """Return ``True`` if call was marked cancelled, else ``False``
+
+        Cancellation can only succeed before completion.
+        """
+        ...
+
+    def done(self) -> bool:
+        """Return ``True`` if call has completed, either with a result or cancelled, else ``False"""
+        ...
+
 
 # contextvars should be top level.  this is used to track the currently
-# processing future
+# processing future for all controllers
 _current_future = contextvars.ContextVar("apsw.aio._current_future")
 
 
