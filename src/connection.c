@@ -609,7 +609,7 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   Connection *self = (Connection *)self_;
   self->transaction_mode = "DEFERRED";
 
-  PyObject *hooks = NULL, *hook = NULL, *iterator = NULL, *hookresult = NULL;
+  PyObject *hook = NULL, *iterator = NULL, *hookresult = NULL;
   const char *filename = NULL;
   int res = 0;
   int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
@@ -724,18 +724,19 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   else
   {
     /* call connection hooks */
-    hooks = PyObject_GetAttr(apswmodule, apst.connection_hooks);
+    PyObject *hooks = PyObject_GetAttr(apswmodule, apst.connection_hooks);
     if (!hooks)
       goto pyexception;
 
     iterator = PyObject_GetIter(hooks);
     if (!iterator)
     {
-      Py_DECREF(hooks);
       AddTraceBackHere(__FILE__, __LINE__, "Connection.__init__", "{s: O}", "connection_hooks", OBJ(hooks));
+      Py_DECREF(hooks);
       goto pyexception;
     }
 
+    Py_DECREF(hooks);
     while ((hook = PyIter_Next(iterator)))
     {
       PyObject *vargs[] = { NULL, (PyObject *)self };
@@ -763,7 +764,6 @@ pyexception:
 
 finally:
   Py_XDECREF(iterator);
-  Py_XDECREF(hooks);
   Py_XDECREF(hook);
   if (res == 0)
   {
