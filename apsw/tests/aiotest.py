@@ -35,8 +35,10 @@ class Async(unittest.TestCase):
         # we need this one because the event loop must still be
         # running in order to do aclose
         try:
+            steps = apsw.aio.DEADLINE_PROGRESS_STEPS
             return await coro
         finally:
+            apsw.aio.DEADLINE_PROGRESS_STEPS = steps
             for c in apsw.connections():
                 await c.aclose()
 
