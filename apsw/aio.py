@@ -275,7 +275,7 @@ class Trio:
         "Periodic check if the deadline has passed"
         future = _current_future.get()
         if future._is_cancelled:
-            raise trio.Cancelled("cancelled in progress handler")
+            raise TrioFuture.Cancelled("cancelled in progress handler")
         if future.deadline is not math.inf and future.deadline < self.clock.current_time():
             raise trio.TooSlowError("deadline exceeded in progress handler")
         return False
@@ -354,6 +354,11 @@ class TrioFuture:
         "_is_cancelled",
     )
 
+    class Cancelled(Exception):
+        "Result when an operation was cancelled"
+
+        pass
+
     async def aresult(self):
         ":meta private:"
         try:
@@ -362,7 +367,7 @@ class TrioFuture:
             self._is_cancelled = True
             raise
         if self._is_cancelled:
-            raise Trio.Cancelled()
+            raise TrioFuture.Cancelled()
         if self.is_exception:
             raise self.result
         return self.result
