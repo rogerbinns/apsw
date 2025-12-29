@@ -4828,7 +4828,7 @@ class APSW(unittest.TestCase):
         self.db.close()
         nargs = self.connection_nargs
         tested = 0
-        for func in [x for x in dir(self.db) if x in nargs or (not x.startswith("__") and not x in ("close",))]:
+        for func in [x for x in dir(self.db) if x in nargs or (not x.startswith("__") and x not in ("close", "aclose", "as_async"))]:
             tested += 1
             args = ("one", "two", "three")[: nargs.get(func, 0)]
 
@@ -4845,7 +4845,7 @@ class APSW(unittest.TestCase):
         # do the same thing, but for cursor
         nargs = self.cursor_nargs
         tested = 0
-        for func in [x for x in dir(cur) if not x.startswith("__") and not x in ("close",)]:
+        for func in [x for x in dir(cur) if not x.startswith("__") and x not in ("close", "aclose")]:
             tested += 1
             args = ("one", "two", "three")[: nargs.get(func, 0)]
             try:
@@ -5474,10 +5474,11 @@ class APSW(unittest.TestCase):
 
         for o in objects:
             for n in dir(o):
-                try:
-                    getattr(o, n)
-                except apsw.Error:
-                    pass
+                if n not in {"async_controller"}:
+                    try:
+                        getattr(o, n)
+                    except apsw.Error:
+                        pass
 
     def testIssue488(self):
         "__init__ called multiple times"
