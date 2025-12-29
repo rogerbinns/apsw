@@ -9,6 +9,8 @@ import contextvars
 import threading
 import unittest
 import sys
+import inspect
+import time
 
 import apsw
 import apsw.aio
@@ -17,15 +19,10 @@ import apsw.bestpractice
 
 #### ::TODO::  tests to add
 #
-# timeouts
-#
-# cancels
-#
 # inheritance of connection/cursor
 #
 # blob needs aenter / aexit
 # backup: aclose
-# cursor get/fetchall need to close the cursor (or maybe not?)
 #
 # multiple connections active at once (also backup with this)
 
@@ -469,6 +466,7 @@ class Async(unittest.TestCase):
             await event.wait()
             return True
 
+        apsw.aio.DEADLINE_PROGRESS_STEPS = 10
         db = await apsw.Connection.as_async("")
         await db.create_scalar_function("func", func)
         await db.create_scalar_function("block", block)
@@ -484,6 +482,7 @@ class Async(unittest.TestCase):
 
         # block queue and check second item gets timed out
         db.execute("select block()")
+        release_gil()
         with apsw.aio.contextvar_set(apsw.aio.deadline, time()):
             task2 = db.execute("select func()")
             event.set()
@@ -511,11 +510,24 @@ class Async(unittest.TestCase):
         for timeout in timeout_seq():
             with apsw.aio.contextvar_set(apsw.aio.deadline, time() + timeout):
                 task = db.execute("select func()")
+                release_gil()
             try:
                 await task
             except BaseException as exc:
                 check_timeout(exc)
-            if timed_out:
+                break
+
+        # now in long query
+        for timeout in timeout_seq():
+            if timeout <= 0:
+                continue
+            with apsw.aio.contextvar_set(apsw.aio.deadline, time() + timeout):
+                task = db.execute(fractal_sql)
+                release_gil()
+            try:
+                await task
+            except BaseException as exc:
+                check_timeout(exc)
                 break
 
         match fw:
@@ -544,7 +556,6 @@ class Async(unittest.TestCase):
                     self.assertEqual(v, await (await db.execute("select ced()")).get)
 
             case "anyio":
-                timed_out = False
                 for timeout in timeout_seq():
                     try:
                         with anyio.fail_after(timeout):
@@ -553,7 +564,6 @@ class Async(unittest.TestCase):
                                 await task
                     except BaseException as exc:
                         check_timeout(exc)
-                    if timed_out:
                         break
 
             case _:
@@ -619,6 +629,12 @@ class Async(unittest.TestCase):
                             backend_options = {}
                     anyio.run(self.asyncTearDown, fn("anyio"), backend=be, backend_options=backend_options)
 
+    def testNoIO(self):
+        "no async running"
+        self.assertRaisesRegex(
+            RuntimeError, "Unable to determine current Async environment", apsw.Connection.as_async, ""
+        )
+
 
 cvar_outside = contextvars.ContextVar("outside")
 
@@ -655,6 +671,30 @@ def BatchSends(conn):
         for item in batcher.batch:
             actual_queue.put(item)
 
+# does a lot of work to test timeouts/cancellation
+fractal_sql = """
+    WITH RECURSIVE
+    xaxis(x) AS (VALUES(-2.0) UNION ALL SELECT x+0.05 FROM xaxis WHERE x<1.2),
+    yaxis(y) AS (VALUES(-1.0) UNION ALL SELECT y+0.1 FROM yaxis WHERE y<1.0),
+    m(iter, cx, cy, x, y) AS (
+        SELECT 0, x, y, 0.0, 0.0 FROM xaxis, yaxis
+        UNION ALL
+        SELECT iter+1, cx, cy, x*x-y*y + cx, 2.0*x*y + cy FROM m
+        WHERE (x*x + y*y) < 4.0 AND iter< 800000 -- this should be 28 and controls how much work is done
+    ),
+    m2(iter, cx, cy) AS (
+        SELECT max(iter), cx, cy FROM m GROUP BY cx, cy
+    ),
+    a(t) AS (
+        SELECT group_concat( substr(' .+*#', 1+min(iter/7,4), 1), '')
+        FROM m2 GROUP BY cy
+    )
+    SELECT group_concat(rtrim(t),x'0a') FROM a;"""
+
+def release_gil():
+    # called to ensure another thread has a chance to run
+    for i in range(5):
+        time.sleep(0)
 
 __all__ = ("Async",)
 
