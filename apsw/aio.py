@@ -180,14 +180,9 @@ class AsyncIO:
 
     def send(self, call):
         "Enqueues call to worker thread"
-        try:
-            future = self.loop.create_future()
-            self.queue.put((future, call))
-            return future
-        except AttributeError:
-            if self.queue is None:
-                raise apsw.ConnectionClosedError()
-            raise
+        future = self.loop.create_future()
+        self.queue.put((future, call))
+        return future
 
     def close(self):
         "Called from connection destructor, so the worker thread can be stopped"
@@ -301,7 +296,6 @@ class Trio:
 
     def close(self):
         self.queue.put(None)
-        self.queue = None
 
     def worker_thread_run(self, q):
         while (future := q.get()) is not None:
