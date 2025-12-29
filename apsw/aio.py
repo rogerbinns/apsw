@@ -114,12 +114,17 @@ else:
 
         return _contextvar_set_wrapper()
 
+
 class AsyncResult(Protocol):
     """
     All async results have these methods, no matter which API or
     Controller is in use.  This is a :class:`~typing.Protocol` and
     **not** a real class.  The actual class returned will vary
     even for the same call.
+
+    The methods can only be called in async context - calling in a
+    background thread will result in exceptions, wrong answers, or no
+    effect.
     """
 
     def __await__(self) -> Generator[Any, None, Any]:
@@ -186,20 +191,15 @@ class AsyncIO:
 
     def close(self):
         "Called from connection destructor, so the worker thread can be stopped"
-
-        # No guarantee of what thread will call this
-
         # How we tell the worker to exit
         self.queue.put(None)
-
-        # queue.SimpleQueue doesn't have a shutdown method like the more
-        # complex ones so we just set it to None which send detects
-        self.queue = None
 
     def progress_deadline_checker(self):
         "Periodic check if the deadline has passed"
         if (this_deadline := deadline.get()) is not None and self.loop.time() > this_deadline:
             raise TimeoutError()
+        if _current_future.get().done():
+            raise asyncio.CancelledError()
         return False
 
     def worker_thread_run(self, q):
@@ -241,7 +241,8 @@ class AsyncIO:
             # yes we really need the timeout twice.  when the wait_for one fires the
             # exception isn't propagated to us
             return asyncio.run_coroutine_threadsafe(
-                asyncio.wait_for(coro, this_timeout), self.loop,
+                asyncio.wait_for(coro, this_timeout),
+                self.loop,
             ).result(this_timeout)
         except concurrent.futures.TimeoutError:
             if sys.version_info < (3, 11):
@@ -334,6 +335,7 @@ class Trio:
         self.clock = trio.lowlevel.current_clock()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
+
 class TrioFuture:
     "Returned for each :class:`Trio` request"
 
@@ -379,7 +381,7 @@ class TrioFuture:
         if not self.event.is_set():
             self._is_cancelled = True
         if self._is_cancelled:
-            trio.from_thread.run_sync(self.event.set, trio_token=future.token)
+            self.event.set()
         return self._is_cancelled
 
     def cancelled(self):
@@ -387,6 +389,7 @@ class TrioFuture:
 
     def done(self):
         return self.event.is_set() or self._is_cancelled
+
 
 async def _trio_loop_run_coro(coro, this_deadline):
     with trio.fail_at(this_deadline):
