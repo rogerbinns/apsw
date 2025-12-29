@@ -342,7 +342,7 @@ APSWBackup_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
     ARG_EPILOG(NULL, Backup_exit_USAGE, );
   }
 
-  if (!IN_WORKER_THREAD(self->dest))
+  if (self->dest && !IN_WORKER_THREAD(self->dest))
     return error_sync_in_async_context();
 
   /* If already closed then we are fine - CHECK_BACKUP_CLOSED not needed*/
