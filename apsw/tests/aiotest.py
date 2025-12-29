@@ -56,6 +56,19 @@ class Async(unittest.TestCase):
         for name in "async_controller", "async_run_coro", "async_cursor_prefetch":
             self.assertRaisesRegex(AttributeError, ".*Do not overwrite apsw.*context", setattr, apsw, name, 3)
 
+    def verifyFuture(self, future):
+        # verify futures match apsw.aio.AsyncResult
+        self.assertTrue(inspect.isawaitable(future))
+
+        # methods can be implemented in python or c and inspect sees
+        # those differently
+        is_method = lambda x: inspect.ismethod(x) or inspect.isbuiltin(x)
+
+        for n in dir(apsw.aio.AsyncResult):
+            if not n.startswith("_"):
+                self.assertHasAttr(future, n)
+                self.assertTrue(is_method(getattr(future, n)))
+
     async def atestContextVars(self, fw):
         db = await apsw.Connection.as_async(":memory:")
         await db.create_scalar_function("sync_cvar", sync_get_cvar)
@@ -97,19 +110,32 @@ class Async(unittest.TestCase):
 
         cursor = await db.execute("select 3")
 
-        await cursor.aclose()
-        await cursor.aclose()
+        fut = cursor.aclose()
+        self.verifyFuture(fut)
+        await fut
+        fut = cursor.aclose()
+        self.verifyFuture(fut)
+        await fut
         cursor.close()
         cursor.close()
 
-        await db.aclose()
-        await db.aclose()
+        fut = db.aclose()
+        self.verifyFuture(fut)
+        await fut
+        fut = db.aclose()
+        self.verifyFuture(fut)
+        await fut
+
         db.close()
         db.close()
 
         for obj in cursor, db:
             await obj.aclose()
+            await obj.aclose()
             obj.close()
+            obj.close()
+
+        self.assertRaises(apsw.ConnectionClosedError, db.execute, "select 3")
 
     async def atestIteration(self, fw):
         "cursor iteration corner cases"
@@ -131,7 +157,10 @@ class Async(unittest.TestCase):
 
         await db.create_scalar_function("error_at", error_at)
 
-        cur = await db.execute("select * from x")
+        fut = db.execute("select * from x")
+        self.verifyFuture(fut)
+        cur = await fut
+
         # do anext without aiter call first
         self.assertRaisesRegex(RuntimeError, "__anext__  called without calling __aiter__", cur.__anext__)
 
@@ -222,6 +251,56 @@ class Async(unittest.TestCase):
             apsw.connection_hooks = []
 
     async def atestCancel(self, fw):
+        "Cancellation calls on futures"
+
+        # this is the only framework specific bit
+        Event = getattr(sys.modules[fw], "Event")
+        match fw:
+            case "asyncio":
+                cancelled_exc = asyncio.CancelledError
+            case "trio":
+                cancelled_exc = apsw.aio.TrioFuture.Cancelled
+            case "anyio":
+                cancelled_exc = []
+                if "asyncio" in sys.modules:
+                    cancelled_exc.append(asyncio.CancelledError)
+                if "trio" in sys.modules:
+                    cancelled_exc.append(apsw.aio.TrioFuture.Cancelled)
+
+                cancelled_exc = tuple(cancelled_exc)
+
+        event = Event()
+
+        async def func():
+            await event.wait()
+            return 3
+
+        apsw.aio.DEADLINE_PROGRESS_STEPS = 10
+
+        db = await apsw.Connection.as_async("")
+        await db.create_scalar_function("func", func)
+
+        fut = db.execute("select func(), func()")
+        self.assertFalse(fut.done())
+        res = fut.cancel()
+        self.assertEqual(res, fut.cancelled())
+        event.set()
+
+        with self.assertRaises(cancelled_exc):
+            await fut
+        self.assertTrue(fut.done())
+
+        fut = db.execute(fractal_sql)
+        self.assertFalse(fut.done())
+        release_gil()
+        res = fut.cancel()
+        self.assertEqual(res, fut.cancelled())
+        with self.assertRaises(cancelled_exc):
+            await fut
+        self.assertTrue(fut.done())
+
+    async def atestCancelFramework(self, fw):
+        "Cancellation done by the framework"
         if sys.version_info < (3, 11):
             global ExceptionGroup
             ExceptionGroup = Exception
@@ -261,12 +340,15 @@ class Async(unittest.TestCase):
                     pass
 
                 with self.assertRaises(ZeroDivisionError):
+                    self.verifyFuture(task1)
                     await task1
 
                 with self.assertRaises(asyncio.CancelledError):
+                    self.verifyFuture(task2)
                     await task2
 
                 with self.assertRaises(asyncio.CancelledError):
+                    self.verifyFuture(task3)
                     await task3
 
             case "trio":
@@ -277,6 +359,7 @@ class Async(unittest.TestCase):
                 retvals = [Retval(), Retval(), Retval()]
 
                 async def wait_on(index, f):
+                    self.verifyFuture(f)
                     try:
                         retvals[index].value = await f
                     except BaseException as exc:
@@ -306,6 +389,7 @@ class Async(unittest.TestCase):
                 retvals = [Retval(), Retval(), Retval()]
 
                 async def wait_on(index, f):
+                    self.verifyFuture(f)
                     try:
                         retvals[index].value = await f
                     except BaseException as exc:
