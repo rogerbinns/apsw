@@ -586,7 +586,7 @@ cursor_mutex_get(APSWCursor *self)
   /* happy path - get it immediately */
   res = sqlite3_mutex_try(self->connection->dbmutex);
   if (res == SQLITE_OK)
-    return 0;
+    goto checks;
 
   /*  the delays we do with the GIL released trying to get the mutex.
       there is no inherent right answer for how long it could take
@@ -609,6 +609,7 @@ cursor_mutex_get(APSWCursor *self)
     }
     Py_END_ALLOW_THREADS;
 
+    checks:
   /* shenanigans could have happened while GIL was released */
     if (!self->connection)
     {
