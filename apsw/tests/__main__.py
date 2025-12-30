@@ -5979,6 +5979,9 @@ class APSW(unittest.TestCase):
             "cursor",
             "APSWChangesetIterator",
             "JSONB",
+            "AwaitableWrapper",
+            "BoxedCall",
+            "APSWChangeset",
         ) or name in {"apsw_no_change_repr", "convert_column_to_pyobject"}:
             return
 
@@ -5993,6 +5996,7 @@ class APSW(unittest.TestCase):
                     "do_row_trace",
                     "step",
                     "close",
+                    "aclose",
                     "close_internal",
                     "tp_traverse",
                     "tp_str",
@@ -6012,6 +6016,7 @@ class APSW(unittest.TestCase):
                     "dealloc",
                     "init",
                     "close",
+                    "aclose",
                     "interrupt",
                     "close_internal",
                     "remove_dependent",
@@ -6036,6 +6041,7 @@ class APSW(unittest.TestCase):
                     "init",
                     "close_internal",
                     "close",
+                    "aclose",
                     "get_change_patch_set",
                     "get_change_patch_set_stream",
                     "dealloc",
