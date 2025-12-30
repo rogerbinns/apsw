@@ -342,9 +342,12 @@ apsw_run_in_event_loop(PyObject *coro)
   return result;
 }
 
+#undef PyObject_VectorcallMethod_AutoAsync
 static PyObject *
 PyObject_VectorcallMethod_AutoAsync(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames)
 {
+#include "faultinject.h"
+
   PyObject *result = PyObject_VectorcallMethod(name, args, nargsf, kwnames);
   if (result && PyCoro_CheckExact(result))
   {
@@ -355,9 +358,12 @@ PyObject_VectorcallMethod_AutoAsync(PyObject *name, PyObject *const *args, size_
   return result;
 }
 
+#undef PyObject_Vectorcall_AutoAsync
 static PyObject *
 PyObject_Vectorcall_AutoAsync(PyObject *callable, PyObject *const *args, size_t nargsf, PyObject *kwnames)
 {
+#include "faultinject.h"
+
   PyObject *result = PyObject_Vectorcall(callable, args, nargsf, kwnames);
   if (result && PyCoro_CheckExact(result))
   {
@@ -368,15 +374,21 @@ PyObject_Vectorcall_AutoAsync(PyObject *callable, PyObject *const *args, size_t 
   return result;
 }
 
+#undef PyObject_VectorcallMethod_NoAsync
 static PyObject *
 PyObject_VectorcallMethod_NoAsync(PyObject *name, PyObject *const *args, size_t nargsf, PyObject *kwnames)
 {
+#include "faultinject.h"
+
   return PyObject_VectorcallMethod(name, args, nargsf, kwnames);
 }
 
+#undef PyObject_Vectorcall_NoAsync
 static PyObject *
 PyObject_Vectorcall_NoAsync(PyObject *callable, PyObject *const *args, size_t nargsf, PyObject *kwnames)
 {
+#include "faultinject.h"
+
   return PyObject_Vectorcall(callable, args, nargsf, kwnames);
 }
 
