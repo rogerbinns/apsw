@@ -583,7 +583,7 @@ class Async(unittest.TestCase):
 
         for fn in self.get_all_atests():
             with self.subTest(fw="asyncio", fn=fn):
-                asyncio.run(self.asyncTearDown(fn("asyncio")))
+                asyncio.run(self.asyncTearDown(fn("asyncio")), debug=False)
 
     def testTrio(self):
         global trio
@@ -624,7 +624,7 @@ class Async(unittest.TestCase):
                 with self.subTest(fw=f"anyio/{be}", fn=fn):
                     match be:
                         case "asyncio":
-                            backend_options = {"debug": True}
+                            backend_options = {"debug": False}
                         case "trio":
                             backend_options = {}
                     anyio.run(self.asyncTearDown, fn("anyio"), backend=be, backend_options=backend_options)
