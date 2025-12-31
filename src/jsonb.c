@@ -773,7 +773,7 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
       tmp_str = PyObject_Str(obj);
       if (!tmp_str)
         return -1;
-      Py_ssize_t py_length;
+      Py_ssize_t py_length = 0;
       utf8 = PyUnicode_AsUTF8AndSize(tmp_str, &py_length);
       length = (size_t)py_length;
     }
