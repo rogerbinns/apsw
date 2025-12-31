@@ -32,10 +32,10 @@ class Async(unittest.TestCase):
         # we need this one because the event loop must still be
         # running in order to do aclose
         try:
-            steps = apsw.aio.DEADLINE_PROGRESS_STEPS
-            return await coro
+            # we have to set it to its value because there is no way to get just the token
+            with apsw.aio.contextvar_set(apsw.aio.check_progress_steps, apsw.aio.check_progress_steps.get()):
+                return await coro
         finally:
-            apsw.aio.DEADLINE_PROGRESS_STEPS = steps
             for c in apsw.connections():
                 await c.aclose()
 
@@ -274,7 +274,7 @@ class Async(unittest.TestCase):
             await event.wait()
             return 3
 
-        apsw.aio.DEADLINE_PROGRESS_STEPS = 10
+        apsw.aio.check_progress_steps.set(10)
 
         db = await apsw.Connection.as_async("")
         await db.create_scalar_function("func", func)
@@ -466,7 +466,7 @@ class Async(unittest.TestCase):
             await event.wait()
             return True
 
-        apsw.aio.DEADLINE_PROGRESS_STEPS = 10
+        apsw.aio.check_progress_steps.set(10)
         db = await apsw.Connection.as_async("")
         await db.create_scalar_function("func", func)
         await db.create_scalar_function("block", block)

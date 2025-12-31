@@ -72,11 +72,17 @@ no deadline.
 
 """
 
-DEADLINE_PROGRESS_STEPS = 50_000
-"""How many steps between checks to see if the deadline has been exceeded
+check_progress_steps : contextvars.ContextVar[int] = contextvars.ContextVar("apsw.aio.check_progress_steps", default=50_000)
+"""How many steps between checks to check for cancellation and deadlines
 
-The smaller the number, the more frequent the checks, but also more
-time consumed making the checks.
+While SQLite queries are executing, periodic checks are made to see if
+the request has been cancelled, or the deadline exceeded.  This is
+done in the :meth:`progress handler
+<apsw.Connection.set_progress_handler>`.
+
+The default should correspond to around 10 checks per second, but will
+vary based on the queries.  The smaller the number, the more frequent
+the checks, but also more time consumed making the checks.
 """
 
 
@@ -108,7 +114,7 @@ else:
         def _contextvar_set_wrapper():
             token = var.set(value)
             try:
-                yield
+                yield token
             finally:
                 var.reset(token)
 
@@ -181,7 +187,7 @@ class AsyncIO:
         "Setup database, just after it is created"
         for hook in apsw.connection_hooks:
             hook(db)
-        db.set_progress_handler(self.progress_deadline_checker, DEADLINE_PROGRESS_STEPS, id=self)
+        db.set_progress_handler(self.progress_checker, check_progress_steps.get(), id=self)
 
     def send(self, call):
         "Enqueues call to worker thread"
@@ -194,8 +200,8 @@ class AsyncIO:
         # How we tell the worker to exit
         self.queue.put(None)
 
-    def progress_deadline_checker(self):
-        "Periodic check if the deadline has passed"
+    def progress_checker(self):
+        "Periodic check for cancellation and deadlines"
         if (this_deadline := deadline.get()) is not None and self.loop.time() > this_deadline:
             raise TimeoutError()
         if _current_future.get().done():
@@ -270,10 +276,10 @@ class Trio:
         "Setup database, just after it is created"
         for hook in apsw.connection_hooks:
             hook(db)
-        db.set_progress_handler(self.progress_deadline_checker, DEADLINE_PROGRESS_STEPS, id=self)
+        db.set_progress_handler(self.progress_checker, check_progress_steps.get(), id=self)
 
-    def progress_deadline_checker(self):
-        "Periodic check if the deadline has passed"
+    def progress_checker(self):
+        "Periodic check for cancellation and deadlines"
         future = _current_future.get()
         if future._is_cancelled:
             raise TrioFuture.Cancelled("cancelled in progress handler")
