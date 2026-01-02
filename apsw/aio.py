@@ -154,7 +154,7 @@ class AsyncResult(Protocol):
         ...
 
     def done(self) -> bool:
-        """Return ``True`` if call has completed, either with a result or cancelled, else ``False"""
+        """Return ``True`` if call has completed, either with a result or cancelled, else ``False``"""
         ...
 
 
