@@ -584,6 +584,30 @@ APSWBlob_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
   Py_RETURN_NONE;
 }
 
+/** .. method:: aclose(force: bool = False) -> None
+  :async:
+
+  Async version of :meth:`close`
+
+*/
+PyObject *
+APSWBlob_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  int force = 0;
+
+  {
+    Blob_aclose_CHECK;
+    ARG_PROLOG(1, Blob_aclose_KWNAMES);
+    ARG_OPTIONAL ARG_bool(force);
+    ARG_EPILOG(NULL, Blob_aclose_USAGE, );
+  }
+
+  if (self->connection)
+    ASYNC_FASTCALL(self->connection, APSWBlob_close);
+  return async_return_value(Py_None);
+}
+
 /** .. method:: __enter__() -> Blob
 
   You can use a blob as a `context manager
@@ -654,6 +678,54 @@ APSWBlob_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
   Py_RETURN_FALSE;
 }
 
+/** .. method:: __aenter__() -> Self
+  :async:
+
+  Async context manager enter
+*/
+static PyObject *
+APSWBlob_aenter(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+
+  CHECK_BLOB_CLOSED;
+
+  if (IN_WORKER_THREAD(self->connection))
+    return error_async_in_sync_context();
+
+  return async_return_value(self_);
+}
+
+/** .. method:: __aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None
+  :async:
+
+  Async context manager exit
+*/
+static PyObject *
+APSWBlob_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  APSWBlob *self = (APSWBlob *)self_;
+
+  CHECK_BLOB_CLOSED;
+
+  PyObject *etype, *evalue, *etraceback;
+  {
+    Blob_aexit_CHECK;
+    ARG_PROLOG(3, Blob_aexit_KWNAMES);
+    ARG_MANDATORY ARG_pyobject(etype);
+    ARG_MANDATORY ARG_pyobject(evalue);
+    ARG_MANDATORY ARG_pyobject(etraceback);
+    ARG_EPILOG(NULL, Blob_aexit_USAGE, );
+  }
+
+  (void)etype;
+  (void)evalue;
+  (void)etraceback;
+
+  ASYNC_FASTCALL(self->connection, APSWBlob_exit);
+  return error_async_in_sync_context();
+}
+
 /** .. method:: reopen(rowid: int) -> None
 
   Change this blob object to point to a different row.  It can be
@@ -721,8 +793,12 @@ static PyMethodDef APSWBlob_methods[] = {
   { "write", (PyCFunction)APSWBlob_write, METH_FASTCALL | METH_KEYWORDS, Blob_write_DOC },
   { "reopen", (PyCFunction)APSWBlob_reopen, METH_FASTCALL | METH_KEYWORDS, Blob_reopen_DOC },
   { "close", (PyCFunction)APSWBlob_close, METH_FASTCALL | METH_KEYWORDS, Blob_close_DOC },
+  { "aclose", (PyCFunction)APSWBlob_aclose, METH_FASTCALL | METH_KEYWORDS, Blob_aclose_DOC },
   { "__enter__", (PyCFunction)APSWBlob_enter, METH_NOARGS, Blob_enter_DOC },
   { "__exit__", (PyCFunction)APSWBlob_exit, METH_FASTCALL | METH_KEYWORDS, Blob_exit_DOC },
+  { "__aenter__", (PyCFunction)APSWBlob_aenter, METH_NOARGS, Blob_aenter_DOC },
+  { "__aexit__", (PyCFunction)APSWBlob_aexit, METH_FASTCALL | METH_KEYWORDS, Blob_aexit_DOC },
+
 #ifndef APSW_OMIT_OLD_NAMES
   { Blob_read_into_OLDNAME, (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS, Blob_read_into_OLDDOC },
 #endif

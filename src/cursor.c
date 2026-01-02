@@ -1497,6 +1497,7 @@ APSWCursor_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
 }
 
 /** .. method:: __aenter__() -> Self
+  :async:
 
   If you use the cursor as a context manager then it will be closed on
   exit.
@@ -1514,6 +1515,7 @@ APSWCursor_aenter(PyObject *self_, PyObject *Py_UNUSED(unused))
 }
 
 /** .. method:: __aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None
+  :async:
 
   Close the cursor on exit of context
 */
@@ -1523,6 +1525,20 @@ APSWCursor_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   APSWCursor *self = (APSWCursor *)self_;
 
   CHECK_CURSOR_CLOSED(NULL);
+
+  PyObject *etype, *evalue, *etraceback;
+  {
+    Cursor_aexit_CHECK;
+    ARG_PROLOG(3, Cursor_aexit_KWNAMES);
+    ARG_MANDATORY ARG_pyobject(etype);
+    ARG_MANDATORY ARG_pyobject(evalue);
+    ARG_MANDATORY ARG_pyobject(etraceback);
+    ARG_EPILOG(NULL, Cursor_aexit_USAGE, );
+  }
+
+  (void)etype;
+  (void)evalue;
+  (void)etraceback;
 
   if (IN_WORKER_THREAD(self->connection))
     return error_async_in_sync_context();
