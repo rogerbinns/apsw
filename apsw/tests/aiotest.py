@@ -21,7 +21,6 @@ import apsw.bestpractice
 #
 # inheritance of connection/cursor
 #
-# blob needs aenter / aexit
 # backup: aclose
 #
 # multiple connections active at once (also backup with this)
@@ -103,11 +102,50 @@ class Async(unittest.TestCase):
         with self.assertRaises(LookupError):
             await (await db.execute("select sync_cvar('inside')")).get
 
+    async def atestBlob(self, fw):
+        db = await apsw.Connection.as_async(":memory:")
+
+        await db.execute("create table dummy(column); insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');")
+
+        blob = db.blob_open("main", "dummy", "column", 73, True)
+        self.verifyFuture(blob)
+        blob = await blob
+
+        self.assertEqual(3, blob.length())
+
+        data = bytearray(3)
+        await blob.read_into(data)
+        self.assertEqual(data, b"\xaa\xbb\xcc")
+
+        blob.seek(1)
+        await blob.write(b"\x11\x22")
+        blob.seek(0)
+        self.assertEqual(await blob.read(), b"\xaa\x11\x22")
+
+        blob.seek(3)
+        with self.assertRaises(ValueError):
+            await blob.write(b"hello world")
+
+        await blob.reopen(74)
+        with self.assertRaises(apsw.SQLError):
+            await blob.reopen(423)
+
+        with self.assertRaises(TypeError):
+            with blob:
+                pass
+
+        async with blob:
+            pass
+
+        self.assertRaises(ValueError, blob.length)
+
     async def atestClosing(self, fw):
         "check aclose can be called multiple times, even after object is closed"
         db = await apsw.Connection.as_async(":memory:")
 
-        cursor = await db.execute("select 3")
+        cursor = await db.execute("create table dummy(column); insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');")
+
+        blob =await db.blob_open("main", "dummy", "column", 73, False)
 
         fut = cursor.aclose()
         self.verifyFuture(fut)
@@ -117,6 +155,15 @@ class Async(unittest.TestCase):
         await fut
         cursor.close()
         cursor.close()
+
+        fut = blob.aclose()
+        self.verifyFuture(fut)
+        await fut
+        fut = blob.aclose()
+        self.verifyFuture(fut)
+        await fut
+        blob.close()
+        blob.close()
 
         fut = db.aclose()
         self.verifyFuture(fut)
@@ -128,7 +175,7 @@ class Async(unittest.TestCase):
         db.close()
         db.close()
 
-        for obj in cursor, db:
+        for obj in cursor, db, blob:
             await obj.aclose()
             await obj.aclose()
             obj.close()
