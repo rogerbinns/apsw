@@ -41,8 +41,12 @@ come back and copy those changes too until the backup is complete.
   {                                                                                                                    \
     if (!self->backup || (self->dest && !self->dest->db) || (self->source && !self->source->db))                       \
     {                                                                                                                  \
-      PyErr_Format(ExcConnectionClosed,                                                                                \
-                   "The backup is finished or the source or destination databases have been closed");                  \
+      if (!self->backup)                                                                                               \
+        PyErr_SetString(ExcConnectionClosed, "The backup is finished");                                                \
+      else if (self->dest && !self->dest->db)                                                                          \
+        PyErr_SetString(ExcConnectionClosed, "The backup destination database is closed");                             \
+      else                                                                                                             \
+        PyErr_SetString(ExcConnectionClosed, "The backup source database is closed");                                  \
       return e;                                                                                                        \
     }                                                                                                                  \
   } while (0)
