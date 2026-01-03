@@ -20,8 +20,8 @@ import apsw.bestpractice
 #### ::TODO::  tests to add
 #
 # inheritance of connection/cursor
-#
-# backup: aclose
+# session
+# virtual tables especially ext wrapper
 #
 # multiple connections active at once (also backup with this)
 
@@ -139,6 +139,48 @@ class Async(unittest.TestCase):
 
         self.assertRaises(ValueError, blob.length)
 
+    async def atestBackup(self, fw):
+        db = await apsw.Connection.as_async(":memory:")
+        db2 = await apsw.Connection.as_async(":memory:")
+        await db2.pragma("page_size", 512)
+        await db2.execute("create table dummy(x)")
+        await db2.executemany("insert into dummy values(?)", (("a"*4096,) for _ in range(129)))
+
+        backup = await db.backup("main", db2, "main")
+
+        await backup.step()
+        # immediate values
+        for v in ("remaining", "page_count", "done"):
+            getattr(backup, v)
+
+        with self.assertRaises(TypeError):
+            await backup.finish()
+
+        await backup.afinish()
+        await backup.afinish()
+
+        backup = await db.backup("main", db2, "main")
+
+        with self.assertRaises(TypeError):
+            with backup:
+                pass
+
+        async with backup:
+            while not backup.done:
+                backup.step(1)
+
+        fut = backup.afinish()
+        self.verifyFuture(fut)
+        await fut
+
+        backup = await db.backup("main", db2, "main")
+
+        async with backup:
+            while not backup.done:
+                backup.step(1)
+
+        self.assertTrue(backup.done)
+
     async def atestClosing(self, fw):
         "check aclose can be called multiple times, even after object is closed"
         db = await apsw.Connection.as_async(":memory:")
@@ -147,6 +189,12 @@ class Async(unittest.TestCase):
 
         blob =await db.blob_open("main", "dummy", "column", 73, False)
 
+        db2 = await apsw.Connection.as_async(":memory:")
+        await db2.pragma("page_size", 512)
+        await db2.execute("create table dummy(x)")
+        await db2.executemany("insert into dummy values(?)", (("a"*4096,) for _ in range(129)))
+
+
         fut = cursor.aclose()
         self.verifyFuture(fut)
         await fut
@@ -165,6 +213,19 @@ class Async(unittest.TestCase):
         blob.close()
         blob.close()
 
+        backup = db.backup("main", db2, "main")
+        self.verifyFuture(backup)
+        backup = await backup
+
+        fut=backup.aclose()
+        self.verifyFuture(fut)
+        await fut
+        fut = backup.aclose()
+        self.verifyFuture(fut)
+        await fut
+        backup.close()
+        backup.close()
+
         fut = db.aclose()
         self.verifyFuture(fut)
         await fut
@@ -175,7 +236,7 @@ class Async(unittest.TestCase):
         db.close()
         db.close()
 
-        for obj in cursor, db, blob:
+        for obj in cursor, db, blob, backup:
             await obj.aclose()
             await obj.aclose()
             obj.close()

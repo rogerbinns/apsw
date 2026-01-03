@@ -678,6 +678,45 @@
 #define Apsw_vfs_names_USAGE "apsw.vfs_names() -> list[str]"
 #define Apsw_vfs_names_OLDDOC Apsw_vfs_names_USAGE "\n(Old less clear name vfsnames)"
 
+#define  Backup_aclose_DOC "Backup.aclose(force: bool = False) -> None\n\n" \
+":async:\n" \
+"\n" \
+"Async version of :meth:`close`\n" 
+
+#define Backup_aclose_KWNAMES "force"
+#define Backup_aclose_USAGE "Backup.aclose(force: bool = False) -> None"
+
+#define Backup_aclose_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(force), int)); \
+  assert(force == 0); \
+} while(0)
+
+
+#define  Backup_aenter_DOC "Backup.__aenter__() -> Self\n\n" \
+":async:\n" \
+"\n" \
+"Async context manager enter\n" 
+
+#define  Backup_aexit_DOC "Backup.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None\n\n" \
+":async:\n" \
+"\n" \
+"Async context manager exit\n" 
+
+#define Backup_aexit_KWNAMES "etype", "evalue", "etraceback"
+#define Backup_aexit_USAGE "Backup.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None"
+
+#define Backup_aexit_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(evalue), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(etraceback), PyObject *)); \
+} while(0)
+
+
+#define  Backup_afinish_DOC "Backup.afinish() -> None\n\n" \
+":async:\n" \
+"\n" \
+"Async version of meth:`finish`\n" 
+
 #define  Backup_class_DOC "You create a backup instance by calling :meth:`Connection.backup`.\n" 
 
 #define  Backup_close_DOC "Backup.close(force: bool = False) -> None\n\n" \
@@ -773,6 +812,40 @@
 #define Backup_step_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(npages), int)); \
   assert(npages == (-1)); \
+} while(0)
+
+
+#define  Blob_aclose_DOC "Blob.aclose(force: bool = False) -> None\n\n" \
+":async:\n" \
+"\n" \
+"Async version of :meth:`close`\n" 
+
+#define Blob_aclose_KWNAMES "force"
+#define Blob_aclose_USAGE "Blob.aclose(force: bool = False) -> None"
+
+#define Blob_aclose_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(force), int)); \
+  assert(force == 0); \
+} while(0)
+
+
+#define  Blob_aenter_DOC "Blob.__aenter__() -> Self\n\n" \
+":async:\n" \
+"\n" \
+"Async context manager enter\n" 
+
+#define  Blob_aexit_DOC "Blob.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None\n\n" \
+":async:\n" \
+"\n" \
+"Async context manager exit\n" 
+
+#define Blob_aexit_KWNAMES "etype", "evalue", "etraceback"
+#define Blob_aexit_USAGE "Blob.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None"
+
+#define Blob_aexit_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(evalue), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(etraceback), PyObject *)); \
 } while(0)
 
 
@@ -3115,11 +3188,25 @@
 
 
 #define  Cursor_aenter_DOC "Cursor.__aenter__() -> Self\n\n" \
+":async:\n" \
+"\n" \
 "If you use the cursor as a context manager then it will be closed on\n" \
 "exit.\n" 
 
 #define  Cursor_aexit_DOC "Cursor.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None\n\n" \
+":async:\n" \
+"\n" \
 "Close the cursor on exit of context\n" 
+
+#define Cursor_aexit_KWNAMES "etype", "evalue", "etraceback"
+#define Cursor_aexit_USAGE "Cursor.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None"
+
+#define Cursor_aexit_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(evalue), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(etraceback), PyObject *)); \
+} while(0)
+
 
 #define  Cursor_aiter_DOC "Cursor.__aiter__() -> Cursor\n\n" \
 ":async:\n" \

@@ -236,6 +236,26 @@ APSWBackup_finish(PyObject *self_, PyObject *Py_UNUSED(unused))
   Py_RETURN_NONE;
 }
 
+/** .. method:: afinish() -> None
+  :async:
+
+  Async version of meth:`finish`
+*/
+static PyObject *
+APSWBackup_afinish(PyObject *self_, PyObject *unused)
+{
+  APSWBackup *self = (APSWBackup *)self_;
+
+  /* We handle CHECK_BACKUP_CLOSED internally */
+  if (!self->backup)
+    return async_return_value(Py_None);
+
+  if (IN_WORKER_THREAD(self->dest))
+    return error_async_in_sync_context();
+
+  return do_async_binary((PyObject *)(self->dest), APSWBackup_finish, self_, unused);
+}
+
 /** .. method:: close(force: bool = False) -> None
 
   Does the same thing as :meth:`~Backup.finish`.  This extra api is
@@ -270,6 +290,30 @@ APSWBackup_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   if (setexc)
     return NULL;
   Py_RETURN_NONE;
+}
+
+/** .. method:: aclose(force: bool = False) -> None
+  :async:
+
+  Async version of :meth:`close`
+
+*/
+PyObject *
+APSWBackup_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  APSWBackup *self = (APSWBackup *)self_;
+  int force = 0;
+
+  {
+    Backup_aclose_CHECK;
+    ARG_PROLOG(1, Backup_aclose_KWNAMES);
+    ARG_OPTIONAL ARG_bool(force);
+    ARG_EPILOG(NULL, Backup_aclose_USAGE, );
+  }
+
+  if (self->dest)
+    ASYNC_FASTCALL(self->dest, APSWBackup_close);
+  return async_return_value(Py_None);
 }
 
 /** .. attribute:: remaining
@@ -371,6 +415,54 @@ APSWBackup_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   Py_RETURN_FALSE;
 }
 
+/** .. method:: __aenter__() -> Self
+  :async:
+
+  Async context manager enter
+*/
+static PyObject *
+APSWBackup_aenter(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBackup *self = (APSWBackup *)self_;
+
+  CHECK_BACKUP_CLOSED(NULL);
+
+  if (IN_WORKER_THREAD(self->dest))
+    return error_async_in_sync_context();
+
+  return async_return_value(self_);
+}
+
+/** .. method:: __aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None
+  :async:
+
+  Async context manager exit
+*/
+static PyObject *
+APSWBackup_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  APSWBackup *self = (APSWBackup *)self_;
+
+  CHECK_BACKUP_CLOSED(NULL);
+
+  PyObject *etype, *evalue, *etraceback;
+  {
+    Backup_aexit_CHECK;
+    ARG_PROLOG(3, Backup_aexit_KWNAMES);
+    ARG_MANDATORY ARG_pyobject(etype);
+    ARG_MANDATORY ARG_pyobject(evalue);
+    ARG_MANDATORY ARG_pyobject(etraceback);
+    ARG_EPILOG(NULL, Backup_aexit_USAGE, );
+  }
+
+  (void)etype;
+  (void)evalue;
+  (void)etraceback;
+
+  ASYNC_FASTCALL(self->dest, APSWBackup_exit);
+  return error_async_in_sync_context();
+}
+
 static PyObject *
 APSWBackup_tp_str(PyObject *self_)
 {
@@ -411,9 +503,13 @@ static PyGetSetDef backup_getset[] = {
 static PyMethodDef backup_methods[]
     = { { "__enter__", (PyCFunction)APSWBackup_enter, METH_NOARGS, Backup_enter_DOC },
         { "__exit__", (PyCFunction)APSWBackup_exit, METH_FASTCALL | METH_KEYWORDS, Backup_exit_DOC },
+        { "__aenter__", (PyCFunction)APSWBackup_aenter, METH_NOARGS, Backup_aenter_DOC },
+        { "__aexit__", (PyCFunction)APSWBackup_aexit, METH_FASTCALL | METH_KEYWORDS, Backup_aexit_DOC },
         { "step", (PyCFunction)APSWBackup_step, METH_FASTCALL | METH_KEYWORDS, Backup_step_DOC },
         { "finish", (PyCFunction)APSWBackup_finish, METH_NOARGS, Backup_finish_DOC },
+        { "afinish", (PyCFunction)APSWBackup_afinish, METH_NOARGS, Backup_afinish_DOC },
         { "close", (PyCFunction)APSWBackup_close, METH_FASTCALL | METH_KEYWORDS, Backup_close_DOC },
+        { "aclose", (PyCFunction)APSWBackup_aclose, METH_FASTCALL | METH_KEYWORDS, Backup_aclose_DOC },
         { 0, 0, 0, 0 } };
 
 static PyNumberMethods backup_as_number = {
