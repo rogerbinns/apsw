@@ -144,7 +144,7 @@ class Async(unittest.TestCase):
         db2 = await apsw.Connection.as_async(":memory:")
         await db2.pragma("page_size", 512)
         await db2.execute("create table dummy(x)")
-        await db2.executemany("insert into dummy values(?)", (("a"*4096,) for _ in range(129)))
+        await db2.executemany("insert into dummy values(?)", (("a"*4096,) for _ in range(33)))
 
         backup = await db.backup("main", db2, "main")
 
@@ -167,7 +167,7 @@ class Async(unittest.TestCase):
 
         async with backup:
             while not backup.done:
-                backup.step(1)
+                await backup.step(1)
 
         fut = backup.afinish()
         self.verifyFuture(fut)
@@ -177,7 +177,7 @@ class Async(unittest.TestCase):
 
         async with backup:
             while not backup.done:
-                backup.step(1)
+                await backup.step(1)
 
         self.assertTrue(backup.done)
 
