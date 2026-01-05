@@ -36,6 +36,10 @@ class Async(unittest.TestCase):
                 return await coro
         finally:
             for c in apsw.connections():
+                try:
+                    c.close()
+                except TypeError:
+                    pass
                 await c.aclose()
 
     def tearDown(self):
@@ -676,6 +680,13 @@ class Async(unittest.TestCase):
 
             case _:
                 raise NotImplementedError
+
+    async def atestConnection(self, fw):
+        "Connection methods and properties"
+        adb = await apsw.Connection.as_async(":memory:")
+        sdb = apsw.Connection(":memory:")
+
+        adb.async_run(func=print)
 
     def get_all_atests(self):
         for n in dir(self):

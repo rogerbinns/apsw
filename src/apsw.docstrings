@@ -1352,6 +1352,12 @@
 "\n" \
 "The controller in effect in async mode.\n" 
 
+#define  Connection_async_run_DOC "Connection.async_run(*args, **kwargs) -> Any\n\n" \
+":async:\n" \
+"\n" \
+"Calls the first ``arg`` with the provided remaining arguments in the\n" \
+"async worker thread for this connection.\n" 
+
 #define  Connection_authorizer_DOC ":type: Optional[Authorizer]\n" \
 "\n" \
 "While `preparing <https://sqlite.org/c3ref/prepare.html>`_\n" \
