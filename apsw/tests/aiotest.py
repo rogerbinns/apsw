@@ -36,11 +36,10 @@ class Async(unittest.TestCase):
                 return await coro
         finally:
             for c in apsw.connections():
-                try:
+                if c.is_async:
+                    await c.aclose()
+                else:
                     c.close()
-                except TypeError:
-                    pass
-                await c.aclose()
 
     def tearDown(self):
         if apsw.connections():
@@ -356,7 +355,8 @@ class Async(unittest.TestCase):
             apsw.config(apsw.SQLITE_CONFIG_LOG, None)
 
             await apsw.Connection.as_async("")
-            await apsw.Connection.as_async(":memory")
+            await apsw.Connection.as_async(":memory:")
+            apsw.Connection(":memory:")
 
         finally:
             apsw.connection_hooks = []
@@ -680,6 +680,38 @@ class Async(unittest.TestCase):
 
             case _:
                 raise NotImplementedError
+
+    async def atestSession(self, fw):
+        strmsize = apsw.session_config(apsw.SQLITE_SESSION_CONFIG_STRMSIZE, 0)
+        try:
+            apsw.session_config(apsw.SQLITE_SESSION_CONFIG_STRMSIZE, 1)
+            db = await apsw.Connection.as_async(":memory:")
+
+            self.assertRaisesRegex(TypeError, ".*apsw.aio.make_session.*", apsw.Session, db, "main")
+
+            session = await apsw.aio.make_session(db, "main")
+            await session.attach()
+
+            await db.execute(
+                "create table foo(x INTEGER PRIMARY KEY); insert into foo values(1), (2), (3), (4), (5), (6)"
+            )
+
+            # sanity and async streamer
+            big = await session.changeset()
+
+            out = b""
+
+            async def w(b):
+                nonlocal out
+                out += b
+
+            res = await session.changeset_stream(w)
+
+            self.assertEqual(out, big)
+            self.assertIsNone(res)
+
+        finally:
+            apsw.session_config(apsw.SQLITE_SESSION_CONFIG_STRMSIZE, strmsize)
 
     async def atestConnection(self, fw):
         "Connection methods and properties"
