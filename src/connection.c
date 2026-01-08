@@ -844,11 +844,11 @@ error:
   return NULL;
 }
 
-/** .. method:: async_run(*args, **kwargs) -> Any
+/** .. method:: async_run(call, *args, **kwargs) -> Any
   :async:
 
-  Calls the first ``arg`` with the provided remaining arguments in the
-  async worker thread for this connection.
+  Calls with the provided arguments in the async worker thread for this
+  connection.
 */
 static PyObject *
 Connection_async_run(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -860,14 +860,15 @@ Connection_async_run(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
     return error_async_in_sync_context();
 
   Py_ssize_t nargs = PyVectorcall_NARGS(fast_nargs);
-  if(nargs<1)
-    return PyErr_Format(PyExc_TypeError, "At least one argument must be provided");
+  if (nargs < 1)
+    return PyErr_Format(PyExc_TypeError, "async_run requires at least one argument");
+
   if(!PyCallable_Check(fast_args[0]))
     return PyErr_Format(PyExc_TypeError, "Expected a callable first argument not %s", Py_TypeName(fast_args[0]));
 
   ASYNC_FASTCALL(self, Connection_async_run);
 
-  return PyObject_Vectorcall(fast_args[0], fast_args + 1, nargs - 1, fast_kwnames);
+  return PyObject_Vectorcall_NoAsync(fast_args[0], fast_args + 1, nargs - 1, fast_kwnames);
 }
 
 /** .. method:: blob_open(database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob
