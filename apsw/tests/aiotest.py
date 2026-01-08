@@ -686,7 +686,43 @@ class Async(unittest.TestCase):
         adb = await apsw.Connection.as_async(":memory:")
         sdb = apsw.Connection(":memory:")
 
-        adb.async_run(func=print)
+        self.assertTrue(adb.is_async)
+        self.assertFalse(sdb.is_async)
+
+        self.assertIsNotNone(adb.async_controller)
+        self.assertRaises(TypeError, getattr, sdb, "async_controller")
+
+        self.assertRaisesRegex(TypeError, ".*at least one argument.*", adb.async_run, func=print)
+        self.assertRaisesRegex(TypeError, ".*async in sync.*", sdb.async_run, print)
+
+        self.assertRaisesRegex(TypeError, ".*Expected a callable.*", adb.async_run, 3)
+
+        def got_what(*args, **kwargs):
+            return {"got": {"args": args, "kwargs": kwargs}}
+
+        self.assertEqual((await adb.async_run(got_what)).pop("got"), {"args": tuple(), "kwargs": {}})
+
+        self.assertEqual(
+            (await adb.async_run(got_what, "one", "two", "three", six="six", four="four", five="five")).pop("got"),
+            {"args": ("one", "two", "three"), "kwargs": {"four": "four", "five": "five", "six": "six"}},
+        )
+
+        cvar = contextvars.ContextVar("dummy")
+        cvar.set(7)
+
+        def val():
+            return cvar.get()
+
+        with apsw.aio.contextvar_set(cvar, 8):
+            x = adb.async_run(val)
+
+        self.assertEqual(8, await x)
+
+        async def foo():
+            return 3
+
+        x = adb.async_run(foo)
+        self.assertEqual(3, await (await x))
 
     def get_all_atests(self):
         for n in dir(self):
