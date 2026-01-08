@@ -20,6 +20,7 @@ import queue
 from typing import Literal
 
 import apsw
+import apsw.aio
 
 
 # The result is one of
@@ -78,6 +79,8 @@ def is_method(object, name):
 class AsyncMeta(unittest.TestCase):
     def tearDown(self):
         for c in apsw.connections():
+            # yes its ugly but we don't have a real event loop and are
+            # just making a best effort
             try:
                 c.aclose()
             except:
@@ -86,7 +89,6 @@ class AsyncMeta(unittest.TestCase):
                 c.close()
             except:
                 pass
-
 
     def classifyOne(self, send, is_attr, object, klass, member, value=None):
         # send is None for async access, callable for sync
@@ -117,6 +119,8 @@ class AsyncMeta(unittest.TestCase):
             match klass:
                 case "Connection":
                     match member:
+                        case "async_run":
+                            args = (lambda : 1,)
                         case "autovacuum_pages" | "collation_needed":
                             args = (lambda *args: 1 / 0,)
                         case "backup":
@@ -214,11 +218,11 @@ class AsyncMeta(unittest.TestCase):
                 case "Session":
                     match member:
                         case "changeset_stream" | "patchset_stream" | "table_filter":
-                            args = (lambda x: None,)
+                            args = (lambda x: True,)
                         case "config":
                             args = apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1
                         case "diff":
-                            args = "main", "dummy2"
+                            args = "other", "dummy"
 
         try:
             if send:
@@ -279,7 +283,7 @@ class AsyncMeta(unittest.TestCase):
                         sync_await(
                             value.execute("""
                                 create table dummy(column);
-                                create table dummy2(column);
+                                create table dummy2(column INTEGER PRIMARY KEY);
                                 insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');
                                 """)
                         )
@@ -290,19 +294,16 @@ class AsyncMeta(unittest.TestCase):
                     case "Backup":
                         value = sync_await(objects["Connection"].backup("main", apsw.Connection(""), "main"))
                     case "Session":
-                        value = sync_await(
-                            objects["Connection"].async_controller.send(
-                                functools.partial(apsw.Session, objects["Connection"], "main")
-                            )
-                        )
+                        sync_await(objects["Connection"].execute("attach ':memory:' as other; create table other.dummy(column INTEGER PRIMARY KEY)"))
+                        value = sync_await(apsw.aio.make_session(objects["Connection"], "main"))
                         sync_await(value.attach())
                         sync_await(
                             objects["Connection"].execute("""
-                        insert into dummy values('hello'), (3.1415), (null), (4);
+                        insert into dummy2 values(1), (2), (3), (4);
                         """)
                         )
                         if changeset is None:
-                            changeset = sync_await(objects["Connection"].async_controller.send(value.changeset))
+                            changeset = sync_await(value.changeset())
 
                     case _:
                         1 / 0
