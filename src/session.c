@@ -325,7 +325,7 @@ APSWSession_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
   if (!IN_WORKER_THREAD(db))
   {
-    error_sync_in_async_context();
+    PyErr_SetString(PyExc_TypeError, "The database is in async mode - use apsw.aio.make_session");
     return -1;
   }
 
