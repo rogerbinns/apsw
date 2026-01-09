@@ -124,6 +124,9 @@ else:
 async def make_session(db: apsw.AsyncConnection, schema: str) -> AsyncSession:
     "Helper to create a :class:`~apsw.Session` in async mode for an async database"
     # This mainly exists to give IDEs and type checkers the clues they need
+    if not hasattr(apsw, "Session"):
+        # misuse is what SQLite uses
+        raise apsw.MisuseError("The session extension is not enabled and available")
     return await db.async_run(apsw.Session, db, schema)
 
 class AsyncResult(Protocol):

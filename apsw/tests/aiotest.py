@@ -229,15 +229,19 @@ class Async(unittest.TestCase):
         backup.close()
         backup.close()
 
-        session = await apsw.aio.make_session(db, "main")
-        fut = session.aclose()
-        self.verifyFuture(fut)
-        await fut
-        fut = session.aclose()
-        self.verifyFuture(fut)
-        await fut
-        session.close()
-        session.close()
+        if hasattr(apsw, "Session"):
+            session = await apsw.aio.make_session(db, "main")
+            fut = session.aclose()
+            self.verifyFuture(fut)
+            await fut
+            fut = session.aclose()
+            self.verifyFuture(fut)
+            await fut
+            session.close()
+            session.close()
+        else:
+            # keep following lines happy
+            session = db
 
         fut = db.aclose()
         self.verifyFuture(fut)
@@ -692,6 +696,11 @@ class Async(unittest.TestCase):
                 raise NotImplementedError
 
     async def atestSession(self, fw):
+        if not hasattr(apsw, "Session"):
+            with self.assertRaisesRegex(apsw.MisuseError, ".*The session extension is not enabled and available.*"):
+                await apsw.aio.make_session(None, None)
+            return
+
         strmsize = apsw.session_config(apsw.SQLITE_SESSION_CONFIG_STRMSIZE, 0)
         try:
             apsw.session_config(apsw.SQLITE_SESSION_CONFIG_STRMSIZE, 1)
