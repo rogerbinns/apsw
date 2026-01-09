@@ -229,6 +229,16 @@ class Async(unittest.TestCase):
         backup.close()
         backup.close()
 
+        session = await apsw.aio.make_session(db, "main")
+        fut = session.aclose()
+        self.verifyFuture(fut)
+        await fut
+        fut = session.aclose()
+        self.verifyFuture(fut)
+        await fut
+        session.close()
+        session.close()
+
         fut = db.aclose()
         self.verifyFuture(fut)
         await fut
@@ -239,7 +249,7 @@ class Async(unittest.TestCase):
         db.close()
         db.close()
 
-        for obj in cursor, db, blob, backup:
+        for obj in cursor, db, blob, backup, session:
             await obj.aclose()
             await obj.aclose()
             obj.close()

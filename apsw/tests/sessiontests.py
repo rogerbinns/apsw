@@ -446,7 +446,7 @@ class Session(unittest.TestCase):
         # this should close the session
         db.close()
         tested = []
-        for attr in [x for x in dir(session) if not x.startswith("__") and not x in ("close",)]:
+        for attr in [x for x in dir(session) if not x.startswith("__") and x not in ("close", "aclose")]:
             tested.append(attr)
             try:
                 f = getattr(session, attr)

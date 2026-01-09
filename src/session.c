@@ -422,6 +422,24 @@ APSWSession_close(PyObject *self_, PyObject *Py_UNUSED(unused))
   Py_RETURN_NONE;
 }
 
+/** .. method:: aclose() -> None
+  :async:
+
+  Async close
+*/
+static PyObject *
+APSWSession_aclose(PyObject *self_, PyObject *unused)
+{
+  APSWSession *self = (APSWSession *)self_;
+  if (self->connection && IN_WORKER_THREAD(self->connection))
+    return error_async_in_sync_context();
+
+  if (self->connection)
+    return do_async_binary((PyObject *)self->connection, APSWSession_close, self_, unused);
+
+  return async_return_value(Py_None);
+}
+
 /** .. method:: attach(name: Optional[str] = None) -> None
 
  Attach to a specific table, or all tables if no name is provided.  The
@@ -2460,6 +2478,7 @@ APSWRebaser_dealloc(PyObject *self_)
 
 static PyMethodDef APSWSession_methods[] = {
   { "close", (PyCFunction)APSWSession_close, METH_NOARGS, Session_close_DOC },
+  { "aclose", (PyCFunction)APSWSession_aclose, METH_NOARGS, Session_aclose_DOC },
   { "attach", (PyCFunction)APSWSession_attach, METH_FASTCALL | METH_KEYWORDS, Session_attach_DOC },
   { "diff", (PyCFunction)APSWSession_diff, METH_FASTCALL | METH_KEYWORDS, Session_diff_DOC },
   { "table_filter", (PyCFunction)APSWSession_table_filter, METH_FASTCALL | METH_KEYWORDS, Session_table_filter_DOC },

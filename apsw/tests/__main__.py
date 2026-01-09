@@ -4817,7 +4817,7 @@ class APSW(unittest.TestCase):
         blob = self.db.blob_open("main", "foo", "x", rowid, True)
         blob.close()
         nargs = self.blob_nargs
-        for func in [x for x in dir(blob) if not x.startswith("__") and not x in ("close",)]:
+        for func in [x for x in dir(blob) if not x.startswith("__") and x not in ("close", "aclose")]:
             args = ("one", "two", "three")[: nargs.get(func, 0)]
             try:
                 getattr(blob, func)(*args)
@@ -6070,12 +6070,12 @@ class APSW(unittest.TestCase):
                 "order": ("closed",),
             },
             "APSWBlob": {
-                "skip": ("dealloc", "init", "close", "close_internal", "tp_str", "bool"),
+                "skip": ("dealloc", "init", "close", "close_internal", "tp_str", "bool", "aclose"),
                 "req": {"closed": "CHECK_BLOB_CLOSED"},
                 "order": ("use", "closed"),
             },
             "APSWBackup": {
-                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count", "tp_str", "bool"),
+                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count", "tp_str", "bool", "aclose"),
                 "req": {"closed": "CHECK_BACKUP_CLOSED"},
                 "order": ("use", "closed"),
             },
