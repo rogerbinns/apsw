@@ -1077,13 +1077,6 @@
 "\n" \
 "Calls: `sqlite3changegroup_delete <https://sqlite.org/session/sqlite3changegroup_delete.html>`__\n" 
 
-#define ChangesetBuilder_close_KWNAMES NULL
-#define ChangesetBuilder_close_USAGE "ChangesetBuilder.close() -> None"
-
-#define ChangesetBuilder_close_CHECK do { \
-} while(0)
-
-
 #define  ChangesetBuilder_init_DOC "ChangesetBuilder.__init__()\n\n" \
 "Creates a new empty builder.\n" \
 "\n" \
@@ -1100,13 +1093,6 @@
 "Produces a changeset of what was built so far\n" \
 "\n" \
 "Calls: `sqlite3changegroup_output <https://sqlite.org/session/sqlite3changegroup_output.html>`__\n" 
-
-#define ChangesetBuilder_output_KWNAMES NULL
-#define ChangesetBuilder_output_USAGE "ChangesetBuilder.output() -> bytes"
-
-#define ChangesetBuilder_output_CHECK do { \
-} while(0)
-
 
 #define  ChangesetBuilder_output_stream_DOC "ChangesetBuilder.output_stream(output: SessionStreamOutput) -> None\n\n" \
 "Produces a streaming changeset of what was built so far\n" \
@@ -1352,11 +1338,11 @@
 "\n" \
 "The controller in effect in async mode.\n" 
 
-#define  Connection_async_run_DOC "Connection.async_run(*args, **kwargs) -> Any\n\n" \
+#define  Connection_async_run_DOC "Connection.async_run(call, *args, **kwargs) -> Any\n\n" \
 ":async:\n" \
 "\n" \
-"Calls the first ``arg`` with the provided remaining arguments in the\n" \
-"async worker thread for this connection.\n" 
+"Calls with the provided arguments in the async worker thread for this\n" \
+"connection.\n" 
 
 #define  Connection_authorizer_DOC ":type: Optional[Authorizer]\n" \
 "\n" \
@@ -4200,13 +4186,6 @@
 "\n" \
 "Calls: `sqlite3rebaser_delete <https://sqlite.org/session/sqlite3rebaser_delete.html>`__\n" 
 
-#define Rebaser_close_KWNAMES NULL
-#define Rebaser_close_USAGE "Rebaser.close() -> None"
-
-#define Rebaser_close_CHECK do { \
-} while(0)
-
-
 #define  Rebaser_configure_DOC "Rebaser.configure(cr: Buffer) -> None\n\n" \
 "Tells the rebaser about conflict resolutions made in an earlier\n" \
 ":meth:`Changeset.apply`.\n" \
@@ -4260,6 +4239,11 @@
   assert(__builtin_types_compatible_p(typeof(output), PyObject *)); \
 } while(0)
 
+
+#define  Session_aclose_DOC "Session.aclose() -> None\n\n" \
+":async:\n" \
+"\n" \
+"Async close\n" 
 
 #define  Session_attach_DOC "Session.attach(name: Optional[str] = None) -> None\n\n" \
 "Attach to a specific table, or all tables if no name is provided.  The\n" \
@@ -4322,13 +4306,6 @@
 "so there is no need to manually call this.\n" \
 "\n" \
 "Calls: `sqlite3session_delete <https://sqlite.org/session/sqlite3session_delete.html>`__\n" 
-
-#define Session_close_KWNAMES NULL
-#define Session_close_USAGE "Session.close() -> None"
-
-#define Session_close_CHECK do { \
-} while(0)
-
 
 #define  Session_config_DOC "Session.config(op: int, *args: Any) -> Any\n\n" \
 "Set or get `configuration values <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__\n" \
