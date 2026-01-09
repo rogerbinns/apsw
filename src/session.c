@@ -402,14 +402,9 @@ APSWSession_dealloc(PyObject *self_)
   -* sqlite3session_delete
 */
 static PyObject *
-APSWSession_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWSession_close(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   APSWSession *self = (APSWSession *)self_;
-  {
-    Session_close_CHECK;
-    ARG_PROLOG(0, Session_close_KWNAMES);
-    ARG_EPILOG(NULL, Session_close_USAGE, );
-  }
 
   if (self->connection && !IN_WORKER_THREAD(self->connection))
     return error_sync_in_async_context();
@@ -2052,14 +2047,9 @@ APSWChangesetBuilder_dealloc(PyObject *self_)
   -* sqlite3changegroup_delete
 */
 static PyObject *
-APSWChangesetBuilder_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWChangesetBuilder_close(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
-  {
-    ChangesetBuilder_close_CHECK;
-    ARG_PROLOG(0, ChangesetBuilder_close_KWNAMES);
-    ARG_EPILOG(NULL, ChangesetBuilder_close_USAGE, );
-  }
 
   APSWChangesetBuilder_close_internal(self);
   MakeExistingException();
@@ -2210,14 +2200,9 @@ APSWChangesetBuilder_schema(PyObject *self_, PyObject *const *fast_args, Py_ssiz
   -* sqlite3changegroup_output
  */
 static PyObject *
-APSWChangesetBuilder_output(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWChangesetBuilder_output(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
-  {
-    ChangesetBuilder_output_CHECK;
-    ARG_PROLOG(0, ChangesetBuilder_output_KWNAMES);
-    ARG_EPILOG(NULL, ChangesetBuilder_output_USAGE, );
-  }
 
   CHECK_BUILDER_CLOSED(NULL);
 
@@ -2442,14 +2427,10 @@ APSWRebaser_rebase_stream(PyObject *self_, PyObject *const *fast_args, Py_ssize_
   -* sqlite3rebaser_delete
  */
 static PyObject *
-APSWRebaser_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+APSWRebaser_close(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   APSWRebaser *self = (APSWRebaser *)self_;
-  {
-    Rebaser_close_CHECK;
-    ARG_PROLOG(0, Rebaser_close_KWNAMES);
-    ARG_EPILOG(NULL, Rebaser_close_USAGE, );
-  }
+
   if(self->rebaser)
   {
     sqlite3rebaser_delete(self->rebaser);
@@ -2478,7 +2459,7 @@ APSWRebaser_dealloc(PyObject *self_)
 }
 
 static PyMethodDef APSWSession_methods[] = {
-  { "close", (PyCFunction)APSWSession_close, METH_FASTCALL | METH_KEYWORDS, Session_close_DOC },
+  { "close", (PyCFunction)APSWSession_close, METH_NOARGS, Session_close_DOC },
   { "attach", (PyCFunction)APSWSession_attach, METH_FASTCALL | METH_KEYWORDS, Session_attach_DOC },
   { "diff", (PyCFunction)APSWSession_diff, METH_FASTCALL | METH_KEYWORDS, Session_diff_DOC },
   { "table_filter", (PyCFunction)APSWSession_table_filter, METH_FASTCALL | METH_KEYWORDS, Session_table_filter_DOC },
@@ -2546,8 +2527,8 @@ static PyTypeObject APSWChangesetIteratorType = {
 };
 
 static PyMethodDef APSWChangesetBuilder_methods[] = {
-  { "close", (PyCFunction)APSWChangesetBuilder_close, METH_FASTCALL | METH_KEYWORDS, ChangesetBuilder_close_DOC },
-  { "output", (PyCFunction)APSWChangesetBuilder_output, METH_FASTCALL | METH_KEYWORDS, ChangesetBuilder_output_DOC },
+  { "close", (PyCFunction)APSWChangesetBuilder_close, METH_NOARGS, ChangesetBuilder_close_DOC },
+  { "output", (PyCFunction)APSWChangesetBuilder_output, METH_NOARGS, ChangesetBuilder_output_DOC },
   { "output_stream", (PyCFunction)APSWChangesetBuilder_output_stream, METH_FASTCALL | METH_KEYWORDS,
     ChangesetBuilder_output_stream_DOC },
   { "add", (PyCFunction)APSWChangesetBuilder_add, METH_FASTCALL | METH_KEYWORDS, ChangesetBuilder_add_DOC },
@@ -2601,7 +2582,7 @@ static PyMethodDef APSWRebaser_methods[] = {
   { "configure", (PyCFunction)APSWRebaser_configure, METH_FASTCALL | METH_KEYWORDS, Rebaser_configure_DOC },
   { "rebase", (PyCFunction)APSWRebaser_rebase, METH_FASTCALL | METH_KEYWORDS, Rebaser_rebase_DOC },
   { "rebase_stream", (PyCFunction)APSWRebaser_rebase_stream, METH_FASTCALL | METH_KEYWORDS, Rebaser_rebase_stream_DOC },
-  { "close", (PyCFunction)APSWRebaser_close, METH_FASTCALL | METH_KEYWORDS, Rebaser_close_DOC },
+  { "close", (PyCFunction)APSWRebaser_close, METH_NOARGS, Rebaser_close_DOC },
   { 0 },
 };
 
