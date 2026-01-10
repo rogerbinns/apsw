@@ -69,9 +69,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-314-x86_64-linux-gnu.so
-             APSW version 3.51.1.0
-    SQLite header version 3051001
-       SQLite lib version 3.51.1
+             APSW version 3.51.2.0
+    SQLite header version 3051002
+       SQLite lib version 3.51.2
        Using amalgamation True
 
 
@@ -876,11 +876,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2025, 11, 28, 10, 45, 51, 313381))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2026, 1, 10, 7, 32, 44, 62419))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2025, 11, 28, 18, 45, 51, 313381, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2026, 1, 10, 15, 32, 44, 62419, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Runtime Python objects (example code)
@@ -950,7 +950,7 @@ runtime.
 .. code-block:: output
 
     Bad binding argument type supplied - argument #1: type set
-    select ? {1, 2, <_io.StringIO object at 0x753729983c70>, 'three', (4+5j)}
+    select ? {1, 2, <_io.StringIO object at 0x7b8a6b583c70>, (4+5j), 'three'}
     select typeof(?) null
     make_set got ((3+4j), <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello')
     select make_set(?, ?, ?) {'hello', <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, (3+4j)}
@@ -1028,7 +1028,7 @@ across all the queries within the block
 .. code-block:: output
 
     len(rows)=20
-    After 0.200 seconds, we hit number=307329
+    After 0.200 seconds, we hit number=318229
     exc=IndexError('query row limit hit')
 
 
@@ -1447,7 +1447,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9923950222,)
+    (9981964807,)
 
 
 .. index:: File Control (example code)
@@ -1566,7 +1566,8 @@ with  :meth:`Connection.set_commit_hook`.
 .. code-block:: output
 
     in commit hook
-    commits okay at this time
+    no commits out of hours
+    commit was not allowed
 
 
 .. index:: Update hook (example code)
@@ -1862,8 +1863,8 @@ useful instead.
     │ .o         │ 11096      │
     │ .patch     │ 2682       │
     │ .ps1       │ 9031       │
-    │ .py        │ 11249525   │
-    │ .pyc       │ 12223522   │
+    │ .py        │ 11249551   │
+    │ .pyc       │ 12223539   │
     │ .rst       │ 9561       │
     │ .sh        │ 2752       │
     │ .so        │ 8745952    │
@@ -2142,9 +2143,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.51.1.0)
-    -- SQLite version 3.51.1
-    -- Date: Fri Nov 28 10:45:51 2025
+    -- SQLite dump (by APSW 3.51.2.0)
+    -- SQLite version 3.51.2
+    -- Date: Sat Jan 10 07:32:44 2026
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2193,8 +2194,8 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 522192 max 2499320
-    5360 bytes used to store schema for this connection
+    SQLite memory usage 517528 max 2494616
+    5048 bytes used to store schema for this connection
 
 
 .. index:: Tracing (example code)
@@ -2262,16 +2263,16 @@ This shows using :meth:`Connection.trace_v2`
     code is  SQLITE_TRACE_STMT
     {'code': 1,
      'explain': 0,
-     'id': 393889112,
+     'id': 144959864,
      'readonly': True,
      'total_changes': 146,
      'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 393889112}
+    {'code': 4, 'id': 144959864}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 393889112,
-     'nanoseconds': 17000000,
+     'id': 144959864,
+     'nanoseconds': 15000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
@@ -2314,16 +2315,13 @@ Only statistics that have changed are shown in the summary. There are
 
 .. code-block:: output
 
-                           Total CPU consumption 0.024
-                                      Wall clock 1.326
-                          Block input operations 8
-                            Page faults with I/O 1
-                       Maximum resident set size 1,380
-                            Page faults - no I/O 299
-                    Involuntary context switches 449
-                      Voluntary context switches 2
-                             Time in system mode 0.002
-                               Time in user mode 0.022
+                           Total CPU consumption 0.022
+                                      Wall clock 1.323
+                       Maximum resident set size 612
+                            Page faults - no I/O 24
+                    Involuntary context switches 42
+                      Voluntary context switches 1
+                               Time in user mode 0.021
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,353
@@ -2394,13 +2392,13 @@ code.  This also shows behind the scenes SQL.
          Time: 0.000
      > insert into multi values(?)
        INS 1 (0)
-         Time: 0.000  Changes: 1
+         Time: 0.000  Rows: 1  Changes: 1
      > insert into multi values(?)
        INS 2 (1)
          Time: 0.000  Changes: 1
      > insert into multi values(?)
        INS 3 (2)
-         Time: 0.001  Changes: 1
+         Time: 0.000  Changes: 1
      > insert into multi values(?)
        INS 4 (3)
          Time: 0.000  Changes: 1
@@ -2417,12 +2415,12 @@ code.  This also shows behind the scenes SQL.
          Time: 0.000  Changes: 4
      > COMMIT
       !COMMIT
-         Time: 0.007
+         Time: 0.008
      > SELECT narg FROM pragma_function_list WHERE name='pow'
      V PRAGMA function_list
          Time: 0.000  Rows: 215  VmStep: 1,509  Mem: 71.0KB
      < SELECT narg FROM pragma_function_list WHERE name='pow'
-         Time: 0.000  Rows: 2  VmStep: 656
+         Time: 0.000  Rows: 1  VmStep: 656
       !BEGIN
      > create trigger error after insert on multi
             begin
@@ -2436,7 +2434,7 @@ code.  This also shows behind the scenes SQL.
          UPD 6>106 (...)
       !ROLLBACK
      < insert into multi values(54)
-         Time: 0.000  Rows: 1  Changes: 1
+         Time: 0.000  Changes: 1
     
 
 
@@ -2593,12 +2591,12 @@ is no guarantee if they will go up or down.
 
     SQLite cache = -2000  page_size =  4096
     Before values
-    connection.pragma("schema_version")=23
-    connection.data_version()=61
+    connection.pragma("schema_version")=22
+    connection.data_version()=60
     
     After values
-    connection.data_version()=61
-    connection.pragma("schema_version")=24
+    connection.data_version()=60
+    connection.pragma("schema_version")=23
 
 
 .. index:: The CARRAY extension (example code)
