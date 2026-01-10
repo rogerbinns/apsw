@@ -6,27 +6,46 @@ Concurrency & Async
 How SQLite works
 ----------------
 
-- each db has mutex
-- acquired on call, released after
-- can be reacquired re-entrantly but only same thread
-- aims to do work as quickly as possible
-- pragma threads (eg for sorting)
-- cannot get same connection to be concurrent with multiple threads
-- inherently synchronous due to C implementation
-- get next row only API (network db give back batches of rows)
+Each connection has a mutex to protect the SQLite data structure.  It
+is acquired on a call into the connection, and released on return of
+the call. The mutex can be acquired more times in the same thread,
+allowing nested calls, but cannot be acquired outside of the thread
+until the top level call completes.
+
+This means you cannot get more concurrency per connection by using
+additional threads, although SQLite can do so internally (`pragma
+threads <https://www.sqlite.org/pragma.html#pragma_threads>`__`)
+such as for sorting.
+
+SQLite is inherently synchronous due to being written in C and using
+the C stack.
 
 How Python works
 -----------------
 
-- GIL protects all python data structures with one lock, so only
-  one thread at a time can be accessing python objects.
-  GIL released during I/O operations etc so Python code can
-  run in other threads.
+GIL (usual operation)
 
-- free threaded requires each python object in use to be locked
-  individually - ~50% performance hit but code in different
-  threads can run at the same time providing they don't
-  access the same python objects.
+    A single lock (global interpreter lock) protects all Python
+    data structures.  It can only be held by one thread at a time.
+    It can be released by C code when not using Python data structures
+    to allow other threads to run.  This is done during I/O operations
+    etc.
+
+Free threaded (Python 3.14+)
+
+    Each Python data structure gets its own lock.  Code has to acquire
+    and release the locks on individual Python objects being used,
+    which allows code in other threads to run providing they are not
+    using the same objects.
+
+    The extra locking can result in around a 50% performance hit
+    versus the single global lock in a single thread.
+
+Async
+
+    Traditionally concurrency has been done using the :mod:`concurrent.futures`
+    library to spread work over threads and processes,
+
 
 - async has an event loop run by asyncio or trio in one thread.
   multiple coroutines can be "running" at once, which means they are
@@ -49,7 +68,7 @@ GIL (usual operation)
 
 Free threaded
 
-   Requires expansive code updates to lock Connection / Cursor /Backup
+   Requires expansive code updates to lock Connection / Cursor / Backup
    etc objects, but also input objects like list for executemany so can't
    be modified while in use.  Work ongoing.
 
@@ -80,6 +99,7 @@ Async usage
 
 extract from rewrite section below
 
+cancellation & deadlines
 
 Async Alternatives
 ------------------
@@ -100,6 +120,7 @@ excellent choice, use if meets your needs
 * aiosqlite exception in cursor iteration
 * doesn't directly support async callbacks, but you could wrap each callback to do so
 * doesn't support contextvars for sync callbacks
+* manual work to add each API
 
 
 
