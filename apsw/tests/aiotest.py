@@ -15,12 +15,12 @@ import time
 import apsw
 import apsw.aio
 import apsw.bestpractice
+import apsw.ext
 
 
 #### ::TODO::  tests to add
 #
 # inheritance of connection/cursor
-# session
 # virtual tables especially ext wrapper
 #
 # multiple connections active at once (also backup with this)
@@ -774,6 +774,23 @@ class Async(unittest.TestCase):
 
         x = adb.async_run(foo)
         self.assertEqual(3, await (await x))
+
+    async def atestVTable(self, fw):
+        sleep = getattr(sys.modules[fw], "sleep")
+
+        async def vtable(start=0, end=10, foo="foo"):
+            for i in range(start, end):
+                await sleep(0)
+                yield i, foo
+
+        vtable.columns = ("red", "green")
+        vtable.column_access = apsw.ext.VTColumnAccess.By_Index
+
+        db = await apsw.Connection.as_async(":memory:")
+
+        apsw.ext.make_virtual_module(db, "hello", vtable)
+
+        print(await (await db.execute("select * from hello where start=7")).fetchall())
 
     def get_all_atests(self):
         for n in dir(self):
