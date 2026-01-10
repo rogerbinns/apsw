@@ -10,6 +10,12 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.51.2.0
+========
+
+:class:`apsw.ext.DataClassRowFactory` now defaults ``slots`` to ``True``
+for :func:`dataclasses.dataclass` which saves a small amount of memory.
+
 3.51.1.0
 ========
 
