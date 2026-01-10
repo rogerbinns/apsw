@@ -64,8 +64,8 @@ class DataClassRowFactory:
 
     :param dataclass_kwargs: Additional parameters when creating the dataclass
        as described in :func:`dataclasses.dataclass`.  For example you may
-       want `frozen = True` to make the dataclass read-only, or `slots = True`
-       to reduce memory consumption.
+       want `frozen = True` to make the dataclass read-only.  ``slots``
+       defaults to ``True`` which saves memory.
 
     """
 
@@ -94,6 +94,8 @@ class DataClassRowFactory:
         types = [self.get_type(d[1]) for d in description]
 
         kwargs = self.dataclass_kwargs.copy()
+        if "slots" not in kwargs:
+            kwargs["slots"] = True
         if "namespace" not in kwargs:
             kwargs["namespace"] = {}
         kwargs["namespace"]["__description__"] = description
