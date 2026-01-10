@@ -6,8 +6,8 @@ apsw
 A terminal interface to the APSW SQLite shell modelled after the SQLite shell
 -----------------------------------------------------------------------------
 
-:version: apsw 3.51.1.0
-:date: 28 November 2025
+:version: apsw 3.51.2.0
+:date: 9 January 2026
 :manual section: 1
 :manual group: General Commands Manual
 
@@ -876,7 +876,7 @@ https://sqlite.org/cli.html
 COPYRIGHT AND LICENSE
 =====================
 
-Copyright (C) 2004-2025 `Roger Binns <https://www.rogerbinns.com>`__
+Copyright (C) 2004-2026 `Roger Binns <https://www.rogerbinns.com>`__
 
 
 This software is provided 'as-is', without any express or implied

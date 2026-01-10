@@ -53,7 +53,7 @@ pygments_style = "vs"
 # General substitutions.
 project = "APSW"
 author = "Roger Binns <rogerb@rogerbinns.com>"
-copyright = f"2004-2025, { author }"
+copyright = f"2004-2026, { author }"
 html_logo = "apswlogo.png"
 
 # The default replacements for |version| and |release|, also used in various
