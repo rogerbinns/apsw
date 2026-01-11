@@ -778,19 +778,35 @@ class Async(unittest.TestCase):
     async def atestVTable(self, fw):
         sleep = getattr(sys.modules[fw], "sleep")
 
-        async def vtable(start=0, end=10, foo="foo"):
+        async def vtable_gen(start=0, end=10, foo="foo"):
             for i in range(start, end):
                 await sleep(0)
                 yield i, foo
 
-        vtable.columns = ("red", "green")
-        vtable.column_access = apsw.ext.VTColumnAccess.By_Index
+        async def vtable_coro(start=0, end=10, foo="foo"):
+            await sleep(0)
+            return [
+                (0 + start, "a " + foo),
+                (1 + end, foo + " b"),
+            ]
+
+        vtable_coro.columns = vtable_gen.columns = ("red", "green")
+        vtable_coro.column_access = vtable_gen.column_access = apsw.ext.VTColumnAccess.By_Index
 
         db = await apsw.Connection.as_async(":memory:")
 
-        apsw.ext.make_virtual_module(db, "hello", vtable)
+        await apsw.ext.make_virtual_module(db, "vtable_gen", vtable_gen)
+        await apsw.ext.make_virtual_module(db, "vtable_coro", vtable_coro)
 
-        print(await (await db.execute("select * from hello where start=7")).fetchall())
+        self.assertEqual(
+            [(7, "orange"), (8, "orange"), (9, "orange")],
+            await (await db.execute("select * from vtable_gen where start=7 and foo='orange'")).get,
+        )
+        self.assertEqual(
+            [(0, "a red"), (3, "red b")],
+            await (await db.execute("select * from vtable_coro where end=2 and foo='red'")).get,
+        )
+
 
     def get_all_atests(self):
         for n in dir(self):

@@ -22,7 +22,7 @@ import traceback
 import types
 from dataclasses import dataclass, is_dataclass, make_dataclass
 from fractions import Fraction
-from typing import Any, Callable, Generator, Iterable, Iterator, Literal, Sequence, TextIO, Union
+from typing import Any, Callable, Generator, Iterable, Iterator, AsyncIterator, Literal, Sequence, TextIO, Union
 from types import NoneType
 
 import apsw
@@ -2262,11 +2262,10 @@ def make_virtual_module(
       SELECT * from table_name(1) WHERE
             include_system=1;
 
-    :func:`iter` is called on *callable* with each iteration expected
-    to return the next row.  That means *callable* can return its data
-    all at once (eg a list of rows), or *yield* them one row at a
-    time.  The number of columns must always be the same, no matter
-    what the parameter values.
+    The callable can be sync or async.  It can return all the data in
+    one shot such as a list of rows, or it can ``yield`` one row at a
+    time.  The number of columns for each row must always be the same,
+    no matter what the parameter values.
 
     :param eponymous: Lets you use the *name* as a table name without
              having to create a virtual table
@@ -2276,6 +2275,14 @@ def make_virtual_module(
        :func:`repr`
 
     See the :ref:`example <example_virtual_tables>`
+
+    Async
+    +++++
+
+    If the db connection is in async mode, then you must ``await`` the
+    result of this function.  async callables can only be used when
+    the database is in async mode.  sync callables can be used in
+    either mode.
 
     Advanced
     ++++++++
@@ -2394,7 +2401,7 @@ def make_virtual_module(
             def __init__(self, module: Module, param_values: dict[str, apsw.SQLiteValue]):
                 self.module = module
                 self.param_values = param_values
-                self.iterating: Iterator[apsw.SQLiteValues] | None = None
+                self.iterating: Iterator[apsw.SQLiteValues] | AsyncIterator[apsw.SQLiteValues] | None = None
                 self.current_row: Any = None
                 self.columns = module.columns
                 self.repr_invalid = module.repr_invalid
@@ -2411,7 +2418,16 @@ def make_virtual_module(
             def Filter(self, idx_num: int, idx_str: str, args: tuple[apsw.SQLiteValue]) -> None:
                 params: dict[str, apsw.SQLiteValue] = self.param_values.copy()
                 params.update(zip(idx_str.split(","), args))
-                self.iterating = iter(self.module.callable(**params))
+                values = self.module.callable(**params)
+                if inspect.isasyncgen(values):
+                    self.iterating = aiter(values)
+                    self._impl_next =                    _get_anext
+                elif inspect.iscoroutine(values):
+                    self.iterating = iter(apsw.async_run_coro.get()(values))
+                    self._impl_next = next
+                else:
+                    self.iterating = iter(values)
+                    self.impl_next = next
                 # proactively advance so we can tell if eof
                 self.Next()
 
@@ -2470,8 +2486,8 @@ def make_virtual_module(
 
             def Next(self) -> None:
                 try:
-                    self.current_row = next(self.iterating)  # type: ignore[arg-type]
-                except StopIteration:
+                    self.current_row = self._impl_next(self.iterating)  # type: ignore[arg-type]
+                except (StopIteration, StopAsyncIteration):
                     if hasattr(self.iterating, "close"):
                         self.iterating.close()  # type: ignore[union-attr]
                     self.iterating = None
@@ -2489,9 +2505,7 @@ def make_virtual_module(
         repr_invalid,
     )
 
-    # unregister any existing first
-    db.create_module(name, None)
-    db.create_module(
+    return db.create_module(
         name,
         mod,  # type: ignore[arg-type]
         use_bestindex_object=True,
@@ -2500,6 +2514,11 @@ def make_virtual_module(
         read_only=True,
     )
 
+def _get_anext(aiterator: AsyncIterator[apsw.SQLiteValues]) -> apsw.SQLiteValues:
+    async def async_get_anext():
+        return await anext(aiterator)
+
+    return apsw.async_run_coro.get()(async_get_anext())
 
 def generate_series_sqlite(
     start: apsw.SQLiteValue = None, stop: apsw.SQLiteValue = 0xFFFF_FFFF_FFFF_FFFF, step: apsw.SQLiteValue = 1
