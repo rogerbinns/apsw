@@ -23,7 +23,7 @@ setup = """
 create table foo(one, two, three, four, five);
 insert into foo values(1, 2, 3, 4, 5);
 insert into foo values(5, 4, 3, 2, 1);
-""".split(";")
+"""
 
 insert = """
 insert into foo values(?,?,?,?,?)
@@ -39,49 +39,45 @@ def get_times():
 
 
 async def apsw_bench(prefetch: int):
+    # APSW connection with does transaction control
     async with contextlib.aclosing(await apsw.Connection.as_async(":memory:")) as con:
         apsw.async_cursor_prefetch.set(prefetch)
 
-        for sql in setup:
-            async with await con.execute(sql):
-                pass
+        await con.execute(setup)
 
         while True:
-            async with await con.execute(length) as cursor:
-                async for (count,) in cursor:
-                    pass
+            count =  await (await con.execute(length)).get
             if count > 300_000:
                 break
 
             data = []
-            async with await con.execute(source) as cursor:
-                async for row in cursor:
+            async for row in await con.execute(source):
                     data.append(row)
 
-            async with await con.executemany(insert, data):
-                pass
+            await con.executemany(insert, data)
 
 
 async def sqlite3_bench(prefetch: int):
+    # aiosqlite async with closes on exit
     async with aiosqlite.connect(":memory:", iter_chunk_size=prefetch) as con:
-        for sql in setup:
-            async with con.execute(sql):
-                pass
+
+        await con.executescript(setup)
 
         while True:
-            async with con.execute(length) as cursor:
-                async for (count,) in cursor:
-                    pass
+            count = (await con.execute_fetchall(length))[0][0]
+
             if count > 300_000:
                 break
 
             data = []
+            # the async with is needed to close the cursor
+            # on completion.  it has to be handled in the correct
+            # thread - apsw has no such limitation.
             async with con.execute(source) as cursor:
                 async for row in cursor:
                     data.append(row)
 
-            async with con.executemany(insert, data):
-                pass
+            await con.executemany(insert, data)
 
 
 print(f"""\
