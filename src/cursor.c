@@ -1496,56 +1496,6 @@ APSWCursor_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   return async_return_value(Py_None);
 }
 
-/** .. method:: __aenter__() -> Self
-  :async:
-
-  If you use the cursor as a context manager then it will be closed on
-  exit.
-*/
-static PyObject *
-APSWCursor_aenter(PyObject *self_, PyObject *Py_UNUSED(unused))
-{
-  APSWCursor *self = (APSWCursor *)self_;
-  CHECK_CURSOR_CLOSED(NULL);
-
-  if (IN_WORKER_THREAD(self->connection))
-    return error_async_in_sync_context();
-
-  return async_return_value(self_);
-}
-
-/** .. method:: __aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None
-  :async:
-
-  Close the cursor on exit of context
-*/
-static PyObject *
-APSWCursor_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
-{
-  APSWCursor *self = (APSWCursor *)self_;
-
-  CHECK_CURSOR_CLOSED(NULL);
-
-  PyObject *etype, *evalue, *etraceback;
-  {
-    Cursor_aexit_CHECK;
-    ARG_PROLOG(3, Cursor_aexit_KWNAMES);
-    ARG_MANDATORY ARG_pyobject(etype);
-    ARG_MANDATORY ARG_pyobject(evalue);
-    ARG_MANDATORY ARG_pyobject(etraceback);
-    ARG_EPILOG(NULL, Cursor_aexit_USAGE, );
-  }
-
-  (void)etype;
-  (void)evalue;
-  (void)etraceback;
-
-  if (IN_WORKER_THREAD(self->connection))
-    return error_async_in_sync_context();
-  /* the sanitizer doesn't like NULL as a pointer even when accessing 0 bytes of it, so we pass in 8 instead */
-  return do_async_fastcall((PyObject *)self->connection, APSWCursor_close, self_, (PyObject *const *)8, 0, NULL);
-}
-
 /** .. method:: __next__() -> Any
 
     Cursors are iterators
@@ -2498,8 +2448,6 @@ static PyMethodDef APSWCursor_methods[] = {
   { "get_description", (PyCFunction)APSWCursor_get_description, METH_NOARGS, Cursor_get_description_DOC },
   { "close", (PyCFunction)APSWCursor_close, METH_FASTCALL | METH_KEYWORDS, Cursor_close_DOC },
   { "aclose", (PyCFunction)APSWCursor_aclose, METH_FASTCALL | METH_KEYWORDS, Cursor_aclose_DOC },
-  { "__aenter__", (PyCFunction)APSWCursor_aenter, METH_NOARGS, Cursor_aenter_DOC },
-  { "__aexit__", (PyCFunction)APSWCursor_aexit, METH_FASTCALL | METH_KEYWORDS, Cursor_aexit_DOC },
   { "fetchall", (PyCFunction)APSWCursor_fetchall, METH_NOARGS, Cursor_fetchall_DOC },
   { "fetchone", (PyCFunction)APSWCursor_fetchone, METH_NOARGS, Cursor_fetchone_DOC },
 #ifndef APSW_OMIT_OLD_NAMES

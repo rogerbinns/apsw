@@ -3179,27 +3179,6 @@
 } while(0)
 
 
-#define  Cursor_aenter_DOC "Cursor.__aenter__() -> Self\n\n" \
-":async:\n" \
-"\n" \
-"If you use the cursor as a context manager then it will be closed on\n" \
-"exit.\n" 
-
-#define  Cursor_aexit_DOC "Cursor.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None\n\n" \
-":async:\n" \
-"\n" \
-"Close the cursor on exit of context\n" 
-
-#define Cursor_aexit_KWNAMES "etype", "evalue", "etraceback"
-#define Cursor_aexit_USAGE "Cursor.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None"
-
-#define Cursor_aexit_CHECK do { \
-  assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
-  assert(__builtin_types_compatible_p(typeof(evalue), PyObject *)); \
-  assert(__builtin_types_compatible_p(typeof(etraceback), PyObject *)); \
-} while(0)
-
-
 #define  Cursor_aiter_DOC "Cursor.__aiter__() -> Cursor\n\n" \
 ":async:\n" \
 "\n" \
