@@ -18,14 +18,6 @@ import apsw.bestpractice
 import apsw.ext
 
 
-#### ::TODO::  tests to add
-#
-# inheritance of connection/cursor
-# virtual tables especially ext wrapper
-#
-# multiple connections active at once (also backup with this)
-
-
 class Async(unittest.TestCase):
     async def asyncTearDown(self, coro):
         # we need this one because the event loop must still be
@@ -105,10 +97,35 @@ class Async(unittest.TestCase):
         with self.assertRaises(LookupError):
             await (await db.execute("select sync_cvar('inside')")).get
 
+    async def atestInheritance(self, fw):
+        class DerivedCur(apsw.Cursor):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.colour = "gold"
+
+        class DerivedCon(apsw.Connection):
+            def __init__(self, colour, flags, filename):
+                self.colour = colour
+                super().__init__(filename, flags)
+                self.cursor_factory = DerivedCur
+
+        d = await DerivedCon.as_async("yellow", apsw.SQLITE_OPEN_READWRITE | apsw.SQLITE_OPEN_CREATE, ":memory:")
+
+        self.assertEqual(d.colour, "yellow")
+        self.assertIsInstance(d, DerivedCon)
+
+        cur = await d.execute("select 3;")
+        self.assertEqual(cur.colour, "gold")
+        self.assertIsInstance(cur, DerivedCur)
+
+        self.assertEqual(await cur.get, 3)
+
     async def atestBlob(self, fw):
         db = await apsw.Connection.as_async(":memory:")
 
-        await db.execute("create table dummy(column); insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');")
+        await db.execute(
+            "create table dummy(column); insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');"
+        )
 
         blob = db.blob_open("main", "dummy", "column", 73, True)
         self.verifyFuture(blob)
@@ -147,7 +164,7 @@ class Async(unittest.TestCase):
         db2 = await apsw.Connection.as_async(":memory:")
         await db2.pragma("page_size", 512)
         await db2.execute("create table dummy(x)")
-        await db2.executemany("insert into dummy values(?)", (("a"*4096,) for _ in range(33)))
+        await db2.executemany("insert into dummy values(?)", (("a" * 4096,) for _ in range(33)))
 
         backup = await db.backup("main", db2, "main")
 
@@ -188,15 +205,16 @@ class Async(unittest.TestCase):
         "check aclose can be called multiple times, even after object is closed"
         db = await apsw.Connection.as_async(":memory:")
 
-        cursor = await db.execute("create table dummy(column); insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');")
+        cursor = await db.execute(
+            "create table dummy(column); insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');"
+        )
 
-        blob =await db.blob_open("main", "dummy", "column", 73, False)
+        blob = await db.blob_open("main", "dummy", "column", 73, False)
 
         db2 = await apsw.Connection.as_async(":memory:")
         await db2.pragma("page_size", 512)
         await db2.execute("create table dummy(x)")
-        await db2.executemany("insert into dummy values(?)", (("a"*4096,) for _ in range(129)))
-
+        await db2.executemany("insert into dummy values(?)", (("a" * 4096,) for _ in range(129)))
 
         fut = cursor.aclose()
         self.verifyFuture(fut)
@@ -220,7 +238,7 @@ class Async(unittest.TestCase):
         self.verifyFuture(backup)
         backup = await backup
 
-        fut=backup.aclose()
+        fut = backup.aclose()
         self.verifyFuture(fut)
         await fut
         fut = backup.aclose()
@@ -807,7 +825,6 @@ class Async(unittest.TestCase):
             await (await db.execute("select * from vtable_coro where end=2 and foo='red'")).get,
         )
 
-
     def get_all_atests(self):
         for n in dir(self):
             if "atestA" <= n <= "atestZ":
@@ -910,6 +927,7 @@ def BatchSends(conn):
         for item in batcher.batch:
             actual_queue.put(item)
 
+
 # does a lot of work to test timeouts/cancellation
 fractal_sql = """
     WITH RECURSIVE
@@ -930,10 +948,12 @@ fractal_sql = """
     )
     SELECT group_concat(rtrim(t),x'0a') FROM a;"""
 
+
 def release_gil():
     # called to ensure another thread has a chance to run
     for i in range(5):
         time.sleep(0)
+
 
 __all__ = ("Async",)
 
