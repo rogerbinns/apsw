@@ -2421,13 +2421,13 @@ def make_virtual_module(
                 values = self.module.callable(**params)
                 if inspect.isasyncgen(values):
                     self.iterating = aiter(values)
-                    self._impl_next =                    _get_anext
+                    self._impl_next = _get_anext
                 elif inspect.iscoroutine(values):
                     self.iterating = iter(apsw.async_run_coro.get()(values))
                     self._impl_next = next
                 else:
                     self.iterating = iter(values)
-                    self.impl_next = next
+                    self._impl_next = next
                 # proactively advance so we can tell if eof
                 self.Next()
 
