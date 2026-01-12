@@ -372,23 +372,23 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
 #define ARG_TYPE_CHECK(varname, type, cast)                                                                            \
   do                                                                                                                   \
   {                                                                                                                    \
-    switch (PyObject_IsInstance(useargs[argp_optindex], type))                                                         \
+    if (PyObject_TypeCheck(useargs[argp_optindex], type))                                                              \
     {                                                                                                                  \
-    case 1:                                                                                                            \
       varname = (cast)useargs[argp_optindex];                                                                          \
       argp_optindex++;                                                                                                 \
       break;                                                                                                           \
-    case 0:                                                                                                            \
-      PyErr_Format(PyExc_TypeError, "Expected %s not %s", Py_TypeName(type), Py_TypeName(useargs[argp_optindex]));     \
-      /* fallthru */                                                                                                   \
-    case -1:                                                                                                           \
+    }                                                                                                                  \
+    else                                                                                                               \
+    {                                                                                                                  \
+      PyErr_Format(PyExc_TypeError, "Expected %s not %s", Py_TypeName((PyObject *)type),                               \
+                   Py_TypeName(useargs[argp_optindex]));                                                               \
       goto param_error;                                                                                                \
     }                                                                                                                  \
   } while (0)
 
-#define ARG_Connection(varname) ARG_TYPE_CHECK(varname, (PyObject *)&ConnectionType, Connection *)
+#define ARG_Connection(varname) ARG_TYPE_CHECK(varname, &ConnectionType, Connection *)
 
-#define ARG_TableChange(varname) ARG_TYPE_CHECK(varname, (PyObject *)&APSWTableChangeType, APSWTableChange *)
+#define ARG_TableChange(varname) ARG_TYPE_CHECK(varname, &APSWTableChangeType, APSWTableChange *)
 
 /* PySequence_Check is too strict and rejects things that are
     accepted by PySequence_Fast like sets and generators,
@@ -407,7 +407,7 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
   do                                                                                                                   \
   {                                                                                                                    \
     if (Py_IsNone(useargs[argp_optindex]) || PyUnicode_Check(useargs[argp_optindex])                                   \
-        || PyObject_IsInstance(useargs[argp_optindex], (PyObject *)&APSWURIFilenameType))                              \
+        || PyObject_TypeCheck(useargs[argp_optindex], &APSWURIFilenameType))                                           \
     {                                                                                                                  \
       varname = useargs[argp_optindex];                                                                                \
       argp_optindex++;                                                                                                 \

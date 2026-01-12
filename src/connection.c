@@ -368,15 +368,7 @@ Connection_close_internal(Connection *self, int force)
     {
       int nargs = 2;
 #ifdef SQLITE_ENABLE_SESSION
-      /* these don't have force parameter.   PyObject_IsInstance could exception
-         although it would require heroics to do, so we unraisable them */
-      int is_session = PyObject_IsInstance(item, (PyObject *)&APSWSessionType) == 1;
-      if (PyErr_Occurred())
-        apsw_write_unraisable(NULL);
-      is_session = is_session || PyObject_IsInstance(item, (PyObject *)&APSWChangesetBuilderType) == 1;
-      if (PyErr_Occurred())
-        apsw_write_unraisable(NULL);
-      if (is_session)
+      if(PyObject_TypeCheck(item, &APSWSessionType) || PyObject_TypeCheck(item, &APSWChangesetBuilderType))
         nargs = 1;
 #endif
       closeres = PyObject_VectorcallMethod(apst.close, vargs + 1, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -7012,8 +7004,7 @@ static PyTypeObject ConnectionType = {
 static PyObject *
 async_get_controller_from_connection(PyObject *connection_)
 {
-  /* won't work for subclasses but PyObject isinstance can raise exceptions */
-  assert(Py_TYPE(connection_) == &ConnectionType);
+  assert(PyObject_TypeCheck(connection_, &ConnectionType));
   Connection *connection = (Connection *)connection_;
   assert(connection->async_controller);
   return connection->async_controller;
