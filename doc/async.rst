@@ -101,9 +101,9 @@ APSW async usage has been developed and tested with :mod:`asyncio`,
 `Trio <https://trio.readthedocs.io/>`__, and `AnyIO
 <https://anyio.readthedocs.io/>`__ with asyncio and trio event loops.
 This includes cancellations and deadlines/timeouts.  There is a
-controller interface (described below) providing implementations
-above, or you can write/adapt your own if you have more specialised
-needs or a different async framework.
+controller interface (described below) providing event loop
+integration, or you can write/adapt your own if you have more
+specialised needs, or a different async framework.
 
 Use :meth:`Connection.as_async` (a class method) to get an async
 :class:`Connection`.  Related objects like :class:`Cursor`,
@@ -126,13 +126,13 @@ async mode or not, and behave appropriately.  You can use
 
 However to make type checkers and IDEs work better, the type stubs
 included with APSW have those classes so it is clear when returned
-values are direct or need to be awaited.
+values are direct, or need to be awaited.
 
 Awaitable
 =========
 
 No matter which async framework is used, all awaitables conform to
-:class:`apsw.aio.AsyncResult`.  The underlying  class will vary even
+:class:`apsw.aio.AsyncResult`.  The underlying class will vary even
 within the same framework.
 
 Contextvars
@@ -145,7 +145,7 @@ and find the current value for their context.
 
 contextvar values at the point of a query in the event loop are
 propagated to their processing in the database worker thread, being
-available to any callbacks and are also propagated back to the event
+available to any callbacks, and are also propagated back to the event
 loop if any callbacks are async.
 
 Configuration
@@ -166,13 +166,17 @@ The native cancellation of each framework is supported.  This is often
 used to cancel all tasks in a group if one fails, or to support
 timeouts/deadlines.
 
-You can use * :attr:`apsw.aio.deadline` for  :mod:`asyncio` and anyio
+You can use :attr:`apsw.aio.deadline` for  :mod:`asyncio` and anyio
 to set a deadline for queries.  Trio's native timeout/deadlines are
 supported, with this overriding them.  Because it is a contextvar, the
 deadline is propagated back to async callbacks.
 
+An example usage of deadlines is if you use a function or virtual table
+that makes network requests.  When executing the query you can ensure
+reasonable bounds for how long it takes.
+
 Async controllers
------------------
+=================
 
 A controller configured via :attr:`apsw.async_controller` is used to
 integrate with the async framework.  :mod:`apsw.aio` contains
@@ -181,42 +185,99 @@ implementations for asyncio, trio, and auto-detection (the default).
 The controller is responsible for:
 
 * Starting the worker thread
-* Configuring teh connection in the worker thread
+* Configuring the connection in the worker thread
 * Sending calls from the event loop to the worker thread
 * Providing the awaitable results
 * Checking deadlines and cancellations
 * Running coroutines in the event loop, and providing their results
 * Stopping the worker thread when told about database close
 
+Although it seems like a lot, they are around 50 lines of code.
 
+Run in thread (alternative)
+===========================
 
-Async Alternatives
-------------------
-
-run in thread
-=============
-
-can use regular mode and run expensive operations in thread each time - eg :func:`asyncio.to_thread`
-(can't be used with stdlib sqlite3 because everything has to be in same thread each time)
-
-aiosqlite
-=========
-
-excellent choice, use if meets your needs
-
-* asyncio only (no trio)
-* About equal performance
-* aiosqlite exception in cursor iteration
-* doesn't directly support async callbacks, but you could wrap each callback to do so
-* doesn't support contextvars for sync callbacks
-* manual work to add each API
-
-
+Instead of using APSW in async mode, you can request your framework
+run expensive operations in a thread.  For example
+:func:`asyncio.to_thread` can do so.
 
 Performance
------------
+===========
 
-explain aiobench, why prefetch size matters, give some output
+Performance is dominated by the overhead of sending calls to the
+worker thread, and setting the result.  :source:`tools/aio_benchh.py`
+is a small benchmark that keeps reading rows from a dummy memory
+database, and then appending 1,000 to the end of the table, until there
+are 300,000 rows in the table.
+
+**Benchmarks aren't real - use your own scenario for real testing!**
+
+Library
+
+    apsw with :mod:`asyncio`, asyncio using uvloop as the inner loop,
+    trio, and the aiosqlite library for comparison.
+
+Prefetch
+
+    How many rows are fetched in a batch for queries, controlled by :attr:`apsw.async_cursor_prefetch`
+    in APSW.  A value of 1 as shown in the first rows ends up as 301 thousand
+    messages and responses with the worker thread.  That is halved with 2
+    etc.  The default is 64.
+
+Wall
+
+    Wall clock time in seconds for the test to run.
+
+CpuTotal / CpuEvtLoop / CpuDbWorker
+
+    The total CPU time used in seconds, with how much of that was in
+    the async event loop thread, and how much in the background
+    database worker thread.
+
+.. csv-table:: Benchmark Results
+    :widths: auto
+    :stub-columns: 1
+    :header: "Library", "Prefetch", "Wall", "CpuTotal", "CpuEvtLoop", "CpuDbWorker"
+    :class: aiobench-table
+
+    "apsw AsyncIO", 1, 6.717, 6.902, 2.596, 4.305
+    "apsw AsyncIO uvloop", 1, 4.361, 4.506, 1.149, 3.356
+    "apsw Trio", 1, 16.284, 18.690, 9.095, 9.595
+    "aiosqlite", 1, 7.495, 7.739, 3.371, 4.368
+    "aiosqlite uvloop", 1, 4.847, 5.049, 1.697, 3.352
+    "apsw AsyncIO", 2, 3.769, 3.887, 1.457, 2.429
+    "apsw AsyncIO uvloop", 2, 2.821, 2.872, 0.732, 2.141
+    "apsw Trio", 2, 8.748, 9.964, 4.407, 5.556
+    "aiosqlite", 2, 3.968, 4.106, 1.757, 2.348
+    "aiosqlite uvloop", 2, 2.631, 2.719, 0.865, 1.854
+    "apsw AsyncIO", 16, 1.001, 1.019, 0.224, 0.795
+    "apsw AsyncIO uvloop", 16, 0.851, 0.863, 0.131, 0.733
+    "apsw Trio", 16, 1.747, 1.900, 0.635, 1.265
+    "aiosqlite", 16, 1.011, 1.025, 0.303, 0.722
+    "aiosqlite uvloop", 16, 0.834, 0.830, 0.182, 0.649
+    "apsw AsyncIO", 64, 0.756, 0.758, 0.107, 0.651
+    "apsw AsyncIO uvloop", 64, 0.662, 0.660, 0.062, 0.598
+    "apsw Trio", 64, 0.958, 1.002, 0.236, 0.766
+    "aiosqlite", 64, 0.660, 0.650, 0.135, 0.515
+    "aiosqlite uvloop", 64, 0.569, 0.568, 0.092, 0.476
+    "apsw AsyncIO", 512, 0.658, 0.661, 0.076, 0.585
+    "apsw AsyncIO uvloop", 512, 0.631, 0.623, 0.052, 0.571
+    "apsw Trio", 512, 0.732, 0.749, 0.119, 0.630
+    "aiosqlite", 512, 0.533, 0.529, 0.075, 0.454
+    "aiosqlite uvloop", 512, 0.517, 0.511, 0.070, 0.441
+    "apsw AsyncIO", 8192, 0.739, 0.719, 0.088, 0.632
+    "apsw AsyncIO uvloop", 8192, 0.625, 0.620, 0.057, 0.564
+    "apsw Trio", 8192, 0.692, 0.707, 0.089, 0.618
+    "aiosqlite", 8192, 0.529, 0.522, 0.080, 0.442
+    "aiosqlite uvloop", 8192, 0.508, 0.506, 0.069, 0.436
+    "apsw AsyncIO", 65536, 0.624, 0.629, 0.063, 0.566
+    "apsw AsyncIO uvloop", 65536, 0.620, 0.611, 0.052, 0.560
+    "apsw Trio", 65536, 0.681, 0.700, 0.090, 0.610
+    "aiosqlite", 65536, 0.543, 0.535, 0.091, 0.445
+    "aiosqlite uvloop", 65536, 0.521, 0.509, 0.066, 0.442
+
+The results show that what is used only matters if you are doing very
+large numbers of calls with very small row batch sizes.
 
 apsw.aio module
 ---------------
@@ -224,119 +285,4 @@ apsw.aio module
 .. automodule:: apsw.aio
     :members:
     :undoc-members:
-
-
-
-OLD DOC TO REWRITE
-------------------
-
-
-
-
-
-APSW supports using async with SQLite.  This covers both calls into it
-such as to connections and cursors, and callbacks back out such as
-functions, virtual tables, and VFS.
-
-Callbacks are independent of call-ins, although you would typically use
-the same async framework for both.  It is not required.
-
-SQLite is implemented in C and is inherently synchronous.
-
-Callbacks
----------
-
-When a coroutine (async function) is used as a callback, it is
-detected and :attr:`apsw.async_run_coro` is called with the coroutine.
-It should return the result or raise an exception.  Typically it would
-send the coroutine back to the event loop and wait for the result.
-
-SQLite is blocked until it gets an answer.
-
-Async Connection, Cursor, ...
------------------------------
-
-Calling :meth:`Connection.as_async` will result in an async
-:class:`Connection`.  A controller runs the connection in a background
-worker thread.  Calls will be sent to the worker thread giving an
-awaitable to check for async completion to the caller.
-
-While the type stubs say there is an :class:`AsyncConnection` for
-convenience, there is no separate type.  The :class:`Connection`
-knows if it is async or not and behaves appropriately.
-
-You can use :attr:`Connection.is_async` to detect async mode.
-:attr:`Connection.async_controller` provides the :class:`controller
-<AsyncConnectionController>` currently in use, with its ``send``
-method letting you run any callable (use :func:`functools.partial`)
-in the worker thread.
-
-Deadlocks
----------
-
-It is possible to get deadlocks if you make a callback go to the event
-loop which then makes a call back into SQLite and awaits (blocking)
-for a result.  Neither side will be able to make any progress.
-
-Configuration is via contextvars
-================================
-
-Configuration uses :mod:`contextvars`.  These let you provide thread
-local and async context specific values.   It saves having to provide
-a parameter to every function in a call chain, instead letting those
-that care reach out and find the current value for them.
-
-The recommended way of using them is as a context manager which will
-change the value inside, and restore it on exit.
-
-.. code-block:: python
-
-    with var.set(7):
-        # now at 7 here
-        with var.set(12):
-            # now at 12 here
-            ...
-        # back to 7 here
-
-    # Python 3.14 supports with directly.  For earlier versions
-    import apsw.aio.contextvar_set as contextvar_set
-
-    with contextvar_set(var, 7):
-        # now at 7 here
-        with contextvar_set(var, 12):
-            # now at 12 here
-            ...
-        # back to 7 here
-
-:attr:`apsw.async_run_coro`
-
-    Called with a coroutine and must block until a result/exception is
-    returned.
-
-:attr:`apsw.async_controller`
-
-    Used to start a worker thread and run a connection in it.
-
-
-
-The :mod:`apsw.aio` controllers also use contextvars.  For example
-:attr:`apsw.aio.deadline` is used with :mod:`asyncio` to set a deadline
-for a query.
-
-Async Framework Support
-=======================
-
-The APSW async implementation is neutral to any framework.
-:mod:`apsw.aio` provides implementations for the standard library
-:mod:`asyncio` and others.  They can be used as is, or as the basis
-for your own customisations.
-
-Functionality like timeouts/deadlines in each framework are honoured
-or provided.
-
-* :mod:`asyncio` standard library module
-* `trio <https://trio.readthedocs.io>`__
-* anyio
-* curio https://curio.readthedocs.io/en/latest/reference.html#asynchronous-threads
-
-
+    :member-order: bysource

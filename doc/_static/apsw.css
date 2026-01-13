@@ -14,3 +14,9 @@
 .rst-content code.literal {
 	white-space: nowrap;
 }
+
+.aiobench-table td:not(:first-child),
+.aiobench-table th:not(:first-child) {
+    text-align: right;
+	font: fixed;
+}

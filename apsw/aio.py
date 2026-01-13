@@ -1,4 +1,4 @@
-"Implements async framework controllers"
+"Implements async framework controllers, configuration, and helpers"
 
 from __future__ import annotations
 
@@ -40,13 +40,15 @@ no deadline.
     <https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_effective_deadline>`__
     where the call is made is used.
 
-    Time is measured using `current_clock <https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.current_clock>`__
+    Time is measured using `current_clock
+    <https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.current_clock>`__
     in place when the connection is created.
 
-**AnyIO**
+AnyIO
 
-    You can use `anyio.current_effective_deadline <https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline>` to
-    set this::
+    You can use `anyio.current_effective_deadline
+    <https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline>`__
+    to set this::
 
         with anyio.fail_after(15):
             with apsw.aio.deadline.set(anyio.current_effective_deadline):
@@ -65,10 +67,6 @@ no deadline.
        with apsw.aio.timeout.set(loop.time() + 10):
           # do other operations
           ...
-
-`anyio <https://anyio.readthedocs.io/>`__
-
-    TODO: it looks like TimeoutError is raised if using trio, but double check
 
 """
 
@@ -162,7 +160,8 @@ class AsyncResult(Protocol):
         ...
 
     def done(self) -> bool:
-        """Return ``True`` if call has completed, either with a result or cancelled, else ``False``"""
+        """Return ``True`` if call has completed, either with a result or cancelled, else ``False`` if
+        still waiting for a result"""
         ...
 
 
@@ -199,6 +198,7 @@ class AsyncIO:
 
     def send(self, call):
         "Enqueues call to worker thread"
+        self.counter +=1
         future = self.loop.create_future()
         self.queue.put((future, call))
         return future
@@ -273,7 +273,7 @@ class AsyncIO:
 
         self.queue = queue.SimpleQueue()
         self.loop = asyncio.get_running_loop()
-
+        self.counter = 0
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
@@ -296,6 +296,7 @@ class Trio:
         return False
 
     def send(self, call):
+        self.counter +=1
         future = TrioFuture()
         future.token = trio.lowlevel.current_trio_token()
         future.event = trio.Event()
@@ -344,7 +345,7 @@ class Trio:
         import trio
 
         apsw.async_run_coro.set(self.async_run_coro)
-
+        self.counter = 0
         self.queue = queue.SimpleQueue()
         self.clock = trio.lowlevel.current_clock()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
