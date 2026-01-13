@@ -199,7 +199,24 @@ Run in thread (alternative)
 
 Instead of using APSW in async mode, you can request your framework
 run expensive operations in a thread.  For example
-:func:`asyncio.to_thread` can do so.
+:func:`asyncio.to_thread`, `trio.to_thread.run_sync
+<https://trio.readthedocs.io/en/stable/reference-core.html#trio.to_thread.run_sync>`_,
+and `anyio.to_thread.run_sync
+<https://anyio.readthedocs.io/en/stable/api.html#anyio.to_thread.run_sync>`__
+can do that for you.
+
+Extensions
+==========
+
+Session
+
+    You will need to use :func:`apsw.aio.make_session`
+
+:class:`apsw.fts5.Table`
+
+    Virtually every method and property needs to access the database.
+    Therefore you will need to run all of them in a thread as documented
+    above.
 
 Performance
 ===========
@@ -215,16 +232,17 @@ are 300,000 rows in the table.
 Library
 
     apsw with :mod:`asyncio`, asyncio using `uvloop
-    <https://uvloop.readthedocs.io/>`__ as the inner loop, trio, and
-    the aiosqlite library for comparison.  aiosqlite uses the same
-    background worker thread and queue implementation as apsw.
+    <https://uvloop.readthedocs.io/>`__ as the inner loop, and trio.
+    The aiosqlite library (asyncio only) is included for comparison,
+    using the same SQLite shared library as apsw.
 
 Prefetch
 
-    How many rows are fetched in a batch for queries, controlled by :attr:`apsw.async_cursor_prefetch`
-    in APSW.  A value of 1 as shown in the first rows ends up as 301 thousand
-    messages and responses with the worker thread.  That is halved with 2
-    etc.  The default is 64.
+    How many rows are fetched in a batch for queries, controlled by
+    :attr:`apsw.async_cursor_prefetch` in APSW.  A value of 1 as shown
+    in the first rows ends up as 301 thousand messages and responses
+    with the worker thread.  That is halved with 2 etc.  The default
+    is 64.  The most returned by the query is 1,000 rows.
 
 Wall
 
@@ -279,7 +297,9 @@ CpuTotal / CpuEvtLoop / CpuDbWorker
     "aiosqlite uvloop", "65,536", 0.521, 0.509, 0.066, 0.442
 
 The results show that what is used only matters if you are doing very
-large numbers of calls with very small row batch sizes.
+large numbers of calls because of very small row batch sizes.  APSW
+has to allocate space for results, so increasing the prefetch size
+results in more memory consumption and more CPU time to allocate it.
 
 apsw.aio module
 ---------------
