@@ -3,103 +3,192 @@ Concurrency & Async
 
 .. currentmodule:: apsw
 
-How SQLite works
-----------------
+How SQLite concurrency works
+----------------------------
 
 Each connection has a mutex to protect the SQLite data structure.  It
 is acquired on a call into the connection, and released on return of
 the call. The mutex can be acquired more times in the same thread,
 allowing nested calls, but cannot be acquired outside of the thread
-until the top level call completes.
+until the top level call in the original thread completes.
 
 This means you cannot get more concurrency per connection by using
 additional threads, although SQLite can do so internally (`pragma
-threads <https://www.sqlite.org/pragma.html#pragma_threads>`__`)
-such as for sorting.
+threads <https://www.sqlite.org/pragma.html#pragma_threads>`__)
+such as for sorting.  You can get concurrency with multiple connections.
 
 SQLite is inherently synchronous due to being written in C and using
 the C stack.
 
-How Python works
------------------
+How Python concurrency works
+----------------------------
 
 GIL (usual operation)
 
-    A single lock (global interpreter lock) protects all Python
-    data structures.  It can only be held by one thread at a time.
-    It can be released by C code when not using Python data structures
+    A single lock (global interpreter lock) protects all Python data
+    structures.  It can only be held by one thread at a time.  By
+    default it will switch the active thread every 5ms (200 times a
+    second), with the operating system scheduler choosing which thread
+    runs next.
+
+    The GIL can be released by C code when not using Python data structures
     to allow other threads to run.  This is done during I/O operations
     etc.
 
 Free threaded (Python 3.14+)
 
-    Each Python data structure gets its own lock.  Code has to acquire
-    and release the locks on individual Python objects being used,
-    which allows code in other threads to run providing they are not
-    using the same objects.
+    Each Python data structure gets its own lock.  C code has to
+    acquire and release the locks on individual Python objects being
+    used, which allows code in other threads to run providing they are
+    not using the same objects.
 
     The extra locking can result in around a 50% performance hit
     versus the single global lock in a single thread.
 
 Async
 
-    Traditionally concurrency has been done using the :mod:`concurrent.futures`
-    library to spread work over threads and processes,
+    async is a language level concurrency mechanism, contrasted with
+    the traditional library mechanism in :mod:`concurrent.futures`.
+    It is done with the ``async`` and ``await`` keywords.
 
-
-- async has an event loop run by asyncio or trio in one thread.
-  multiple coroutines can be "running" at once, which means they are
-  waiting for their next thing to happen such as time to pass, network
-  I/O activity, work in a background thread to complete.  event loop
-  handles time, activity, cancellations etc.
-
-  methods need to be marked ``async`` to say they can be running at
-  same time as others, and ``await`` used to get result of waiting on
-  something.
+    An event loop does fine grained management of multiple tasks
+    as their results become available, timeouts, cancellations,
+    task groups etc, with the tasks cooperatively defining the
+    points at which they can switch.  There is typically a 50%
+    hit to throughput, but latencies and time to complete are
+    far more uniform.
 
 How APSW works
 --------------
 
 GIL (usual operation)
 
-   GIL protects APSW and Connection Python objects.  When making a SQLite
-   call the GIL is released and SQLite acquires its db mutex.  Means Python code
-   can run concurrently with SQLite connections.
+   The GIL protects APSW Python objects.  When making a SQLite call,
+   the GIL is released and SQLite acquires its connection  mutex.
+   This means other Python code can run concurrently with SQLite
+   connections.  APSW is thread safe in that you can use any thread to
+   make any call on any object, due to the GIL protection.
 
 Free threaded
 
-   Requires expansive code updates to lock Connection / Cursor / Backup
-   etc objects, but also input objects like list for executemany so can't
-   be modified while in use.  Work ongoing.
+   APSW has not yet been updated.  (:issue:`568`)  It requires
+   extensive code changes to lock all APSW objects (connections,
+   cursors, backups etc) as well as inputs and outputs such as lists
+   for executemany.
 
-   Free threaded build is available on pypi but will re-enable GIL.  Can use
-   -Xgil and that won't happen, but you can get crashes if you use same
-   connection and objects concurrently across threads.
+   A free threaded build is available on pypi, but loading the module
+   will re-enable GIL.  You can use ``-X nogil`` when starting Python
+   and that won't happen, but you can get crashes if you use the same
+   objects and inputs concurrently across threads, especially if
+   making concurrent modifications.
 
 Async
 
-   :meth:`Connection.as_async` gets async connection.  connection is run in
-   dedicated background worker thread.  calls in event loop get forwarded to
-   worker thread via controller returning async to event loop that completes
-   when worker thread finishes that call.
+    APSW fully supports async operation.  This is done by running each
+    connection in its own dedicated worker thread.  Calls made in the
+    event loop get forwarded to the worker thread, and the results can
+    then be awaited.
 
-   can also have async functions for any callback including virtual tables,
-   VFS, scalar/aggregate/window functions etc.  Uses async_run_coro to
-   get result, with typical (but not required) approach being async controller
-   handling that.
-
-   .. warning:: DEADLOCKS
-
-        async callback can't block on re-entrant call.  if need more queries
-        eg in vtable, then use sync function to make them
-
+    **All** callbacks such as user defined functions, virtual tables,
+    various hooks, VFS etc can be async functions.  The async function
+    (coroutine) is forwarded from the worker thread back to the event
+    loop with the worker thread blocked until getting a result back.
 
 Async usage
 -----------
 
-extract from rewrite section below
+APSW async usage has been developed and tested with :mod:`asyncio`,
+`Trio <https://trio.readthedocs.io/>`__, and `AnyIO
+<https://anyio.readthedocs.io/>`__ with asyncio and trio event loops.
+This includes cancellations and deadlines/timeouts.  There is a
+controller interface (described below) providing implementations
+above, or you can write/adapt your own if you have more specialised
+needs or a different async framework.
 
-cancellation & deadlines
+Use :meth:`Connection.as_async` (a class method) to get an async
+:class:`Connection`.  Related objects like :class:`Cursor`,
+:class:`Blob`, :class:`Backup`, :class:`Session` etc will also be
+async.
+
+.. code-block:: python
+
+    db = await apsw.Connection.as_async("database.db")
+
+    # note awaiting the db.execute call to get the cursor, and then
+    # using async for to iterate
+    async for name, price in await db.execute("SELECT name, price FROM ..."):
+        print(f"{name=) {price=}")"
+
+There is no separate ``AsyncConnection`` (or ``AsyncCursor``,
+``AsyncBlob`` etc) class.  The existing instances know if they are in
+async mode or not, and behave appropriately.  You can use
+:attr:`Connection.is_async` to check.
+
+However to make type checkers and IDEs work better, the type stubs
+included with APSW have those classes so it is clear when returned
+values are direct or need to be awaited.
+
+Awaitable
+=========
+
+No matter which async framework is used, all awaitables conform to
+:class:`apsw.aio.AsyncResult`.  The underlying  class will vary even
+within the same framework.
+
+Contextvars
+===========
+
+:mod:`contextvars` let you provide thread local and async context
+specific values.   It saves having to provide a parameter to every
+function in a call chain, instead letting those that care reach out
+and find the current value for their context.
+
+contextvar values at the point of a query in the event loop are
+propagated to their processing in the database worker thread, being
+available to any callbacks and are also propagated back to the event
+loop if any callbacks are async.
+
+Configuration
+=============
+
+Configuration uses :mod:`contextvars`.
+
+* :attr:`apsw.async_cursor_prefetch`
+* :attr:`apsw.aio.check_progress_steps`
+* :attr:`apsw.aio.deadline`
+* :attr:`apsw.async_controller`
+* :attr:`apsw.async_run_coro`
+
+Deadlines and Cancellation
+==========================
+
+The native cancellation of each framework is supported.  This is often
+used to cancel all tasks in a group if one fails, or to support
+timeouts/deadlines.
+
+You can use * :attr:`apsw.aio.deadline` for  :mod:`asyncio` and anyio
+to set a deadline for queries.  Trio's native timeout/deadlines are
+supported, with this overriding them.  Because it is a contextvar, the
+deadline is propagated back to async callbacks.
+
+Async controllers
+-----------------
+
+A controller configured via :attr:`apsw.async_controller` is used to
+integrate with the async framework.  :mod:`apsw.aio` contains
+implementations for asyncio, trio, and auto-detection (the default).
+
+The controller is responsible for:
+
+* Starting the worker thread
+* Configuring teh connection in the worker thread
+* Sending calls from the event loop to the worker thread
+* Providing the awaitable results
+* Checking deadlines and cancellations
+* Running coroutines in the event loop, and providing their results
+* Stopping the worker thread when told about database close
+
+
 
 Async Alternatives
 ------------------
@@ -228,11 +317,7 @@ change the value inside, and restore it on exit.
 
     Used to start a worker thread and run a connection in it.
 
-:attr:`apsw.async_cursor_prefetch`
 
-    Sets how many rows are fetched at once when using a cursor.  This
-    improves performance by avoiding a round trip through the worker
-    thread for each row.
 
 The :mod:`apsw.aio` controllers also use contextvars.  For example
 :attr:`apsw.aio.deadline` is used with :mod:`asyncio` to set a deadline
