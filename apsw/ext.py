@@ -2113,7 +2113,7 @@ def _format_table(
     if rows:
         for row in rows:
             if multiline:
-                do_bar(["╞═╪╡", "├─┼┤"][which] if use_unicode else "+-++")
+                do_bar(["╞═╪╡", "├─┼┤"][which] if use_unicode else ["+=++", "+-++"][which])
                 which = 1
             do_row(row, "│" if use_unicode else "|")
 
