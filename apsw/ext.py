@@ -1958,7 +1958,7 @@ def _format_table(
         def colour_wrap(text: str, kind: type | None, header: bool = False) -> str:
             return text
 
-    colwidths = [max(len(v) for v in c.splitlines()) for c in colnames]
+    colwidths = [(max(len(v) for v in c.splitlines()) if c else 0) for c in colnames]
     coltypes: list[set[type]] = [set() for _ in colnames]
 
     # type, measure and stringize each cell
@@ -2073,7 +2073,7 @@ def _format_table(
 
     # break headers and cells into lines
     def wrap(text: str, width: int) -> list[str]:
-        return list(apsw.unicode.text_wrap(text, width))
+        return list(apsw.unicode.text_wrap(text, width)) or [""]
 
     colnames = [wrap(colnames[i], colwidths[i]) for i in range(len(colwidths))]  # type: ignore
     for row in rows:
