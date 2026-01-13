@@ -205,7 +205,7 @@ Performance
 ===========
 
 Performance is dominated by the overhead of sending calls to the
-worker thread, and setting the result.  :source:`tools/aio_benchh.py`
+worker thread, and setting the result.  :source:`tools/aio_bench.py`
 is a small benchmark that keeps reading rows from a dummy memory
 database, and then appending 1,000 to the end of the table, until there
 are 300,000 rows in the table.
@@ -214,8 +214,10 @@ are 300,000 rows in the table.
 
 Library
 
-    apsw with :mod:`asyncio`, asyncio using uvloop as the inner loop,
-    trio, and the aiosqlite library for comparison.
+    apsw with :mod:`asyncio`, asyncio using `uvloop
+    <https://uvloop.readthedocs.io/>`__ as the inner loop, trio, and
+    the aiosqlite library for comparison.  aiosqlite uses the same
+    background worker thread and queue implementation as apsw.
 
 Prefetch
 
@@ -226,7 +228,7 @@ Prefetch
 
 Wall
 
-    Wall clock time in seconds for the test to run.
+    Wall clock time in seconds for the Configuration to run.
 
 CpuTotal / CpuEvtLoop / CpuDbWorker
 
@@ -265,16 +267,16 @@ CpuTotal / CpuEvtLoop / CpuDbWorker
     "apsw Trio", 512, 0.732, 0.749, 0.119, 0.630
     "aiosqlite", 512, 0.533, 0.529, 0.075, 0.454
     "aiosqlite uvloop", 512, 0.517, 0.511, 0.070, 0.441
-    "apsw AsyncIO", 8192, 0.739, 0.719, 0.088, 0.632
-    "apsw AsyncIO uvloop", 8192, 0.625, 0.620, 0.057, 0.564
-    "apsw Trio", 8192, 0.692, 0.707, 0.089, 0.618
-    "aiosqlite", 8192, 0.529, 0.522, 0.080, 0.442
-    "aiosqlite uvloop", 8192, 0.508, 0.506, 0.069, 0.436
-    "apsw AsyncIO", 65536, 0.624, 0.629, 0.063, 0.566
-    "apsw AsyncIO uvloop", 65536, 0.620, 0.611, 0.052, 0.560
-    "apsw Trio", 65536, 0.681, 0.700, 0.090, 0.610
-    "aiosqlite", 65536, 0.543, 0.535, 0.091, 0.445
-    "aiosqlite uvloop", 65536, 0.521, 0.509, 0.066, 0.442
+    "apsw AsyncIO", "8,192", 0.739, 0.719, 0.088, 0.632
+    "apsw AsyncIO uvloop", "8,192", 0.625, 0.620, 0.057, 0.564
+    "apsw Trio", "8,192", 0.692, 0.707, 0.089, 0.618
+    "aiosqlite", "8,192", 0.529, 0.522, 0.080, 0.442
+    "aiosqlite uvloop", "8,192", 0.508, 0.506, 0.069, 0.436
+    "apsw AsyncIO", "65,536", 0.624, 0.629, 0.063, 0.566
+    "apsw AsyncIO uvloop", "65,536", 0.620, 0.611, 0.052, 0.560
+    "apsw Trio", "65,536", 0.681, 0.700, 0.090, 0.610
+    "aiosqlite", "65,536", 0.543, 0.535, 0.091, 0.445
+    "aiosqlite uvloop", "65,536", 0.521, 0.509, 0.066, 0.442
 
 The results show that what is used only matters if you are doing very
 large numbers of calls with very small row batch sizes.

@@ -352,7 +352,10 @@ class Trio:
 
 
 class TrioFuture:
-    "Returned for each :class:`Trio` request"
+    """Returned for each :class:`Trio` request
+
+    :meta private:
+    """
 
     __slots__ = (
         # needed to call back into trio
