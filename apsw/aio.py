@@ -198,7 +198,6 @@ class AsyncIO:
 
     def send(self, call):
         "Enqueues call to worker thread"
-        self.counter +=1
         future = self.loop.create_future()
         self.queue.put((future, call))
         return future
@@ -273,7 +272,6 @@ class AsyncIO:
 
         self.queue = queue.SimpleQueue()
         self.loop = asyncio.get_running_loop()
-        self.counter = 0
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
@@ -296,7 +294,6 @@ class Trio:
         return False
 
     def send(self, call):
-        self.counter +=1
         future = TrioFuture()
         future.token = trio.lowlevel.current_trio_token()
         future.event = trio.Event()
@@ -345,7 +342,6 @@ class Trio:
         import trio
 
         apsw.async_run_coro.set(self.async_run_coro)
-        self.counter = 0
         self.queue = queue.SimpleQueue()
         self.clock = trio.lowlevel.current_clock()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
