@@ -192,7 +192,8 @@ The controller is responsible for:
 * Running coroutines in the event loop, and providing their results
 * Stopping the worker thread when told about database close
 
-Although it seems like a lot, they are around 50 lines of code.
+Although it seems like a lot, they are around 50 lines of code, and
+conform to the :class:`AsyncConnectionController` protocol.
 
 Run in thread (alternative)
 ===========================

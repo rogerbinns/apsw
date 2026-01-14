@@ -70,7 +70,9 @@ AnyIO
 
 """
 
-check_progress_steps : contextvars.ContextVar[int] = contextvars.ContextVar("apsw.aio.check_progress_steps", default=50_000)
+check_progress_steps: contextvars.ContextVar[int] = contextvars.ContextVar(
+    "apsw.aio.check_progress_steps", default=50_000
+)
 """How many steps between checks to check for cancellation and deadlines
 
 While SQLite queries are executing, periodic checks are made to see if
@@ -127,6 +129,7 @@ async def make_session(db: apsw.AsyncConnection, schema: str) -> AsyncSession:
         raise apsw.MisuseError("The session extension is not enabled and available")
     return await db.async_run(apsw.Session, db, schema)
 
+
 class AsyncResult(Protocol):
     """
     All async results have these methods, no matter which API or
@@ -137,6 +140,8 @@ class AsyncResult(Protocol):
     The methods can only be called in async context - calling in a
     background thread will result in exceptions, wrong answers, or no
     effect.
+
+    You must ``await`` it to get the result or exception.
     """
 
     def __await__(self) -> Generator[Any, None, Any]:
@@ -203,7 +208,7 @@ class AsyncIO:
         return future
 
     def close(self):
-        "Called from connection destructor, so the worker thread can be stopped"
+        "Called on connection close, so the worker thread can be stopped"
         # How we tell the worker to exit
         self.queue.put(None)
 
@@ -251,8 +256,8 @@ class AsyncIO:
             if (this_timeout := deadline.get()) is not None:
                 this_timeout -= self.loop.time()
 
-            # yes we really need the timeout twice.  when the wait_for one fires the
-            # exception isn't propagated to us
+            # yes we really need the timeout twice.  when the wait_for
+            # one fires, the exception isn't propagated to us
             return asyncio.run_coroutine_threadsafe(
                 asyncio.wait_for(coro, this_timeout),
                 self.loop,
@@ -284,16 +289,8 @@ class Trio:
             hook(db)
         db.set_progress_handler(self.progress_checker, check_progress_steps.get(), id=self)
 
-    def progress_checker(self):
-        "Periodic check for cancellation and deadlines"
-        future = _current_future.get()
-        if future._is_cancelled:
-            raise TrioFuture.Cancelled("cancelled in progress handler")
-        if future.deadline is not math.inf and future.deadline < self.clock.current_time():
-            raise trio.TooSlowError("deadline exceeded in progress handler")
-        return False
-
     def send(self, call):
+        "Enqueues call to worker thread"
         future = TrioFuture()
         future.token = trio.lowlevel.current_trio_token()
         future.event = trio.Event()
@@ -308,9 +305,20 @@ class Trio:
         return future
 
     def close(self):
+        "Called on connection close, so the worker thread can be stopped"
         self.queue.put(None)
 
+    def progress_checker(self):
+        "Periodic check for cancellation and deadlines"
+        future = _current_future.get()
+        if future._is_cancelled:
+            raise TrioFuture.Cancelled("cancelled in progress handler")
+        if future.deadline is not math.inf and future.deadline < self.clock.current_time():
+            raise trio.TooSlowError("deadline exceeded in progress handler")
+        return False
+
     def worker_thread_run(self, q):
+        "Does the enqueued call processing in the worker thread"
         while (future := q.get()) is not None:
             if not future._is_cancelled:
                 with future.call:
@@ -329,6 +337,7 @@ class Trio:
             trio.from_thread.run_sync(future.event.set, trio_token=future.token)
 
     def async_run_coro(self, coro):
+        "Called in worker thread to run a coroutine in the event loop"
         try:
             future = _current_future.get()
             if future._is_cancelled:
@@ -348,10 +357,9 @@ class Trio:
 
 
 class TrioFuture:
-    """Returned for each :class:`Trio` request
+    """Returned for most :class:`Trio` requests
 
-    :meta private:
-    """
+    See :class:`AsyncResult`"""
 
     __slots__ = (
         # needed to call back into trio
@@ -369,6 +377,23 @@ class TrioFuture:
         # cancel handling
         "_is_cancelled",
     )
+
+    ## These are to stop sphinx documenting them
+
+    #: :meta private:
+    token: Any
+    #: :meta private:
+    event: Any
+    #: :meta private:
+    result: Any
+    #: :meta private:
+    is_exception: Any
+    #: :meta private:
+    call: Any
+    #: :meta private:
+    deadline: Any
+    #: :meta private:
+    _is_cancelled: Any
 
     class Cancelled(Exception):
         "Result when an operation was cancelled"
@@ -392,6 +417,8 @@ class TrioFuture:
         return self.aresult().__await__()
 
     def cancel(self):
+        "Cancel the call"
+
         if not self.event.is_set():
             self._is_cancelled = True
         if self._is_cancelled:
@@ -399,9 +426,11 @@ class TrioFuture:
         return self._is_cancelled
 
     def cancelled(self):
+        "Return ``True`` if call was marked cancelled, else ``False``"
         return self._is_cancelled
 
     def done(self):
+        """Return ``True`` if call has completed, either with a result or cancelled, else ``False``"""
         return self.event.is_set() or self._is_cancelled
 
 

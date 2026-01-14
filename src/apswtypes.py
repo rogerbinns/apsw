@@ -182,6 +182,9 @@ stringized."""
 class AsyncConnectionController(Protocol):
     """Manages a worker thread and marshalling async requests to it
 
+    To support async callbacks, it should implement
+    :attr:`apsw.async_run_coro` to send them to the event loop.
+
     See :mod:`apsw.aio` for some implementations.
     """
 
@@ -197,12 +200,13 @@ class AsyncConnectionController(Protocol):
         """Called from outside the worker thread to send to worker thread
 
         This should return an awaitable, and forward ``call`` to the worker
-        thread.  In this worker thread::
+        thread.  In the worker thread do the following.  The ``with`` ensures
+        passing on context vars, and cleanup.
 
             with call:
                 result = call()
 
-        The result which could also be an exception.  The awaitable should
+        The result could also be an exception.  The awaitable should
         be made ready with the result.
         """
         ...
