@@ -402,13 +402,13 @@ class Async(unittest.TestCase):
             case "asyncio":
                 cancelled_exc = asyncio.CancelledError
             case "trio":
-                cancelled_exc = apsw.aio.TrioFuture.Cancelled
+                cancelled_exc = apsw.aio.Cancelled
             case "anyio":
                 cancelled_exc = []
                 if "asyncio" in sys.modules:
                     cancelled_exc.append(asyncio.CancelledError)
                 if "trio" in sys.modules:
-                    cancelled_exc.append(apsw.aio.TrioFuture.Cancelled)
+                    cancelled_exc.append(apsw.aio.Cancelled)
 
                 cancelled_exc = tuple(cancelled_exc)
 

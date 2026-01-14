@@ -169,6 +169,14 @@ class AsyncResult(Protocol):
         still waiting for a result"""
         ...
 
+class Cancelled(Exception):
+    """Result when an operation was cancelled (Trio, AnyIO)
+
+    asyncio uses :class:`asyncio.CancelledError`
+    """
+
+    pass
+
 
 # contextvars should be top level.  this is used to track the currently
 # processing future for all controllers
@@ -291,7 +299,7 @@ class Trio:
 
     def send(self, call):
         "Enqueues call to worker thread"
-        future = TrioFuture()
+        future = _Future()
         future.token = trio.lowlevel.current_trio_token()
         future.event = trio.Event()
         future.is_exception = False
@@ -312,7 +320,7 @@ class Trio:
         "Periodic check for cancellation and deadlines"
         future = _current_future.get()
         if future._is_cancelled:
-            raise TrioFuture.Cancelled("cancelled in progress handler")
+            raise Cancelled("cancelled in progress handler")
         if future.deadline is not math.inf and future.deadline < self.clock.current_time():
             raise trio.TooSlowError("deadline exceeded in progress handler")
         return False
@@ -341,7 +349,7 @@ class Trio:
         try:
             future = _current_future.get()
             if future._is_cancelled:
-                raise trio.Cancelled("Cancelled in async_run_coro")
+                raise Cancelled("Cancelled in async_run_coro")
             return trio.from_thread.run(_trio_loop_run_coro, coro, future.deadline, trio_token=future.token)
         finally:
             coro.close()
@@ -356,8 +364,13 @@ class Trio:
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
-class TrioFuture:
-    """Returned for most :class:`Trio` requests
+async def _trio_loop_run_coro(coro, this_deadline):
+    with trio.fail_at(this_deadline):
+        return await coro
+
+
+class _Future:
+    """Returned for most :class:`Trio` and :class:`AnyIO` requests
 
     See :class:`AsyncResult`"""
 
@@ -378,27 +391,6 @@ class TrioFuture:
         "_is_cancelled",
     )
 
-    ## These are to stop sphinx documenting them
-
-    #: :meta private:
-    token: Any
-    #: :meta private:
-    event: Any
-    #: :meta private:
-    result: Any
-    #: :meta private:
-    is_exception: Any
-    #: :meta private:
-    call: Any
-    #: :meta private:
-    deadline: Any
-    #: :meta private:
-    _is_cancelled: Any
-
-    class Cancelled(Exception):
-        "Result when an operation was cancelled"
-
-        pass
 
     async def aresult(self):
         ":meta private:"
@@ -408,7 +400,7 @@ class TrioFuture:
             self._is_cancelled = True
             raise
         if self._is_cancelled:
-            raise TrioFuture.Cancelled()
+            raise Cancelled()
         if self.is_exception:
             raise self.result
         return self.result
@@ -433,10 +425,6 @@ class TrioFuture:
         """Return ``True`` if call has completed, either with a result or cancelled, else ``False``"""
         return self.event.is_set() or self._is_cancelled
 
-
-async def _trio_loop_run_coro(coro, this_deadline):
-    with trio.fail_at(this_deadline):
-        return await coro
 
 
 def Auto() -> Trio | AsyncIO:
