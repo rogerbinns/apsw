@@ -216,8 +216,38 @@ Session
 :class:`apsw.fts5.Table`
 
     Virtually every method and property needs to access the database.
-    Therefore you will need to run all of them in a thread as documented
-    above.
+    Therefore you will need to run all of them in the database thread
+    using :meth:`Connection.async_run`
+
+    .. code-block:: python
+
+        db = await apsw.Connection.as_async("my.db")
+
+        # creating a table
+        table = await db.async_run(
+            # table creation method
+            apsw.fts5.Table.create,
+            # the various parameters
+            db, "search", content="recipes", columns=...
+        )
+
+        # loading existing table
+        table = await db.async_run(
+            # load method
+            apsw.fts5.Table,
+            # prameters
+            db, "search"
+        )
+
+        # row count (attribute)
+        row_count = await db.async_run(
+            getattr, table, "row_count"
+        )
+
+        # query suggestions (method)
+        suggest = await db.async_run(
+            table.query_suggest, query
+        )
 
 Performance
 ===========
