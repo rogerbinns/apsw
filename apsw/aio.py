@@ -342,7 +342,7 @@ class Trio:
                         future.is_exception = True
 
             # this ensures completion even if cancelled
-            trio.from_thread.run_sync(future.event.set, trio_token=future.token)
+            future.token.run_sync_soon(future.event.set)
 
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
