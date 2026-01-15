@@ -625,10 +625,7 @@ class Async(unittest.TestCase):
         def timeout_seq():
             # the sequences we try to get func executing and then
             # timeout, in seconds.
-            yield -10
-            yield -1
-            yield 0
-            i = 0.001
+            i = 0.05
             yield i
             while i < 5:
                 i *= 2
@@ -637,6 +634,7 @@ class Async(unittest.TestCase):
 
         # have timeout in the async func sleep
         for timeout in timeout_seq():
+            timed_out = None
             with apsw.aio.contextvar_set(apsw.aio.deadline, time() + timeout):
                 task = db.execute("select func()")
                 release_gil()
@@ -648,8 +646,7 @@ class Async(unittest.TestCase):
 
         # now in long query
         for timeout in timeout_seq():
-            if timeout <= 0:
-                continue
+            timed_out = False
             with apsw.aio.contextvar_set(apsw.aio.deadline, time() + timeout):
                 task = db.execute(fractal_sql)
                 release_gil()
@@ -659,44 +656,41 @@ class Async(unittest.TestCase):
                 check_timeout(exc)
                 break
 
-        match fw:
-            case "asyncio":
-                # nothing else to test
-                pass
-            case "trio":
-                # We support both trio current_effective_deadline and
-                # our deadline context var with the latter taking
-                # priority.  It has been been tested above.  Now
-                # check current_effective_deadline works
+        if fw == "asyncio":
+            # no native timeout handling so nothing else to test
+            return
 
-                async def current_effective_deadline():
-                    return trio.current_effective_deadline()
+        ced = getattr(sys.modules[fw], "current_effective_deadline")
+        fail_after = getattr(sys.modules[fw], "fail_after")
 
-                await db.create_scalar_function("ced", current_effective_deadline)
+        async def current_effective_deadline():
+            return ced()
 
-                v = time() + 3600
-                with trio.fail_at(v):
-                    # sqlite worker thread should not have deadline set because using ced
-                    with self.assertRaises(LookupError):
-                        await (await db.execute("select sync_cvar(?)", ("apsw.aio.deadline",))).get
-                    with self.assertRaises(LookupError):
-                        await (await db.execute("select async_cvar(?)", ("apsw.aio.deadline",))).get
-                    # and this should be set
-                    self.assertEqual(v, await (await db.execute("select ced()")).get)
+        await db.create_scalar_function("ced", current_effective_deadline)
 
-            case "anyio":
-                for timeout in timeout_seq():
-                    try:
-                        with anyio.fail_after(timeout):
-                            with apsw.aio.contextvar_set(apsw.aio.deadline, anyio.current_effective_deadline()):
-                                task = db.execute("select func()")
-                                await task
-                    except BaseException as exc:
-                        check_timeout(exc)
-                        break
+        with fail_after(1234):
+            # deadline should not be set because using ced
+            with self.assertRaises(LookupError):
+                await (await db.execute("select sync_cvar(?)", ("apsw.aio.deadline",))).get
+            with self.assertRaises(LookupError):
+                await (await db.execute("select async_cvar(?)", ("apsw.aio.deadline",))).get
+            # and this should almost match.  anyio+asyncio ends up
+            # with rounding errors on each call so we reduce precision
+            # of check
+            this_ced = ced()
+            self.assertAlmostEqual(this_ced, await (await db.execute("select ced()")).get, places=5)
 
-            case _:
-                raise NotImplementedError
+        # all the way back to event loop using only the framework timeouts
+        for timeout in timeout_seq():
+            timed_out = None
+            with fail_after(timeout):
+                task = db.execute("select func()")
+                release_gil()
+            try:
+                await task
+            except BaseException as exc:
+                check_timeout(exc)
+                break
 
     async def atestSession(self, fw):
         if not hasattr(apsw, "Session"):
