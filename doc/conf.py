@@ -25,6 +25,18 @@ extensions = [
     "sphinx.ext.autosummary",
 ]
 
+# how we link to various things
+rst_prolog = """
+.. |anyio| replace:: :external+anyio:doc:`anyio <index>`
+
+.. |uvloop| replace:: `uvloop <https://uvloop.readthedocs.io/>`__
+
+.. |trio| replace:: :external+trio:doc:`trio <index>`
+
+.. |aiosqlite| replace:: `aiosqlite <https://aiosqlite.omnilib.dev/en/stable/>`__
+"""
+
+
 # this shows shorter names like Buffer instead of collections.abc.Buffer
 python_use_unqualified_type_names = True
 # less verbose Literal [ "one", "two"] -> "one" : "two"
@@ -37,7 +49,11 @@ extlinks = {
     "source": ("https://github.com/rogerbinns/apsw/blob/master/%s", "%s"),
 }
 
-intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "trio": (" https://trio.readthedocs.io/en/stable/", None),
+    "anyio": (" https://anyio.readthedocs.io/en/stable/", None),
+    }
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
