@@ -9,6 +9,7 @@ import contextlib
 import sys
 import concurrent.futures
 import math
+import time
 
 import apsw
 
@@ -18,55 +19,35 @@ T = TypeVar("T")
 
 
 deadline: contextvars.ContextVar[int | float | None] = contextvars.ContextVar("apsw.aio.deadline", default=None)
-"""Deadline in seconds
+"""Absolute time deadline for a request
 
 This makes a best effort to timeout a database operation including any
-callbacks if the deadline is passed.  The default (``None``) is
-no deadline.
+sync and async callbacks if the deadline is passed.  The default
+(``None``) is no deadline.
+
+The deadline is set at the point an APSW call is made, and changes
+after that are not observed.
 
 :class:`AsyncIO`
 
     This is the only way to set a deadline.  :exc:`TimeoutError` will be
-    raised if the deadline is exceeded.  The time is measured using
-    :meth:`asyncio.loop.time`
+    raised if the deadline is exceeded.  The current time is
+    available from  :meth:`asyncio.loop.time`
 
 :class:`Trio`
 
-    If this is set then it is used for the deadline.  `TooSlowError
-    <https://trio.readthedocs.io/en/stable/reference-core.html#trio.TooSlowError>`__
+    If this is set then it is used for the deadline.  :exc:`trio.TooSlowError`
     is raised.
 
-    Otherwise the `current effective deadline
-    <https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_effective_deadline>`__
-    where the call is made is used.
-
-    Time is measured using `current_clock
-    <https://trio.readthedocs.io/en/stable/reference-lowlevel.html#trio.lowlevel.current_clock>`__
-    in place when the connection is created.
+    Otherwise the :func:`trio.current_effective_deadline` where the
+    call is made is used.
 
 AnyIO
 
-    You can use `anyio.current_effective_deadline
-    <https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline>`__
-    to set this::
+    If this is set then it is used for the deadline.  :exc:`TimeoutError` is raised.
 
-        with anyio.fail_after(15):
-            with apsw.aio.deadline.set(anyio.current_effective_deadline):
-                # do operations that will pick up the fail after value
-                ,,,
-
-
-.. code-block:: python
-
-    # a minute
-    with apsw.aio.timeout.deadline.set(loop.time() + 60):
-       # do operations
-       ...
-       # you can use it nested - these operations are 10
-       # seconds
-       with apsw.aio.timeout.set(loop.time() + 10):
-          # do other operations
-          ...
+    Otherwise the :func:`anyio.current_effective_deadline` where the
+    call is made is used.
 
 """
 
@@ -289,7 +270,7 @@ class AsyncIO:
 
 
 class Trio:
-    """Uses `Trio <https://trio.readthedocs.io/>`__ for async concurrency"""
+    """Uses |trio| for async concurrency"""
 
     def configure(self, db: apsw.Connection):
         "Setup database, just after it is created"
@@ -299,16 +280,11 @@ class Trio:
 
     def send(self, call):
         "Enqueues call to worker thread"
-        future = _Future()
-        future.token = trio.lowlevel.current_trio_token()
-        future.event = trio.Event()
-        future.is_exception = False
-        future.call = call
+        future = _Future(trio.lowlevel.current_trio_token(), trio.Event(), call, trio.Cancelled)
         if (this_deadline := deadline.get()) is None:
-            future.deadline = trio.current_effective_deadline()
-        else:
-            future.deadline = this_deadline
-        future._is_cancelled = False
+            this_deadline = trio.current_effective_deadline()
+        future._set_deadline(this_deadline, trio.current_time)
+
         self.queue.put(future)
         return future
 
@@ -321,7 +297,7 @@ class Trio:
         future = _current_future.get()
         if future._is_cancelled:
             raise Cancelled("cancelled in progress handler")
-        if future.deadline is not math.inf and future.deadline < self.clock.current_time():
+        if future._monotonic_exceeded():
             raise trio.TooSlowError("deadline exceeded in progress handler")
         return False
 
@@ -329,20 +305,20 @@ class Trio:
         "Does the enqueued call processing in the worker thread"
         while (future := q.get()) is not None:
             if not future._is_cancelled:
-                with future.call:
+                with future._call:
                     _current_future.set(future)
 
                     try:
-                        if future.deadline is not math.inf and future.deadline < self.clock.current_time():
+                        if future._monotonic_exceeded():
                             raise trio.TooSlowError("Deadline exceeded in queue")
 
-                        future.result = future.call()
+                        future._result = future._call()
                     except BaseException as exc:
-                        future.result = exc
-                        future.is_exception = True
+                        future._result = exc
+                        future._is_exception = True
 
             # this ensures completion even if cancelled
-            future.token.run_sync_soon(future.event.set)
+            future._token.run_sync_soon(future._event.set)
 
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
@@ -350,7 +326,9 @@ class Trio:
             future = _current_future.get()
             if future._is_cancelled:
                 raise Cancelled("Cancelled in async_run_coro")
-            return trio.from_thread.run(_trio_loop_run_coro, coro, future.deadline, trio_token=future.token)
+            if future._monotonic_exceeded():
+                raise trio.TooSlowError("deadline exceeded in async_run_coro")
+            return trio.from_thread.run(_trio_loop_run_coro, coro, future._deadline_loop, trio_token=future._token)
         finally:
             coro.close()
 
@@ -360,12 +338,87 @@ class Trio:
 
         apsw.async_run_coro.set(self.async_run_coro)
         self.queue = queue.SimpleQueue()
-        self.clock = trio.lowlevel.current_clock()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
 async def _trio_loop_run_coro(coro, this_deadline):
     with trio.fail_at(this_deadline):
+        return await coro
+
+class AnyIO:
+    """Uses |anyio| for async concurrency"""
+
+    def configure(self, db: apsw.Connection):
+        "Setup database, just after it is created"
+        for hook in apsw.connection_hooks:
+            hook(db)
+        db.set_progress_handler(self.progress_checker, check_progress_steps.get(), id=self)
+
+    def send(self, call):
+        "Enqueues call to worker thread"
+        future = _Future(anyio.lowlevel.current_token(), anyio.Event(), call, self.cancelled_exc_class)
+        if (this_deadline := deadline.get()) is None:
+            this_deadline = anyio.current_effective_deadline()
+        future._set_deadline(this_deadline, anyio.current_time)
+        self.queue.put(future)
+        return future
+
+    def close(self):
+        "Called on connection close, so the worker thread can be stopped"
+        self.queue.put(None)
+
+    def progress_checker(self):
+        "Periodic check for cancellation and deadlines"
+        future = _current_future.get()
+        if future._is_cancelled:
+            raise Cancelled("cancelled in progress handler")
+        if future._monotonic_exceeded():
+            raise TimeoutError("deadline exceeded in progress handler")
+        return False
+
+    def worker_thread_run(self, q):
+        "Does the enqueued call processing in the worker thread"
+        while (future := q.get()) is not None:
+            if not future._is_cancelled:
+                with future._call:
+                    _current_future.set(future)
+
+                    try:
+                        if future._monotonic_exceeded():
+                            raise TimeoutError("Deadline exceeded in queue")
+
+                        future._result = future._call()
+                    except BaseException as exc:
+                        future._result = exc
+                        future._is_exception = True
+
+            # this ensures completion even if cancelled
+            anyio.from_thread.run_sync(future._event.set, token=future._token)
+
+    def async_run_coro(self, coro):
+        "Called in worker thread to run a coroutine in the event loop"
+        try:
+            future = _current_future.get()
+            if future._is_cancelled:
+                raise Cancelled("Cancelled in async_run_coro")
+            if future._monotonic_exceeded():
+                raise TimeoutError("deadline exceeded in async_run_coro")
+            return anyio.from_thread.run(_anyio_loop_run_coro, coro, future._deadline_loop, token=future._token)
+        finally:
+            coro.close()
+
+    def __init__(self, *, thread_name: str = "anyio apsw background worker"):
+        global anyio
+        import anyio
+
+        apsw.async_run_coro.set(self.async_run_coro)
+        self.queue = queue.SimpleQueue()
+        self.cancelled_exc_class = anyio.get_cancelled_exc_class()
+        threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
+
+
+async def _anyio_loop_run_coro(coro, this_deadline):
+    with anyio.fail_after(this_deadline - anyio.current_time()):
         return await coro
 
 
@@ -374,47 +427,70 @@ class _Future:
 
     See :class:`AsyncResult`"""
 
+    # the underscores are everywhere to "hide" everything except the
+    # public AsyncResult methods
+
     __slots__ = (
-        # needed to call back into trio
-        "token",
-        # trio.Event used to signal ready
-        "event",
+        # needed to call back into trio/anyio
+        "_token",
+        # Event used to signal ready
+        "_event",
         # result value or exception
-        "result",
+        "_result",
         # is it an exception?
-        "is_exception",
+        "_is_exception",
         # call to make
-        "call",
-        # timeout handling
-        "deadline",
+        "_call",
+        # deadline in event loop clock
+        "_deadline_loop",
+        # deadline in worker thread relative to monotonic clock
+        "_deadline_monotonic",
         # cancel handling
         "_is_cancelled",
+        # cancelled exception class
+        "_cancelled_exc_class"
     )
 
+    def __init__(self, token, event, call, cancelled_exc_class):
+        self._is_exception = False
+        self._is_cancelled = False
+        self._token = token
+        self._event = event
+        self._call = call
+        self._deadline_loop = None
+        self._deadline_monotonic = None
+        self._cancelled_exc_class = cancelled_exc_class
 
-    async def aresult(self):
-        ":meta private:"
+    def _set_deadline(self, value, loop_time):
+        self._deadline_loop = value
+        if value is not math.inf:
+            self._deadline_monotonic = value - loop_time() + time.monotonic()
+
+    def _monotonic_exceeded(self) -> bool:
+        return self._deadline_monotonic is not None and time.monotonic() > self._deadline_monotonic
+
+    async def _aresult(self):
         try:
-            await self.event.wait()
-        except trio.Cancelled:
+            await self._event.wait()
+        except self._cancelled_exc_class:
             self._is_cancelled = True
             raise
         if self._is_cancelled:
             raise Cancelled()
-        if self.is_exception:
-            raise self.result
-        return self.result
+        if self._is_exception:
+            raise self._result
+        return self._result
 
     def __await__(self):
-        return self.aresult().__await__()
+        return self._aresult().__await__()
 
     def cancel(self):
         "Cancel the call"
 
-        if not self.event.is_set():
+        if not self._event.is_set():
             self._is_cancelled = True
         if self._is_cancelled:
-            self.event.set()
+            self._event.set()
         return self._is_cancelled
 
     def cancelled(self):
@@ -423,25 +499,49 @@ class _Future:
 
     def done(self):
         """Return ``True`` if call has completed, either with a result or cancelled, else ``False``"""
-        return self.event.is_set() or self._is_cancelled
+        return self._event.is_set() or self._is_cancelled
 
 
 
-def Auto() -> Trio | AsyncIO:
+def Auto() -> Trio | AsyncIO | AnyIO:
     """
-    Automatically detects the current async framework and returns the
-    appropriate controller.  This is the default for
-    :attr:`apsw.async_controller`.
+    Automatically detects the current async framework running event
+    loop and returns the appropriate controller.  This is the default
+    for :attr:`apsw.async_controller`.
 
-    It uses the same logic as the `sniffio
-    <https://sniffio.readthedocs.io>`__ package and only knows about
-    the controllers implemented in this module.  anyio always runs an
-    asyncio or trio event loop.
+    **AnyIO note**
+
+        The :class:`AnyIO` controller is only returned if
+        :func:`anyio.run` is in the call stack.
+
+        If you are simultaneously using anyio and another framework
+        then you should manually configure
+        :attr:`apsw.async_controller` to get the one you want.
+
+        This matters especially for timeouts and cancellations where
+        each framework is different.
 
     :exc:`RuntimeError` is raised if the framework can't be detected.
 
-    :rtype: Trio | AsyncIO
     """
+    if "anyio" in sys.modules:
+        try:
+            import anyio
+
+            # this checks if an anyio supported event loop is running
+            # but anyio works with asyncio/trio as the loop ...
+            anyio.get_current_task()
+
+            # ... so we need to check if anyio.run is in the call stack
+            anyio_run_code = anyio.run.__code__
+
+            frame = sys._getframe()
+            while frame:
+                if frame.f_code is anyio_run_code:
+                    return AnyIO()
+                frame = frame.f_back
+        except:
+            pass
     if "trio" in sys.modules:
         try:
             import trio

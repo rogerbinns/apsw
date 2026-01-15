@@ -401,16 +401,8 @@ class Async(unittest.TestCase):
         match fw:
             case "asyncio":
                 cancelled_exc = asyncio.CancelledError
-            case "trio":
+            case "trio" | "anyio":
                 cancelled_exc = apsw.aio.Cancelled
-            case "anyio":
-                cancelled_exc = []
-                if "asyncio" in sys.modules:
-                    cancelled_exc.append(asyncio.CancelledError)
-                if "trio" in sys.modules:
-                    cancelled_exc.append(apsw.aio.Cancelled)
-
-                cancelled_exc = tuple(cancelled_exc)
 
         event = Event()
 
@@ -569,18 +561,11 @@ class Async(unittest.TestCase):
                 time = asyncio.get_running_loop().time
                 timeout_exc_class = TimeoutError
             case "trio":
-                time = trio.lowlevel.current_clock().current_time
+                time = trio.current_time
                 timeout_exc_class = trio.TooSlowError
             case "anyio":
                 time = anyio.current_time
-                if "trio" in sys.modules:
-                    # this is where the underlying framework leaks
-                    # because we don't do an anyio specific controller
-                    timeout_exc_class = (TimeoutError, getattr(sys.modules["trio"], "TooSlowError"))
-                else:
-                    timeout_exc_class = TimeoutError
-            case _:
-                raise NotImplementedError
+                timeout_exc_class = TimeoutError
 
         def check_timeout(exc):
             # other exceptions can happen during timeout exceptions so
