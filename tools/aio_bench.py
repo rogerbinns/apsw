@@ -61,7 +61,7 @@ async def apsw_bench(prefetch: int):
     return start, get_times()
 
 
-async def sqlite3_bench(prefetch: int):
+async def aiosqlite_bench(prefetch: int):
     start = get_times()
     # aiosqlite async with closes on exit
     async with aiosqlite.connect(":memory:", iter_chunk_size=prefetch) as con:
@@ -87,6 +87,8 @@ async def sqlite3_bench(prefetch: int):
     return start, get_times()
 
 
+# sqlite3.sqlite_version is what aiosqlite is using.  this is to
+# confirm they are using the same sqlite library/version
 print(f"""\
    APSW SQLite version: {apsw.sqlite_lib_version()}
 sqlite3 SQLite version: {sqlite3.sqlite_version}
@@ -102,7 +104,7 @@ def show(library, prefetch, start, end):
     cpu_async = end[2] - start[2]
     cpu_worker = cpu_total - cpu_async
     print(
-        f"{library:>25s} {prefetch:>8} {wall:8.3f} {cpu_total:10.3f} {cpu_async:>12.3f} {cpu_worker:>12.3f}"
+        f"{library:>25s} {prefetch:>8,} {wall:8.3f} {cpu_total:10.3f} {cpu_async:>12.3f} {cpu_worker:>12.3f}"
     )
 
 modes = ["AsyncIO"]
@@ -135,9 +137,9 @@ for prefetch in (1, 2, 16, 64, 512, 8192, 65536):
         show(f"apsw {mode}", prefetch, start, end)
 
     start = get_times()
-    start, end = asyncio.run(sqlite3_bench(prefetch))
+    start, end = asyncio.run(aiosqlite_bench(prefetch))
     end = get_times()
     show("aiosqlite", prefetch, start, end)
     if uvloop:
-        start, end = asyncio.run(sqlite3_bench(prefetch), loop_factory=uvloop.new_event_loop)
+        start, end = asyncio.run(aiosqlite_bench(prefetch), loop_factory=uvloop.new_event_loop)
         show("aiosqlite uvloop", prefetch, start, end)

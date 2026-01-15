@@ -98,8 +98,7 @@ Async usage
 -----------
 
 APSW async usage has been developed and tested with :mod:`asyncio`,
-`Trio <https://trio.readthedocs.io/>`__, and `AnyIO
-<https://anyio.readthedocs.io/>`__ with asyncio and trio event loops.
+|trio|, and |anyio| with asyncio and trio event loops.
 This includes cancellations and deadlines/timeouts.  There is a
 controller interface (described below) providing event loop
 integration, or you can write/adapt your own if you have more
@@ -163,24 +162,35 @@ Deadlines and Cancellation
 ==========================
 
 The native cancellation of each framework is supported.  This is often
-used to cancel all tasks in a group if one fails, or to support
+used to cancel all tasks in a group if one fails, and to support
 timeouts/deadlines.
 
-You can use :attr:`apsw.aio.deadline` for  :mod:`asyncio` and anyio
-to set a deadline for queries.  Trio's native timeout/deadlines are
-supported, with this overriding them.  Because it is a contextvar, the
-deadline is propagated back to async callbacks.
+An example usage of deadlines is if you use a function or virtual
+table that makes network requests.  When executing a query you can
+ensure reasonable bounds for how long it takes, bounding the internal
+functions and virtual tables used to answer the query.
 
-An example usage of deadlines is if you use a function or virtual table
-that makes network requests.  When executing the query you can ensure
-reasonable bounds for how long it takes.
+You can set a deadline by which an API request must timeout if not
+completed.  This includes sync and async callbacks that are made to
+satisfy the request.  The deadline is captured at the point the call
+is made, and subsequent changes are not observed.
+
+You can use :attr:`apsw.aio.deadline` to set the deadline - its
+documentation provides more details.
+
+Trio and anyio have timeout managers.  If :attr:`apsw.aio.deadline` is
+not set, then their ``current_effective_deadline`` used.
+
+* :func:`trio.fail_at`,  :func:`trio.fail_after`, :func:`trio.current_effective_deadline`
+* :func:`anyio.fail_after`, :func:`anyio.current_effective_deadline`
 
 Async controllers
 =================
 
 A controller configured via :attr:`apsw.async_controller` is used to
 integrate with the async framework.  :mod:`apsw.aio` contains
-implementations for asyncio, trio, and auto-detection (the default).
+implementations for :mod:`asyncio`, |trio|, |anyio|, and
+auto-detection (the default).
 
 The controller is responsible for:
 
@@ -200,11 +210,8 @@ Run in thread (alternative)
 
 Instead of using APSW in async mode, you can request your framework
 run expensive operations in a thread.  For example
-:func:`asyncio.to_thread`, `trio.to_thread.run_sync
-<https://trio.readthedocs.io/en/stable/reference-core.html#trio.to_thread.run_sync>`_,
-and `anyio.to_thread.run_sync
-<https://anyio.readthedocs.io/en/stable/api.html#anyio.to_thread.run_sync>`__
-can do that for you.
+:func:`asyncio.to_thread`, :func:`trio.to_thread.run_sync` and
+:func:`anyio.to_thread.run_sync` can do that for you.
 
 Extensions
 ==========
@@ -235,7 +242,7 @@ Session
         table = await db.async_run(
             # load method
             apsw.fts5.Table,
-            # prameters
+            # parameters
             db, "search"
         )
 
@@ -249,11 +256,19 @@ Session
             table.query_suggest, query
         )
 
-Performance
-===========
+apsw.aio module
+---------------
+
+.. automodule:: apsw.aio
+    :members:
+    :undoc-members:
+    :member-order: bysource
+
+Async Performance
+-----------------
 
 Performance is dominated by the overhead of sending calls to the
-worker thread, and setting the result.  :source:`tools/aio_bench.py`
+worker thread, and getting the result.  :source:`tools/aio_bench.py`
 is a small benchmark that keeps reading rows from a dummy memory
 database, and then appending 1,000 to the end of the table, until there
 are 300,000 rows in the table.
@@ -262,22 +277,24 @@ are 300,000 rows in the table.
 
 Library
 
-    apsw with :mod:`asyncio`, asyncio using `uvloop
-    <https://uvloop.readthedocs.io/>`__ as the inner loop, and trio.
-    The aiosqlite library (asyncio only) is included for comparison,
-    using the same SQLite shared library as apsw.
+    apsw with :mod:`asyncio`, asyncio using |uvloop| as the inner
+    loop, |trio|, and |anyio| with asyncio and trio event loops.
+
+    The |aiosqlite| library (asyncio only) is included for comparison
+    which also sends calls to a worker thread.
 
 Prefetch
 
     How many rows are fetched in a batch for queries, controlled by
-    :attr:`apsw.async_cursor_prefetch` in APSW.  A value of 1 as shown
-    in the first rows ends up as 301 thousand messages and responses
-    with the worker thread.  That is halved with 2 etc.  The default
-    is 64.  The most returned by the query is 1,000 rows.
+    :attr:`apsw.async_cursor_prefetch` in APSW and ``iter_chunk_size``
+    in |aiosqlite|.  A value of 1 as shown in the first rows ends up
+    as 301 thousand messages and responses with the worker thread.
+    That is halved with 2 etc.  The default is 64.  The benchmark
+    queries return a maximum of 1,000 rows.
 
 Wall
 
-    Wall clock time in seconds for the Configuration to run.
+    Wall clock time in seconds for the configuration to run.
 
 CpuTotal / CpuEvtLoop / CpuDbWorker
 
@@ -331,11 +348,3 @@ The results show that what is used only matters if you are doing very
 large numbers of calls because of very small row batch sizes.  APSW
 has to allocate space for results, so increasing the prefetch size
 results in more memory consumption and more CPU time to allocate it.
-
-apsw.aio module
----------------
-
-.. automodule:: apsw.aio
-    :members:
-    :undoc-members:
-    :member-order: bysource
