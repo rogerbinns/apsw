@@ -12,6 +12,9 @@ import tempfile
 import json
 import pathlib
 
+from apsw.tests.async_meta import get_meta as async_category
+from apsw.tests.async_meta import ASYNCABLE
+
 if len(sys.argv) != 5:
     print("You must supply sqlite version, docdb filename, input and output filenames", file=sys.stderr)
 
@@ -237,6 +240,10 @@ def do_methods():
         if curclass:
             dec = re.sub(r"^(\.\.\s+(method|attribute)::\s+)()", r"\1" + curclass + ".", dec)
         op.append(dec)
+        if curclass in ASYNCABLE:
+            am = async_category(curclass, k, ["attribute", "function"]["method::" in dec])
+            op.append(f"  |badge-async-{am}|")
+            op.append("")
         op.extend(d)
         op.append("")
         op.extend(fixup(op, saop))
