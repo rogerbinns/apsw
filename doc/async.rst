@@ -127,6 +127,49 @@ However to make type checkers and IDEs work better, the type stubs
 included with APSW have those classes so it is clear when returned
 values are direct, or need to be awaited.
 
+You can use :meth:`Connection.async_run` to run functions in the
+async Connection worker thread.
+
+Attributes
+!!!!!!!!!!
+
+Some SQLite functions are provided in APSW as attributes such as
+:attr:`Connection.authorizer`.  For an async connection, you will need
+to await the result.
+
+.. code-block:: python
+
+    auth = await connection.authorizer
+
+To set them, you will need to use ``setattr`` nin the worker thread.
+
+.. code-block:: python
+
+    await connection.async_run(setattr, connection, "authorizer", my_auth)
+
+The type stubs will make this clear to your IDE and type checker.
+
+Callbacks
+=========
+
+SQLite has numerous hooks and callbacks such as :meth:`functions
+<Connection.create_scalar_function>`, :meth:`hooks
+<Connection.set_update_hook>`, :doc:`virtual tables <vtable>`, and
+:doc:`VFS <vfs>`.
+
+If you provide sync versions they get called in the connection worker
+thread.  You can also provide an async callback/method.  The async
+controller will suspend execution in the worker thread, send the
+callback back to the event loop, and resume execution on getting a
+result (or exception).
+
+.. warning:: DEADLOCK
+
+    If your async callback makes a request back into the connection
+    **and** awaits it, then you will get a deadlock.  The connection
+    cannot proceed until it gets a result, and the callback is waiting
+    on the suspended connection.
+
 Awaitable
 =========
 
