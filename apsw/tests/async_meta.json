@@ -1,5 +1,8 @@
 {
     "Backup": {
+        "async": [
+            "afinish"
+        ],
         "sync": [
             "close",
             "finish"

@@ -262,7 +262,7 @@ class AsyncMeta(unittest.TestCase):
             # Changeset.apply is too difficult to include
         }
 
-        assert ASYNCABLE = set(objects.keys()) | {"Changeset"}
+        assert ASYNCABLE == set(objects.keys()) | {"Changeset"}
 
         changeset = None
 
@@ -334,6 +334,7 @@ class AsyncMeta(unittest.TestCase):
             "exec_trace",
             "row_trace",
             "finish",
+            "afinish",
             "close",
             "aclose",
             "__exit__",
