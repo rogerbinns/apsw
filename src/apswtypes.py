@@ -219,3 +219,14 @@ class AsyncConnectionController(Protocol):
         :func:`unraisable <sys.unraisablehook>`.
         """
         ...
+
+# Async Note: These types do not exist separately at runtime.  They
+# are present in type stubs to allow IDE and type checking.
+
+class AsyncConnection:
+    "A type stub to indicate a Connection in async mode"
+    ...
+
+class AsyncSession:
+    "A type stub to indicate a :class:`Session` in async mode"
+    ...

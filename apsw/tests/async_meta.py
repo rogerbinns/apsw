@@ -57,6 +57,8 @@ def get_meta(
         case _:
             return "dual" if kind == "function" else "value"
 
+# Classes where we fake there being an async version
+ASYNCABLE = {"Connection", "Cursor", "Blob", "Backup", "Session", "Changeset"}
 
 
 def sync_await(obj):
@@ -259,6 +261,8 @@ class AsyncMeta(unittest.TestCase):
             "Session": None,
             # Changeset.apply is too difficult to include
         }
+
+        assert ASYNCABLE = set(objects.keys()) | {"Changeset"}
 
         changeset = None
 
