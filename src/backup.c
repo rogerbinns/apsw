@@ -237,7 +237,6 @@ APSWBackup_finish(PyObject *self_, PyObject *Py_UNUSED(unused))
 }
 
 /** .. method:: afinish() -> None
-  :async:
 
   Async version of meth:`finish`
 */
@@ -293,7 +292,6 @@ APSWBackup_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
 }
 
 /** .. method:: aclose(force: bool = False) -> None
-  :async:
 
   Async version of :meth:`close`
 
@@ -416,7 +414,6 @@ APSWBackup_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
 }
 
 /** .. method:: __aenter__() -> Self
-  :async:
 
   Async context manager enter
 */
@@ -434,7 +431,6 @@ APSWBackup_aenter(PyObject *self_, PyObject *Py_UNUSED(unused))
 }
 
 /** .. method:: __aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None
-  :async:
 
   Async context manager exit
 */

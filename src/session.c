@@ -423,7 +423,6 @@ APSWSession_close(PyObject *self_, PyObject *Py_UNUSED(unused))
 }
 
 /** .. method:: aclose() -> None
-  :async:
 
   Async close
 */

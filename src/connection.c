@@ -530,7 +530,6 @@ Connection_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
 }
 
 /** .. method:: aclose(force: bool = False) -> None
-  :async:
 
   The async version of :meth:`close`
 */
@@ -836,8 +835,7 @@ error:
   return NULL;
 }
 
-/** .. method:: async_run(call, *args, **kwargs) -> Any
-  :async:
+/** .. method:: async_run(call: Callable, *args, **kwargs) -> Awaitable[Any]
 
   Calls with the provided arguments in the async worker thread for this
   connection.
@@ -4882,10 +4880,8 @@ exit:
 }
 
 /** .. method:: __aenter__() -> Connection
-  :async:
 
-  Async version of :meth:`__enter__` context
-  manager.  You must use this with async connections.
+  Async version of :meth:`__enter__` context manager.
 */
 static PyObject *
 Connection_aenter(PyObject *self_, PyObject *unused)
@@ -4899,10 +4895,8 @@ Connection_aenter(PyObject *self_, PyObject *unused)
 }
 
 /** .. method:: __aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None
-  :async:
 
-  Async version of :meth:`__exit__` context manager.  You must use this
-  with async connections.
+  Async version of :meth:`__exit__` context manager.
 */
 
 static PyObject *

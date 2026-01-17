@@ -1473,7 +1473,6 @@ APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
 }
 
 /** .. method:: aclose(force: bool = False) -> None
-  :async:
 
   Async version of :meth:`close`
 
@@ -1670,7 +1669,6 @@ again:
 }
 
 /** .. method:: __anext__() -> Any
-    :async:
 
     Cursors are iterators
 */
@@ -1730,9 +1728,8 @@ APSWCursor_iter(PyObject *self_)
 }
 
 /** .. method:: __aiter__() -> Cursor
-    :async:
 
-    Cursors are async iterators
+    AsyncCursors are async iterators
 */
 static PyObject *
 APSWCursor_aiter(PyObject *self_)
