@@ -183,6 +183,9 @@ stringized."""
 class AsyncConnectionController(Protocol):
     """Manages a worker thread and marshalling async requests to it
 
+    To support async callbacks, it should implement
+    :attr:`apsw.async_run_coro` to send them to the event loop.
+
     See :mod:`apsw.aio` for some implementations.
     """
 
@@ -190,26 +193,34 @@ class AsyncConnectionController(Protocol):
         """
         Called in the worker thead once the connection is available
 
-        This is called before the :attr:`Connection.connection_hooks` are
-        run.
+        This must run the :attr:`Connection.connection_hooks`.
         """
         ...
 
     def send(self, call: Callable[[], Any]) -> Awaitable[Any]:
         """Called from outside the worker thread to send to worker thread
 
-        The controller must send ``call`` to the worker thread where it should be
-        called without parameters :code:`call()` with the returned Awaitable
-        tracking the call result.
+        This should return an awaitable, and forward ``call`` to the worker
+        thread.  In the worker thread do the following.  The ``with`` ensures
+        passing on context vars, and cleanup.
+
+            with call:
+                result = call()
+
+        The result could also be an exception.  The awaitable should
+        be made ready with the result.
         """
         ...
 
     def close(self):
         """Called after the connection has closed
 
-        This allows shutting down the worker thread and similar housekeeping.
-        !!!Exceptions unraisable"""
+        This allows shutting down the worker thread and similar
+        housekeeping.  Because of when this called, any exceptions are
+        :func:`unraisable <sys.unraisablehook>`.
+        """
         ...
+
 
 SQLITE_VERSION_NUMBER: int
 """The integer version number of SQLite that APSW was compiled
@@ -242,7 +253,8 @@ def apsw_version() -> str:
 apswversion = apsw_version ## OLD-NAME
 
 async_controller: type[AsyncConnectionController]
-"""Call this to get a controller for :meth:`Connection.as_async`."""
+"""This sets the controller for :meth:`Connection.as_async`.  It will use
+:func:`apsw.aio.Auto` if not explicitly set."""
 
 async_cursor_prefetch: contextvars.ContextVar[int]
 """When looping on a :class:`Cursor` in async mode, subsequent rows can
@@ -762,6 +774,15 @@ vfsnames = vfs_names ## OLD-NAME
 class Backup:
     """You create a backup instance by calling :meth:`Connection.backup`."""
 
+
+
+
+    def afinish(self) -> None:
+        """:async:
+
+        Async version of meth:`finish`"""
+        ...
+
     def close(self, force: bool = False) -> None:
         """Does the same thing as :meth:`~Backup.finish`.  This extra api is
         provided to give the same api as other APSW objects and files.
@@ -845,6 +866,9 @@ class Blob:
       <https://sqlite.org/lang_corefunc.html>`_ function.
 
     See the :ref:`example <example_blob_io>`."""
+
+
+
 
     def close(self, force: bool = False) -> None:
         """Closes the blob.  Note that even if an error occurs the blob is
@@ -1133,25 +1157,8 @@ class Connection:
     """This object wraps a `sqlite3 pointer
     <https://sqlite.org/c3ref/sqlite3.html>`_."""
 
-    def aclose(self, force: bool = False) -> None:
-        """:async:
 
-        The async version of :meth:`close`"""
-        ...
 
-    def __aenter__(self) -> Connection:
-        """:async:
-
-        Async version of :meth:`__enter__` context
-        manager.  You must use this with async connections."""
-        ...
-
-    def __aexit__(self, etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None:
-        """:async:
-
-        Async version of :meth:`__exit__` context manager.  You must use this
-        with async connections."""
-        ...
 
     def as_async(self, *args, **kwargs) -> Awaitable[AsyncConnection]:
         """:staticmethod:
@@ -1168,6 +1175,13 @@ class Connection:
 
     async_controller: AsyncConnectionController
     """The controller in effect in async mode."""
+
+    def async_run(self, call, *args, **kwargs) -> Any:
+        """:async:
+
+        Calls with the provided arguments in the async worker thread for this
+        connection."""
+        ...
 
     authorizer: Optional[Authorizer]
     """While `preparing <https://sqlite.org/c3ref/prepare.html>`_
@@ -2490,32 +2504,8 @@ class Connection:
 class Cursor:
     """"""
 
-    def aclose(self, force: bool = False) -> None:
-        """:async:
 
-        Async version of :meth:`close`"""
-        ...
 
-    def __aenter__(self) -> Self:
-        """If you use the cursor as a context manager then it will be closed on
-        exit."""
-        ...
-
-    def __aexit__(self, etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None:
-        """Close the cursor on exit of context"""
-        ...
-
-    def __aiter__(self) -> Cursor:
-        """:async:
-
-        Cursors are async iterators"""
-        ...
-
-    def __anext__(self) -> Any:
-        """:async:
-
-        Cursors are iterators"""
-        ...
 
     bindings_count: int
     """How many bindings are in the statement.  The ``?`` form
@@ -3229,6 +3219,7 @@ class Rebaser:
 class Session:
     """This object wraps a `sqlite3_session
     <https://www.sqlite.org/session/session.html>`__ object."""
+
 
     def attach(self, name: Optional[str] = None) -> None:
         """Attach to a specific table, or all tables if no name is provided.  The
@@ -5785,4 +5776,1847 @@ class VFSFileClosedError(Error):
 class VFSNotImplementedError(Error):
     """A call cannot be made to an inherited :ref:`VFS` method as the VFS
     does not implement the method."""
+
+@final
+class AsyncBackup:
+    """This represents a :class:`Backup` when in async mode.
+
+    You create a backup instance by calling :meth:`Connection.backup`."""
+
+    async def aclose(self, force: bool = False) -> None:
+        """:async:
+
+        Async version of :meth:`close`"""
+        ...
+
+    async def __aenter__(self) -> Self:
+        """:async:
+
+        Async context manager enter"""
+        ...
+
+    async def __aexit__(self, etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None:
+        """:async:
+
+        Async context manager exit"""
+        ...
+
+    async def afinish(self) -> None:
+        """:async:
+
+        Async version of meth:`finish`"""
+        ...
+
+
+    done: Awaitable[bool]
+    """A boolean that is True if the copy completed in the last call to :meth:`~Backup.step`."""
+
+
+
+
+    page_count: Awaitable[int]
+    """Read only. How many pages were in the source database after the last
+    step.  If you haven't called :meth:`~Backup.step` or the backup
+    object has been :meth:`finished <Backup.finish>` then zero is
+    returned.
+
+    Calls: `sqlite3_backup_pagecount <https://sqlite.org/c3ref/backup_finish.html#sqlite3backuppagecount>`__"""
+
+    remaining: Awaitable[int]
+    """Read only. How many pages were remaining to be copied after the last
+    step.  If you haven't called :meth:`~Backup.step` or the backup
+    object has been :meth:`finished <Backup.finish>` then zero is
+    returned.
+
+    Calls: `sqlite3_backup_remaining <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupremaining>`__"""
+
+    async def step(self, npages: int = -1) -> bool:
+        """Copies *npages* pages from the source to destination database.  The source database is locked during the copy so
+        using smaller values allows other access to the source database.  The destination database is always locked until the
+        backup object is :meth:`finished <Backup.finish>`.
+
+        :param npages: How many pages to copy. If the parameter is omitted
+           or negative then all remaining pages are copied.
+
+        This method may throw a :exc:`BusyError` or :exc:`LockedError` if
+        unable to lock the source database.  You can catch those and try
+        again.
+
+        :returns: True if this copied the last remaining outstanding pages, else False.  This is the same value as :attr:`~Backup.done`
+
+        Calls: `sqlite3_backup_step <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupstep>`__"""
+        ...
+
+@final
+class AsyncBlob:
+    """This represents a :class:`Blob` when in async mode.
+
+    This object is created by :meth:`Connection.blob_open` and provides
+    access to a blob in the database.  It behaves like a Python file.
+    It wraps a `sqlite3_blob
+    <https://sqlite.org/c3ref/blob.html>`_.
+
+    .. note::
+
+      You cannot change the size of a blob using this object. You should
+      create it with the correct size in advance either by using
+      :class:`zeroblob` or the `zeroblob()
+      <https://sqlite.org/lang_corefunc.html>`_ function.
+
+    See the :ref:`example <example_blob_io>`."""
+
+    async def aclose(self, force: bool = False) -> None:
+        """:async:
+
+        Async version of :meth:`close`"""
+        ...
+
+    async def __aenter__(self) -> Self:
+        """:async:
+
+        Async context manager enter"""
+        ...
+
+    async def __aexit__(self, etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None:
+        """:async:
+
+        Async context manager exit"""
+        ...
+
+
+
+
+    async def length(self) -> int:
+        """Returns the size of the blob in bytes.
+
+        Calls: `sqlite3_blob_bytes <https://sqlite.org/c3ref/blob_bytes.html>`__"""
+        ...
+
+    async def read(self, length: int = -1) -> bytes:
+        """Reads amount of data requested, or till end of file, whichever is
+        earlier. Attempting to read beyond the end of the blob returns an
+        empty bytes in the same manner as end of file on normal file
+        objects.  Negative numbers read all remaining data.
+
+        Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__"""
+        ...
+
+    async def read_into(self, buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None:
+        """Reads from the blob into a buffer you have supplied.  This method is
+        useful if you already have a buffer like object that data is being
+        assembled in, and avoids allocating results in :meth:`Blob.read` and
+        then copying into buffer.
+
+        :param buffer: A writable buffer like object.
+                       There is a :class:`bytearray` type that is very useful.
+                       :mod:`Arrays <array>` also work.
+
+        :param offset: The position to start writing into the buffer
+                       defaulting to the beginning.
+
+        :param length: How much of the blob to read.  The default is the
+                       remaining space left in the buffer.  Note that if
+                       there is more space available than blob left then you
+                       will get a *ValueError* exception.
+
+        Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__"""
+        ...
+
+    async def reopen(self, rowid: int) -> None:
+        """Change this blob object to point to a different row.  It can be
+        faster than closing an existing blob an opening a new one.
+
+        Calls: `sqlite3_blob_reopen <https://sqlite.org/c3ref/blob_reopen.html>`__"""
+        ...
+
+    async def seek(self, offset: int, whence: int = 0) -> None:
+        """Changes current position to *offset* biased by *whence*.
+
+        :param offset: New position to seek to.  Can be positive or negative number.
+        :param whence: Use 0 if *offset* is relative to the beginning of the blob,
+                       1 if *offset* is relative to the current position,
+                       and 2 if *offset* is relative to the end of the blob.
+        :raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob."""
+        ...
+
+    async def tell(self) -> int:
+        """Returns the current offset."""
+        ...
+
+    async def write(self, data: Buffer) -> None:
+        """Writes the data to the blob.
+
+        :param data: Buffer to write
+
+        :raises TypeError: Wrong data type
+
+        :raises ValueError: If the data would go beyond the end of the blob.
+            You cannot increase the size of a blob by writing beyond the end.
+            You need to use :class:`zeroblob` to set the desired size first when
+            inserting the blob.
+
+        Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__"""
+        ...
+
+class AsyncConnection:
+    """This represents a :class:`Connection` when in async mode.
+
+    This object wraps a `sqlite3 pointer
+    <https://sqlite.org/c3ref/sqlite3.html>`_."""
+
+    async def aclose(self, force: bool = False) -> None:
+        """:async:
+
+        The async version of :meth:`close`"""
+        ...
+
+    async def __aenter__(self) -> Connection:
+        """:async:
+
+        Async version of :meth:`__enter__` context
+        manager.  You must use this with async connections."""
+        ...
+
+    async def __aexit__(self, etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None:
+        """:async:
+
+        Async version of :meth:`__exit__` context manager.  You must use this
+        with async connections."""
+        ...
+
+    async def as_async(self, *args, **kwargs) -> Awaitable[AsyncConnection]:
+        """:staticmethod:
+
+        Uses the :attr:`async_controller` to start a :class:`Connection`
+        with the parameters in a background worker thread.  The resulting
+        :class:`AsyncConnection` is the same as regular :class:`Connection`
+        but with most methods and attributes and related objects configured
+        for async operation.
+
+        See :mod:`apsw.aio` for some controller implementations and :doc:`async`
+        for more details."""
+        ...
+
+    async_controller: Awaitable[AsyncConnectionController]
+    """The controller in effect in async mode."""
+
+    async def async_run(self, call, *args, **kwargs) -> Any:
+        """:async:
+
+        Calls with the provided arguments in the async worker thread for this
+        connection."""
+        ...
+
+    authorizer: Awaitable[Optional[Authorizer]]
+    """While `preparing <https://sqlite.org/c3ref/prepare.html>`_
+    statements, SQLite will call any defined authorizer to see if a
+    particular action is ok to be part of the statement.
+
+    Typical usage would be if you are running user supplied SQL and want
+    to prevent harmful operations.  You should also
+    set the :class:`statementcachesize <Connection>` to zero.
+
+    The authorizer callback has 5 parameters:
+
+      * An `operation code <https://sqlite.org/c3ref/c_alter_table.html>`_
+      * A string (or None) dependent on the operation `(listed as 3rd) <https://sqlite.org/c3ref/c_alter_table.html>`_
+      * A string (or None) dependent on the operation `(listed as 4th) <https://sqlite.org/c3ref/c_alter_table.html>`_
+      * A string name of the database (or None)
+      * Name of the innermost trigger or view doing the access (or None)
+
+    The authorizer callback should return one of *SQLITE_OK*,
+    *SQLITE_DENY* or *SQLITE_IGNORE*.
+    (*SQLITE_DENY* is returned if there is an error in your
+    Python code).
+
+    .. seealso::
+
+      * :ref:`Example <example_authorizer>`
+      * :ref:`statementcache`
+
+    Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__"""
+
+    async def autovacuum_pages(self, callable: Optional[Callable[[str, int, int, int], int]]) -> None:
+        """Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
+
+        * Database name: str. `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+        * Database pages: int (how many pages make up the database now)
+        * Free pages: int (how many pages could be freed)
+        * Page size: int (page size in bytes)
+
+        Return how many pages should be freed.  Values less than zero or more than the free pages are
+        treated as zero or free page count.  On error zero is returned.
+
+        .. warning:: READ THE NOTE IN THE SQLITE DOCUMENTATION.
+
+          Calling back into SQLite can result in crashes, corrupt
+          databases, or worse.
+
+        Calls: `sqlite3_autovacuum_pages <https://sqlite.org/c3ref/autovacuum_pages.html>`__"""
+        ...
+
+    async def backup(self, databasename: str, sourceconnection: Connection, sourcedatabasename: str)  -> Backup:
+        """Opens a :ref:`backup object <Backup>`.  All data will be copied from source
+        database to this database.
+
+        :param databasename: Name of the database. `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+        :param sourceconnection: The :class:`Connection` to copy a database from.
+        :param sourcedatabasename: Name of the database in the source (eg ``main``).
+
+        :rtype: :class:`Backup`
+
+        .. seealso::
+
+          * :doc:`Backup reference <backup>`
+          * :ref:`Backup example <example_backup>`
+
+        Calls: `sqlite3_backup_init <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupinit>`__"""
+        ...
+
+    async def blob_open(self, database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob:
+        """Opens a blob for :ref:`incremental I/O <blobio>`.
+
+        :param database: Name of the database.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__.
+        :param table: The name of the table
+        :param column: The name of the column
+        :param rowid: The id that uniquely identifies the row.
+        :param writeable: If True then you can read and write the blob.  If False then you can only read it.
+
+        :rtype: :class:`Blob`
+
+        .. seealso::
+
+          * :ref:`Blob I/O example <example_blob_io>`
+          * `SQLite row ids <https://sqlite.org/autoinc.html>`_
+
+        Calls: `sqlite3_blob_open <https://sqlite.org/c3ref/blob_open.html>`__"""
+        ...
+
+    async def cache_flush(self) -> None:
+        """Flushes caches to disk mid-transaction.
+
+        Calls: `sqlite3_db_cacheflush <https://sqlite.org/c3ref/db_cacheflush.html>`__"""
+        ...
+
+    async def cache_stats(self, include_entries: bool = False) -> dict[str, int]:
+        """Returns information about the statement cache as dict.
+
+        .. note::
+
+          Calling execute with "select a; select b; insert into c ..." will
+          result in 3 cache entries corresponding to each of the 3 queries
+          present.
+
+        The returned dictionary has the following information.
+
+        .. list-table::
+          :header-rows: 1
+          :widths: auto
+
+          * - Key
+            - Explanation
+          * - size
+            - Maximum number of entries in the cache
+          * - evictions
+            - How many entries were removed (expired) to make space for a newer
+              entry
+          * - no_cache
+            - Queries that had can_cache parameter set to False
+          * - hits
+            - A match was found in the cache
+          * - misses
+            - No match was found in the cache, or the cache couldn't be used
+          * - no_vdbe
+            - The statement was empty (eg a comment) or SQLite took action
+              during parsing (eg some pragmas).  These are not cached and also
+              included in the misses count
+          * - too_big
+            - UTF8 query size was larger than considered for caching.  These are also included
+              in the misses count.
+          * - max_cacheable_bytes
+            - Maximum size of query (in bytes of utf8) that will be considered for caching
+          * - entries
+            - (Only present if `include_entries` is True) A list of the cache entries
+
+        If `entries` is present, then each list entry is a dict with the following information.
+
+        .. list-table::
+          :header-rows: 1
+          :widths: auto
+
+          * - Key
+            - Explanation
+          * - query
+            - Text of the query itself (first statement only)
+          * - prepare_flags
+            - Flags passed to `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
+              for this query
+          * - explain
+            - The value passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
+              if >= 0
+          * - uses
+            - How many times this entry has been (re)used
+          * - has_more
+            - Boolean indicating if there was more query text than
+              the first statement"""
+        ...
+
+    async def changes(self) -> int:
+        """Returns the number of database rows that were changed (or inserted
+        or deleted) by the most recently completed INSERT, UPDATE, or DELETE
+        statement.
+
+        Calls: `sqlite3_changes64 <https://sqlite.org/c3ref/changes.html>`__"""
+        ...
+
+
+    async def collation_needed(self, callable: Optional[Callable[[Connection, str], None]]) -> None:
+        """*callable* will be called if a statement requires a `collation
+        <https://en.wikipedia.org/wiki/Collation>`_ that hasn't been
+        registered. Your callable will be passed two parameters. The first
+        is the connection object. The second is the name of the
+        collation. If you have the collation code available then call
+        :meth:`Connection.create_collation`.
+
+        This is useful for creating collations on demand.  For example you
+        may include the `locale <https://en.wikipedia.org/wiki/Locale>`_ in
+        the collation name, but since there are thousands of locales in
+        popular use it would not be useful to :meth:`prereigster
+        <Connection.create_collation>` them all.  Using
+        :meth:`~Connection.collation_needed` tells you when you need to
+        register them.
+
+        .. seealso::
+
+          * :meth:`~Connection.create_collation`
+
+        Calls: `sqlite3_collation_needed <https://sqlite.org/c3ref/collation_needed.html>`__"""
+        ...
+
+    async def column_metadata(self, dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]:
+        """`dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__, or None to search
+        all databases.
+
+        The returned :class:`tuple` has these fields:
+
+        0: str - declared data type
+
+        1: str - name of default collation sequence
+
+        2: bool - True if not null constraint
+
+        3: bool - True if part of primary key
+
+        4: bool - True if column is `autoincrement <https://www.sqlite.org/autoinc.html>`__
+
+        Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__"""
+        ...
+
+    async def config(self, op: int, *args: int) -> int:
+        """:param op: A `configuration operation
+          <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
+        :param args: Zero or more arguments as appropriate for *op*
+
+        This is how to get the fkey setting::
+
+          val = db.config(apsw.SQLITE_DBCONFIG_ENABLE_FKEY, -1)
+
+        A parameter of zero would turn it off, 1 turns on, and negative
+        leaves unaltered.  The effective value is always returned.
+
+        Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__"""
+        ...
+
+    convert_binding: Awaitable[ConvertBinding | None]
+    """Called on a cursor when a binding is not a supported type.
+    This connection value is used when the cursor does not set
+    its own value.  See :attr:`Cursor.convert_binding`"""
+
+    convert_jsonb: Awaitable[ConvertJSONB | None]
+    """Called on a cursor when a blob being returned is valid JSONB.
+    This connection value is used when the cursor does not set
+    its own value.  See :attr:`Cursor.convert_jsonb`"""
+
+    async def create_aggregate_function(self, name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None:
+        """Registers an aggregate function.  Aggregate functions operate on all
+        the relevant rows such as counting how many there are.
+
+        :param name: The string name of the function.  It should be less than 255 characters
+        :param factory: The function that will be called.  Use None to delete the function.
+        :param numargs: How many arguments the function takes, with -1 meaning any number
+        :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+
+        When a query starts, the *factory* will be called.  It can return an object
+        with a *step* function called for each matching row, and a *final* function
+        to provide the final value.
+
+        Alternatively a non-class approach can return a tuple of 3 items:
+
+          a context object
+             This can be of any type
+
+          a step function
+             This function is called once for each row.  The first parameter
+             will be the context object and the remaining parameters will be
+             from the SQL statement.  Any value returned will be ignored.
+
+          a final function
+             This function is called at the very end with the context object
+             as a parameter.  The value returned is set as the return for
+             the function. The final function is always called even if an
+             exception was raised by the step function. This allows you to
+             ensure any resources are cleaned up.
+
+        .. note::
+
+          You can register the same named function but with different
+          callables and *numargs*.  See
+          :meth:`~Connection.create_scalar_function` for an example.
+
+        .. seealso::
+
+           * :ref:`Example <example_aggregate>`
+           * :meth:`~Connection.create_scalar_function`
+           * :meth:`~Connection.create_window_function`
+
+        Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__"""
+        ...
+
+    async def create_collation(self, name: str, callback: Optional[Callable[[str, str], int]]) -> None:
+        """You can control how SQLite sorts (termed `collation
+        <https://en.wikipedia.org/wiki/Collation>`_) when giving the
+        ``COLLATE`` term to a `SELECT
+        <https://sqlite.org/lang_select.html>`_.  For example your
+        collation could take into account locale or do numeric sorting.
+
+        The *callback* will be called with two items.  It should return -1
+        if the first is less then the second, 0 if they are equal, and 1 if
+        first is greater::
+
+           def mycollation(first: str, two: str) -> int:
+               if first < second:
+                   return -1
+               if first == second:
+                   return 0
+               if first > second:
+                   return 1
+
+        Passing None as the callback will unregister the collation.
+
+        .. seealso::
+
+          * :ref:`Example <example_collation>`
+          * :meth:`Connection.collation_needed`
+
+        Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__"""
+        ...
+
+    async def create_module(self, name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None:
+        """Registers a virtual table, or drops it if *datasource* is *None*.
+        See :ref:`virtualtables` for details.
+
+        :param name: Module name (CREATE VIRTUAL TABLE table_name USING module_name...)
+        :param datasource: Provides :class:`VTModule` methods
+        :param use_bestindex_object: If True then BestIndexObject is used, else BestIndex
+        :param use_no_change: Turn on understanding :meth:`VTCursor.ColumnNoChange` and using :attr:`apsw.no_change` to reduce :meth:`VTTable.UpdateChangeRow` work
+        :param iVersion: iVersion field in `sqlite3_module <https://www.sqlite.org/c3ref/module.html>`__
+        :param eponymous: Configures module to be `eponymous <https://www.sqlite.org/vtab.html#eponymous_virtual_tables>`__
+        :param eponymous_only: Configures module to be `eponymous only <https://www.sqlite.org/vtab.html#eponymous_only_virtual_tables>`__
+        :param read_only: Leaves `sqlite3_module <https://www.sqlite.org/c3ref/module.html>`__ methods that involve writing and transactions as NULL
+
+        .. seealso::
+
+           * :ref:`Example <example_virtual_tables>`
+
+        Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__"""
+        ...
+
+    async def create_scalar_function(self, name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None:
+        """Registers a scalar function.  Scalar functions operate on one set of parameters once.
+
+        :param name: The string name of the function.  It should be less than 255 characters
+        :param callable: The function that will be called.  Use None to unregister.
+        :param numargs: How many arguments the function takes, with -1 meaning any number
+        :param deterministic: When True this means the function always
+                 returns the same result for the same input arguments.
+                 SQLite's query planner can perform additional optimisations
+                 for deterministic functions.  For example a random()
+                 function is not deterministic while one that returns the
+                 length of a string is.
+        :param flags: Additional `function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+
+        .. note::
+
+          You can register the same named function but with different
+          *callable* and *numargs*.  For example::
+
+            connection.create_scalar_function("toip", ipv4convert, 4)
+            connection.create_scalar_function("toip", ipv6convert, 16)
+            connection.create_scalar_function("toip", strconvert, -1)
+
+          The one with the correct *numargs* will be called and only if that
+          doesn't exist then the one with negative *numargs* will be called.
+
+        .. seealso::
+
+           * :ref:`Example <example_scalar>`
+           * :meth:`~Connection.create_aggregate_function`
+           * :meth:`~Connection.create_window_function`
+
+        Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__"""
+        ...
+
+    async def create_window_function(self, name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None:
+        """Registers a `window function
+        <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
+
+        :param name: The string name of the function.  It should be less than 255 characters
+        :param factory: Called to start a new window.  Use None to delete the function.
+        :param numargs: How many arguments the function takes, with -1 meaning any number
+        :param flags: `Function flags <https://www.sqlite.org/c3ref/c_deterministic.html>`__
+
+        You need to provide callbacks for the ``step``, ``final``, ``value``
+        and ``inverse`` methods.  This can be done by having `factory` as a
+        class, returning an instance with the corresponding method names, or by having `factory`
+        return a sequence of a first parameter, and then each of the 4
+        functions.
+
+        **Debugging note** SQlite always calls the ``final`` method to allow
+        for cleanup.  If you have an exception in one of the other methods, then
+        ``final`` will also be called, and you may see both methods in
+        tracebacks.
+
+        .. seealso::
+
+         * :ref:`Example <example_window>`
+         * :meth:`~Connection.create_scalar_function`
+         * :meth:`~Connection.create_aggregate_function`
+
+        Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__"""
+        ...
+
+    async def cursor(self) -> Cursor:
+        """Creates a new :class:`Cursor` object on this database.
+
+        :rtype: :class:`Cursor`"""
+        ...
+
+    cursor_factory: Awaitable[Callable[[Connection], Any]]
+    """Defaults to :class:`Cursor`
+
+    Called with a :class:`Connection` as the only parameter when a cursor
+    is needed such as by the :meth:`cursor` method, or
+    :meth:`Connection.execute`.
+
+    Note that whatever is returned doesn't have to be an actual
+    :class:`Cursor` instance, and just needs to have the methods present
+    that are actually called.  These are likely to be `execute`,
+    `executemany`, `close` etc."""
+
+    async def data_version(self, schema: Optional[str] = None) -> int:
+        """Unlike `pragma data_version
+        <https://sqlite.org/pragma.html#pragma_data_version>`__ this value
+        updates when changes are made by other connections, **AND** this one.
+
+        :param schema: `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__,
+            defaulting to `main` if not supplied.
+
+        See the :ref:`example <example_caching>`.
+
+        Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__"""
+        ...
+
+    async def db_filename(self, name: str) -> str:
+        """Returns the full filename of the named (attached) database.  The
+        main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+
+        Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__"""
+        ...
+
+    async def db_names(self) -> list[str]:
+        """Returns the list of database names.  For example the first database
+        is named 'main', the next 'temp', and the rest with the name provided
+        in `ATTACH <https://www.sqlite.org/lang_attach.html>`__
+
+        Calls: `sqlite3_db_name <https://sqlite.org/c3ref/db_name.html>`__"""
+        ...
+
+    async def deserialize(self, name: str, contents: Buffer) -> None:
+        """Replaces the named database with an in-memory copy of *contents*.
+        *name* is `main`, `temp`, the name in `ATTACH
+        <https://sqlite.org/lang_attach.html>`__
+
+        The resulting database is in-memory, read-write, and the memory is
+        owned, resized, and freed by SQLite.
+
+        .. seealso::
+
+          * :meth:`Connection.serialize`
+
+        Calls: `sqlite3_deserialize <https://sqlite.org/c3ref/deserialize.html>`__"""
+        ...
+
+    async def drop_modules(self, keep: Optional[Iterable[str]]) -> None:
+        """If *keep* is *None* then all registered virtual tables are dropped.
+
+        Otherwise *keep* is a sequence of strings, naming the virtual tables that
+        are kept, dropping all others."""
+        ...
+
+    async def enable_load_extension(self, enable: bool) -> None:
+        """Enables/disables `extension loading
+        <https://www.sqlite.org/loadext.html>`_
+        which is disabled by default.
+
+        :param enable: If True then extension loading is enabled, else it is disabled.
+
+        Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__
+
+        .. seealso::
+
+          * :meth:`~Connection.load_extension`"""
+        ...
+
+
+    exec_trace: Awaitable[Optional[ExecTracer]]
+    """Called with the cursor, statement and bindings for
+    each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
+    Connection, unless the :class:`Cursor` installed its own
+    tracer. Your execution tracer can also abort execution of a
+    statement.
+
+    If *callable* is *None* then any existing execution tracer is
+    removed.
+
+    .. seealso::
+
+      * :ref:`tracing`
+      * :ref:`rowtracer`
+      * :attr:`Cursor.exec_trace`"""
+
+    async def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
+        """Executes the statements using the supplied bindings.  Execution
+        returns when the first row is available or all statements have
+        completed.  (A cursor is automatically obtained).
+
+        For pragmas you should use :meth:`pragma` which handles quoting and
+        caching correctly.
+
+        See :meth:`Cursor.execute` for more details, and the :ref:`example <example_executing_sql>`."""
+        ...
+
+    async def executemany(self, statements: str, sequenceofbindings:Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
+        """This method is for when you want to execute the same statements over a
+        sequence of bindings, such as inserting into a database.  (A cursor is
+        automatically obtained).
+
+        See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_executemany>`."""
+        ...
+
+
+    async def file_control(self, dbname: str, op: int, pointer: int) -> bool:
+        """Calls the :meth:`~VFSFile.xFileControl` method on the :ref:`VFS`
+        implementing :class:`file access <VFSFile>` for the database.
+
+        :param dbname: The name of the database to affect.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+        :param op: A `numeric code
+          <https://sqlite.org/c3ref/c_fcntl_lockstate.html>`_ with values less
+          than 100 reserved for SQLite internal use.
+        :param pointer: A number which is treated as a ``void pointer`` at the C level.
+
+        :returns: True or False indicating if the VFS understood the op.
+
+        The :ref:`example <example_filecontrol>` shows getting
+        `SQLITE_FCNTL_DATA_VERSION
+        <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.
+
+        If you want data returned back then the *pointer* needs to point to
+        something mutable.  Here is an example using :mod:`ctypes` of
+        passing a Python dictionary to :meth:`~VFSFile.xFileControl` which
+        can then modify the dictionary to set return values::
+
+          obj={"foo": 1, 2: 3}                 # object we want to pass
+          objwrap=ctypes.py_object(obj)        # objwrap must live before and after the call else
+                                               # it gets garbage collected
+          connection.file_control(
+                   "main",                     # which db
+                   123,                        # our op code
+                   ctypes.addressof(objwrap))  # get pointer
+
+        The :meth:`~VFSFile.xFileControl` method then looks like this::
+
+          def xFileControl(self, op, pointer):
+              if op==123:                      # our op code
+                  obj=ctypes.py_object.from_address(pointer).value
+                  # play with obj - you can use id() to verify it is the same
+                  print(obj["foo"])
+                  obj["result"]="it worked"
+                  return True
+              else:
+                  # pass to parent/superclass
+                  return super().xFileControl(op, pointer)
+
+        This is how you set the chunk size by which the database grows.  Do
+        not combine it into one line as the c_int would be garbage collected
+        before the file control call is made::
+
+           chunksize=ctypes.c_int(32768)
+           connection.file_control("main", apsw.SQLITE_FCNTL_CHUNK_SIZE, ctypes.addressof(chunksize))
+
+        Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__"""
+        ...
+
+    filename: Awaitable[str]
+    """The filename of the database.
+
+    Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__"""
+
+    filename_journal: Awaitable[str]
+    """The journal filename of the database,
+
+    Calls: `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__"""
+
+    filename_wal: Awaitable[str]
+    """The WAL filename of the database,
+
+    Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
+
+    async def fts5_tokenizer(self, name: str, args: list[str] | None = None) -> FTS5Tokenizer:
+        """Returns the named tokenizer initialized with ``args``.  Names are case insensitive.
+
+        .. seealso::
+
+            * :meth:`register_fts5_tokenizer`
+            * :doc:`textsearch`"""
+        ...
+
+    async def fts5_tokenizer_available(self, name: str) -> bool:
+        """Checks if the named tokenizer is registered.
+
+        .. seealso::
+
+            * :meth:`fts5_tokenizer`
+            * :doc:`textsearch`
+            * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__"""
+        ...
+
+    async def get_autocommit(self) -> bool:
+        """Returns if the Connection is in auto commit mode (ie not in a transaction).
+
+        Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__"""
+        ...
+
+    async def get_exec_trace(self) -> Optional[ExecTracer]:
+        """Returns the currently installed :attr:`execution tracer
+        <Connection.exec_trace>`"""
+        ...
+
+    async def get_row_trace(self) -> Optional[RowTracer]:
+        """Returns the currently installed :attr:`row tracer
+        <Connection.row_trace>`"""
+        ...
+
+    in_transaction: Awaitable[bool]
+    """True if currently in a transaction, else False
+
+    Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__"""
+
+    async def __init__(self, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100):
+        """Opens the named database.  You can use ``:memory:`` to get a private temporary
+        in-memory database that is not shared with any other connections.
+
+        :param flags: One or more of the `open flags <https://sqlite.org/c3ref/c_open_autoproxy.html>`_ orred together
+        :param vfs: The name of the `vfs <https://sqlite.org/c3ref/vfs.html>`_ to use.  If *None* then the default
+           vfs will be used.
+
+        :param statementcachesize: Use zero to disable the statement cache,
+          or a number larger than the total distinct SQL statements you
+          execute frequently.
+
+        Calls: `sqlite3_open_v2 <https://sqlite.org/c3ref/open.html>`__
+
+        .. seealso::
+
+          * :attr:`apsw.connection_hooks`
+          * :ref:`statementcache`
+          * :ref:`vfs`"""
+        ...
+
+    async def interrupt(self) -> None:
+        """Causes all pending operations on the database to abort at the
+        earliest opportunity. You can call this from any thread.  For
+        example you may have a long running query when the user presses the
+        stop button in your user interface.  :exc:`InterruptError`
+        will be raised in the queries that got interrupted.
+
+        Calls: `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`__"""
+        ...
+
+    is_async: Awaitable[bool]
+    """`True` if this connection is operating in async mode."""
+
+    is_interrupted: Awaitable[bool]
+    """Indicates if this connection has been interrupted.
+
+    Calls: `sqlite3_is_interrupted <https://sqlite.org/c3ref/interrupt.html>`__"""
+
+    async def last_insert_rowid(self) -> int:
+        """Returns the integer key of the most recent insert in the database.
+
+        Calls: `sqlite3_last_insert_rowid <https://sqlite.org/c3ref/last_insert_rowid.html>`__"""
+        ...
+
+    async def limit(self, id: int, newval: int = -1) -> int:
+        """If called with one parameter then the current limit for that *id* is
+        returned.  If called with two then the limit is set to *newval*.
+
+
+        :param id: One of the `runtime limit ids <https://sqlite.org/c3ref/c_limit_attached.html>`_
+        :param newval: The new limit.  This is a 32 bit signed integer even on 64 bit platforms.
+
+        :returns: The limit in place on entry to the call.
+
+        Calls: `sqlite3_limit <https://sqlite.org/c3ref/limit.html>`__
+
+        .. seealso::
+
+          * :ref:`Example <example_limits>`"""
+        ...
+
+    async def load_extension(self, filename: str, entrypoint: Optional[str] = None) -> None:
+        """Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_
+
+        :param filename: The file to load.
+
+        :param entrypoint: The initialization method to call.  If this
+          parameter is not supplied then the SQLite default of
+          ``sqlite3_extension_init`` is used.
+
+        :raises ExtensionLoadingError: If the extension could not be
+          loaded.  The exception string includes more details.
+
+        Calls: `sqlite3_load_extension <https://sqlite.org/c3ref/load_extension.html>`__
+
+        .. seealso::
+
+          * :meth:`~Connection.enable_load_extension`"""
+        ...
+
+    open_flags: Awaitable[int]
+    """The combination of :attr:`flags <apsw.mapping_open_flags>` used to open the database."""
+
+    open_vfs: Awaitable[str]
+    """The string name of the vfs used to open the database."""
+
+    async def overload_function(self, name: str, nargs: int) -> None:
+        """Registers a placeholder function so that a virtual table can provide an implementation via
+        :meth:`VTTable.FindFunction`.
+
+        :param name: Function name
+        :param nargs: How many arguments the function takes
+
+          Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__"""
+        ...
+
+    async def pragma(self, name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> Any:
+        """Issues the pragma (with the value if supplied) and returns the result with
+        :attr:`the least amount of structure <Cursor.get>`.  For example
+        :code:`pragma("user_version")` will return just the number, while
+        :code:`pragma("journal_mode", "WAL")` will return the journal mode
+        now in effect.
+
+        Pragmas do not support bindings, so this method is a convenient
+        alternative to composing SQL text.  Pragmas are often executed
+        while being prepared, instead of when run like regular SQL.  They
+        may also contain encryption keys.  This method ensures they are
+        not cached to avoid problems.
+
+        Use the `schema` parameter to run the pragma against a different
+        attached database (eg ``temp``).
+
+        * :ref:`Example <example_pragma>`"""
+        ...
+
+    async def preupdate_hook(self, callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None:
+        """A callback just after a database row is updated.  You can have multiple hooks at once
+        (managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for
+        ``callback`` will remove it.
+
+        SQLite provides no way to report errors from the callback.  The SQLite level update
+        will always succeed, with Python exceptions reported when control returns to Python
+        code.
+
+        .. important::
+
+           The :doc:`session` extension uses the preupdate hook, and will **CRASH
+           THE PROCESS** if you register a hook via this method, and then create
+           a :class:`Session`.
+
+        SQLlite must be compiled with ``SQLITE_ENABLE_PREUPDATE_HOOK`` and this must be known
+        to APSW at compile time.  If not, this API and :class:`PreUpdate` will not be present.
+
+        You do not get calls undoing changes when a transaction is
+        aborted/rolled back.  Consequently you can't use this hook to track
+        the current state of the database.  The approach taken by the
+        :doc:`session` is to note the rowid (or primary keys for without rowid
+        tables), and initial values the first time that a row is seen.  When a
+        changeset is requested, it compares the contents of the row now to the row
+        then, and generates the appropriate changeset entry.
+
+        Calls: `sqlite3_preupdate_hook <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__"""
+        ...
+
+    async def read(self, schema: str, which: int, offset: int, amount: int) -> tuple[bool, bytes]:
+        """Invokes the underlying VFS method to read data from the database.  It
+        is strongly recommended to read aligned complete pages, since that is
+        only what SQLite does.
+
+        `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+
+        `which` is 0 for the database file, 1 for the journal.
+
+        The return value is a tuple of a boolean indicating a complete read if
+        True, and the bytes read which will always be the amount requested
+        in size.
+
+        `SQLITE_IOERR_SHORT_READ` will give a `False` value for the boolean,
+        and there is no way of knowing how much was read.
+
+        Implemented using `SQLITE_FCNTL_FILE_POINTER` and `SQLITE_FCNTL_JOURNAL_POINTER`.
+        Errors will usually be generic `SQLITE_ERROR` with no message.
+
+        Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__"""
+        ...
+
+    async def readonly(self, name: str) -> bool:
+        """True or False if the named (attached) database was opened readonly or file
+        permissions don't allow writing.  The name is `main`, `temp`, the
+        name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+
+        An exception is raised if the database doesn't exist.
+
+        Calls: `sqlite3_db_readonly <https://sqlite.org/c3ref/db_readonly.html>`__"""
+        ...
+
+    async def register_fts5_function(self, name: str, function: FTS5Function) -> None:
+        """Registers the (case insensitive) named function used as an `auxiliary
+        function  <https://www.sqlite.org/fts5.html#custom_auxiliary_functions>`__.
+
+        The first parameter to the function will be :class:`FTS5ExtensionApi`
+        and the rest will be the function arguments at the SQL level."""
+        ...
+
+    async def register_fts5_tokenizer(self, name: str, tokenizer_factory: FTS5TokenizerFactory) -> None:
+        """Registers a tokenizer factory.  Names are case insensitive.  It is not possible to
+        unregister a tokenizer.
+
+        .. seealso::
+
+            * :meth:`fts5_tokenizer`
+            * :doc:`textsearch`
+            * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__"""
+        ...
+
+    async def release_memory(self) -> None:
+        """Attempts to free as much heap memory as possible used by this connection.
+
+        Calls: `sqlite3_db_release_memory <https://sqlite.org/c3ref/db_release_memory.html>`__"""
+        ...
+
+    row_trace: Awaitable[Optional[RowTracer]]
+    """Called with the cursor and row being returned for
+    :class:`cursors <Cursor>` associated with this Connection, unless
+    the Cursor installed its own tracer.  You can change the data that
+    is returned or cause the row to be skipped altogether.
+
+    If *callable* is *None* then any existing row tracer is
+    removed.
+
+    .. seealso::
+
+      * :ref:`tracing`
+      * :ref:`rowtracer`
+      * :attr:`Cursor.exec_trace`"""
+
+    async def serialize(self, name: str) -> bytes:
+        """Returns a memory copy of the database. *name* is `main`, `temp`, the name
+        in `ATTACH <https://sqlite.org/lang_attach.html>`__
+
+        The memory copy is the same as if the database was backed up to
+        disk.
+
+        If the database name doesn't exist, then None is returned, not an
+        exception (this is SQLite's behaviour).  One exception is than an
+        empty temp will result in a None return.
+
+         .. seealso::
+
+           * :meth:`Connection.deserialize`
+
+         Calls: `sqlite3_serialize <https://sqlite.org/c3ref/serialize.html>`__"""
+        ...
+
+    async def set_authorizer(self, callable: Optional[Authorizer]) -> None:
+        """Sets the :attr:`authorizer`"""
+        ...
+
+    async def set_busy_handler(self, callable: Optional[Callable[[int], bool]]) -> None:
+        """Sets the busy handler to callable. callable will be called with one
+        integer argument which is the number of prior calls to the busy
+        callback for the same lock. If the busy callback returns False,
+        then SQLite returns *SQLITE_BUSY* to the calling code. If
+        the callback returns True, then SQLite tries to open the table
+        again and the cycle repeats.
+
+        If you previously called :meth:`~Connection.set_busy_timeout` then
+        calling this overrides that.
+
+        Passing None unregisters the existing handler.
+
+        .. seealso::
+
+          * :meth:`Connection.set_busy_timeout`
+          * :ref:`Busy handling <busyhandling>`
+
+        Calls: `sqlite3_busy_handler <https://sqlite.org/c3ref/busy_handler.html>`__"""
+        ...
+
+    async def set_busy_timeout(self, milliseconds: int) -> None:
+        """If the database is locked such as when another connection is making
+        changes, SQLite will keep retrying.  This sets the maximum amount of
+        time SQLite will keep retrying before giving up.  If the database is
+        still busy then :class:`apsw.BusyError` will be returned.
+
+        :param milliseconds: Maximum thousandths of a second to wait.
+
+        If you previously called :meth:`~Connection.set_busy_handler` then
+        calling this overrides that.
+
+        .. seealso::
+
+           * :meth:`Connection.set_busy_handler`
+           * :ref:`Busy handling <busyhandling>`
+
+        Calls: `sqlite3_busy_timeout <https://sqlite.org/c3ref/busy_timeout.html>`__"""
+        ...
+
+    async def set_commit_hook(self, callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None:
+        """*callable* will be called just before a commit.  It should return
+        False for the commit to go ahead and True for it to be turned
+        into a rollback. In the case of an exception in your callable, a
+        True (rollback) value is returned.  Pass None to unregister
+        the existing hook.
+
+        You can have multiple hooks at once (managed by APSW) by specifying
+        different ``id`` for each one.
+
+        .. seealso::
+
+          * :ref:`Example <example_commit_hook>`
+
+        Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__"""
+        ...
+
+    async def set_exec_trace(self, callable: Optional[ExecTracer]) -> None:
+        """Method to set :attr:`Connection.exec_trace`"""
+        ...
+
+    async def set_last_insert_rowid(self, rowid: int) -> None:
+        """Sets the value calls to :meth:`last_insert_rowid` will return.
+
+        Calls: `sqlite3_set_last_insert_rowid <https://sqlite.org/c3ref/set_last_insert_rowid.html>`__"""
+        ...
+
+    async def set_profile(self, callable: Optional[Callable[[str, int], None]]) -> None:
+        """Sets a callable which is invoked at the end of execution of each
+        statement and passed the statement string and how long it took to
+        execute. (The execution time is in nanoseconds.) Note that it is
+        called only on completion. If for example you do a ``SELECT`` and only
+        read the first result, then you won't reach the end of the statement.
+
+        Calls: `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__"""
+        ...
+
+    async def set_progress_handler(self, callable: Optional[Callable[[], bool]], nsteps: int = 100, *, id: Optional[Any] = None) -> None:
+        """Sets a callable which is invoked every *nsteps* SQLite inststructions.
+        The callable should return True to abort or False to continue. (If
+        there is an error in your Python *callable* then True/abort will be
+        returned).  SQLite raises :exc:`InterruptError` for aborts.
+
+        Use :class:`None` to cancel the progress handler.  Multiple handlers
+        can be present at once (implemented by APSW). Registered callbacks are
+        distinguished by their ``id`` - an equality test is done to match ids.
+
+        You can use :class:`apsw.ext.Trace` to see how many steps are used for
+        a representative statement, or :class:`apsw.ext.ShowResourceUsage` to
+        see how many are used in a block.  It will generally be several million
+        per second.
+
+        .. seealso::
+
+           * :ref:`Example <example_progress_handler>`
+
+        Calls: `sqlite3_progress_handler <https://sqlite.org/c3ref/progress_handler.html>`__"""
+        ...
+
+    async def set_rollback_hook(self, callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None:
+        """Sets a callable which is invoked during a rollback.  If *callable*
+        is *None* then any existing rollback hook is unregistered.
+
+        The *callable* is called with no parameters and the return value is ignored.
+
+        You can have multiple hooks at once (managed by APSW) by specifying
+        different ``id`` for each one.
+
+        Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__"""
+        ...
+
+    async def set_row_trace(self, callable: Optional[RowTracer]) -> None:
+        """Method to set :attr:`Connection.row_trace`"""
+        ...
+
+    async def set_update_hook(self, callable: Optional[Callable[[int, str, str, int], None]]) -> None:
+        """Calls *callable* whenever a row is updated, deleted or inserted.  If
+        *callable* is *None* then any existing update hook is
+        unregistered.  The update hook cannot make changes to the database while
+        the query is still executing, but can record them for later use or
+        apply them in a different connection.
+
+        The update hook is called with 4 parameters:
+
+          type (int)
+            *SQLITE_INSERT*, *SQLITE_DELETE* or *SQLITE_UPDATE*
+          database name (str)
+            `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+          table name (str)
+            The table on which the update happened
+          rowid (int)
+            The affected row
+
+        .. seealso::
+
+            * :ref:`Example <example_update_hook>`
+
+        Calls: `sqlite3_update_hook <https://sqlite.org/c3ref/update_hook.html>`__"""
+        ...
+
+    async def set_wal_hook(self, callable: Optional[Callable[[Connection, str, int], int]]) -> None:
+        """*callable* will be called just after data is committed in :ref:`wal`
+        mode.  It should return *SQLITE_OK* or an error code.  The
+        callback is called with 3 parameters:
+
+          * The Connection
+          * The database name.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+          * The number of pages in the wal log
+
+        You can pass in None in order to unregister an existing hook.
+
+        Calls: `sqlite3_wal_hook <https://sqlite.org/c3ref/wal_hook.html>`__"""
+        ...
+
+    async def setlk_timeout(self, ms: int, flags: int) -> None:
+        """Sets a VFS level timeout.
+
+        Calls: `sqlite3_setlk_timeout <https://sqlite.org/c3ref/setlk_timeout.html>`__"""
+        ...
+
+    async def sqlite3_pointer(self) -> int:
+        """Returns the underlying `sqlite3 *
+        <https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
+        method is useful if there are other C level libraries in the same
+        process and you want them to use the APSW connection handle. The value
+        is returned as a number using `PyLong_FromVoidPtr
+        <https://docs.python.org/3/c-api/long.html?highlight=pylong_fromvoidptr#c.PyLong_FromVoidPtr>`__
+        under the hood. You should also ensure that you increment the
+        reference count on the :class:`Connection` for as long as the other
+        libraries are using the pointer.  It is also a very good idea to call
+        :meth:`sqlite_lib_version` and ensure it is the same as the other
+        libraries."""
+        ...
+
+    async def status(self, op: int, reset: bool = False) -> tuple[int, int]:
+        """Returns current and highwater measurements for the database.
+
+        :param op: A `status parameter <https://sqlite.org/c3ref/c_dbstatus_options.html>`_
+        :param reset: If *True* then the highwater is set to the current value
+        :returns: A tuple of current value and highwater value
+
+        .. seealso::
+
+          * :func:`apsw.status` which does the same for SQLite as a whole
+          * :ref:`Example <example_status>`
+
+        Calls: `sqlite3_db_status64 <https://sqlite.org/c3ref/db_status.html>`__"""
+        ...
+
+    system_errno: Awaitable[int]
+    """The underlying system error code for the most recent I/O error.
+
+    Calls: `sqlite3_system_errno <https://sqlite.org/c3ref/system_errno.html>`__"""
+
+    async def table_exists(self, dbname: Optional[str], table_name: str) -> bool:
+        """Returns True if the named table exists, else False.
+
+        ``dbname`` is ``main``, ``temp``, the name in `ATTACH
+        <https://sqlite.org/lang_attach.html>`__, or None to search  all
+        databases
+
+        Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__"""
+        ...
+
+    async def total_changes(self) -> int:
+        """Returns the total number of database rows that have be modified,
+        inserted, or deleted since the database connection was opened.
+
+        Calls: `sqlite3_total_changes64 <https://sqlite.org/c3ref/total_changes.html>`__"""
+        ...
+
+    async def trace_v2(self, mask: int, callback: Optional[Callable[[dict], None]] = None, *, id: Optional[Any] = None) -> None:
+        """Registers a trace callback.  Multiple traces can be active at once
+        (implemented by APSW).  A callback of :class:`None` unregisters a
+        trace.  Registered callbacks are distinguished by their ``id`` - an
+        equality test is done to match ids.
+
+        The callback is called with a dict of relevant values based on the
+        code.
+
+        .. list-table::
+          :header-rows: 1
+          :widths: auto
+
+          * - Key
+            - Type
+            - Explanation
+          * - code
+            - :class:`int`
+            - One of the `trace event codes <https://www.sqlite.org/c3ref/c_trace.html>`__
+          * - connection
+            - :class:`Connection`
+            - Connection this trace event belongs to
+          * - sql
+            - :class:`str`
+            - SQL text (except SQLITE_TRACE_ROW and SQLITE_TRACE_CLOSE).
+          * - id
+            - :class:`int`
+            - An opaque key to correlate events on the same statement.  The
+              id can be reused after SQLITE_TRACE_PROFILE.
+          * - trigger
+            - :class:`bool`
+            - If `trigger <https://www.sqlite.org/lang_createtrigger.html>`__
+              SQL is executing then this is ``True`` and the SQL is of the trigger.
+              Virtual table nested queries also come through as trigger activity.
+          * - total_changes
+            - :class:`int`
+            - Value of :meth:`total_changes`  (SQLITE_TRACE_STMT and SQLITE_TRACE_PROFILE only)
+          * - nanoseconds
+            - :class:`int`
+            - nanoseconds SQL took to execute (SQLITE_TRACE_PROFILE only)
+          * - stmt_status
+            - :class:`dict`
+            - SQLITE_TRACE_PROFILE only: Keys are names from `status parameters
+              <https://www.sqlite.org/c3ref/c_stmtstatus_counter.html>`__ - eg
+              *"SQLITE_STMTSTATUS_VM_STEP"* and corresponding integer values.
+              The counters are reset each time a statement
+              starts execution.  This includes any changes made by triggers.
+
+        Note that SQLite ignores any errors from the trace callbacks, so
+        whatever was being traced will still proceed.  Exceptions will be
+        delivered when your Python code resumes.
+
+        If you register for all trace types, the following sequence will happen.
+
+        * SQLITE_TRACE_STMT with `trigger` `False` and an `id` and `sql` of
+          the statement.
+        * Multiple times: SQLITE_TRACE_STMT with the same `id` and `trigger`
+          `True` if a trigger is executed.  The first time the `sql` will be
+          ``TRIGGER name`` and then subsequent calls will be lines of the
+          trigger.  This also happens for virtual tables that make queries.
+        * Multiple times: SQLITE_TRACE_ROW with the same `id` for each time
+          execution stopped at a row. (Rows visited by triggers do not cause
+          thie event)
+        * SQLITE_TRACE_PROFILE with the same `id` for any virtual table
+          queries - the ``sql`` will be of those queries
+        * SQLITE_TRACE_PROFILE with the same `id` for the initial SQL.
+
+        .. seealso::
+
+          * :ref:`Example <example_trace_v2>`
+          * :class:`apsw.ext.Trace`
+
+        Calls:
+          * `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__
+          * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__"""
+        ...
+
+    transaction_mode: Awaitable[str]
+    """The mode used for the outermost transaction when using the
+    :meth:`context manager (with) <__enter__>`.
+
+    The value will be one of ``DEFERRED`` (default), ``IMMEDIATE``,
+    or ``EXCLUSIVE``.  When setting it must be one of those values
+    in any case."""
+
+    async def txn_state(self, schema: Optional[str] = None) -> int:
+        """Returns the current transaction state of the database, or a specific schema
+        if provided.  :attr:`apsw.mapping_txn_state` contains the values returned.
+
+        Calls: `sqlite3_txn_state <https://sqlite.org/c3ref/txn_state.html>`__"""
+        ...
+
+    async def vfsname(self, dbname: str) -> str | None:
+        """Issues the `SQLITE_FCNTL_VFSNAME
+        <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__
+        file control against the named database (`main`, `temp`, attached
+        name).
+
+        This is useful to see which VFS is in use, and if inheritance is used
+        then ``/`` will separate the names.  If you have a :class:`VFSFile` in
+        use then its fully qualified class name will also be included.
+
+        If ``SQLITE_FCNTL_VFSNAME`` is not implemented, ``dbname`` is not a
+        database name, or an error occurred then ``None`` is returned."""
+        ...
+
+
+
+    async def wal_autocheckpoint(self, n: int) -> None:
+        """Sets how often the :ref:`wal` checkpointing is run.
+
+         :param n: A number representing the checkpointing interval or
+           zero/negative to disable auto checkpointing.
+
+        Calls: `sqlite3_wal_autocheckpoint <https://sqlite.org/c3ref/wal_autocheckpoint.html>`__"""
+        ...
+
+    async def wal_checkpoint(self, dbname: Optional[str] = None, mode: int = SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]:
+        """Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.
+
+          :param dbname:  The name of the database or all databases if None
+
+          :param mode: One of the `checkpoint modes <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
+
+          :return: A tuple of the size of the WAL log in frames and the
+             number of frames checkpointed as described in the
+             `documentation
+             <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__.
+
+        Calls: `sqlite3_wal_checkpoint_v2 <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__"""
+        ...
+
+class AsyncCursor:
+    """This represents a :class:`Cursor` when in async mode."""
+
+    async def aclose(self, force: bool = False) -> None:
+        """:async:
+
+        Async version of :meth:`close`"""
+        ...
+
+    async def __aiter__(self) -> Cursor:
+        """:async:
+
+        Cursors are async iterators"""
+        ...
+
+    async def __anext__(self) -> Any:
+        """:async:
+
+        Cursors are iterators"""
+        ...
+
+    bindings_count: Awaitable[int]
+    """How many bindings are in the statement.  The ``?`` form
+    results in the largest number.  For example you could do
+    ``SELECT ?123``` in which case the count will be ``123``.
+
+    Calls: `sqlite3_bind_parameter_count <https://sqlite.org/c3ref/bind_parameter_count.html>`__"""
+
+    bindings_names: Awaitable[tuple[str | None]]
+    """A tuple of the name of each bind parameter, or None for no name.  The
+    leading marker (``?:@$``) is omitted
+
+    .. note::
+
+      SQLite parameter numbering starts at ``1``, while Python
+      indexing starts at ``0``.
+
+    Calls: `sqlite3_bind_parameter_name <https://sqlite.org/c3ref/bind_parameter_name.html>`__"""
+
+
+    connection: Awaitable[Connection]
+    """:class:`Connection` this cursor is using"""
+
+    convert_binding: Awaitable[ConvertBinding | None]
+    """Called with the :class:`Cursor`, parameter number, and value when
+    an unsuppported type is used in a binding. Note that parameter
+    numbers start at 1.
+
+    If set to ``None`` then conversion is disabled for this cursor.
+
+    .. seealso::
+
+      * :attr:`bindings_count`
+      * :attr:`bindings_names`"""
+
+    convert_jsonb: Awaitable[ConvertJSONB | None]
+    """Called with the :class:`Cursor`, column number, and bytes value
+    when a blob value is valid JSONB.  The callback can :func:`decode the
+    <jsonb_decode>` or return the bytes as is.
+
+    If set to ``None`` then conversion is disabled for this cursor.
+
+    .. seealso::
+
+      You can consult the description to get further confirmation if
+      the value is intended to be JSONB.
+
+      * :attr:`Cursor.description_full`
+      * :attr:`Cursor.description`"""
+
+    description: Awaitable[tuple[tuple[str, str, None, None, None, None, None], ...]]
+    """Based on the `DB-API cursor property
+    <https://www.python.org/dev/peps/pep-0249/>`__, this returns the
+    same as :meth:`get_description` but with 5 Nones appended because
+    SQLite does not have the information."""
+
+    description_full: Awaitable[tuple[tuple[str, str, str, str, str], ...]]
+    """Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at
+    compile time.
+
+    Returns all information about the query result columns. In
+    addition to the name and declared type, you also get the database
+    name, table name, and origin name.
+
+    Calls:
+      * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__
+      * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__
+      * `sqlite3_column_database_name <https://sqlite.org/c3ref/column_database_name.html>`__
+      * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__
+      * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__"""
+
+    exec_trace: Awaitable[ExecTracer | None]
+    """Called with the cursor, statement and bindings for
+    each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
+    cursor.
+
+    If *callable* is *None* then execution tracing is disabled for the cursor..
+
+    .. seealso::
+
+      * :ref:`tracing`
+      * :ref:`executiontracer`
+      * :attr:`Connection.exec_trace`"""
+
+    async def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
+        """Executes the statements using the supplied bindings.  Execution
+        returns when the first row is available or all statements have
+        completed.
+
+        :param statements: One or more SQL statements such as ``select *
+          from books`` or ``begin; insert into books ...; select
+          last_insert_rowid(); end``.
+        :param bindings: If supplied should either be a sequence or a dictionary.  Each item must be one of the :ref:`supported types <types>`,
+          :class:`zeroblob`, or a wrapped :ref:`Python object <pyobject>`
+        :param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be
+          placed in the cache after execution
+        :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.html>`__ passed to
+          `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
+        :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
+           where you can force it to not be an explain, or force explain or explain query plan.
+
+        :raises TypeError: The bindings supplied were neither a dict nor a sequence
+        :raises BindingsError: You supplied too many or too few bindings for the statements
+        :raises IncompleteExecutionError: There are remaining unexecuted queries from your last execute
+
+        Calls:
+          * `sqlite3_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
+          * `sqlite3_step <https://sqlite.org/c3ref/step.html>`__
+          * `sqlite3_bind_int64 <https://sqlite.org/c3ref/bind_blob.html>`__
+          * `sqlite3_bind_null <https://sqlite.org/c3ref/bind_blob.html>`__
+          * `sqlite3_bind_text64 <https://sqlite.org/c3ref/bind_blob.html>`__
+          * `sqlite3_bind_double <https://sqlite.org/c3ref/bind_blob.html>`__
+          * `sqlite3_bind_blob64 <https://sqlite.org/c3ref/bind_blob.html>`__
+          * `sqlite3_bind_zeroblob64 <https://sqlite.org/c3ref/bind_blob.html>`__
+          * `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__"""
+        ...
+
+    async def executemany(self, statements: str, sequenceofbindings: Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
+        """This method is for when you want to execute the same statements over
+        a sequence of bindings.  Conceptually it does this::
+
+          for binding in sequenceofbindings:
+              cursor.execute(statements, binding)
+
+        The return is the cursor itself which acts as an iterator.  Your
+        statements can return data.  See :meth:`~Cursor.execute` for more
+        information, and the :ref:`example <example_executemany>`."""
+        ...
+
+    expanded_sql: Awaitable[str]
+    """The SQL text with bound parameters expanded.  For example::
+
+       execute("select ?, ?", (3, "three"))
+
+    would return::
+
+       select 3, 'three'
+
+    Note that while SQLite supports nulls in strings, their implementation
+    of sqlite3_expanded_sql stops at the first null.
+
+    You will get :exc:`MemoryError` if SQLite ran out of memory, or if
+    the expanded string would exceed `SQLITE_LIMIT_LENGTH
+    <https://www.sqlite.org/c3ref/c_limit_attached.html>`__.
+
+    Calls: `sqlite3_expanded_sql <https://sqlite.org/c3ref/expanded_sql.html>`__"""
+
+    async def fetchall(self) -> list[tuple[SQLiteValue, ...]]:
+        """Returns all remaining result rows as a list.  This method is defined
+        in DBAPI.  See :meth:`get` which does the same thing, but with the least
+        amount of structure to unpack."""
+        ...
+
+    async def fetchone(self) -> Optional[Any]:
+        """Returns the next row of data or None if there are no more rows."""
+        ...
+
+    get: Awaitable[Any]
+    """Like :meth:`fetchall` but returns the data with the least amount of structure
+    possible.
+
+    .. list-table:: Some examples
+       :header-rows: 1
+       :widths: auto
+
+       * - Query
+         - Result
+       * - select 3
+         - 3
+       * - select 3,4
+         - (3, 4)
+       * - select 3; select 4
+         - [3, 4]
+       * - select 3,4; select 4,5
+         - [(3, 4), (4, 5)]
+       * - select 3,4; select 5
+         - [(3, 4), 5]
+
+    Row tracers are not called when using this method."""
+
+    async def get_connection(self) -> Connection:
+        """Returns the :attr:`connection` this cursor is part of"""
+        ...
+
+    async def get_description(self) -> tuple[tuple[str, str], ...]:
+        """If you are trying to get information about a table or view,
+        then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
+        is better.  If you want to know up front what columns and other
+        details a query does then :func:`apsw.ext.query_info` is useful.
+
+        Returns a tuple describing each column in the result row.  The
+        return is identical for every row of the results.
+
+        The information about each column is a tuple of ``(column_name,
+        declared_column_type)``.  The type is what was declared in the
+        ``CREATE TABLE`` statement - the value returned in the row will be
+        whatever type you put in for that row and column.
+
+        See the :ref:`query_info example <example_query_details>`.
+
+        Calls:
+          * `sqlite3_column_name <https://sqlite.org/c3ref/column_name.html>`__
+          * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__"""
+        ...
+
+    async def get_exec_trace(self) -> ExecTracer | None:
+        """Returns the currently installed :attr:`execution tracer
+        <Cursor.exec_trace>`
+
+        .. seealso::
+
+          * :ref:`tracing`"""
+        ...
+
+    async def get_row_trace(self) -> RowTracer | None:
+        """Returns the currently installed (via :meth:`~Cursor.set_row_trace`)
+        row tracer.
+
+        .. seealso::
+
+          * :ref:`tracing`"""
+        ...
+
+    has_vdbe: Awaitable[bool]
+    """``True`` if the SQL does anything.  Comments have nothing to
+    evaluate, and so are ``False``."""
+
+    async def __init__(self, connection: Connection):
+        """Use :meth:`Connection.cursor` to make a new cursor."""
+        ...
+
+    is_explain: Awaitable[int]
+    """Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
+    and 2 if an EXPLAIN QUERY PLAN query.
+
+    Calls: `sqlite3_stmt_isexplain <https://sqlite.org/c3ref/stmt_isexplain.html>`__"""
+
+    is_readonly: Awaitable[bool]
+    """Returns True if the current query does not change the database.
+
+    Note that called functions, virtual tables etc could make changes though.
+
+    Calls: `sqlite3_stmt_readonly <https://sqlite.org/c3ref/stmt_readonly.html>`__"""
+
+
+
+    row_trace: Awaitable[RowTracer | None]
+    """Called with cursor and row being returned.  You can
+    change the data that is returned or cause the row to be skipped
+    altogether.
+
+    If ``None`` then row tracing is disabled for this cursor.
+
+    .. seealso::
+
+      * :ref:`tracing`
+      * :ref:`rowtracer`
+      * :attr:`Connection.row_trace`"""
+
+    async def set_exec_trace(self, callable: ExecTracer | None) -> None:
+        """Sets the :attr:`execution tracer <Cursor.exec_trace>`"""
+        ...
+
+    async def set_row_trace(self, callable: RowTracer | None) -> None:
+        """Sets the :attr:`row tracer <Cursor.row_trace>`.  If ``None``
+        then row tracing is disabled for this cursor."""
+        ...
+
+    sql: Awaitable[str]
+    """The SQL being executed
+
+    Calls: `sqlite3_sql <https://sqlite.org/c3ref/expanded_sql.html>`__"""
+
+class AsyncSession:
+    """This represents a :class:`Session` when in async mode.
+
+    This object wraps a `sqlite3_session
+    <https://www.sqlite.org/session/session.html>`__ object."""
+
+    async def aclose(self) -> None:
+        """:async:
+
+        Async close"""
+        ...
+
+    async def attach(self, name: Optional[str] = None) -> None:
+        """Attach to a specific table, or all tables if no name is provided.  The
+        table does not need to exist at the time of the call.  You can call
+        this multiple times.
+
+        .. seealso::
+
+           :meth:`table_filter`
+
+        Calls: `sqlite3session_attach <https://sqlite.org/session/sqlite3session_attach.html>`__"""
+        ...
+
+    async def changeset(self) -> bytes:
+        """Produces a changeset of the session so far.
+
+        Calls: `sqlite3session_changeset <https://sqlite.org/session/sqlite3session_changeset.html>`__"""
+        ...
+
+    changeset_size: Awaitable[int]
+    """Returns upper limit on changeset size, but only if :meth:`Session.config`
+    was used to enable it.  Otherwise it will be zero.
+
+    Calls: `sqlite3session_changeset_size <https://sqlite.org/session/sqlite3session_changeset_size.html>`__"""
+
+    async def changeset_stream(self, output: SessionStreamOutput) -> None:
+        """Produces a changeset of the session so far in a stream
+
+        Calls: `sqlite3session_changeset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
+
+    async def config(self, op: int, *args: Any) -> Any:
+        """Set or get `configuration values <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__
+
+        For example :code:`session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1)` tells you
+        if size information is enabled.
+
+        Calls: `sqlite3session_object_config <https://sqlite.org/session/sqlite3session_object_config.html>`__"""
+        ...
+
+    async def diff(self, from_schema: str, table: str) -> None:
+        """Loads the changes necessary to update the named ``table`` in the attached database
+        ``from_schema`` to match the same named table in the database this session is
+        attached to.
+
+        See the :ref:`example <example_session_diff>`.
+
+        .. note::
+
+          You must use :meth:`attach` (or use :meth:`table_filter`) to attach to
+          the table before running this method otherwise nothing is recorded.
+
+        Calls: `sqlite3session_diff <https://sqlite.org/session/sqlite3session_diff.html>`__"""
+        ...
+
+    enabled: Awaitable[bool]
+    """Get or change if this session is recording changes.  Disabling only
+    stops recording rows not already part of the changeset.
+
+    Calls: `sqlite3session_enable <https://sqlite.org/session/sqlite3session_enable.html>`__"""
+
+    indirect: Awaitable[bool]
+    """Get or change if this session is in indirect mode
+
+    Calls: `sqlite3session_indirect <https://sqlite.org/session/sqlite3session_indirect.html>`__"""
+
+    async def __init__(self, db: Connection, schema: str):
+        """Starts a new session.
+
+        :param connection: Which database to operate on
+        :param schema: `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+
+        Calls: `sqlite3session_create <https://sqlite.org/session/sqlite3session_create.html>`__"""
+        ...
+
+    is_empty: Awaitable[bool]
+    """True if no changes have been recorded.
+
+    Calls: `sqlite3session_isempty <https://sqlite.org/session/sqlite3session_isempty.html>`__"""
+
+    memory_used: Awaitable[int]
+    """How many bytes of memory have been used to record session changes.
+
+    Calls: `sqlite3session_memory_used <https://sqlite.org/session/sqlite3session_memory_used.html>`__"""
+
+    async def patchset(self) -> bytes:
+        """Produces a patchset of the session so far.  Patchsets do not include
+        before values of changes, making them smaller, but also harder to detect
+        conflicts.
+
+        Calls: `sqlite3session_patchset <https://sqlite.org/session/sqlite3session_patchset.html>`__"""
+        ...
+
+    async def patchset_stream(self, output: SessionStreamOutput) -> None:
+        """Produces a patchset of the session so far in a stream
+
+        Calls: `sqlite3session_patchset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
+    async def table_filter(self, callback: Callable[[str], bool]) -> None:
+        """Register a callback that says if changes to the named table should be
+        recorded.  If your callback has an exception then ``False`` is
+        returned.
+
+        .. seealso::
+
+          :meth:`attach`
+
+        Calls: `sqlite3session_table_filter <https://sqlite.org/session/sqlite3session_table_filter.html>`__"""
+        ...
+
 
