@@ -34,6 +34,15 @@ rst_prolog = """
 .. |trio| replace:: :external+trio:doc:`trio <index>`
 
 .. |aiosqlite| replace:: `aiosqlite <https://aiosqlite.omnilib.dev/en/stable/>`__
+
+.. |badge-async-sync| replace::  :ref:`Sync only <badge_async_sync>`
+
+.. |badge-async-async| replace::  :ref:`Async only <badge_async_async>`
+
+.. |badge-async-dual| replace::  :ref:`Sync / Async <badge_async_dual>`
+
+.. |badge-async-value| replace::  :ref:`Value <badge_async_value>`
+
 """
 
 
