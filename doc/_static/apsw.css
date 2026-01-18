@@ -20,3 +20,54 @@
     text-align: right;
 	font: fixed;
 }
+
+/* async badge stuff - unfortunately it isn't possible to have a
+   generic badge class */
+a.reference.internal[href*="#badge-async-sync"],
+a.reference.internal[href*="#badge-async-async"],
+a.reference.internal[href*="#badge-async-dual"],
+a.reference.internal[href*="#badge-async-value"]
+{
+  float: right;
+  margin: 0 0 0.5em 1em;
+  padding: 0.15em 0.6em;
+  font-size: 0.85em;
+  font-weight: 600;
+  border-radius: 0.4em;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: #ffe680;
+  border: 1px solid #e6c200;
+}
+
+/* undecided about making them different colours */
+a.reference.internal[href*="#badge-async-sync"] {
+	color: #1e5aa7;
+}
+
+/* tooltip testing */
+@media (hover: hover)  {
+	a.reference.internal[href*="#badge-async-sync"]::after {
+	content: "This can only be called when the object is in asynchronous mode";
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    background: #333;
+    color: #fff;
+    padding: 0.4em 0.6em;
+    border-radius: 0.3em;
+    font-size: 0.75em;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity 0.15s ease-in-out;
+    z-index: 1000;
+	}
+
+	a.reference.internal[href*="#badge-async-sync"]::hover::after {
+		opacity: 1;
+	}
+
+}
+

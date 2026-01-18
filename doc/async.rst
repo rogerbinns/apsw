@@ -131,7 +131,7 @@ You can use :meth:`Connection.async_run` to run functions in the
 async Connection worker thread.
 
 Attributes
-!!!!!!!!!!
+==========
 
 Some SQLite functions are provided in APSW as attributes such as
 :attr:`Connection.authorizer`.  For an async connection, you will need
@@ -148,6 +148,42 @@ To set them, you will need to use ``setattr`` nin the worker thread.
     await connection.async_run(setattr, connection, "authorizer", my_auth)
 
 The type stubs will make this clear to your IDE and type checker.
+
+API results
+===========
+
+Each API has an indicator of its behaviour in sync and async modes.
+
+.. _badge_async_sync:
+
+Sync only
+!!!!!!!!!
+
+This can only be called when the object is in sync mode, and will
+provide the result directly.
+
+.. _badge_async_async:
+
+Async only
+!!!!!!!!!!
+
+This  can only be called when the object is in async mode, and will
+provide an awaitable result.
+
+.. _badge_async_dual:
+
+Sync / Async
+!!!!!!!!!!!!
+
+You get a direct result in sync mode, and an awaitable result in
+async mode.
+
+.. _badge_async_value:
+
+Value
+!!!!!
+
+You get a direct result in sync or async mode.
 
 Callbacks
 =========

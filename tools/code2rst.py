@@ -241,9 +241,9 @@ def do_methods():
             dec = re.sub(r"^(\.\.\s+(method|attribute)::\s+)()", r"\1" + curclass + ".", dec)
         op.append(dec)
         if curclass in ASYNCABLE:
+            # DO THIS BETTER - it also wipes out :static: etc in d
             am = async_category(curclass, k, ["attribute", "function"]["method::" in dec])
-            op.append(f"  |badge-async-{am}|")
-            op.append("")
+            op.extend(["", f"  |badge-async-{am}|", ""])
         op.extend(d)
         op.append("")
         op.extend(fixup(op, saop))
