@@ -196,7 +196,9 @@ Sync object
     A direct result will be provided
 
 Async object
-    You will need to ``await`` the result when ready
+    You will need to ``await`` the result when ready.  When objects
+    are returned like :class:`Cursor`, :class:`Blob`, :class:`Backup`
+    etc, they will also be in async mode.`
 
 .. _badge_async_value:
 
