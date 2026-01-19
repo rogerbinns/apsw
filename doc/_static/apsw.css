@@ -1,4 +1,4 @@
-/* setting line height makes the unicode box drawing characters have spacing
+/* default line height makes the unicode box drawing characters have spacing
    between lines which looks ugly */
 .rst-content div.highlight-output div.highlight pre {
 	line-height: normal;
@@ -11,63 +11,61 @@
 	white-space: normal
 }
 
+/* prevent wrapping in code sections */
 .rst-content code.literal {
 	white-space: nowrap;
 }
 
+/* makes numbers in benchmark on async page be right aligned */
 .aiobench-table td:not(:first-child),
 .aiobench-table th:not(:first-child) {
-    text-align: right;
+	text-align: right;
 	font: fixed;
 }
 
 /* async badge stuff - unfortunately it isn't possible to have a
-   generic badge class */
+   generic badge class so we have to select all 4 each time.
+
+   the contents are the joint work of claude, chatgpt, and
+   gemini merged by me
+*/
 a.reference.internal[href*="#badge-async-sync"],
 a.reference.internal[href*="#badge-async-async"],
 a.reference.internal[href*="#badge-async-dual"],
-a.reference.internal[href*="#badge-async-value"]
-{
-  float: right;
-  margin: 0 0 0.5em 1em;
-  padding: 0.15em 0.6em;
-  font-size: 0.85em;
-  font-weight: 600;
-  border-radius: 0.4em;
-  text-decoration: none;
-  white-space: nowrap;
-  background-color: #ffe680;
-  border: 1px solid #e6c200;
+a.reference.internal[href*="#badge-async-value"] {
+	float: right;
+	margin: 0 0 0.6em 1.2em;
+	padding: 0.25em 0.8em;
+	font-size: 0.75rem;
+	font-weight: 800;
+	line-height: 1.2;
+	letter-spacing: 0.05em;
+	border-radius: 2em;
+	white-space: nowrap;
+	text-decoration: none;
+	color: #5c4d00;
+	background: linear-gradient(to bottom, #fff5cc 0%, #ffe680 100%);
+	border: 1px solid #d4b100;
+	box-shadow:
+		0 1px 2px rgba(0, 0, 0, 0.1),
+		inset 0 1px 0 rgba(255, 255, 255, 0.4);
+	transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
-/* undecided about making them different colours */
-a.reference.internal[href*="#badge-async-sync"] {
-	color: #1e5aa7;
+
+a.reference.internal[href*="#badge-async-sync"]:hover,
+a.reference.internal[href*="#badge-async-async"]:hover,
+a.reference.internal[href*="#badge-async-dual"]:hover,
+a.reference.internal[href*="#badge-async-value"]:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+	background: linear-gradient(to bottom, #fff9dd, #ffed99);
 }
 
-/* tooltip testing */
-@media (hover: hover)  {
-	a.reference.internal[href*="#badge-async-sync"]::after {
-	content: "This can only be called when the object is in asynchronous mode";
-    position: absolute;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    background: #333;
-    color: #fff;
-    padding: 0.4em 0.6em;
-    border-radius: 0.3em;
-    font-size: 0.75em;
-    white-space: nowrap;
-    pointer-events: none;
-    transition: opacity 0.15s ease-in-out;
-    z-index: 1000;
-	}
-
-	a.reference.internal[href*="#badge-async-sync"]::hover::after {
-		opacity: 1;
-	}
-
+a.reference.internal[href*="#badge-async-sync"]:active,
+a.reference.internal[href*="#badge-async-async"]:active,
+a.reference.internal[href*="#badge-async-dual"]:active,
+a.reference.internal[href*="#badge-async-value"]:active {
+	transform: translateY(0);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
-
