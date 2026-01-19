@@ -24,6 +24,9 @@
         ]
     },
     "Connection": {
+        "async": [
+            "async_run"
+        ],
         "dual": [
             "filename",
             "filename_journal",
