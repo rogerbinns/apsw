@@ -241,12 +241,36 @@ def do_methods():
             dec = re.sub(r"^(\.\.\s+(method|attribute)::\s+)()", r"\1" + curclass + ".", dec)
         op.append(dec)
         if curclass in ASYNCABLE:
-            # DO THIS BETTER - it also wipes out :static: etc in d
-            am = async_category(curclass, k, ["attribute", "function"]["method::" in dec])
-            op.extend(["", f"  |badge-async-{am}|", ""])
-        op.extend(d)
+            op.extend(async_markup(curclass, k, ["attribute", "function"]["method::" in dec], d))
+        else:
+            op.extend(d)
         op.append("")
         op.extend(fixup(op, saop))
+
+
+def async_markup(klass: str, member: str, kind: Literal["function" | "attribute"], doclines: list[str]):
+    "returned revised body lines marked up with async behaviour"
+
+    # some we aren't going to markup
+    if {klass, member} == {"Connection", "as_async"}:
+        return doclines
+
+    res = []
+
+    for line in doclines:
+        if line.strip():
+            indent = line[: len(line) - len(line.lstrip())]
+            break
+
+    while doclines[0].strip().startswith(":"):
+        res.append(doclines[0])
+        doclines = doclines[1:]
+
+    am = async_category(klass, member, kind)
+    res.extend(["", f"{indent}|badge-async-{am}|", ""])
+    res.extend(doclines)
+
+    return res
 
 
 # op is current output, integrate is unindented lines that need to be
