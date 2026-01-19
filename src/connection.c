@@ -770,7 +770,7 @@ finally:
 }
 
 /** .. method:: as_async(*args, **kwargs) -> Awaitable[AsyncConnection]
-  :staticmethod:
+  :classmethod:
 
   Uses the :attr:`async_controller` to start a :class:`Connection`
   with the parameters in a background worker thread.  The resulting
@@ -835,9 +835,9 @@ error:
   return NULL;
 }
 
-/** .. method:: async_run(call: Callable, *args, **kwargs) -> Awaitable[Any]
+/** .. method:: async_run(call: Callable, /, *args, **kwargs) -> Any
 
-  Calls with the provided arguments in the async worker thread for this
+  Calls ``call`` with the provided arguments in the async worker thread for this
   connection.
 */
 static PyObject *
