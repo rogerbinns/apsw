@@ -153,37 +153,62 @@ API results
 ===========
 
 Each API has an indicator of its behaviour in sync and async modes.
+You can find out if an object is in async mode by checking its
+corresponding :attr:`Connection.is_async`.
 
 .. _badge_async_sync:
+
+|badge-async-sync|
 
 Sync only
 !!!!!!!!!
 
-This can only be called when the object is in sync mode, and will
-provide the result directly.
+Sync object
+    A direct result will be provided
+Async object
+    A :exc:`TypeError` will be raised.  There may be an async
+    equivalent such as ``aclose`` instead of ``close``, or you may
+    need ``async with`` instead of ``with``, ``async for`` instead of
+    ``for``
 
 .. _badge_async_async:
+
+ |badge-async-async|
 
 Async only
 !!!!!!!!!!
 
-This  can only be called when the object is in async mode, and will
-provide an awaitable result.
+Sync object
+    A :exc:`TypeError` will be raised. Omit the leasing ``async`` and
+    use plain ``with`` and ``for``.  There may be a sync equivalent
+    without a leasing ``a``.
+Async object
+    You will need to ``await`` the result when ready
 
 .. _badge_async_dual:
+
+ |badge-async-dual|
 
 Sync / Async
 !!!!!!!!!!!!
 
-You get a direct result in sync mode, and an awaitable result in
-async mode.
+Sync object
+    A direct result will be provided
+
+Async object
+    You will need to ``await`` the result when ready
 
 .. _badge_async_value:
+
+ |badge-async-value|
 
 Value
 !!!!!
 
-You get a direct result in sync or async mode.
+Sync object
+    A direct result will be provided
+Async object
+    A direct result will be provided.  Do not ``await``` it.
 
 Callbacks
 =========
