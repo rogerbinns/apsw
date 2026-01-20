@@ -108,7 +108,7 @@ whatever is returned is returned as a result row for the query"""
 
 ExecTracer = Callable[[Cursor, str, Optional[Bindings]], bool]
 """Execution tracers are called with the cursor, sql query text, and the bindings
-used.  Return False/None to abort execution, or True to continue"""
+used.  Return False to abort execution, or True to continue"""
 
 ConvertBinding = Callable[[Cursor, int, Any], SQLiteValue]
 """Called with a cursor, parameter number, and value to convert
