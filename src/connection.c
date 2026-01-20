@@ -935,7 +935,7 @@ error:
   return NULL;
 }
 
-/** .. method:: backup(databasename: str, sourceconnection: Connection, sourcedatabasename: str)  -> Backup
+/** .. method:: backup(databasename: str, sourceconnection: Connection | AsyncConnection, sourcedatabasename: str)  -> Backup
 
    Opens a :ref:`backup object <Backup>`.  All data will be copied from source
    database to this database.
@@ -4879,7 +4879,7 @@ exit:
   Py_RETURN_FALSE;
 }
 
-/** .. method:: __aenter__() -> Connection
+/** .. method:: __aenter__() -> Self
 
   Async version of :meth:`__enter__` context manager.
 */

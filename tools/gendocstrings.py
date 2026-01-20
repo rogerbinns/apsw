@@ -591,7 +591,7 @@ def do_argparse(item):
             if param["default"]:
                 breakpoint()
                 pass
-        elif param["type"] == "Connection":
+        elif param["type"] in ("Connection", "Connection | AsyncConnection"):
             type = "Connection *"
             kind = "Connection"
             if param["default"]:
@@ -803,12 +803,29 @@ def generate_typestubs(items: list[dict]) -> None:
                     print(fmt_docstring(item["doc"], indent=f"{ baseindent }        "), file=out)
                     print(f"{ baseindent }        ...", file=out)
 
-                if asyncable and async_category(klass, name, "function") in {"async", "dual", "value"}:
+                if (
+                    asyncable
+                    and async_category(klass, name, "function") in {"async", "dual", "value"}
+                    and (klass, name) not in (("Connection", "as_async"),)
+                ):
                     if klass in {"Changeset"}:
                         print(f"{ baseindent}    @staticmethod", file=async_out)
                     else:
                         if not signature.startswith("(self"):
                             signature = "(self" + (", " if signature[1] != ")" else "") + signature[1:]
+
+
+                    if name != "__init__":
+                        assert "->" in signature, f"{klass=} {name=} {signature=}"
+
+                        returns = signature.split("->")[-1].strip()
+
+                        if  returns in ASYNCABLE:
+                            signature = signature.split("->")[0] + " -> " + f"Async{returns}"
+                        else:
+                            for a in ASYNCABLE:
+                                assert a not in returns, f"{klass=} {name=} {signature=}"
+
                     print(f"{ baseindent }    async def { name }{ signature }:", file=async_out)
                     print(fmt_docstring(item["doc"], indent=f"{ baseindent }        "), file=async_out)
                     print(f"{ baseindent }        ...", file=async_out)

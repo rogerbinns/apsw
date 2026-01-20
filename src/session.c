@@ -1644,7 +1644,7 @@ error:
   return NULL;
 }
 
-/** .. method:: apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None
+/** .. method:: apply(changeset: ChangesetInput, db: Connection | AsyncConnection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None
 
   Applies a changeset to a database.
 
@@ -2153,7 +2153,7 @@ APSWChangesetBuilder_add_change(PyObject *self_, PyObject *const *fast_args, Py_
   Py_RETURN_NONE;
 }
 
-/** .. method:: schema(db: Connection, schema: str) -> None
+/** .. method:: schema(db: Connection | AsyncConnection, schema: str) -> None
 
   Ensures the changesets comply with the tables in the database
 

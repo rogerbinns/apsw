@@ -1727,7 +1727,7 @@ APSWCursor_iter(PyObject *self_)
   return Py_NewRef(self_);
 }
 
-/** .. method:: __aiter__() -> Cursor
+/** .. method:: __aiter__() -> Self
 
     AsyncCursors are async iterators
 */
