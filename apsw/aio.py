@@ -280,7 +280,7 @@ class Trio:
 
     def send(self, call):
         "Enqueues call to worker thread"
-        future = _Future(trio.lowlevel.current_trio_token(), trio.Event(), call, trio.Cancelled)
+        future = _Future(trio.Event(), call, trio.Cancelled)
         if (this_deadline := deadline.get()) is None:
             this_deadline = trio.current_effective_deadline()
         future._set_deadline(this_deadline, trio.current_time)
@@ -318,7 +318,7 @@ class Trio:
                         future._is_exception = True
 
             # this ensures completion even if cancelled
-            future._token.run_sync_soon(future._event.set)
+            self.token.run_sync_soon(future._event.set)
 
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
@@ -328,7 +328,7 @@ class Trio:
                 raise Cancelled("Cancelled in async_run_coro")
             if future._monotonic_exceeded():
                 raise trio.TooSlowError("deadline exceeded in async_run_coro")
-            return trio.from_thread.run(_trio_loop_run_coro, coro, future._deadline_loop, trio_token=future._token)
+            return trio.from_thread.run(_trio_loop_run_coro, coro, future._deadline_loop, trio_token=self.token)
         finally:
             coro.close()
 
@@ -338,6 +338,7 @@ class Trio:
 
         apsw.async_run_coro.set(self.async_run_coro)
         self.queue = queue.SimpleQueue()
+        self.token = trio.lowlevel.current_trio_token()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
@@ -356,7 +357,7 @@ class AnyIO:
 
     def send(self, call):
         "Enqueues call to worker thread"
-        future = _Future(anyio.lowlevel.current_token(), anyio.Event(), call, self.cancelled_exc_class)
+        future = _Future(anyio.Event(), call, self.cancelled_exc_class)
         if (this_deadline := deadline.get()) is None:
             this_deadline = anyio.current_effective_deadline()
         future._set_deadline(this_deadline, anyio.current_time)
@@ -393,7 +394,7 @@ class AnyIO:
                         future._is_exception = True
 
             # this ensures completion even if cancelled
-            anyio.from_thread.run_sync(future._event.set, token=future._token)
+            anyio.from_thread.run_sync(future._event.set, token=self.token)
 
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
@@ -403,7 +404,7 @@ class AnyIO:
                 raise Cancelled("Cancelled in async_run_coro")
             if future._monotonic_exceeded():
                 raise TimeoutError("deadline exceeded in async_run_coro")
-            return anyio.from_thread.run(_anyio_loop_run_coro, coro, future._deadline_loop, token=future._token)
+            return anyio.from_thread.run(_anyio_loop_run_coro, coro, future._deadline_loop, token=self.token)
         finally:
             coro.close()
 
@@ -413,6 +414,7 @@ class AnyIO:
 
         apsw.async_run_coro.set(self.async_run_coro)
         self.queue = queue.SimpleQueue()
+        self.token = anyio.lowlevel.current_token()
         self.cancelled_exc_class = anyio.get_cancelled_exc_class()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
@@ -431,8 +433,6 @@ class _Future:
     # public AsyncResult methods
 
     __slots__ = (
-        # needed to call back into trio/anyio
-        "_token",
         # Event used to signal ready
         "_event",
         # result value or exception
@@ -451,10 +451,9 @@ class _Future:
         "_cancelled_exc_class"
     )
 
-    def __init__(self, token, event, call, cancelled_exc_class):
+    def __init__(self, event, call, cancelled_exc_class):
         self._is_exception = False
         self._is_cancelled = False
-        self._token = token
         self._event = event
         self._call = call
         self._deadline_loop = None
