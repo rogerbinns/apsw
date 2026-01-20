@@ -2942,7 +2942,7 @@ class FTS5Query(unittest.TestCase):
         self.assertEqual(applicable_columns, {"COLa", "አማርኛ"})
 
 
-def extended_testing_file(name: str) -> typing.Union[pathlib.Path, None]:
+def extended_testing_file(name: str) -> pathlib.Path | None:
     "Returns path if found"
 
     # bigger data files used for testing are not shipped with apsw or part

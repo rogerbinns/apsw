@@ -22,7 +22,8 @@ import traceback
 import types
 from dataclasses import dataclass, is_dataclass, make_dataclass
 from fractions import Fraction
-from typing import Any, Callable, Generator, Iterable, Iterator, Literal, Sequence, TextIO, Union
+from typing import Any, Literal, TextIO
+from collections.abc import Callable, Iterator, Sequence
 from types import NoneType
 
 import apsw
@@ -126,7 +127,7 @@ class DataClassRowFactory:
             return bytes
         if "REAL" in t or "FLOA" in t or "DOUB" in t:
             return float
-        return Union[float, int]
+        return float | int
 
     def __call__(self, cursor: apsw.Cursor, row: apsw.SQLiteValues) -> Any:
         """What the row tracer calls

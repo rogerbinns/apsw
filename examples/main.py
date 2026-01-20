@@ -5,7 +5,7 @@
 # then you must include this future annotations line first.
 from __future__ import annotations
 
-from typing import Optional, Iterator, Any
+from typing import Iterator, Any
 
 import os
 import sys
@@ -220,7 +220,7 @@ if check != "ok":
 def my_tracer(
     cursor: apsw.Cursor,
     statement: str,
-    bindings: Optional[apsw.Bindings],
+    bindings: apsw.Bindings | None,
 ) -> bool:
     "Called just before executing each statement"
     print("SQL:", statement.strip())
@@ -786,10 +786,10 @@ with destination.backup("main", connection, "main") as backup:
 
 def auth(
     operation: int,
-    p1: Optional[str],
-    p2: Optional[str],
-    db_name: Optional[str],
-    trigger_or_view: Optional[str],
+    p1: str | None,
+    p2: str | None,
+    db_name: str | None,
+    trigger_or_view: str | None,
 ) -> int:
     """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
     SQLITE_IGNORE"""

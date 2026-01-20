@@ -45,15 +45,10 @@ def process(module: ast.Module, source: str) -> list[tuple[str, str, str]]:
 
 # stuff defined in standard library
 std_typing = {
-    "Union",
-    "Callable",
     "Tuple",
     "Dict",
     "List",
-    "Optional",
     "Any",
-    "Sequence",
-    "Iterable",
     "Protocol",
 }
 
@@ -61,6 +56,9 @@ std_typing = {
 std_collections_abc = {
     "Buffer",
     "Mapping",
+    "Callable",
+    "Sequence",
+    "Iterable",
 }
 
 std_other = {"None", "int", "float", "bytes", "str", "dict", "tuple", "bool", "list", "memoryview"}

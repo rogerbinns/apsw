@@ -11117,7 +11117,7 @@ shell.write(shell.stdout, "hello world\\n")
             self.assertEqual(a["three"], str)
             self.assertEqual(a["four"], bytes)
             self.assertEqual(a["five"], float)
-            self.assertEqual(a["six"], typing.Union[float, int])
+            self.assertEqual(a["six"], float |  int)
 
     def testExtTypesConverter(self) -> None:
         "apsw.ext.TypesConverterCursorFactory"
