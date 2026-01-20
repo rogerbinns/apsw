@@ -777,11 +777,6 @@ class Backup:
 
 
 
-    def afinish(self) -> None:
-        """:async:
-
-        Async version of meth:`finish`"""
-        ...
 
     def close(self, force: bool = False) -> None:
         """Does the same thing as :meth:`~Backup.finish`.  This extra api is
@@ -1034,7 +1029,7 @@ class ChangesetBuilder:
         Calls: `sqlite3changegroup_output_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
         ...
 
-    def schema(self, db: Connection, schema: str) -> None:
+    def schema(self, db: Connection | AsyncConnection, schema: str) -> None:
         """Ensures the changesets comply with the tables in the database
 
         :param db: Connection to consult
@@ -1060,7 +1055,7 @@ class Changeset:
     usage, or where changesets are larger than 2GB (the SQLite limit)."""
 
     @staticmethod
-    def apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None:
+    def apply(changeset: ChangesetInput, db: Connection | AsyncConnection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None:
         """Applies a changeset to a database.
 
         :param source: The changeset either as the bytes, or a stream
@@ -1161,7 +1156,7 @@ class Connection:
 
 
     def as_async(self, *args, **kwargs) -> Awaitable[AsyncConnection]:
-        """:staticmethod:
+        """:classmethod:
 
         Uses the :attr:`async_controller` to start a :class:`Connection`
         with the parameters in a background worker thread.  The resulting
@@ -1176,12 +1171,6 @@ class Connection:
     async_controller: AsyncConnectionController
     """The controller in effect in async mode."""
 
-    def async_run(self, call, *args, **kwargs) -> Any:
-        """:async:
-
-        Calls with the provided arguments in the async worker thread for this
-        connection."""
-        ...
 
     authorizer: Optional[Authorizer]
     """While `preparing <https://sqlite.org/c3ref/prepare.html>`_
@@ -1231,7 +1220,7 @@ class Connection:
         Calls: `sqlite3_autovacuum_pages <https://sqlite.org/c3ref/autovacuum_pages.html>`__"""
         ...
 
-    def backup(self, databasename: str, sourceconnection: Connection, sourcedatabasename: str)  -> Backup:
+    def backup(self, databasename: str, sourceconnection: Connection | AsyncConnection, sourcedatabasename: str)  -> Backup:
         """Opens a :ref:`backup object <Backup>`.  All data will be copied from source
         database to this database.
 
@@ -5784,27 +5773,19 @@ class AsyncBackup:
     You create a backup instance by calling :meth:`Connection.backup`."""
 
     async def aclose(self, force: bool = False) -> None:
-        """:async:
-
-        Async version of :meth:`close`"""
+        """Async version of :meth:`close`"""
         ...
 
     async def __aenter__(self) -> Self:
-        """:async:
-
-        Async context manager enter"""
+        """Async context manager enter"""
         ...
 
     async def __aexit__(self, etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None:
-        """:async:
-
-        Async context manager exit"""
+        """Async context manager exit"""
         ...
 
     async def afinish(self) -> None:
-        """:async:
-
-        Async version of meth:`finish`"""
+        """Async version of meth:`finish`"""
         ...
 
 
@@ -5866,21 +5847,15 @@ class AsyncBlob:
     See the :ref:`example <example_blob_io>`."""
 
     async def aclose(self, force: bool = False) -> None:
-        """:async:
-
-        Async version of :meth:`close`"""
+        """Async version of :meth:`close`"""
         ...
 
     async def __aenter__(self) -> Self:
-        """:async:
-
-        Async context manager enter"""
+        """Async context manager enter"""
         ...
 
     async def __aexit__(self, etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> None:
-        """:async:
-
-        Async context manager exit"""
+        """Async context manager exit"""
         ...
 
 
@@ -5958,6 +5933,115 @@ class AsyncBlob:
         Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__"""
         ...
 
+class AsyncChangeset:
+    """This represents a :class:`Changeset` when in async mode.
+
+    Provides changeset (including patchset) related methods.  Note that
+    all methods are static (belong to the class).  There is no Changeset
+    object.   On input Changesets can be a :class:`collections.abc.Buffer`
+    (anything that resembles a sequence of bytes), or
+    :class:`SessionStreamInput` which provides the bytes in chunks from a
+    callback.
+
+    Output is bytes, or :class:`SessionStreamOutput` (chunks in a callback).
+
+    The streaming versions are useful when you are concerned about memory
+    usage, or where changesets are larger than 2GB (the SQLite limit)."""
+
+    @staticmethod
+    async def apply(changeset: ChangesetInput, db: Connection | AsyncConnection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None:
+        """Applies a changeset to a database.
+
+        :param source: The changeset either as the bytes, or a stream
+        :param db: The connection to make the change on
+        :param filter: Callback to determine if changes to a table are done
+        :param filter_change: Callback to determine if a particular change is made
+        :param conflict: Callback to handle a change that cannot be applied
+        :param flags: `API flags <https://www.sqlite.org/session/c_changesetapply_fknoaction.html>`__.
+        :param rebase: If ``True`` then return :class:`rebase <Rebaser>` information, else :class:`None`.
+
+        Filter
+        ------
+
+        Callback called with a table name, once per table that has a change.  It should return ``True``
+        if changes to that table should be applied, or ``False`` to ignore them.  If not supplied then
+        all tables have changes applied.
+
+        Filter Change
+        -------------
+
+        Callback called with each :class:`TableChange`.  It should return
+        ``True`` if the change should be applied, or ``False`` to ignore it.
+        If not supplied then all changes are applied.
+
+        **Note** You can only supply either ``filter`` or ``filter_change`` but not both.
+
+        Conflict
+        --------
+
+        When a change cannot be applied the conflict handler determines what
+        to do.  It is called with a `conflict reason
+        <https://www.sqlite.org/session/c_changeset_conflict.html>`__ as the
+        first parameter, and a :class:`TableChange` as the second.  Possible
+        conflicts are `described here
+        <https://sqlite.org/sessionintro.html#conflicts>`__.
+
+        It should return the `action to take <https://www.sqlite.org/session/c_changeset_abort.html>`__.
+
+        If not supplied or on error, ``SQLITE_CHANGESET_ABORT`` is returned.
+
+        See the :ref:`example <example_applying>`.
+
+        Calls:
+          * `sqlite3changeset_apply_v2 <https://sqlite.org/session/sqlite3changeset_apply.html>`__
+          * `sqlite3changeset_apply_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
+          * `sqlite3changeset_apply_v3 <https://sqlite.org/session/sqlite3changeset_apply.html>`__
+          * `sqlite3changeset_apply_v3_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
+    @staticmethod
+    async def concat(A: Buffer, B: Buffer) -> bytes:
+        """Returns combined changesets
+
+        Calls: `sqlite3changeset_concat <https://sqlite.org/session/sqlite3changeset_concat.html>`__"""
+        ...
+
+    @staticmethod
+    async def concat_stream(A: SessionStreamInput, B: SessionStreamInput, output: SessionStreamOutput) -> None:
+        """Streaming concatenate two changesets
+
+        Calls: `sqlite3changeset_concat_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
+    @staticmethod
+    async def invert(changeset: Buffer) -> bytes:
+        """Produces a changeset that reverses the effect of
+        the supplied changeset.
+
+        Calls: `sqlite3changeset_invert <https://sqlite.org/session/sqlite3changeset_invert.html>`__"""
+        ...
+
+    @staticmethod
+    async def invert_stream(changeset: SessionStreamInput, output: SessionStreamOutput) -> None:
+        """Streaming reverses the effect of the supplied changeset.
+
+        Calls: `sqlite3changeset_invert_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
+    @staticmethod
+    async def iter(changeset: ChangesetInput, *, flags: int = 0) -> Iterator[TableChange]:
+        """Provides an iterator over a changeset.  You can supply the changeset as
+         the bytes, or streamed via a callable.
+
+         If flags is non-zero them the ``v2`` API is used (marked as experimental)
+
+        Calls:
+          * `sqlite3changeset_start <https://sqlite.org/session/sqlite3changeset_start.html>`__
+          * `sqlite3changeset_start_v2 <https://sqlite.org/session/sqlite3changeset_start.html>`__
+          * `sqlite3changeset_start_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
+          * `sqlite3changeset_start_v2_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
+        ...
+
 class AsyncConnection:
     """This represents a :class:`Connection` when in async mode.
 
@@ -5965,45 +6049,23 @@ class AsyncConnection:
     <https://sqlite.org/c3ref/sqlite3.html>`_."""
 
     async def aclose(self, force: bool = False) -> None:
-        """:async:
-
-        The async version of :meth:`close`"""
+        """The async version of :meth:`close`"""
         ...
 
-    async def __aenter__(self) -> Connection:
-        """:async:
-
-        Async version of :meth:`__enter__` context
-        manager.  You must use this with async connections."""
+    async def __aenter__(self) -> Self:
+        """Async version of :meth:`__enter__` context manager."""
         ...
 
     async def __aexit__(self, etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None:
-        """:async:
-
-        Async version of :meth:`__exit__` context manager.  You must use this
-        with async connections."""
+        """Async version of :meth:`__exit__` context manager."""
         ...
 
-    async def as_async(self, *args, **kwargs) -> Awaitable[AsyncConnection]:
-        """:staticmethod:
-
-        Uses the :attr:`async_controller` to start a :class:`Connection`
-        with the parameters in a background worker thread.  The resulting
-        :class:`AsyncConnection` is the same as regular :class:`Connection`
-        but with most methods and attributes and related objects configured
-        for async operation.
-
-        See :mod:`apsw.aio` for some controller implementations and :doc:`async`
-        for more details."""
-        ...
 
     async_controller: Awaitable[AsyncConnectionController]
     """The controller in effect in async mode."""
 
-    async def async_run(self, call, *args, **kwargs) -> Any:
-        """:async:
-
-        Calls with the provided arguments in the async worker thread for this
+    async def async_run(self, call: Callable, /, *args, **kwargs) -> Any:
+        """Calls ``call`` with the provided arguments in the async worker thread for this
         connection."""
         ...
 
@@ -6055,7 +6117,7 @@ class AsyncConnection:
         Calls: `sqlite3_autovacuum_pages <https://sqlite.org/c3ref/autovacuum_pages.html>`__"""
         ...
 
-    async def backup(self, databasename: str, sourceconnection: Connection, sourcedatabasename: str)  -> Backup:
+    async def backup(self, databasename: str, sourceconnection: Connection | AsyncConnection, sourcedatabasename: str)   -> AsyncBackup:
         """Opens a :ref:`backup object <Backup>`.  All data will be copied from source
         database to this database.
 
@@ -6073,7 +6135,7 @@ class AsyncConnection:
         Calls: `sqlite3_backup_init <https://sqlite.org/c3ref/backup_finish.html#sqlite3backupinit>`__"""
         ...
 
-    async def blob_open(self, database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob:
+    async def blob_open(self, database: str, table: str, column: str, rowid: int, writeable: bool)   -> AsyncBlob:
         """Opens a blob for :ref:`incremental I/O <blobio>`.
 
         :param database: Name of the database.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__.
@@ -6395,7 +6457,7 @@ class AsyncConnection:
         Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__"""
         ...
 
-    async def cursor(self) -> Cursor:
+    async def cursor(self)  -> AsyncCursor:
         """Creates a new :class:`Cursor` object on this database.
 
         :rtype: :class:`Cursor`"""
@@ -6494,7 +6556,7 @@ class AsyncConnection:
       * :ref:`rowtracer`
       * :attr:`Cursor.exec_trace`"""
 
-    async def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
+    async def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1)  -> AsyncCursor:
         """Executes the statements using the supplied bindings.  Execution
         returns when the first row is available or all statements have
         completed.  (A cursor is automatically obtained).
@@ -6505,7 +6567,7 @@ class AsyncConnection:
         See :meth:`Cursor.execute` for more details, and the :ref:`example <example_executing_sql>`."""
         ...
 
-    async def executemany(self, statements: str, sequenceofbindings:Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
+    async def executemany(self, statements: str, sequenceofbindings:Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1)  -> AsyncCursor:
         """This method is for when you want to execute the same statements over a
         sequence of bindings, such as inserting into a database.  (A cursor is
         automatically obtained).
@@ -7207,21 +7269,15 @@ class AsyncCursor:
     """This represents a :class:`Cursor` when in async mode."""
 
     async def aclose(self, force: bool = False) -> None:
-        """:async:
-
-        Async version of :meth:`close`"""
+        """Async version of :meth:`close`"""
         ...
 
-    async def __aiter__(self) -> Cursor:
-        """:async:
-
-        Cursors are async iterators"""
+    async def __aiter__(self) -> Self:
+        """AsyncCursors are async iterators"""
         ...
 
     async def __anext__(self) -> Any:
-        """:async:
-
-        Cursors are iterators"""
+        """Cursors are iterators"""
         ...
 
     bindings_count: Awaitable[int]
@@ -7307,7 +7363,7 @@ class AsyncCursor:
       * :ref:`executiontracer`
       * :attr:`Connection.exec_trace`"""
 
-    async def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
+    async def execute(self, statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1)  -> AsyncCursor:
         """Executes the statements using the supplied bindings.  Execution
         returns when the first row is available or all statements have
         completed.
@@ -7340,7 +7396,7 @@ class AsyncCursor:
           * `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__"""
         ...
 
-    async def executemany(self, statements: str, sequenceofbindings: Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor:
+    async def executemany(self, statements: str, sequenceofbindings: Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1)  -> AsyncCursor:
         """This method is for when you want to execute the same statements over
         a sequence of bindings.  Conceptually it does this::
 
@@ -7403,7 +7459,7 @@ class AsyncCursor:
 
     Row tracers are not called when using this method."""
 
-    async def get_connection(self) -> Connection:
+    async def get_connection(self)  -> AsyncConnection:
         """Returns the :attr:`connection` this cursor is part of"""
         ...
 
@@ -7503,9 +7559,7 @@ class AsyncSession:
     <https://www.sqlite.org/session/session.html>`__ object."""
 
     async def aclose(self) -> None:
-        """:async:
-
-        Async close"""
+        """Async close"""
         ...
 
     async def attach(self, name: Optional[str] = None) -> None:
