@@ -706,12 +706,12 @@
 "as defined in :pep:`0343`.  The :meth:`~Backup.__exit__` method ensures that backup\n" \
 "is :meth:`finished <Backup.finish>`.\n" 
 
-#define  Backup_exit_DOC "Backup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]\n\n" \
+#define  Backup_exit_DOC "Backup.__exit__(etype: type[BaseException] | None, evalue: type[BaseException] | None, etraceback: types.TracebackType | None) -> bool\n\n" \
 "Implements context manager in conjunction with :meth:`~Backup.__enter__` ensuring\n" \
 "that the copy is :meth:`finished <Backup.finish>`.\n" 
 
 #define Backup_exit_KWNAMES "etype", "evalue", "etraceback"
-#define Backup_exit_USAGE "Backup.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]"
+#define Backup_exit_USAGE "Backup.__exit__(etype: type[BaseException] | None, evalue: type[BaseException] | None, etraceback: types.TracebackType | None) -> bool"
 
 #define Backup_exit_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
@@ -832,7 +832,7 @@
 "      blob.write(\"...\")\n" \
 "      res=blob.read(1024)\n" 
 
-#define  Blob_exit_DOC "Blob.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]\n\n" \
+#define  Blob_exit_DOC "Blob.__exit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool\n\n" \
 "Implements context manager in conjunction with\n" \
 ":meth:`~Blob.__enter__`.  Any exception that happened in the\n" \
 "*with* block is raised after closing the blob.\n" 
@@ -1058,7 +1058,7 @@
 } while(0)
 
 
-#define  Changeset_apply_DOC "Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None\n\n" \
+#define  Changeset_apply_DOC "Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Callable[[str], bool] | None = None, filter_change: Callable[[TableChange], bool] | None = None, conflict: Callable[[int,TableChange], int] | None = None, flags: int = 0, rebase: bool = False) -> bytes | None\n\n" \
 "Applies a changeset to a database.\n" \
 "\n" \
 ":param source: The changeset either as the bytes, or a stream\n" \
@@ -1108,7 +1108,7 @@
 "  * `sqlite3changeset_apply_v3_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__\n" 
 
 #define Changeset_apply_KWNAMES "changeset", "db", "filter", "filter_change", "conflict", "flags", "rebase"
-#define Changeset_apply_USAGE "Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None"
+#define Changeset_apply_USAGE "Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Callable[[str], bool] | None = None, filter_change: Callable[[TableChange], bool] | None = None, conflict: Callable[[int,TableChange], int] | None = None, flags: int = 0, rebase: bool = False) -> bytes | None"
 
 #define Changeset_apply_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(changeset), PyObject *)); \
@@ -1217,7 +1217,7 @@
 } while(0)
 
 
-#define  Connection_authorizer_DOC ":type: Optional[Authorizer]\n" \
+#define  Connection_authorizer_DOC ":type: Authorizer | None\n" \
 "\n" \
 "While `preparing <https://sqlite.org/c3ref/prepare.html>`_\n" \
 "statements, SQLite will call any defined authorizer to see if a\n" \
@@ -1247,7 +1247,7 @@
 "\n" \
 "Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__\n" 
 
-#define  Connection_autovacuum_pages_DOC "Connection.autovacuum_pages(callable: Optional[Callable[[str, int, int, int], int]]) -> None\n\n" \
+#define  Connection_autovacuum_pages_DOC "Connection.autovacuum_pages(callable: Callable[[str, int, int, int], int] | None) -> None\n\n" \
 "Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:\n" \
 "\n" \
 "* Database name: str. `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
@@ -1266,7 +1266,7 @@
 "Calls: `sqlite3_autovacuum_pages <https://sqlite.org/c3ref/autovacuum_pages.html>`__\n" 
 
 #define Connection_autovacuum_pages_KWNAMES "callable"
-#define Connection_autovacuum_pages_USAGE "Connection.autovacuum_pages(callable: Optional[Callable[[str, int, int, int], int]]) -> None"
+#define Connection_autovacuum_pages_USAGE "Connection.autovacuum_pages(callable: Callable[[str, int, int, int], int] | None) -> None"
 
 #define Connection_autovacuum_pages_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -1456,7 +1456,7 @@
 } while(0)
 
 
-#define  Connection_collation_needed_DOC "Connection.collation_needed(callable: Optional[Callable[[Connection, str], None]]) -> None\n\n" \
+#define  Connection_collation_needed_DOC "Connection.collation_needed(callable: Callable[[Connection, str], None] | None) -> None\n\n" \
 "*callable* will be called if a statement requires a `collation\n" \
 "<https://en.wikipedia.org/wiki/Collation>`_ that hasn't been\n" \
 "registered. Your callable will be passed two parameters. The first\n" \
@@ -1479,7 +1479,7 @@
 "Calls: `sqlite3_collation_needed <https://sqlite.org/c3ref/collation_needed.html>`__\n" 
 
 #define Connection_collation_needed_KWNAMES "callable"
-#define Connection_collation_needed_USAGE "Connection.collation_needed(callable: Optional[Callable[[Connection, str], None]]) -> None"
+#define Connection_collation_needed_USAGE "Connection.collation_needed(callable: Callable[[Connection, str], None] | None) -> None"
 
 #define Connection_collation_needed_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -1489,7 +1489,7 @@
 #define Connection_collation_needed_OLDNAME "collationneeded"
 #define Connection_collation_needed_OLDDOC Connection_collation_needed_USAGE "\n(Old less clear name collationneeded)"
 
-#define  Connection_column_metadata_DOC "Connection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]\n\n" \
+#define  Connection_column_metadata_DOC "Connection.column_metadata(dbname: str | None, table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]\n\n" \
 "`dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__, or None to search\n" \
 "all databases.\n" \
 "\n" \
@@ -1508,7 +1508,7 @@
 "Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__\n" 
 
 #define Connection_column_metadata_KWNAMES "dbname", "table_name", "column_name"
-#define Connection_column_metadata_USAGE "Connection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]"
+#define Connection_column_metadata_USAGE "Connection.column_metadata(dbname: str | None, table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]"
 
 #define Connection_column_metadata_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(dbname), const char *)); \
@@ -1543,7 +1543,7 @@
 "This connection value is used when the cursor does not set\n" \
 "its own value.  See :attr:`Cursor.convert_jsonb`\n" 
 
-#define  Connection_create_aggregate_function_DOC "Connection.create_aggregate_function(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None\n\n" \
+#define  Connection_create_aggregate_function_DOC "Connection.create_aggregate_function(name: str, factory: AggregateFactory | None, numargs: int = -1, *, flags: int = 0) -> None\n\n" \
 "Registers an aggregate function.  Aggregate functions operate on all\n" \
 "the relevant rows such as counting how many there are.\n" \
 "\n" \
@@ -1588,7 +1588,7 @@
 "Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__\n" 
 
 #define Connection_create_aggregate_function_KWNAMES "name", "factory", "numargs", "flags"
-#define Connection_create_aggregate_function_USAGE "Connection.create_aggregate_function(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None"
+#define Connection_create_aggregate_function_USAGE "Connection.create_aggregate_function(name: str, factory: AggregateFactory | None, numargs: int = -1, *, flags: int = 0) -> None"
 
 #define Connection_create_aggregate_function_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -1603,7 +1603,7 @@
 #define Connection_create_aggregate_function_OLDNAME "createaggregatefunction"
 #define Connection_create_aggregate_function_OLDDOC Connection_create_aggregate_function_USAGE "\n(Old less clear name createaggregatefunction)"
 
-#define  Connection_create_collation_DOC "Connection.create_collation(name: str, callback: Optional[Callable[[str, str], int]]) -> None\n\n" \
+#define  Connection_create_collation_DOC "Connection.create_collation(name: str, callback: Callable[[str, str], int] | None) -> None\n\n" \
 "You can control how SQLite sorts (termed `collation\n" \
 "<https://en.wikipedia.org/wiki/Collation>`_) when giving the\n" \
 "``COLLATE`` term to a `SELECT\n" \
@@ -1632,7 +1632,7 @@
 "Calls: `sqlite3_create_collation_v2 <https://sqlite.org/c3ref/create_collation.html>`__\n" 
 
 #define Connection_create_collation_KWNAMES "name", "callback"
-#define Connection_create_collation_USAGE "Connection.create_collation(name: str, callback: Optional[Callable[[str, str], int]]) -> None"
+#define Connection_create_collation_USAGE "Connection.create_collation(name: str, callback: Callable[[str, str], int] | None) -> None"
 
 #define Connection_create_collation_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -1643,7 +1643,7 @@
 #define Connection_create_collation_OLDNAME "createcollation"
 #define Connection_create_collation_OLDDOC Connection_create_collation_USAGE "\n(Old less clear name createcollation)"
 
-#define  Connection_create_module_DOC "Connection.create_module(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None\n\n" \
+#define  Connection_create_module_DOC "Connection.create_module(name: str, datasource: VTModule | None, *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None\n\n" \
 "Registers a virtual table, or drops it if *datasource* is *None*.\n" \
 "See :ref:`virtualtables` for details.\n" \
 "\n" \
@@ -1663,7 +1663,7 @@
 "Calls: `sqlite3_create_module_v2 <https://sqlite.org/c3ref/create_module.html>`__\n" 
 
 #define Connection_create_module_KWNAMES "name", "datasource", "use_bestindex_object", "use_no_change", "iVersion", "eponymous", "eponymous_only", "read_only"
-#define Connection_create_module_USAGE "Connection.create_module(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None"
+#define Connection_create_module_USAGE "Connection.create_module(name: str, datasource: VTModule | None, *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None"
 
 #define Connection_create_module_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -1686,7 +1686,7 @@
 #define Connection_create_module_OLDNAME "createmodule"
 #define Connection_create_module_OLDDOC Connection_create_module_USAGE "\n(Old less clear name createmodule)"
 
-#define  Connection_create_scalar_function_DOC "Connection.create_scalar_function(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None\n\n" \
+#define  Connection_create_scalar_function_DOC "Connection.create_scalar_function(name: str, callable: ScalarProtocol | None, numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None\n\n" \
 "Registers a scalar function.  Scalar functions operate on one set of parameters once.\n" \
 "\n" \
 ":param name: The string name of the function.  It should be less than 255 characters\n" \
@@ -1721,7 +1721,7 @@
 "Calls: `sqlite3_create_function_v2 <https://sqlite.org/c3ref/create_function.html>`__\n" 
 
 #define Connection_create_scalar_function_KWNAMES "name", "callable", "numargs", "deterministic", "flags"
-#define Connection_create_scalar_function_USAGE "Connection.create_scalar_function(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None"
+#define Connection_create_scalar_function_USAGE "Connection.create_scalar_function(name: str, callable: ScalarProtocol | None, numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None"
 
 #define Connection_create_scalar_function_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -1738,7 +1738,7 @@
 #define Connection_create_scalar_function_OLDNAME "createscalarfunction"
 #define Connection_create_scalar_function_OLDDOC Connection_create_scalar_function_USAGE "\n(Old less clear name createscalarfunction)"
 
-#define  Connection_create_window_function_DOC "Connection.create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None\n\n" \
+#define  Connection_create_window_function_DOC "Connection.create_window_function(name:str, factory: WindowFactory | None, numargs: int =-1, *, flags: int = 0) -> None\n\n" \
 "Registers a `window function\n" \
 "<https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__\n" \
 "\n" \
@@ -1767,7 +1767,7 @@
 "Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__\n" 
 
 #define Connection_create_window_function_KWNAMES "name", "factory", "numargs", "flags"
-#define Connection_create_window_function_USAGE "Connection.create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None"
+#define Connection_create_window_function_USAGE "Connection.create_window_function(name:str, factory: WindowFactory | None, numargs: int =-1, *, flags: int = 0) -> None"
 
 #define Connection_create_window_function_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -1797,7 +1797,7 @@
 "that are actually called.  These are likely to be `execute`,\n" \
 "`executemany`, `close` etc.\n" 
 
-#define  Connection_data_version_DOC "Connection.data_version(schema: Optional[str] = None) -> int\n\n" \
+#define  Connection_data_version_DOC "Connection.data_version(schema: str | None = None) -> int\n\n" \
 "Unlike `pragma data_version\n" \
 "<https://sqlite.org/pragma.html#pragma_data_version>`__ this value\n" \
 "updates when changes are made by other connections, **AND** this one.\n" \
@@ -1810,7 +1810,7 @@
 "Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__\n" 
 
 #define Connection_data_version_KWNAMES "schema"
-#define Connection_data_version_USAGE "Connection.data_version(schema: Optional[str] = None) -> int"
+#define Connection_data_version_USAGE "Connection.data_version(schema: str | None = None) -> int"
 
 #define Connection_data_version_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(schema), const char *)); \
@@ -1862,14 +1862,14 @@
 } while(0)
 
 
-#define  Connection_drop_modules_DOC "Connection.drop_modules(keep: Optional[Iterable[str]]) -> None\n\n" \
+#define  Connection_drop_modules_DOC "Connection.drop_modules(keep: Iterable[str] | None) -> None\n\n" \
 "If *keep* is *None* then all registered virtual tables are dropped.\n" \
 "\n" \
 "Otherwise *keep* is a sequence of strings, naming the virtual tables that\n" \
 "are kept, dropping all others.\n" 
 
 #define Connection_drop_modules_KWNAMES "keep"
-#define Connection_drop_modules_USAGE "Connection.drop_modules(keep: Optional[Iterable[str]]) -> None"
+#define Connection_drop_modules_USAGE "Connection.drop_modules(keep: Iterable[str] | None) -> None"
 
 #define Connection_drop_modules_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(keep), PyObject *)); \
@@ -1923,7 +1923,7 @@
 ":attr:`transaction_mode` (default ``DEFERRED``).  Nested statements\n" \
 "use `savepoints <https://sqlite.org/lang_savepoint.html>`__.\n" 
 
-#define  Connection_exec_trace_DOC ":type: Optional[ExecTracer]\n" \
+#define  Connection_exec_trace_DOC ":type: ExecTracer | None\n" \
 "\n" \
 "Called with the cursor, statement and bindings for\n" \
 "each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this\n" \
@@ -1944,7 +1944,7 @@
 #define Connection_exec_trace_USAGE "Connection.exec_trace"
 #define Connection_exec_trace_OLDDOC Connection_exec_trace_USAGE "\n(Old less clear name exectrace)"
 
-#define  Connection_execute_DOC "Connection.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor\n\n" \
+#define  Connection_execute_DOC "Connection.execute(statements: str, bindings: Bindings | None = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor\n\n" \
 "Executes the statements using the supplied bindings.  Execution\n" \
 "returns when the first row is available or all statements have\n" \
 "completed.  (A cursor is automatically obtained).\n" \
@@ -1961,14 +1961,14 @@
 "\n" \
 "See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_executemany>`.\n" 
 
-#define  Connection_exit_DOC "Connection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]\n\n" \
+#define  Connection_exit_DOC "Connection.__exit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool\n\n" \
 "Implements context manager in conjunction with\n" \
 ":meth:`~Connection.__enter__`.  If no exception happened then\n" \
 "the pending transaction is committed, while an exception results in a\n" \
 "rollback.\n" 
 
 #define Connection_exit_KWNAMES "etype", "evalue", "etraceback"
-#define Connection_exit_USAGE "Connection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]"
+#define Connection_exit_USAGE "Connection.__exit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool"
 
 #define Connection_exit_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(etype), PyObject *)); \
@@ -2103,20 +2103,20 @@
 #define Connection_get_autocommit_USAGE "Connection.get_autocommit() -> bool"
 #define Connection_get_autocommit_OLDDOC Connection_get_autocommit_USAGE "\n(Old less clear name getautocommit)"
 
-#define  Connection_get_exec_trace_DOC "Connection.get_exec_trace() -> Optional[ExecTracer]\n\n" \
+#define  Connection_get_exec_trace_DOC "Connection.get_exec_trace() -> ExecTracer | None\n\n" \
 "Returns the currently installed :attr:`execution tracer\n" \
 "<Connection.exec_trace>`\n" 
 
 #define Connection_get_exec_trace_OLDNAME "getexectrace"
-#define Connection_get_exec_trace_USAGE "Connection.get_exec_trace() -> Optional[ExecTracer]"
+#define Connection_get_exec_trace_USAGE "Connection.get_exec_trace() -> ExecTracer | None"
 #define Connection_get_exec_trace_OLDDOC Connection_get_exec_trace_USAGE "\n(Old less clear name getexectrace)"
 
-#define  Connection_get_row_trace_DOC "Connection.get_row_trace() -> Optional[RowTracer]\n\n" \
+#define  Connection_get_row_trace_DOC "Connection.get_row_trace() -> RowTracer | None\n\n" \
 "Returns the currently installed :attr:`row tracer\n" \
 "<Connection.row_trace>`\n" 
 
 #define Connection_get_row_trace_OLDNAME "getrowtrace"
-#define Connection_get_row_trace_USAGE "Connection.get_row_trace() -> Optional[RowTracer]"
+#define Connection_get_row_trace_USAGE "Connection.get_row_trace() -> RowTracer | None"
 #define Connection_get_row_trace_OLDDOC Connection_get_row_trace_USAGE "\n(Old less clear name getrowtrace)"
 
 #define  Connection_in_transaction_DOC ":type: bool\n" \
@@ -2125,7 +2125,7 @@
 "\n" \
 "Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__\n" 
 
-#define  Connection_init_DOC "Connection.__init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)\n\n" \
+#define  Connection_init_DOC "Connection.__init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100)\n\n" \
 "Opens the named database.  You can use ``:memory:`` to get a private temporary\n" \
 "in-memory database that is not shared with any other connections.\n" \
 "\n" \
@@ -2146,7 +2146,7 @@
 "  * :ref:`vfs`\n" 
 
 #define Connection_init_KWNAMES "filename", "flags", "vfs", "statementcachesize"
-#define Connection_init_USAGE "Connection.__init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)"
+#define Connection_init_USAGE "Connection.__init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100)"
 
 #define Connection_init_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(filename), const char *)); \
@@ -2205,7 +2205,7 @@
 } while(0)
 
 
-#define  Connection_load_extension_DOC "Connection.load_extension(filename: str, entrypoint: Optional[str] = None) -> None\n\n" \
+#define  Connection_load_extension_DOC "Connection.load_extension(filename: str, entrypoint: str | None = None) -> None\n\n" \
 "Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_\n" \
 "\n" \
 ":param filename: The file to load.\n" \
@@ -2224,7 +2224,7 @@
 "  * :meth:`~Connection.enable_load_extension`\n" 
 
 #define Connection_load_extension_KWNAMES "filename", "entrypoint"
-#define Connection_load_extension_USAGE "Connection.load_extension(filename: str, entrypoint: Optional[str] = None) -> None"
+#define Connection_load_extension_USAGE "Connection.load_extension(filename: str, entrypoint: str | None = None) -> None"
 
 #define Connection_load_extension_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(filename), const char *)); \
@@ -2265,7 +2265,7 @@
 #define Connection_overload_function_OLDNAME "overloadfunction"
 #define Connection_overload_function_OLDDOC Connection_overload_function_USAGE "\n(Old less clear name overloadfunction)"
 
-#define  Connection_pragma_DOC "Connection.pragma(name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> Any\n\n" \
+#define  Connection_pragma_DOC "Connection.pragma(name: str, value: SQLiteValue | None = None, *, schema: str | None = None) -> Any\n\n" \
 "Issues the pragma (with the value if supplied) and returns the result with\n" \
 ":attr:`the least amount of structure <Cursor.get>`.  For example\n" \
 ":code:`pragma(\"user_version\")` will return just the number, while\n" \
@@ -2284,7 +2284,7 @@
 "* :ref:`Example <example_pragma>`\n" 
 
 #define Connection_pragma_KWNAMES "name", "value", "schema"
-#define Connection_pragma_USAGE "Connection.pragma(name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> Any"
+#define Connection_pragma_USAGE "Connection.pragma(name: str, value: SQLiteValue | None = None, *, schema: str | None = None) -> Any"
 
 #define Connection_pragma_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -2295,7 +2295,7 @@
 } while(0)
 
 
-#define  Connection_preupdate_hook_DOC "Connection.preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None\n\n" \
+#define  Connection_preupdate_hook_DOC "Connection.preupdate_hook(callback: PreupdateHook | None, *, id: Any = None) -> None\n\n" \
 "A callback just after a database row is updated.  You can have multiple hooks at once\n" \
 "(managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for\n" \
 "``callback`` will remove it.\n" \
@@ -2324,7 +2324,7 @@
 "Calls: `sqlite3_preupdate_hook <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
 #define Connection_preupdate_hook_KWNAMES "callback", "id"
-#define Connection_preupdate_hook_USAGE "Connection.preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None"
+#define Connection_preupdate_hook_USAGE "Connection.preupdate_hook(callback: PreupdateHook | None, *, id: Any = None) -> None"
 
 #define Connection_preupdate_hook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callback), PyObject *)); \
@@ -2422,7 +2422,7 @@
 "\n" \
 "Calls: `sqlite3_db_release_memory <https://sqlite.org/c3ref/db_release_memory.html>`__\n" 
 
-#define  Connection_row_trace_DOC ":type: Optional[RowTracer]\n" \
+#define  Connection_row_trace_DOC ":type: RowTracer | None\n" \
 "\n" \
 "Called with the cursor and row being returned for\n" \
 ":class:`cursors <Cursor>` associated with this Connection, unless\n" \
@@ -2467,11 +2467,11 @@
 } while(0)
 
 
-#define  Connection_set_authorizer_DOC "Connection.set_authorizer(callable: Optional[Authorizer]) -> None\n\n" \
+#define  Connection_set_authorizer_DOC "Connection.set_authorizer(callable: Authorizer | None) -> None\n\n" \
 "Sets the :attr:`authorizer`\n" 
 
 #define Connection_set_authorizer_KWNAMES "callable"
-#define Connection_set_authorizer_USAGE "Connection.set_authorizer(callable: Optional[Authorizer]) -> None"
+#define Connection_set_authorizer_USAGE "Connection.set_authorizer(callable: Authorizer | None) -> None"
 
 #define Connection_set_authorizer_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -2481,7 +2481,7 @@
 #define Connection_set_authorizer_OLDNAME "setauthorizer"
 #define Connection_set_authorizer_OLDDOC Connection_set_authorizer_USAGE "\n(Old less clear name setauthorizer)"
 
-#define  Connection_set_busy_handler_DOC "Connection.set_busy_handler(callable: Optional[Callable[[int], bool]]) -> None\n\n" \
+#define  Connection_set_busy_handler_DOC "Connection.set_busy_handler(callable: Callable[[int], bool] | None) -> None\n\n" \
 "Sets the busy handler to callable. callable will be called with one\n" \
 "integer argument which is the number of prior calls to the busy\n" \
 "callback for the same lock. If the busy callback returns False,\n" \
@@ -2502,7 +2502,7 @@
 "Calls: `sqlite3_busy_handler <https://sqlite.org/c3ref/busy_handler.html>`__\n" 
 
 #define Connection_set_busy_handler_KWNAMES "callable"
-#define Connection_set_busy_handler_USAGE "Connection.set_busy_handler(callable: Optional[Callable[[int], bool]]) -> None"
+#define Connection_set_busy_handler_USAGE "Connection.set_busy_handler(callable: Callable[[int], bool] | None) -> None"
 
 #define Connection_set_busy_handler_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -2541,7 +2541,7 @@
 #define Connection_set_busy_timeout_OLDNAME "setbusytimeout"
 #define Connection_set_busy_timeout_OLDDOC Connection_set_busy_timeout_USAGE "\n(Old less clear name setbusytimeout)"
 
-#define  Connection_set_commit_hook_DOC "Connection.set_commit_hook(callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None\n\n" \
+#define  Connection_set_commit_hook_DOC "Connection.set_commit_hook(callable: CommitHook | None, *, id: Any = None) -> None\n\n" \
 "*callable* will be called just before a commit.  It should return\n" \
 "False for the commit to go ahead and True for it to be turned\n" \
 "into a rollback. In the case of an exception in your callable, a\n" \
@@ -2558,7 +2558,7 @@
 "Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
 #define Connection_set_commit_hook_KWNAMES "callable", "id"
-#define Connection_set_commit_hook_USAGE "Connection.set_commit_hook(callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None"
+#define Connection_set_commit_hook_USAGE "Connection.set_commit_hook(callable: CommitHook | None, *, id: Any = None) -> None"
 
 #define Connection_set_commit_hook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -2570,11 +2570,11 @@
 #define Connection_set_commit_hook_OLDNAME "setcommithook"
 #define Connection_set_commit_hook_OLDDOC Connection_set_commit_hook_USAGE "\n(Old less clear name setcommithook)"
 
-#define  Connection_set_exec_trace_DOC "Connection.set_exec_trace(callable: Optional[ExecTracer]) -> None\n\n" \
+#define  Connection_set_exec_trace_DOC "Connection.set_exec_trace(callable: ExecTracer | None) -> None\n\n" \
 "Method to set :attr:`Connection.exec_trace`\n" 
 
 #define Connection_set_exec_trace_KWNAMES "callable"
-#define Connection_set_exec_trace_USAGE "Connection.set_exec_trace(callable: Optional[ExecTracer]) -> None"
+#define Connection_set_exec_trace_USAGE "Connection.set_exec_trace(callable: ExecTracer | None) -> None"
 
 #define Connection_set_exec_trace_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -2597,7 +2597,7 @@
 } while(0)
 
 
-#define  Connection_set_profile_DOC "Connection.set_profile(callable: Optional[Callable[[str, int], None]]) -> None\n\n" \
+#define  Connection_set_profile_DOC "Connection.set_profile(callable: Callable[[str, int], None] | None) -> None\n\n" \
 "Sets a callable which is invoked at the end of execution of each\n" \
 "statement and passed the statement string and how long it took to\n" \
 "execute. (The execution time is in nanoseconds.) Note that it is\n" \
@@ -2607,7 +2607,7 @@
 "Calls: `sqlite3_trace_v2 <https://sqlite.org/c3ref/trace_v2.html>`__\n" 
 
 #define Connection_set_profile_KWNAMES "callable"
-#define Connection_set_profile_USAGE "Connection.set_profile(callable: Optional[Callable[[str, int], None]]) -> None"
+#define Connection_set_profile_USAGE "Connection.set_profile(callable: Callable[[str, int], None] | None) -> None"
 
 #define Connection_set_profile_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -2617,7 +2617,7 @@
 #define Connection_set_profile_OLDNAME "setprofile"
 #define Connection_set_profile_OLDDOC Connection_set_profile_USAGE "\n(Old less clear name setprofile)"
 
-#define  Connection_set_progress_handler_DOC "Connection.set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 100, *, id: Optional[Any] = None) -> None\n\n" \
+#define  Connection_set_progress_handler_DOC "Connection.set_progress_handler(callable: Callable[[], bool] | None, nsteps: int = 100, *, id: Any = None) -> None\n\n" \
 "Sets a callable which is invoked every *nsteps* SQLite inststructions.\n" \
 "The callable should return True to abort or False to continue. (If\n" \
 "there is an error in your Python *callable* then True/abort will be\n" \
@@ -2639,7 +2639,7 @@
 "Calls: `sqlite3_progress_handler <https://sqlite.org/c3ref/progress_handler.html>`__\n" 
 
 #define Connection_set_progress_handler_KWNAMES "callable", "nsteps", "id"
-#define Connection_set_progress_handler_USAGE "Connection.set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 100, *, id: Optional[Any] = None) -> None"
+#define Connection_set_progress_handler_USAGE "Connection.set_progress_handler(callable: Callable[[], bool] | None, nsteps: int = 100, *, id: Any = None) -> None"
 
 #define Connection_set_progress_handler_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -2653,7 +2653,7 @@
 #define Connection_set_progress_handler_OLDNAME "setprogresshandler"
 #define Connection_set_progress_handler_OLDDOC Connection_set_progress_handler_USAGE "\n(Old less clear name setprogresshandler)"
 
-#define  Connection_set_rollback_hook_DOC "Connection.set_rollback_hook(callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None\n\n" \
+#define  Connection_set_rollback_hook_DOC "Connection.set_rollback_hook(callable: Callable[[], None] | None, *, id: Any = None) -> None\n\n" \
 "Sets a callable which is invoked during a rollback.  If *callable*\n" \
 "is *None* then any existing rollback hook is unregistered.\n" \
 "\n" \
@@ -2665,7 +2665,7 @@
 "Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__\n" 
 
 #define Connection_set_rollback_hook_KWNAMES "callable", "id"
-#define Connection_set_rollback_hook_USAGE "Connection.set_rollback_hook(callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None"
+#define Connection_set_rollback_hook_USAGE "Connection.set_rollback_hook(callable: Callable[[], None] | None, *, id: Any = None) -> None"
 
 #define Connection_set_rollback_hook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -2677,11 +2677,11 @@
 #define Connection_set_rollback_hook_OLDNAME "setrollbackhook"
 #define Connection_set_rollback_hook_OLDDOC Connection_set_rollback_hook_USAGE "\n(Old less clear name setrollbackhook)"
 
-#define  Connection_set_row_trace_DOC "Connection.set_row_trace(callable: Optional[RowTracer]) -> None\n\n" \
+#define  Connection_set_row_trace_DOC "Connection.set_row_trace(callable: RowTracer | None) -> None\n\n" \
 "Method to set :attr:`Connection.row_trace`\n" 
 
 #define Connection_set_row_trace_KWNAMES "callable"
-#define Connection_set_row_trace_USAGE "Connection.set_row_trace(callable: Optional[RowTracer]) -> None"
+#define Connection_set_row_trace_USAGE "Connection.set_row_trace(callable: RowTracer | None) -> None"
 
 #define Connection_set_row_trace_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -2691,7 +2691,7 @@
 #define Connection_set_row_trace_OLDNAME "setrowtrace"
 #define Connection_set_row_trace_OLDDOC Connection_set_row_trace_USAGE "\n(Old less clear name setrowtrace)"
 
-#define  Connection_set_update_hook_DOC "Connection.set_update_hook(callable: Optional[Callable[[int, str, str, int], None]]) -> None\n\n" \
+#define  Connection_set_update_hook_DOC "Connection.set_update_hook(callable: Callable[[int, str, str, int], None] | None) -> None\n\n" \
 "Calls *callable* whenever a row is updated, deleted or inserted.  If\n" \
 "*callable* is *None* then any existing update hook is\n" \
 "unregistered.  The update hook cannot make changes to the database while\n" \
@@ -2716,7 +2716,7 @@
 "Calls: `sqlite3_update_hook <https://sqlite.org/c3ref/update_hook.html>`__\n" 
 
 #define Connection_set_update_hook_KWNAMES "callable"
-#define Connection_set_update_hook_USAGE "Connection.set_update_hook(callable: Optional[Callable[[int, str, str, int], None]]) -> None"
+#define Connection_set_update_hook_USAGE "Connection.set_update_hook(callable: Callable[[int, str, str, int], None] | None) -> None"
 
 #define Connection_set_update_hook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -2726,7 +2726,7 @@
 #define Connection_set_update_hook_OLDNAME "setupdatehook"
 #define Connection_set_update_hook_OLDDOC Connection_set_update_hook_USAGE "\n(Old less clear name setupdatehook)"
 
-#define  Connection_set_wal_hook_DOC "Connection.set_wal_hook(callable: Optional[Callable[[Connection, str, int], int]]) -> None\n\n" \
+#define  Connection_set_wal_hook_DOC "Connection.set_wal_hook(callable: Callable[[Connection, str, int], int] | None) -> None\n\n" \
 "*callable* will be called just after data is committed in :ref:`wal`\n" \
 "mode.  It should return *SQLITE_OK* or an error code.  The\n" \
 "callback is called with 3 parameters:\n" \
@@ -2740,7 +2740,7 @@
 "Calls: `sqlite3_wal_hook <https://sqlite.org/c3ref/wal_hook.html>`__\n" 
 
 #define Connection_set_wal_hook_KWNAMES "callable"
-#define Connection_set_wal_hook_USAGE "Connection.set_wal_hook(callable: Optional[Callable[[Connection, str, int], int]]) -> None"
+#define Connection_set_wal_hook_USAGE "Connection.set_wal_hook(callable: Callable[[Connection, str, int], int] | None) -> None"
 
 #define Connection_set_wal_hook_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(callable), PyObject *)); \
@@ -2811,7 +2811,7 @@
 "\n" \
 "Calls: `sqlite3_system_errno <https://sqlite.org/c3ref/system_errno.html>`__\n" 
 
-#define  Connection_table_exists_DOC "Connection.table_exists(dbname: Optional[str], table_name: str) -> bool\n\n" \
+#define  Connection_table_exists_DOC "Connection.table_exists(dbname: str | None, table_name: str) -> bool\n\n" \
 "Returns True if the named table exists, else False.\n" \
 "\n" \
 "``dbname`` is ``main``, ``temp``, the name in `ATTACH\n" \
@@ -2821,7 +2821,7 @@
 "Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__\n" 
 
 #define Connection_table_exists_KWNAMES "dbname", "table_name"
-#define Connection_table_exists_USAGE "Connection.table_exists(dbname: Optional[str], table_name: str) -> bool"
+#define Connection_table_exists_USAGE "Connection.table_exists(dbname: str | None, table_name: str) -> bool"
 
 #define Connection_table_exists_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(dbname), const char *)); \
@@ -2839,7 +2839,7 @@
 #define Connection_total_changes_USAGE "Connection.total_changes() -> int"
 #define Connection_total_changes_OLDDOC Connection_total_changes_USAGE "\n(Old less clear name totalchanges)"
 
-#define  Connection_trace_v2_DOC "Connection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None, *, id: Optional[Any] = None) -> None\n\n" \
+#define  Connection_trace_v2_DOC "Connection.trace_v2(mask: int, callback: Callable[[dict], None] | None = None, *, id: Any = None) -> None\n\n" \
 "Registers a trace callback.  Multiple traces can be active at once\n" \
 "(implemented by APSW).  A callback of :class:`None` unregisters a\n" \
 "trace.  Registered callbacks are distinguished by their ``id`` - an\n" \
@@ -2916,7 +2916,7 @@
 "  * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__\n" 
 
 #define Connection_trace_v2_KWNAMES "mask", "callback", "id"
-#define Connection_trace_v2_USAGE "Connection.trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None, *, id: Optional[Any] = None) -> None"
+#define Connection_trace_v2_USAGE "Connection.trace_v2(mask: int, callback: Callable[[dict], None] | None = None, *, id: Any = None) -> None"
 
 #define Connection_trace_v2_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(mask), int)); \
@@ -2936,14 +2936,14 @@
 "or ``EXCLUSIVE``.  When setting it must be one of those values\n" \
 "in any case.\n" 
 
-#define  Connection_txn_state_DOC "Connection.txn_state(schema: Optional[str] = None) -> int\n\n" \
+#define  Connection_txn_state_DOC "Connection.txn_state(schema: str | None = None) -> int\n\n" \
 "Returns the current transaction state of the database, or a specific schema\n" \
 "if provided.  :attr:`apsw.mapping_txn_state` contains the values returned.\n" \
 "\n" \
 "Calls: `sqlite3_txn_state <https://sqlite.org/c3ref/txn_state.html>`__\n" 
 
 #define Connection_txn_state_KWNAMES "schema"
-#define Connection_txn_state_USAGE "Connection.txn_state(schema: Optional[str] = None) -> int"
+#define Connection_txn_state_USAGE "Connection.txn_state(schema: str | None = None) -> int"
 
 #define Connection_txn_state_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(schema), const char *)); \
@@ -3009,7 +3009,7 @@
 } while(0)
 
 
-#define  Connection_wal_checkpoint_DOC "Connection.wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]\n\n" \
+#define  Connection_wal_checkpoint_DOC "Connection.wal_checkpoint(dbname: str | None = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]\n\n" \
 "Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.\n" \
 "\n" \
 "  :param dbname:  The name of the database or all databases if None\n" \
@@ -3024,7 +3024,7 @@
 "Calls: `sqlite3_wal_checkpoint_v2 <https://sqlite.org/c3ref/wal_checkpoint_v2.html>`__\n" 
 
 #define Connection_wal_checkpoint_KWNAMES "dbname", "mode"
-#define Connection_wal_checkpoint_USAGE "Connection.wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]"
+#define Connection_wal_checkpoint_USAGE "Connection.wal_checkpoint(dbname: str | None = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]"
 
 #define Connection_wal_checkpoint_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(dbname), const char *)); \
@@ -3156,7 +3156,7 @@
 #define Cursor_exec_trace_USAGE "Cursor.exec_trace"
 #define Cursor_exec_trace_OLDDOC Cursor_exec_trace_USAGE "\n(Old less clear name exectrace)"
 
-#define  Cursor_execute_DOC "Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor\n\n" \
+#define  Cursor_execute_DOC "Cursor.execute(statements: str, bindings: Bindings | None = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor\n\n" \
 "Executes the statements using the supplied bindings.  Execution\n" \
 "returns when the first row is available or all statements have\n" \
 "completed.\n" \
@@ -3189,7 +3189,7 @@
 "  * `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__\n" 
 
 #define Cursor_execute_KWNAMES "statements", "bindings", "can_cache", "prepare_flags", "explain"
-#define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor"
+#define Cursor_execute_USAGE "Cursor.execute(statements: str, bindings: Bindings | None = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor"
 
 #define Cursor_execute_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(statements), PyObject *)); \
@@ -3254,7 +3254,7 @@
 "in DBAPI.  See :meth:`get` which does the same thing, but with the least\n" \
 "amount of structure to unpack.\n" 
 
-#define  Cursor_fetchone_DOC "Cursor.fetchone() -> Optional[Any]\n\n" \
+#define  Cursor_fetchone_DOC "Cursor.fetchone() -> Any | None\n\n" \
 "Returns the next row of data or None if there are no more rows.\n" 
 
 #define  Cursor_get_DOC ":type: Any\n" \
@@ -3601,12 +3601,12 @@
 "\n" \
 "Rowid of the `current row <https://www.sqlite.org/fts5.html#xGetAuxdata>`__\n" 
 
-#define  FTS5ExtensionApi_tokenize_DOC "FTS5ExtensionApi.tokenize(utf8: Buffer, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list\n\n" \
+#define  FTS5ExtensionApi_tokenize_DOC "FTS5ExtensionApi.tokenize(utf8: Buffer, locale: str | None, *, include_offsets: bool = True, include_colocated: bool = True) -> list\n\n" \
 "`Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize_v2>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.\n" \
 "See :meth:`apsw.FTS5Tokenizer.__call__` for details.\n" 
 
 #define FTS5ExtensionApi_tokenize_KWNAMES "utf8", "locale", "include_offsets", "include_colocated"
-#define FTS5ExtensionApi_tokenize_USAGE "FTS5ExtensionApi.tokenize(utf8: Buffer, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list"
+#define FTS5ExtensionApi_tokenize_USAGE "FTS5ExtensionApi.tokenize(utf8: Buffer, locale: str | None, *, include_offsets: bool = True, include_colocated: bool = True) -> list"
 
 #define FTS5ExtensionApi_tokenize_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(utf8), PyObject *)); \
@@ -3624,13 +3624,14 @@
 "\n" \
 "The arguments the tokenizer was created with.\n" 
 
-#define  FTS5Tokenizer_call_DOC "FTS5Tokenizer.__call__(utf8: Buffer, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult\n\n" \
+#define  FTS5Tokenizer_call_DOC "FTS5Tokenizer.__call__(utf8: Buffer, flags: int,  locale: str | None, *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult\n\n" \
 "Does a tokenization, returning a list of the results.  If you have no\n" \
 "interest in token offsets or colocated tokens then they can be omitted from\n" \
 "the results.\n" \
 "\n" \
 ":param utf8: Input buffer\n" \
-":param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag\n" \
+":param flags: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag\n" \
+":param locale: Optional locale\n" \
 ":param include_offsets: Returned list includes offsets into utf8 for each token\n" \
 ":param include_colocated: Returned list can include colocated tokens\n" \
 "\n" \
@@ -3677,7 +3678,7 @@
 "        ]\n" 
 
 #define FTS5Tokenizer_call_KWNAMES "utf8", "flags", "locale", "include_offsets", "include_colocated"
-#define FTS5Tokenizer_call_USAGE "FTS5Tokenizer.__call__(utf8: Buffer, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult"
+#define FTS5Tokenizer_call_USAGE "FTS5Tokenizer.__call__(utf8: Buffer, flags: int,  locale: str | None, *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult"
 
 #define FTS5Tokenizer_call_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(utf8), PyObject *)); \
@@ -3860,7 +3861,7 @@
 "\n" \
 "Number used to identify the index\n" 
 
-#define  IndexInfo_idxStr_DOC ":type: Optional[str]\n" \
+#define  IndexInfo_idxStr_DOC ":type: str | None\n" \
 "\n" \
 "Name used to identify the index\n" 
 
@@ -4069,7 +4070,7 @@
 } while(0)
 
 
-#define  Session_attach_DOC "Session.attach(name: Optional[str] = None) -> None\n\n" \
+#define  Session_attach_DOC "Session.attach(name: str | None = None) -> None\n\n" \
 "Attach to a specific table, or all tables if no name is provided.  The\n" \
 "table does not need to exist at the time of the call.  You can call\n" \
 "this multiple times.\n" \
@@ -4081,7 +4082,7 @@
 "Calls: `sqlite3session_attach <https://sqlite.org/session/sqlite3session_attach.html>`__\n" 
 
 #define Session_attach_KWNAMES "name"
-#define Session_attach_USAGE "Session.attach(name: Optional[str] = None) -> None"
+#define Session_attach_USAGE "Session.attach(name: str | None = None) -> None"
 
 #define Session_attach_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -4383,13 +4384,13 @@
 } while(0)
 
 
-#define  URIFilename_uri_parameter_DOC "URIFilename.uri_parameter(name: str) -> Optional[str]\n\n" \
+#define  URIFilename_uri_parameter_DOC "URIFilename.uri_parameter(name: str) -> str | None\n\n" \
 "Returns the value of parameter `name` or None.\n" \
 "\n" \
 "Calls: `sqlite3_uri_parameter <https://sqlite.org/c3ref/uri_boolean.html>`__\n" 
 
 #define URIFilename_uri_parameter_KWNAMES "name"
-#define URIFilename_uri_parameter_USAGE "URIFilename.uri_parameter(name: str) -> Optional[str]"
+#define URIFilename_uri_parameter_USAGE "URIFilename.uri_parameter(name: str) -> str | None"
 
 #define URIFilename_uri_parameter_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -4431,7 +4432,7 @@
 "if you want the file object returned from :meth:`VFS.xOpen` to\n" \
 "inherit from an existing VFS implementation.\n" 
 
-#define  VFSFile_excepthook_DOC "VFSFile.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None\n\n" \
+#define  VFSFile_excepthook_DOC "VFSFile.excepthook(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool\n\n" \
 "Called when there has been an exception in a :class:`VFSFile`\n" \
 "routine, and it can't be reported to the caller as usual.\n" \
 "\n" \
@@ -4633,7 +4634,7 @@
 "`SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To\n" \
 "create a VFS your Python class must inherit from :class:`VFS`.\n" 
 
-#define  VFS_excepthook_DOC "VFS.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any\n\n" \
+#define  VFS_excepthook_DOC "VFS.excepthook(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool\n\n" \
 "Called when there has been an exception in a :class:`VFS` routine,\n" \
 "and it can't be reported to the caller as usual.\n" \
 "\n" \
@@ -4642,7 +4643,7 @@
 ":func:`sys.unraisablehook` and :func:`sys.excepthook`, falling back to\n" \
 "`PyErr_Display`.\n" 
 
-#define  VFS_init_DOC "VFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)\n\n" \
+#define  VFS_init_DOC "VFS.__init__(name: str, base: str | None = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: set[str] | None = None)\n\n" \
 ":param name: The name to register this vfs under.  If the name\n" \
 "    already exists then this vfs will replace the prior one of the\n" \
 "    same name.  Use :meth:`apsw.vfs_names` to get a list of\n" \
@@ -4672,7 +4673,7 @@
 "  * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__\n" 
 
 #define VFS_init_KWNAMES "name", "base", "makedefault", "maxpathname", "iVersion", "exclude"
-#define VFS_init_USAGE "VFS.__init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)"
+#define VFS_init_USAGE "VFS.__init__(name: str, base: str | None = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: set[str] | None = None)"
 
 #define VFS_init_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
@@ -4829,19 +4830,19 @@
 "Return an integer error code and (optional) text describing\n" \
 "the last error code and message that happened in this thread.\n" 
 
-#define  VFS_xGetSystemCall_DOC "VFS.xGetSystemCall(name: str) -> Optional[int]\n\n" \
+#define  VFS_xGetSystemCall_DOC "VFS.xGetSystemCall(name: str) -> int | None\n\n" \
 "Returns a pointer for the current method implementing the named\n" \
 "system call.  Return None if the call does not exist.\n" 
 
 #define VFS_xGetSystemCall_KWNAMES "name"
-#define VFS_xGetSystemCall_USAGE "VFS.xGetSystemCall(name: str) -> Optional[int]"
+#define VFS_xGetSystemCall_USAGE "VFS.xGetSystemCall(name: str) -> int | None"
 
 #define VFS_xGetSystemCall_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
 } while(0)
 
 
-#define  VFS_xNextSystemCall_DOC "VFS.xNextSystemCall(name: Optional[str]) -> Optional[str]\n\n" \
+#define  VFS_xNextSystemCall_DOC "VFS.xNextSystemCall(name: str | None) -> str | None\n\n" \
 "This method is repeatedly called to iterate over all of the system\n" \
 "calls in the vfs.  When called with None you should return the\n" \
 "name of the first system call.  In subsequent calls return the\n" \
@@ -4849,14 +4850,14 @@
 "then return None.\n" 
 
 #define VFS_xNextSystemCall_KWNAMES "name"
-#define VFS_xNextSystemCall_USAGE "VFS.xNextSystemCall(name: Optional[str]) -> Optional[str]"
+#define VFS_xNextSystemCall_USAGE "VFS.xNextSystemCall(name: str | None) -> str | None"
 
 #define VFS_xNextSystemCall_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
 } while(0)
 
 
-#define  VFS_xOpen_DOC "VFS.xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile\n\n" \
+#define  VFS_xOpen_DOC "VFS.xOpen(name: str | URIFilename | None, flags: list[int,int]) -> VFSFile\n\n" \
 "This method should return a new file object based on name.  You\n" \
 "can return a :class:`VFSFile` from a completely different VFS.\n" \
 "\n" \
@@ -4875,7 +4876,7 @@
 "  set.\n" 
 
 #define VFS_xOpen_KWNAMES "name", "flags"
-#define VFS_xOpen_USAGE "VFS.xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile"
+#define VFS_xOpen_USAGE "VFS.xOpen(name: str | URIFilename | None, flags: list[int,int]) -> VFSFile"
 
 #define VFS_xOpen_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), PyObject *)); \
@@ -4897,7 +4898,7 @@
 } while(0)
 
 
-#define  VFS_xSetSystemCall_DOC "VFS.xSetSystemCall(name: Optional[str], pointer: int) -> bool\n\n" \
+#define  VFS_xSetSystemCall_DOC "VFS.xSetSystemCall(name: str | None, pointer: int) -> bool\n\n" \
 "Change a system call used by the VFS.  This is useful for testing\n" \
 "and some other scenarios such as sandboxing.\n" \
 "\n" \
@@ -4917,7 +4918,7 @@
 "  call is not known.\n" 
 
 #define VFS_xSetSystemCall_KWNAMES "name", "pointer"
-#define VFS_xSetSystemCall_USAGE "VFS.xSetSystemCall(name: Optional[str], pointer: int) -> bool"
+#define VFS_xSetSystemCall_USAGE "VFS.xSetSystemCall(name: str | None, pointer: int) -> bool"
 
 #define VFS_xSetSystemCall_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
