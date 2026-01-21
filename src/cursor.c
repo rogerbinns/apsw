@@ -888,7 +888,7 @@ APSWCursor_do_exec_trace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
   sqlcmd = PyUnicode_FromStringAndSize(self->statement->utf8 ? self->statement->utf8 : "", self->statement->query_size);
 
   if (!sqlcmd)
-    return -1;
+    goto error_out;
 
   /* now deal with the bindings */
   if (self->bindings)
@@ -908,7 +908,7 @@ APSWCursor_do_exec_trace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
       if (!bindings)
       {
         Py_DECREF(sqlcmd);
-        return -1;
+        goto error_out;
       }
     }
   }
@@ -925,21 +925,29 @@ APSWCursor_do_exec_trace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
   if (!retval)
   {
     assert(PyErr_Occurred());
-    return -1;
+    goto error_out;
   }
   result = PyObject_IsTrueStrict(retval);
-  Py_DECREF(retval);
   assert(result == -1 || result == 0 || result == 1);
   if (result == -1)
   {
     assert(PyErr_Occurred());
-    return -1;
+    goto error_out;
   }
   if (result)
+  {
+    Py_DECREF(retval);
     return 0;
+  }
 
   /* callback didn't want us to continue */
   PyErr_Format(ExcTraceAbort, "Aborted by false/null return value of exec tracer");
+
+error_out:
+  assert(PyErr_Occurred());
+  AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_do_exec_trace", "{s: O, s: O}", "exec_trace", OBJ(exectrace),
+                   "returned", OBJ(retval));
+  Py_XDECREF(retval);
   return -1;
 }
 
@@ -951,7 +959,14 @@ APSWCursor_do_row_trace(APSWCursor *self, PyObject *retval)
   assert(rowtrace);
 
   PyObject *vargs[] = { NULL, (PyObject *)self, retval };
-  return PyObject_Vectorcall(rowtrace, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  PyObject *out = PyObject_Vectorcall(rowtrace, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  if (!out)
+  {
+    assert(PyErr_Occurred());
+    AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_do_row_trace", "{s: O, s: O}", "row_trace", OBJ(rowtrace), "row",
+                     retval);
+  }
+  return out;
 }
 
 /* Returns a borrowed reference to self if all is ok, else NULL on error */

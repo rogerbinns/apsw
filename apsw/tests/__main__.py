@@ -1350,6 +1350,49 @@ class APSW(unittest.TestCase):
         finally:
             apsw.config(apsw.SQLITE_CONFIG_LOG, None)
 
+    def testIssue595(self):
+        "exec/row tracer errors show up in augmented stack trace"
+
+        def bad_exec1(*args):
+            1 / 0
+
+        def bad_exec2(*args):
+            return 3 + 4j
+
+        def bad_row1(*args):
+            1 / 0
+
+        out = io.StringIO()
+        self.db.exec_trace = bad_exec1
+        try:
+            self.db.execute("select 3")
+        except Exception:
+            apsw.ext.print_augmented_traceback(*sys.exc_info(), file=out)
+        self.assertIn(", in APSWCursor_do_exec_trace", out.getvalue())
+        self.assertIn(", in bad_exec1", out.getvalue())
+
+        out = io.StringIO()
+        self.db.exec_trace = bad_exec2
+        try:
+            self.db.execute("select 3")
+        except Exception:
+            apsw.ext.print_augmented_traceback(*sys.exc_info(), file=out)
+
+        self.assertIn(", in APSWCursor_do_exec_trace", out.getvalue())
+        self.assertIn(f"returned = {3 + 4j}", out.getvalue())
+
+        self.db.exec_trace = None
+
+        out = io.StringIO()
+        self.db.row_trace = bad_row1
+        try:
+            self.db.execute("select 3,4").fetchall()
+        except Exception:
+            apsw.ext.print_augmented_traceback(*sys.exc_info(), file=out)
+
+        self.assertIn(", in APSWCursor_do_row_trace", out.getvalue())
+        self.assertIn(f"row = {(3, 4)}", out.getvalue())
+
     def testTypes(self):
         "Check type information is maintained"
 
