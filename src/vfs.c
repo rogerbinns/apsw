@@ -318,7 +318,7 @@ typedef struct
 
 */
 
-/** .. method:: excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> Any
+/** .. method:: excepthook(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool
 
     Called when there has been an exception in a :class:`VFS` routine,
     and it can't be reported to the caller as usual.
@@ -692,7 +692,7 @@ finally:
   return result;
 }
 
-/** .. method:: xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile
+/** .. method:: xOpen(name: str | URIFilename | None, flags: list[int,int]) -> VFSFile
 
     This method should return a new file object based on name.  You
     can return a :class:`VFSFile` from a completely different VFS.
@@ -1503,7 +1503,7 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
   return res;
 }
 
-/** .. method:: xSetSystemCall(name: Optional[str], pointer: int) -> bool
+/** .. method:: xSetSystemCall(name: str | None, pointer: int) -> bool
 
     Change a system call used by the VFS.  This is useful for testing
     and some other scenarios such as sandboxing.
@@ -1587,7 +1587,7 @@ apswvfs_xGetSystemCall(sqlite3_vfs *vfs, const char *zName)
   return ptr;
 }
 
-/** .. method:: xGetSystemCall(name: str) -> Optional[int]
+/** .. method:: xGetSystemCall(name: str) -> int | None
 
     Returns a pointer for the current method implementing the named
     system call.  Return None if the call does not exist.
@@ -1647,7 +1647,7 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
   return res;
 }
 
-/** .. method:: xNextSystemCall(name: Optional[str]) -> Optional[str]
+/** .. method:: xNextSystemCall(name: str | None) -> str | None
 
     This method is repeatedly called to iterate over all of the system
     calls in the vfs.  When called with None you should return the
@@ -1756,7 +1756,7 @@ APSWVFS_dealloc(PyObject *self_)
   Py_TpFree(self_);
 }
 
-/** .. method:: __init__(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)
+/** .. method:: __init__(name: str, base: str | None = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: set[str] | None = None)
 
     :param name: The name to register this vfs under.  If the name
         already exists then this vfs will replace the prior one of the
@@ -1969,7 +1969,7 @@ is_apsw_vfs(sqlite3_vfs *vfs)
 
 */
 
-/** .. method:: excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None
+/** .. method:: excepthook(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool
 
     Called when there has been an exception in a :class:`VFSFile`
     routine, and it can't be reported to the caller as usual.
@@ -3183,7 +3183,7 @@ fail:
   return NULL;
 }
 
-/** .. method:: uri_parameter(name: str) -> Optional[str]
+/** .. method:: uri_parameter(name: str) -> str | None
 
     Returns the value of parameter `name` or None.
 

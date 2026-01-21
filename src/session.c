@@ -404,7 +404,7 @@ APSWSession_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   Py_RETURN_NONE;
 }
 
-/** .. method:: attach(name: Optional[str] = None) -> None
+/** .. method:: attach(name: str | None = None) -> None
 
  Attach to a specific table, or all tables if no name is provided.  The
  table does not need to exist at the time of the call.  You can call
@@ -1548,7 +1548,7 @@ error:
   return NULL;
 }
 
-/** .. method:: apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None
+/** .. method:: apply(changeset: ChangesetInput, db: Connection, *, filter: Callable[[str], bool] | None = None, filter_change: Callable[[TableChange], bool] | None = None, conflict: Callable[[int,TableChange], int] | None = None, flags: int = 0, rebase: bool = False) -> bytes | None
 
   Applies a changeset to a database.
 

@@ -454,10 +454,10 @@ def do_argparse(item):
                 f'param { param } comes after * or args with defaults and must have default value in { item["name"] } { item["signature_original"] }'
             )
 
+        assert "Optional" not in param["type"] and "Union" not in param["type"], f"{param=} {item['name']=}"
+
         if param["type"].endswith(" | None"):
-            # ::TODO:: convert all the code to use | None and fixup here.  sphinx
-            # currently fixes up the doc but the pyi is full of
-            # Optional.  Optional is easier to handle in the following
+            # Optional is easier to handle in the following
             # code hence this transform
             base = param["type"][:-len(" | None")]
             param["type"]=f"Optional[{base}]"

@@ -534,7 +534,7 @@ Connection_dealloc(PyObject *self_)
   Py_TpFree(self_);
 }
 
-/** .. method:: __init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)
+/** .. method:: __init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100)
 
   Opens the named database.  You can use ``:memory:`` to get a private temporary
   in-memory database that is not shared with any other connections.
@@ -1217,7 +1217,7 @@ finally:
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: set_update_hook(callable: Optional[Callable[[int, str, str, int], None]]) -> None
+/** .. method:: set_update_hook(callable: Callable[[int, str, str, int], None] | None) -> None
 
   Calls *callable* whenever a row is updated, deleted or inserted.  If
   *callable* is *None* then any existing update hook is
@@ -1305,7 +1305,7 @@ rollbackhook_cb(void *context)
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: set_rollback_hook(callable: Optional[Callable[[], None]], *, id: Optional[Any] = None) -> None
+/** .. method:: set_rollback_hook(callable: Callable[[], None] | None, *, id: Any = None) -> None
 
   Sets a callable which is invoked during a rollback.  If *callable*
   is *None* then any existing rollback hook is unregistered.
@@ -1541,7 +1541,7 @@ Connection_update_trace_v2(Connection *self)
   Py_RETURN_NONE;
 }
 
-/** .. method:: set_profile(callable: Optional[Callable[[str, int], None]]) -> None
+/** .. method:: set_profile(callable: Callable[[str, int], None] | None) -> None
 
   Sets a callable which is invoked at the end of execution of each
   statement and passed the statement string and how long it took to
@@ -1580,7 +1580,7 @@ Connection_set_profile(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
   return Connection_update_trace_v2(self);
 }
 
-/** .. method:: trace_v2(mask: int, callback: Optional[Callable[[dict], None]] = None, *, id: Optional[Any] = None) -> None
+/** .. method:: trace_v2(mask: int, callback: Callable[[dict], None] | None = None, *, id: Any = None) -> None
 
   Registers a trace callback.  Multiple traces can be active at once
   (implemented by APSW).  A callback of :class:`None` unregisters a
@@ -1788,7 +1788,7 @@ finally:
   return res;
 }
 
-/** .. method:: set_commit_hook(callable: Optional[CommitHook], *, id: Optional[Any] = None) -> None
+/** .. method:: set_commit_hook(callable: CommitHook | None, *, id: Any = None) -> None
 
   *callable* will be called just before a commit.  It should return
   False for the commit to go ahead and True for it to be turned
@@ -1908,7 +1908,7 @@ finally:
   return code;
 }
 
-/** .. method:: set_wal_hook(callable: Optional[Callable[[Connection, str, int], int]]) -> None
+/** .. method:: set_wal_hook(callable: Callable[[Connection, str, int], int] | None) -> None
 
  *callable* will be called just after data is committed in :ref:`wal`
  mode.  It should return *SQLITE_OK* or an error code.  The
@@ -2009,7 +2009,7 @@ finally:
   return ok;
 }
 
-/** .. method:: set_progress_handler(callable: Optional[Callable[[], bool]], nsteps: int = 100, *, id: Optional[Any] = None) -> None
+/** .. method:: set_progress_handler(callable: Callable[[], bool] | None, nsteps: int = 100, *, id: Any = None) -> None
 
   Sets a callable which is invoked every *nsteps* SQLite inststructions.
   The callable should return True to abort or False to continue. (If
@@ -2219,7 +2219,7 @@ Connection_internal_set_authorizer(Connection *self, PyObject *callable)
   return Py_None;
 }
 
-/** .. method:: set_authorizer(callable: Optional[Authorizer]) -> None
+/** .. method:: set_authorizer(callable: Authorizer | None) -> None
 
   Sets the :attr:`authorizer`
 */
@@ -2305,7 +2305,7 @@ finally:
 #undef AVPCB_CAL
 #undef AVPCB_TB
 
-/** .. method:: autovacuum_pages(callable: Optional[Callable[[str, int, int, int], int]]) -> None
+/** .. method:: autovacuum_pages(callable: Callable[[str, int, int, int], int] | None) -> None
 
   Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
 
@@ -2385,7 +2385,7 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: collation_needed(callable: Optional[Callable[[Connection, str], None]]) -> None
+/** .. method:: collation_needed(callable: Callable[[Connection, str], None] | None) -> None
 
   *callable* will be called if a statement requires a `collation
   <https://en.wikipedia.org/wiki/Collation>`_ that hasn't been
@@ -2482,7 +2482,7 @@ finally:
   return result;
 }
 
-/** .. method:: set_busy_handler(callable: Optional[Callable[[int], bool]]) -> None
+/** .. method:: set_busy_handler(callable: Callable[[int], bool] | None) -> None
 
    Sets the busy handler to callable. callable will be called with one
    integer argument which is the number of prior calls to the busy
@@ -2713,7 +2713,7 @@ Connection_enable_load_extension(PyObject *self_, PyObject *const *fast_args, Py
   Py_RETURN_NONE;
 }
 
-/** .. method:: load_extension(filename: str, entrypoint: Optional[str] = None) -> None
+/** .. method:: load_extension(filename: str, entrypoint: str | None = None) -> None
 
   Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_
 
@@ -3494,7 +3494,7 @@ finally:
 
 #undef funcname
 
-/** .. method:: create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None
+/** .. method:: create_window_function(name:str, factory: WindowFactory | None, numargs: int =-1, *, flags: int = 0) -> None
 
     Registers a `window function
     <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
@@ -3570,7 +3570,7 @@ finally:
   Py_RETURN_NONE;
 }
 
-/** .. method:: create_scalar_function(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None
+/** .. method:: create_scalar_function(name: str, callable: ScalarProtocol | None, numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None
 
   Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
@@ -3659,7 +3659,7 @@ finally:
   Py_RETURN_NONE;
 }
 
-/** .. method:: create_aggregate_function(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None
+/** .. method:: create_aggregate_function(name: str, factory: AggregateFactory | None, numargs: int = -1, *, flags: int = 0) -> None
 
   Registers an aggregate function.  Aggregate functions operate on all
   the relevant rows such as counting how many there are.
@@ -3821,7 +3821,7 @@ collation_destroy(void *context)
   PyGILState_Release(gilstate);
 }
 
-/** .. method:: create_collation(name: str, callback: Optional[Callable[[str, str], int]]) -> None
+/** .. method:: create_collation(name: str, callback: Callable[[str, str], int] | None) -> None
 
   You can control how SQLite sorts (termed `collation
   <https://en.wikipedia.org/wiki/Collation>`_) when giving the
@@ -4076,7 +4076,7 @@ Connection_wal_autocheckpoint(PyObject *self_, PyObject *const *fast_args, Py_ss
   Py_RETURN_NONE;
 }
 
-/** .. method:: wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]
+/** .. method:: wal_checkpoint(dbname: str | None = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]
 
     Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.
 
@@ -4124,7 +4124,7 @@ static void apswvtabFree(void *context);
 static struct sqlite3_module *apswvtabSetupModuleDef(PyObject *datasource, int iVersion, int eponymous,
                                                      int eponymous_only, int read_only);
 
-/** .. method:: create_module(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
+/** .. method:: create_module(name: str, datasource: VTModule | None, *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
 
     Registers a virtual table, or drops it if *datasource* is *None*.
     See :ref:`virtualtables` for details.
@@ -4307,7 +4307,7 @@ Connection_overload_function(PyObject *self_, PyObject *const *fast_args, Py_ssi
   Py_RETURN_NONE;
 }
 
-/** .. method:: set_exec_trace(callable: Optional[ExecTracer]) -> None
+/** .. method:: set_exec_trace(callable: ExecTracer | None) -> None
 
    Method to set :attr:`Connection.exec_trace`
 */
@@ -4333,7 +4333,7 @@ Connection_set_exec_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_
   Py_RETURN_NONE;
 }
 
-/** .. method:: set_row_trace(callable: Optional[RowTracer]) -> None
+/** .. method:: set_row_trace(callable: RowTracer | None) -> None
 
   Method to set :attr:`Connection.row_trace`
 */
@@ -4360,7 +4360,7 @@ Connection_set_row_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
   Py_RETURN_NONE;
 }
 
-/** .. method:: get_exec_trace() -> Optional[ExecTracer]
+/** .. method:: get_exec_trace() -> ExecTracer | None
 
   Returns the currently installed :attr:`execution tracer
   <Connection.exec_trace>`
@@ -4378,7 +4378,7 @@ Connection_get_exec_trace(PyObject *self_, PyObject *Py_UNUSED(unused))
   return Py_NewRef(ret);
 }
 
-/** .. method:: get_row_trace() -> Optional[RowTracer]
+/** .. method:: get_row_trace() -> RowTracer | None
 
   Returns the currently installed :attr:`row tracer
   <Connection.row_trace>`
@@ -4564,7 +4564,7 @@ error:
   return NULL;
 }
 
-/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
+/** .. method:: __exit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool
 
   Implements context manager in conjunction with
   :meth:`~Connection.__enter__`.  If no exception happened then
@@ -4842,7 +4842,7 @@ Connection_db_filename(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
   return retval;
 }
 
-/** .. method:: txn_state(schema: Optional[str] = None) -> int
+/** .. method:: txn_state(schema: str | None = None) -> int
 
   Returns the current transaction state of the database, or a specific schema
   if provided.  :attr:`apsw.mapping_txn_state` contains the values returned.
@@ -4876,7 +4876,7 @@ Connection_txn_state(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
   return PyErr_Format(PyExc_ValueError, "unknown schema %s", schema);
 }
 
-/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
+/** .. method:: execute(statements: str, bindings: Bindings | None = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -4957,7 +4957,7 @@ fail:
 }
 
 static PyObject *formatsqlvalue(PyObject *Py_UNUSED(self), PyObject *value);
-/** .. method:: pragma(name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> Any
+/** .. method:: pragma(name: str, value: SQLiteValue | None = None, *, schema: str | None = None) -> Any
 
   Issues the pragma (with the value if supplied) and returns the result with
   :attr:`the least amount of structure <Cursor.get>`.  For example
@@ -5132,7 +5132,7 @@ Connection_cache_stats(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
   return statementcache_stats(self->stmtcache, include_entries);
 }
 
-/** .. method:: table_exists(dbname: Optional[str], table_name: str) -> bool
+/** .. method:: table_exists(dbname: str | None, table_name: str) -> bool
 
   Returns True if the named table exists, else False.
 
@@ -5174,7 +5174,7 @@ Connection_table_exists(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
   Py_RETURN_FALSE;
 }
 
-/** .. method:: column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]
+/** .. method:: column_metadata(dbname: str | None, table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]
 
   `dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__, or None to search
   all databases.
@@ -5276,7 +5276,7 @@ Connection_release_memory(PyObject *self_, PyObject *Py_UNUSED(unused))
   Py_RETURN_NONE;
 }
 
-/** .. method:: drop_modules(keep: Optional[Iterable[str]]) -> None
+/** .. method:: drop_modules(keep: Iterable[str] | None) -> None
 
   If *keep* is *None* then all registered virtual tables are dropped.
 
@@ -5697,7 +5697,7 @@ Connection_set_convert_jsonb(PyObject *self_, PyObject *value, void *Py_UNUSED(u
 }
 
 /** .. attribute:: exec_trace
-  :type: Optional[ExecTracer]
+  :type: ExecTracer | None
 
   Called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
@@ -5742,7 +5742,7 @@ Connection_set_exec_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED
 }
 
 /** .. attribute:: row_trace
-  :type: Optional[RowTracer]
+  :type: RowTracer | None
 
   Called with the cursor and row being returned for
   :class:`cursors <Cursor>` associated with this Connection, unless
@@ -5788,7 +5788,7 @@ Connection_set_row_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(
 }
 
 /** .. attribute:: authorizer
-  :type: Optional[Authorizer]
+  :type: Authorizer | None
 
   While `preparing <https://sqlite.org/c3ref/prepare.html>`_
   statements, SQLite will call any defined authorizer to see if a
@@ -5879,7 +5879,7 @@ Connection_is_interrupted(PyObject *self_, void *Py_UNUSED(unused))
   return Py_NewRef(sqlite3_is_interrupted(self->db) ? Py_True : Py_False);
 }
 
-/** .. method:: data_version(schema: Optional[str] = None) -> int
+/** .. method:: data_version(schema: str | None = None) -> int
 
   Unlike `pragma data_version
   <https://sqlite.org/pragma.html#pragma_data_version>`__ this value
@@ -6239,7 +6239,7 @@ finally:
 static void APSWPreUpdateHook_cb(void *pCtx, sqlite3 *db, int op, char const *zDb, char const *zName,
                                  sqlite3_int64 iKey1, sqlite3_int64 iKey2);
 
-/** .. method:: preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[Any] = None) -> None
+/** .. method:: preupdate_hook(callback: PreupdateHook | None, *, id: Any = None) -> None
 
  A callback just after a database row is updated.  You can have multiple hooks at once
  (managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for

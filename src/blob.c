@@ -597,7 +597,7 @@ APSWBlob_enter(PyObject *self_, PyObject *Py_UNUSED(args))
   return Py_NewRef((PyObject *)self);
 }
 
-/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
+/** .. method:: __exit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool
 
   Implements context manager in conjunction with
   :meth:`~Blob.__enter__`.  Any exception that happened in the

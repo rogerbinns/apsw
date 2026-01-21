@@ -181,14 +181,15 @@ error:
   return SQLITE_ERROR;
 }
 
-/** .. method:: __call__(utf8: Buffer, flags: int,  locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult
+/** .. method:: __call__(utf8: Buffer, flags: int,  locale: str | None, *, include_offsets: bool = True, include_colocated: bool = True) -> TokenizerResult
 
   Does a tokenization, returning a list of the results.  If you have no
   interest in token offsets or colocated tokens then they can be omitted from
   the results.
 
   :param utf8: Input buffer
-  :param reason: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag
+  :param flags: :data:`Reason <apsw.mapping_fts5_tokenize_reason>` flag
+  :param locale: Optional locale
   :param include_offsets: Returned list includes offsets into utf8 for each token
   :param include_colocated: Returned list can include colocated tokens
 
@@ -1223,7 +1224,7 @@ APSWFTS5ExtensionApi_xColumnText(PyObject *self, PyObject *const *fast_args, Py_
   return PyBytes_FromStringAndSize(bytes, size);
 }
 
-/** .. method:: tokenize(utf8: Buffer, locale: Optional[str], *, include_offsets: bool = True, include_colocated: bool = True) -> list
+/** .. method:: tokenize(utf8: Buffer, locale: str | None, *, include_offsets: bool = True, include_colocated: bool = True) -> list
 
   `Tokenizes the utf8 <https://www.sqlite.org/fts5.html#xTokenize_v2>`__.  FTS5 sets the reason to ``FTS5_TOKENIZE_AUX``.
   See :meth:`apsw.FTS5Tokenizer.__call__` for details.

@@ -1102,7 +1102,7 @@ APSWCursor_step(APSWCursor *self)
   }
 }
 
-/** .. method:: execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
+/** .. method:: execute(statements: str, bindings: Bindings | None = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -1627,7 +1627,7 @@ APSWCursor_fetchall(PyObject *self_, PyObject *Py_UNUSED(unused))
   return PySequence_List((PyObject *)self);
 }
 
-/** .. method:: fetchone() -> Optional[Any]
+/** .. method:: fetchone() -> Any | None
 
   Returns the next row of data or None if there are no more rows.
 */

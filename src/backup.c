@@ -309,7 +309,7 @@ APSWBackup_enter(PyObject *self_, PyObject *Py_UNUSED(ignored))
   return Py_NewRef(self_);
 }
 
-/** .. method:: __exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
+/** .. method:: __exit__(etype: type[BaseException] | None, evalue: type[BaseException] | None, etraceback: types.TracebackType | None) -> bool
 
   Implements context manager in conjunction with :meth:`~Backup.__enter__` ensuring
   that the copy is :meth:`finished <Backup.finish>`.
