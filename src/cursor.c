@@ -1762,7 +1762,7 @@ APSWCursor_aiter(PyObject *self_)
     Py_DECREF(self->aiter_slots[i]);
   self->aiter_head = self->aiter_tail = 0;
 
-  int slots_desired = 1;
+  int slots_desired = 64;
 
   PyObject *desired = NULL;
   if (0 != PyContextVar_Get(async_cursor_prefetch_context_var, NULL, &desired))
