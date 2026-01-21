@@ -107,8 +107,8 @@ import sys
 
 import dataclasses
 
-from typing import Union, Any, Sequence, NoReturn, Literal, Iterator, TypeAlias
-
+from typing import Any, NoReturn, Literal, TypeAlias
+from collections.abc import Sequence, Iterator
 import apsw
 
 QUERY_TOKENS_MARKER = "$!Tokens~"
@@ -262,7 +262,7 @@ class NOT:
 
 # Sphinx makes this real ugly
 # https://github.com/sphinx-doc/sphinx/issues/10541
-QUERY: TypeAlias = Union[COLUMNFILTER, NEAR, AND, OR, NOT, PHRASE]
+QUERY: TypeAlias = COLUMNFILTER | NEAR | AND | OR | NOT | PHRASE
 """Type representing all query types."""
 
 

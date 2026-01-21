@@ -24,7 +24,7 @@ import tempfile
 import textwrap
 import time
 import traceback
-from typing import Optional, TextIO
+from typing import TextIO
 import webbrowser
 
 import apsw

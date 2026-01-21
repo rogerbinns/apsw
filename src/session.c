@@ -439,7 +439,7 @@ APSWSession_aclose(PyObject *self_, PyObject *unused)
   return async_return_value(Py_None);
 }
 
-/** .. method:: attach(name: Optional[str] = None) -> None
+/** .. method:: attach(name: str | None = None) -> None
 
  Attach to a specific table, or all tables if no name is provided.  The
  table does not need to exist at the time of the call.  You can call
@@ -1644,7 +1644,7 @@ error:
   return NULL;
 }
 
-/** .. method:: apply(changeset: ChangesetInput, db: Connection | AsyncConnection, *, filter: Optional[Callable[[str], bool]] = None, filter_change: Optional[Callable[[TableChange], bool]] = None, conflict: Optional[Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None
+/** .. method:: apply(changeset: ChangesetInput, db: Connection | AsyncConnection, *, filter: Callable[[str], bool] | None = None, filter_change: Callable[[TableChange], bool] | None = None, conflict: Callable[[int,TableChange], int] | None = None, flags: int = 0, rebase: bool = False) -> bytes | None
 
   Applies a changeset to a database.
 

@@ -1,7 +1,7 @@
 import sys
 
-from typing import Optional, Callable, Any, Iterator, Iterable, Sequence, Literal, Protocol, TypeAlias, final
-from collections.abc import Mapping, Buffer, Awaitable
+from typing import Callable, Any, Iterable, Sequence, Literal, Protocol, TypeAlias, final
+from collections.abc import Mapping, Buffer, Iterator, Awaitable
 import array
 import types
 
@@ -106,9 +106,9 @@ RowTracer = Callable[[Cursor, SQLiteValues], Any]
 be returned.  If you return None, then no row is returned, otherwise
 whatever is returned is returned as a result row for the query"""
 
-ExecTracer = Callable[[Cursor, str, Optional[Bindings]], bool]
+ExecTracer = Callable[[Cursor, str, Bindings | None], bool]
 """Execution tracers are called with the cursor, sql query text, and the bindings
-used.  Return False/None to abort execution, or True to continue"""
+used.  Return False to abort execution, or True to continue"""
 
 ConvertBinding = Callable[[Cursor, int, Any], SQLiteValue]
 """Called with a cursor, parameter number, and value to convert
@@ -122,7 +122,7 @@ JSONB.  This is a good location to call :func:`jsonb_decode` to
 convert :doc:`JSON representation <jsonb>` into any Python
 value"""
 
-Authorizer = Callable[[int, Optional[str], Optional[str], Optional[str], Optional[str]], int]
+Authorizer = Callable[[int, str | None, str | None, str | None, str | None], int]
 """Authorizers are called with an operation code and 4 strings (which could be None) depending
 on the operatation.  Return SQLITE_OK, SQLITE_DENY, or SQLITE_IGNORE"""
 

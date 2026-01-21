@@ -489,7 +489,7 @@ SqliteIndexInfo_set_idxNum(PyObject *self, PyObject *value, void *Py_UNUSED(unus
 }
 
 /** .. attribute:: idxStr
-  :type: Optional[str]
+  :type: str | None
 
   Name used to identify the index
 */
@@ -1799,7 +1799,7 @@ finally:
 
   :param rowid: 64 bit integer
 */
-/** .. method:: UpdateInsertRow(rowid: Optional[int], fields: tuple[SQLiteValue, ...])  -> Optional[int]
+/** .. method:: UpdateInsertRow(rowid: int | None, fields: tuple[SQLiteValue, ...])  -> int | None
 
   Insert a row with the specified *rowid*.
 
@@ -2295,7 +2295,7 @@ track of where in the table it is.
 
 */
 
-/** .. method:: Filter(indexnum: int, indexname: str, constraintargs: Optional[tuple]) -> None
+/** .. method:: Filter(indexnum: int, indexname: str, constraintargs: tuple | None) -> None
 
   This method is always called first to initialize an iteration to the
   first row of the table. The arguments come from the
@@ -2418,12 +2418,7 @@ finally:
     supported types <types>`
 */
 
-/*
-  Tt would be ideal for the return to be Union[SQLiteValue, apsw.no_change]
-  but that then requires apsw.no_change being documented as a class
-  which then confuses the documentation extractor.
-*/
-/** .. method:: ColumnNoChange(number: int) -> SQLiteValue
+/** .. method:: ColumnNoChange(number: int) -> SQLiteValue | apsw.no_change
 
   :meth:`VTTable.UpdateChangeRow` is going to be called which includes
   values for all columns.  However this column is not going to be changed

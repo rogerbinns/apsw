@@ -676,9 +676,9 @@ class Async(unittest.TestCase):
                 await (await db.execute("select async_cvar(?)", ("apsw.aio.deadline",))).get
             # and this should almost match.  anyio+asyncio ends up
             # with rounding errors on each call so we reduce precision
-            # of check
+            # of check.  debug python builds also increase the delta
             this_ced = ced()
-            self.assertAlmostEqual(this_ced, await (await db.execute("select ced()")).get, places=5)
+            self.assertAlmostEqual(this_ced, await (await db.execute("select ced()")).get, places=4)
 
         # all the way back to event loop using only the framework timeouts
         for timeout in timeout_seq():
