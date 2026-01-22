@@ -769,7 +769,7 @@ finally:
   return res;
 }
 
-/** .. method:: as_async(*args, **kwargs) -> Awaitable[AsyncConnection]
+/** .. method:: as_async(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100) -> Awaitable[AsyncConnection]
   :classmethod:
 
   Uses the :attr:`async_controller` to start a :class:`Connection`
@@ -780,6 +780,15 @@ finally:
 
   See :mod:`apsw.aio` for some controller implementations and :doc:`async`
   for more details.
+
+  .. note:: Inheritance
+
+    If you inherit from :class:`Connection` then this still works without
+    having to write your own.  The returned object will be of your
+    Connection subclass.  The parameters can be any positional and keyword
+    arguments, and will be passed to your ``__init__`` method in the
+    worker thread first.  :meth:`Connection.__init__` should be called
+    from it as normal for inheritance.
 */
 static PyObject *
 Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)

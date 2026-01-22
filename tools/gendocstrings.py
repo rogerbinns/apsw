@@ -978,6 +978,7 @@ if __name__ == "__main__":
                     "VFS.excepthook",
                     "Connection.execute",
                     "Connection.executemany",
+                    "Connection.as_async",
                     "Blob.__exit__",
                     "apsw.pyobject",
                 }:
