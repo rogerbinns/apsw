@@ -1910,7 +1910,7 @@ APSWCursor_get_connection(PyObject *self_, PyObject *Py_UNUSED(unused))
   return Py_NewRef((PyObject *)self->connection);
 }
 
-/** .. method:: fetchall() -> list[tuple[SQLiteValue, ...]]
+/** .. method:: fetchall() -> list[SQLiteValues]
 
   Returns all remaining result rows as a list.  This method is defined
   in DBAPI.  See :meth:`get` which does the same thing, but with the least

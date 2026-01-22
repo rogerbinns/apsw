@@ -1229,7 +1229,7 @@ error:
 }
 
 /** .. attribute:: conflict
-  :type: tuple[SQLiteValue, ...] | None
+  :type: SQLiteValues | None
 
   :class:`None` if not applicable (not in a conflict).  Otherwise a
   tuple of values for the conflicting row.

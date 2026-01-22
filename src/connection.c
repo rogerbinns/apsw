@@ -7247,7 +7247,7 @@ PreUpdate_blob_write(PyObject *self_, void *Py_UNUSED(unused))
 }
 
 /** .. attribute:: new
-  :type: tuple[SQLiteValue, ...] | None
+  :type: SQLiteValues | None
 
   Row values for an INSERT, or after an UPDATE.  :class:`None` for
   DELETE.  See also :attr:`old` and :attr:`update`.
@@ -7291,7 +7291,7 @@ error:
 }
 
 /** .. attribute:: old
-  :type: tuple[SQLiteValue, ...] | None
+  :type: SQLiteValues | None
 
   Row values for a DELETE, or before an UPDATE. :class:`None` for
   INSERT.  See also :attr:`new` and :attr:`update`.
