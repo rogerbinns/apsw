@@ -826,7 +826,7 @@ def generate_typestubs(items: list[dict]) -> None:
                             for a in ASYNCABLE:
                                 assert a not in returns, f"{klass=} {name=} {signature=}"
 
-                    print(f"{ baseindent }    async def { name }{ signature }:", file=async_out)
+                    decl = "async def" if name not in {"__aiter__"} else "def"
                     print(fmt_docstring(item["doc"], indent=f"{ baseindent }        "), file=async_out)
                     print(f"{ baseindent }        ...", file=async_out)
 

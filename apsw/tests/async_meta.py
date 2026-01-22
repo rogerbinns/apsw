@@ -51,6 +51,8 @@ def get_meta(
         case "__enter__" | "__exit__" | "__iter__" | "__next__":
             return "sync"
         case "__aenter__" | "__aexit__" | "aclose" | "__aiter__" | "__anext__":
+            # aiter is technically value but we only want it on async objects
+            # so that is handled elsewhere
             return "async"
         case "__repr__" | "__str__" | "__bool__":
             return "value"
