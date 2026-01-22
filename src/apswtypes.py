@@ -1,6 +1,6 @@
 import sys
 
-from typing import Callable, Any, Iterable, Sequence, Literal, Protocol, TypeAlias, final
+from typing import Callable, Any, Iterable, Sequence, Literal, Protocol, TypeAlias, final, Self
 from collections.abc import Mapping, Buffer, Iterator, Awaitable
 import array
 import types
