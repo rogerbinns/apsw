@@ -3041,6 +3041,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes);
     if (strdata)
     {
+      assert(strdata[strbytes] == 0);
       sqlite3_result_text64(context, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8_ZT);
       return 1;
     }
