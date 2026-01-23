@@ -19,10 +19,10 @@
 # https://sqlite.org/forum/forumpost/c066073abd559b8e
 
 diff --git a/sqlite3.c b/sqlite3-changed.c
-index f3a60e93..72050186 100644
+index 0a48c7e2..addfebb4 100644
 --- a/sqlite3.c
 +++ b/sqlite3-changed.c
-@@ -230074,10 +230074,11 @@ typedef struct carray_bind carray_bind;
+@@ -231456,10 +231456,11 @@ typedef struct carray_bind carray_bind;
  struct carray_bind {
    void *aData;                /* The data */
    int nData;                  /* Number of elements */
@@ -34,7 +34,7 @@ index f3a60e93..72050186 100644
 
  /* carray_cursor is a subclass of sqlite3_vtab_cursor which will
  ** serve as the underlying representation of a cursor that scans
-@@ -230406,26 +230407,28 @@ static sqlite3_module carrayModule = {
+@@ -231788,26 +231789,28 @@ static sqlite3_module carrayModule = {
  ** Destructor for the carray_bind object
  */
  static void carrayBindDel(void *pPtr){
@@ -65,7 +65,7 @@ index f3a60e93..72050186 100644
    int i;
    int rc = SQLITE_OK;
 
-@@ -230498,19 +230501,21 @@ SQLITE_API int sqlite3_carray_bind(
+@@ -231880,23 +231883,35 @@ SQLITE_API int sqlite3_carray_bind(
        }
      }else{
        memcpy(pNew->aData, aData, sz);
@@ -87,4 +87,18 @@ index f3a60e93..72050186 100644
    sqlite3_free(pNew);
    return rc;
  }
++SQLITE_API int sqlite3_carray_bind(
++  sqlite3_stmt *pStmt,
++  int idx,
++  void *aData,
++  int nData,
++  int mFlags,
++  void (*xDestroy)(void*)
++){
++  return sqlite3_carray_bind_apsw(pStmt, idx, aData, nData, mFlags, xDestroy, NULL);
++}
 
+ /*
+ ** Invoke this routine to register the carray() function.
+ */
+ SQLITE_PRIVATE Module *sqlite3CarrayRegister(sqlite3 *db){
