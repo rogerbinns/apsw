@@ -102,6 +102,10 @@ API Reference
 #error Your SQLite version is too old.  It must be at least 3.51
 #endif
 
+#if SQLITE_VERSION_NUMBER < 3052000
+#define SQLITE_UTF8_ZT SQLITE_UTF8
+#endif
+
 #include "sqlite_debug.h"
 
 /* system headers */
