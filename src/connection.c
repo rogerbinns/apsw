@@ -2841,7 +2841,7 @@ set_context_result(sqlite3_context *context, PyObject *obj)
     strdata = PyUnicode_AsUTF8AndSize(obj, &strbytes);
     if (strdata)
     {
-      sqlite3_result_text64(context, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8);
+      sqlite3_result_text64(context, strdata, strbytes, SQLITE_TRANSIENT, SQLITE_UTF8_ZT);
       return 1;
     }
     sqlite3_result_error(context, "Unicode conversions failed", -1);
