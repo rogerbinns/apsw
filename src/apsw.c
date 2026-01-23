@@ -2177,7 +2177,7 @@ PyInit_apsw(void)
     goto fail;
 
   /** .. attribute:: async_run_coro
-    :type: contextvars.ContextVar[Callable[[typing.Coroutine], Any]]
+    :type: contextvars.ContextVar[Callable[[Coroutine], Any]]
 
     When APSW encounters a :class:`~typing.Coroutine` this called to run
     it and block until getting the result.  The callable would typically

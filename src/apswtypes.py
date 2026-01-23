@@ -1,7 +1,8 @@
-import sys
+import contextvars
 
-from typing import Callable, Any, Iterable, Sequence, Literal, Protocol, TypeAlias, final, Self
+from typing import Callable, Any, Iterable, Sequence, Literal, Protocol, TypeAlias, final, Self, Coroutine
 from collections.abc import Mapping, Buffer, Iterator, Awaitable
+
 import array
 import types
 
