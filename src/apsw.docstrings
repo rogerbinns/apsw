@@ -1300,7 +1300,7 @@
 } while(0)
 
 
-#define  Connection_as_async_DOC "Connection.as_async(*args, **kwargs) -> Awaitable[AsyncConnection]\n\n" \
+#define  Connection_as_async_DOC "Connection.as_async(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100) -> Awaitable[AsyncConnection]\n\n" \
 ":classmethod:\n" \
 "\n" \
 "Uses the :attr:`async_controller` to start a :class:`Connection`\n" \
@@ -1310,7 +1310,16 @@
 "for async operation.\n" \
 "\n" \
 "See :mod:`apsw.aio` for some controller implementations and :doc:`async`\n" \
-"for more details.\n" 
+"for more details.\n" \
+"\n" \
+".. note:: Inheritance\n" \
+"\n" \
+"  If you inherit from :class:`Connection` then this still works without\n" \
+"  having to write your own.  The returned object will be of your\n" \
+"  Connection subclass.  The parameters can be any positional and keyword\n" \
+"  arguments, and will be passed to your ``__init__`` method in the\n" \
+"  worker thread first.  :meth:`Connection.__init__` should be called\n" \
+"  from it as normal for inheritance.\n" 
 
 #define  Connection_async_controller_DOC ":type: AsyncConnectionController\n" \
 "\n" \
@@ -3376,7 +3385,7 @@
 "\n" \
 "Calls: `sqlite3_expanded_sql <https://sqlite.org/c3ref/expanded_sql.html>`__\n" 
 
-#define  Cursor_fetchall_DOC "Cursor.fetchall() -> list[tuple[SQLiteValue, ...]]\n\n" \
+#define  Cursor_fetchall_DOC "Cursor.fetchall() -> list[SQLiteValues]\n\n" \
 "Returns all remaining result rows as a list.  This method is defined\n" \
 "in DBAPI.  See :meth:`get` which does the same thing, but with the least\n" \
 "amount of structure to unpack.\n" 
@@ -4078,14 +4087,14 @@
 "\n" \
 "Calls: `sqlite3_preupdate_depth <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
-#define  PreUpdate_new_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
+#define  PreUpdate_new_DOC ":type: SQLiteValues | None\n" \
 "\n" \
 "Row values for an INSERT, or after an UPDATE.  :class:`None` for\n" \
 "DELETE.  See also :attr:`old` and :attr:`update`.\n" \
 "\n" \
 "Calls: `sqlite3_preupdate_new <https://sqlite.org/c3ref/preupdate_blobwrite.html>`__\n" 
 
-#define  PreUpdate_old_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
+#define  PreUpdate_old_DOC ":type: SQLiteValues | None\n" \
 "\n" \
 "Row values for a DELETE, or before an UPDATE. :class:`None` for\n" \
 "INSERT.  See also :attr:`new` and :attr:`update`.\n" \
@@ -4390,7 +4399,7 @@
 "\n" \
 " Number of columns in the affected table\n" 
 
-#define  TableChange_conflict_DOC ":type: tuple[SQLiteValue, ...] | None\n" \
+#define  TableChange_conflict_DOC ":type: SQLiteValues | None\n" \
 "\n" \
 ":class:`None` if not applicable (not in a conflict).  Otherwise a\n" \
 "tuple of values for the conflicting row.\n" \
