@@ -1157,7 +1157,8 @@ class Connection:
 
 
 
-    def as_async(self, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100) -> Awaitable[AsyncConnection]:
+    @classmethod
+    def as_async(cls, filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100) -> Awaitable[AsyncConnection]:
         """:classmethod:
 
         Uses the :attr:`async_controller` to start a :class:`Connection`
