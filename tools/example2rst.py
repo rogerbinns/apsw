@@ -97,6 +97,7 @@ Async Example/Tour
 ==================
 
 This shows how to use APSW in :doc:`async <async>` node.
+:mod:`asyncio`, |trio|, and |anyio| are supported.
 
 .. code-block:: python
 
