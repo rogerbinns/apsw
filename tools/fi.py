@@ -33,11 +33,16 @@ def file_cleanup():
     for f in glob.glob(f"{tmpdir.name}/*"):
         os.remove(f)
 
+examples_completed = set()
 
 def exercise_examples(example_code, expect_exception):
     file_cleanup()
     for code, __ in example_code:
+        if examples_completed is not None and code in examples_completed:
+            continue
         exec(code, {"print": lambda *args: None}, None)
+        if examples_completed is not None:
+            examples_completed.add(code)
         if expect_exception:
             return
 
@@ -1073,6 +1078,8 @@ class Tester:
                         if not use_runplan and not self.faulted_this_round:
                             use_runplan = True
                             print("\nExercising locations that require multiple failures\n")
+                            global examples_completed
+                            examples_completed = None
                             continue
                 finally:
                     if not use_runplan and not self.faulted_this_round:
