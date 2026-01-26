@@ -110,46 +110,6 @@ async def make_session(db: apsw.AsyncConnection, schema: str) -> AsyncSession:
         raise apsw.MisuseError("The session extension is not enabled and available")
     return await db.async_run(apsw.Session, db, schema)
 
-
-class AsyncResult(Protocol):
-    """
-    All async results have these methods, no matter which API or
-    Controller is in use.  This is a :class:`~typing.Protocol` and
-    **not** a real class.  The actual class returned will vary
-    even for the same call.
-
-    The methods can only be called in async context - calling in a
-    background thread will result in exceptions, wrong answers, or no
-    effect.
-
-    You must ``await`` it to get the result or exception.
-    """
-
-    def __await__(self) -> Generator[Any, None, Any]:
-        "awaitable, giving the call result or exception"
-        ...
-
-    def cancel(self) -> bool:
-        """Cancel the call
-
-        Attempts to stop the call if already in progress, or not start
-        it.  Returns ``True`` if marked for cancellation, or ``False``
-        if too late.
-        """
-        ...
-
-    def cancelled(self) -> bool:
-        """Return ``True`` if call was marked cancelled, else ``False``
-
-        Cancellation can only succeed before completion.
-        """
-        ...
-
-    def done(self) -> bool:
-        """Return ``True`` if call has completed, either with a result or cancelled, else ``False`` if
-        still waiting for a result"""
-        ...
-
 class Cancelled(Exception):
     """Result when an operation was cancelled (Trio, AnyIO)
 
@@ -425,12 +385,7 @@ async def _anyio_loop_run_coro(coro, this_deadline):
 
 
 class _Future:
-    """Returned for most :class:`Trio` and :class:`AnyIO` requests
-
-    See :class:`AsyncResult`"""
-
-    # the underscores are everywhere to "hide" everything except the
-    # public AsyncResult methods
+    """Used for most :class:`Trio` and :class:`AnyIO` requests"""
 
     __slots__ = (
         # Event used to signal ready

@@ -233,13 +233,6 @@ result (or exception).
     cannot proceed until it gets a result, and the callback is waiting
     on the suspended connection.
 
-Awaitable
-=========
-
-No matter which async framework is used, all awaitables conform to
-:class:`apsw.aio.AsyncResult`.  The underlying class will vary even
-within the same framework.
-
 Contextvars
 ===========
 

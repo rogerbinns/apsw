@@ -49,18 +49,9 @@ class Async(unittest.TestCase):
         for name in "async_controller", "async_run_coro", "async_cursor_prefetch":
             self.assertRaisesRegex(AttributeError, ".*Do not overwrite apsw.*context", setattr, apsw, name, 3)
 
-    def verifyFuture(self, future):
-        # verify futures match apsw.aio.AsyncResult
-        self.assertTrue(inspect.isawaitable(future))
-
-        # methods can be implemented in python or c and inspect sees
-        # those differently
-        is_method = lambda x: inspect.ismethod(x) or inspect.isbuiltin(x)
-
-        for n in dir(apsw.aio.AsyncResult):
-            if not n.startswith("_"):
-                self.assertHasAttr(future, n)
-                self.assertTrue(is_method(getattr(future, n)))
+    def verifyCoroutine(self, coro):
+        self.assertTrue(inspect.isawaitable(coro))
+        self.assertTrue(inspect.iscoroutine(coro))
 
     async def atestContextVars(self, fw):
         db = await apsw.Connection.as_async(":memory:")
@@ -128,7 +119,7 @@ class Async(unittest.TestCase):
         )
 
         blob = db.blob_open("main", "dummy", "column", 73, True)
-        self.verifyFuture(blob)
+        self.verifyCoroutine(blob)
         blob = await blob
 
         self.assertEqual(3, blob.length())
@@ -190,7 +181,7 @@ class Async(unittest.TestCase):
                 await backup.step(1)
 
         fut = backup.afinish()
-        self.verifyFuture(fut)
+        self.verifyCoroutine(fut)
         await fut
 
         backup = await db.backup("main", db2, "main")
@@ -217,32 +208,32 @@ class Async(unittest.TestCase):
         await db2.executemany("insert into dummy values(?)", (("a" * 4096,) for _ in range(129)))
 
         fut = cursor.aclose()
-        self.verifyFuture(fut)
+        self.verifyCoroutine(fut)
         await fut
         fut = cursor.aclose()
-        self.verifyFuture(fut)
+        self.verifyCoroutine(fut)
         await fut
         cursor.close()
         cursor.close()
 
         fut = blob.aclose()
-        self.verifyFuture(fut)
+        self.verifyCoroutine(fut)
         await fut
         fut = blob.aclose()
-        self.verifyFuture(fut)
+        self.verifyCoroutine(fut)
         await fut
         blob.close()
         blob.close()
 
         backup = db.backup("main", db2, "main")
-        self.verifyFuture(backup)
+        self.verifyCoroutine(backup)
         backup = await backup
 
         fut = backup.aclose()
-        self.verifyFuture(fut)
+        self.verifyCoroutine(fut)
         await fut
         fut = backup.aclose()
-        self.verifyFuture(fut)
+        self.verifyCoroutine(fut)
         await fut
         backup.close()
         backup.close()
@@ -250,10 +241,10 @@ class Async(unittest.TestCase):
         if hasattr(apsw, "Session"):
             session = await apsw.aio.make_session(db, "main")
             fut = session.aclose()
-            self.verifyFuture(fut)
+            self.verifyCoroutine(fut)
             await fut
             fut = session.aclose()
-            self.verifyFuture(fut)
+            self.verifyCoroutine(fut)
             await fut
             session.close()
             session.close()
@@ -262,10 +253,10 @@ class Async(unittest.TestCase):
             session = db
 
         fut = db.aclose()
-        self.verifyFuture(fut)
+        self.verifyCoroutine(fut)
         await fut
         fut = db.aclose()
-        self.verifyFuture(fut)
+        self.verifyCoroutine(fut)
         await fut
 
         db.close()
@@ -300,7 +291,7 @@ class Async(unittest.TestCase):
         await db.create_scalar_function("error_at", error_at)
 
         fut = db.execute("select * from x")
-        self.verifyFuture(fut)
+        self.verifyCoroutine(fut)
         cur = await fut
 
         # do anext without aiter call first
@@ -475,15 +466,15 @@ class Async(unittest.TestCase):
                     pass
 
                 with self.assertRaises(ZeroDivisionError):
-                    self.verifyFuture(task1)
+                    self.verifyCoroutine(task1)
                     await task1
 
                 with self.assertRaises(asyncio.CancelledError):
-                    self.verifyFuture(task2)
+                    self.verifyCoroutine(task2)
                     await task2
 
                 with self.assertRaises(asyncio.CancelledError):
-                    self.verifyFuture(task3)
+                    self.verifyCoroutine(task3)
                     await task3
 
             case "trio":
@@ -494,7 +485,7 @@ class Async(unittest.TestCase):
                 retvals = [Retval(), Retval(), Retval()]
 
                 async def wait_on(index, f):
-                    self.verifyFuture(f)
+                    self.verifyCoroutine(f)
                     try:
                         retvals[index].value = await f
                     except BaseException as exc:
@@ -524,7 +515,7 @@ class Async(unittest.TestCase):
                 retvals = [Retval(), Retval(), Retval()]
 
                 async def wait_on(index, f):
-                    self.verifyFuture(f)
+                    self.verifyCoroutine(f)
                     try:
                         retvals[index].value = await f
                     except BaseException as exc:
