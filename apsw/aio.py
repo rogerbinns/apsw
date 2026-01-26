@@ -110,6 +110,7 @@ async def make_session(db: apsw.AsyncConnection, schema: str) -> AsyncSession:
         raise apsw.MisuseError("The session extension is not enabled and available")
     return await db.async_run(apsw.Session, db, schema)
 
+
 class Cancelled(Exception):
     """Result when an operation was cancelled (Trio, AnyIO)
 
@@ -122,23 +123,6 @@ class Cancelled(Exception):
 # contextvars should be top level.  this is used to track the currently
 # processing future for all controllers
 _current_future = contextvars.ContextVar("apsw.aio._current_future")
-
-
-# These were originally members of AsyncIO and we were low single
-# digit percent slower than aiosqlite for message round trip.  Making
-# them a module function makes us slightly faster!  They are called
-# for every message.
-def _asyncio_set_future_result(future, result):
-    "Update future with result in the event loop"
-    # you get an exception if cancelled
-    if not future.done():
-        future.set_result(result)
-
-
-def _asyncio_set_future_exception(future, exc):
-    "Update future with exception in the event loop"
-    if not future.done():
-        future.set_exception(exc)
 
 
 class AsyncIO:
@@ -189,12 +173,12 @@ class AsyncIO:
                     if (this_deadline := deadline.get()) is not None:
                         if self.loop.time() > this_deadline:
                             raise TimeoutError()
-                    self.loop.call_soon_threadsafe(_asyncio_set_future_result, future, call())
+                    self.loop.call_soon_threadsafe(self.set_future_result, future, call())
 
                 except BaseException as exc:
                     # BaseException is deliberately used because CancelledError
                     # is a subclass of it
-                    self.loop.call_soon_threadsafe(_asyncio_set_future_exception, future, exc)
+                    self.loop.call_soon_threadsafe(self.set_future_exception, future, exc)
 
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
@@ -217,6 +201,17 @@ class AsyncIO:
             raise
         finally:
             coro.close()
+
+    def set_future_result(self, future, result):
+        "Update future with result in the event loop"
+        # you get an exception if cancelled
+        if not future.done():
+            future.set_result(result)
+
+    def set_future_exception(self, future, exc):
+        "Update future with exception in the event loop"
+        if not future.done():
+            future.set_exception(exc)
 
     def __init__(self, *, thread_name: str = "asyncio apsw background worker"):
         global asyncio
@@ -288,7 +283,7 @@ class Trio:
                 raise Cancelled("Cancelled in async_run_coro")
             if future._monotonic_exceeded():
                 raise trio.TooSlowError("deadline exceeded in async_run_coro")
-            return trio.from_thread.run(_trio_loop_run_coro, coro, future._deadline_loop, trio_token=self.token)
+            return trio.from_thread.run(self.loop_run_coro, coro, future._deadline_loop, trio_token=self.token)
         finally:
             coro.close()
 
@@ -302,9 +297,10 @@ class Trio:
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
-async def _trio_loop_run_coro(coro, this_deadline):
-    with trio.fail_at(this_deadline):
-        return await coro
+    async def loop_run_coro(self, coro, this_deadline):
+        with trio.fail_at(this_deadline):
+            return await coro
+
 
 class AnyIO:
     """Uses |anyio| for async concurrency"""
@@ -364,7 +360,7 @@ class AnyIO:
                 raise Cancelled("Cancelled in async_run_coro")
             if future._monotonic_exceeded():
                 raise TimeoutError("deadline exceeded in async_run_coro")
-            return anyio.from_thread.run(_anyio_loop_run_coro, coro, future._deadline_loop, token=self.token)
+            return anyio.from_thread.run(self.loop_run_coro, coro, future._deadline_loop, token=self.token)
         finally:
             coro.close()
 
@@ -379,9 +375,9 @@ class AnyIO:
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
 
-async def _anyio_loop_run_coro(coro, this_deadline):
-    with anyio.fail_after(this_deadline - anyio.current_time()):
-        return await coro
+    async def loop_run_coro(self, coro, this_deadline):
+        with anyio.fail_after(this_deadline - anyio.current_time()):
+            return await coro
 
 
 class _Future:
@@ -403,7 +399,7 @@ class _Future:
         # cancel handling
         "_is_cancelled",
         # cancelled exception class
-        "_cancelled_exc_class"
+        "_cancelled_exc_class",
     )
 
     def __init__(self, event, call, cancelled_exc_class):
@@ -454,7 +450,6 @@ class _Future:
     def done(self):
         """Return ``True`` if call has completed, either with a result or cancelled, else ``False``"""
         return self._event.is_set() or self._is_cancelled
-
 
 
 def Auto() -> Trio | AsyncIO | AnyIO:
