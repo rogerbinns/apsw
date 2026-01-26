@@ -1069,7 +1069,7 @@ Connection_cursor(PyObject *self_, PyObject *Py_UNUSED(unused))
   CHECK_CLOSED(self, NULL);
 
   PyObject *vargs[] = { NULL, self_ };
-  cursor = PyObject_Vectorcall(self->cursor_factory, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  cursor = PyObject_Vectorcall_NoAsync(self->cursor_factory, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!cursor)
   {
     AddTraceBackHere(__FILE__, __LINE__, "Connection.cursor", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));
@@ -5184,7 +5184,7 @@ Connection_execute(PyObject *self_, PyObject *const *args, Py_ssize_t nargs, PyO
   CHECK_CLOSED(self, NULL);
 
   PyObject *vargs[] = { NULL, self_ };
-  cursor = PyObject_VectorcallMethod(apst.cursor, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  cursor = PyObject_VectorcallMethod_NoAsync(apst.cursor, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!cursor)
   {
     AddTraceBackHere(__FILE__, __LINE__, "Connection.execute", "{s: O}", "cursor_factory", OBJ(self->cursor_factory));
@@ -5197,7 +5197,7 @@ Connection_execute(PyObject *self_, PyObject *const *args, Py_ssize_t nargs, PyO
     AddTraceBackHere(__FILE__, __LINE__, "Connection.execute", "{s: O}", "cursor", OBJ(cursor));
     goto fail;
   }
-  res = PyObject_Vectorcall(method, args, nargs, kwnames);
+  res = PyObject_Vectorcall_NoAsync(method, args, nargs, kwnames);
 
 fail:
   Py_XDECREF(cursor);
@@ -5222,7 +5222,7 @@ Connection_executemany(PyObject *self_, PyObject *const *args, Py_ssize_t nargs,
   CHECK_CLOSED(self, NULL);
 
   PyObject *vargs[] = { NULL, (PyObject *)self };
-  cursor = PyObject_VectorcallMethod(apst.cursor, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  cursor = PyObject_VectorcallMethod_NoAsync(apst.cursor, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   if (!cursor)
   {
     AddTraceBackHere(__FILE__, __LINE__, "Connection.executemany", "{s: O}", "cursor_factory",
@@ -5236,7 +5236,7 @@ Connection_executemany(PyObject *self_, PyObject *const *args, Py_ssize_t nargs,
     AddTraceBackHere(__FILE__, __LINE__, "Connection.executemany ", "{s: O}", "cursor", OBJ(cursor));
     goto fail;
   }
-  res = PyObject_Vectorcall(method, args, nargs, kwnames);
+  res = PyObject_Vectorcall_NoAsync(method, args, nargs, kwnames);
 
 fail:
   Py_XDECREF(cursor);
