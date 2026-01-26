@@ -5557,7 +5557,7 @@ Connection_set_cursor_factory(PyObject *self_, PyObject *value, void *Py_UNUSED(
 /** .. attribute:: in_transaction
   :type: bool
 
-  True if currently in a transaction, else False
+  It is recommended to use :meth:`txn_state` instead which is more reliable.
 
   -* sqlite3_get_autocommit
 */
