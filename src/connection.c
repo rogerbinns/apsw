@@ -371,7 +371,7 @@ Connection_close_internal(Connection *self, int force)
       if(PyObject_TypeCheck(item, &APSWSessionType) || PyObject_TypeCheck(item, &APSWChangesetBuilderType))
         nargs = 1;
 #endif
-      closeres = PyObject_VectorcallMethod(apst.close, vargs + 1, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      closeres = PyObject_VectorcallMethod_NoAsync(apst.close, vargs + 1, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
     }
     Py_XDECREF(vargs[2]);
     Py_XDECREF(vargs[1]);
@@ -731,7 +731,7 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
     while ((hook = PyIter_Next(iterator)))
     {
       PyObject *vargs[] = { NULL, (PyObject *)self };
-      hookresult = PyObject_Vectorcall(hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      hookresult = PyObject_Vectorcall_NoAsync(hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       if (!hookresult)
         goto pyexception;
       Py_DECREF(hook);
