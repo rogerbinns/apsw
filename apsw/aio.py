@@ -29,9 +29,10 @@ after that are not observed.
 
 :class:`AsyncIO`
 
-    This is the only way to set a deadline.  :exc:`TimeoutError` will be
-    raised if the deadline is exceeded.  The current time is
-    available from  :meth:`asyncio.loop.time`
+    This is the only way to set a deadline.  :exc:`TimeoutError` will
+    be raised if the deadline is exceeded.  The current time is
+    available from  :meth:`asyncio.get_running_loop().time()
+    <asyncio.loop.time>`
 
 :class:`Trio`
 
@@ -183,7 +184,7 @@ class _CallTracker:
 
 
 # These are used to directly return values and exceptions without
-# sending to the worker thread.
+# sending to the worker thread such as prefetched query rows.
 async def _coro_for_value(value):
     return value
 
@@ -199,6 +200,7 @@ else:
 
     async def _coro_for_exception(exc):
         raise exc
+
 
 # this is separate to avoid the version issues above
 async def _coro_for_stopasynciteration():
