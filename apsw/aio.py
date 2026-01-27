@@ -284,16 +284,41 @@ class AsyncIO:
         finally:
             coro.close()
 
-    async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
-        "executes the coro in the event loop"
+    if sys.version_info < (3, 11):
 
-        async with asyncio.timeout_at(tracker.deadline_loop):
-            task = asyncio.create_task(coro, context=context)
-            try:
-                tracker.cancel_async_cb = task.cancel
+        async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
+            "executes the coro in the event loop"
+
+            task = context.run(asyncio.create_task, coro)
+            tracker.cancel_async_cb = task.cancel
+
+            return await asyncio.wait_for(task, tracker.deadline_loop - self.loop.time())
+
+    elif sys.version_info < (3, 12):
+
+        async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
+            "executes the coro in the event loop"
+
+            task = context.run(asyncio.create_task, coro)
+            tracker.cancel_async_cb = task.cancel
+
+            async with asyncio.timeout_at(tracker.deadline_loop):
                 return await task
-            finally:
-                tracker.cancel_async_cb = None
+
+    else:
+
+        async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
+            "executes the coro in the event loop"
+
+            # Note: we don't set cancel_async_cb back to None on exit
+            # because cancelling an already completed task is doesn't
+            # error or cause problems.
+
+            task = asyncio.create_task(coro, context=context)
+            tracker.cancel_async_cb = task.cancel
+
+            async with asyncio.timeout_at(tracker.deadline_loop):
+                return await task
 
     def __init__(self, *, thread_name: str = "asyncio apsw background worker"):
         global asyncio
