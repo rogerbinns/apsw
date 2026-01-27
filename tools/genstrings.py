@@ -49,6 +49,7 @@ null true false
 
 async_controller async_run_coro async_cursor_prefetch send
 apsw.aio Auto configure _coro_for_value _coro_for_exception
+_coro_for_stopasynciteration
 """
 
 

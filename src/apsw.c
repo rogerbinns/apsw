@@ -1091,6 +1091,7 @@ apsw_fini(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
   fini_apsw_strings();
   Py_CLEAR(coro_for_value);
   Py_CLEAR(coro_for_exception);
+  Py_CLEAR(coro_for_stopasynciteration);
   Py_RETURN_NONE;
 }
 #endif

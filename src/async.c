@@ -302,10 +302,19 @@ async_return_exception(PyObject *exc)
   return PyObject_Vectorcall_NoAsync(coro_for_exception, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 }
 
+static PyObject *coro_for_stopasynciteration;
+
 static PyObject *
 async_return_stopasynciteration(void)
 {
-  return async_return_exception(PyExc_StopAsyncIteration);
+    if (!coro_for_stopasynciteration)
+  {
+    coro_for_stopasynciteration = PyImport_ImportModuleAttr(apst.apsw_aio, apst._coro_for_stopasynciteration);
+    if (!coro_for_stopasynciteration)
+      return NULL;
+  }
+
+  return PyObject_CallNoArgs(coro_for_stopasynciteration);
 }
 
 static PyObject *

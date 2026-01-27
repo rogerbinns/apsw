@@ -188,8 +188,21 @@ async def _coro_for_value(value):
     return value
 
 
-async def _coro_for_exception(exc):
-    raise exc
+if sys.version_info < (3, 12):
+    # Python 3.12 unified the exc type, value, and traceback into the single
+    # exception object.
+
+    async def _coro_for_exception(exc):
+        raise exc[0](exc[1]).with_traceback(exc[2])
+
+else:
+
+    async def _coro_for_exception(exc):
+        raise exc
+
+# this is separate to avoid the version issues above
+async def _coro_for_stopasynciteration():
+    raise StopAsyncIteration
 
 
 class AsyncIO:
