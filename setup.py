@@ -749,6 +749,12 @@ class apsw_patch_amalgamation(Command):
         if not patch_amalgamation():
             raise Exception("Failed to patch amalgamation")
 
+def get_amalgamation_version(filename):
+    for line in pathlib.Path(filename).read_text().splitlines():
+        if mo:= re.match(r"^#define\s+SQLITE_VERSION_NUMBER\s+([0-9]{7})\s*$", line):
+            return int(mo.group(1))
+    raise Exception(f"Unable to find version in {filename=}")
+
 # amalgamation patching
 def patch_amalgamation() -> bool:
     "Returns bool if it succeeded"
@@ -819,6 +825,10 @@ def patch_amalgamation() -> bool:
 
     source_file_name = pathlib.Path(__file__).parent / "sqlite3" / "sqlite3.c"
     patch_file_name = pathlib.Path(__file__).parent / "tools" / "carray.patch"
+
+    if get_amalgamation_version(source_file_name) >= 3052000:
+        print("No patches needed for this version")
+        return True
 
     try:
         source_file_lines = source_file_name.read_text(encoding="utf8").splitlines()
