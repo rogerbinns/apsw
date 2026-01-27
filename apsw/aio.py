@@ -182,8 +182,8 @@ class _CallTracker:
             self.cancel_async_cb()
 
 
-# ::TODO:: in async.c delete AwaitableWrapper and make
-# async_return_value and async_return_exception use these
+# These are used to directly return values and exceptions without
+# sending to the worker thread.
 async def _coro_for_value(value):
     return value
 

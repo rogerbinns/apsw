@@ -43,6 +43,8 @@
 #undef UpdateChangeRow
 #undef UpdateDeleteRow
 #undef UpdateInsertRow
+#undef _coro_for_exception
+#undef _coro_for_value
 #undef add_note
 #undef apsw_aio
 #undef async_controller
@@ -139,6 +141,8 @@ static struct _apsw_string_table
     PyObject *UpdateChangeRow;
     PyObject *UpdateDeleteRow;
     PyObject *UpdateInsertRow;
+    PyObject *_coro_for_exception;
+    PyObject *_coro_for_value;
     PyObject *add_note;
     PyObject *apsw_aio;
     PyObject *async_controller;
@@ -236,6 +240,8 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.UpdateChangeRow);
     Py_CLEAR(apst.UpdateDeleteRow);
     Py_CLEAR(apst.UpdateInsertRow);
+    Py_CLEAR(apst._coro_for_exception);
+    Py_CLEAR(apst._coro_for_value);
     Py_CLEAR(apst.add_note);
     Py_CLEAR(apst.apsw_aio);
     Py_CLEAR(apst.async_controller);
@@ -334,6 +340,8 @@ init_apsw_strings()
         || (!apst.UpdateChangeRow && 0 == (apst.UpdateChangeRow = PyUnicode_FromString("UpdateChangeRow")))
         || (!apst.UpdateDeleteRow && 0 == (apst.UpdateDeleteRow = PyUnicode_FromString("UpdateDeleteRow")))
         || (!apst.UpdateInsertRow && 0 == (apst.UpdateInsertRow = PyUnicode_FromString("UpdateInsertRow")))
+        || (!apst._coro_for_exception && 0 == (apst._coro_for_exception = PyUnicode_FromString("_coro_for_exception")))
+        || (!apst._coro_for_value && 0 == (apst._coro_for_value = PyUnicode_FromString("_coro_for_value")))
         || (!apst.add_note && 0 == (apst.add_note = PyUnicode_FromString("add_note")))
         || (!apst.apsw_aio && 0 == (apst.apsw_aio = PyUnicode_FromString("apsw.aio")))
         || (!apst.async_controller && 0 == (apst.async_controller = PyUnicode_FromString("async_controller")))

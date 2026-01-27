@@ -6,137 +6,20 @@ static PyObject *async_get_controller_from_connection(PyObject *connection);
 static PyObject *async_cursor_prefetch_context_var;
 static PyObject *async_controller_context_var;
 
-/* used to return values and exceptions.  I originally did this by
-   calling into the controller which was time consuming and fragile */
-typedef struct
-{
-  PyObject_HEAD
-
-  enum
-  {
-    Value,
-    Exception,
-    StopAsyncIteration
-  } value_type;
-
-  PyObject *one;
-#if PY_VERSION_HEX < 0x030c0000
-  PyObject *two;
-  PyObject *three;
-#endif
-} AwaitableWrapper;
-
-static PyObject *
-AwaitableWrapper_await(PyObject *self)
-{
-  return Py_NewRef(self);
-}
-
-static PyObject *
-AwaitableWrapper_next(PyObject *self_)
-{
-  AwaitableWrapper *self = (AwaitableWrapper *)self_;
-  switch (self->value_type)
-  {
-  case Exception: {
-    /* exception restoring steals references */
-#if PY_VERSION_HEX < 0x030c0000
-    PyErr_Restore(self->one, self->two, self->three);
-    self->one = self->two = self->three = NULL;
-#else
-    PyErr_SetRaisedException(self->one);
-    self->one = NULL;
-#endif
-    break;
-  }
-  case Value:
-  {
-    /* PyErr_SetObject has more complex code to instantiate the exception */
-    PyObject *real_value = PyObject_CallOneArg(PyExc_StopIteration, self->one);
-    if (real_value)
-    {
-      PyErr_SetObject(PyExc_StopIteration, real_value);
-      Py_DECREF(real_value);
-    }
-    break;
-  }
-  case StopAsyncIteration:
-    PyErr_SetNone(PyExc_StopAsyncIteration);
-  }
-  self->value_type = StopAsyncIteration;
-  return NULL;
-}
-
-/* these methods are just to make it smell like a Future but do nothing */
-
-static PyObject *
-AwaitableWrapper_cancel(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused21))
-{
-  Py_RETURN_FALSE;
-}
-
-static PyObject *
-AwaitableWrapper_cancelled(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused21))
-{
-  Py_RETURN_FALSE;
-}
-
-static PyObject *
-AwaitableWrapper_done(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused21))
-{
-  Py_RETURN_TRUE;
-}
-
-static void
-AwaitableWrapper_dealloc(PyObject *self_)
-{
-  AwaitableWrapper *self = (AwaitableWrapper *)self_;
-  Py_CLEAR(self->one);
-#if PY_VERSION_HEX < 0x030c0000
-  Py_CLEAR(self->two);
-  Py_CLEAR(self->three);
-#endif
-  Py_TpFree(self_);
-}
-
-static PyAsyncMethods AwaitableWrapper_async_methods = {
-  .am_await = AwaitableWrapper_await,
-};
-
-static PyMethodDef AwaitableMethods[] = {
-  { "cancel", (PyCFunction)AwaitableWrapper_cancel, METH_NOARGS },
-  { "cancelled", (PyCFunction)AwaitableWrapper_cancelled, METH_NOARGS },
-  { "done", (PyCFunction)AwaitableWrapper_done, METH_NOARGS },
-  { 0 },
-};
-
-static PyTypeObject AwaitableWrapperType = {
-  .ob_base = PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.aio.AwaitableWrapper",
-  .tp_basicsize = sizeof(AwaitableWrapper),
-  .tp_flags = Py_TPFLAGS_DEFAULT,
-  .tp_new = PyType_GenericNew,
-  .tp_iter = PyObject_SelfIter,
-  .tp_iternext = AwaitableWrapper_next,
-  .tp_dealloc = AwaitableWrapper_dealloc,
-  .tp_methods = AwaitableMethods,
-  .tp_as_async = &AwaitableWrapper_async_methods,
-};
-
 /* used for getting call details im a non-worker thread that can be invoked in the worker thread */
 typedef struct BoxedCall
 {
   PyObject_VAR_HEAD
 
-  /* discriminated union */
-  enum
-  {
-    Dormant = 0,
-    ConnectionInit,
-    FastCallWithKeywords,
-    Unary,
-    Binary,
-    AttrGet,
-  } call_type;
+      /* discriminated union */
+      enum {
+        Dormant = 0,
+        ConnectionInit,
+        FastCallWithKeywords,
+        Unary,
+        Binary,
+        AttrGet,
+      } call_type;
 
   /* PyContext to run call in */
   PyObject *context;
@@ -387,54 +270,42 @@ async_send_boxed_call(PyObject *connection, PyObject *boxed_call)
   return result;
 }
 
+static PyObject *coro_for_value;
+
 static PyObject *
 async_return_value(PyObject *value)
 {
-  AwaitableWrapper *wrap = (AwaitableWrapper *)_PyObject_New(&AwaitableWrapperType);
-  if (wrap)
+  if (!coro_for_value)
   {
-    wrap->value_type = Value;
-    wrap->one = Py_NewRef(value);
-#if PY_VERSION_HEX < 0x030c0000
-    wrap->two = NULL;
-    wrap->three = NULL;
-#endif
+    coro_for_value = PyImport_ImportModuleAttr(apst.apsw_aio, apst._coro_for_value);
+    if (!coro_for_value)
+      return NULL;
   }
-  return (PyObject *)wrap;
+
+  PyObject *vargs[] = { NULL, value };
+  return PyObject_Vectorcall_NoAsync(coro_for_value, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 }
 
+static PyObject *coro_for_exception;
+
 static PyObject *
-async_return_exception(PyObject *value)
+async_return_exception(PyObject *exc)
 {
-  AwaitableWrapper *wrap = (AwaitableWrapper *)_PyObject_New(&AwaitableWrapperType);
-  if (wrap)
+  if (!coro_for_exception)
   {
-    wrap->value_type = Exception;
-#if PY_VERSION_HEX < 0x030c0000
-    wrap->one = Py_XNewRef(PyTuple_GET_ITEM(value, 0));
-    wrap->two = Py_XNewRef(PyTuple_GET_ITEM(value, 1));
-    wrap->three = Py_XNewRef(PyTuple_GET_ITEM(value, 2));
-#else
-    wrap->one = Py_NewRef(value);
-#endif
+    coro_for_exception = PyImport_ImportModuleAttr(apst.apsw_aio, apst._coro_for_exception);
+    if (!coro_for_exception)
+      return NULL;
   }
-  return (PyObject *)wrap;
+
+  PyObject *vargs[] = { NULL, exc };
+  return PyObject_Vectorcall_NoAsync(coro_for_exception, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 }
 
 static PyObject *
 async_return_stopasynciteration(void)
 {
-  AwaitableWrapper *wrap = (AwaitableWrapper *)_PyObject_New(&AwaitableWrapperType);
-  if (wrap)
-  {
-    wrap->value_type = StopAsyncIteration;
-    wrap->one = NULL;
-#if PY_VERSION_HEX < 0x030c0000
-    wrap->two = NULL;
-    wrap->three = NULL;
-#endif
-  }
-  return (PyObject *)wrap;
+  return async_return_exception(PyExc_StopAsyncIteration);
 }
 
 static PyObject *
@@ -546,8 +417,7 @@ do_async_attr_get(PyObject *connection, getter function, PyObject *arg1, void *a
 static PyObject *
 error_async_in_sync_context(void)
 {
-  PyErr_SetString(PyExc_TypeError,
-                  "Using async in sync context");
+  PyErr_SetString(PyExc_TypeError, "Using async in sync context");
   return NULL;
 }
 

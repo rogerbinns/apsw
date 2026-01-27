@@ -1089,6 +1089,8 @@ static PyObject *
 apsw_fini(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   fini_apsw_strings();
+  Py_CLEAR(coro_for_value);
+  Py_CLEAR(coro_for_exception);
   Py_RETURN_NONE;
 }
 #endif
@@ -2018,7 +2020,6 @@ PyInit_apsw(void)
       || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_type) < 0
       || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0
       || PyType_Ready(&PyObjectBindType) < 0 || PyType_Ready(&BoxedCallType) < 0
-      || PyType_Ready(&AwaitableWrapperType) < 0
 #ifdef SQLITE_ENABLE_CARRAY
       || PyType_Ready(&CArrayBindType) < 0
 #endif
