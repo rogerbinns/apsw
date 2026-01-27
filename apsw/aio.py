@@ -2,18 +2,17 @@
 
 from __future__ import annotations
 
-import queue
-import threading
-import contextvars
 import contextlib
-import sys
-import concurrent.futures
+import contextvars
 import math
+import queue
+import sys
+import threading
 import time
+from collections.abc import Callable, Coroutine
+from typing import Any, TypeVar
 
 import apsw
-
-from typing import TypeVar, Protocol
 
 T = TypeVar("T")
 
@@ -120,9 +119,77 @@ class Cancelled(Exception):
     pass
 
 
-# contextvars should be top level.  this is used to track the currently
-# processing future for all controllers
-_current_future = contextvars.ContextVar("apsw.aio._current_future")
+# this is used to track the currently processing call for all controllers
+_current_call: contextvars.ContextVar[_CallTracker] = contextvars.ContextVar("apsw.aio._current_call")
+
+
+class _CallTracker:
+    """
+    All the details for the lifecycle of a call.
+    """
+
+    __slots__ = (
+        # Event used to signal ready
+        "event",
+        # result value or exception
+        "result",
+        # is it an exception?
+        "is_exception",
+        # BoxedCall to make
+        "call",
+        # deadline in event loop clock
+        "deadline_loop",
+        # deadline in worker thread relative to monotonic clock
+        "deadline_monotonic",
+        # cancel indication
+        "is_cancelled",
+        # if a callback is async and run back in the event loop then
+        # this can be called to cancel it
+        "cancel_async_cb",
+    )
+
+    event: asyncio.Event | anyio.Event | trio.Event
+    result: Any | BaseException
+    is_exception: bool
+    call: Callable[[], Any]
+    deadline_loop: None | float | int
+    deadline_monotonic: None | float | int
+    is_cancelled: bool
+    cancel_async_cb: Callable[[], Any] | None
+
+    def __init__(self, event: asyncio.Event | anyio.Event | trio.Event, call: Callable[[], Any]) -> None:
+        self.is_exception = False
+        self.is_cancelled = False
+        self.event = event
+        self.call = call
+        self.deadline_loop = None
+        self.deadline_monotonic = None
+        self.cancel_async_cb = None
+
+    def set_deadline(self, value: int | float, loop_time: int | float):
+        self.deadline_loop = value
+        if value is not math.inf:
+            self.deadline_monotonic = value - loop_time + time.monotonic()
+
+    def monotonic_exceeded(self) -> bool:
+        return self.deadline_monotonic is not None and time.monotonic() > self.deadline_monotonic
+
+    def cancel(self):
+        "Cancel the call"
+
+        self.is_cancelled = True
+        if self.cancel_async_cb is not None:
+            self.cancel_async_cb()
+
+
+# ::TODO:: in async.c delete AwaitableWrapper and make
+# async_return_value and async_return_exception use these
+async def _coro_for_value(value):
+    return value
+
+
+async def _coro_for_exception(exc):
+    raise exc
 
 
 class AsyncIO:
@@ -134,84 +201,86 @@ class AsyncIO:
             hook(db)
         db.set_progress_handler(self.progress_checker, check_progress_steps.get(), id=self)
 
-    def send(self, call):
-        "Enqueues call to worker thread"
-        future = self.loop.create_future()
-        self.queue.put((future, call))
-        return future
+    async def send(self, call: Callable[[], Any]):
+        "Send call to worker"
+        tracker = _CallTracker(asyncio.Event(), call)
+        if (this_deadline := deadline.get()) is not None:
+            tracker.set_deadline(this_deadline, self.loop.time())
+        self.queue.put(tracker)
+        try:
+            await tracker.event.wait()
+            if tracker.is_exception:
+                raise tracker.result
+            return tracker.result
+        except (asyncio.CancelledError, TimeoutError):
+            tracker.cancel()
+            raise
 
     def close(self):
         "Called on connection close, so the worker thread can be stopped"
-        # How we tell the worker to exit
+        # How we tell the worker thread to exit
         self.queue.put(None)
 
     def progress_checker(self):
         "Periodic check for cancellation and deadlines"
-        if (this_deadline := deadline.get()) is not None and self.loop.time() > this_deadline:
-            raise TimeoutError()
-        if _current_future.get().done():
+        if _current_call.get().is_cancelled:
             raise asyncio.CancelledError()
+        if _current_call.get().monotonic_exceeded():
+            raise TimeoutError()
         return False
 
-    def worker_thread_run(self, q):
+    def worker_thread_run(self):
         "Does the enqueued call processing in the worker thread"
 
-        while (item := q.get()) is not None:
-            future, call = item
-            # cancelled?
-            if future.done():
-                continue
+        while (tracker := self.queue.get()) is not None:
+            try:
+                if not tracker.is_cancelled:
+                    # adopt caller's contextvars
+                    with tracker.call:
+                        # we don't restore this because the queue is not
+                        # re-entrant, so there is no point
+                        _current_call.set(tracker)
 
-            # adopt caller's contextvars
-            with call:
-                # we don't restore this because the queue is not
-                # re-entrant, so there is no point
-                _current_future.set(future)
+                        try:
+                            # should we even start?
+                            if tracker.monotonic_exceeded():
+                                raise TimeoutError()
+                            tracker.result = tracker.call()
 
-                try:
-                    # should we even start?
-                    if (this_deadline := deadline.get()) is not None:
-                        if self.loop.time() > this_deadline:
-                            raise TimeoutError()
-                    self.loop.call_soon_threadsafe(self.set_future_result, future, call())
+                        except BaseException as exc:
+                            # BaseException is deliberately used because CancelledError
+                            # is a subclass of it
+                            tracker.result = exc
+                            tracker.is_exception = True
+            finally:
+                self.loop.call_soon_threadsafe(tracker.event.set)
 
-                except BaseException as exc:
-                    # BaseException is deliberately used because CancelledError
-                    # is a subclass of it
-                    self.loop.call_soon_threadsafe(self.set_future_exception, future, exc)
-
-    def async_run_coro(self, coro):
+    def async_run_coro(self, coro: Coroutine):
         "Called in worker thread to run a coroutine in the event loop"
+
+        tracker = _current_call.get()
+
         try:
-            if _current_future.get().done():
+            if tracker.is_cancelled:
                 raise asyncio.CancelledError()
 
-            if (this_timeout := deadline.get()) is not None:
-                this_timeout -= self.loop.time()
-
-            # yes we really need the timeout twice.  when the wait_for
-            # one fires, the exception isn't propagated to us
             return asyncio.run_coroutine_threadsafe(
-                asyncio.wait_for(coro, this_timeout),
-                self.loop,
-            ).result(this_timeout)
-        except concurrent.futures.TimeoutError:
-            if sys.version_info < (3, 11):
-                raise TimeoutError
-            raise
+                self.run_coro_in_loop(coro, tracker, contextvars.copy_context()), self.loop
+            ).result()
+
         finally:
             coro.close()
 
-    def set_future_result(self, future, result):
-        "Update future with result in the event loop"
-        # you get an exception if cancelled
-        if not future.done():
-            future.set_result(result)
+    async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
+        "executes the coro in the event loop"
 
-    def set_future_exception(self, future, exc):
-        "Update future with exception in the event loop"
-        if not future.done():
-            future.set_exception(exc)
+        async with asyncio.timeout_at(tracker.deadline_loop):
+            task = asyncio.create_task(coro, context=context)
+            try:
+                tracker.cancel_async_cb = task.cancel
+                return await task
+            finally:
+                tracker.cancel_async_cb = None
 
     def __init__(self, *, thread_name: str = "asyncio apsw background worker"):
         global asyncio
@@ -219,9 +288,9 @@ class AsyncIO:
 
         apsw.async_run_coro.set(self.async_run_coro)
 
-        self.queue = queue.SimpleQueue()
+        self.queue: queue.SimpleQueue[_CallTracker | None] = queue.SimpleQueue()
         self.loop = asyncio.get_running_loop()
-        threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
+        threading.Thread(name=thread_name, target=self.worker_thread_run).start()
 
 
 class Trio:
@@ -235,10 +304,10 @@ class Trio:
 
     def send(self, call):
         "Enqueues call to worker thread"
-        future = _Future(trio.Event(), call, trio.Cancelled)
+        future = _CallTracker(trio.Event(), call, trio.Cancelled)
         if (this_deadline := deadline.get()) is None:
             this_deadline = trio.current_effective_deadline()
-        future._set_deadline(this_deadline, trio.current_time)
+        future.set_deadline(this_deadline, trio.current_time)
 
         self.queue.put(future)
         return future
@@ -249,7 +318,7 @@ class Trio:
 
     def progress_checker(self):
         "Periodic check for cancellation and deadlines"
-        future = _current_future.get()
+        future = _current_call.get()
         if future._is_cancelled:
             raise Cancelled("cancelled in progress handler")
         if future._monotonic_exceeded():
@@ -261,7 +330,7 @@ class Trio:
         while (future := q.get()) is not None:
             if not future._is_cancelled:
                 with future._call:
-                    _current_future.set(future)
+                    _current_call.set(future)
 
                     try:
                         if future._monotonic_exceeded():
@@ -278,7 +347,7 @@ class Trio:
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
         try:
-            future = _current_future.get()
+            future = _current_call.get()
             if future._is_cancelled:
                 raise Cancelled("Cancelled in async_run_coro")
             if future._monotonic_exceeded():
@@ -296,7 +365,6 @@ class Trio:
         self.token = trio.lowlevel.current_trio_token()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
-
     async def loop_run_coro(self, coro, this_deadline):
         with trio.fail_at(this_deadline):
             return await coro
@@ -313,10 +381,10 @@ class AnyIO:
 
     def send(self, call):
         "Enqueues call to worker thread"
-        future = _Future(anyio.Event(), call, self.cancelled_exc_class)
+        future = _CallTracker(anyio.Event(), call, self.cancelled_exc_class)
         if (this_deadline := deadline.get()) is None:
             this_deadline = anyio.current_effective_deadline()
-        future._set_deadline(this_deadline, anyio.current_time)
+        future.set_deadline(this_deadline, anyio.current_time)
         self.queue.put(future)
         return future
 
@@ -326,7 +394,7 @@ class AnyIO:
 
     def progress_checker(self):
         "Periodic check for cancellation and deadlines"
-        future = _current_future.get()
+        future = _current_call.get()
         if future._is_cancelled:
             raise Cancelled("cancelled in progress handler")
         if future._monotonic_exceeded():
@@ -338,7 +406,7 @@ class AnyIO:
         while (future := q.get()) is not None:
             if not future._is_cancelled:
                 with future._call:
-                    _current_future.set(future)
+                    _current_call.set(future)
 
                     try:
                         if future._monotonic_exceeded():
@@ -355,7 +423,7 @@ class AnyIO:
     def async_run_coro(self, coro):
         "Called in worker thread to run a coroutine in the event loop"
         try:
-            future = _current_future.get()
+            future = _current_call.get()
             if future._is_cancelled:
                 raise Cancelled("Cancelled in async_run_coro")
             if future._monotonic_exceeded():
@@ -374,82 +442,9 @@ class AnyIO:
         self.cancelled_exc_class = anyio.get_cancelled_exc_class()
         threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
 
-
     async def loop_run_coro(self, coro, this_deadline):
         with anyio.fail_after(this_deadline - anyio.current_time()):
             return await coro
-
-
-class _Future:
-    """Used for most :class:`Trio` and :class:`AnyIO` requests"""
-
-    __slots__ = (
-        # Event used to signal ready
-        "_event",
-        # result value or exception
-        "_result",
-        # is it an exception?
-        "_is_exception",
-        # call to make
-        "_call",
-        # deadline in event loop clock
-        "_deadline_loop",
-        # deadline in worker thread relative to monotonic clock
-        "_deadline_monotonic",
-        # cancel handling
-        "_is_cancelled",
-        # cancelled exception class
-        "_cancelled_exc_class",
-    )
-
-    def __init__(self, event, call, cancelled_exc_class):
-        self._is_exception = False
-        self._is_cancelled = False
-        self._event = event
-        self._call = call
-        self._deadline_loop = None
-        self._deadline_monotonic = None
-        self._cancelled_exc_class = cancelled_exc_class
-
-    def _set_deadline(self, value, loop_time):
-        self._deadline_loop = value
-        if value is not math.inf:
-            self._deadline_monotonic = value - loop_time() + time.monotonic()
-
-    def _monotonic_exceeded(self) -> bool:
-        return self._deadline_monotonic is not None and time.monotonic() > self._deadline_monotonic
-
-    async def _aresult(self):
-        try:
-            await self._event.wait()
-        except self._cancelled_exc_class:
-            self._is_cancelled = True
-            raise
-        if self._is_cancelled:
-            raise Cancelled()
-        if self._is_exception:
-            raise self._result
-        return self._result
-
-    def __await__(self):
-        return self._aresult().__await__()
-
-    def cancel(self):
-        "Cancel the call"
-
-        if not self._event.is_set():
-            self._is_cancelled = True
-        if self._is_cancelled:
-            self._event.set()
-        return self._is_cancelled
-
-    def cancelled(self):
-        "Return ``True`` if call was marked cancelled, else ``False``"
-        return self._is_cancelled
-
-    def done(self):
-        """Return ``True`` if call has completed, either with a result or cancelled, else ``False``"""
-        return self._event.is_set() or self._is_cancelled
 
 
 def Auto() -> Trio | AsyncIO | AnyIO:
