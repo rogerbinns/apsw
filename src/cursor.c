@@ -702,7 +702,11 @@ APSWCursor_dobinding(APSWCursor *self, int arg, PyObject *obj)
   else if (PyObject_TypeCheck(obj, &CArrayBindType) == 1)
   {
     CArrayBind *cab = (CArrayBind *)obj;
-#ifdef APSW_MODIFIED_CARRAY
+#if SQLITE_VERSION_NUMBER >= 3052000
+    Py_INCREF(obj);
+    res = sqlite3_carray_bind_v2(self->statement->vdbestatement, arg, cab->aData, cab->nData, cab->mFlags,
+                                   CArrayBind_bind_destructor, obj);
+#elif defined(APSW_MODIFIED_CARRAY)
     Py_INCREF(obj);
     res = sqlite3_carray_bind_apsw(self->statement->vdbestatement, arg, cab->aData, cab->nData, cab->mFlags,
                                    CArrayBind_bind_destructor, obj);

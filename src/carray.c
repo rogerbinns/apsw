@@ -303,7 +303,7 @@ CArrayBind_dealloc(PyObject *self_)
   Py_TpFree(self_);
 }
 
-#ifdef APSW_MODIFIED_CARRAY
+#if defined(APSW_MODIFIED_CARRAY) || SQLITE_VERSION_NUMBER >= 3052000
 static void
 CArrayBind_bind_destructor(void *pCtx)
 {
