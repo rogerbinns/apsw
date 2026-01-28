@@ -563,8 +563,6 @@ class Async(unittest.TestCase):
             # no native timeout handling so nothing else to test
             return
 
-        raise NotImplementedError # these need checking and updating like above
-
         ced = getattr(sys.modules[fw], "current_effective_deadline")
         fail_after = getattr(sys.modules[fw], "fail_after")
 
@@ -585,17 +583,36 @@ class Async(unittest.TestCase):
             this_ced = ced()
             self.assertAlmostEqual(this_ced, await (await db.execute("select ced()")).get, places=4)
 
-        # all the way back to event loop using only the framework timeouts
-        for timeout in timeout_seq():
-            timed_out = None
-            with fail_after(timeout):
-                task = db.execute("select func()")
-                release_gil()
+        timed_out = Event()
+
+        async def func():
             try:
-                await task
-            except BaseException as exc:
-                check_timeout(exc)
-                break
+                await sleep(1000)
+            except:
+                # trio does Cancelled here - the caller gets timeout exception
+                timed_out.set()
+                raise
+
+        await db.create_scalar_function("func", func)
+
+        # we need to ensure the async function is running hence delays
+        # until it gets executed
+        for timeout in (0, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5):
+            try:
+                with fail_after(timeout):
+                    await (await db.execute("select func()")).get
+            except timeout_exc_class:
+                if timed_out.is_set():
+                    break
+        else:
+            self.fail("Timeout never happened")
+
+        # the timeout value from above is used because that was enough
+        # time to go from worker back to event loop, so it should be
+        # enough to be deep in the sql
+        with self.assertRaises(timeout_exc_class):
+            with fail_after(timeout):
+                await (await db.execute(fractal_sql)).get
 
     async def atestSession(self, fw):
         if not hasattr(apsw, "Session"):
@@ -834,12 +851,6 @@ fractal_sql = """
         FROM m2 GROUP BY cy
     )
     SELECT group_concat(rtrim(t),x'0a') FROM a;"""
-
-
-def release_gil():
-    # called to ensure another thread has a chance to run
-    for i in range(5):
-        time.sleep(0)
 
 
 __all__ = ("Async",)
