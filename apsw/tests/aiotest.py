@@ -710,8 +710,11 @@ class Async(unittest.TestCase):
         )
 
     def get_all_atests(self):
+        verbose = self._outcome.result.showAll
         for n in dir(self):
             if "atestA" <= n <= "atestZ":
+                if verbose:
+                    print(">>> ", n)
                 yield getattr(self, n)
 
     def testAsyncIO(self):
