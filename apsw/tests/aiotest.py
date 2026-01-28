@@ -6,6 +6,7 @@
 
 import contextlib
 import contextvars
+import functools
 import threading
 import unittest
 import sys
@@ -385,166 +386,83 @@ class Async(unittest.TestCase):
             apsw.connection_hooks = []
 
     async def atestCancel(self, fw):
-        "Cancellation calls on futures"
 
         # this is the only framework specific bit
         Event = getattr(sys.modules[fw], "Event")
+        sleep = getattr(sys.modules[fw], "sleep")
+
+
+        # async callback cancellation
+        event = Event()
+
+        async def infinite_loop():
+            event.set()
+            while True:
+                await sleep(0)
+
+        db = await apsw.Connection.as_async("")
+        await db.create_scalar_function("infinite_loop", infinite_loop)
+
+        async def work():
+
+            await event.wait()
+            await sleep(0.01)
+            return await cur.get
+
         match fw:
             case "asyncio":
-                cancelled_exc = asyncio.CancelledError
-            case "trio" | "anyio":
-                cancelled_exc = apsw.aio.Cancelled
+                task1 = asyncio.create_task(db.execute("select infinite_loop()"))
+                # this gets queued but should not run because task1 is running
+                task2 = asyncio.create_task(db.pragma("user_version", 3))
+
+                await event.wait()
+                await sleep(0.01)
+                task2.cancel()
+                task1.cancel()
+                with self.assertRaises(asyncio.CancelledError):
+                    await task1
+                with self.assertRaises(asyncio.CancelledError):
+                    await task2
+
+                self.assertEqual(0, await db.pragma("user_version"))
+
+            case _:
+                1/0
+
+        # regular sync code cancellation
+        apsw.aio.check_progress_steps.set(10)
+        db = await apsw.Connection.as_async("")
 
         event = Event()
 
-        async def func():
-            await event.wait()
-            return 3
+        def set_event(loop, call):
+            match fw:
+                case "asyncio":
+                    loop.call_soon_threadsafe(call)
+                case _:
+                    raise NotImplementedError
 
-        apsw.aio.check_progress_steps.set(10)
-
-        db = await apsw.Connection.as_async("")
-        await db.create_scalar_function("func", func)
-
-        fut = db.execute("select func(), func()")
-        self.assertFalse(fut.done())
-        res = fut.cancel()
-        self.assertEqual(res, fut.cancelled())
-        event.set()
-
-        with self.assertRaises(cancelled_exc):
-            await fut
-        self.assertTrue(fut.done())
-
-        fut = db.execute(fractal_sql)
-        self.assertFalse(fut.done())
-        release_gil()
-        res = fut.cancel()
-        self.assertEqual(res, fut.cancelled())
-        with self.assertRaises(cancelled_exc):
-            await fut
-        self.assertTrue(fut.done())
-
-    async def atestCancelFramework(self, fw):
-        "Cancellation done by the framework"
-        if sys.version_info < (3, 11):
-            global ExceptionGroup
-            ExceptionGroup = Exception
-
-        event = getattr(sys.modules[fw], "Event")()
-
-        async def set_event():
-            event.set()
-
-        async def func(x, y):
-            await event.wait()
-            if x == y:
-                1 / 0
-            return x + y
-
-        db = await apsw.Connection.as_async("")
-        await db.create_scalar_function("func", func)
 
         match fw:
             case "asyncio":
-                if sys.version_info < (3, 11):
-                    # py 3.10 doesn't have TaskGroup
-                    return
+                await db.create_scalar_function("set_event", functools.partial(set_event, asyncio.get_running_loop(), event.set))
 
-                async def wait_on(f):
-                    return await f
+                cur = await db.execute("select set_event();"+fractal_sql)
 
-                try:
-                    async with asyncio.TaskGroup() as tg:
-                        task1 = tg.create_task(wait_on(db.execute("select func(4, 5), func(4, 4)")))
-                        task2 = tg.create_task(wait_on(db.execute("select func(3,4)")))
-                        task3 = tg.create_task(wait_on(db.pragma("user_version", 7)))
+                task = asyncio.create_task(cur.fetchall())
 
-                        tg.create_task(set_event())
+                await event.wait()
+                await sleep(0.01)
 
-                except ExceptionGroup:
-                    pass
-
-                with self.assertRaises(ZeroDivisionError):
-                    self.verifyCoroutine(task1)
-                    await task1
+                task.cancel()
 
                 with self.assertRaises(asyncio.CancelledError):
-                    self.verifyCoroutine(task2)
-                    await task2
-
-                with self.assertRaises(asyncio.CancelledError):
-                    self.verifyCoroutine(task3)
-                    await task3
-
-            case "trio":
-
-                class Retval:
-                    pass
-
-                retvals = [Retval(), Retval(), Retval()]
-
-                async def wait_on(index, f):
-                    self.verifyCoroutine(f)
-                    try:
-                        retvals[index].value = await f
-                    except BaseException as exc:
-                        retvals[index].exception = exc
-                        raise
-
-                try:
-                    async with trio.open_nursery() as n:
-                        n.start_soon(wait_on, 0, db.execute("select func(4, 5), func(4, 4)"))
-                        n.start_soon(wait_on, 1, db.execute("select func(3,4)"))
-                        n.start_soon(wait_on, 2, db.pragma("user_version", 7))
-
-                        n.start_soon(set_event)
-
-                except ExceptionGroup:
-                    pass
-
-                self.assertIsInstance(retvals[0].exception, ZeroDivisionError)
-                self.assertIsInstance(retvals[1].exception, trio.Cancelled)
-                self.assertIsInstance(retvals[2].exception, trio.Cancelled)
-
-            case "anyio":
-
-                class Retval:
-                    pass
-
-                retvals = [Retval(), Retval(), Retval()]
-
-                async def wait_on(index, f):
-                    self.verifyCoroutine(f)
-                    try:
-                        retvals[index].value = await f
-                    except BaseException as exc:
-                        retvals[index].exception = exc
-                        raise
-
-                try:
-                    async with anyio.create_task_group() as tg:
-                        tg.start_soon(wait_on, 0, db.execute("select func(4, 5), func(4, 4)"))
-                        tg.start_soon(wait_on, 1, db.execute("select func(3,4)"))
-                        tg.start_soon(wait_on, 2, db.pragma("user_version", 7))
-
-                        tg.start_soon(set_event)
-                except ExceptionGroup:
-                    pass
-
-                cancelled = anyio.get_cancelled_exc_class()
-
-                self.assertIsInstance(retvals[0].exception, ZeroDivisionError)
-                self.assertIsInstance(retvals[1].exception, cancelled)
-                self.assertIsInstance(retvals[2].exception, cancelled)
+                    await task
 
             case _:
                 raise NotImplementedError
 
-        self.assertEqual(0, await db.pragma("user_version"))
-
     async def atestTimeout(self, fw):
-        Event = getattr(sys.modules[fw], "Event")
         sleep = getattr(sys.modules[fw], "sleep")
 
         match fw:
@@ -558,37 +476,15 @@ class Async(unittest.TestCase):
                 time = anyio.current_time
                 timeout_exc_class = TimeoutError
 
-        def check_timeout(exc):
-            # other exceptions can happen during timeout exceptions so
-            # check them all
-            got_timeout = False
-            while exc is not None:
-                if isinstance(exc, timeout_exc_class):
-                    got_timeout = True
-                    break
-                exc = exc.__cause__ or exc.__context__
-            if not got_timeout:
-                raise
-
-        event = Event()
-
-        timed_out = None
-
-        async def func():
-            nonlocal timed_out
-            try:
-                await sleep(3600)
-            except BaseException as exc:
-                timed_out = exc
-                raise
-
-        async def block():
-            await event.wait()
-            return True
+        # check apsw.aio.deadline first
 
         apsw.aio.check_progress_steps.set(10)
         db = await apsw.Connection.as_async("")
-        await db.create_scalar_function("func", func)
+
+        async def block():
+            while True:
+                await sleep(0)
+
         await db.create_scalar_function("block", block)
         await db.create_scalar_function("sync_cvar", sync_get_cvar)
         await db.create_scalar_function("async_cvar", async_get_cvar)
@@ -600,56 +496,35 @@ class Async(unittest.TestCase):
             self.assertEqual(v, await (await db.execute("select sync_cvar(?)", ("apsw.aio.deadline",))).get)
             self.assertEqual(v, await (await db.execute("select async_cvar(?)", ("apsw.aio.deadline",))).get)
 
-        # block queue and check second item gets timed out
-        db.execute("select block()")
-        release_gil()
+        cura =  db.execute("select block()")
+
         with apsw.aio.contextvar_set(apsw.aio.deadline, time()):
-            task2 = db.execute("select func()")
-            event.set()
 
-        try:
-            await task2
-            1 / 0  # should not be reached
-        except BaseException as exc:
-            check_timeout(exc)
+            # this should be queued but never run
+            fut = db.pragma("user_version", 7)
 
-        def timeout_seq():
-            # the sequences we try to get func executing and then
-            # timeout, in seconds.
-            i = 0.05
-            yield i
-            while i < 5:
-                i *= 2
-                yield i
-            raise Exception("Unable to find timeout value that works")
+            with self.assertRaises(timeout_exc_class):
+                await (await cura).get
 
-        # have timeout in the async func sleep
-        for timeout in timeout_seq():
-            timed_out = None
-            with apsw.aio.contextvar_set(apsw.aio.deadline, time() + timeout):
-                task = db.execute("select func()")
-                release_gil()
-            try:
-                await task
-            except BaseException as exc:
-                check_timeout(exc)
-                break
+            with self.assertRaises(timeout_exc_class):
+                await fut
 
-        # now in long query
-        for timeout in timeout_seq():
-            timed_out = False
-            with apsw.aio.contextvar_set(apsw.aio.deadline, time() + timeout):
-                task = db.execute(fractal_sql)
-                release_gil()
-            try:
-                await task
-            except BaseException as exc:
-                check_timeout(exc)
-                break
+        # check it never ran
+        self.assertEqual(0, await db.pragma("user_version"))
+
+        # straight forward sync code
+
+        cura =  db.execute("fractal_sql")
+        with apsw.aio.contextvar_set(apsw.aio.deadline, time()+0.01):
+            await sleep(0.01)
+            with self.assertRaises(timeout_exc_class):
+                await (await cura).get
 
         if fw == "asyncio":
             # no native timeout handling so nothing else to test
             return
+
+        raise NotImplementedError # these need checking and updating like above
 
         ced = getattr(sys.modules[fw], "current_effective_deadline")
         fail_after = getattr(sys.modules[fw], "fail_after")
@@ -847,7 +722,7 @@ class Async(unittest.TestCase):
 
         for be in backends:
             for fn in self.get_all_atests():
-                with self.subTest(fw=f"anyio/{be}", fn=fn):
+                with self.subTest(fw="anyio", be=be, fn=fn):
                     match be:
                         case "asyncio":
                             backend_options = {"debug": False}
