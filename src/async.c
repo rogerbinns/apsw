@@ -310,7 +310,7 @@ static PyObject *coro_for_stopasynciteration;
 static PyObject *
 async_return_stopasynciteration(void)
 {
-    if (!coro_for_stopasynciteration)
+  if (!coro_for_stopasynciteration)
   {
     coro_for_stopasynciteration = PyImport_ImportModuleAttr(apst.apsw_aio, apst._coro_for_stopasynciteration);
     if (!coro_for_stopasynciteration)
