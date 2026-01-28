@@ -227,7 +227,7 @@ class AsyncIO:
             if tracker.is_exception:
                 raise tracker.result
             return tracker.result
-        except (asyncio.CancelledError, TimeoutError):
+        except:
             tracker.cancel()
             raise
 
