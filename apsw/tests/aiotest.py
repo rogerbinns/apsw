@@ -54,6 +54,51 @@ class Async(unittest.TestCase):
         self.assertTrue(inspect.isawaitable(coro))
         self.assertTrue(inspect.iscoroutine(coro))
 
+    async def atestInitFail(self, fw):
+        "ensure cleanup on init failures"
+
+        # Connection.__init__ in worker fails
+        with self.assertRaises(TypeError):
+            await apsw.Connection.as_async(one=2)
+
+        # Connection init never even called
+        class BadInit(apsw.Connection):
+            def __init__(self):
+                1/0
+
+        with self.assertRaises(ZeroDivisionError):
+            await BadInit.as_async()
+
+        def error():
+            1/0
+
+        with apsw.aio.contextvar_set(apsw.async_controller, error):
+            with self.assertRaises(ZeroDivisionError):
+                await apsw.Connection.as_async("")
+
+
+        class Bad1:
+            def send(*args):
+                1/0
+
+            def close(*args):
+                pass
+
+        with apsw.aio.contextvar_set(apsw.async_controller, Bad1):
+            with self.assertRaises(ZeroDivisionError):
+                await apsw.Connection.as_async("")
+
+        class Bad2:
+            def send(*args):
+                1/0
+
+            def close(*args):
+                pass
+
+        with apsw.aio.contextvar_set(apsw.async_controller, Bad1):
+            with self.assertRaises(ZeroDivisionError):
+                await apsw.Connection.as_async("")
+
     async def atestContextVars(self, fw):
         db = await apsw.Connection.as_async(":memory:")
         await db.create_scalar_function("sync_cvar", sync_get_cvar)
