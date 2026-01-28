@@ -64,22 +64,21 @@ class Async(unittest.TestCase):
         # Connection init never even called
         class BadInit(apsw.Connection):
             def __init__(self):
-                1/0
+                1 / 0
 
         with self.assertRaises(ZeroDivisionError):
             await BadInit.as_async()
 
         def error():
-            1/0
+            1 / 0
 
         with apsw.aio.contextvar_set(apsw.async_controller, error):
             with self.assertRaises(ZeroDivisionError):
                 await apsw.Connection.as_async("")
 
-
         class Bad1:
             def send(*args):
-                1/0
+                1 / 0
 
             def close(*args):
                 pass
@@ -90,7 +89,7 @@ class Async(unittest.TestCase):
 
         class Bad2:
             def send(*args):
-                1/0
+                1 / 0
 
             def close(*args):
                 pass
@@ -431,11 +430,9 @@ class Async(unittest.TestCase):
             apsw.connection_hooks = []
 
     async def atestCancel(self, fw):
-
         # this is the only framework specific bit
         Event = getattr(sys.modules[fw], "Event")
         sleep = getattr(sys.modules[fw], "sleep")
-
 
         # async/sync callback cancellation
         event = Event()
@@ -471,7 +468,6 @@ class Async(unittest.TestCase):
                 with self.assertRaises(asyncio.CancelledError):
                     await task
 
-
             case "trio":
 
                 async def wrap(call, ready, cancelled):
@@ -486,7 +482,9 @@ class Async(unittest.TestCase):
                 cancelled = trio.Event(), trio.Event()
 
                 async with trio.open_nursery() as nursery:
-                    nursery.start_soon(wrap, functools.partial(db.execute, "select infinite_loop()"), ready[0], cancelled[0])
+                    nursery.start_soon(
+                        wrap, functools.partial(db.execute, "select infinite_loop()"), ready[0], cancelled[0]
+                    )
                     nursery.start_soon(wrap, functools.partial(db.pragma, "user_version", 7), ready[1], cancelled[1])
 
                     await ready[0].wait()
@@ -499,10 +497,11 @@ class Async(unittest.TestCase):
 
                 self.assertEqual(0, await db.pragma("user_version"))
             case _:
-                1/0
+                1 / 0
 
     async def atestTimeout(self, fw):
         sleep = getattr(sys.modules[fw], "sleep")
+        Event = getattr(sys.modules[fw], "Event")
 
         match fw:
             case "asyncio":
@@ -535,10 +534,9 @@ class Async(unittest.TestCase):
             self.assertEqual(v, await (await db.execute("select sync_cvar(?)", ("apsw.aio.deadline",))).get)
             self.assertEqual(v, await (await db.execute("select async_cvar(?)", ("apsw.aio.deadline",))).get)
 
-        cura =  db.execute("select block()")
+        cura = db.execute("select block()")
 
         with apsw.aio.contextvar_set(apsw.aio.deadline, time()):
-
             # this should be queued but never run
             fut = db.pragma("user_version", 7)
 
@@ -552,9 +550,8 @@ class Async(unittest.TestCase):
         self.assertEqual(0, await db.pragma("user_version"))
 
         # straight forward sync code
-
-        cura =  db.execute("fractal_sql")
-        with apsw.aio.contextvar_set(apsw.aio.deadline, time()+0.02):
+        cura = db.execute(fractal_sql)
+        with apsw.aio.contextvar_set(apsw.aio.deadline, time() + 0.02):
             await sleep(0.01)
             with self.assertRaises(timeout_exc_class):
                 await (await cura).get
