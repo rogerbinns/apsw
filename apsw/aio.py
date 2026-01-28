@@ -294,7 +294,9 @@ class AsyncIO:
             task = context.run(asyncio.create_task, coro)
             tracker.cancel_async_cb = task.cancel
 
-            return await asyncio.wait_for(task, tracker.deadline_loop - self.loop.time())
+            if tracker.deadline_loop is not None:
+                return await asyncio.wait_for(task, tracker.deadline_loop - self.loop.time())
+            return await task
 
     elif sys.version_info < (3, 12):
 
