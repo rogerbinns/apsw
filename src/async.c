@@ -129,6 +129,9 @@ BoxedCall_internal_call(BoxedCall *self)
         == Py_TYPE(self->ConnectionInit.connection)
                ->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, self->ConnectionInit.kwargs))
       result = Py_NewRef(self->ConnectionInit.connection);
+    else
+      /* this causes close on init failure so threads don't get leaked */
+      Py_DECREF(self->ConnectionInit.connection);
     break;
   case FastCallWithKeywords:
     result = self->FastCallWithKeywords.function(self->FastCallWithKeywords.object,
