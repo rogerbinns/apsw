@@ -38,12 +38,12 @@ class Async(unittest.TestCase):
         if apsw.connections():
             raise RuntimeError(f"Connections were left open {apsw.connections()=}")
 
-        for thread in threading.enumerate():
-            if thread not in self.active_threads:
-                raise RuntimeError(f"Leaked thread {thread=}")
+        leaked = set(threading.enumerate()) - self.active_threads
+        if leaked:
+            raise RuntimeError(f"Leaked {len(leaked)} threads {leaked}")
 
     def setUp(self):
-        self.active_threads = list(threading.enumerate())
+        self.active_threads = set(threading.enumerate())
 
     def testOverwrite(self):
         "make sure module contextvars can't be overwritten"
