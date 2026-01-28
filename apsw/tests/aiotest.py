@@ -437,7 +437,7 @@ class Async(unittest.TestCase):
         sleep = getattr(sys.modules[fw], "sleep")
 
 
-        # async callback cancellation
+        # async/sync callback cancellation
         event = Event()
 
         async def infinite_loop():
@@ -447,12 +447,6 @@ class Async(unittest.TestCase):
 
         db = await apsw.Connection.as_async("")
         await db.create_scalar_function("infinite_loop", infinite_loop)
-
-        async def work():
-
-            await event.wait()
-            await sleep(0.01)
-            return await cur.get
 
         match fw:
             case "asyncio":
@@ -471,41 +465,41 @@ class Async(unittest.TestCase):
 
                 self.assertEqual(0, await db.pragma("user_version"))
 
-            case _:
-                1/0
-
-        # regular sync code cancellation
-        apsw.aio.check_progress_steps.set(10)
-        db = await apsw.Connection.as_async("")
-
-        event = Event()
-
-        def set_event(loop, call):
-            match fw:
-                case "asyncio":
-                    loop.call_soon_threadsafe(call)
-                case _:
-                    raise NotImplementedError
-
-
-        match fw:
-            case "asyncio":
-                await db.create_scalar_function("set_event", functools.partial(set_event, asyncio.get_running_loop(), event.set))
-
-                cur = await db.execute("select set_event();"+fractal_sql)
-
-                task = asyncio.create_task(cur.fetchall())
-
-                await event.wait()
-                await sleep(0.01)
-
+                task = asyncio.create_task(db.execute(fractal_sql))
+                await sleep(0.05)
                 task.cancel()
-
                 with self.assertRaises(asyncio.CancelledError):
                     await task
 
+
+            case "trio":
+
+                async def wrap(call, ready, cancelled):
+                    ready.set()
+                    try:
+                        await call()
+                    except trio.Cancelled:
+                        cancelled.set()
+                        raise
+
+                ready = trio.Event(), trio.Event()
+                cancelled = trio.Event(), trio.Event()
+
+                async with trio.open_nursery() as nursery:
+                    nursery.start_soon(wrap, functools.partial(db.execute, "select infinite_loop()"), ready[0], cancelled[0])
+                    nursery.start_soon(wrap, functools.partial(db.pragma, "user_version", 7), ready[1], cancelled[1])
+
+                    await ready[0].wait()
+                    await ready[1].wait()
+
+                    nursery.cancel_scope.cancel()
+
+                await cancelled[0].wait()
+                await cancelled[1].wait()
+
+                self.assertEqual(0, await db.pragma("user_version"))
             case _:
-                raise NotImplementedError
+                1/0
 
     async def atestTimeout(self, fw):
         sleep = getattr(sys.modules[fw], "sleep")
@@ -560,7 +554,7 @@ class Async(unittest.TestCase):
         # straight forward sync code
 
         cura =  db.execute("fractal_sql")
-        with apsw.aio.contextvar_set(apsw.aio.deadline, time()+0.01):
+        with apsw.aio.contextvar_set(apsw.aio.deadline, time()+0.02):
             await sleep(0.01)
             with self.assertRaises(timeout_exc_class):
                 await (await cura).get
