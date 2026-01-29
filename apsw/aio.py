@@ -437,14 +437,23 @@ class AnyIO:
             hook(db)
         db.set_progress_handler(self.progress_checker, check_progress_steps.get(), id=self)
 
-    def send(self, call):
+    async def send(self, call: Callable[[], Any]):
         "Enqueues call to worker thread"
-        future = _CallTracker(anyio.Event(), call, self.cancelled_exc_class)
+
+        tracker = _CallTracker(anyio.Event(), call)
         if (this_deadline := deadline.get()) is None:
             this_deadline = anyio.current_effective_deadline()
-        future.set_deadline(this_deadline, anyio.current_time)
-        self.queue.put(future)
-        return future
+        tracker.set_deadline(this_deadline, anyio.current_time())
+
+        self.queue.put(tracker)
+        try:
+            await tracker.event.wait()
+            if tracker.is_exception:
+                raise tracker.result
+            return tracker.result
+        except:
+            tracker.cancel()
+            raise
 
     def close(self):
         "Called on connection close, so the worker thread can be stopped"
@@ -452,57 +461,69 @@ class AnyIO:
 
     def progress_checker(self):
         "Periodic check for cancellation and deadlines"
-        future = _current_call.get()
-        if future._is_cancelled:
-            raise Cancelled("cancelled in progress handler")
-        if future._monotonic_exceeded():
+        tracker = _current_call.get()
+        if tracker.is_cancelled:
+            raise _Cancelled("cancelled in progress handler")
+        if tracker.monotonic_exceeded():
             raise TimeoutError("deadline exceeded in progress handler")
         return False
 
-    def worker_thread_run(self, q):
+    def worker_thread_run(self):
         "Does the enqueued call processing in the worker thread"
-        while (future := q.get()) is not None:
-            if not future._is_cancelled:
-                with future._call:
-                    _current_call.set(future)
 
-                    try:
-                        if future._monotonic_exceeded():
-                            raise TimeoutError("Deadline exceeded in queue")
+        while (tracker := self.queue.get()) is not None:
+            try:
+                if not tracker.is_cancelled:
+                    # adopt caller's contextvars
+                    with tracker.call:
+                        # we don't restore this because the queue is not
+                        # re-entrant, so there is no point
+                        _current_call.set(tracker)
 
-                        future._result = future._call()
-                    except BaseException as exc:
-                        future._result = exc
-                        future._is_exception = True
+                        try:
+                            # should we even start?
+                            if tracker.monotonic_exceeded():
+                                raise TimeoutError("Deadline exceeded in queue")
+                            tracker.result = tracker.call()
 
-            # this ensures completion even if cancelled
-            anyio.from_thread.run_sync(future._event.set, token=self.token)
+                        except BaseException as exc:
+                            # BaseException is deliberately used because CancelledError
+                            # is a subclass of it
+                            tracker.result = exc
+                            tracker.is_exception = True
+            finally:
+                anyio.from_thread.run_sync(tracker.event.set, token=self.token)
 
-    def async_run_coro(self, coro):
+    def async_run_coro(self, coro: Coroutine):
         "Called in worker thread to run a coroutine in the event loop"
+
         try:
-            future = _current_call.get()
-            if future._is_cancelled:
-                raise Cancelled("Cancelled in async_run_coro")
-            if future._monotonic_exceeded():
+            tracker = _current_call.get()
+            if tracker.is_cancelled:
+                raise _Cancelled("Cancelled in async_run_coro")
+            if tracker.monotonic_exceeded():
                 raise TimeoutError("deadline exceeded in async_run_coro")
-            return anyio.from_thread.run(self.loop_run_coro, coro, future._deadline_loop, token=self.token)
+            return anyio.from_thread.run(self.run_coro_in_loop, coro, tracker, token=self.token)
         finally:
             coro.close()
+
+    async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker):
+        "executes coro in the event loop"
+
+        with anyio.fail_after(
+            math.inf if tracker.deadline_loop is None else tracker.deadline_loop - anyio.current_time()
+        ) as scope:
+            tracker.cancel_async_cb = scope.cancel
+            return await coro
 
     def __init__(self, *, thread_name: str = "anyio apsw background worker"):
         global anyio
         import anyio
 
         apsw.async_run_coro.set(self.async_run_coro)
-        self.queue = queue.SimpleQueue()
+        self.queue: queue.SimpleQueue[_CallTracker | None] = queue.SimpleQueue()
         self.token = anyio.lowlevel.current_token()
-        self.cancelled_exc_class = anyio.get_cancelled_exc_class()
-        threading.Thread(name=thread_name, target=self.worker_thread_run, args=(self.queue,)).start()
-
-    async def loop_run_coro(self, coro, this_deadline):
-        with anyio.fail_after(this_deadline - anyio.current_time()):
-            return await coro
+        threading.Thread(name=thread_name, target=self.worker_thread_run).start()
 
 
 def Auto() -> Trio | AsyncIO | AnyIO:
