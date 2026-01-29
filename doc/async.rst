@@ -246,6 +246,16 @@ propagated to their processing in the database worker thread, being
 available to any callbacks, and are also propagated back to the event
 loop if any callbacks are async.
 
+.. warning:: Not a regular variable
+
+    Each time you :meth:`~contextvars.ContextVar.set` a value, the
+    previous value is saved behind the scenes so it can be
+    :meth:`restored <contextvars.ContextVar.reset>`.  You will get
+    ever increasing memory consumption if you do not
+    :meth:`~contextvars.ContextVar.reset`.
+    :func:`apsw.aio.contextvar_set` shows a convenient way of doing
+    so.
+
 Configuration
 =============
 
