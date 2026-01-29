@@ -144,9 +144,7 @@ for prefetch in (1, 2, 16, 64, 512, 8192, 65536):
                 raise Exception(f"Unhandled {mode=}")
         show(f"apsw {mode}", prefetch, start, end)
 
-    start = get_times()
     start, end = asyncio.run(aiosqlite_bench(prefetch))
-    end = get_times()
     show("aiosqlite", prefetch, start, end)
     if uvloop:
         start, end = asyncio.run(aiosqlite_bench(prefetch), loop_factory=uvloop.new_event_loop)
