@@ -124,7 +124,8 @@ class _Cancelled(BaseException):
 
 
 # this is used to track the currently processing call for all controllers
-_current_call: contextvars.ContextVar[_CallTracker] = contextvars.ContextVar("apsw.aio._current_call")
+# as _tls.current_call
+_tls = threading.local()
 
 
 class _CallTracker:
@@ -241,9 +242,9 @@ class AsyncIO:
 
     def progress_checker(self):
         "Periodic check for cancellation and deadlines"
-        if _current_call.get().is_cancelled:
+        if _tls.current_call.is_cancelled:
             raise _Cancelled("cancelled in progress checked")
-        if _current_call.get().monotonic_exceeded():
+        if _tls.current_call.monotonic_exceeded():
             raise TimeoutError()
         return False
 
@@ -257,7 +258,7 @@ class AsyncIO:
                     with tracker.call:
                         # we don't restore this because the queue is not
                         # re-entrant, so there is no point
-                        _current_call.set(tracker)
+                        _tls.current_call = tracker
 
                         try:
                             # should we even start?
@@ -276,7 +277,7 @@ class AsyncIO:
     def async_run_coro(self, coro: Coroutine):
         "Called in worker thread to run a coroutine in the event loop"
 
-        tracker = _current_call.get()
+        tracker = _tls.current_call
 
         try:
             if tracker.is_cancelled:
@@ -370,9 +371,9 @@ class Trio:
 
     def progress_checker(self):
         "Periodic check for cancellation and deadlines"
-        if _current_call.get().is_cancelled:
+        if _tls.current_call.is_cancelled:
             raise _Cancelled("cancelled in progress handler")
-        if _current_call.get().monotonic_exceeded():
+        if _tls.current_call.monotonic_exceeded():
             raise trio.TooSlowError("deadline exceeded in progress handler")
         return False
 
@@ -385,7 +386,7 @@ class Trio:
                     with tracker.call:
                         # we don't restore this because the queue is not
                         # re-entrant, so there is no point
-                        _current_call.set(tracker)
+                        _tls.current_call = tracker
 
                         try:
                             # should we even start?
@@ -404,7 +405,7 @@ class Trio:
     def async_run_coro(self, coro: Coroutine):
         "Called in worker thread to run a coroutine in the event loop"
         try:
-            tracker = _current_call.get()
+            tracker = _tls.current_call
             if tracker.is_cancelled:
                 raise _Cancelled("Cancelled in async_run_coro")
 
@@ -461,7 +462,7 @@ class AnyIO:
 
     def progress_checker(self):
         "Periodic check for cancellation and deadlines"
-        tracker = _current_call.get()
+        tracker = _tls.current_call
         if tracker.is_cancelled:
             raise _Cancelled("cancelled in progress handler")
         if tracker.monotonic_exceeded():
@@ -478,7 +479,7 @@ class AnyIO:
                     with tracker.call:
                         # we don't restore this because the queue is not
                         # re-entrant, so there is no point
-                        _current_call.set(tracker)
+                        _tls.current_call = tracker
 
                         try:
                             # should we even start?
@@ -498,7 +499,7 @@ class AnyIO:
         "Called in worker thread to run a coroutine in the event loop"
 
         try:
-            tracker = _current_call.get()
+            tracker = _tls.current_call
             if tracker.is_cancelled:
                 raise _Cancelled("Cancelled in async_run_coro")
             if tracker.monotonic_exceeded():
