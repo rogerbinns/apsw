@@ -38,9 +38,13 @@ class Async(unittest.TestCase):
         if apsw.connections():
             raise RuntimeError(f"Connections were left open {apsw.connections()=}")
 
+        # we could be running before the threads have shutdown due to GIL
         leaked = set(threading.enumerate()) - self.active_threads
-        if leaked:
-            raise RuntimeError(f"Leaked {len(leaked)} threads {leaked}")
+        for thread in leaked:
+            # so have a grace period
+            thread.join(1.0)
+            if thread.is_alive():
+                raise Exception(f"Leaked {thread=}")
 
     def setUp(self):
         self.active_threads = set(threading.enumerate())
