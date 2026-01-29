@@ -134,8 +134,10 @@ class _CallTracker:
     """
 
     __slots__ = (
-        # Event used to signal ready
-        "event",
+        # Used for result ready.  asyncio uses Future which also
+        # includes the result/exception, while trio/anyio use the
+        # result/is_exception fields
+        "completion",
         # result value or exception
         "result",
         # is it an exception?
@@ -153,7 +155,7 @@ class _CallTracker:
         "cancel_async_cb",
     )
 
-    event: asyncio.Event | anyio.Event | trio.Event
+    completion: asyncio.Future | anyio.Event | trio.Event
     result: Any | BaseException
     is_exception: bool
     call: Callable[[], Any]
@@ -162,10 +164,10 @@ class _CallTracker:
     is_cancelled: bool
     cancel_async_cb: Callable[[], Any] | None
 
-    def __init__(self, event: asyncio.Event | anyio.Event | trio.Event, call: Callable[[], Any]) -> None:
+    def __init__(self, completion: asyncio.Event | anyio.Event | trio.Event, call: Callable[[], Any]) -> None:
         self.is_exception = False
         self.is_cancelled = False
-        self.event = event
+        self.completion = completion
         self.call = call
         self.deadline_loop = None
         self.deadline_monotonic = None
@@ -222,15 +224,13 @@ class AsyncIO:
 
     async def send(self, call: Callable[[], Any]):
         "Send call to worker"
-        tracker = _CallTracker(asyncio.Event(), call)
+        tracker = _CallTracker(self.loop.create_future(), call)
         if (this_deadline := deadline.get()) is not None:
             tracker.set_deadline(this_deadline, self.loop.time())
         self.queue.put(tracker)
         try:
-            await tracker.event.wait()
-            if tracker.is_exception:
-                raise tracker.result
-            return tracker.result
+            await tracker.completion
+            return tracker.completion.result()
         except:
             tracker.cancel()
             raise
@@ -252,27 +252,31 @@ class AsyncIO:
         "Does the enqueued call processing in the worker thread"
 
         while (tracker := self.queue.get()) is not None:
-            try:
-                if not tracker.is_cancelled:
-                    # adopt caller's contextvars
-                    with tracker.call:
-                        # we don't restore this because the queue is not
-                        # re-entrant, so there is no point
-                        _tls.current_call = tracker
+            if not tracker.is_cancelled:
+                # adopt caller's contextvars
+                with tracker.call:
+                    # we don't restore this because the queue is not
+                    # re-entrant, so there is no point
+                    _tls.current_call = tracker
 
-                        try:
-                            # should we even start?
-                            if tracker.monotonic_exceeded():
-                                raise TimeoutError()
-                            tracker.result = tracker.call()
+                    try:
+                        # should we even start?
+                        if tracker.monotonic_exceeded():
+                            raise TimeoutError()
+                        self.loop.call_soon_threadsafe(self.set_future_result, tracker.completion, tracker.call())
 
-                        except BaseException as exc:
-                            # BaseException is deliberately used because CancelledError
-                            # is a subclass of it
-                            tracker.result = exc
-                            tracker.is_exception = True
-            finally:
-                self.loop.call_soon_threadsafe(tracker.event.set)
+                    except BaseException as exc:
+                        # BaseException is deliberately used because CancelledError
+                        # is a subclass of it
+                        self.loop.call_soon_threadsafe(self.set_future_exception, tracker.completion, exc)
+
+    def set_future_result(self, future: asyncio.Future, value: Any):
+        if not future.done():
+            future.set_result(value)
+
+    def set_future_exception(self, future: asyncio.Future, exc: BaseException):
+        if not future.done():
+            future.set_exception(exc)
 
     def async_run_coro(self, coro: Coroutine):
         "Called in worker thread to run a coroutine in the event loop"
@@ -357,7 +361,7 @@ class Trio:
 
         self.queue.put(tracker)
         try:
-            await tracker.event.wait()
+            await tracker.completion.wait()
             if tracker.is_exception:
                 raise tracker.result
             return tracker.result
@@ -400,7 +404,7 @@ class Trio:
                             tracker.result = exc
                             tracker.is_exception = True
             finally:
-                self.token.run_sync_soon(tracker.event.set)
+                self.token.run_sync_soon(tracker.completion.set)
 
     def async_run_coro(self, coro: Coroutine):
         "Called in worker thread to run a coroutine in the event loop"
@@ -448,7 +452,7 @@ class AnyIO:
 
         self.queue.put(tracker)
         try:
-            await tracker.event.wait()
+            await tracker.completion.wait()
             if tracker.is_exception:
                 raise tracker.result
             return tracker.result
@@ -493,7 +497,7 @@ class AnyIO:
                             tracker.result = exc
                             tracker.is_exception = True
             finally:
-                anyio.from_thread.run_sync(tracker.event.set, token=self.token)
+                anyio.from_thread.run_sync(tracker.completion.set, token=self.token)
 
     def async_run_coro(self, coro: Coroutine):
         "Called in worker thread to run a coroutine in the event loop"
