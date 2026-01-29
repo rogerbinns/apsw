@@ -496,8 +496,34 @@ class Async(unittest.TestCase):
                 await cancelled[1].wait()
 
                 self.assertEqual(0, await db.pragma("user_version"))
-            case _:
-                1 / 0
+            case "anyio":
+
+                async def wrap(call, ready, cancelled):
+                    ready.set()
+                    try:
+                        await call()
+                    except anyio.get_cancelled_exc_class():
+                        cancelled.set()
+                        raise
+
+                ready = anyio.Event(), anyio.Event()
+                cancelled = anyio.Event(), anyio.Event()
+
+                async with anyio.create_task_group() as nursery:
+                    nursery.start_soon(
+                        wrap, functools.partial(db.execute, "select infinite_loop()"), ready[0], cancelled[0]
+                    )
+                    nursery.start_soon(wrap, functools.partial(db.pragma, "user_version", 7), ready[1], cancelled[1])
+
+                    await ready[0].wait()
+                    await ready[1].wait()
+
+                    nursery.cancel_scope.cancel()
+
+                await cancelled[0].wait()
+                await cancelled[1].wait()
+
+                self.assertEqual(0, await db.pragma("user_version"))
 
     async def atestTimeout(self, fw):
         sleep = getattr(sys.modules[fw], "sleep")
