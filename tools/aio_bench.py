@@ -7,11 +7,9 @@ around iteration
 
 import asyncio
 import contextlib
-import gc
 import resource
 import sqlite3
 import time
-import threading
 
 import aiosqlite
 import anyio
@@ -45,25 +43,25 @@ def get_times():
 
 
 async def apsw_bench(prefetch: int):
-    # APSW connection async with does transaction control
-    async with contextlib.aclosing(await apsw.Connection.as_async(":memory:")) as con:
-        start = get_times()
+    with apsw.aio.contextvar_set(apsw.async_cursor_prefetch, prefetch):
 
-        apsw.async_cursor_prefetch.set(prefetch)
+        # APSW connection async with does transaction control
+        async with contextlib.aclosing(await apsw.Connection.as_async(":memory:")) as con:
+            start = get_times()
 
-        await con.execute(setup)
+            await con.execute(setup)
 
-        while True:
-            count =  (await (await con.execute(length)).fetchall())[0][0]
-            if count > 300_000:
-                break
+            while True:
+                count =  (await (await con.execute(length)).fetchall())[0][0]
+                if count > 300_000:
+                    break
 
-            data = []
-            async for row in await con.execute(source):
-                    data.append(row)
+                data = []
+                async for row in await con.execute(source):
+                        data.append(row)
 
-            await con.executemany(insert, data)
-        return start, get_times()
+                await con.executemany(insert, data)
+            return start, get_times()
 
 
 async def aiosqlite_bench(prefetch: int):
@@ -126,27 +124,25 @@ if uvloop:
 
 for prefetch in (1, 2, 16, 64, 512, 8192, 65536):
     for mode in modes:
-        gc.collect(2)
-        threads = set(threading.enumerate())
         match mode:
             case "AsyncIO":
-                apsw.async_controller.set(apsw.aio.AsyncIO)
-                start, end = asyncio.run(apsw_bench(prefetch))
+                with apsw.aio.contextvar_set(apsw.async_controller, apsw.aio.AsyncIO):
+                    start, end = asyncio.run(apsw_bench(prefetch))
             case "AsyncIO uvloop":
-                apsw.async_controller.set(apsw.aio.AsyncIO)
-                start, end = asyncio.run(apsw_bench(prefetch), loop_factory=uvloop.new_event_loop)
+                with apsw.aio.contextvar_set(apsw.async_controller, apsw.aio.AsyncIO):
+                    start, end = asyncio.run(apsw_bench(prefetch), loop_factory=uvloop.new_event_loop)
             case "Trio":
-                apsw.async_controller.set(apsw.aio.Trio)
-                start, end = trio.run(apsw_bench, prefetch)
+                with apsw.aio.contextvar_set(apsw.async_controller, apsw.aio.Trio):
+                    start, end = trio.run(apsw_bench, prefetch)
             case "AnyIO asyncio":
-                apsw.async_controller.set(apsw.aio.AnyIO)
-                start, end = anyio.run(apsw_bench, prefetch, backend="asyncio")
+                with apsw.aio.contextvar_set(apsw.async_controller, apsw.aio.AnyIO):
+                    start, end = anyio.run(apsw_bench, prefetch, backend="asyncio")
             case "AnyIO asyncio uvloop":
-                apsw.async_controller.set(apsw.aio.AnyIO)
-                start, end = anyio.run(apsw_bench, prefetch, backend="asyncio", backend_options={"use_uvloop": True})
+                with apsw.aio.contextvar_set(apsw.async_controller, apsw.aio.AnyIO):
+                    start, end = anyio.run(apsw_bench, prefetch, backend="asyncio", backend_options={"use_uvloop": True})
             case "AnyIO trio":
-                apsw.async_controller.set(apsw.aio.AnyIO)
-                start, end = anyio.run(apsw_bench, prefetch, backend="trio")
+                with apsw.aio.contextvar_set(apsw.async_controller, apsw.aio.AnyIO):
+                    start, end = anyio.run(apsw_bench, prefetch, backend="trio")
             case "aiosqlite":
                 start, end = asyncio.run(aiosqlite_bench(prefetch))
             case "aiosqlite uvloop":
@@ -154,7 +150,4 @@ for prefetch in (1, 2, 16, 64, 512, 8192, 65536):
             case _:
                 raise Exception(f"Unhandled {mode=}")
         show(f"{'apsw ' if 'aiosqlite' not in mode else ''}{mode}", prefetch, start, end)
-        leaked = threads - set(threading.enumerate())
-        if leaked:
-            print(f"Threads leaked!!! {leaked}")
 
