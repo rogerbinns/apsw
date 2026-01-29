@@ -111,10 +111,13 @@ async def make_session(db: apsw.AsyncConnection, schema: str) -> AsyncSession:
     return await db.async_run(apsw.Session, db, schema)
 
 
-class Cancelled(Exception):
-    """Result when an operation was cancelled (Trio, AnyIO)
+class _Cancelled(BaseException):
+    """
+    Raised in the worker thread on seeing call cancellation.
 
-    asyncio uses :class:`asyncio.CancelledError`
+    The original caller in async will get their framework's
+    cancellation exception - this is just to terminate call processing
+    back through the call stacks
     """
 
     pass
@@ -239,7 +242,7 @@ class AsyncIO:
     def progress_checker(self):
         "Periodic check for cancellation and deadlines"
         if _current_call.get().is_cancelled:
-            raise asyncio.CancelledError()
+            raise _Cancelled("cancelled in progress checked")
         if _current_call.get().monotonic_exceeded():
             raise TimeoutError()
         return False
@@ -277,7 +280,7 @@ class AsyncIO:
 
         try:
             if tracker.is_cancelled:
-                raise asyncio.CancelledError()
+                raise _Cancelled("cancelled in async_run_coro")
 
             return asyncio.run_coroutine_threadsafe(
                 self.run_coro_in_loop(coro, tracker, contextvars.copy_context()), self.loop
@@ -368,7 +371,7 @@ class Trio:
     def progress_checker(self):
         "Periodic check for cancellation and deadlines"
         if _current_call.get().is_cancelled:
-            raise Cancelled("cancelled in progress handler")
+            raise _Cancelled("cancelled in progress handler")
         if _current_call.get().monotonic_exceeded():
             raise trio.TooSlowError("deadline exceeded in progress handler")
         return False
@@ -403,7 +406,7 @@ class Trio:
         try:
             tracker = _current_call.get()
             if tracker.is_cancelled:
-                raise Cancelled("Cancelled in async_run_coro")
+                raise _Cancelled("Cancelled in async_run_coro")
 
             return trio.from_thread.run(self.run_coro_in_loop, coro, tracker, trio_token=self.token)
         finally:
