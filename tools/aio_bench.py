@@ -5,16 +5,18 @@ A crude benchmark comparing apsw and aiosqlite performance, especially
 around iteration
 """
 
-import apsw
-import time
+import asyncio
 import contextlib
 import resource
 import sqlite3
+import time
 
 import aiosqlite
 import anyio
-import asyncio
 import trio
+
+import apsw
+import apsw.aio
 
 try:
     import uvloop
@@ -49,7 +51,7 @@ async def apsw_bench(prefetch: int):
         await con.execute(setup)
 
         while True:
-            count =  await (await con.execute(length)).get
+            count =  (await (await con.execute(length)).fetchall())[0][0]
             if count > 300_000:
                 break
 
@@ -69,7 +71,7 @@ async def aiosqlite_bench(prefetch: int):
         await con.executescript(setup)
 
         while True:
-            count = (await con.execute_fetchall(length))[0][0]
+            count = (await (await con.execute(length)).fetchall())[0][0]
 
             if count > 300_000:
                 break
@@ -121,16 +123,22 @@ for prefetch in (1, 2, 16, 64, 512, 8192, 65536):
     for mode in modes:
         match mode:
             case "AsyncIO":
+                apsw.async_controller.set(apsw.aio.AsyncIO)
                 start, end = asyncio.run(apsw_bench(prefetch))
             case "AsyncIO uvloop":
+                apsw.async_controller.set(apsw.aio.AsyncIO)
                 start, end = asyncio.run(apsw_bench(prefetch), loop_factory=uvloop.new_event_loop)
             case "Trio":
+                apsw.async_controller.set(apsw.aio.Trio)
                 start, end = trio.run(apsw_bench, prefetch)
             case "AnyIO asyncio":
+                apsw.async_controller.set(apsw.aio.AnyIO)
                 start, end = anyio.run(apsw_bench, prefetch, backend="asyncio")
             case "AnyIO asyncio uvloop":
+                apsw.async_controller.set(apsw.aio.AnyIO)
                 start, end = anyio.run(apsw_bench, prefetch, backend="asyncio", backend_options={"use_uvloop": True})
             case "AnyIO trio":
+                apsw.async_controller.set(apsw.aio.AnyIO)
                 start, end = anyio.run(apsw_bench, prefetch, backend="trio")
             case _:
                 raise Exception(f"Unhandled {mode=}")
