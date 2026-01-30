@@ -559,7 +559,12 @@ def Auto() -> Trio | AsyncIO | AnyIO:
     :exc:`RuntimeError` is raised if the framework can't be detected.
 
     """
-    if "anyio" in sys.modules:
+    # This variable tracks which class to use.  It is instantiated
+    # outside of the try/except blocks so exceptions in its
+    # initialization will be raised.
+    found = None
+
+    if found is None and "anyio" in sys.modules:
         try:
             import anyio
 
@@ -573,25 +578,31 @@ def Auto() -> Trio | AsyncIO | AnyIO:
             frame = sys._getframe()
             while frame:
                 if frame.f_code is anyio_run_code:
-                    return AnyIO()
+                    found = AnyIO
+                    break
                 frame = frame.f_back
         except:
             pass
-    if "trio" in sys.modules:
+
+    if found is None and "trio" in sys.modules:
         try:
             import trio
 
             trio.lowlevel.current_trio_token()
-            return Trio()
+            found = Trio
         except:
             pass
-    if "asyncio" in sys.modules:
+
+    if found is None and "asyncio" in sys.modules:
         try:
             import asyncio
 
             asyncio.get_running_loop()
-            return AsyncIO()
+            found = AsyncIO
         except:
             pass
 
-    raise RuntimeError("Unable to determine current Async environment")
+    if not found:
+        raise RuntimeError("Unable to determine current Async environment")
+
+    return found()
