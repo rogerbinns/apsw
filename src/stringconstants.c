@@ -28,6 +28,7 @@
 #undef FindFunction
 #undef INSERT
 #undef Integrity
+#undef Mapping
 #undef sNULL
 #undef Next
 #undef Open
@@ -53,6 +54,7 @@
 #undef async_run_coro
 #undef can_cache
 #undef close
+#undef collections_abc
 #undef configure
 #undef connection_hooks
 #undef cursor
@@ -127,6 +129,7 @@ static struct _apsw_string_table
     PyObject *FindFunction;
     PyObject *INSERT;
     PyObject *Integrity;
+    PyObject *Mapping;
     PyObject *sNULL;
     PyObject *Next;
     PyObject *Open;
@@ -152,6 +155,7 @@ static struct _apsw_string_table
     PyObject *async_run_coro;
     PyObject *can_cache;
     PyObject *close;
+    PyObject *collections_abc;
     PyObject *configure;
     PyObject *connection_hooks;
     PyObject *cursor;
@@ -227,6 +231,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.FindFunction);
     Py_CLEAR(apst.INSERT);
     Py_CLEAR(apst.Integrity);
+    Py_CLEAR(apst.Mapping);
     Py_CLEAR(apst.sNULL);
     Py_CLEAR(apst.Next);
     Py_CLEAR(apst.Open);
@@ -252,6 +257,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.async_run_coro);
     Py_CLEAR(apst.can_cache);
     Py_CLEAR(apst.close);
+    Py_CLEAR(apst.collections_abc);
     Py_CLEAR(apst.configure);
     Py_CLEAR(apst.connection_hooks);
     Py_CLEAR(apst.cursor);
@@ -328,6 +334,7 @@ init_apsw_strings()
         || (!apst.FindFunction && 0 == (apst.FindFunction = PyUnicode_FromString("FindFunction")))
         || (!apst.INSERT && 0 == (apst.INSERT = PyUnicode_FromString("INSERT")))
         || (!apst.Integrity && 0 == (apst.Integrity = PyUnicode_FromString("Integrity")))
+        || (!apst.Mapping && 0 == (apst.Mapping = PyUnicode_FromString("Mapping")))
         || (!apst.sNULL && 0 == (apst.sNULL = PyUnicode_FromString("NULL")))
         || (!apst.Next && 0 == (apst.Next = PyUnicode_FromString("Next")))
         || (!apst.Open && 0 == (apst.Open = PyUnicode_FromString("Open")))
@@ -353,6 +360,7 @@ init_apsw_strings()
         || (!apst.async_run_coro && 0 == (apst.async_run_coro = PyUnicode_FromString("async_run_coro")))
         || (!apst.can_cache && 0 == (apst.can_cache = PyUnicode_FromString("can_cache")))
         || (!apst.close && 0 == (apst.close = PyUnicode_FromString("close")))
+        || (!apst.collections_abc && 0 == (apst.collections_abc = PyUnicode_FromString("collections.abc")))
         || (!apst.configure && 0 == (apst.configure = PyUnicode_FromString("configure")))
         || (!apst.connection_hooks && 0 == (apst.connection_hooks = PyUnicode_FromString("connection_hooks")))
         || (!apst.cursor && 0 == (apst.cursor = PyUnicode_FromString("cursor")))

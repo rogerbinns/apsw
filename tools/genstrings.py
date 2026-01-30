@@ -37,6 +37,8 @@ close connection_hooks cursor error_offset excepthook execute
 executemany extendedresult get result add_note
 can_cache
 
+collections.abc Mapping
+
 step final value inverse
 
 NULL 0.0 -9e999 9e999
@@ -65,8 +67,7 @@ def mangle(name):
         "null": "snull",
         "true": "strue",
         "false": "sfalse",
-        "apsw.aio": "apsw_aio",
-    }.get(name, name)
+    }.get(name, name).replace(".", "_")
 
 
 # tokenize names
