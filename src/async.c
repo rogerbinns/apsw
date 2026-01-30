@@ -106,6 +106,9 @@ BoxedCall_clear(PyObject *self_)
     Py_DECREF(self->AttrGet.arg1);
     break;
   }
+
+  Py_CLEAR(((BoxedCall *)self)->context);
+
   self->call_type = Dormant;
 }
 
@@ -113,7 +116,6 @@ static void
 BoxedCall_dealloc(PyObject *self)
 {
   BoxedCall_clear(self);
-  Py_CLEAR(((BoxedCall *)self)->context);
   Py_TpFree(self);
 }
 
@@ -121,6 +123,11 @@ static PyObject *
 BoxedCall_internal_call(BoxedCall *self)
 {
   PyObject *result = NULL;
+
+  if (0 != PyContext_Enter(self->context))
+    return NULL;
+
+  assert(self->call_type != Dormant);
 
   switch (self->call_type)
   {
@@ -152,8 +159,10 @@ BoxedCall_internal_call(BoxedCall *self)
     break;
 
   case Dormant:
-    PyErr_SetString(PyExc_RuntimeError, "Can only be called once");
+    Py_UNREACHABLE();
   }
+
+  PyContext_Exit(self->context);
 
   if (!result && PyErr_Occurred() && !PyErr_ExceptionMatches(PyExc_StopAsyncIteration)
       && !PyErr_ExceptionMatches(PyExc_StopIteration))
@@ -172,39 +181,14 @@ BoxedCall_call(PyObject *self_, PyObject *args, PyObject *kwargs)
   if (kwargs || (args && PyTuple_GET_SIZE(args)))
     return PyErr_Format(PyExc_RuntimeError, "BoxedCall takes no parameters");
 
-  return BoxedCall_internal_call(self);
-}
-
-static PyObject *
-BoxedCall_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
-{
-  BoxedCall *self = (BoxedCall *)self_;
   if (self->call_type == Dormant)
   {
-    PyErr_SetString(PyExc_RuntimeError, "BoxedCall has already been called");
+    PyErr_SetString(PyExc_RuntimeError, "Can only be called once");
     return NULL;
   }
-  if (0 == PyContext_Enter(self->context))
-    return Py_NewRef(self_);
-  return NULL;
+
+  return BoxedCall_internal_call(self);
 }
-
-static PyObject *
-BoxedCall_exit(PyObject *self_, PyObject *const *Py_UNUSED(fast_args), Py_ssize_t Py_UNUSED(fast_nargs),
-               PyObject *Py_UNUSED(fast_kwnames))
-{
-  BoxedCall *self = (BoxedCall *)self_;
-
-  PyContext_Exit(self->context);
-
-  Py_RETURN_NONE;
-}
-
-static PyMethodDef BoxedCall_methods[] = {
-  { "__enter__", (PyCFunction)BoxedCall_enter, METH_NOARGS },
-  { "__exit__", (PyCFunction)BoxedCall_exit, METH_FASTCALL | METH_KEYWORDS },
-  { NULL },
-};
 
 static PyTypeObject BoxedCallType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.aio.BoxedCall",
@@ -213,7 +197,6 @@ static PyTypeObject BoxedCallType = {
   .tp_itemsize = sizeof(PyObject *),
   .tp_free = PyObject_Free,
   .tp_call = BoxedCall_call,
-  .tp_methods = BoxedCall_methods,
 };
 
 static BoxedCall *
