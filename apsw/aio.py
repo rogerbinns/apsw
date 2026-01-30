@@ -253,7 +253,9 @@ class AsyncIO:
     def worker_thread_run(self):
         "Does the enqueued call processing in the worker thread"
 
-        while (tracker := self.queue.get()) is not None:
+        q = self.queue
+
+        while (tracker := q.get()) is not None:
             if not tracker.is_cancelled:
                 # adopt caller's contextvars
                 with tracker.call:
@@ -385,7 +387,9 @@ class Trio:
 
     def worker_thread_run(self):
         "Does the enqueued call processing in the worker thread"
-        while (tracker := self.queue.get()) is not None:
+        q = self.queue
+
+        while (tracker := q.get()) is not None:
             try:
                 if not tracker.is_cancelled:
                     # adopt caller's contextvars
@@ -478,8 +482,9 @@ class AnyIO:
 
     def worker_thread_run(self):
         "Does the enqueued call processing in the worker thread"
+        q = self.queue
 
-        while (tracker := self.queue.get()) is not None:
+        while (tracker := q.get()) is not None:
             try:
                 if not tracker.is_cancelled:
                     # adopt caller's contextvars
