@@ -348,6 +348,8 @@ class Trio:
 
     def configure(self, db: apsw.Connection):
         "Setup database, just after it is created"
+        apsw.async_run_coro = self.async_run_coro
+
         for hook in apsw.connection_hooks:
             hook(db)
         db.set_progress_handler(self.progress_checker, check_progress_steps.get(), id=self)
@@ -427,7 +429,6 @@ class Trio:
         global trio
         import trio
 
-        apsw.async_run_coro.set(self.async_run_coro)
         self.queue: queue.SimpleQueue[_CallTracker | None] = queue.SimpleQueue()
         self.token = trio.lowlevel.current_trio_token()
         threading.Thread(name=thread_name, target=self.worker_thread_run).start()
