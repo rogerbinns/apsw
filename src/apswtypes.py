@@ -193,6 +193,9 @@ class AsyncConnectionController(Protocol):
         """
         Called in the worker thead once the connection is available
 
+        To support async callbacks, it should set
+        :attr:`apsw.async_run_coro`.
+
         This must run the :attr:`Connection.connection_hooks`.
         """
         ...

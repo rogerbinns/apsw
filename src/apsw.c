@@ -1963,11 +1963,10 @@ static PyMethodDef module_methods[] = {
 static int module_is_initialized;
 
 static int
-setattr_no_write(PyObject *module, PyObject *name, PyObject *value)
+apswmod_setattr(PyObject *module, PyObject *name, PyObject *value)
 {
   if (module_is_initialized
       && (PyObject_RichCompareBool(name, apst.async_controller, Py_EQ) == 1
-          || PyObject_RichCompareBool(name, apst.async_run_coro, Py_EQ) == 1
           || PyObject_RichCompareBool(name, apst.async_cursor_prefetch, Py_EQ) == 1))
   {
     PyErr_Format(PyExc_AttributeError,
@@ -1975,13 +1974,39 @@ setattr_no_write(PyObject *module, PyObject *name, PyObject *value)
     return -1;
   }
 
+  if (module_is_initialized && (PyObject_RichCompareBool(name, apst.async_run_coro, Py_EQ) == 1))
+  {
+    if (!Py_IsNone(value) && !PyCallable_Check(value))
+    {
+      PyErr_Format(PyExc_TypeError, "Expected None or a callable for async_run_coro, not %s", Py_TypeName(value));
+      return -1;
+    }
+    return PyDict_SetItem(PyThreadState_GetDict(), async_run_coro_sentinel, value);
+  }
+
   return PyErr_Occurred() ? -1 : PyObject_GenericSetAttr(module, name, value);
+}
+
+static PyObject *
+apswmod_getattr(PyObject *module, PyObject *name)
+{
+  if (module_is_initialized && (PyObject_RichCompareBool(name, apst.async_run_coro, Py_EQ) == 1))
+  {
+    PyObject *runner = PyDict_GetItemWithError(PyThreadState_GetDict(), async_run_coro_sentinel);
+    if (PyErr_Occurred())
+      return NULL;
+    if (!runner)
+      Py_RETURN_NONE;
+    return Py_NewRef(runner);
+  }
+  return PyObject_GenericGetAttr(module, name);
 }
 
 static PyTypeObject ApswModuleType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "APSWModule",
   .tp_flags = Py_TPFLAGS_DEFAULT,
-  .tp_setattro = setattr_no_write,
+  .tp_setattro = apswmod_setattr,
+  .tp_getattro = apswmod_getattr,
 };
 
 static struct PyModuleDef apswmoduledef = { PyModuleDef_HEAD_INIT, "apsw", NULL, -1, module_methods, 0, 0, 0, 0 };
@@ -2179,20 +2204,19 @@ PyInit_apsw(void)
     goto fail;
 
   /** .. attribute:: async_run_coro
-    :type: contextvars.ContextVar[Callable[[Coroutine], Any]]
+    :type: Callable[[Coroutine], Any]
 
     When APSW encounters a :class:`~typing.Coroutine` this called to run
     it and block until getting the result.  The callable would typically
     have the coroutine run in the event loop.  See :doc:`async` for
     details.
+
+    This is a per-thread value.
   */
 
-  if (!async_run_coro_context_var)
-    if (NULL == (async_run_coro_context_var = PyContextVar_New("apsw.async_run_coro", NULL)))
+  if (!async_run_coro_sentinel)
+    if (NULL == (async_run_coro_sentinel = PyBaseObject_Type.tp_alloc(&PyBaseObject_Type, 0)))
       goto fail;
-
-  if (PyModule_AddObjectRef(m, "async_run_coro", async_run_coro_context_var))
-    goto fail;
 
   /** .. attribute:: async_cursor_prefetch
     :type: contextvars.ContextVar[int]
@@ -2200,6 +2224,13 @@ PyInit_apsw(void)
     When iterating on a :class:`Cursor` in async mode, it is more
     efficient to get multiple result rows at once.  This controls how many
     that is.  The default is 64 if not set. See :doc:`async` for details.
+    Typical usage is:
+
+    .. code-block:: python
+
+      with apsw.aio.contextvar_set(apsw.async_cursor_prefetch, 1):
+        async for row in await db.execute("SELECT ..."):
+            print(f"{row=})
   */
 
   if (!async_cursor_prefetch_context_var)
@@ -2218,10 +2249,10 @@ PyInit_apsw(void)
     and :class:`PreUpdate.update`.
   */
 
-  if(!apsw_no_change_object)
+  if (!apsw_no_change_object)
   {
     apsw_no_change_object = _PyObject_New(&apsw_no_change_type);
-    if(!apsw_no_change_object)
+    if (!apsw_no_change_object)
       goto fail;
   }
 
@@ -2276,14 +2307,9 @@ modules etc. For example::
 
   if (!PyErr_Occurred())
   {
-    PyObject *mod = PyImport_ImportModule("collections.abc");
-    if (mod)
-    {
-      collections_abc_Mapping = PyObject_GetAttrString(mod, "Mapping");
-      Py_DECREF(mod);
-    }
-    /* should always have succeeded */
-    if(!mod || !collections_abc_Mapping)
+    collections_abc_Mapping = PyImport_ImportModuleAttr(apst.collections_abc, apst.Mapping);
+
+    if (!collections_abc_Mapping)
       goto fail;
   }
 

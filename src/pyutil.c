@@ -310,34 +310,31 @@ If a callback returns a coroutine, we ship it back to the event loop
 */
 static void AddTraceBackHere(const char *filename, int lineno, const char *functionname, const char *localsformat, ...);
 
-
-static PyObject *async_run_coro_context_var;
+static PyObject *async_run_coro_sentinel;
 
 static PyObject *
 apsw_run_in_event_loop(PyObject *coro)
 {
   assert(coro);
 
-  PyObject *runner = NULL, *result = NULL;
+  PyObject *runner = PyDict_GetItemWithError(PyThreadState_GetDict(), async_run_coro_sentinel);
 
-  PyContextVar_Get(async_run_coro_context_var, NULL, &runner);
-  if (!runner)
+  if (!runner || Py_IsNone(runner))
   {
     if (!PyErr_Occurred())
       PyErr_Format(PyExc_RuntimeError,
                    "A coroutine (async) was passed as a callback to APSW, but apsw.async_run_coro "
-                   "has not been set to run it in this context. See the APSW async documentation for more details.");
+                   "has not been set to run it in this thread. See the APSW async documentation for more details.");
     AddTraceBackHere(__FILE__, __LINE__, "apsw_run_in_event_loop", "{s: O}", "coro", coro);
     return NULL;
   }
 
   PyObject *vargs_run[] = { NULL, coro };
-  result = PyObject_Vectorcall(runner, vargs_run + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+  PyObject *result = PyObject_Vectorcall(runner, vargs_run + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!result)
     AddTraceBackHere(__FILE__, __LINE__, "apsw_run_in_event_loop.returned_exception", "{s: O, s: O}", "coroutine", coro,
                      "runner", runner);
-  Py_DECREF(runner);
 
   return result;
 }

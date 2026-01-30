@@ -2426,7 +2426,7 @@ def make_virtual_module(
                     self.iterating = aiter(values)
                     self._impl_next = _get_anext
                 elif inspect.iscoroutine(values):
-                    self.iterating = iter(apsw.async_run_coro.get()(values))
+                    self.iterating = iter(apsw.async_run_coro(values))
                     self._impl_next = next
                 else:
                     self.iterating = iter(values)
@@ -2521,7 +2521,7 @@ def _get_anext(aiterator: AsyncIterator[apsw.SQLiteValues]) -> apsw.SQLiteValues
     async def async_get_anext():
         return await anext(aiterator)
 
-    return apsw.async_run_coro.get()(async_get_anext())
+    return apsw.async_run_coro(async_get_anext())
 
 def generate_series_sqlite(
     start: apsw.SQLiteValue = None, stop: apsw.SQLiteValue = 0xFFFF_FFFF_FFFF_FFFF, step: apsw.SQLiteValue = 1

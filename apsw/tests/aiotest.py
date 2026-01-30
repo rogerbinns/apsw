@@ -51,8 +51,24 @@ class Async(unittest.TestCase):
 
     def testOverwrite(self):
         "make sure module contextvars can't be overwritten"
-        for name in "async_controller", "async_run_coro", "async_cursor_prefetch":
+        for name in "async_controller", "async_cursor_prefetch":
             self.assertRaisesRegex(AttributeError, ".*Do not overwrite apsw.*context", setattr, apsw, name, 3)
+        # used to be a contextvar, now thread local
+        self.assertIsNone(apsw.async_run_coro)
+        self.assertRaises(TypeError, setattr, apsw.async_run_coro, 3)
+        x = lambda: 3
+        apsw.async_run_coro = x
+        self.assertIs(apsw.async_run_coro, x)
+
+        res = []
+        def check():
+            res.append(apsw.async_run_coro)
+
+        t = threading.Thread(target=check)
+        t.start()
+        t.join()
+
+        self.assertEqual(res, [None])
 
     def verifyCoroutine(self, coro):
         self.assertTrue(inspect.isawaitable(coro))
