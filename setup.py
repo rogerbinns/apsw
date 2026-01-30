@@ -991,6 +991,12 @@ if __name__ == "__main__":
             "Programming Language :: C",
             "Programming Language :: Python :: 3",
             "Topic :: Database :: Front-Ends",
+            "License :: OSI Approved",
+            "Framework :: Trio",
+            "Framework :: AsyncIO",
+            "Framework :: AnyIO",
+            "Framework :: AnyIO"
+            "Programming Language :: Python :: Implementation :: CPython",
         ],
         keywords=["database", "sqlite"],
         license="any-OSI",
