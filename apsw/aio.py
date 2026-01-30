@@ -277,22 +277,20 @@ class AsyncIO:
 
         while (tracker := q.get()) is not None:
             if not tracker.is_cancelled:
-                # adopt caller's contextvars
-                with tracker.call:
-                    # we don't restore this because the queue is not
-                    # re-entrant, so there is no point
-                    _tls.current_call = tracker
+                # we don't restore this because the queue is not
+                # re-entrant, so there is no point
+                _tls.current_call = tracker
 
-                    try:
-                        # should we even start?
-                        if tracker.monotonic_exceeded():
-                            raise TimeoutError()
-                        self.loop.call_soon_threadsafe(self.set_future_result, tracker.completion, tracker.call())
+                try:
+                    # should we even start?
+                    if tracker.monotonic_exceeded():
+                        raise TimeoutError()
+                    self.loop.call_soon_threadsafe(self.set_future_result, tracker.completion, tracker.call())
 
-                    except BaseException as exc:
-                        # BaseException is deliberately used because CancelledError
-                        # is a subclass of it
-                        self.loop.call_soon_threadsafe(self.set_future_exception, tracker.completion, exc)
+                except BaseException as exc:
+                    # BaseException is deliberately used because CancelledError
+                    # is a subclass of it
+                    self.loop.call_soon_threadsafe(self.set_future_exception, tracker.completion, exc)
 
     def set_future_result(self, future: asyncio.Future, value: Any):
         if not future.done():
@@ -410,27 +408,25 @@ class Trio:
         q = self.queue
 
         while (tracker := q.get()) is not None:
-            try:
-                if not tracker.is_cancelled:
-                    # adopt caller's contextvars
-                    with tracker.call:
-                        # we don't restore this because the queue is not
-                        # re-entrant, so there is no point
-                        _tls.current_call = tracker
+            if not tracker.is_cancelled:
+                # we don't restore this because the queue is not
+                # re-entrant, so there is no point
+                _tls.current_call = tracker
 
-                        try:
-                            # should we even start?
-                            if tracker.monotonic_exceeded():
-                                raise trio.TooSlowError()
-                            tracker.result = tracker.call()
+                try:
+                    # should we even start?
+                    if tracker.monotonic_exceeded():
+                        raise trio.TooSlowError()
+                    tracker.result = tracker.call()
 
-                        except BaseException as exc:
-                            # BaseException is deliberately used because CancelledError
-                            # is a subclass of it
-                            tracker.result = exc
-                            tracker.is_exception = True
-            finally:
-                self.token.run_sync_soon(tracker.completion.set)
+                except BaseException as exc:
+                    # BaseException is deliberately used because Cancelled
+                    # is a subclass of it
+                    tracker.result = exc
+                    tracker.is_exception = True
+
+                finally:
+                    self.token.run_sync_soon(tracker.completion.set)
 
     def async_run_coro(self, coro: Coroutine):
         "Called in worker thread to run a coroutine in the event loop"
@@ -505,27 +501,25 @@ class AnyIO:
         q = self.queue
 
         while (tracker := q.get()) is not None:
-            try:
-                if not tracker.is_cancelled:
-                    # adopt caller's contextvars
-                    with tracker.call:
-                        # we don't restore this because the queue is not
-                        # re-entrant, so there is no point
-                        _tls.current_call = tracker
+            if not tracker.is_cancelled:
+                # we don't restore this because the queue is not
+                # re-entrant, so there is no point
+                _tls.current_call = tracker
 
-                        try:
-                            # should we even start?
-                            if tracker.monotonic_exceeded():
-                                raise TimeoutError("Deadline exceeded in queue")
-                            tracker.result = tracker.call()
+                try:
+                    # should we even start?
+                    if tracker.monotonic_exceeded():
+                        raise TimeoutError("Deadline exceeded in queue")
+                    tracker.result = tracker.call()
 
-                        except BaseException as exc:
-                            # BaseException is deliberately used because CancelledError
-                            # is a subclass of it
-                            tracker.result = exc
-                            tracker.is_exception = True
-            finally:
-                anyio.from_thread.run_sync(tracker.completion.set, token=self.token)
+                except BaseException as exc:
+                    # BaseException is deliberately used because CancelledError
+                    # is a subclass of it
+                    tracker.result = exc
+                    tracker.is_exception = True
+
+                finally:
+                    anyio.from_thread.run_sync(tracker.completion.set, token=self.token)
 
     def async_run_coro(self, coro: Coroutine):
         "Called in worker thread to run a coroutine in the event loop"
