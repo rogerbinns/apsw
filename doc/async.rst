@@ -256,16 +256,39 @@ loop if any callbacks are async.
     :func:`apsw.aio.contextvar_set` shows a convenient way of doing
     so.
 
+    The context is copied (a trivial internal operation) as it passes
+    from async to worker thread and back to async again.  Setting a
+    variable is not visible to code earlier in the call chain.  Use a
+    dict or similar as the value set by the initial code to provide
+    somewhere all the code in the chain can see and make changes.
+
 Configuration
 =============
 
-Configuration uses :mod:`contextvars`.
+Most configuration uses :mod:`contextvars`.
 
-* :attr:`apsw.async_cursor_prefetch`
-* :attr:`apsw.aio.check_progress_steps`
-* :attr:`apsw.aio.deadline`
-* :attr:`apsw.async_controller`
-* :attr:`apsw.async_run_coro`
+:attr:`apsw.async_cursor_prefetch`
+
+    How many rows are fetched at once when iterating query results.
+
+:attr:`apsw.aio.check_progress_steps`
+
+    How frequently running SQLite queries check for cancellations and
+    timeouts
+
+:attr:`apsw.aio.deadline`
+
+    When SQLite queries or async callbacks should timeout.  (|trio|
+    and |anyio|) native timeout is also supported.
+
+:attr:`apsw.async_controller`
+
+    Interface between async framework and worker thread.
+
+:attr:`apsw.async_run_coro`
+
+    How the worker thread runs an async callback back in the event
+    loop.
 
 Deadlines and Cancellation
 ==========================
@@ -305,8 +328,8 @@ The controller is responsible for:
 
 * Starting the worker thread
 * Configuring the connection in the worker thread
-* Sending calls from the event loop to the worker thread
-* Providing the awaitable results
+* Sending calls from the event loop to the worker thread with
+  awaitable results
 * Checking deadlines and cancellations
 * Running coroutines in the event loop, and providing their results
 * Stopping the worker thread when told about database close
@@ -379,8 +402,8 @@ Async Performance
 Performance is dominated by the overhead of sending calls to the
 worker thread, and getting the result.  :source:`tools/aio_bench.py`
 is a small benchmark that keeps reading rows from a dummy memory
-database, and then appending 1,000 to the end of the table, until there
-are 300,000 rows in the table.
+database, and then appending 1,000 more rows to the end of the table,
+until there are 300,000 rows in the table.
 
 **Benchmarks aren't real - use your own scenario for real testing!**
 
@@ -390,7 +413,8 @@ Library
     loop, |trio|, and |anyio| with asyncio and trio event loops.
 
     The |aiosqlite| library (asyncio only) is included for comparison
-    which also sends calls to a worker thread.
+    which also sends calls to a worker thread.  Note that it doesn't
+    support cancellation, timeouts, or async callbacks.
 
 Prefetch
 
@@ -411,49 +435,70 @@ CpuTotal / CpuEvtLoop / CpuDbWorker
     the async event loop thread, and how much in the background
     database worker thread.
 
+The results show that what is used only matters if you are doing very
+large numbers of calls because of very small row batch sizes.  APSW
+has to allocate space for results, so increasing the prefetch size
+results in more memory consumption and more CPU time to allocate it.
+
 .. csv-table:: Benchmark Results
     :widths: auto
     :stub-columns: 1
     :header: "Library", "Prefetch", "Wall", "CpuTotal", "CpuEvtLoop", "CpuDbWorker"
     :class: aiobench-table
 
-    "apsw AsyncIO", 1, 6.717, 6.902, 2.596, 4.305
-    "apsw AsyncIO uvloop", 1, 4.361, 4.506, 1.149, 3.356
-    "apsw Trio", 1, 16.284, 18.690, 9.095, 9.595
-    "aiosqlite", 1, 7.495, 7.739, 3.371, 4.368
-    "aiosqlite uvloop", 1, 4.847, 5.049, 1.697, 3.352
-    "apsw AsyncIO", 2, 3.769, 3.887, 1.457, 2.429
-    "apsw AsyncIO uvloop", 2, 2.821, 2.872, 0.732, 2.141
-    "apsw Trio", 2, 8.748, 9.964, 4.407, 5.556
-    "aiosqlite", 2, 3.968, 4.106, 1.757, 2.348
-    "aiosqlite uvloop", 2, 2.631, 2.719, 0.865, 1.854
-    "apsw AsyncIO", 16, 1.001, 1.019, 0.224, 0.795
-    "apsw AsyncIO uvloop", 16, 0.851, 0.863, 0.131, 0.733
-    "apsw Trio", 16, 1.747, 1.900, 0.635, 1.265
-    "aiosqlite", 16, 1.011, 1.025, 0.303, 0.722
-    "aiosqlite uvloop", 16, 0.834, 0.830, 0.182, 0.649
-    "apsw AsyncIO", 64, 0.756, 0.758, 0.107, 0.651
-    "apsw AsyncIO uvloop", 64, 0.662, 0.660, 0.062, 0.598
-    "apsw Trio", 64, 0.958, 1.002, 0.236, 0.766
-    "aiosqlite", 64, 0.660, 0.650, 0.135, 0.515
-    "aiosqlite uvloop", 64, 0.569, 0.568, 0.092, 0.476
-    "apsw AsyncIO", 512, 0.658, 0.661, 0.076, 0.585
-    "apsw AsyncIO uvloop", 512, 0.631, 0.623, 0.052, 0.571
-    "apsw Trio", 512, 0.732, 0.749, 0.119, 0.630
-    "aiosqlite", 512, 0.533, 0.529, 0.075, 0.454
-    "aiosqlite uvloop", 512, 0.517, 0.511, 0.070, 0.441
-    "apsw AsyncIO", "8,192", 0.739, 0.719, 0.088, 0.632
-    "apsw AsyncIO uvloop", "8,192", 0.625, 0.620, 0.057, 0.564
-    "apsw Trio", "8,192", 0.692, 0.707, 0.089, 0.618
-    "aiosqlite", "8,192", 0.529, 0.522, 0.080, 0.442
-    "aiosqlite uvloop", "8,192", 0.508, 0.506, 0.069, 0.436
-    "apsw AsyncIO", "65,536", 0.624, 0.629, 0.063, 0.566
-    "apsw AsyncIO uvloop", "65,536", 0.620, 0.611, 0.052, 0.560
-    "apsw Trio", "65,536", 0.681, 0.700, 0.090, 0.610
-    "aiosqlite", "65,536", 0.543, 0.535, 0.091, 0.445
-    "aiosqlite uvloop", "65,536", 0.521, 0.509, 0.066, 0.442
-
-The results show that what is used only matters if you are doing very
-large numbers of calls because of very small row batch sizes.  APSW
-has to allocate space for results, so increasing the prefetch size
-results in more memory consumption and more CPU time to allocate it.
+    apsw AsyncIO,1,7.890,8.004,3.141,4.863
+    apsw AsyncIO uvloop,1,5.014,5.061,1.386,3.675
+    apsw Trio,1,11.653,12.525,7.238,5.287
+    apsw AnyIO asyncio,1,15.620,17.807,6.971,10.836
+    apsw AnyIO asyncio uvloop,1,9.985,11.115,3.695,7.421
+    apsw AnyIO trio,1,17.009,19.356,9.579,9.777
+    aiosqlite,1,8.146,8.321,3.677,4.644
+    aiosqlite uvloop,1,5.386,5.498,1.821,3.677
+    apsw AsyncIO,2,4.229,4.284,1.615,2.668
+    apsw AsyncIO uvloop,2,2.926,2.941,0.728,2.213
+    apsw Trio,2,6.388,6.771,3.675,3.096
+    apsw AnyIO asyncio,2,8.287,9.362,3.591,5.771
+    apsw AnyIO asyncio uvloop,2,5.652,6.190,1.968,4.221
+    apsw AnyIO trio,2,9.017,10.174,4.837,5.337
+    aiosqlite,2,4.472,4.569,1.899,2.669
+    aiosqlite uvloop,2,2.964,3.015,0.935,2.080
+    apsw AsyncIO,16,1.116,1.112,0.260,0.852
+    apsw AsyncIO uvloop,16,0.930,0.925,0.141,0.784
+    apsw Trio,16,1.382,1.438,0.539,0.899
+    apsw AnyIO asyncio,16,1.677,1.796,0.524,1.272
+    apsw AnyIO asyncio uvloop,16,1.303,1.363,0.336,1.027
+    apsw AnyIO trio,16,1.726,1.867,0.679,1.189
+    aiosqlite,16,1.091,1.080,0.334,0.746
+    aiosqlite uvloop,16,0.866,0.858,0.176,0.682
+    apsw AsyncIO,64,0.744,0.753,0.109,0.645
+    apsw AsyncIO uvloop,64,0.691,0.689,0.072,0.617
+    apsw Trio,64,0.860,0.877,0.196,0.681
+    apsw AnyIO asyncio,64,0.929,0.962,0.188,0.774
+    apsw AnyIO asyncio uvloop,64,0.799,0.817,0.129,0.688
+    apsw AnyIO trio,64,0.940,0.990,0.231,0.759
+    aiosqlite,64,0.682,0.677,0.145,0.532
+    aiosqlite uvloop,64,0.597,0.597,0.106,0.491
+    apsw AsyncIO,512,0.649,0.653,0.061,0.592
+    apsw AsyncIO uvloop,512,0.624,0.618,0.052,0.566
+    apsw Trio,512,0.685,0.690,0.091,0.599
+    apsw AnyIO asyncio,512,0.697,0.707,0.096,0.611
+    apsw AnyIO asyncio uvloop,512,0.668,0.673,0.070,0.603
+    apsw AnyIO trio,512,0.710,0.728,0.104,0.624
+    aiosqlite,512,0.555,0.552,0.088,0.464
+    aiosqlite uvloop,512,0.523,0.517,0.075,0.443
+    apsw AsyncIO,"8,192",0.639,0.642,0.057,0.585
+    apsw AsyncIO uvloop,"8,192",0.618,0.611,0.045,0.566
+    apsw Trio,"8,192",0.662,0.670,0.088,0.582
+    apsw AnyIO asyncio,"8,192",0.683,0.692,0.085,0.607
+    apsw AnyIO asyncio uvloop,"8,192",0.661,0.664,0.076,0.588
+    apsw AnyIO trio,"8,192",0.689,0.707,0.096,0.610
+    aiosqlite,"8,192",0.538,0.535,0.089,0.446
+    aiosqlite uvloop,"8,192",0.521,0.519,0.074,0.445
+    apsw AsyncIO,"65,536",0.636,0.640,0.054,0.586
+    apsw AsyncIO uvloop,"65,536",0.618,0.614,0.040,0.574
+    apsw Trio,"65,536",0.659,0.670,0.077,0.593
+    apsw AnyIO asyncio,"65,536",0.681,0.687,0.081,0.606
+    apsw AnyIO asyncio uvloop,"65,536",0.650,0.654,0.067,0.587
+    apsw AnyIO trio,"65,536",0.702,0.714,0.093,0.621
+    aiosqlite,"65,536",0.541,0.539,0.089,0.450
+    aiosqlite uvloop,"65,536",0.518,0.514,0.071,0.443

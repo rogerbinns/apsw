@@ -18,14 +18,26 @@ T = TypeVar("T")
 
 
 deadline: contextvars.ContextVar[int | float | None] = contextvars.ContextVar("apsw.aio.deadline", default=None)
-"""Absolute time deadline for a request
+"""Absolute time deadline for a request in seconds
 
 This makes a best effort to timeout a database operation including any
 sync and async callbacks if the deadline is passed.  The default
 (``None``) is no deadline.
 
 The deadline is set at the point an APSW call is made, and changes
-after that are not observed.
+after that are not observed.  Typical usage is:
+
+.. code-block:: python
+
+    # 10 seconds from now.  You'll need to get the time from your
+    # framework as documented below.
+
+    with apsw.aio.contextvar_set(apsw.aio.deadline,
+            anyio.current_time() + 10):
+
+            for row in await db.execute("SELECT  time_consuming ..."):
+                print(f"{row=}")
+
 
 :class:`AsyncIO`
 
@@ -37,7 +49,7 @@ after that are not observed.
 :class:`Trio`
 
     If this is set then it is used for the deadline.  :exc:`trio.TooSlowError`
-    is raised.
+    is raised.  The current time is available from :meth:`trio.current_time`.
 
     Otherwise the :func:`trio.current_effective_deadline` where the
     call is made is used.
@@ -45,6 +57,7 @@ after that are not observed.
 AnyIO
 
     If this is set then it is used for the deadline.  :exc:`TimeoutError` is raised.
+    The current time is available from :meth:`anyio.current_time`.
 
     Otherwise the :func:`anyio.current_effective_deadline` where the
     call is made is used.
@@ -64,6 +77,13 @@ done in the :meth:`progress handler
 The default should correspond to around 10 checks per second, but will
 vary based on the queries.  The smaller the number, the more frequent
 the checks, but also more time consumed making the checks.
+
+This is only used during connection creation.  Typical usage is:
+
+.. code-block:: python
+
+    with apsw.aio.contextvar_set(apsw.aio.check_progress_steps, 500):
+        db = await apsw.Connection.as_async(...)
 """
 
 
