@@ -5,19 +5,18 @@
 # then you must include this future annotations line first.
 from __future__ import annotations
 
-import asyncio
 import contextlib
-
+import time
 from pprint import pprint
 
-# trio and anyio also work
-import trio
-import anyio
-
 import apsw
-import apsw.ext
 import apsw.bestpractice
+import apsw.ext
 
+# all the popular async frameworks work
+import asyncio
+import anyio
+import trio
 
 ### async_basics: Basics
 # Use :meth:`Connection.as_async` to get an async connection, and
@@ -55,11 +54,13 @@ asyncio.run(basics())
 
 # an async scalar function
 async def a_add(one, two):
+    print("async scalar called")
     return one + two
 
 
 # and a sync scalar function
 def s_add(one, two):
+    print("sync scalar called")
     return one + two
 
 
@@ -92,6 +93,7 @@ async def callbacks():
             "CREATE TABLE x(y); INSERT INTO x VALUES(42)"
         )
 
+
 # use anyio this time
 anyio.run(callbacks)
 
@@ -111,8 +113,8 @@ anyio.run(callbacks)
 # This example shows asyncio, but the principles are the same across
 # all the frameworks.
 
-async def cancellation():
 
+async def cancellation():
     # this will block SQLite for the sleep duration
     async def sleep(duration):
         await asyncio.sleep(duration)
@@ -122,39 +124,61 @@ async def cancellation():
         1 / 0
         return 3
 
-
-    async def wrap(f):
-        # create_task only accepts async def functions
-        return await f
-
     db = await apsw.Connection.as_async(":memory:")
 
     # always close database
     async with contextlib.aclosing(db):
-
         await db.create_scalar_function("sleep", sleep)
 
-        # create some tasks in a task group
+        start = time.monotonic()
+
+        # create some tasks in a task group that will all
+        # run simultaneously
         try:
             async with asyncio.TaskGroup() as tg:
+                # this query will sleep for an hour
+                task1 = tg.create_task(
+                    db.execute("SELECT sleep(3600)")
+                )
+                # this query will only run after the hour sleep query
+                # finishes because we can only do one SQLite query at
+                # a time
+                task2 = tg.create_task(
+                    db.execute("SELECT * FROM sqlite_schema")
+                )
+                # this will also sleep for an hour
+                task3 = tg.create_task(asyncio.sleep(3600))
+                # this will have an error
+                task4 = tg.create_task(deliberate_error())
 
-                    task1 = tg.create_task(wrap(db.execute("SELECT sleep(0.1)")))
+                # the TaskGroup with block will now run all the tasks
+                # to completion before exiting the block
 
-                    task2 = asyncio.sleep(1)
-                    task3 = db.execute("SELECT * FROM sqlite_schema")
-                    task4 = deliberate_error()
+        # note the * after except which is how you do exception groups
+        except* ZeroDivisionError:
+            print(
+                f"got zero division error after {time.monotonic() - start:.6f} seconds"
+            )
 
-                    # this one has the error
-                    await task4
-        except * ZeroDivisionError:
-            print("got zero division error")
+        # Lets see what happened to all the tasks.  Note how they are
+        # all done (complete) and how all except the deliberate error
+        # got cancelled.
+        print(f"{task1.done()=} {task1.cancelled()=}")
+        print(f"{task2.done()=} {task2.cancelled()=}")
+        print(f"{task3.done()=} {task3.cancelled()=}")
+        print(f"{task4.done()=} {task4.cancelled()=}")
 
-        await task2
+        # Lets verify SQLite is not still waiting for an hour
+        start = time.monotonic()
+        functions = await (
+            await db.execute(
+                "SELECT COUNT(*) FROM pragma_function_list"
+            )
+        ).get
+        print(
+            f"After {time.monotonic() - start:.6f} seconds, there are {functions} registered SQLite functions"
+        )
 
-        print(f"{task1.cancelled()=} {task1.done()=}")
-        print(f"{task3.cancelled()=} {task3.done()=}")
-
-        await task1
 
 asyncio.run(cancellation())
 
