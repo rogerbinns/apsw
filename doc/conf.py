@@ -165,6 +165,10 @@ nitpicky = True
 
 nitpick_ignore = [
     ('py:class', 'apsw.aio.T'),
+    # private
+    ('py:class', 'apsw.aio._CallTracker'),
+    # gets confused by C extension
+    ('py:class', '_queue.SimpleQueue'),
 ]
 
 # autosummary etc fail to import modules even though python import
