@@ -25,6 +25,11 @@ extensions = [
     "sphinx.ext.autosummary",
 ]
 
+if not os.getenv("APSW_NO_GA"):
+    extensions.append("sphinxcontrib.googleanalytics")
+    googleanalytics_id = "G-2NR9GDCQLT"
+
+
 # how we link to various things
 rst_prolog = """
 .. |anyio| replace:: :external+anyio:doc:`anyio <index>`
@@ -106,13 +111,10 @@ extlinks_detect_hardcoded_links = True
 html_title = f"{ project } { version } documentation"
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
-    "analytics_id": "G-2NR9GDCQLT",
     "prev_next_buttons_location": "both",
 }
 html_css_files = ["apsw.css"]
-
-if os.getenv("APSW_NO_GA"):
-    del html_theme_options["analytics_id"]
+html_baseurl = "https://rogerbinns.github.io/apsw/"
 
 html_favicon = "favicon.ico"
 
