@@ -49,7 +49,7 @@ after that are not observed.  Typical usage is:
 :class:`Trio`
 
     If this is set then it is used for the deadline.  :exc:`trio.TooSlowError`
-    is raised.  The current time is available from :meth:`trio.current_time`.
+    is raised.  The current time is available from :func:`trio.current_time`.
 
     Otherwise the :func:`trio.current_effective_deadline` where the
     call is made is used.
@@ -57,7 +57,7 @@ after that are not observed.  Typical usage is:
 AnyIO
 
     If this is set then it is used for the deadline.  :exc:`TimeoutError` is raised.
-    The current time is available from :meth:`anyio.current_time`.
+    The current time is available from :func:`anyio.current_time`.
 
     Otherwise the :func:`anyio.current_effective_deadline` where the
     call is made is used.
