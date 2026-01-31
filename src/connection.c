@@ -787,7 +787,7 @@ finally:
     having to write your own.  The returned object will be of your
     Connection subclass.  The parameters can be any positional and keyword
     arguments, and will be passed to your ``__init__`` method in the
-    worker thread first.  :meth:`Connection.__init__` should be called
+    worker thread first.  ``super().__init__`` should be called
     from it as normal for inheritance.
 */
 static PyObject *
