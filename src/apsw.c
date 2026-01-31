@@ -2218,6 +2218,9 @@ PyInit_apsw(void)
     if (NULL == (async_run_coro_sentinel = PyBaseObject_Type.tp_alloc(&PyBaseObject_Type, 0)))
       goto fail;
 
+  if (PyModule_AddObjectRef(m, "async_run_coro", Py_None))
+    goto fail;
+
   /** .. attribute:: async_cursor_prefetch
     :type: contextvars.ContextVar[int]
 
