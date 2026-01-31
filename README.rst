@@ -21,8 +21,10 @@ with both SQLite and Python.  This includes `full text search
 <https://rogerbinns.github.io/apsw/vtable.html>`__, `VFS (virtual file
 system) <https://rogerbinns.github.io/apsw/vfs.html>`__, `JSON
 <https://rogerbinns.github.io/apsw/jsonb.html>`__, and `CArray
-<https://rogerbinns.github.io/apsw/apsw.html#apsw.carray>`__.
-
+<https://rogerbinns.github.io/apsw/apsw.html#apsw.carray>`__.  All
+functionality is available in regular synchronous code, as well as
+full support for all the `async frameworks
+<https://rogerbinns.github.io/apsw/async.html>`__.
 
 It is recommended to use the builtin `sqlite3 module
 <https://docs.python.org/3/library/sqlite3.html>`__ if you want SQLite
