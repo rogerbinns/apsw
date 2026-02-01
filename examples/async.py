@@ -13,7 +13,7 @@ import apsw
 import apsw.bestpractice
 import apsw.ext
 
-# all the popular async frameworks work
+# all the popular async frameworks are supported
 import asyncio
 import anyio
 import trio
