@@ -70,7 +70,7 @@ docs-no-fetch: $(GENDOCS) doc/example.rst $(GENEXAMPLES) doc/typing.rstgen doc/r
 
 doc/example.rst: examples/main.py tools/example2rst.py src/apswversion.h
 	rm -f dbfile
-	env PYTHONPATH=. $(PYTHON) -sS tools/example2rst.py examples/main.py doc/example.rst
+	env PYTHONPATH=. $(PYTHON) -s tools/example2rst.py examples/main.py doc/example.rst
 	rm -f dbfile
 
 doc/example-%.rst: examples/%.py tools/example2rst.py src/apswversion.h apsw/ext.py
