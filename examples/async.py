@@ -6,12 +6,13 @@
 from __future__ import annotations
 
 import contextlib
+import io
 import time
-from pprint import pprint
 
 import apsw
 import apsw.bestpractice
 import apsw.ext
+import apsw.shell
 
 # all the popular async frameworks are supported
 import asyncio
@@ -39,11 +40,34 @@ async def basics():
                          (3, 'three'), (10, 'ten');
         """)
 
-        # query - note we have to await the cursor
+        # query - note we have to await to get the cursor before
+        # iterating in the for loop
         async for value, name in await db.execute(
             "SELECT value, name FROM numbers ORDER BY value DESC"
         ):
             print(f"{value=} {name=}")
+
+        # .get is great if you expect only a single value or
+        # row.  Lets get the number of registered functions
+        count = await (
+            await db.execute(
+                "SELECT COUNT(DISTINCT(name)) FROM pragma_function_list"
+            )
+        ).get
+        print(f"There are {count} functions")
+
+        # a pragma
+        print(f"journal_mode={await db.pragma('journal_mode')}")
+
+        # You should always use a transaction - use async with
+        async with db:
+            await db.execute("INSERT INTO numbers VALUES(7, 'seven')")
+            # nested transactions are supported via savepoints
+            async with db:
+                await db.execute("DROP TABLE numbers")
+                # any exception in the async with block
+                # will rollback that block, while successful
+                # completion commits the changes
 
 
 asyncio.run(basics())
@@ -103,11 +127,11 @@ anyio.run(callbacks)
 # any fail, then cancel uncompleted ones, and raise the resulting
 # exceptions.
 #
-# * :external+python:label:`except * <except_star>` and
+# * :external+python:ref:`except * <except_star>` and
 #   :class:`ExceptionGroup` Python syntax for catching multiple
 #   exceptions such as from a group of tasks
 # * :class:`asyncio.TaskGroup`
-# * :external+trio:label:`Trio tasks <tasks>`
+# * :external+trio:ref:`Trio tasks <tasks>`
 # * :external+anyio:doc:`AnyIO tasks <tasks>`
 #
 # This example shows asyncio, but the principles are the same across
@@ -176,16 +200,155 @@ async def cancellation():
             )
         ).get
         print(
-            f"After {time.monotonic() - start:.6f} seconds, there are {functions} registered SQLite functions"
+            f"After {time.monotonic() - start:.6f} seconds, "
+            f"there are {functions} registered SQLite functions"
         )
 
 
 asyncio.run(cancellation())
 
+### async_timeout: Timeouts
+# This demonstrates timeouts for both async and sync code.  The sync
+# SQL is `the outlandish fractal
+# <https://www.sqlite.org/lang_with.html#outlandish_recursive_query_examples>`__
+# but with the ``28`` changed to ``800_000``` and would take days to
+# run to completion.
+#
+# The deadline for async functions is enforced by the async event loop
+# and tends to be accurate. The deadline for sync functions is based
+# on SQLite periodically calling the :meth:`progress handler
+# <apsw.Connection.set_progress_handler>`.
+#
+# There is a dedicated :attr:`apsw.aio.deadline` which takes priority
+# for all frameworks, For |trio| and |anyio| their native timeouts are
+# also supported if :attr:`apsw.aio.deadline` has not been set.  The
+# :attr:`~apsw.aio.deadline` documentation has more details on setting
+# deadlines for each framework, getting their current time, and
+# exceptions raised on timeout.
+#
+# * :meth:`asyncio.get_running_loop().time() <asyncio.loop.time>`
+# * :exc:`TimeoutError`
+# * :exc:`trio.TooSlowError`
+# * :func:`trio.current_time`
+# * :func:`trio.current_effective_deadline`
+# * :func:`trio.fail_after` :func:`trio.fail_at`
+# * :func:`anyio.current_time`
+# * :func:`anyio.current_effective_deadline`
+# * :func:`anyio.fail_after`
+
+
+# The query is not reproduced here but is used when running this
+# example.
+fractal_sql = "outlandish fractal"
+
+
+async def timeouts():
+    async def sleep(amount):
+        await trio.sleep(amount)
+        return 42
+
+    db = await apsw.Connection.as_async(":memory:")
+
+    # always close database
+    async with contextlib.aclosing(db):
+        await db.create_scalar_function("sleep", sleep)
+
+        try:
+            # This will work with every framework.  Half a second from now.
+            with apsw.aio.contextvar_set(
+                apsw.aio.deadline, trio.current_time() + 0.5
+            ):
+                start = trio.current_time()
+                await (
+                    await db.execute("SELECT sleep(3600)")
+                ).fetchall()
+        except trio.TooSlowError:
+            end = trio.current_time()
+            print(
+                f"Got async function TooSlowError after {end - start:.6f} seconds"
+            )
+
+        # With trio and anyio we can use the native framework timeouts
+        try:
+            with trio.fail_after(0.5):
+                await (await db.execute(fractal_sql)).fetchall()
+        except trio.TooSlowError:
+            end = trio.current_time()
+            print(
+                f"Got sync function TooSlowError after {end - start:.6f} seconds"
+            )
+
+
+trio.run(timeouts)
+
+### async_worker_thread: Worker thread
+# Async connections work by running the SQLite operations in a
+# dedicated background thread.  You can also run your own code there
+# which is especially useful if it does many calls before returning a
+# final result.
+#
+# Examples shown include :ref:`schema_upgrade` and getting a text
+# :ref:`dump <shell-cmd-dump>`.
+#
+# In the worker thread, the connection is a regular sync connection.
+
+
+def schema_upgrade(db: apsw.Connection):
+    # The user_version is a great way of tracking and upgrading the
+    # schema.  Because this is run in the worker thread it is the
+    # normal sync approach.
+
+    # Do everything in a single transactions
+    with db:
+        # database fresh state
+        if db.pragma("user_version") == 0:
+            db.execute("""
+                CREATE TABLE products(id, name, sku, price);
+                CREATE TABLE orders(id, product_id, quantity);
+                pragma user_version = 1;
+            """)
+        if db.pragma("user_version") == 1:
+            db.execute("""
+                ALTER TABLE products ADD COLUMN description;
+                CREATE INDEX orders_idx ON orders(id, product_id);
+                pragma user_version = 2;
+            """)
+
+
+async def worker_thread():
+    db = await apsw.Connection.as_async(":memory:")
+
+    # always close database
+    async with contextlib.aclosing(db):
+        # Do the upgrade
+        await db.async_run(lambda: schema_upgrade(db))
+
+        # This is doing one operation
+        await db.async_run(
+            lambda: db.execute(
+                "INSERT INTO products(id, name) VALUES(?,?)",
+                (37, "Banana"),
+            )
+        )
+
+        # Getting a result
+        rows = await db.async_run(
+            lambda: db.execute("SELECT COUNT(*) FROM products").get
+        )
+        print(f"{rows=}")
+
+        # get a dump - to a memory file here, but you'd want to use
+        # a real file
+        out = io.StringIO()
+        await db.async_run(
+            lambda: apsw.shell.Shell(db=db, stdout=out).process_command(".dump")
+        )
+        dump = out.getvalue()
+        print(f"Dump is {len(dump)} chars starting {repr(dump):.40}")
+
+anyio.run(worker_thread)
+
 ### async_todo: TODO TODO TODO
-# * timeout
-# * async with db transaction
-# * running things in worker thread
 # * virtual tables
 # * ext trace & showresourceusage
 # * blob
