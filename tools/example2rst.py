@@ -111,6 +111,17 @@ header = {
     "examples/async.py": header_async,
 }[input_name]
 
+# this is used when generating the X in index directives
+# and should include its following space
+# eg .. index:: Timeouts (X example code)
+index_name ={
+    "examples/main.py": "",
+    "examples/fts.py": "Full text search ",
+    "examples/session.py": "Session ",
+    "examples/json.py": "JSON ",
+    "examples/async.py": "Async ",
+}[input_name]
+
 
 replacements = {
     'pathlib.Path("session.sql")': 'pathlib.Path("doc/_static/samples/session.sql")'
@@ -182,7 +193,7 @@ def gen_rst(filename: str, outfile: TextIO, output: dict[str, list[str]]) -> Non
                         print("    " + l, file=outfile)
                     print("", file=outfile)
                 cur_section = mo.group("section")
-                print(f"\n.. index:: {mo.group('desc')} (example code)\n", file=outfile)
+                print(f"\n.. index:: {mo.group('desc')} ({index_name}example code)\n", file=outfile)
                 print(f".. _example_{cur_section}:\n", file=outfile)
                 print(mo.group("desc"), file=outfile)
                 print("-" * len(mo.group("desc")), file=outfile)
