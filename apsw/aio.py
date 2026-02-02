@@ -25,7 +25,8 @@ sync and async callbacks if the deadline is passed.  The default
 (``None``) is no deadline.
 
 The deadline is set at the point an APSW call is made, and changes
-after that are not observed.  Typical usage is:
+after that are not observed.  It is based on the clock used by the
+event loop.  Typical usage is:
 
 .. code-block:: python
 
@@ -35,7 +36,7 @@ after that are not observed.  Typical usage is:
     with apsw.aio.contextvar_set(apsw.aio.deadline,
             anyio.current_time() + 10):
 
-            for row in await db.execute("SELECT  time_consuming ..."):
+            async for row in await db.execute("SELECT  time_consuming ..."):
                 print(f"{row=}")
 
 
@@ -75,8 +76,8 @@ done in the :meth:`progress handler
 <apsw.Connection.set_progress_handler>`.
 
 The default should correspond to around 10 checks per second, but will
-vary based on the queries.  The smaller the number, the more frequent
-the checks, but also more time consumed making the checks.
+vary a lot based on the queries.  The smaller the number, the more
+frequent the checks, but also more time consumed making the checks.
 
 This is only used during connection creation.  Typical usage is:
 
