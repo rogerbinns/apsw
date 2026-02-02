@@ -97,7 +97,14 @@ Async Example/Tour
 ==================
 
 This shows how to use APSW in :doc:`async <async>` node.
-:mod:`asyncio`, |trio|, and |anyio| are supported.
+:mod:`asyncio`, |trio|, and |anyio| are supported.  A different one is
+used for each block, although they all work.
+
+.. note::
+
+    You don't have to make all connections exclusively sync or async,
+    and can mix and match as needed.  SQLite is fast, and in many
+    cases there may not be a benefit to concurrency with async.
 
 .. code-block:: python
 
@@ -123,9 +130,31 @@ index_name ={
 }[input_name]
 
 
+fractal_sql = """
+    WITH RECURSIVE
+    xaxis(x) AS (VALUES(-2.0) UNION ALL SELECT x+0.05 FROM xaxis WHERE x<1.2),
+    yaxis(y) AS (VALUES(-1.0) UNION ALL SELECT y+0.1 FROM yaxis WHERE y<1.0),
+    m(iter, cx, cy, x, y) AS (
+        SELECT 0, x, y, 0.0, 0.0 FROM xaxis, yaxis
+        UNION ALL
+        SELECT iter+1, cx, cy, x*x-y*y + cx, 2.0*x*y + cy FROM m
+        WHERE (x*x + y*y) < 4.0 AND iter< 800000 -- this should be 28 and controls how much work is done
+    ),
+    m2(iter, cx, cy) AS (
+        SELECT max(iter), cx, cy FROM m GROUP BY cx, cy
+    ),
+    a(t) AS (
+        SELECT group_concat( substr(' .+*#', 1+min(iter/7,4), 1), '')
+        FROM m2 GROUP BY cy
+    )
+    SELECT group_concat(rtrim(t),x'0a') FROM a;"""
+
+
 replacements = {
-    'pathlib.Path("session.sql")': 'pathlib.Path("doc/_static/samples/session.sql")'
+    'pathlib.Path("session.sql")': 'pathlib.Path("doc/_static/samples/session.sql")',
+    'fractal_sql = "outlandish fractal"': 'fractal_sql = "' + fractal_sql.replace("\n", "\\n") + '"',
 }
+
 
 def get_output(filename: str):
     code: list[str] = []
