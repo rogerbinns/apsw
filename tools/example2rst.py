@@ -124,7 +124,7 @@ def get_output(filename: str):
             continue
         mo = re.match(section_re, line)
         if mo:
-            code.append(f"print('{section_marker}{mo.group('section')}')")
+            code.append(f"apsw.config(apsw.SQLITE_CONFIG_LOG, None) ; print('{section_marker}{mo.group('section')}')")
             continue
         for k, v in replacements.items():
             if k in line:
