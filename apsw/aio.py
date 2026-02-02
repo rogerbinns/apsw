@@ -123,7 +123,7 @@ else:
         return _contextvar_set_wrapper()
 
 
-async def make_session(db: apsw.AsyncConnection, schema: str) -> AsyncSession:
+async def make_session(db: apsw.AsyncConnection, schema: str) -> apsw.AsyncSession:
     "Helper to create a :class:`~apsw.Session` in async mode for an async database"
     # This mainly exists to give IDEs and type checkers the clues they need
     if not hasattr(apsw, "Session"):
