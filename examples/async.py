@@ -341,15 +341,72 @@ async def worker_thread():
         # a real file
         out = io.StringIO()
         await db.async_run(
-            lambda: apsw.shell.Shell(db=db, stdout=out).process_command(".dump")
+            lambda: apsw.shell.Shell(
+                db=db, stdout=out
+            ).process_command(".dump")
         )
         dump = out.getvalue()
         print(f"Dump is {len(dump)} chars starting {repr(dump):.40}")
 
+
 anyio.run(worker_thread)
 
+### async_vtable: Virtual tables
+# :ref:`Virtual tables <virtualtables>` are a very good match for
+# async, especially if networking is involved.  You can do your own
+# :class:`full implementation <VTModule>` using sync and async methods
+# as needed, but will find it easier to start with
+# :func:`apsw.ext.make_virtual_module` that turns any Python function
+# (sync or async) in a virtual table accepting positional and keyword
+# arguments.  The sync :ref:`example is here <example_virtual_tables>`
+# with the async below being pretty much the same thing.
+
+
+async def data_table(flags, server="example.com"):
+    # one positional and one keyword argument.  note you can't change
+    # the number of columns or their order based on the arguments but
+    # you can change what rows are returned and their contents
+    print(f"data_table called with {flags=} and {server=}")
+
+    # you would do real work here - we just provide some books
+    yield ("The Great Gatsby", 1925, 9.2)
+    yield ("To Kill a Mockingbird", 1960, 9.5)
+    yield ("1984", 1949, 9.8)
+    yield ("The Catcher in the Rye", 1951, 8.4)
+    yield ("The Hobbit", 1937, 9.6)
+
+# Tell make_virtual_module about the columns
+data_table.columns = ("title", "year", "review")
+# ... and how to extract them from each row
+data_table.column_access = apsw.ext.VTColumnAccess.By_Index
+
+
+async def virtual_tables():
+    db = await apsw.Connection.as_async(":memory:")
+
+    # always close database
+    async with contextlib.aclosing(db):
+        await apsw.ext.make_virtual_module(db, "books", data_table)
+
+        # regular query
+        async for row in await db.execute(
+            "SELECT * FROM books WHERE flags=94 AND server=?",
+            ("example2.com",),
+        ):
+            print(row)
+
+        # SQLite will do the query work
+        async for row in await db.execute(
+            "SELECT * FROM books WHERE server=? AND flags=?AND review > 9.55 "
+            "   ORDER BY year DESC",
+            ("orange", -2),
+        ):
+            print(row)
+
+
+trio.run(virtual_tables)
+
 ### async_todo: TODO TODO TODO
-# * virtual tables
 # * ext trace & showresourceusage
 # * blob
 # * backup
