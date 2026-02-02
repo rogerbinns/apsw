@@ -22,8 +22,8 @@ import traceback
 import types
 from dataclasses import dataclass, is_dataclass, make_dataclass
 from fractions import Fraction
-from typing import Any, Literal, TextIO
-from collections.abc import Callable, Iterator, Sequence
+from typing import Any, Literal, Protocol, TextIO, overload
+from collections.abc import Callable, Iterator, AsyncIterator, AsyncIterable, Iterable, Sequence, Awaitable
 from types import NoneType
 
 import apsw
@@ -2210,16 +2210,58 @@ def get_column_names(row: Any) -> tuple[Sequence[str], VTColumnAccess]:
         return tuple(f"column{x}" for x in range(len(row))), VTColumnAccess.By_Index
     raise TypeError(f"Can't figure out columns for {row}")
 
+class VirtualModuleCallable(Protocol):
+    """
+    What :func:`make_virtual_module` takes as the callable
+
+    """
+
+    columns: tuple[str]
+    "The columns names"
+    column_access: VTColumnAccess
+    "How to get values from each row"
+    primary_key: int | None = None
+    "Which column if any is a primary key"
+
+    def __call__(self, *args, **kwargs) -> Iterable | AsyncIterable:
+        "It can either an iterator over the values"
+        ...
+
+
+# ::TODO:: one day sphinx won't barf on this so badly it
+# denies the existence of the function
+#  @overload
+#  def make_virtual_module(
+#      db: apsw.Connection,
+#      name: str,
+#      callable: VirtualModuleCallable,
+#      *,
+#      eponymous: bool = True,
+#      eponymous_only: bool = False,
+#      repr_invalid: bool = False,
+#  ) -> None: ...
+#
+#  @overload
+#  def make_virtual_module(
+#      db: apsw.AsyncConnection,
+#      name: str,
+#      callable: VirtualModuleCallable,
+#      *,
+#      eponymous: bool = True,
+#      eponymous_only: bool = False,
+#      repr_invalid: bool = False,
+#  ) -> Awaitable[None]: ...
+
 
 def make_virtual_module(
-    db: apsw.Connection,
+    db: apsw.Connection | apsw.AsyncConnection,
     name: str,
-    callable: Callable,
+    callable: VirtualModuleCallable,
     *,
     eponymous: bool = True,
     eponymous_only: bool = False,
     repr_invalid: bool = False,
-) -> None:
+) -> None | Awaitable[None]:
     """
     Registers a read-only virtual table module with *db* based on
     *callable*.  The *callable* must have an attribute named *columns*
