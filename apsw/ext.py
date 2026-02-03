@@ -22,7 +22,7 @@ import traceback
 import types
 from dataclasses import dataclass, is_dataclass, make_dataclass
 from fractions import Fraction
-from typing import Any, Literal, Protocol, TextIO, overload
+from typing import Any, Literal, Protocol, TextIO, overload, TYPE_CHECKING
 from collections.abc import Callable, Iterator, AsyncIterator, AsyncIterable, Iterable, Sequence, Awaitable
 from types import NoneType
 
@@ -2227,30 +2227,30 @@ class VirtualModuleCallable(Protocol):
         "It can either an iterator over the values"
         ...
 
-
-# ::TODO:: one day sphinx won't barf on this so badly it
-# denies the existence of the function
-#  @overload
-#  def make_virtual_module(
-#      db: apsw.Connection,
-#      name: str,
-#      callable: VirtualModuleCallable,
-#      *,
-#      eponymous: bool = True,
-#      eponymous_only: bool = False,
-#      repr_invalid: bool = False,
-#  ) -> None: ...
+# ::TODO:: sphinx barfs when these overloads are present even though TYPE_CHECKING
+# is False.  Will need to automate commenting out the block while sphinx runs
 #
-#  @overload
-#  def make_virtual_module(
-#      db: apsw.AsyncConnection,
-#      name: str,
-#      callable: VirtualModuleCallable,
-#      *,
-#      eponymous: bool = True,
-#      eponymous_only: bool = False,
-#      repr_invalid: bool = False,
-#  ) -> Awaitable[None]: ...
+#  if TYPE_CHECKING:
+#      @overload
+#      def make_virtual_module(
+#          db: apsw.Connection,
+#          name: str,
+#          callable: VirtualModuleCallable,
+#          *,
+#          eponymous: bool = True,
+#          eponymous_only: bool = False,
+#          repr_invalid: bool = False,
+#      ) -> None: ...
+#      @overload
+#      def make_virtual_module(
+#          db: apsw.AsyncConnection,
+#          name: str,
+#          callable: VirtualModuleCallable,
+#          *,
+#          eponymous: bool = True,
+#          eponymous_only: bool = False,
+#          repr_invalid: bool = False,
+#      ) -> Awaitable[None]: ...
 
 
 def make_virtual_module(
