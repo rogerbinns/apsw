@@ -1042,7 +1042,7 @@ class ShowResourceUsage:
            Statistics from each SQL statement executed are added together.
     :param scope: Get :data:`thread <resource.RUSAGE_THREAD>` or
            :data:`process <resource.RUSAGE_SELF>` stats, or `None`.
-           Note that MacOS only supports process, and Windows doesn't support
+           Note that MacOS only provides process, and Windows doesn't support
            either.
     :param indent: Printed before each line of output
 
@@ -1076,7 +1076,7 @@ class ShowResourceUsage:
 
         _get_resource = resource.getrusage
         _get_resource_param = {
-            "thread": getattr("resource", "RUSAGE_THREAD", resource.RUSAGE_SELF),
+            "thread": getattr(resource, "RUSAGE_THREAD", resource.RUSAGE_SELF),
             "process": resource.RUSAGE_SELF,
         }
 
