@@ -3,6 +3,7 @@
 # The purpose of this file is to produce rst output interspersed into
 # the the text of the example codes
 
+import contextlib
 import sys
 import re
 import tempfile
@@ -153,15 +154,13 @@ fractal_sql = """
 replacements = {
     'pathlib.Path("session.sql")': 'pathlib.Path("doc/_static/samples/session.sql")',
     'fractal_sql = "outlandish fractal"': 'fractal_sql = "' + fractal_sql.replace("\n", "\\n") + '"',
+    'query = "fractal"': 'query = "' + fractal_sql.replace("\n", "\\n").replace("800000", "28") + '"',
 }
 
 
 def get_output(filename: str):
     code: list[str] = []
     for line in pathlib.Path(filename).read_text().splitlines():
-        if line.split() == ["from", "pprint", "import", "pprint"]:
-            code.append("# " + line)
-            continue
         mo = re.match(section_re, line)
         if mo:
             code.append(f"apsw.config(apsw.SQLITE_CONFIG_LOG, None) ; print('{section_marker}{mo.group('section')}')")
@@ -169,40 +168,28 @@ def get_output(filename: str):
         for k, v in replacements.items():
             if k in line:
                 line = line.replace(k, v)
-        code.append(line.rstrip().replace("sys.stdout", "my_io"))
+        code.append(line)
+
+    code: str = "\n".join(code) + "\n"
 
     output: dict[str, list[str]] = {}
     cur_section = None
 
+    if False:  # make True if you need to debug the changes
+        print(code)
+
     my_io = io.StringIO()
 
-    def my_print(*args: Any) -> None:
-        nonlocal output, cur_section
-        s = " ".join(str(a) for a in args)
-        if s.startswith(section_marker):
-            v = my_io.getvalue()
-            if v:
-                my_print(v)
-                my_io.seek(0)
-                my_io.truncate(0)
-            cur_section = s[len(section_marker) :]
-            assert cur_section not in output
+    with contextlib.redirect_stdout(my_io):
+        with contextlib.redirect_stderr(my_io):
+            exec(compile(code, filename, "exec"), {})
+
+    for line in my_io.getvalue().splitlines():
+        if line.startswith(section_marker):
+            cur_section = line[len(section_marker) :]
             output[cur_section] = []
-            print("SECTION", cur_section)
-            return
-
-        assert cur_section is not None
-        output[cur_section].extend(s.split("\n"))
-
-        print(s)
-
-    def my_pprint(obj):
-        my_print(pprint.pformat(obj))
-
-    if False:  # make True if you need to debug the changes
-        print("\n".join(code))
-
-    exec(compile("\n".join(code), filename, "exec"), {"print": my_print, "pprint": my_pprint, "my_io": my_io})
+            continue
+        output[cur_section].append(line)
 
     return output
 
