@@ -194,6 +194,9 @@ class AsyncConnectionController(Protocol):
         """
         Called in the worker thead once the connection is available
 
+        To support async callbacks, it should set
+        :attr:`apsw.async_run_coro`.
+
         This must run the :attr:`Connection.connection_hooks`.
         """
         ...
@@ -259,13 +262,22 @@ async_controller: type[AsyncConnectionController]
 async_cursor_prefetch: contextvars.ContextVar[int]
 """When iterating on a :class:`Cursor` in async mode, it is more
 efficient to get multiple result rows at once.  This controls how many
-that is.  The default is 64 if not set. See :doc:`async` for details."""
+that is.  The default is 64 if not set. See :doc:`async` for details.
+Typical usage is:
 
-async_run_coro: contextvars.ContextVar[Callable[[Coroutine], Any]]
+.. code-block:: python
+
+  with apsw.aio.contextvar_set(apsw.async_cursor_prefetch, 1):
+    async for row in await db.execute("SELECT ..."):
+        print(f"{row=})"""
+
+async_run_coro: Callable[[Coroutine], Any]
 """When APSW encounters a :class:`~typing.Coroutine` this called to run
 it and block until getting the result.  The callable would typically
 have the coroutine run in the event loop.  See :doc:`async` for
-details."""
+details.
+
+This is a per-thread value."""
 
 def carray(object: Buffer | tuple[str, ...] | tuple[Buffer, ...], *, start: int = 0, stop: int = -1, flags: int = -1) -> CArrayBinding:
     """Indicates a Python object is being provided as a runtime array for the
@@ -1176,7 +1188,7 @@ class Connection:
           having to write your own.  The returned object will be of your
           Connection subclass.  The parameters can be any positional and keyword
           arguments, and will be passed to your ``__init__`` method in the
-          worker thread first.  :meth:`Connection.__init__` should be called
+          worker thread first.  ``super().__init__`` should be called
           from it as normal for inheritance."""
         ...
 
@@ -1873,7 +1885,7 @@ class Connection:
     getrowtrace = get_row_trace ## OLD-NAME
 
     in_transaction: bool
-    """True if currently in a transaction, else False
+    """It is recommended to use :meth:`txn_state` instead which is more reliable.
 
     Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__"""
 
@@ -5868,13 +5880,13 @@ class AsyncBackup:
         ...
 
 
-    done: Awaitable[bool]
+    done: bool
     """A boolean that is True if the copy completed in the last call to :meth:`~Backup.step`."""
 
 
 
 
-    page_count: Awaitable[int]
+    page_count: int
     """Read only. How many pages were in the source database after the last
     step.  If you haven't called :meth:`~Backup.step` or the backup
     object has been :meth:`finished <Backup.finish>` then zero is
@@ -5882,7 +5894,7 @@ class AsyncBackup:
 
     Calls: `sqlite3_backup_pagecount <https://sqlite.org/c3ref/backup_finish.html#sqlite3backuppagecount>`__"""
 
-    remaining: Awaitable[int]
+    remaining: int
     """Read only. How many pages were remaining to be copied after the last
     step.  If you haven't called :meth:`~Backup.step` or the backup
     object has been :meth:`finished <Backup.finish>` then zero is
@@ -5940,7 +5952,7 @@ class AsyncBlob:
 
 
 
-    async def length(self) -> int:
+    def length(self) -> int:
         """Returns the size of the blob in bytes.
 
         Calls: `sqlite3_blob_bytes <https://sqlite.org/c3ref/blob_bytes.html>`__"""
@@ -5983,7 +5995,7 @@ class AsyncBlob:
         Calls: `sqlite3_blob_reopen <https://sqlite.org/c3ref/blob_reopen.html>`__"""
         ...
 
-    async def seek(self, offset: int, whence: int = 0) -> None:
+    def seek(self, offset: int, whence: int = 0) -> None:
         """Changes current position to *offset* biased by *whence*.
 
         :param offset: New position to seek to.  Can be positive or negative number.
@@ -5993,7 +6005,7 @@ class AsyncBlob:
         :raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob."""
         ...
 
-    async def tell(self) -> int:
+    def tell(self) -> int:
         """Returns the current offset."""
         ...
 
@@ -6140,7 +6152,7 @@ class AsyncConnection:
         ...
 
 
-    async_controller: Awaitable[AsyncConnectionController]
+    async_controller: AsyncConnectionController
     """The controller in effect in async mode."""
 
     async def async_run(self, call: Callable, /, *args, **kwargs) -> Any:
@@ -6148,7 +6160,7 @@ class AsyncConnection:
         connection."""
         ...
 
-    authorizer: Awaitable[( Authorizer | AsyncAuthorizer ) | None]
+    authorizer: ( Authorizer | AsyncAuthorizer ) | None
     """While `preparing <https://sqlite.org/c3ref/prepare.html>`_
     statements, SQLite will call any defined authorizer to see if a
     particular action is ok to be part of the statement.
@@ -6239,7 +6251,7 @@ class AsyncConnection:
         Calls: `sqlite3_db_cacheflush <https://sqlite.org/c3ref/db_cacheflush.html>`__"""
         ...
 
-    async def cache_stats(self, include_entries: bool = False) -> dict[str, int]:
+    def cache_stats(self, include_entries: bool = False) -> dict[str, int]:
         """Returns information about the statement cache as dict.
 
         .. note::
@@ -6302,7 +6314,7 @@ class AsyncConnection:
               the first statement"""
         ...
 
-    async def changes(self) -> int:
+    def changes(self) -> int:
         """Returns the number of database rows that were changed (or inserted
         or deleted) by the most recently completed INSERT, UPDATE, or DELETE
         statement.
@@ -6368,12 +6380,12 @@ class AsyncConnection:
         Calls: `sqlite3_db_config <https://sqlite.org/c3ref/db_config.html>`__"""
         ...
 
-    convert_binding: Awaitable[( ConvertBinding | AsyncConvertBinding ) | None]
+    convert_binding: ( ConvertBinding | AsyncConvertBinding ) | None
     """Called on a cursor when a binding is not a supported type.
     This connection value is used when the cursor does not set
     its own value.  See :attr:`Cursor.convert_binding`"""
 
-    convert_jsonb: Awaitable[( ConvertJSONB | AsyncConvertJSONB ) | None]
+    convert_jsonb: ( ConvertJSONB | AsyncConvertJSONB ) | None
     """Called on a cursor when a blob being returned is valid JSONB.
     This connection value is used when the cursor does not set
     its own value.  See :attr:`Cursor.convert_jsonb`"""
@@ -6536,13 +6548,13 @@ class AsyncConnection:
         Calls: `sqlite3_create_window_function <https://sqlite.org/c3ref/create_function.html>`__"""
         ...
 
-    async def cursor(self)  -> AsyncCursor:
+    def cursor(self)  -> AsyncCursor:
         """Creates a new :class:`Cursor` object on this database.
 
         :rtype: :class:`Cursor`"""
         ...
 
-    cursor_factory: Awaitable[Callable[[Connection], Any]]
+    cursor_factory: Callable[[Connection], Any]
     """Defaults to :class:`Cursor`
 
     Called with a :class:`Connection` as the only parameter when a cursor
@@ -6619,7 +6631,7 @@ class AsyncConnection:
         ...
 
 
-    exec_trace: Awaitable[( ExecTracer | AsyncExecTracer ) | None]
+    exec_trace: ( ExecTracer | AsyncExecTracer ) | None
     """Called with the cursor, statement and bindings for
     each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
     Connection, unless the :class:`Cursor` installed its own
@@ -6741,29 +6753,29 @@ class AsyncConnection:
             * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__"""
         ...
 
-    async def get_autocommit(self) -> bool:
+    def get_autocommit(self) -> bool:
         """Returns if the Connection is in auto commit mode (ie not in a transaction).
 
         Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__"""
         ...
 
-    async def get_exec_trace(self) -> ( ExecTracer | AsyncExecTracer ) | None:
+    def get_exec_trace(self) -> ( ExecTracer | AsyncExecTracer ) | None:
         """Returns the currently installed :attr:`execution tracer
         <Connection.exec_trace>`"""
         ...
 
-    async def get_row_trace(self) -> ( RowTracer | AsyncRowTracer ) | None:
+    def get_row_trace(self) -> ( RowTracer | AsyncRowTracer ) | None:
         """Returns the currently installed :attr:`row tracer
         <Connection.row_trace>`"""
         ...
 
-    in_transaction: Awaitable[bool]
-    """True if currently in a transaction, else False
+    in_transaction: bool
+    """It is recommended to use :meth:`txn_state` instead which is more reliable.
 
     Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__"""
 
 
-    async def interrupt(self) -> None:
+    def interrupt(self) -> None:
         """Causes all pending operations on the database to abort at the
         earliest opportunity. You can call this from any thread.  For
         example you may have a long running query when the user presses the
@@ -6773,21 +6785,21 @@ class AsyncConnection:
         Calls: `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`__"""
         ...
 
-    is_async: Awaitable[bool]
+    is_async: bool
     """`True` if this connection is operating in async mode."""
 
-    is_interrupted: Awaitable[bool]
+    is_interrupted: bool
     """Indicates if this connection has been interrupted.
 
     Calls: `sqlite3_is_interrupted <https://sqlite.org/c3ref/interrupt.html>`__"""
 
-    async def last_insert_rowid(self) -> int:
+    def last_insert_rowid(self) -> int:
         """Returns the integer key of the most recent insert in the database.
 
         Calls: `sqlite3_last_insert_rowid <https://sqlite.org/c3ref/last_insert_rowid.html>`__"""
         ...
 
-    async def limit(self, id: int, newval: int = -1) -> int:
+    def limit(self, id: int, newval: int = -1) -> int:
         """If called with one parameter then the current limit for that *id* is
         returned.  If called with two then the limit is set to *newval*.
 
@@ -6823,10 +6835,10 @@ class AsyncConnection:
           * :meth:`~Connection.enable_load_extension`"""
         ...
 
-    open_flags: Awaitable[int]
+    open_flags: int
     """The combination of :attr:`flags <apsw.mapping_open_flags>` used to open the database."""
 
-    open_vfs: Awaitable[str]
+    open_vfs: str
     """The string name of the vfs used to open the database."""
 
     async def overload_function(self, name: str, nargs: int) -> None:
@@ -6944,7 +6956,7 @@ class AsyncConnection:
         Calls: `sqlite3_db_release_memory <https://sqlite.org/c3ref/db_release_memory.html>`__"""
         ...
 
-    row_trace: Awaitable[( RowTracer | AsyncRowTracer ) | None]
+    row_trace: ( RowTracer | AsyncRowTracer ) | None
     """Called with the cursor and row being returned for
     :class:`cursors <Cursor>` associated with this Connection, unless
     the Cursor installed its own tracer.  You can change the data that
@@ -7038,7 +7050,7 @@ class AsyncConnection:
         Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__"""
         ...
 
-    async def set_exec_trace(self, callable: ( ExecTracer | AsyncExecTracer ) | None) -> None:
+    def set_exec_trace(self, callable: ( ExecTracer | AsyncExecTracer ) | None) -> None:
         """Method to set :attr:`Connection.exec_trace`"""
         ...
 
@@ -7092,7 +7104,7 @@ class AsyncConnection:
         Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__"""
         ...
 
-    async def set_row_trace(self, callable: ( RowTracer | AsyncRowTracer ) | None) -> None:
+    def set_row_trace(self, callable: ( RowTracer | AsyncRowTracer ) | None) -> None:
         """Method to set :attr:`Connection.row_trace`"""
         ...
 
@@ -7141,7 +7153,7 @@ class AsyncConnection:
         Calls: `sqlite3_setlk_timeout <https://sqlite.org/c3ref/setlk_timeout.html>`__"""
         ...
 
-    async def sqlite3_pointer(self) -> int:
+    def sqlite3_pointer(self) -> int:
         """Returns the underlying `sqlite3 *
         <https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
         method is useful if there are other C level libraries in the same
@@ -7170,7 +7182,7 @@ class AsyncConnection:
         Calls: `sqlite3_db_status64 <https://sqlite.org/c3ref/db_status.html>`__"""
         ...
 
-    system_errno: Awaitable[int]
+    system_errno: int
     """The underlying system error code for the most recent I/O error.
 
     Calls: `sqlite3_system_errno <https://sqlite.org/c3ref/system_errno.html>`__"""
@@ -7185,7 +7197,7 @@ class AsyncConnection:
         Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__"""
         ...
 
-    async def total_changes(self) -> int:
+    def total_changes(self) -> int:
         """Returns the total number of database rows that have be modified,
         inserted, or deleted since the database connection was opened.
 
@@ -7269,7 +7281,7 @@ class AsyncConnection:
           * `sqlite3_stmt_status <https://sqlite.org/c3ref/stmt_status.html>`__"""
         ...
 
-    transaction_mode: Awaitable[str]
+    transaction_mode: str
     """The mode used for the outermost transaction when using the
     :meth:`context manager (with) <__enter__>`.
 
@@ -7339,7 +7351,7 @@ class AsyncCursor:
         """Cursors are iterators"""
         ...
 
-    bindings_count: Awaitable[int]
+    bindings_count: int
     """How many bindings are in the statement.  The ``?`` form
     results in the largest number.  For example you could do
     ``SELECT ?123``` in which case the count will be ``123``.
@@ -7358,10 +7370,10 @@ class AsyncCursor:
     Calls: `sqlite3_bind_parameter_name <https://sqlite.org/c3ref/bind_parameter_name.html>`__"""
 
 
-    connection: Awaitable[Connection]
+    connection: Connection
     """:class:`Connection` this cursor is using"""
 
-    convert_binding: Awaitable[( ConvertBinding | AsyncConvertBinding ) | None]
+    convert_binding: ( ConvertBinding | AsyncConvertBinding ) | None
     """Called with the :class:`Cursor`, parameter number, and value when
     an unsuppported type is used in a binding. Note that parameter
     numbers start at 1.
@@ -7373,7 +7385,7 @@ class AsyncCursor:
       * :attr:`bindings_count`
       * :attr:`bindings_names`"""
 
-    convert_jsonb: Awaitable[( ConvertJSONB | AsyncConvertJSONB ) | None]
+    convert_jsonb: ( ConvertJSONB | AsyncConvertJSONB ) | None
     """Called with the :class:`Cursor`, column number, and bytes value
     when a blob value is valid JSONB.  The callback can :func:`decode the
     <jsonb_decode>` or return the bytes as is.
@@ -7409,7 +7421,7 @@ class AsyncCursor:
       * `sqlite3_column_table_name <https://sqlite.org/c3ref/column_database_name.html>`__
       * `sqlite3_column_origin_name <https://sqlite.org/c3ref/column_database_name.html>`__"""
 
-    exec_trace: Awaitable[( ExecTracer | AsyncExecTracer ) | None]
+    exec_trace: ( ExecTracer | AsyncExecTracer ) | None
     """Called with the cursor, statement and bindings for
     each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
     cursor.
@@ -7518,7 +7530,7 @@ class AsyncCursor:
 
     Row tracers are not called when using this method."""
 
-    async def get_connection(self)  -> AsyncConnection:
+    def get_connection(self)  -> AsyncConnection:
         """Returns the :attr:`connection` this cursor is part of"""
         ...
 
@@ -7543,7 +7555,7 @@ class AsyncCursor:
           * `sqlite3_column_decltype <https://sqlite.org/c3ref/column_decltype.html>`__"""
         ...
 
-    async def get_exec_trace(self) -> ( ExecTracer | AsyncExecTracer ) | None:
+    def get_exec_trace(self) -> ( ExecTracer | AsyncExecTracer ) | None:
         """Returns the currently installed :attr:`execution tracer
         <Cursor.exec_trace>`
 
@@ -7552,7 +7564,7 @@ class AsyncCursor:
           * :ref:`tracing`"""
         ...
 
-    async def get_row_trace(self) -> ( RowTracer | AsyncRowTracer ) | None:
+    def get_row_trace(self) -> ( RowTracer | AsyncRowTracer ) | None:
         """Returns the currently installed (via :meth:`~Cursor.set_row_trace`)
         row tracer.
 
@@ -7561,18 +7573,18 @@ class AsyncCursor:
           * :ref:`tracing`"""
         ...
 
-    has_vdbe: Awaitable[bool]
+    has_vdbe: bool
     """``True`` if the SQL does anything.  Comments have nothing to
     evaluate, and so are ``False``."""
 
 
-    is_explain: Awaitable[int]
+    is_explain: int
     """Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
     and 2 if an EXPLAIN QUERY PLAN query.
 
     Calls: `sqlite3_stmt_isexplain <https://sqlite.org/c3ref/stmt_isexplain.html>`__"""
 
-    is_readonly: Awaitable[bool]
+    is_readonly: bool
     """Returns True if the current query does not change the database.
 
     Note that called functions, virtual tables etc could make changes though.
@@ -7581,7 +7593,7 @@ class AsyncCursor:
 
 
 
-    row_trace: Awaitable[( RowTracer | AsyncRowTracer ) | None]
+    row_trace: ( RowTracer | AsyncRowTracer ) | None
     """Called with cursor and row being returned.  You can
     change the data that is returned or cause the row to be skipped
     altogether.
@@ -7594,11 +7606,11 @@ class AsyncCursor:
       * :ref:`rowtracer`
       * :attr:`Connection.row_trace`"""
 
-    async def set_exec_trace(self, callable: ( ExecTracer | AsyncExecTracer ) | None) -> None:
+    def set_exec_trace(self, callable: ( ExecTracer | AsyncExecTracer ) | None) -> None:
         """Sets the :attr:`execution tracer <Cursor.exec_trace>`"""
         ...
 
-    async def set_row_trace(self, callable: ( RowTracer | AsyncRowTracer ) | None) -> None:
+    def set_row_trace(self, callable: ( RowTracer | AsyncRowTracer ) | None) -> None:
         """Sets the :attr:`row tracer <Cursor.row_trace>`.  If ``None``
         then row tracing is disabled for this cursor."""
         ...
@@ -7636,7 +7648,7 @@ class AsyncSession:
         Calls: `sqlite3session_changeset <https://sqlite.org/session/sqlite3session_changeset.html>`__"""
         ...
 
-    changeset_size: Awaitable[int]
+    changeset_size: int
     """Returns upper limit on changeset size, but only if :meth:`Session.config`
     was used to enable it.  Otherwise it will be zero.
 
@@ -7649,7 +7661,7 @@ class AsyncSession:
         ...
 
 
-    async def config(self, op: int, *args: Any) -> Any:
+    def config(self, op: int, *args: Any) -> Any:
         """Set or get `configuration values <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__
 
         For example :code:`session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1)` tells you
@@ -7690,7 +7702,7 @@ class AsyncSession:
 
     Calls: `sqlite3session_isempty <https://sqlite.org/session/sqlite3session_isempty.html>`__"""
 
-    memory_used: Awaitable[int]
+    memory_used: int
     """How many bytes of memory have been used to record session changes.
 
     Calls: `sqlite3session_memory_used <https://sqlite.org/session/sqlite3session_memory_used.html>`__"""
@@ -7709,7 +7721,7 @@ class AsyncSession:
         Calls: `sqlite3session_patchset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
         ...
 
-    async def table_filter(self, callback: Callable[[str], bool | Awaitable[bool]]) -> None:
+    def table_filter(self, callback: Callable[[str], bool | Awaitable[bool]]) -> None:
         """Register a callback that says if changes to the named table should be
         recorded.  If your callback has an exception then ``False`` is
         returned.

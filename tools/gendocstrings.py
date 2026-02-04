@@ -849,7 +849,7 @@ def generate_typestubs(items: list[dict]) -> None:
 
                 if (
                     asyncable
-                    and async_category(klass, name, "function") in {"async", "dual", "value"}
+                    and (acat := async_category(klass, name, "function")) in {"async", "dual", "value"}
                     and (klass, name) not in (("Connection", "as_async"),)
                     and name != "__init__"
                 ):
@@ -871,7 +871,7 @@ def generate_typestubs(items: list[dict]) -> None:
                             for a in ASYNCABLE:
                                 assert a not in returns, f"{klass=} {name=} {signature=}"
 
-                    decl = "async def" if name not in {"__aiter__"} else "def"
+                    decl = "async def" if name not in {"__aiter__"} and acat != "value" else "def"
 
                     print(f"{ baseindent }    { decl} { name }{ async_fix_type_aliases(callable_async(signature)) }:", file=async_out)
                     print(fmt_docstring(item["doc"], indent=f"{ baseindent }        "), file=async_out)
@@ -883,8 +883,14 @@ def generate_typestubs(items: list[dict]) -> None:
                     print(f"{ baseindent }    { name }: { attribute_type(item) }", file=out)
                     print(fmt_docstring(attr_docstring(item["doc"]), indent=f"{ baseindent }    "), file=out)
 
-                if asyncable and async_category(klass, name, "function") in {"async", "dual", "value"}:
-                    print(f"{ baseindent }    { name }: Awaitable[{ async_fix_type_aliases(attribute_type(item)) }]", file=async_out)
+                if asyncable and (acat := async_category(klass, name, "attribute")) in {"async", "dual", "value"}:
+                    if acat == "value":
+                        print(f"{baseindent}    {name}: {async_fix_type_aliases(attribute_type(item))}", file=async_out)
+                    else:
+                        print(
+                            f"{baseindent}    {name}: Awaitable[{async_fix_type_aliases(attribute_type(item))}]",
+                            file=async_out,
+                        )
                     print(fmt_docstring(attr_docstring(item["doc"]), indent=f"{ baseindent }    "), file=async_out)
 
         print("", file=out)
