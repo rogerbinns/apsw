@@ -848,7 +848,7 @@ class Trace:
     def __init__(
         self,
         file: TextIO | None,
-        db: apsw.Connection,
+        db: apsw.Connection | apsw.AsyncConnection,
         *,
         trigger: bool = False,
         vtable: bool = False,
@@ -1078,7 +1078,7 @@ class ShowResourceUsage:
         self,
         file: TextIO | None,
         *,
-        db: apsw.Connection | None = None,
+        db: apsw.Connection | apsw.AsyncConnection | None = None,
         scope: Literal["thread"] | Literal["process"] | None = None,
         indent: str = "",
     ):
@@ -1110,9 +1110,28 @@ class ShowResourceUsage:
         if self.scope:
             self._usage = self._get_resource(self._get_resource_param[self.scope])
         if self.db:
-            self.db.trace_v2(apsw.SQLITE_TRACE_PROFILE, self._sqlite_trace, id=self)
-            self.stmt_status = {}
-            self.db_status = self.db_status_get()
+            self.db_enter()
+        return self
+
+    def db_enter(self):
+        ":meta private:"
+        self.db.trace_v2(apsw.SQLITE_TRACE_PROFILE, self._sqlite_trace, id=self)
+        self.stmt_status = {}
+        self.db_status = self.db_status_get()
+
+    def db_exit(self):
+        ":meta private:"
+        self.db.trace_v2(0, None, id=self)
+        return self.db_status_get()
+
+    async def __aenter__(self):
+        if not self.file:
+            return self
+        self._times = time.process_time(), time.monotonic()
+        if self.scope:
+            self._usage = self._get_resource(self._get_resource_param[self.scope])
+        if self.db:
+            return await self.db.async_run(lambda: self.db_enter())
         return self
 
     def _sqlite_trace(self, v):
@@ -1137,20 +1156,37 @@ class ShowResourceUsage:
             "SQLITE_DBSTATUS_TEMPBUF_SPILL": self.db.status(apsw.SQLITE_DBSTATUS_TEMPBUF_SPILL)[0],
         }
 
+    async def __aexit__(self, *_):
+        if not self.file:
+            return
+
+        times = time.process_time(), time.monotonic()
+        usage = self._get_resource(self._get_resource_param[self.scope]) if self.scope else None
+        status_vals = await self.db.async_run(lambda: self.db_exit()) if self.db else None
+
+        self.format_output(times, usage, status_vals)
+
     def __exit__(self, *_) -> None:
         if not self.file:
             return
 
+        times = time.process_time(), time.monotonic()
+        usage = self._get_resource(self._get_resource_param[self.scope]) if self.scope else None
+        status_vals = self.db_exit() if self.db else None
+
+        self.format_output(times, usage, status_vals)
+
+    def format_output(self, times, usage, status_vals):
+        ":meta private:"
+
         vals: list[tuple[str, int | float]] = []
 
-        times = time.process_time(), time.monotonic()
         if times[0] - self._times[0] >= 0.001:
             vals.append((self._descriptions["process_time"], times[0] - self._times[0]))
         if times[1] - self._times[1] >= 0.001:
             vals.append((self._descriptions["monotonic"], times[1] - self._times[1]))
 
         if self.scope:
-            usage = self._get_resource(self._get_resource_param[self.scope])
 
             for k in dir(usage):
                 if not k.startswith("ru_"):
@@ -1160,13 +1196,12 @@ class ShowResourceUsage:
                     vals.append((self._descriptions.get(k, k), delta))
 
         if self.db:
-            self.db.trace_v2(0, None, id=self)
             if self.stmt_status:
                 self.stmt_status.pop("SQLITE_STMTSTATUS_MEMUSED")
                 for k, v in self.stmt_status.items():
                     if v:
                         vals.append((self._descriptions[k], v))
-                for k, v in self.db_status_get().items():
+                for k, v in status_vals.items():
                     diff = v - self.db_status[k]
                     if diff:
                         vals.append((self._descriptions[k], diff))
@@ -1184,7 +1219,7 @@ class ShowResourceUsage:
                 print(self.indent, " " * (max_width - len(k)), k, " ", v, file=self.file, sep="")
 
     _descriptions = {
-        "process_time": "Total CPU consumption",
+        "process_time": "Process CPU consumption",
         "monotonic": "Wall clock",
         "SQLITE_STMTSTATUS_FULLSCAN_STEP": "SQLite full table scan",
         "SQLITE_STMTSTATUS_SORT": "SQLite sort operations",
@@ -1207,8 +1242,8 @@ class ShowResourceUsage:
         "SQLITE_DBSTATUS_CACHE_SPILL": "SQLite pager cache writes during transaction",
         "SQLITE_DBSTATUS_DEFERRED_FKS": "SQLite unresolved foreign keys",
         "SQLITE_DBSTATUS_TEMPBUF_SPILL": "SQLite temp spill from full memory to disk",
-        "ru_utime": "Time in user mode",
-        "ru_stime": "Time in system mode",
+        "ru_utime": "CPU time in user mode",
+        "ru_stime": "CPU time in system mode",
         "ru_maxrss": "Maximum resident set size",
         "ru_ixrss": "Shared memory size",
         "ru_idrss": "Unshared memory size",
@@ -2459,14 +2494,17 @@ def make_virtual_module(
                     setattr(self, "_Column_get", f)
                 else:
                     setattr(self, "Column", f)
+                self.is_async = False
 
             def Filter(self, idx_num: int, idx_str: str, args: tuple[apsw.SQLiteValue]) -> None:
                 params: dict[str, apsw.SQLiteValue] = self.param_values.copy()
                 params.update(zip(idx_str.split(","), args))
                 values = self.module.callable(**params)
+                self.is_async = False
                 if inspect.isasyncgen(values):
                     self.iterating = aiter(values)
                     self._impl_next = _get_anext
+                    self.is_async = True
                 elif inspect.iscoroutine(values):
                     self.iterating = iter(apsw.async_run_coro(values))
                     self._impl_next = next
