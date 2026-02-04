@@ -2485,7 +2485,10 @@ def make_virtual_module(
 
             def Close(self) -> None:
                 if self.iterating:
-                    if hasattr(self.iterating, "close"):
+                    if self.is_async:
+                        if (aclose := getattr(self.iterating, "aclose", None)) is not None:
+                            apsw.async_run_coro(aclose())
+                    elif hasattr(self.iterating, "close"):
                         self.iterating.close()
                     self.iterating = None
 
