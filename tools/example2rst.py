@@ -10,7 +10,6 @@ import tempfile
 import shutil
 import io
 import pathlib
-import pprint
 
 import apsw.ext
 
@@ -157,6 +156,21 @@ replacements = {
     'query = "fractal"': 'query = "' + fractal_sql.replace("\n", "\\n").replace("800000", "28") + '"',
 }
 
+class TeeStringIO(io.StringIO):
+    def __init__(self, tee: TextIO):
+        super().__init__()
+        self.tee = tee
+
+    def write(self, s: str) -> int:
+        if s.startswith(section_marker):
+            self.tee.write("\nSECTION "+s[len(section_marker):])
+        else:
+            self.tee.write(s)
+        return super().write(s)
+
+    def writelines(self, lines: Iterable[str]) -> None:
+        # hopefully don't need to implement this
+        raise NotImplementedError
 
 def get_output(filename: str):
     code: list[str] = []
@@ -178,7 +192,7 @@ def get_output(filename: str):
     if False:  # make True if you need to debug the changes
         print(code)
 
-    my_io = io.StringIO()
+    my_io = TeeStringIO(sys.stdout)
 
     with contextlib.redirect_stdout(my_io):
         with contextlib.redirect_stderr(my_io):
