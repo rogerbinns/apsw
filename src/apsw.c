@@ -1868,27 +1868,7 @@ apsw_allow_missing_dict_bindings(PyObject *Py_UNUSED(module), PyObject *const *f
   Py_RETURN_FALSE;
 }
 
-static PyObject *
-apsw_getattr(PyObject *Py_UNUSED(module), PyObject *name)
-{
-  PyObject *shellmodule = NULL, *res = NULL;
-#undef PyUnicode_AsUTF8
-  /* we can't do this because it messes up the import machinery */
-  const char *cname = PyUnicode_AsUTF8(name);
-#include "faultinject.h"
 
-  if (!cname)
-    return NULL;
-
-  if (strcmp(cname, "Shell") && strcmp(cname, "main"))
-    return PyErr_Format(PyExc_AttributeError, "Unknown apsw attribute %R", name);
-
-  shellmodule = PyImport_ImportModule("apsw.shell");
-  if (shellmodule)
-    res = PyObject_GetAttr(shellmodule, name);
-  Py_XDECREF(shellmodule);
-  return res;
-}
 
 static PyMethodDef module_methods[] = {
   { "sqlite3_sourceid", (PyCFunction)get_sqlite3_sourceid, METH_NOARGS, Apsw_sqlite3_sourceid_DOC },
@@ -1929,7 +1909,6 @@ static PyMethodDef module_methods[] = {
 #ifdef APSW_FORK_CHECKER
   { "fork_checker", (PyCFunction)apsw_fork_checker, METH_NOARGS, Apsw_fork_checker_DOC },
 #endif
-  { "__getattr__", (PyCFunction)apsw_getattr, METH_O, "module getattr" },
   { "connections", (PyCFunction)apsw_connections, METH_NOARGS, Apsw_connections_DOC },
   { "sleep", (PyCFunction)apsw_sleep, METH_FASTCALL | METH_KEYWORDS, Apsw_sleep_DOC },
 #ifdef SQLITE_ENABLE_SESSION
@@ -1963,7 +1942,7 @@ static PyMethodDef module_methods[] = {
 static int module_is_initialized;
 
 static int
-apswmod_setattr(PyObject *module, PyObject *name, PyObject *value)
+apsw_module_setattr(PyObject *module, PyObject *name, PyObject *value)
 {
   if (module_is_initialized
       && (PyObject_RichCompareBool(name, apst.async_controller, Py_EQ) == 1
@@ -1988,7 +1967,7 @@ apswmod_setattr(PyObject *module, PyObject *name, PyObject *value)
 }
 
 static PyObject *
-apswmod_getattr(PyObject *module, PyObject *name)
+apsw_module_getattr(PyObject *module, PyObject *name)
 {
   if (module_is_initialized && (PyObject_RichCompareBool(name, apst.async_run_coro, Py_EQ) == 1))
   {
@@ -1999,14 +1978,20 @@ apswmod_getattr(PyObject *module, PyObject *name)
       Py_RETURN_NONE;
     return Py_NewRef(runner);
   }
+  if (module_is_initialized && (PyObject_RichCompareBool(name, apst.main, Py_EQ) == 1))
+    return PyImport_ImportModuleAttr(apst.apsw_shell, apst.main);
+
+  if (module_is_initialized && (PyObject_RichCompareBool(name, apst.Shell, Py_EQ) == 1))
+    return PyImport_ImportModuleAttr(apst.apsw_shell, apst.Shell);
+
   return PyObject_GenericGetAttr(module, name);
 }
 
 static PyTypeObject ApswModuleType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "APSWModule",
   .tp_flags = Py_TPFLAGS_DEFAULT,
-  .tp_setattro = apswmod_setattr,
-  .tp_getattro = apswmod_getattr,
+  .tp_setattro = apsw_module_setattr,
+  .tp_getattro = apsw_module_getattr,
 };
 
 static struct PyModuleDef apswmoduledef = { PyModuleDef_HEAD_INIT, "apsw", NULL, -1, module_methods, 0, 0, 0, 0 };

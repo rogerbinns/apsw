@@ -39,6 +39,7 @@
 #undef Rowid
 #undef Savepoint
 #undef ShadowName
+#undef Shell
 #undef Sync
 #undef UPDATE
 #undef UpdateChangeRow
@@ -49,6 +50,7 @@
 #undef _coro_for_value
 #undef add_note
 #undef apsw_aio
+#undef apsw_shell
 #undef async_controller
 #undef async_cursor_prefetch
 #undef async_run_coro
@@ -67,6 +69,7 @@
 #undef final
 #undef get
 #undef inverse
+#undef main
 #undef snull
 #undef release
 #undef result
@@ -140,6 +143,7 @@ static struct _apsw_string_table
     PyObject *Rowid;
     PyObject *Savepoint;
     PyObject *ShadowName;
+    PyObject *Shell;
     PyObject *Sync;
     PyObject *UPDATE;
     PyObject *UpdateChangeRow;
@@ -150,6 +154,7 @@ static struct _apsw_string_table
     PyObject *_coro_for_value;
     PyObject *add_note;
     PyObject *apsw_aio;
+    PyObject *apsw_shell;
     PyObject *async_controller;
     PyObject *async_cursor_prefetch;
     PyObject *async_run_coro;
@@ -168,6 +173,7 @@ static struct _apsw_string_table
     PyObject *final;
     PyObject *get;
     PyObject *inverse;
+    PyObject *main;
     PyObject *snull;
     PyObject *release;
     PyObject *result;
@@ -242,6 +248,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.Rowid);
     Py_CLEAR(apst.Savepoint);
     Py_CLEAR(apst.ShadowName);
+    Py_CLEAR(apst.Shell);
     Py_CLEAR(apst.Sync);
     Py_CLEAR(apst.UPDATE);
     Py_CLEAR(apst.UpdateChangeRow);
@@ -252,6 +259,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst._coro_for_value);
     Py_CLEAR(apst.add_note);
     Py_CLEAR(apst.apsw_aio);
+    Py_CLEAR(apst.apsw_shell);
     Py_CLEAR(apst.async_controller);
     Py_CLEAR(apst.async_cursor_prefetch);
     Py_CLEAR(apst.async_run_coro);
@@ -270,6 +278,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.final);
     Py_CLEAR(apst.get);
     Py_CLEAR(apst.inverse);
+    Py_CLEAR(apst.main);
     Py_CLEAR(apst.snull);
     Py_CLEAR(apst.release);
     Py_CLEAR(apst.result);
@@ -345,6 +354,7 @@ init_apsw_strings()
         || (!apst.Rowid && 0 == (apst.Rowid = PyUnicode_FromString("Rowid")))
         || (!apst.Savepoint && 0 == (apst.Savepoint = PyUnicode_FromString("Savepoint")))
         || (!apst.ShadowName && 0 == (apst.ShadowName = PyUnicode_FromString("ShadowName")))
+        || (!apst.Shell && 0 == (apst.Shell = PyUnicode_FromString("Shell")))
         || (!apst.Sync && 0 == (apst.Sync = PyUnicode_FromString("Sync")))
         || (!apst.UPDATE && 0 == (apst.UPDATE = PyUnicode_FromString("UPDATE")))
         || (!apst.UpdateChangeRow && 0 == (apst.UpdateChangeRow = PyUnicode_FromString("UpdateChangeRow")))
@@ -355,6 +365,7 @@ init_apsw_strings()
         || (!apst._coro_for_value && 0 == (apst._coro_for_value = PyUnicode_FromString("_coro_for_value")))
         || (!apst.add_note && 0 == (apst.add_note = PyUnicode_FromString("add_note")))
         || (!apst.apsw_aio && 0 == (apst.apsw_aio = PyUnicode_FromString("apsw.aio")))
+        || (!apst.apsw_shell && 0 == (apst.apsw_shell = PyUnicode_FromString("apsw.shell")))
         || (!apst.async_controller && 0 == (apst.async_controller = PyUnicode_FromString("async_controller")))
         || (!apst.async_cursor_prefetch && 0 == (apst.async_cursor_prefetch = PyUnicode_FromString("async_cursor_prefetch")))
         || (!apst.async_run_coro && 0 == (apst.async_run_coro = PyUnicode_FromString("async_run_coro")))
@@ -373,6 +384,7 @@ init_apsw_strings()
         || (!apst.final && 0 == (apst.final = PyUnicode_FromString("final")))
         || (!apst.get && 0 == (apst.get = PyUnicode_FromString("get")))
         || (!apst.inverse && 0 == (apst.inverse = PyUnicode_FromString("inverse")))
+        || (!apst.main && 0 == (apst.main = PyUnicode_FromString("main")))
         || (!apst.snull && 0 == (apst.snull = PyUnicode_FromString("null")))
         || (!apst.release && 0 == (apst.release = PyUnicode_FromString("release")))
         || (!apst.result && 0 == (apst.result = PyUnicode_FromString("result")))
