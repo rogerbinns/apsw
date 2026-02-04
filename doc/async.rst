@@ -156,6 +156,9 @@ Each API has an indicator of its behaviour in sync and async modes.
 You can find out if an object is in async mode by checking its
 corresponding :attr:`Connection.is_async`.
 
+The included type stubs will show correct usage for your IDE and type
+checker.
+
 .. _badge_async_sync:
 
 |badge-async-sync|
