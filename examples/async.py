@@ -8,6 +8,7 @@ from __future__ import annotations
 import contextlib
 import io
 import time
+import sys
 
 import apsw
 import apsw.bestpractice
@@ -375,6 +376,7 @@ async def data_table(flags, server="example.com"):
     yield ("The Catcher in the Rye", 1951, 8.4)
     yield ("The Hobbit", 1937, 9.6)
 
+
 # Tell make_virtual_module about the columns
 data_table.columns = ("title", "year", "review")
 # ... and how to extract them from each row
@@ -406,14 +408,210 @@ async def virtual_tables():
 
 trio.run(virtual_tables)
 
+### async_trace: Tracing in a block
+# This is the same as :ref:`sync tracing in a block <example_Trace>`
+# adapted to use ``async with`` for :class:`apsw.ext.Trace` and
+# transaction control.
+
+
+async def tracing():
+    db = await apsw.Connection.as_async(":memory:")
+
+    # always close database
+    async with contextlib.aclosing(db):
+        # Use None instead of stdout and no information is printed or gathered
+        async with apsw.ext.Trace(
+            sys.stdout,
+            db=db,
+            vtable=True,
+            updates=True,
+            transaction=True,
+        ):
+            # APSW does a savepoint behind the scenes to wrap the block
+            async with db:
+                # Some regular SQL
+                await db.execute("create table multi(x)")
+                # executemany runs the same statement repeatedly
+                await db.executemany(
+                    "insert into multi values(?)",
+                    ((x,) for x in range(5)),
+                )
+                # See how many rows were processed
+                await (
+                    await db.execute("select * from multi limit 2")
+                ).fetchall()
+                # You can also see how many rows were changed
+                await db.execute("delete from multi where x < 4")
+
+            # pragma functions are virtual tables - see how many rows this processes even
+            # though only one has 'pow'
+            await (
+                await db.execute(
+                    "SELECT narg FROM pragma_function_list WHERE name='pow'"
+                )
+            ).get
+
+            # trigger that causes rollback
+            await db.execute("""
+                create trigger error after insert on multi
+                begin
+                update multi set rowid=100+new.rowid where rowid=new.rowid;
+                select raise(rollback, 'nope');
+            end;
+            """)
+
+            with contextlib.suppress(apsw.ConstraintError):
+                await db.execute("insert into multi values(54)")
+
+
+asyncio.run(tracing())
+
+### async_resource: Resource usage in a block
+# The async equivalent of :ref:`the sync example
+# <example_ShowResourceUsage>`.
+
+# The standard outlandish fractal example which is used when running
+# but not reproduced here.
+query = "fractal"
+
+
+async def resource_usage():
+    db = await apsw.Connection.as_async(":memory:")
+
+    # always close database
+    async with contextlib.aclosing(db):
+        print("thread (async event loop)")
+
+        async with apsw.ext.ShowResourceUsage(
+            sys.stdout, db=db, scope="thread"
+        ):
+            # some SQLite work
+            await (await db.execute(query)).get
+
+            # and take some wall clock time
+            await trio.sleep(0.5)
+
+        print("\nprocess (including background SQLite worker)")
+
+        async with apsw.ext.ShowResourceUsage(
+            sys.stdout, db=db, scope="process"
+        ):
+            # some SQLite work
+            await (await db.execute(query)).get
+
+            # and take some wall clock time
+            await trio.sleep(0.5)
+
+
+trio.run(resource_usage)
+
+### async_blob: Blob
+# Async :doc:`blob` run in the SQLite worker thread.  See the
+# :ref:`sync example <example_blob_io>` which this is a direct
+# translation to async.
+
+
+async def blob():
+    db = await apsw.Connection.as_async(":memory:")
+
+    # always close database
+    async with contextlib.aclosing(db):
+        await db.execute("create table blobby(x,y)")
+        # Add a blob we will fill in later
+        await db.execute(
+            "insert into blobby values(1, zeroblob(10000))"
+        )
+        # Or as a binding
+        await db.execute(
+            "insert into blobby values(2, ?)", (apsw.zeroblob(20000),)
+        )
+        # Open a blob for writing.  We need to know the rowid
+        rowid = await (
+            await db.execute("select ROWID from blobby where x=1")
+        ).get
+        blob = await db.blob_open("main", "blobby", "y", rowid, True)
+        await blob.write(b"hello world")
+        # seeking is immediate (no await)
+        blob.seek(2000)
+        await blob.read(24)
+        # seek relative to the end
+        blob.seek(-32, 2)
+        await blob.write(b"hello world, again")
+        # it will be automatically closed when the connection is
+        # closed, but explicitly closing chooses transaction
+        # boundaries
+        await blob.aclose()
+
+
+anyio.run(blob)
+
+### async_backup: Backup
+# :doc:`Backups <backup>` run in the SQLite worker thread of the async
+# destination database.  The source can be a sync or async database.
+# You do backups by getting the backup object from the destination
+# database telling it about the source using
+# :meth:`Connection.backup`,
+#
+# If the destination is sync and you are working with an async source,
+# you can run the backup in the async source thread as demonstrated
+# below.
+
+
+async def backup():
+    # Setup source and destinations
+
+    async_source = await apsw.Connection.as_async("")
+    # ... and fill it with a large amount of data
+    await async_source.execute(
+        "CREATE TABLE x(y); INSERT INTO x VALUES(randomblob(250000))"
+    )
+    sync_source = apsw.Connection("")
+    sync_source.execute(
+        "CREATE TABLE x(y); INSERT INTO x VALUES(randomblob(250000))"
+    )
+
+    async_dest = await apsw.Connection.as_async("")
+    sync_dest = apsw.Connection("")
+
+    print("async destination, async source")
+    async with await async_dest.backup(
+        "main", async_source, "main"
+    ) as backup:
+        while not backup.done:
+            await backup.step(42)
+            print(
+                f"page_count = {backup.page_count} remaining = {backup.remaining}"
+            )
+
+    print("async destination, sync source")
+    async with await async_dest.backup(
+        "main", sync_source, "main"
+    ) as backup:
+        while not backup.done:
+            await backup.step(42)
+            print(
+                f"page_count = {backup.page_count} remaining = {backup.remaining}"
+            )
+
+    print("sync destination, async source")
+
+    # we will run this in the async source thread
+    def do_backup():
+        with sync_dest.backup("main", async_source, "main") as backup:
+            while not backup.done:
+                backup.step(42)
+            print(
+                f"page_count = {backup.page_count} remaining = {backup.remaining}"
+            )
+    await async_source.async_run(lambda: do_backup())
+
+    # ensure connections get closed
+    await async_source.aclose()
+    await async_dest.aclose()
+
+asyncio.run(backup())
+
 ### async_todo: TODO TODO TODO
-# * ext trace & showresourceusage
-# * blob
-# * backup
 # * session
 
 pass
-
-### async_cleanup: Cleanup
-# No cleanup needed.  You can use sync and async connections at the
-# same time without limitation.

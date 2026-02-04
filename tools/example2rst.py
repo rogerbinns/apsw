@@ -36,8 +36,16 @@ This code demonstrates usage of APSW.  It gives you a good overview of
 all the things that can be done.  Also included is output so you can
 see what gets printed when you run the code.
 
-There are also specific examples in the classes, functions,
-and attribute documentation.
+There are other dedicated examples:
+
+* :doc:`Async tour <example-async>` for :mod:`asyncio`, |trio|,
+  |anyio| etc :doc:`async support <async>`
+* :doc:`JSON tour <example-json>` for :doc:`JSON and JSONB support
+  <jsonb>`
+* :doc:`FTS5 tour <example-fts>` for :doc:`full text search
+  <textsearch>`
+* :doc:`Session tour <example-session>` for :doc:`session recording
+  and playback <session>`
 
 .. code-block:: python
 """
