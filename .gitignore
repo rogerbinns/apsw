@@ -51,7 +51,7 @@ apsw.egg-info
 __pycache__/
 setup.cfg
 work/
-.venv/
+.venv*/
 compile_commands.json
 .vscode/
 .cache/
