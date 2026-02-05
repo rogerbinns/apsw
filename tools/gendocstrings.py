@@ -834,6 +834,17 @@ def generate_typestubs(items: list[dict]) -> None:
                 ):
                     signature = signature.replace(find, replace)
 
+                if (klass, name) == ("Changeset", "apply"):
+                    # yes it is ugly, but easier than trying to make this happen programmatically.  The
+                    print(f"""
+{baseindent}    @overload
+{baseindent}    @staticmethod
+{baseindent}    def apply(changeset: ChangesetInput, db: Connection, *, filter: Callable[[str], bool] | None = None, filter_change: Callable[[TableChange], bool] | None = None, conflict: Callable[[int,TableChange], int] | None = None, flags: int = 0, rebase: bool = False) -> bytes | None: ...
+{baseindent}    @overload
+{baseindent}    @staticmethod
+{baseindent}    async def apply(changeset: ChangesetInput, db: AsyncConnection, *, filter: Callable[[str], bool] | None = None, filter_change: Callable[[TableChange], bool] | None = None, conflict: Callable[[int,TableChange], int] | None = None, flags: int = 0, rebase: bool = False) -> bytes | None: ...
+""", file=out)
+
                 if not asyncable or async_category(klass, name, "function") in {"sync", "dual", "value"}:
                     if klass in {"Changeset"}:
                         print(f"{ baseindent}    @staticmethod", file=out)
