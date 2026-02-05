@@ -319,6 +319,10 @@ where each number handles the changes needed.::
         ALTER TABLE .....
         PRAGMA user_version = 3;""")
 
+      # we could exception here if user_version > 3 because it means
+      # a more recent schema is present than this code understands.
+      # Perhaps a version downgrade happened?
+
 This approach will automatically upgrade the schema as you expect.
 You can also use `pragma application_id
 <https://sqlite.org/pragma.html#pragma_application_id>`__ to mark the
