@@ -11,6 +11,7 @@ import time
 import sys
 
 import apsw
+import apsw.aio
 import apsw.bestpractice
 import apsw.ext
 import apsw.shell
@@ -314,6 +315,9 @@ def schema_upgrade(db: apsw.Connection):
                 CREATE INDEX orders_idx ON orders(id, product_id);
                 pragma user_version = 2;
             """)
+        # we could exception here if user_version > 2 because it means
+        # a more recent schema is present than this code understands.
+        # Perhaps a version downgrade happened?
 
 
 async def worker_thread():
@@ -600,18 +604,61 @@ async def backup():
         with sync_dest.backup("main", async_source, "main") as backup:
             while not backup.done:
                 backup.step(42)
-            print(
-                f"page_count = {backup.page_count} remaining = {backup.remaining}"
-            )
+                print(
+                    f"page_count = {backup.page_count} remaining = {backup.remaining}"
+                )
+
     await async_source.async_run(lambda: do_backup())
 
     # ensure connections get closed
     await async_source.aclose()
     await async_dest.aclose()
 
+
 asyncio.run(backup())
 
-### async_todo: TODO TODO TODO
-# * session
+### async_fts: Full Text Search TODO TODO TODO
+#
+# show doing queries in worker thread
 
-pass
+### async_session: Session
+# Use :func:`apsw.aio.make_session` to create the
+# :class:`~apsw.Session` object in async mode from an async
+# connection.
+
+
+async def session_example():
+    db = await apsw.Connection.as_async(":memory:")
+
+    # always close database
+    async with contextlib.aclosing(db):
+        await db.execute("CREATE TABLE x(y PRIMARY KEY, z)")
+
+        session = await apsw.aio.make_session(db, "main")
+
+        # We'd like size estimates
+        session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, True)
+
+        # all tables
+        await session.attach()
+
+        # add some data
+        await db.executemany(
+            "INSERT INTO x VALUES(?,?)",
+            ((i, "a" * i) for i in range(200)),
+        )
+
+        print("Size estimate {session.changeset_size}")
+        changeset = await session.changeset()
+        print(f"Actual size {len(changeset)}")
+
+        # Other than apply, changeset operations don't use a
+        # Connection so we'll use trio's mechanism to do invert in a
+        # background thread.
+        undo = await trio.to_thread.run_sync(apsw.Changeset.invert, changeset)
+
+        #  Undo the changes
+        await apsw.Changeset.apply(undo, db)
+
+
+trio.run(session_example)
