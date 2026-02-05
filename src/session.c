@@ -1646,6 +1646,8 @@ error:
 
 /** .. method:: apply(changeset: ChangesetInput, db: Connection | AsyncConnection, *, filter: Callable[[str], bool] | None = None, filter_change: Callable[[TableChange], bool] | None = None, conflict: Callable[[int,TableChange], int] | None = None, flags: int = 0, rebase: bool = False) -> bytes | None
 
+  |badge-async-dual|
+
   Applies a changeset to a database.
 
   :param source: The changeset either as the bytes, or a stream

@@ -60,7 +60,7 @@ def get_meta(
             return "dual" if kind == "function" else "value"
 
 # Classes where we fake there being an async version
-ASYNCABLE = {"Connection", "Cursor", "Blob", "Backup", "Session", "Changeset"}
+ASYNCABLE = {"Connection", "Cursor", "Blob", "Backup", "Session"}
 
 
 def sync_await(obj):
@@ -264,7 +264,7 @@ class AsyncMeta(unittest.TestCase):
             # Changeset.apply is too difficult to include
         }
 
-        assert ASYNCABLE == set(objects.keys()) | {"Changeset"}
+        assert ASYNCABLE == set(objects.keys())
 
         changeset = None
 
@@ -320,7 +320,7 @@ class AsyncMeta(unittest.TestCase):
             for name in objects:
                 ensure_objects(name)
                 for attr in dir(objects[name]):
-                    if attr in skip or attr in {"as_async", "__next__", "aclose"} or (name, attr) in old_names:
+                    if attr in skip or attr in {"as_async", "async_run", "__next__", "aclose"} or (name, attr) in old_names:
                         continue
                     res.append((name, attr))
                 self.tearDown()

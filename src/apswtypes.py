@@ -1,6 +1,6 @@
 import contextvars
 
-from typing import Callable, Any, Iterable, Sequence, Literal, Protocol, TypeAlias, final, Self, Coroutine
+from typing import Callable, Any, Iterable, Sequence, Literal, Protocol, TypeAlias, final, Self, Coroutine, overload
 from collections.abc import Mapping, Buffer, Iterator, Awaitable
 
 import array
