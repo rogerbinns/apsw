@@ -216,7 +216,6 @@ class TypesConverterCursorFactory:
         def _rowtracer(self, cursor: apsw.Cursor, values: apsw.SQLiteValues) -> tuple[Any, ...]:
             return tuple(self.factory.convert_value(d[1], v) for d, v in zip(cursor.get_description(), values))
 
-
 class Function:
     """Provides a direct Python way to call a SQL level function
 
@@ -226,17 +225,22 @@ class Function:
         value = json_extract(some_json, '$.c[2].f')
 
     :attr:`~apsw.Cursor.get` is used to return the results
+
+    This works with both sync and async connections (await the
+    result).  It isn't currently possible to type annotate and
+    generate the documentation to accurately reflect that without one
+    of them having problems.
     """
     # This is tested in tests/jsonb.py because it was developed in
     # conjunction with jsonb
     def __init__(
         self,
-        connection: apsw.Connection,
+        connection: apsw.Connection | apsw.AsyncConnection,
         name: str,
         *,
-        convert_binding=None,
-        convert_jsonb=None,
-        exec_trace=None,
+        convert_binding: apsw.ConvertBinding | None = None,
+        convert_jsonb: apsw.ConvertJSONB | None = None,
+        exec_trace: apsw.ExecTracer | None = None,
     ):
         """
         :param connection: Connection to use
@@ -251,10 +255,20 @@ class Function:
         cursor.convert_jsonb = convert_jsonb
         cursor.exec_trace = exec_trace
         self.cursor = cursor
+        self.is_async = connection.is_async
 
-    def __call__(self, *args: apsw.SQLiteValue) -> apsw.SQLiteValue:
-        "Calls the function with zero or more parameters, returning the result"
-        return self.cursor.execute(f'SELECT "{self.name}"({",".join("?" * len(args))})', args).get
+    def __call__(self, *args: apsw.SQLiteValue) -> apsw.SQLiteValue | Awaitable[apsw.SQLiteValue]:
+        """Calls the function with zero or more parameters, returning the result
+
+        If using a sync connection then you get the direct result,
+        while an async connection requires awaiting the result.
+        """
+        if not self.is_async:
+            return self.cursor.execute(f'SELECT "{self.name}"({",".join("?" * len(args))})', args).get
+        return self.__call_async(*args)
+
+    async def __call_async(self, *args: apsw.SQLiteValue) -> Awaitable[apsw.SQLiteValue]:
+        return await (await self.cursor.execute(f'SELECT "{self.name}"({",".join("?" * len(args))})', args)).get
 
 
 def make_jsonb(tag: int, value: None | str | bytes | Any = None):
