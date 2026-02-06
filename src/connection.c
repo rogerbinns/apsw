@@ -554,12 +554,12 @@ static void
 Connection_dealloc(PyObject *self_)
 {
   Connection *self = (Connection *)self_;
+  Connection_internal_cleanup(self);
   PyObject_GC_UnTrack(self_);
   APSW_CLEAR_WEAKREFS;
 
   DBMUTEX_FORCE(self->dbmutex);
   Connection_close_internal(self, 2);
-  Connection_internal_cleanup(self);
 
   /* Our dependents all hold a refcount on us, so they must have all
       released before this destructor could be called */
