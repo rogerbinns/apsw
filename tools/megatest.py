@@ -60,7 +60,7 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, config, gil):
             cd {workdir} ;
             {pybin} -m venv venv
             venv/bin/python3 -m ensurepip || true ;
-            venv/bin/python3 -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools ;
+            venv/bin/python3 -m pip install --upgrade --upgrade-strategy eager pip wheel setuptools trio anyio;
             env LD_LIBRARY_PATH={pylib} venv/bin/python3 {pyflags} setup.py fetch \
                 --version={sqlitever} --all build_test_extension build_ext --inplace --force \
                 {extdebug} {build_ext_flags} test -v --locals;"""
