@@ -750,7 +750,7 @@ class apsw_patch_amalgamation(Command):
             raise Exception("Failed to patch amalgamation")
 
 def get_amalgamation_version(filename):
-    for line in pathlib.Path(filename).read_text().splitlines():
+    for line in pathlib.Path(filename).read_text(encoding="utf8").splitlines():
         if mo:= re.match(r"^#define\s+SQLITE_VERSION_NUMBER\s+([0-9]{7})\s*$", line):
             return int(mo.group(1))
     raise Exception(f"Unable to find version in {filename=}")
