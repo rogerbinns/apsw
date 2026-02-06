@@ -30,7 +30,7 @@ class Async(unittest.TestCase):
         finally:
             for c in apsw.connections():
                 if c.is_async:
-                    c.async_run(lambda: c.close())
+                    await c.aclose()
                 else:
                     c.close()
 
