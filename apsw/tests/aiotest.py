@@ -505,9 +505,9 @@ class Async(unittest.TestCase):
                     nursery.start_soon(
                         wrap, functools.partial(db.execute, "select infinite_loop()"), ready[0], cancelled[0]
                     )
-                    nursery.start_soon(wrap, functools.partial(db.pragma, "user_version", 7), ready[1], cancelled[1])
-
                     await ready[0].wait()
+
+                    nursery.start_soon(wrap, functools.partial(db.pragma, "user_version", 7), ready[1], cancelled[1])
                     await ready[1].wait()
 
                     nursery.cancel_scope.cancel()
