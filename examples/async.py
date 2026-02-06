@@ -10,10 +10,13 @@ import io
 import time
 import sys
 
+from pprint import pprint
+
 import apsw
 import apsw.aio
 import apsw.bestpractice
 import apsw.ext
+import apsw.fts5
 import apsw.shell
 
 # all the popular async frameworks are supported
@@ -287,7 +290,7 @@ trio.run(timeouts)
 # Async connections work by running the SQLite operations in a
 # dedicated background thread.  You can also run your own code there
 # which is especially useful if it does many calls before returning a
-# final result.
+# final result.  Use :meth:`Connection.async_run`.
 #
 # Examples shown include :ref:`schema_upgrade` and getting a text
 # :ref:`dump <shell-cmd-dump>`.
@@ -352,6 +355,16 @@ async def worker_thread():
         )
         dump = out.getvalue()
         print(f"Dump is {len(dump)} chars starting {repr(dump):.40}")
+
+        # Some stuff from apsw.ext
+        usage = await db.async_run(
+            lambda: apsw.ext.analyze_pages(db, 2)
+        )
+        details = await db.async_run(
+            lambda: apsw.ext.query_info(
+                db, "SELECT * FROM sqlite_schema"
+            )
+        )
 
 
 anyio.run(worker_thread)
@@ -617,9 +630,83 @@ async def backup():
 
 asyncio.run(backup())
 
-### async_fts: Full Text Search TODO TODO TODO
-#
-# show doing queries in worker thread
+### async_fts: Full Text Search
+# :class:`~apsw.fts5.Table` accesses the database for virtually all
+# methods and attributes, so using the :ref:`worker thread
+# <example_async_worker_thread>` is needed.  A subset of the
+# :doc:`example-fts` is shown.
+
+
+async def fts():
+    db = await apsw.Connection.as_async("recipes.db")
+
+    # always close database
+    async with contextlib.aclosing(db):
+        if not await db.table_exists("main", "search"):
+            search_table: apsw.fts5.Table = await db.async_run(
+                lambda: apsw.fts5.Table.create(
+                    db,
+                    "search",
+                    content="recipes",
+                    columns=None,
+                    generate_triggers=True,
+                    tokenize=[
+                        "simplify",
+                        "casefold",
+                        "true",
+                        "strip",
+                        "true",
+                        "strip",
+                        "true",
+                        "unicodewords",
+                    ],
+                )
+            )
+        else:
+            search_table: apsw.fts5.Table = await db.async_run(
+                lambda: apsw.fts5.Table(db, "search")
+            )
+
+        # property access
+        print(
+            "row_count =",
+            await db.async_run(lambda: search_table.row_count),
+        )
+
+        # we need to do search processing in the worker thread
+        def search_processing(query: str, limit: int):
+            matches = []
+            for match in search_table.search(query):
+                matches.append(match)
+                if len(matches) >= limit:
+                    break
+            return matches
+
+        for match in await db.async_run(
+            lambda: search_processing("lemon OR guava", 10)
+        ):
+            pprint(match)
+            break
+
+        print(
+            "First match name is",
+            await db.async_run(
+                lambda: search_table.row_by_id(match.rowid, "name")
+            ),
+        )
+
+        # query suggestion
+        query = "nyme:(minced OR oyl NOT peenut)"
+        print(
+            query,
+            "=>",
+            await db.async_run(
+                lambda: search_table.query_suggest(query)
+            ),
+        )
+
+
+asyncio.run(fts())
 
 ### async_session: Session
 # Use :func:`apsw.aio.make_session` to create the
@@ -655,7 +742,9 @@ async def session_example():
         # Other than apply, changeset operations don't use a
         # Connection so we'll use trio's mechanism to do invert in a
         # background thread.
-        undo = await trio.to_thread.run_sync(apsw.Changeset.invert, changeset)
+        undo = await trio.to_thread.run_sync(
+            apsw.Changeset.invert, changeset
+        )
 
         #  Undo the changes
         await apsw.Changeset.apply(undo, db)
