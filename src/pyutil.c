@@ -4,7 +4,7 @@
   See the accompanying LICENSE file.
 */
 
-#if PY_VERSION_HEX < 0x030b0000
+#if PY_VERSION_HEX < 0x030d0000
 typedef PyObject *(*PyCFunctionFastWithKeywords)(PyObject *self,
                                       PyObject *const *args,
                                       Py_ssize_t nargs,
