@@ -305,6 +305,43 @@ Connection_internal_cleanup(Connection *self)
 
   self->progresshandler = 0;
   self->progresshandler_count = 0;
+
+  if (self->preupdate_hooks)
+  {
+    for (unsigned i = 0; i < self->preupdate_hooks_count; i++)
+    {
+      Py_CLEAR(self->preupdate_hooks[i].callback);
+      Py_CLEAR(self->preupdate_hooks[i].id);
+    }
+    PyMem_Free(self->preupdate_hooks);
+    self->preupdate_hooks = NULL;
+    self->preupdate_hooks_count = 0;
+  }
+
+  if (self->commit_hooks)
+  {
+    for (unsigned i = 0; i < self->commit_hooks_count; i++)
+    {
+      Py_CLEAR(self->commit_hooks[i].callback);
+      Py_CLEAR(self->commit_hooks[i].id);
+    }
+    PyMem_Free(self->commit_hooks);
+    self->commit_hooks = NULL;
+    self->commit_hooks_count = 0;
+  }
+
+  if (self->rollback_hooks)
+  {
+    for (unsigned i = 0; i < self->rollback_hooks_count; i++)
+    {
+      Py_CLEAR(self->rollback_hooks[i].callback);
+      Py_CLEAR(self->rollback_hooks[i].id);
+    }
+    PyMem_Free(self->rollback_hooks);
+    self->rollback_hooks = NULL;
+    self->rollback_hooks_count = 0;
+  }
+
 }
 
 static void
@@ -387,42 +424,6 @@ Connection_close_internal(Connection *self, int force)
         return 1;
       }
     }
-  }
-
-  if (self->preupdate_hooks)
-  {
-    for (unsigned i = 0; i < self->preupdate_hooks_count; i++)
-    {
-      Py_CLEAR(self->preupdate_hooks[i].callback);
-      Py_CLEAR(self->preupdate_hooks[i].id);
-    }
-    PyMem_Free(self->preupdate_hooks);
-    self->preupdate_hooks = NULL;
-    self->preupdate_hooks_count = 0;
-  }
-
-  if (self->commit_hooks)
-  {
-    for (unsigned i = 0; i < self->commit_hooks_count; i++)
-    {
-      Py_CLEAR(self->commit_hooks[i].callback);
-      Py_CLEAR(self->commit_hooks[i].id);
-    }
-    PyMem_Free(self->commit_hooks);
-    self->commit_hooks = NULL;
-    self->commit_hooks_count = 0;
-  }
-
-  if (self->rollback_hooks)
-  {
-    for (unsigned i = 0; i < self->rollback_hooks_count; i++)
-    {
-      Py_CLEAR(self->rollback_hooks[i].callback);
-      Py_CLEAR(self->rollback_hooks[i].id);
-    }
-    PyMem_Free(self->rollback_hooks);
-    self->rollback_hooks = NULL;
-    self->rollback_hooks_count = 0;
   }
 
   if (self->stmtcache)
@@ -554,7 +555,6 @@ static void
 Connection_dealloc(PyObject *self_)
 {
   Connection *self = (Connection *)self_;
-  Connection_internal_cleanup(self);
   PyObject_GC_UnTrack(self_);
   APSW_CLEAR_WEAKREFS;
 
