@@ -47,6 +47,7 @@ class Async(unittest.TestCase):
                 raise Exception(f"Leaked {thread=}")
 
     def setUp(self):
+        self.verbose = self._outcome.result.showAll
         self.active_threads = set(threading.enumerate())
 
     def testOverwrite(self):
@@ -775,10 +776,9 @@ class Async(unittest.TestCase):
         )
 
     def get_all_atests(self):
-        verbose = self._outcome.result.showAll
         for n in dir(self):
             if "atestA" <= n <= "atestZ":
-                if verbose:
+                if self.verbose:
                     print(">>> ", n)
                 yield getattr(self, n)
 
@@ -828,6 +828,9 @@ class Async(unittest.TestCase):
             return
 
         for be in backends:
+            if self.verbose:
+                print(f"!!! AnyIO backend {be}")
+
             for fn in self.get_all_atests():
                 with self.subTest(fw="anyio", be=be, fn=fn):
                     match be:
