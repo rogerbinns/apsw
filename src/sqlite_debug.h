@@ -6,7 +6,7 @@
    check code correctness.  See issue 551 where we want to
    verify the database mutex is held */
 
-#if !defined(NDEBUG) && defined(SQLITE_DEBUG) && defined(APSW_DEBUG)
+#if !defined(NDEBUG) && defined(SQLITE_DEBUG) && defined(APSW_DEBUG) && !(defined(_MSC_VER) && !defined(__clang__))
 
 #undef DBMUTEX_ASSERT
 #define DBMUTEX_ASSERT(x) do { assert(sqlite3_mutex_held(sqlite3_db_mutex((x)))); } while(0)
