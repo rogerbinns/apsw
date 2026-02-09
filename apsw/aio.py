@@ -448,7 +448,7 @@ class Trio:
 
     async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker):
         "executes the coro in the event loop"
-        with trio.CancelScope(deadline=math.inf if tracker.deadline_loop is None else tracker.deadline_loop) as scope:
+        with trio.fail_at(deadline=math.inf if tracker.deadline_loop is None else tracker.deadline_loop) as scope:
             tracker.cancel_async_cb = scope.cancel
             if tracker.is_cancelled:
                 return
