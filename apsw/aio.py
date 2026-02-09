@@ -324,6 +324,8 @@ class AsyncIO:
 
             task = context.run(asyncio.create_task, coro)
             tracker.cancel_async_cb = task.cancel
+            if tracker.is_cancelled:
+                return
 
             if tracker.deadline_loop is not None:
                 return await asyncio.wait_for(task, tracker.deadline_loop - self.loop.time())
@@ -336,6 +338,8 @@ class AsyncIO:
 
             task = context.run(asyncio.create_task, coro)
             tracker.cancel_async_cb = task.cancel
+            if tracker.is_cancelled:
+                return
 
             async with asyncio.timeout_at(tracker.deadline_loop):
                 return await task
@@ -351,6 +355,8 @@ class AsyncIO:
 
             task = asyncio.create_task(coro, context=context)
             tracker.cancel_async_cb = task.cancel
+            if tracker.is_cancelled:
+                return
 
             async with asyncio.timeout_at(tracker.deadline_loop):
                 return await task
@@ -444,6 +450,8 @@ class Trio:
         "executes the coro in the event loop"
         with trio.CancelScope(deadline=math.inf if tracker.deadline_loop is None else tracker.deadline_loop) as scope:
             tracker.cancel_async_cb = scope.cancel
+            if tracker.is_cancelled:
+                return
             return await coro
 
     def __init__(self, *, thread_name: str = "trio apsw background worker"):
@@ -542,6 +550,8 @@ class AnyIO:
             math.inf if tracker.deadline_loop is None else tracker.deadline_loop - anyio.current_time()
         ) as scope:
             tracker.cancel_async_cb = scope.cancel
+            if tracker.is_cancelled:
+                return
             return await coro
 
     def __init__(self, *, thread_name: str = "anyio apsw background worker"):
