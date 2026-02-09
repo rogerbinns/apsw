@@ -7895,6 +7895,13 @@ class APSW(unittest.TestCase):
                 return "a" * amount
 
             def xRead5(self, amount, offset):
+                # This does short reads on purpose.
+                if "DEBUG" in apsw.compile_options:
+                    # SQLite has an assertion that gets hit if amount
+                    # is zero which happens under Windows but not
+                    # other platforms so we avoid zero length reads
+                    # when assertions are enabled
+                    return super().xRead(max(1, amount - 1), offset)
                 return super().xRead(amount - 1, offset)
 
             def xRead99(self, amount, offset):
