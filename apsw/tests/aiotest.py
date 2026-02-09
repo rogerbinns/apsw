@@ -581,14 +581,14 @@ class Async(unittest.TestCase):
             self.assertEqual(v, await (await db.execute("select sync_cvar(?)", ("apsw.aio.deadline",))).get)
             self.assertEqual(v, await (await db.execute("select async_cvar(?)", ("apsw.aio.deadline",))).get)
 
-        cura = db.execute("select block()")
+        cura = await db.execute("select 3; select block()")
 
-        with apsw.aio.contextvar_set(apsw.aio.deadline, time()):
+        with apsw.aio.contextvar_set(apsw.aio.deadline, time() - 0.01):
             # this should be queued but never run
             fut = db.pragma("user_version", 7)
 
             with self.assertRaises(timeout_exc_class):
-                await (await cura).get
+                await cura.get
 
             with self.assertRaises(timeout_exc_class):
                 await fut
