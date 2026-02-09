@@ -109,13 +109,13 @@ class Async(unittest.TestCase):
                 await apsw.Connection.as_async("")
 
         class Bad2:
-            def send(*args):
+            async def send(*args):
                 1 / 0
 
             def close(*args):
                 pass
 
-        with apsw.aio.contextvar_set(apsw.async_controller, Bad1):
+        with apsw.aio.contextvar_set(apsw.async_controller, Bad2):
             with self.assertRaises(ZeroDivisionError):
                 await apsw.Connection.as_async("")
 
