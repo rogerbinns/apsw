@@ -244,6 +244,9 @@ bgdelthread.start()
 def deletefile(name):
     try:
         os.remove(name)
+        return
+    except FileNotFoundError:
+        return
     except:
         pass
     l = list("abcdefghijklmn")
@@ -254,6 +257,9 @@ def deletefile(name):
         count += 1
         try:
             os.rename(name, newname)
+            return
+        except FileNotFoundError:
+            return
         except:
             if count > 30:  # 3 seconds we have been at this!
                 # So give up and give it a stupid name.  The sooner
