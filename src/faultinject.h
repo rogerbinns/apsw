@@ -263,6 +263,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #define MakeExistingException(...) \
 ({                                                                                                                                                                  \
     __auto_type _res_MakeExistingException = 0 ? MakeExistingException(__VA_ARGS__) : 0;                                                                            \
+    if(!PyErr_Occurred()) {                                                                                                                                         \
                                                                                                                                                                     \
     _res_MakeExistingException = (typeof (_res_MakeExistingException))APSW_FaultInjectControl("MakeExistingException", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
                                                                                                                                                                     \
@@ -272,6 +273,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     {                                                                                                                                                               \
         MakeExistingException(__VA_ARGS__);                                                                                                                         \
         _res_MakeExistingException = (typeof (_res_MakeExistingException))18;                                                                                       \
+    }                                                                                                                                                               \
     }                                                                                                                                                               \
     _res_MakeExistingException;                                                                                                                                     \
 })

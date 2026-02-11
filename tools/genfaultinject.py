@@ -41,6 +41,9 @@ def get_definition(name, use_name):
         # put back pretty name in string passed to APSW_FaultInjectControl
         t = t.replace(f'"{ use_name }"', f'"{ name }"')
     t = t.strip().split("\n")
+    # don't query for MakeExistingException if there already is one
+    if name == "MakeExistingException":
+        t = t[0:2] + ["    if(!PyErr_Occurred()) {"] + t[2:-2] + ["    }"] + t[-2:]
     maxlen = max(len(l) for l in t)
     for i in range(len(t) - 1):
         t[i] += " " * (maxlen - len(t[i])) + " \\\n"
