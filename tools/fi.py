@@ -14,6 +14,7 @@ import atexit
 import pathlib
 import random
 import contextlib
+import threading
 
 import tempfile
 
@@ -29,18 +30,27 @@ testing_recursion = False
 def file_cleanup():
     if "apsw" in sys.modules:
         for c in sys.modules["apsw"].connections():
-            c.close(True)
+            if c.is_async:
+                c.async_run(lambda: c.close(True))
+            else:
+                c.close(True)
     for f in glob.glob(f"{tmpdir.name}/*"):
         os.remove(f)
 
 examples_completed = set()
+
+def ignore_print(*args, **kwargs):
+    pass
+
 
 def exercise_examples(example_code, expect_exception):
     file_cleanup()
     for code, __ in example_code:
         if examples_completed is not None and code in examples_completed:
             continue
-        exec(code, {"print": lambda *args: None}, None)
+        g = globals().copy()
+        g["print"] = ignore_print
+        exec(code, g)
         if examples_completed is not None:
             examples_completed.add(code)
         if expect_exception:
@@ -61,11 +71,11 @@ def exercise(example_code, expect_exception):
     import apsw, apsw.ext, apsw.fts5, apsw.unicode
 
     try:
+        apsw.config(apsw.SQLITE_CONFIG_LOG, None)
+        apsw.ext.log_sqlite(level=0)
         apsw.config(apsw.SQLITE_CONFIG_URI, 1)
         apsw.config(apsw.SQLITE_CONFIG_MULTITHREAD)
         apsw.config(apsw.SQLITE_CONFIG_PCACHE_HDRSZ)
-        apsw.config(apsw.SQLITE_CONFIG_LOG, None)
-        apsw.ext.log_sqlite(level=0)
     except apsw.MisuseError:
         pass
 
@@ -603,6 +613,9 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
+    # done before VFS stuff which can cause problems
+    exercise_examples(example_code, expect_exception)
+
     vname = "foo"
     v = apsw.VFS(vname, iVersion=3)
     registered = [vfs for vfs in apsw.vfs_details() if vfs["zName"] == vname][0]
@@ -692,8 +705,6 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
-    exercise_examples(example_code, expect_exception)
-
     if False:
         # This does recursion error, which also causes lots of last chance
         # exception printing to stderr, making the noise unhelpful.  The
@@ -710,13 +721,11 @@ def exercise(example_code, expect_exception):
     del vfsinstance
     del vfsinstance2
 
-    del sys.modules["apsw.ext"]
-    del sys.modules["apsw._unicode"]
-    del sys.modules["apsw.unicode"]
-    gc.collect()
-    del apsw._unicode
-    del apsw.unicode
-    del apsw
+    # unload all the modules - the sort ensures the base module is last
+    for name in reversed(list(sys.modules.keys())):
+        if name == "apsw" or name.startswith("apsw.") and name in sys.modules:
+            del sys.modules[name]
+            gc.collect()
 
 
 class Tester:
@@ -762,18 +771,24 @@ class Tester:
             "apsw.ext.log_sqlite()": "apsw.ext.log_sqlite(level=0)",
             # resource usage is deliberately slow
             "time.sleep(1.3)": "time.sleep(0)",
-            # and it and Trace make output
-            "import random": "import random,io; string_sink=io.StringIO()",
-            "sys.stdout,": "string_sink,",
-            # fix pprint
-            "from pprint import pprint": "pprint = print",
             # needs to reraise nested exceptions - absurd syntax from chatgpt so I can make it one line
             'print("commit was not allowed")': "(inner := exc.__cause__ or exc.__context__) and (_ for _ in ()).throw(inner)",
+            # aio uses fractal stuff
+            'fractal_sql = "outlandish fractal"': 'fractal_sql = "' + fractal_sql.replace("\n", "\\n") + '"',
+            'query = "fractal"': 'query = "' + fractal_sql.replace("\n", "\\n").replace("800000", "28") + '"',
         }
 
-        example_files = []
+        example_files: list[pathlib.Path] = []
         if not self.example_arg:
-            example_files.extend(sorted(pathlib.Path().glob("examples/*.py")))
+            # we want the main example first, async last etc
+            def key_func(p: pathlib.Path):
+                if str(p).endswith("main.py"):
+                    return (0, p)
+                if str(p).endswith("async.py"):
+                    return (100, p)
+                return (50, p)
+
+            example_files.extend(sorted(pathlib.Path().glob("examples/*.py"), key=key_func))
         else:
             names = sorted(pathlib.Path().glob(f"examples/{self.example_arg}.py"))
             if not names:
@@ -783,7 +798,7 @@ class Tester:
             code = example.read_text()
             for k, v in replacements.items():
                 code = code.replace(k, v)
-            self.example_code.append((compile(code, example.with_suffix(""), "exec"), len(code.split("\n"))))
+            self.example_code.append((compile(code, example, "exec"), len(code.split("\n"))))
 
     @staticmethod
     def apsw_attr(name: str):
@@ -911,9 +926,14 @@ class Tester:
         return res is True
 
     def fault_inject_control(self, key):
+        # key is (api, file, calling func, lineno, str(args)) eg
+        # ('PyUnicode_AsUTF8AndSize', 'src/apsw.c', 'apsw_unregister_vfs', 1796, 'useargs[argp_optindex], &sz')
         if testing_recursion and key[2] in {"apsw_write_unraisable", "apswvfs_excepthook"}:
             return self.Proceed
         if key[2] == "apsw_leak_check":
+            return self.Proceed
+        if key[0] == 'PyObject_VectorcallMethod_NoAsync' and key[2]=="async_shutdown_controller":
+            # we can't fail this otherwise the worker thread keeps running forever
             return self.Proceed
         if "misuse_check" in key[4]:
             # sqlite session stuff where we only care about misuse being returned
@@ -937,10 +957,14 @@ class Tester:
             if key in self.has_faulted_ever:
                 return self.Proceed
 
-        line = self.get_progress()
+        tid, fname, line = self.get_progress()
+        loc = ""
+        if tid:
+            loc += f"[{tid:.16}] "
+        loc += f"{fname[-20:]} L{line}"
         if self.runplan is not None:
             print("  Pre" if self.runplan else "Fault", end=" ")
-        print(f"faulted: {len(self.has_faulted_ever): 4} / new: {len(self.to_fault): 3} {line} {key}")
+        print(f"faulted: {len(self.has_faulted_ever): 4} / new: {len(self.to_fault): 3} {loc} {key}")
         try:
             return self.FaultCall(key)
         finally:
@@ -973,15 +997,25 @@ class Tester:
             return False
         return True  # do not raise
 
-    def get_progress(self):
+    def get_progress(self) -> tuple[None | str, str, int]:
         # work out what progress in exercise
-        ss = traceback.extract_stack()
-        for frame in reversed(ss):
-            if frame.filename == __file__ and self.start_line <= frame.lineno <= self.end_line:
-                return f"(exercise) L{frame.lineno}"
-            if frame.filename.startswith("examples"):
-                return f"{frame.filename} L{frame.lineno}"
-        return "GC"
+        thread = None if threading.current_thread() is main_thread else threading.current_thread().name
+        frame = sys._getframe()
+        best = None
+        while frame:
+            if frame.f_code is exercise.__code__:
+                return thread, "(exercise)", frame.f_lineno
+            if frame.f_code is exercise_examples.__code__:
+                return thread, "(examples GC)", frame.f_lineno
+            if frame.f_code.co_filename.startswith("examples/"):
+                return thread, frame.f_code.co_filename, frame.f_lineno
+            if best is None and frame.f_code.co_filename != __file__:
+                best = thread, frame.f_code.co_filename, frame.f_lineno
+            frame = frame.f_back
+        if best is not None:
+            return best
+
+        return thread, "GC", 0
 
     def verify_exception(self, tested):
         ok = any(e[0] in self.expect_exception for e in self.exc_happened) or any(
@@ -1013,6 +1047,9 @@ class Tester:
                     ok = True
                 elif tested[-1][0] == "sqlite3_mprintf":
                     ok = True
+            elif tested[-1][0] == "Py_EnterRecursiveCall" and tested[-1][2] == "jsonb_decode_one":
+                # exceptions are swallowed if doing a validity check
+                ok = True
             else:
                 ok = False
         if not ok:
@@ -1090,7 +1127,10 @@ class Tester:
                         self.abort = 0
                     if "apsw" in sys.modules:
                         for c in sys.modules["apsw"].connections():
-                            c.close()
+                            if c.is_async:
+                                c.async_run(lambda: c.close(True))
+                            else:
+                                c.close()
                     gc.collect()
                     if "apsw" in sys.modules and hasattr(sys.modules["apsw"], "leak_check"):
                         res = getattr(sys.modules["apsw"], "leak_check")()
@@ -1124,6 +1164,24 @@ class Tester:
         sys.excepthook = sys.__excepthook__
         sys.unraisablehook = sys.__unraisablehook__
 
+fractal_sql = """
+    WITH RECURSIVE
+    xaxis(x) AS (VALUES(-2.0) UNION ALL SELECT x+0.05 FROM xaxis WHERE x<1.2),
+    yaxis(y) AS (VALUES(-1.0) UNION ALL SELECT y+0.1 FROM yaxis WHERE y<1.0),
+    m(iter, cx, cy, x, y) AS (
+        SELECT 0, x, y, 0.0, 0.0 FROM xaxis, yaxis
+        UNION ALL
+        SELECT iter+1, cx, cy, x*x-y*y + cx, 2.0*x*y + cy FROM m
+        WHERE (x*x + y*y) < 4.0 AND iter< 800000 -- this should be 28 and controls how much work is done
+    ),
+    m2(iter, cx, cy) AS (
+        SELECT max(iter), cx, cy FROM m GROUP BY cx, cy
+    ),
+    a(t) AS (
+        SELECT group_concat( substr(' .+*#', 1+min(iter/7,4), 1), '')
+        FROM m2 GROUP BY cy
+    )
+    SELECT group_concat(rtrim(t),x'0a') FROM a;"""
 
 import argparse
 
@@ -1131,5 +1189,19 @@ p = argparse.ArgumentParser()
 p.add_argument("example", nargs="?", help="If specificed then only run this example")
 args = p.parse_args()
 
+real_stdout = sys.stdout
+
+real_print = print
+
+
+def print(*args, **kwargs):
+    return real_print(*args, **kwargs, file=real_stdout)
+
+
+main_thread = threading.current_thread()
+
 t = Tester(args.example)
-t.run()
+with open(os.devnull, "w") as null:
+    with contextlib.redirect_stderr(null):
+        with contextlib.redirect_stdout(null):
+            t.run()
