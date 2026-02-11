@@ -23,6 +23,7 @@ doc/renames.rstgen
 doc/docdb.json
 *.pyc
 testextension.*
+!testextension.c
 testdbx-journal
 testdbx
 *~
