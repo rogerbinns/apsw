@@ -280,9 +280,6 @@ APSWBackup_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_EPILOG(NULL, Backup_close_USAGE, );
   }
 
-  if (!IN_WORKER_THREAD(self->dest))
-    return error_sync_in_async_context();
-
   DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
                    "Backup destination Connection is busy in another thread");
   setexc = APSWBackup_close_internal(self, force);

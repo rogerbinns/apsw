@@ -517,10 +517,7 @@ Connection_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_EPILOG(NULL, Connection_close_USAGE, );
   }
 
-  if (!IN_WORKER_THREAD(self))
-    return error_sync_in_async_context();
-
-  DBMUTEX_ENSURE(self);
+  DBMUTEX_ENSURE_ANY_THREAD(self);
   if (Connection_close_internal(self, force))
   {
     assert(PyErr_Occurred());

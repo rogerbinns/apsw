@@ -266,8 +266,11 @@ def async_markup(klass: str, member: str, kind: Literal["function" | "attribute"
         res.append(doclines[0])
         doclines = doclines[1:]
 
-    am = async_category(klass, member, kind)
-    res.extend(["", f"{indent}|badge-async-{am}|", ""])
+    if member in {"close", "aclose"}:
+        res.extend(["", f"{indent}|badge-close|", ""])
+    else:
+        am = async_category(klass, member, kind)
+        res.extend(["", f"{indent}|badge-async-{am}|", ""])
     res.extend(doclines)
 
     return res

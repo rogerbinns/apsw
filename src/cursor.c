@@ -1472,10 +1472,7 @@ APSWCursor_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
     ARG_EPILOG(NULL, Cursor_close_USAGE, );
   }
 
-  if (!IN_WORKER_THREAD(self->connection))
-    return error_sync_in_async_context();
-
-  DBMUTEX_ENSURE(self->connection);
+  DBMUTEX_ENSURE_ANY_THREAD(self->connection);
   /* Manual IN_QUERY_CHECK to give better error message */
   if (self->in_query)
   {

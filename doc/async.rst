@@ -49,7 +49,7 @@ Async
 
     async is a language level concurrency mechanism, contrasted with
     the traditional library mechanism in :mod:`concurrent.futures`.
-    It is done with the ``async`` and ``await`` keywords.
+    It is done with the :code:`async` and :code:`await` keywords.
 
     An event loop does fine grained management of multiple tasks
     as their results become available, timeouts, cancellations,
@@ -77,7 +77,7 @@ Free threaded
    for executemany.
 
    A free threaded build is available on pypi, but loading the module
-   will re-enable GIL.  You can use ``-X nogil`` when starting Python
+   will re-enable GIL.  You can use :code:`-X nogil` when starting Python
    and that won't happen, but you can get crashes if you use the same
    objects and inputs concurrently across threads, especially if
    making concurrent modifications.
@@ -118,8 +118,8 @@ async.
     async for name, price in await db.execute("SELECT name, price FROM ..."):
         print(f"{name=) {price=}")"
 
-There is no separate ``AsyncConnection`` (or ``AsyncCursor``,
-``AsyncBlob`` etc) class.  The existing instances know if they are in
+There is no separate :code:`AsyncConnection` (or :code:`AsyncCursor`,
+:code:`AsyncBlob` etc) class.  The existing instances know if they are in
 async mode or not, and behave appropriately.  You can use
 :attr:`Connection.is_async` to check.
 
@@ -141,7 +141,7 @@ to await the result.
 
     auth = await connection.authorizer
 
-To set them, you will need to use ``setattr`` nin the worker thread.
+To set them, you will need to use :code:`setattr` in the worker thread.
 
 .. code-block:: python
 
@@ -170,9 +170,9 @@ Sync object
     A direct result will be provided
 Async object
     A :exc:`TypeError` will be raised.  There may be an async
-    equivalent such as ``aclose`` instead of ``close``, or you may
-    need ``async with`` instead of ``with``, ``async for`` instead of
-    ``for``
+    equivalent such as :code:`aclose` instead of :code:`close`, or you
+    may need :code:`async with` instead of :code:`with`, :code:`async for` instead
+    of :code:`for`
 
 .. _badge_async_async:
 
@@ -182,11 +182,11 @@ Async only
 !!!!!!!!!!
 
 Sync object
-    A :exc:`TypeError` will be raised. Omit the leasing ``async`` and
-    use plain ``with`` and ``for``.  There may be a sync equivalent
-    without a leasing ``a``.
+    A :exc:`TypeError` will be raised. Omit the leasing :code:`async`
+    and use plain :code:`with` and :code:`for`.  There may be a sync
+    equivalent without a leading :code:`a`.
 Async object
-    You will need to ``await`` the result when ready
+    You will need to :code:`await` the result when ready
 
 .. _badge_async_dual:
 
@@ -199,7 +199,7 @@ Sync object
     A direct result will be provided
 
 Async object
-    You will need to ``await`` the result when ready.  When objects
+    You will need to :code:`await` the result when ready.  When objects
     are returned like :class:`Cursor`, :class:`Blob`, :class:`Backup`
     etc, they will also be in async mode.`
 
@@ -213,7 +213,38 @@ Value
 Sync object
     A direct result will be provided
 Async object
-    A direct result will be provided.  Do not ``await``` it.
+    A direct result will be provided.  Do not :code:`await` it.
+
+.. _badge_close:
+
+ |badge-close|
+
+Close
+!!!!!
+
+Sync object
+    Closes this object, releasing its held resources.  It is safe to
+    call close multiple times.  When you call close on a
+    :class:`Connection`, then it will close all the corresponding
+    objects like :class:`Cursor`, :class:`Blob`, :class:`Session` etc.
+
+Async object
+    You should :code:`await` calling :code:`aclose` - the async
+    version of close.  It is safe to call multiple times.  It will
+    only be effective if the event loop is still running.
+    :func:`contextlib.aclosing` is a handy context manager.
+
+    This is important for the :class:`Connection` because the worker
+    thread will not exit until the connection is closed.  It will be
+    closed if normal garbage collection happens, but it is very easy
+    to have a stray reference preventing that.
+
+    It is allowed to call :code:`close` on async objects, which will
+    immediately close them and return :exc:`ConnectionClosedError` to
+    any subsequent calls made.  This is also the only way to close an
+    object after the event loop has finished.  You can use
+    :func:`apsw.connections` to get the currently open connections.
+
 
 Callbacks
 =========
@@ -314,7 +345,7 @@ You can use :attr:`apsw.aio.deadline` to set the deadline - its
 documentation provides more details.
 
 Trio and anyio have timeout managers.  If :attr:`apsw.aio.deadline` is
-not set, then their ``current_effective_deadline`` used.
+not set, then their :code:`current_effective_deadline` used.
 
 * :func:`trio.fail_at`,  :func:`trio.fail_after`, :func:`trio.current_effective_deadline`
 * :func:`anyio.fail_after`, :func:`anyio.current_effective_deadline`
@@ -422,11 +453,11 @@ Library
 Prefetch
 
     How many rows are fetched in a batch for queries, controlled by
-    :attr:`apsw.async_cursor_prefetch` in APSW and ``iter_chunk_size``
-    in |aiosqlite|.  A value of 1 as shown in the first rows ends up
-    as 301 thousand messages and responses with the worker thread.
-    That is halved with 2 etc.  The default is 64.  The benchmark
-    queries return a maximum of 1,000 rows.
+    :attr:`apsw.async_cursor_prefetch` in APSW and
+    :code:`iter_chunk_size` in |aiosqlite|.  A value of 1 as shown in
+    the first rows ends up as 301 thousand messages and responses with
+    the worker thread.  That is halved with 2 etc.  The default is 64.
+    The benchmark queries return a maximum of 1,000 rows.
 
 Wall
 

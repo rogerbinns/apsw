@@ -258,7 +258,11 @@ class Async(unittest.TestCase):
 
         self.assertTrue(backup.done)
 
-    async def atestClosing(self, fw):
+    async def atestClosingSync(self, fw):
+        "check sync close works too"
+        return await self.atestClosing(fw, sync=True)
+
+    async def atestClosing(self, fw, *, sync=False):
         "check aclose can be called multiple times, even after object is closed"
         db = await apsw.Connection.as_async(":memory:")
 
@@ -273,6 +277,8 @@ class Async(unittest.TestCase):
         await db2.execute("create table dummy(x)")
         await db2.executemany("insert into dummy values(?)", (("a" * 4096,) for _ in range(129)))
 
+        if sync:
+            cursor.close()
         fut = cursor.aclose()
         self.verifyCoroutine(fut)
         await fut
@@ -282,6 +288,8 @@ class Async(unittest.TestCase):
         cursor.close()
         cursor.close()
 
+        if sync:
+            blob.close()
         fut = blob.aclose()
         self.verifyCoroutine(fut)
         await fut
@@ -295,6 +303,8 @@ class Async(unittest.TestCase):
         self.verifyCoroutine(backup)
         backup = await backup
 
+        if sync:
+            backup.close()
         fut = backup.aclose()
         self.verifyCoroutine(fut)
         await fut
@@ -306,6 +316,8 @@ class Async(unittest.TestCase):
 
         if hasattr(apsw, "Session"):
             session = await apsw.aio.make_session(db, "main")
+            if sync:
+                session.close()
             fut = session.aclose()
             self.verifyCoroutine(fut)
             await fut
@@ -318,6 +330,8 @@ class Async(unittest.TestCase):
             # keep following lines happy
             session = db
 
+        if sync:
+            db.close()
         fut = db.aclose()
         self.verifyCoroutine(fut)
         await fut
@@ -329,6 +343,9 @@ class Async(unittest.TestCase):
         db.close()
 
         for obj in cursor, db, blob, backup, session:
+            if sync:
+                obj.close()
+                obj.close()
             await obj.aclose()
             await obj.aclose()
             obj.close()

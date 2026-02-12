@@ -329,7 +329,7 @@ APSWSession_init(PyObject *self_, PyObject *args, PyObject *kwargs)
     return -1;
   }
 
-  DBMUTEX_ENSURE_RETURN(db, -1);
+  DBMUTEX_ENSURE_RETURN(1, db, -1);
   int rc = sqlite3session_create(db->db, schema, &self->session);
   sqlite3_mutex_leave(db->dbmutex);
 
@@ -406,12 +406,9 @@ APSWSession_close(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   APSWSession *self = (APSWSession *)self_;
 
-  if (self->connection && !IN_WORKER_THREAD(self->connection))
-    return error_sync_in_async_context();
-
   if (self->connection)
   {
-    DBMUTEX_ENSURE(self->connection);
+    DBMUTEX_ENSURE_ANY_THREAD(self->connection);
     APSWSession_close_internal(self);
   }
   MakeExistingException();
@@ -869,7 +866,7 @@ APSWSession_set_enabled(PyObject *self_, PyObject *value, void *Py_UNUSED(unused
   int enabled = PyObject_IsTrueStrict(value);
   if (enabled == -1)
     return -1;
-  DBMUTEX_ENSURE_RETURN(self->connection, -1);
+  DBMUTEX_ENSURE_RETURN(1, self->connection, -1);
   sqlite3session_enable(self->session, enabled);
   sqlite3_mutex_leave(self->connection->dbmutex);
   return 0;
@@ -914,7 +911,7 @@ APSWSession_set_indirect(PyObject *self_, PyObject *value, void *Py_UNUSED(unuse
     return -1;
   }
 
-  DBMUTEX_ENSURE_RETURN(self->connection, -1);
+  DBMUTEX_ENSURE_RETURN(1, self->connection, -1);
   sqlite3session_indirect(self->session, enabled);
   sqlite3_mutex_leave(self->connection->dbmutex);
 

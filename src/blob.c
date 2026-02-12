@@ -571,9 +571,7 @@ APSWBlob_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
 
   if (self->connection)
   {
-    if (!IN_WORKER_THREAD(self->connection))
-      return error_sync_in_async_context();
-    DBMUTEX_ENSURE(self->connection);
+    DBMUTEX_ENSURE_ANY_THREAD(self->connection);
   }
 
   setexc = APSWBlob_close_internal(self, !!force);

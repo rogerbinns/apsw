@@ -54,7 +54,7 @@ def get_meta(
             # aiter is technically value but we only want it on async objects
             # so that is handled elsewhere
             return "async"
-        case "__repr__" | "__str__" | "__bool__":
+        case "__repr__" | "__str__" | "__bool__" | "close":
             return "value"
         case _:
             return "dual" if kind == "function" else "value"
@@ -83,16 +83,7 @@ def is_method(object, name):
 class AsyncMeta(unittest.TestCase):
     def tearDown(self):
         for c in apsw.connections():
-            # yes its ugly but we don't have a real event loop and are
-            # just making a best effort
-            try:
-                c.aclose()
-            except:
-                pass
-            try:
-                c.close()
-            except:
-                pass
+            c.close()
 
     def classifyOne(self, send, is_attr, object, klass, member, value=None):
         # send is None for async access, callable for sync

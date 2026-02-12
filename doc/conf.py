@@ -48,6 +48,8 @@ rst_prolog = """
 
 .. |badge-async-value| replace::  :ref:`Value <badge_async_value>`
 
+.. |badge-close| replace:: :ref:`Close <badge_close>`
+
 """
 
 

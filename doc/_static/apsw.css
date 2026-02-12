@@ -29,6 +29,7 @@
    the contents are the joint work of claude, chatgpt, and
    gemini merged by me
 */
+a.reference.internal[href*="#badge-close"],
 a.reference.internal[href*="#badge-async-sync"],
 a.reference.internal[href*="#badge-async-async"],
 a.reference.internal[href*="#badge-async-dual"],
@@ -52,7 +53,7 @@ a.reference.internal[href*="#badge-async-value"] {
 	transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
-
+a.reference.internal[href*="#badge-close"]:hover,
 a.reference.internal[href*="#badge-async-sync"]:hover,
 a.reference.internal[href*="#badge-async-async"]:hover,
 a.reference.internal[href*="#badge-async-dual"]:hover,
@@ -62,6 +63,7 @@ a.reference.internal[href*="#badge-async-value"]:hover {
 	background: linear-gradient(to bottom, #fff9dd, #ffed99);
 }
 
+a.reference.internal[href*="#badge-async-close"]:active,
 a.reference.internal[href*="#badge-async-sync"]:active,
 a.reference.internal[href*="#badge-async-async"]:active,
 a.reference.internal[href*="#badge-async-dual"]:active,
