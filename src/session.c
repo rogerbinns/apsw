@@ -1352,7 +1352,7 @@ error:
 }
 
 static PyObject *
-APSWTableChange_tp_str(PyObject *self_)
+APSWTableChange_tp_repr(PyObject *self_)
 {
   APSWTableChange *self = (APSWTableChange *)self_;
   if (!self->iter)
@@ -2592,7 +2592,8 @@ static PyTypeObject APSWTableChangeType = {
   .tp_getset = APSWTableChange_getset,
   .tp_doc = TableChange_class_DOC,
   .tp_dealloc = APSWTableChange_dealloc,
-  .tp_str = APSWTableChange_tp_str,
+  .tp_str = NULL,
+  .tp_repr = APSWTableChange_tp_repr,
 };
 
 static PyMethodDef APSWRebaser_methods[] = {

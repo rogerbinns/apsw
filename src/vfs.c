@@ -1904,7 +1904,7 @@ error:
 }
 
 static PyObject *
-APSWVFS_tp_str(PyObject *self_)
+APSWVFS_tp_repr(PyObject *self_)
 {
   APSWVFS *self = (APSWVFS *)self_;
   if (!self->containingvfs)
@@ -1947,7 +1947,8 @@ static PyTypeObject APSWVFSType = {
   .tp_methods = APSWVFS_methods,
   .tp_init = APSWVFS_init,
   .tp_new = PyType_GenericNew,
-  .tp_str = APSWVFS_tp_str,
+  .tp_str = NULL,
+  .tp_repr = APSWVFS_tp_repr,
 };
 
 static int
@@ -2997,7 +2998,7 @@ apswvfsfilepy_xClose(PyObject *self_, PyObject *Py_UNUSED(unused))
 }
 
 static PyObject *
-APSWVFSFile_tp_str(PyObject *self_)
+APSWVFSFile_tp_repr(PyObject *self_)
 {
   APSWVFSFile *self = (APSWVFSFile *)self_;
   return PyUnicode_FromFormat("<apsw.VFSFile object filename \"%s\" at %p>", self->filename ? self->filename : "(nil)",
@@ -3105,7 +3106,8 @@ static PyTypeObject APSWVFSFileType = {
   .tp_methods = APSWVFSFile_methods,
   .tp_init = APSWVFSFile_init,
   .tp_new = PyType_GenericNew,
-  .tp_str = APSWVFSFile_tp_str,
+  .tp_str = NULL,
+  .tp_repr = APSWVFSFile_tp_repr,
 };
 
 /** .. class:: URIFilename
@@ -3262,7 +3264,7 @@ apswurifilename_uri_boolean(PyObject *self_, PyObject *const *fast_args, Py_ssiz
 }
 
 static PyObject *
-apswurifilename_tp_str(PyObject *self_)
+apswurifilename_tp_repr(PyObject *self_)
 {
   APSWURIFilename *self = (APSWURIFilename *)self_;
   /* CHECK_SCOPE not needed since we manually check */
@@ -3292,7 +3294,8 @@ static PyTypeObject APSWURIFilenameType = {
   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
   .tp_doc = URIFilename_class_DOC,
   .tp_methods = APSWURIFilenameMethods,
-  .tp_str = apswurifilename_tp_str,
+  .tp_str = NULL,
+  .tp_repr = apswurifilename_tp_repr,
   .tp_getset = APSWURIFilename_getset,
 };
 

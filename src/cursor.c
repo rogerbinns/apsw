@@ -2436,7 +2436,7 @@ error:
 }
 
 static PyObject *
-APSWCursor_tp_str(PyObject *self_)
+APSWCursor_tp_repr(PyObject *self_)
 {
   APSWCursor *self = (APSWCursor *)self_;
   return PyUnicode_FromFormat("<apsw.Cursor object from %S at %p>",
@@ -2526,7 +2526,8 @@ static PyTypeObject APSWCursorType = {
   .tp_init = APSWCursor_init,
   .tp_as_number = &APSWCursor_as_number,
   .tp_new = PyType_GenericNew,
-  .tp_str = APSWCursor_tp_str,
+  .tp_str = NULL,
+  .tp_repr = APSWCursor_tp_repr,
   .tp_as_async = &cursor_async_methods,
 };
 

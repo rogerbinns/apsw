@@ -6048,7 +6048,7 @@ class APSW(unittest.TestCase):
                     "aclose",
                     "close_internal",
                     "tp_traverse",
-                    "tp_str",
+                    "tp_repr",
                     "get_description",
                     "get_description_full",
                     "getdescription_dbapi",
@@ -6077,7 +6077,7 @@ class APSW(unittest.TestCase):
                     "tp_traverse",
                     "get_cursor_factory",
                     "set_cursor_factory",
-                    "tp_str",
+                    "tp_repr",
                     "bool",
                 ),
                 "req": {
@@ -6102,7 +6102,7 @@ class APSW(unittest.TestCase):
             },
             "APSWTableChange": {
                 "skip": {
-                    "tp_str",
+                    "tp_repr",
                     "dealloc",
                 },
                 "req": {"scope": "CHECK_TABLE_SCOPE"},
@@ -6119,12 +6119,12 @@ class APSW(unittest.TestCase):
                 "order": ("closed",),
             },
             "APSWBlob": {
-                "skip": ("dealloc", "init", "close", "close_internal", "tp_str", "bool", "aclose"),
+                "skip": ("dealloc", "init", "close", "close_internal", "tp_repr", "bool", "aclose"),
                 "req": {"closed": "CHECK_BLOB_CLOSED"},
                 "order": ("use", "closed"),
             },
             "APSWBackup": {
-                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count", "tp_str", "bool", "aclose"),
+                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count", "tp_repr", "bool", "aclose"),
                 "req": {"closed": "CHECK_BACKUP_CLOSED"},
                 "order": ("use", "closed"),
             },
@@ -6170,7 +6170,7 @@ class APSW(unittest.TestCase):
             },
             "PreUpdate":
             {
-                "skip": ("dealloc", "tp_str", ),
+                "skip": ("dealloc", "tp_repr", ),
                 "req": {"check": "CHECK_PREUPDATE_SCOPE"},
                 "order": ("check",),
             },
@@ -11712,7 +11712,7 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
             backup2,
         )
         for o in objects:
-            self.assertNotEqual(repr(o), str(o))
+            self.assertEqual(repr(o), str(o))
             # issue 501
             if isinstance(o, apsw.URIFilename):
                 self.assertNotEqual(repr(o), urinamestr)

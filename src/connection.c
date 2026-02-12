@@ -6777,7 +6777,7 @@ Connection_tp_traverse(PyObject *self_, visitproc visit, void *arg)
 }
 
 static PyObject *
-Connection_tp_str(PyObject *self_)
+Connection_tp_repr(PyObject *self_)
 {
   Connection *self = (Connection *)self_;
 
@@ -6999,7 +6999,8 @@ static PyTypeObject ConnectionType = {
   .tp_as_number = &Connection_as_number,
   .tp_init = Connection_init,
   .tp_new = PyType_GenericNew,
-  .tp_str = Connection_tp_str,
+  .tp_str = NULL,
+  .tp_repr = Connection_tp_repr,
 };
 
 static PyObject *
@@ -7441,7 +7442,7 @@ PreUpdate_dealloc(PyObject *self)
 }
 
 static PyObject *
-PreUpdate_tp_str(PyObject *self_)
+PreUpdate_tp_repr(PyObject *self_)
 {
   APSWPreUpdate *self = (APSWPreUpdate *)self_;
   if (!self->db)
@@ -7514,7 +7515,8 @@ static PyTypeObject PreUpdateType = {
   .tp_getset = PreUpdate_getset,
   .tp_doc = PreUpdate_class_DOC,
   .tp_dealloc = PreUpdate_dealloc,
-  .tp_str = PreUpdate_tp_str,
+  .tp_str = NULL,
+  .tp_repr = PreUpdate_tp_repr,
 };
 
 #endif

@@ -344,7 +344,7 @@ APSWFTS5Tokenizer_name(PyObject *self_, void *Py_UNUSED(unused))
 }
 
 static PyObject *
-APSWFTS5Tokenizer_tp_str(PyObject *self_)
+APSWFTS5Tokenizer_tp_repr(PyObject *self_)
 {
   APSWFTS5Tokenizer *self = (APSWFTS5Tokenizer *)self_;
   return PyUnicode_FromFormat("<apsw.FTS5Tokenizer object \"%s\" args %S at %p>", self->name, self->args, self);
@@ -381,7 +381,8 @@ static PyTypeObject APSWFTS5TokenizerType = {
   .tp_call = PyVectorcall_Call,
   .tp_vectorcall_offset = offsetof(APSWFTS5Tokenizer, vectorcall),
   .tp_getset = APSWFTS5Tokenizer_getset,
-  .tp_str = APSWFTS5Tokenizer_tp_str,
+  .tp_str = NULL,
+  .tp_repr = APSWFTS5Tokenizer_tp_repr,
 };
 
 typedef struct

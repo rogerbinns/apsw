@@ -457,7 +457,7 @@ APSWBackup_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
 }
 
 static PyObject *
-APSWBackup_tp_str(PyObject *self_)
+APSWBackup_tp_repr(PyObject *self_)
 {
   APSWBackup *self = (APSWBackup *)self_;
   return PyUnicode_FromFormat("<apsw.Backup object from %S to %S at %p>",
@@ -520,5 +520,6 @@ static PyTypeObject APSWBackupType = {
   .tp_members = backup_members,
   .tp_getset = backup_getset,
   .tp_as_number = &backup_as_number,
-  .tp_str = APSWBackup_tp_str,
+  .tp_repr = APSWBackup_tp_repr,
+  .tp_str = NULL,
 };
