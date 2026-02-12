@@ -413,7 +413,7 @@ enable_shared_cache(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ss
 
 /** .. method:: connections() -> list[Connection]
 
-  Returns a list of the connections
+  Returns a list of the open connections
 
 */
 static PyObject *the_connections;
