@@ -923,6 +923,67 @@ class Async(unittest.TestCase):
                 self.assertStartsWith(s, klass_name)
                 self.assertEndsWith(s, addr)
 
+        # get unavailable database name due to mutex being held in another thread
+        scon = apsw.Connection("")
+        e_wait = threading.Event()
+        e_continue = threading.Event()
+
+        def blocker():
+            e_wait.set()
+            e_continue.wait()
+            return 7
+
+        scon.create_scalar_function("blocker", blocker)
+        t = threading.Thread(target=lambda: scon.execute("select blocker()").get)
+        t.start()
+        e_wait.wait()
+        s = get(str(scon))
+        try:
+            self.assertIsNotNone(re.match(r"apsw.Connection \"\(unavailable\)\" at 0x[0-9a-f]+", s))
+        finally:
+            e_continue.set()
+            t.join()
+            scon.close()
+
+        acon = await apsw.Connection.as_async("")
+        e_wait = getattr(sys.modules[fw], "Event")()
+        e_continue = getattr(sys.modules[fw], "Event")()
+
+        async def blocker():
+            e_wait.set()
+            await e_continue.wait()
+            return 7
+
+        await acon.create_scalar_function("blocker", blocker)
+
+        match fw:
+            case "asyncio":
+                task = asyncio.create_task(acon.execute("select blocker()"))
+
+                await e_wait.wait()
+                s = get(str(acon))
+                e_continue.set()
+                await task
+
+            case "trio":
+                async with trio.open_nursery() as nursery:
+                    nursery.start_soon(acon.execute, "select blocker()")
+                    await e_wait.wait()
+                    s = get(str(acon))
+                    e_continue.set()
+
+            case "anyio":
+                async with anyio.create_task_group() as tg:
+                    tg.start_soon(acon.execute, "select blocker()")
+                    await e_wait.wait()
+                    s = get(str(acon))
+                    e_continue.set()
+
+        try:
+            self.assertIsNotNone(re.match(r"apsw.Connection \(async\) \"\(unavailable\)\" at 0x[0-9a-f]+", s))
+        finally:
+            await acon.aclose()
+
     def get_all_atests(self):
         for n in dir(self):
             if "atestA" <= n <= "atestZ":
