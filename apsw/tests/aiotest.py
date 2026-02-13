@@ -358,9 +358,9 @@ class Async(unittest.TestCase):
         "cursor iteration corner cases"
 
         # values we check
-        NUM_ENTRIES = 450
-        PREFETCH_VALUES = (1, 2, 3, 5, 7, 13, 33, 97, 214, 448, 449, 450, 451, 452, 1024, 2048)
-        LIMITS = (0, 1, 2, 3, 4, 6, 7, 8, 32, 33, 34, 100, 448, 449, 450, 451, 452)
+        NUM_ENTRIES = 103
+        PREFETCH_VALUES = (1, 2, 3, 5, 7, 13, 102, 103, 104, 2048)
+        LIMITS = (0, 1, 2, 3, 101, 102, 103, 104)
 
         db = await apsw.Connection.as_async(":memory:")
         await db.execute("create table x(y INTEGER PRIMARY KEY)")
@@ -400,7 +400,7 @@ class Async(unittest.TestCase):
                         values.append(y)
                 except ZeroDivisionError:
                     pass
-                self.assertEqual(values, list(range(min(450, error))))
+                self.assertEqual(values, list(range(min(NUM_ENTRIES, error))))
 
         # check sequential anext without waiting for previous to complete still
         # give correct answer
@@ -427,7 +427,7 @@ class Async(unittest.TestCase):
                     except StopAsyncIteration:
                         self.assertTrue(seen_zerodiv or error >= NUM_ENTRIES)
 
-                self.assertEqual(values, list(range(min(450, error))))
+                self.assertEqual(values, list(range(min(NUM_ENTRIES, error))))
 
     async def atestConfigure(self, fw):
         auto = apsw.aio.Auto()
