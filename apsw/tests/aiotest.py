@@ -9,9 +9,10 @@ import contextvars
 import functools
 import threading
 import unittest
+import tempfile
 import sys
 import inspect
-import time
+import re
 
 import apsw
 import apsw.aio
@@ -791,6 +792,136 @@ class Async(unittest.TestCase):
             [(0, "a red"), (3, "red b")],
             await (await db.execute("select * from vtable_coro where end=2 and foo='red'")).get,
         )
+
+    async def atestStr(self, fw):
+        "ensure async str/repr says that"
+
+        with tempfile.TemporaryDirectory(prefix="apsw-atestStr") as tempd:
+
+            def get(x):
+                # extracts the useful bit
+                return re.match("<(.* at 0x[0-9a-f]+)>", x).group(1)
+
+            class Banana(apsw.Connection):
+                pass
+
+            class BananaCursor(apsw.Cursor):
+                pass
+
+            if hasattr(apsw, "Session"):
+
+                class BananaSession(apsw.Session):
+                    pass
+            else:
+                BananaSession = None
+
+            # the strings we expect in str
+            tag_a = " (async) "
+            tag_aw = " (async: worker thread) "
+            tag_c = " (closed) "
+
+            # starting objects
+            acon = await apsw.Connection.as_async(f"{tempd}/abc")
+            scon = apsw.Connection(f"{tempd}/def")
+            acur = acon.cursor()
+            scur = scon.cursor()
+            await acon.execute(
+                "create table dummy(column);insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');"
+            )
+            scon.execute(
+                "create table dummy(column);insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');"
+            )
+            ablob = await acon.blob_open("main", "dummy", "column", 73, False)
+            sblob = scon.blob_open("main", "dummy", "column", 73, False)
+
+            bacon = await Banana.as_async(f"{tempd}/hij")
+            bscon = Banana(f"{tempd}/klmn")
+            bacon.cursor_factory = BananaCursor
+            bacur = bacon.cursor()
+            bscon.cursor_factory = BananaCursor
+            bscur = bscon.cursor()
+
+            sbackup = bscon.backup("main", scon, "main")
+            abackup = await bacon.backup("main", scon, "main")
+
+            to_test = [
+                (sblob, ablob, acon.async_run, "apsw.Blob"),
+                (scur, acur, acon.async_run, "apsw.Cursor"),
+                (bscur, bacur, bacon.async_run, "BananaCursor"),
+                (sbackup, abackup, bacon.async_run, "apsw.Backup"),
+            ]
+
+            if BananaSession:
+                ssession = apsw.Session(scon, "main")
+                asession = await apsw.aio.make_session(acon, "main")
+                bssession = BananaSession(bscon, "main")
+                basession = await acon.async_run(BananaSession, acon, "main")
+
+                to_test.extend(
+                    (
+                        (ssession, asession, acon.async_run, "apsw.Session"),
+                        (bssession, basession, acon.async_run, "BananaSession"),
+                    )
+                )
+
+            to_test.extend(
+                (
+                    (scon, acon, acon.async_run, "apsw.Connection"),
+                    (bscon, bacon, bacon.async_run, "Banana"),
+                )
+            )
+
+            for sobj, aobj, async_run, klass_name in to_test:
+                # sync object
+                s = get(str(sobj))
+                addr = f" at {hex(id(sobj))}"
+                self.assertNotIn(" object ", s)
+                self.assertNotIn(tag_a, s)
+                self.assertNotIn(tag_c, s)
+                self.assertNotIn(tag_aw, s)
+                self.assertStartsWith(s, klass_name)
+                self.assertEndsWith(s, addr)
+
+                # async object in event loop
+                s = get(str(aobj))
+                addr = f" at {hex(id(aobj))}"
+                self.assertNotIn(" object ", s)
+                self.assertIn(tag_a, s)
+                self.assertNotIn(tag_c, s)
+                self.assertNotIn(tag_aw, s)
+                self.assertStartsWith(s, klass_name)
+                self.assertEndsWith(s, addr)
+
+                # async object in worker thread
+                s = get(await async_run(lambda: str(aobj)))
+                addr = f" at {hex(id(aobj))}"
+                self.assertNotIn(" object ", s)
+                self.assertNotIn(tag_a, s)
+                self.assertNotIn(tag_c, s)
+                self.assertIn(tag_aw, s)
+                self.assertStartsWith(s, klass_name)
+                self.assertEndsWith(s, addr)
+
+                # after closing
+                sobj.close()
+                addr = f" at {hex(id(sobj))}"
+                s = get(str(sobj))
+                self.assertNotIn(" object ", s)
+                self.assertNotIn(tag_a, s)
+                self.assertIn(tag_c, s)
+                self.assertNotIn(tag_aw, s)
+                self.assertStartsWith(s, klass_name)
+                self.assertEndsWith(s, addr)
+
+                aobj.close()
+                s = get(str(aobj))
+                addr = f" at {hex(id(aobj))}"
+                self.assertNotIn(" object ", s)
+                self.assertNotIn(tag_a, s)
+                self.assertIn(tag_c, s)
+                self.assertNotIn(tag_aw, s)
+                self.assertStartsWith(s, klass_name)
+                self.assertEndsWith(s, addr)
 
     def get_all_atests(self):
         for n in dir(self):

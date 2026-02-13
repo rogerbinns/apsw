@@ -460,9 +460,9 @@ static PyObject *
 APSWBackup_tp_repr(PyObject *self_)
 {
   APSWBackup *self = (APSWBackup *)self_;
-  return PyUnicode_FromFormat("<apsw.Backup object from %S to %S at %p>",
-                              self->source ? (PyObject *)self->source : apst.closed,
-                              self->dest ? (PyObject *)self->dest : apst.closed, self);
+  if (self->backup)
+    return PyUnicode_FromFormat("<%s from %S to %S at %p>", Py_TypeName(self_), self->source, self->dest, self);
+  return PyUnicode_FromFormat("<%s (closed) at %p>", Py_TypeName(self_), self_);
 }
 
 static int

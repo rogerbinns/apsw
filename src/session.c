@@ -995,6 +995,19 @@ APSWSession_bool(PyObject *self_)
   return self->session ? 1 : 0;
 }
 
+static PyObject *
+APSWSession_tp_repr(PyObject *self_)
+{
+  APSWSession *self = (APSWSession *)self_;
+  if (self->connection)
+  {
+    assert(self->session);
+    return PyUnicode_FromFormat("<%s of %S at %p>", Py_TypeName(self_), self->connection, self_);
+  }
+  assert(!self->session);
+  return PyUnicode_FromFormat("<%s (closed) at %p>", Py_TypeName(self_), self_);
+}
+
 /** .. class:: TableChange
 
   Represents a `changed row
@@ -1356,7 +1369,7 @@ APSWTableChange_tp_repr(PyObject *self_)
 {
   APSWTableChange *self = (APSWTableChange *)self_;
   if (!self->iter)
-    return PyUnicode_FromFormat("<apsw.TableChange out of scope, at %p>", self);
+    return PyUnicode_FromFormat("<%s out of scope, at %p>", Py_TypeName(self_), self);
 
   PyObject *op = NULL, *old = NULL, *new_vals = NULL, *conflict = NULL, *pk_columns = NULL, *fk_conflicts = NULL;
 
@@ -1375,10 +1388,11 @@ APSWTableChange_tp_repr(PyObject *self_)
   PyObject *res = NULL;
 
   if (fk_conflicts)
-    res = PyUnicode_FromFormat("<apsw.TableChange name=\"%s\", column_count=%d, pk_columns=%S, operation=%U, "
+    res = PyUnicode_FromFormat("<%s name=\"%s\", column_count=%d, pk_columns=%S, operation=%U, "
                                "indirect=%S, old=%S, new=%S, conflict=%S, fk_conflicts=%S, at %p>",
-                               self->table_name ? self->table_name : "(NULL)", self->table_column_count, pk_columns, op,
-                               (self->indirect) ? Py_True : Py_False, old, new_vals, conflict, fk_conflicts, self);
+                               Py_TypeName(self_), self->table_name ? self->table_name : "(NULL)",
+                               self->table_column_count, pk_columns, op, (self->indirect) ? Py_True : Py_False, old,
+                               new_vals, conflict, fk_conflicts, self);
 
   Py_XDECREF(op);
   Py_XDECREF(old);
@@ -2516,6 +2530,8 @@ static PyTypeObject APSWSessionType = {
   .tp_as_number = &APSWSession_as_number,
   .tp_weaklistoffset = offsetof(APSWSession, weakreflist),
   .tp_traverse = APSWSession_tp_traverse,
+  .tp_str = NULL,
+  .tp_repr = APSWSession_tp_repr,
 };
 
 static PyMethodDef APSWChangeset_methods[] = {

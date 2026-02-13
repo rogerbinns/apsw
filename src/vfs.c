@@ -1908,11 +1908,11 @@ APSWVFS_tp_repr(PyObject *self_)
 {
   APSWVFS *self = (APSWVFS *)self_;
   if (!self->containingvfs)
-    return PyUnicode_FromFormat("<apsw.VFS object at %p>", self);
+    return PyUnicode_FromFormat("<%s object at %p>", Py_TypeName(self_), self);
   if (self->basevfs)
-    return PyUnicode_FromFormat("<apsw.VFS object \"%s\" inherits from \"%s\" at %p>", self->containingvfs->zName,
-                                self->basevfs->zName, self);
-  return PyUnicode_FromFormat("<apsw.VFS object \"%s\" at %p>", self->containingvfs->zName, self);
+    return PyUnicode_FromFormat("<%s \"%s\" inherits from \"%s\" at %p>", Py_TypeName(self_),
+                                self->containingvfs->zName, self->basevfs->zName, self);
+  return PyUnicode_FromFormat("<%s \"%s\" at %p>", Py_TypeName(self_), self->containingvfs->zName, self);
 }
 
 static PyMethodDef APSWVFS_methods[] = {
@@ -3001,8 +3001,8 @@ static PyObject *
 APSWVFSFile_tp_repr(PyObject *self_)
 {
   APSWVFSFile *self = (APSWVFSFile *)self_;
-  return PyUnicode_FromFormat("<apsw.VFSFile object filename \"%s\" at %p>", self->filename ? self->filename : "(nil)",
-                              self);
+  return PyUnicode_FromFormat("<%s filename \"%s\" at %p>", Py_TypeName(self_),
+                              self->filename ? self->filename : "(nil)", self);
 }
 
 #define APSWPROXYBASE                                                                                                  \
@@ -3269,8 +3269,8 @@ apswurifilename_tp_repr(PyObject *self_)
   APSWURIFilename *self = (APSWURIFilename *)self_;
   /* CHECK_SCOPE not needed since we manually check */
   if (!self->filename)
-    return PyUnicode_FromFormat("<apsw.URIFilename object (out of scope) at %p>", self);
-  return PyUnicode_FromFormat("<apsw.URIFilename object \"%s\" at %p>", self->filename, self);
+    return PyUnicode_FromFormat("<%s (out of scope) at %p>", Py_TypeName(self_), self);
+  return PyUnicode_FromFormat("<%s \"%s\" at %p>", Py_TypeName(self_), self->filename, self);
 }
 
 static PyMethodDef APSWURIFilenameMethods[]

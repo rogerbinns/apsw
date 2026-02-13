@@ -2439,8 +2439,9 @@ static PyObject *
 APSWCursor_tp_repr(PyObject *self_)
 {
   APSWCursor *self = (APSWCursor *)self_;
-  return PyUnicode_FromFormat("<apsw.Cursor object from %S at %p>",
-                              self->connection ? (PyObject *)self->connection : apst.closed, self);
+  if (self->connection)
+    return PyUnicode_FromFormat("<%s of %S at %p>", Py_TypeName(self_), (PyObject *)self->connection, self);
+  return PyUnicode_FromFormat("<%s (closed) at %p>", Py_TypeName(self_), self);
 }
 
 static int

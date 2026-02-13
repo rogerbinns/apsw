@@ -6094,6 +6094,7 @@ class APSW(unittest.TestCase):
                     "get_change_patch_set",
                     "get_change_patch_set_stream",
                     "dealloc",
+                    "tp_repr",
                     "tp_traverse",
                     "bool",
                 },
@@ -7341,10 +7342,13 @@ class APSW(unittest.TestCase):
                 self.basevfs = basevfs
                 apsw.VFS.__init__(self, self.vfsname, self.basevfs, exclude=None)
 
-            def xOpen(self, name, flags):
-                return ObfuscatedVFSFile(self.basevfs, name, flags)
+            def xOpen(innerself, name, flags):
+                x=ObfuscatedVFSFile(innerself.basevfs, name, flags)
+                self.assertIsNotNone(re.match("<ObfuscatedVFSFile filename \".*\" at 0x[a-f0-9]+>", str(x)))
+                return x
 
         vfs = ObfuscatedVFS()
+        self.assertIsNotNone(re.match("<ObfuscatedVFS \"obfu\" inherits from \".*\" at 0x[0-9a-f]+>", str(vfs)))
 
         query = "create table foo(x,y); insert into foo values(1,2); insert into foo values(3,4)"
         self.db.cursor().execute(query)

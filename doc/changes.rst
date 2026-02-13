@@ -10,6 +10,17 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+async
+=====
+
+Comprehensive async support TODO TODO TODO
+
+Regularised str and repr for APSW objects:
+
+* str and repr return the same value
+* async and closed are indicated
+* Subclasses name are used
+
 3.51.2.0
 ========
 

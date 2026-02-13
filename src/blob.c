@@ -85,7 +85,7 @@ static PyObject *
 ZeroBlobBind_tp_repr(PyObject *self_)
 {
   ZeroBlobBind *self = (ZeroBlobBind *)self_;
-  return PyUnicode_FromFormat("<apsw.zeroblob object size %lld at %p>", self->blobsize, self);
+  return PyUnicode_FromFormat("<%s size %lld at %p>", Py_TypeName(self_), self->blobsize, self);
 }
 
 static PyMethodDef ZeroBlobBind_methods[]
@@ -769,8 +769,10 @@ static PyObject *
 APSWBlob_tp_repr(PyObject *self_)
 {
   APSWBlob *self = (APSWBlob *)self_;
-  return PyUnicode_FromFormat("<apsw.Blob object from %S at %p>",
-                              self->connection ? (PyObject *)self->connection : apst.closed, self);
+  if (self->pBlob)
+    return PyUnicode_FromFormat("<%s pos %d / %d, of %S at %p>", Py_TypeName(self_), self->curoffset,
+                                sqlite3_blob_bytes(self->pBlob), (PyObject *)self->connection, self);
+  return PyUnicode_FromFormat("<%s (closed) at %p>", Py_TypeName(self_), self);
 }
 
 static int

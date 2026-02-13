@@ -6781,22 +6781,30 @@ Connection_tp_repr(PyObject *self_)
 {
   Connection *self = (Connection *)self_;
 
-  int is_async = !!self->async_controller;
+  if (!self->dbmutex)
+    return PyUnicode_FromFormat("<%s (closed) at %p>", Py_TypeName(self_), self_);
 
-  if (self->dbmutex)
+  PyObject *res;
+  int try_res;
+
+  if (self->async_controller)
   {
-    if (IN_WORKER_THREAD(self))
-    {
-      DBMUTEX_ENSURE(self);
-      PyObject *res = PyUnicode_FromFormat("<apsw.%sConnection object \"%s\" at %p>", is_async ? "Async" : "",
-                                           sqlite3_db_filename(self->db, "main"), self);
+    try_res = sqlite3_mutex_try(self->dbmutex);
+    res = PyUnicode_FromFormat("<%s (async%s) \"%s\" at %p>", Py_TypeName(self_),
+                               IN_WORKER_THREAD(self) ? ": worker thread" : "",
+                               (SQLITE_OK == try_res) ? sqlite3_db_filename(self->db, "main") : "(unavailable)", self);
+    if (SQLITE_OK == try_res)
       sqlite3_mutex_leave(self->dbmutex);
-      return res;
-    }
-    return PyUnicode_FromFormat("<apsw.AsyncConnection object (not worker thread) at %p>", self);
+    return res;
   }
 
-  return PyUnicode_FromFormat("<apsw.Connection object (closed) at %p>", self);
+  try_res = sqlite3_mutex_try(self->dbmutex);
+  res = PyUnicode_FromFormat("<%s \"%s\" at %p>", Py_TypeName(self_),
+                             (SQLITE_OK == try_res) ? sqlite3_db_filename(self->db, "main") : "(unavailable)", self);
+  if (SQLITE_OK == try_res)
+    sqlite3_mutex_leave(self->dbmutex);
+
+  return res;
 }
 
 static int
@@ -7446,7 +7454,7 @@ PreUpdate_tp_repr(PyObject *self_)
 {
   APSWPreUpdate *self = (APSWPreUpdate *)self_;
   if (!self->db)
-    return PyUnicode_FromFormat("<apsw.PreUpdate out of scope, at %p>", self);
+    return PyUnicode_FromFormat("<%s out of scope, at %p>", Py_TypeName(self_), self);
 
   PyObject *op = NULL, *depth = NULL, *blob_write = NULL, *vals = NULL;
 
@@ -7477,11 +7485,11 @@ PreUpdate_tp_repr(PyObject *self_)
   PyObject *res = NULL;
 
   if (vals)
-    res = PyUnicode_FromFormat("<apsw.PreUpdate op=%U, database=\"%s\", table=\"%s\", depth=%S, "
+    res = PyUnicode_FromFormat("<%s op=%U, database=\"%s\", table=\"%s\", depth=%S, "
                                "column_count=%d, rowid=%lld, rowid_new=%lld, blob_write=%S, %s=%S "
                                "at %p>",
-                               op, self->zDb, self->zName, depth, self->column_count, self->iKey1, self->iKey2,
-                               blob_write, label, vals, self);
+                               Py_TypeName(self_), op, self->zDb, self->zName, depth, self->column_count, self->iKey1,
+                               self->iKey2, blob_write, label, vals, self);
 
   Py_XDECREF(op);
   Py_XDECREF(depth);
