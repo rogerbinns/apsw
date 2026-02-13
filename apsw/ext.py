@@ -1145,7 +1145,7 @@ class ShowResourceUsage:
         if self.scope:
             self._usage = self._get_resource(self._get_resource_param[self.scope])
         if self.db:
-            return await self.db.async_run(lambda: self.db_enter())
+            return await self.db.async_run(self.db_enter)
         return self
 
     def _sqlite_trace(self, v):
@@ -1176,7 +1176,7 @@ class ShowResourceUsage:
 
         times = time.process_time(), time.monotonic()
         usage = self._get_resource(self._get_resource_param[self.scope]) if self.scope else None
-        status_vals = await self.db.async_run(lambda: self.db_exit()) if self.db else None
+        status_vals = await self.db.async_run(self.db_exit) if self.db else None
 
         self.format_output(times, usage, status_vals)
 

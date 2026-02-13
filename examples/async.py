@@ -329,14 +329,13 @@ async def worker_thread():
     # always close database
     async with contextlib.aclosing(db):
         # Do the upgrade
-        await db.async_run(lambda: schema_upgrade(db))
+        await db.async_run(schema_upgrade, db)
 
         # This is doing one operation
         await db.async_run(
-            lambda: db.execute(
-                "INSERT INTO products(id, name) VALUES(?,?)",
-                (37, "Banana"),
-            )
+            db.execute,
+            "INSERT INTO products(id, name) VALUES(?,?)",
+            (37, "Banana"),
         )
 
         # Getting a result
@@ -357,13 +356,9 @@ async def worker_thread():
         print(f"Dump is {len(dump)} chars starting {repr(dump):.40}")
 
         # Some stuff from apsw.ext
-        usage = await db.async_run(
-            lambda: apsw.ext.analyze_pages(db, 2)
-        )
+        usage = await db.async_run(apsw.ext.analyze_pages, db, 2)
         details = await db.async_run(
-            lambda: apsw.ext.query_info(
-                db, "SELECT * FROM sqlite_schema"
-            )
+            apsw.ext.query_info, db, "SELECT * FROM sqlite_schema"
         )
 
 
@@ -621,7 +616,7 @@ async def backup():
                     f"page_count = {backup.page_count} remaining = {backup.remaining}"
                 )
 
-    await async_source.async_run(lambda: do_backup())
+    await async_source.async_run(do_backup)
 
     # ensure connections get closed
     await async_source.aclose()
@@ -644,33 +639,32 @@ async def fts():
     async with contextlib.aclosing(db):
         if not await db.table_exists("main", "search"):
             search_table: apsw.fts5.Table = await db.async_run(
-                lambda: apsw.fts5.Table.create(
-                    db,
-                    "search",
-                    content="recipes",
-                    columns=None,
-                    generate_triggers=True,
-                    tokenize=[
-                        "simplify",
-                        "casefold",
-                        "true",
-                        "strip",
-                        "true",
-                        "strip",
-                        "true",
-                        "unicodewords",
-                    ],
-                )
+                apsw.fts5.Table.create,
+                db,
+                "search",
+                content="recipes",
+                columns=None,
+                generate_triggers=True,
+                tokenize=[
+                    "simplify",
+                    "casefold",
+                    "true",
+                    "strip",
+                    "true",
+                    "strip",
+                    "true",
+                    "unicodewords",
+                ],
             )
         else:
             search_table: apsw.fts5.Table = await db.async_run(
-                lambda: apsw.fts5.Table(db, "search")
+                apsw.fts5.Table, db, "search"
             )
 
         # property access
         print(
             "row_count =",
-            await db.async_run(lambda: search_table.row_count),
+            await db.async_run(getattr, search_table, "row_count"),
         )
 
         # we need to do search processing in the worker thread
@@ -683,7 +677,7 @@ async def fts():
             return matches
 
         for match in await db.async_run(
-            lambda: search_processing("lemon OR guava", 10)
+            search_processing, "lemon OR guava", 10
         ):
             pprint(match)
             break
@@ -691,7 +685,7 @@ async def fts():
         print(
             "First match name is",
             await db.async_run(
-                lambda: search_table.row_by_id(match.rowid, "name")
+                search_table.row_by_id, match.rowid, "name"
             ),
         )
 
@@ -700,9 +694,7 @@ async def fts():
         print(
             query,
             "=>",
-            await db.async_run(
-                lambda: search_table.query_suggest(query)
-            ),
+            await db.async_run(search_table.query_suggest, query),
         )
 
 
