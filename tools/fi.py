@@ -30,10 +30,7 @@ testing_recursion = False
 def file_cleanup():
     if "apsw" in sys.modules:
         for c in sys.modules["apsw"].connections():
-            if c.is_async:
-                c.async_run(lambda: c.close(True))
-            else:
-                c.close(True)
+            c.close(True)
     for f in glob.glob(f"{tmpdir.name}/*"):
         os.remove(f)
 
@@ -930,7 +927,9 @@ class Tester:
         # ('PyUnicode_AsUTF8AndSize', 'src/apsw.c', 'apsw_unregister_vfs', 1796, 'useargs[argp_optindex], &sz')
         if testing_recursion and key[2] in {"apsw_write_unraisable", "apswvfs_excepthook"}:
             return self.Proceed
-        if key[2] == "apsw_leak_check":
+        # failing module get/setattr leads to claims the module isn't
+        # a module because it has missing __path__ and similar
+        if key[2] == "apsw_leak_check" or key[2] == "apsw_module_getattr" or key[2] == "apsw_module_setattr":
             return self.Proceed
         if key[0] == 'PyObject_VectorcallMethod_NoAsync' and key[2]=="async_shutdown_controller":
             # we can't fail this otherwise the worker thread keeps running forever
@@ -1107,6 +1106,7 @@ class Tester:
             with self:
                 try:
                     if complete:
+                        file_cleanup()
                         # we do this at the very end with shutdown being terminal
                         sys.modules["apsw"].shutdown()
                     else:
@@ -1127,10 +1127,7 @@ class Tester:
                         self.abort = 0
                     if "apsw" in sys.modules:
                         for c in sys.modules["apsw"].connections():
-                            if c.is_async:
-                                c.async_run(lambda: c.close(True))
-                            else:
-                                c.close()
+                            c.close()
                     gc.collect()
                     if "apsw" in sys.modules and hasattr(sys.modules["apsw"], "leak_check"):
                         res = getattr(sys.modules["apsw"], "leak_check")()
@@ -1138,6 +1135,8 @@ class Tester:
                             input("Leaks found, return to continue> ")
 
             self.verify_exception(self.faulted_this_round)
+            if any(thread is not main_thread and not thread.daemon for thread in threading.enumerate()):
+                sys.exit("Thread leak: " + str(list(threading.enumerate())))
 
         if complete:
             print("\nAll faults exercised")
