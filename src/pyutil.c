@@ -394,9 +394,12 @@ PyObject_Vectorcall_NoAsync(PyObject *callable, PyObject *const *args, size_t na
 #define PyObject_Vectorcall PyObject_Vectorcall_AutoAsync
 
 #if PY_VERSION_HEX < 0x030e0000
+#undef PyImport_ImportModuleAttr
 static PyObject *
 PyImport_ImportModuleAttr(PyObject *mod_name, PyObject *attr_name)
 {
+#include "faultinject.h"
+
   PyObject *mod = PyImport_Import(mod_name), *attr = NULL;
   if(mod)
     attr = PyObject_GetAttr(mod, attr_name);
