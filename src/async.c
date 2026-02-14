@@ -122,51 +122,55 @@ BoxedCall_dealloc(PyObject *self)
 static PyObject *
 BoxedCall_internal_call(BoxedCall *self)
 {
-  PyObject *result = NULL;
-
-  if (0 != PyContext_Enter(self->context))
-    return NULL;
-
   assert(self->call_type != Dormant);
 
-  switch (self->call_type)
+  PyObject *result = NULL;
+
+  if (0 == PyContext_Enter(self->context))
   {
-  case ConnectionInit:
-    if (0
-        == Py_TYPE(self->ConnectionInit.connection)
-               ->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, self->ConnectionInit.kwargs))
-      result = Py_NewRef(self->ConnectionInit.connection);
-    else
-      /* this causes close on init failure so threads don't get leaked */
-      Py_DECREF(self->ConnectionInit.connection);
-    break;
-  case FastCallWithKeywords:
-    result = self->FastCallWithKeywords.function(self->FastCallWithKeywords.object,
-                                                 self->FastCallWithKeywords.fast_args + 1,
-                                                 self->FastCallWithKeywords.fast_nargs | PY_VECTORCALL_ARGUMENTS_OFFSET,
-                                                 self->FastCallWithKeywords.fast_kwnames);
-    break;
-  case Unary:
-    result = self->Unary.function(self->Unary.arg);
-    break;
 
-  case Binary:
-    result = self->Binary.function(self->Binary.args[0], self->Binary.args[1]);
-    break;
+    switch (self->call_type)
+    {
+    case ConnectionInit:
+      if (0
+          == Py_TYPE(self->ConnectionInit.connection)
+                 ->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, self->ConnectionInit.kwargs))
+        result = Py_NewRef(self->ConnectionInit.connection);
+      break;
+    case FastCallWithKeywords:
+      result = self->FastCallWithKeywords.function(
+          self->FastCallWithKeywords.object, self->FastCallWithKeywords.fast_args + 1,
+          self->FastCallWithKeywords.fast_nargs | PY_VECTORCALL_ARGUMENTS_OFFSET,
+          self->FastCallWithKeywords.fast_kwnames);
+      break;
+    case Unary:
+      result = self->Unary.function(self->Unary.arg);
+      break;
 
-  case AttrGet:
-    result = self->AttrGet.function(self->AttrGet.arg1, self->AttrGet.arg2);
-    break;
+    case Binary:
+      result = self->Binary.function(self->Binary.args[0], self->Binary.args[1]);
+      break;
 
-  case Dormant:
-    Py_UNREACHABLE();
+    case AttrGet:
+      result = self->AttrGet.function(self->AttrGet.arg1, self->AttrGet.arg2);
+      break;
+
+    case Dormant:
+      Py_UNREACHABLE();
+    }
+
+    PyContext_Exit(self->context);
   }
-
-  PyContext_Exit(self->context);
 
   if (!result && PyErr_Occurred() && !PyErr_ExceptionMatches(PyExc_StopAsyncIteration)
       && !PyErr_ExceptionMatches(PyExc_StopIteration))
+  {
+    if (self->call_type == ConnectionInit)
+      /* this causes close on init failure so threads don't get leaked */
+      Py_DECREF(self->ConnectionInit.connection);
+
     AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.BoxedCall.__call__", "{s:i}", "call_type", (int)self->call_type);
+  }
 
   BoxedCall_clear((PyObject *)self);
 
