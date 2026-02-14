@@ -813,7 +813,7 @@ apswvfs_xDlOpen(sqlite3_vfs *vfs, const char *zName)
   {
     if (PyLong_Check(pyresult) && PyLong_AsDouble(pyresult) >= 0)
       result = PyLong_AsVoidPtr(pyresult);
-    else
+    else if (!PyErr_Occurred())
       PyErr_Format(PyExc_TypeError, "Pointer returned must be int and non-negative");
   }
   if (PyErr_Occurred())
