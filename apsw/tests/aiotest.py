@@ -61,7 +61,7 @@ class Async(unittest.TestCase):
         x = lambda: 3
         apsw.async_run_coro = x
         self.assertIs(apsw.async_run_coro, x)
-
+        self.assertRaises(TypeError, setattr, apsw, "async_run_coro", 3+4j)
         res = []
         def check():
             res.append(apsw.async_run_coro)
