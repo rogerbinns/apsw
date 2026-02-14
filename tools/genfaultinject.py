@@ -110,7 +110,11 @@ returns = {
             PyUnicode_AsUTF8AndSize PyUnicode_AsUTF8String PyUnicode_DecodeUTF8
             PyUnicode_FromFormat PyUnicode_FromKindAndData PyUnicode_FromString
             PyUnicode_FromStringAndSize  PyUnicode_New PyWeakref_GetObject PyWeakref_NewRef Py_BuildValue
-            Py_VaBuildValue _PyObject_New
+            Py_VaBuildValue _PyObject_New PyContextVar_New PyImport_ImportModuleAttr
+            PyImport_Import PyContext_CopyCurrent PyDict_GetItemWithError
+            PyLong_FromUnicodeObject PyLong_FromUnsignedLong PyMapping_Items
+            PyObject_CallNoArgs  PyObject_GenericGetAttr
+
 
             realloc
 
@@ -185,7 +189,10 @@ returns = {
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
         PyStructSequence_InitType2 PyList_Size PyLong_AsInt
         PyList_SetItem PyList_Sort PySet_Contains PyObject_IsInstance
-        PyMapping_Size PySet_Discard
+        PyMapping_Size PySet_Discard PyModule_AddObjectRef
+        PyContext_Enter PyContextVar_Get PyLong_AsDouble
+        PyModule_AddFunctions PyObject_GenericSetAttr
+        PyObject_RichCompareBool
 
         PyObject_GetBufferContiguous PyObject_GetBuffer PyObject_GetBufferContiguousBounded
         _PyTuple_Resize
@@ -226,6 +233,9 @@ no_error = set(
     PyThreadState_Get PyThread_get_thread_ident PyTraceBack_Here
     PyType_IsSubtype PyUnicode_CopyCharacters  _Py_Dealloc
     _Py_HashBytes _Py_NegativeRefcount _Py_RefTotal PyThreadState_GetFrame
+    PyDict_Next PyErr_DisplayException PyErr_FormatV PyErr_GetRaisedException
+    PyErr_SetNone PyErr_SetRaisedException PyObject_Free
+    PyUnicode_InternInPlace
 """.split()
 )
 
@@ -234,10 +244,11 @@ no_error = set(
 no_error.update(
     """PyArg_ParseTuple PyBytes_AsString PyErr_GivenExceptionMatches PyFrame_GetBack
     PyImport_ImportModule PyLong_AsLongAndOverflow PyLong_AsVoidPtr
-    PyObject_IsInstance PySys_GetObject PyErr_ExceptionMatches
+    PySys_GetObject PyErr_ExceptionMatches
     PyErr_SetString PyStructSequence_SetItem PyObject_Print
     Py_GetRecursionLimit Py_LeaveRecursiveCall Py_SetRecursionLimit _PyErr_ChainExceptions
-
+    PyBuffer_IsContiguous PyContext_Exit PyList_SetSlice
+    PyObject_GetAttrString PyThreadState_GetDict PyType_GetQualName PyUnicode_FromFormatV
 """.split()
 )
 
