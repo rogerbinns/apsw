@@ -130,7 +130,7 @@ returns = {
             sqlite3_backup_finish sqlite3_backup_init
             sqlite3_backup_step sqlite3_bind_blob sqlite3_bind_blob64
             sqlite3_bind_double sqlite3_bind_int sqlite3_bind_int64
-            sqlite3_carray_bind sqlite3_carray_bind_apsw
+            sqlite3_carray_bind sqlite3_carray_bind_apsw sqlite3_carray_bind_v2
             sqlite3_bind_null sqlite3_bind_pointer sqlite3_bind_text
             sqlite3_bind_text64 sqlite3_bind_value
             sqlite3_bind_zeroblob sqlite3_bind_zeroblob64
