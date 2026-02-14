@@ -4,14 +4,10 @@
             "afinish"
         ],
         "sync": [
-            "close",
             "finish"
         ]
     },
     "Blob": {
-        "sync": [
-            "close"
-        ],
         "value": [
             "length",
             "seek",
@@ -33,7 +29,6 @@
             "filename_wal"
         ],
         "sync": [
-            "close",
             "vtab_config",
             "vtab_on_conflict"
         ],
@@ -64,9 +59,6 @@
             "get",
             "sql"
         ],
-        "sync": [
-            "close"
-        ],
         "value": [
             "get_connection",
             "get_exec_trace",
@@ -80,9 +72,6 @@
             "enabled",
             "indirect",
             "is_empty"
-        ],
-        "sync": [
-            "close"
         ],
         "value": [
             "config",

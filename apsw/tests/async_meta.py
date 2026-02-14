@@ -83,7 +83,7 @@ def is_method(object, name):
 class AsyncMeta(unittest.TestCase):
     def tearDown(self):
         for c in apsw.connections():
-            c.close()
+            c.close(True)
 
     def classifyOne(self, send, is_attr, object, klass, member, value=None):
         # send is None for async access, callable for sync
