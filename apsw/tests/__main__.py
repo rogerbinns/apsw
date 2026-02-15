@@ -508,6 +508,7 @@ class APSW(unittest.TestCase):
             called = []
 
             def ehook(*args):
+                str(args)
                 if len(args) == 1:
                     t = args[0].exc_type
                     v = args[0].exc_value
