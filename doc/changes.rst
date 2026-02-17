@@ -10,6 +10,12 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.52.0.0
+--------
+
+Fix wrapping, indents. and space for hyphens in
+:func:`apsw.unicode.text_wrap` under various conditions (:issue:`600`)
+
 3.51.2.0
 ========
 
