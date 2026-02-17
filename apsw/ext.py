@@ -2055,13 +2055,25 @@ def _format_table(
         )
 
     # break headers and cells into lines
-    def wrap(text: str, width: int) -> list[str]:
-        return list(apsw.unicode.text_wrap(text, width)) or [""]
+    def wrap(text: str, width: int, justify: apsw.unicode.Justify, hyphen: str) -> list[str]:
+        return list(apsw.unicode.text_wrap(text, width, justify=justify, hyphen=hyphen)) or [""]
 
-    colnames = [wrap(colnames[i], colwidths[i]) for i in range(len(colwidths))]  # type: ignore
+    # special formatting
+    formats = {
+        int: {"justify": apsw.unicode.Justify.RIGHT, "hyphen": ""},
+        float: {"justify": apsw.unicode.Justify.LEFT, "hyphen": ""},
+        "header": {"justify": apsw.unicode.Justify.CENTER, "hyphen": "-"},
+        "_": {"justify": apsw.unicode.Justify.LEFT, "hyphen": "-"},
+    }
+
+    colnames = [wrap(colnames[i], colwidths[i], **formats["header"]) for i in range(len(colwidths))]  # type: ignore
+
     for row in rows:
         for i, (text, t) in enumerate(row):  # type: ignore[misc]
-            row[i] = (wrap(text, colwidths[i]), t)  # type: ignore
+            row[i] = (
+                wrap(text, colwidths[i], **formats.get(t, formats["_"])),
+                t,
+            )  # type: ignore
 
     ## output
     # are any cells more than one line?
@@ -2085,29 +2097,22 @@ def _format_table(
                 line += chars[2]
         out_lines.append(line)
 
-    def do_row(row, sep: str, *, centre: bool = False, header: bool = False) -> None:
+    def do_row(row, sep: str, *, header: bool = False) -> None:
         for n in range(max(len(cell[0]) for cell in row)):
             line = sep
             for i, (cell, t) in enumerate(row):
-                text = cell[n] if n < len(cell) else ""
-                text = " " + text.rstrip() + " "
-                lt = apsw.unicode.text_width(text)
-                extra = " " * max(colwidths[i] + 2 - lt, 0)
-                if centre:
-                    lpad = extra[: len(extra) // 2]
-                    rpad = extra[len(extra) // 2 :]
-                else:
-                    lpad = ""
-                    rpad = extra
+                text = cell[n] if n < len(cell) else " " * colwidths[i]
+                # we do a space on each side
+                text = " " + text + " "
                 if header:
-                    text = colour_wrap(lpad + text + rpad, None, header=True)
+                    text = colour_wrap(text, None, header=True)
                 else:
-                    text = lpad + colour_wrap(text, t) + rpad
+                    text = colour_wrap(text, t)
                 line += text + sep
             out_lines.append(line)
 
     do_bar("╭─┬╮" if use_unicode else "+-++")
-    do_row([(c, None) for c in colnames], "│" if use_unicode else "|", centre=True, header=True)
+    do_row([(c, None) for c in colnames], "│" if use_unicode else "|", header=True)
 
     # rows
     which = 0

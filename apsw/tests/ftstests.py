@@ -2167,6 +2167,65 @@ class Unicode(unittest.TestCase):
             res = list(apsw.unicode.text_wrap(text, width, **args))
             self.assertEqual(res, expected)
 
+    def testWrapJustify(self):
+        "text_wrap justification"
+
+        longer = "a to the four verylongsingleword fivey ytrkes seven77 eightsse"
+
+        J = apsw.unicode.Justify
+        for text, justify, width, expected in (
+            ("hello", J.LEFT, 10, ["hello     "]),
+            ("hello", J.RIGHT, 10, ["     hello"]),
+            ("hello", J.CENTER, 10, ["  hello   "]),
+            (
+                longer,
+                J.LEFT,
+                10,
+                [
+                    "a to the  ",
+                    "four      ",
+                    "verylongs-",
+                    "ingleword ",
+                    "fivey     ",
+                    "ytrkes    ",
+                    "seven77   ",
+                    "eightsse  ",
+                ],
+            ),
+            (
+                longer,
+                J.RIGHT,
+                10,
+                [
+                    "  a to the",
+                    "      four",
+                    "verylongs-",
+                    " ingleword",
+                    "     fivey",
+                    "    ytrkes",
+                    "   seven77",
+                    "  eightsse",
+                ],
+            ),
+            (
+                longer,
+                J.CENTER,
+                10,
+                [
+                    " a to the ",
+                    "   four   ",
+                    "verylongs-",
+                    "ingleword ",
+                    "  fivey   ",
+                    "  ytrkes  ",
+                    " seven77  ",
+                    " eightsse ",
+                ],
+            ),
+        ):
+            res = list(apsw.unicode.text_wrap(text, width, justify=justify))
+            self.assertEqual(res, expected)
+
     def testVersion(self):
         # check we have it in the date list
         self.assertIn(apsw.unicode.unicode_version, apsw.unicode.version_dates)

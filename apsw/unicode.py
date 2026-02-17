@@ -114,6 +114,7 @@ from __future__ import annotations
 
 from typing import Iterator, Iterable, Any
 
+import enum
 import re
 
 ### BEGIN UNICODE UPDATE SECTION ###
@@ -559,6 +560,10 @@ def guess_paragraphs(text: str, tabsize: int = 8) -> str:
     # turn back into newline as the expected delimiter
     return "\n".join(paragraphs) + "\n"
 
+class Justify(enum.Enum):
+    LEFT = 0
+    CENTER = 1
+    RIGHT = 2
 
 def text_wrap(
     text: str,
@@ -568,6 +573,7 @@ def text_wrap(
     hyphen: str = "-",
     combine_space: bool = True,
     invalid: str = "?",
+    justify: Justify = Justify.LEFT
 ) -> Iterator[str]:
     """Similar to :func:`textwrap.wrap` but Unicode grapheme cluster and line break aware
 
@@ -585,6 +591,7 @@ def text_wrap(
           off.
     :param invalid: If invalid codepoints are encountered such as control characters and surrogates
           then they are replaced with this.
+    :param justify: Where to align text within each line
 
     This yields one line of :class:`str` at a time, which will be
     exactly ``width`` when output to a terminal.  It will be right
@@ -596,6 +603,17 @@ def text_wrap(
     text = expand_tabs(text, tabsize, invalid)
 
     hyphen_width = text_width(hyphen)
+
+    def do_justify(line: str, n_spaces: int):
+        match justify:
+            case Justify.LEFT:
+                return line + " " * n_spaces
+            case Justify.RIGHT:
+                return " " * n_spaces + line
+            case Justify.CENTER:
+                l = n_spaces // 2
+                r = n_spaces - l
+                return " " * l + line + " " *r
 
     if hyphen_width:
         # we don't need a hyphen if the text already fits in one line
@@ -664,7 +682,7 @@ def text_wrap(
                     line_width = len(indent)
                     seg_width = text_width(segment)
                     continue
-                yield "".join(accumulated) + " " * (width - line_width)
+                yield do_justify("".join(accumulated), width - line_width)
                 if combine_space and segment[0] == " ":
                     # we added a space, but don't need it on new line
                     segment = segment[1:]
@@ -678,7 +696,7 @@ def text_wrap(
         if len(accumulated) != 1:
             # length 1 means it is only indent which we don't output
             # as last line
-            yield "".join(accumulated) + " " * (width - line_width)
+            yield do_justify("".join(accumulated), width - line_width)
 
 
 def codepoint_name(codepoint: int | str) -> str | None:
