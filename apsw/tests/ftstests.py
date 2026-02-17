@@ -2097,6 +2097,139 @@ class Unicode(unittest.TestCase):
             if age is not None:
                 self.assertIn(age, apsw.unicode.version_dates)
 
+    def testIssue600(self):
+        "wrap when indent is greater than width"
+
+        # we reduce the indent to be less than the width, and
+        # leave space for a hyphen, but that causes various
+        # edge cases like unnecessary space when it all fits
+        # on one line anyway.  the tests below use digits because
+        # that is how the original report came in
+
+        # the original problem
+        con = apsw.Connection("")
+        text = apsw.ext.format_query_table(
+            con, "select printf('%,6d', column1) as x from (values(1), (2), (10), (100), (1000))", use_unicode=False
+        )
+        self.assertEqual(
+            text, "+--------+\n|   x    |\n|      1 |\n|      2 |\n|     10 |\n|    100 |\n|  1,000 |\n+--------+\n"
+        )
+
+        # various edge cases
+        for text, width, args, expected in (
+            ("          ", 3, {}, []),
+            (" 1       2", 4, {}, [" 1 2"]),
+            ("  123456789", 4, {}, ["  1-", "  2-", "  3-", "  4-", "  5-", "  6-", "  7-", "  89"]),
+            ("  123456789", 4, {"hyphen": ""}, ["  12", "  34", "  56", "  78", "  9 "]),
+            ("  123456789", 4, {"hyphen": "--"}, [" 1--", " 2--", " 3--", " 4--", " 5--", " 6--", " 789"]),
+            ("   123456789", 4, {}, ["  1-", "  2-", "  3-", "  4-", "  5-", "  6-", "  7-", "  89"]),
+            (
+                "   123456789",
+                4,
+                {"hyphen": ""},
+                ["   1", "   2", "   3", "   4", "   5", "   6", "   7", "   8", "   9"],
+            ),
+            ("   123456789", 4, {"hyphen": "--"}, [" 1--", " 2--", " 3--", " 4--", " 5--", " 6--", " 789"]),
+            ("    123456789", 4, {}, ["  1-", "  2-", "  3-", "  4-", "  5-", "  6-", "  7-", "  89"]),
+            (
+                "    123456789",
+                4,
+                {"hyphen": ""},
+                ["   1", "   2", "   3", "   4", "   5", "   6", "   7", "   8", "   9"],
+            ),
+            ("    123456789", 4, {"hyphen": "--"}, [" 1--", " 2--", " 3--", " 4--", " 5--", " 6--", " 789"]),
+            (" 1       2", 4, {"combine_space": False}, [" 1 -", "   -", "   -", "   2"]),
+            (" 1       2", 4, {}, [" 1 2"]),
+            (
+                "   1   2   3   4",
+                3,
+                {"combine_space": False},
+                ["   ", " 1-", "  -", "   ", " 2-", "  -", "   ", " 3-", "  -", "   ", " 4 "],
+            ),
+            ("   1", 3, {}, ["  1"]),
+            ("   1", 3, {"hyphen": ""}, ["  1"]),
+            ("   1", 3, {"hyphen": "--"}, ["  1"]),
+            ("   1", 3, {"hyphen": "---"}, ["  1"]),
+            ("   12", 3, {}, [" 1-", " 2 "]),
+            ("   12", 3, {"hyphen": ""}, ["  1", "  2"]),
+            # this seems silly but is the best compromise.  the hyphen is wider
+            # than the character to be hyphenated so that character fits in the
+            # space the hyphen would go obviating the need for the hyphen
+            ("   12", 3, {"hyphen": "--"}, [" 12"]),
+            ("   12", 3, {"hyphen": "---"}, [" 12"]),
+            ("   123", 3, {}, [" 1-", " 23"]),
+            ("   123", 3, {"hyphen": ""}, ["  1", "  2", "  3"]),
+            ("   123", 3, {"hyphen": "--"}, ["1--", "23 "]),
+            ("   123", 3, {"hyphen": "---"}, ["123"]),
+            ("   1234", 3, {}, [" 1-", " 2-", " 34"]),
+            ("   1234", 3, {"hyphen": ""}, ["  1", "  2", "  3", "  4"]),
+            ("   1234", 3, {"hyphen": "--"}, ["1--", "234"]),
+            ("   1234", 3, {"hyphen": "---"}, ["123", "4  "]),
+            ("   1", 4, {}, ["   1"]),
+            ("   1", 5, {}, ["   1 "]),
+        ):
+            res = list(apsw.unicode.text_wrap(text, width, **args))
+            self.assertEqual(res, expected)
+
+    def testWrapJustify(self):
+        "text_wrap justification"
+
+        longer = "a to the four verylongsingleword fivey ytrkes seven77 eightsse"
+
+        J = apsw.unicode.Justify
+        for text, justify, width, expected in (
+            ("hello", J.LEFT, 10, ["hello     "]),
+            ("hello", J.RIGHT, 10, ["     hello"]),
+            ("hello", J.CENTER, 10, ["  hello   "]),
+            (
+                longer,
+                J.LEFT,
+                10,
+                [
+                    "a to the  ",
+                    "four      ",
+                    "verylongs-",
+                    "ingleword ",
+                    "fivey     ",
+                    "ytrkes    ",
+                    "seven77   ",
+                    "eightsse  ",
+                ],
+            ),
+            (
+                longer,
+                J.RIGHT,
+                10,
+                [
+                    "  a to the",
+                    "      four",
+                    "verylongs-",
+                    " ingleword",
+                    "     fivey",
+                    "    ytrkes",
+                    "   seven77",
+                    "  eightsse",
+                ],
+            ),
+            (
+                longer,
+                J.CENTER,
+                10,
+                [
+                    " a to the ",
+                    "   four   ",
+                    "verylongs-",
+                    "ingleword ",
+                    "  fivey   ",
+                    "  ytrkes  ",
+                    " seven77  ",
+                    " eightsse ",
+                ],
+            ),
+        ):
+            res = list(apsw.unicode.text_wrap(text, width, justify=justify))
+            self.assertEqual(res, expected)
+
     def testVersion(self):
         # check we have it in the date list
         self.assertIn(apsw.unicode.unicode_version, apsw.unicode.version_dates)

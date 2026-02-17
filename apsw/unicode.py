@@ -114,6 +114,7 @@ from __future__ import annotations
 
 from typing import Iterator, Iterable, Any
 
+import enum
 import re
 
 ### BEGIN UNICODE UPDATE SECTION ###
@@ -559,6 +560,10 @@ def guess_paragraphs(text: str, tabsize: int = 8) -> str:
     # turn back into newline as the expected delimiter
     return "\n".join(paragraphs) + "\n"
 
+class Justify(enum.Enum):
+    LEFT = 0
+    CENTER = 1
+    RIGHT = 2
 
 def text_wrap(
     text: str,
@@ -568,6 +573,7 @@ def text_wrap(
     hyphen: str = "-",
     combine_space: bool = True,
     invalid: str = "?",
+    justify: Justify = Justify.LEFT
 ) -> Iterator[str]:
     """Similar to :func:`textwrap.wrap` but Unicode grapheme cluster and line break aware
 
@@ -581,9 +587,11 @@ def text_wrap(
     :param tabsize: Tab stop spacing as tabs are expanded
     :param hyphen: Used to show a segment was broken because it was wider than ``width``
     :param combine_space: Leading space on each (indent) is always preserved.  Other spaces where
-          multiple occur are combined into one space.
+          multiple occur are combined into one space.  If tabs matter then you'll want this
+          off.
     :param invalid: If invalid codepoints are encountered such as control characters and surrogates
           then they are replaced with this.
+    :param justify: Where to align text within each line
 
     This yields one line of :class:`str` at a time, which will be
     exactly ``width`` when output to a terminal.  It will be right
@@ -592,9 +600,27 @@ def text_wrap(
     :func:`apsw.ext.format_query_table` uses this method to ensure
     each column is the desired width.
     """
+    text = expand_tabs(text, tabsize, invalid)
+
     hyphen_width = text_width(hyphen)
 
-    text = expand_tabs(text, tabsize, invalid)
+    def do_justify(line: str, n_spaces: int):
+        match justify:
+            case Justify.LEFT:
+                return line + " " * n_spaces
+            case Justify.RIGHT:
+                return " " * n_spaces + line
+            case Justify.CENTER:
+                l = n_spaces // 2
+                r = n_spaces - l
+                return " " * l + line + " " *r
+
+    if hyphen_width:
+        # we don't need a hyphen if the text already fits in one line
+        # which avoids truncating indent unnecessarily
+        if text_width(text) <= width:
+            hyphen = ""
+            hyphen_width = 0
 
     for line in split_lines(text):
         accumulated: list[str] = []
@@ -605,8 +631,12 @@ def text_wrap(
             if indent is None:
                 indent = " " * (len(segment) - len(segment.lstrip(" "))) if segment[0] == " " else ""
                 if len(indent) >= width - hyphen_width:
-                    # make space for double width char if indent wider than width
-                    indent = indent[: max(0, width - hyphen_width - 2)]
+                    # make space for widest char if indent wider than
+                    # width but only if we have to hyphenate. issue 600
+                    # and its dedicated tests exercise this
+                    widths = [text_width(gc) for gc in grapheme_iter(line[len(segment) :])]
+                    widest = max(widths) if widths else 0
+                    indent = indent[: max(0, width - (hyphen_width if len(widths) > 1 else 0) - widest)]
                 accumulated = [indent]
                 line_width = len(indent)
                 if line_width:
@@ -637,7 +667,7 @@ def text_wrap(
                     if desired < 1:
                         hyphen_out = ""
                         desired = width - line_width
-                    seg_width, substr = text_width_substr(segment, desired)
+                    seg_width, substr = text_width_substr(segment, desired) if desired else (0, "")
                     if seg_width == 0:
                         # the first grapheme cluster is wider than desired so
                         # we will display '*' instead for that first grapheme cluster
@@ -652,7 +682,7 @@ def text_wrap(
                     line_width = len(indent)
                     seg_width = text_width(segment)
                     continue
-                yield "".join(accumulated) + " " * (width - line_width)
+                yield do_justify("".join(accumulated), width - line_width)
                 if combine_space and segment[0] == " ":
                     # we added a space, but don't need it on new line
                     segment = segment[1:]
@@ -663,11 +693,10 @@ def text_wrap(
             if segment:
                 accumulated.append(segment)
             line_width += seg_width
-        if len(accumulated) == 1:
-            # only indent
-            yield " " * width
-        else:
-            yield "".join(accumulated) + " " * (width - line_width)
+        if len(accumulated) != 1:
+            # length 1 means it is only indent which we don't output
+            # as last line
+            yield do_justify("".join(accumulated), width - line_width)
 
 
 def codepoint_name(codepoint: int | str) -> str | None:
