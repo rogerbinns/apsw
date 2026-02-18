@@ -406,14 +406,31 @@ class Async(unittest.TestCase):
         self.assertRaises(apsw.ConnectionClosedError, db.execute, "select 3")
 
     async def atestIteration(self, fw):
-        "cursor iteration corner cases"
+        "cursor iteration"
 
-        # values we check
+        db = await apsw.Connection.as_async(":memory:")
+
+        # verify dataclasses work
+        await db.execute("""create table data(one, two, three);
+                         insert into data values('one', -1, 2), ('two', 4, -2), ('three', 3, 0)""")
+        db.row_trace = apsw.ext.DataClassRowFactory()
+        async for row in await db.execute("select one AS hello, (two+three) AS total FROM data"):
+            match row.hello:
+                case "one":
+                    self.assertEqual(row.total, 1)
+                case "two":
+                    self.assertEqual(row.total, 2)
+                case "three":
+                    self.assertEqual(row.total, 3)
+                case _:
+                    self.fail(f"should not happen {row=}")
+        db.row_trace = None
+
+        # cases we check
         NUM_ENTRIES = 103
         PREFETCH_VALUES = (1, 2, 3, 5, 7, 13, 102, 103, 104, 2048)
         LIMITS = (0, 1, 2, 3, 101, 102, 103, 104)
 
-        db = await apsw.Connection.as_async(":memory:")
         await db.execute("create table x(y INTEGER PRIMARY KEY)")
         async with db:
             await db.executemany("insert into x values(?)", ((x,) for x in range(NUM_ENTRIES)))
