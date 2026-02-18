@@ -10,19 +10,34 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
-async
-=====
+3.52.0.0
+========
 
-Comprehensive async support TODO TODO TODO
+Comprehensive async support - connections run in a dedicated worker
+with the event loop able to :code:`await` the results.
+
+  * :mod:`asyncio`, |trio|, and |anyio| are supported and tested
+  * Async callbacks can be used anywhere including:
+      * scalar, window, and aggregate functions
+      * virtual tables (only the methods you want)
+      * :func:`apsw.ext.make_virtual_module`
+      * :doc:`VFS <vfs>` (again, only the methods you want)
+      * the various other SQLite hooks
+  * Cancellations and deadlines (timeouts) from the event loop
+    apply to executing SQL as well as async callbacks
+  * Type stubs as used by type checkers and IDEs reflect async usage
+
+Documentation:
+
+  * :doc:`SQLite, Python, and APSW concurrency <async>`
+  * :ref:`async_usage`
+  * :doc:`example-async`
 
 Regularised str and repr for APSW objects:
 
 * str and repr return the same value
 * async and closed are indicated
-* Subclasses name are used
-
-3.52.0.0
---------
+* Subclasses name are used instead of the APSW parent class
 
 Fix wrapping, indents. and space for hyphens in
 :func:`apsw.unicode.text_wrap` under various conditions (:issue:`600`)

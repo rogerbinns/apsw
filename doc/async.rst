@@ -94,6 +94,8 @@ Async
     (coroutine) is forwarded from the worker thread back to the event
     loop with the worker thread blocked until getting a result back.
 
+.. _async_usage:
+
 Async usage
 -----------
 
