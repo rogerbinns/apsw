@@ -72,6 +72,51 @@ class Async(unittest.TestCase):
 
         self.assertEqual(res, [None])
 
+    def testBadController(self):
+        class BC:
+            def send1(inner_self, call):
+                self.assertRaises(RuntimeError, call, 3)
+                self.assertRaises(RuntimeError, call, three=3)
+                call()
+
+            def send2(inner_self, call):
+                call()
+                call()
+
+            def configure1(inner_self, db):
+                pass
+
+            def close1(inner_self):
+                1 / 0
+
+        unraised = None
+        orig = sys.unraisablehook
+
+        def hook(arg):
+            nonlocal unraised
+            unraised = arg
+
+        sys.unraisablehook = hook
+        try:
+            with apsw.aio.contextvar_set(apsw.async_controller, BC):
+                BC.send = BC.send1
+                self.assertRaisesRegex(AttributeError, ".*no attribute 'configure'.*", apsw.Connection.as_async, "")
+                self.assertIs(unraised.exc_type, AttributeError)
+                self.assertIn("no attribute 'close'", str(unraised.exc_value))
+                self.assertEqual([], apsw.connections())
+                unraised = None
+                BC.send = BC.send2
+                BC.configure = BC.configure1
+                BC.close = BC.close1
+                self.assertRaisesRegex(RuntimeError, ".*only be called once.*", apsw.Connection.as_async, "")
+                self.assertEqual([], apsw.connections())
+                self.assertIs(unraised.exc_type, ZeroDivisionError)
+                unraised = None
+        finally:
+            sys.unraisablehook = orig
+
+        self.assertIsNone(unraised)
+
     def verifyCoroutine(self, coro):
         self.assertTrue(inspect.isawaitable(coro))
         self.assertTrue(inspect.iscoroutine(coro))
@@ -280,6 +325,7 @@ class Async(unittest.TestCase):
 
         if sync:
             cursor.close()
+        self.assertRaises(TypeError, cursor.aclose, "hello")
         fut = cursor.aclose()
         self.verifyCoroutine(fut)
         await fut
@@ -291,6 +337,7 @@ class Async(unittest.TestCase):
 
         if sync:
             blob.close()
+        self.assertRaises(TypeError, blob.aclose, "hello")
         fut = blob.aclose()
         self.verifyCoroutine(fut)
         await fut
@@ -306,6 +353,7 @@ class Async(unittest.TestCase):
 
         if sync:
             backup.close()
+        self.assertRaises(TypeError, blob.aclose, "hello")
         fut = backup.aclose()
         self.verifyCoroutine(fut)
         await fut
@@ -319,6 +367,7 @@ class Async(unittest.TestCase):
             session = await apsw.aio.make_session(db, "main")
             if sync:
                 session.close()
+            self.assertRaises(TypeError, session.aclose, "hello")
             fut = session.aclose()
             self.verifyCoroutine(fut)
             await fut
@@ -333,6 +382,7 @@ class Async(unittest.TestCase):
 
         if sync:
             db.close()
+        self.assertRaises(TypeError, db.aclose, "hello")
         fut = db.aclose()
         self.verifyCoroutine(fut)
         await fut
@@ -349,6 +399,7 @@ class Async(unittest.TestCase):
                 obj.close()
             await obj.aclose()
             await obj.aclose()
+            self.assertRaises(TypeError, obj.aclose, "hello")
             obj.close()
             obj.close()
 
