@@ -464,6 +464,13 @@ def exercise(example_code, expect_exception):
     con.set_profile(lambda: 1)
     con.set_profile(None)
 
+    with con:
+        with con:
+            with con:
+                pass
+
+    apsw.connections()
+
     # has to be done on a real file not memory db
     con2 = apsw.Connection("/tmp/fitesting")
     con2.pragma("user_version", 77)
@@ -610,9 +617,6 @@ def exercise(example_code, expect_exception):
     if expect_exception:
         return
 
-    # done before VFS stuff which can cause problems
-    exercise_examples(example_code, expect_exception)
-
     vname = "foo"
     v = apsw.VFS(vname, iVersion=3)
     registered = [vfs for vfs in apsw.vfs_details() if vfs["zName"] == vname][0]
@@ -697,10 +701,19 @@ def exercise(example_code, expect_exception):
 
     file_cleanup()
     apsw.tests.__main__.testtimeout = True
-    apsw.tests.__main__.vfstestdb(f"{tmpdir.name}/dbfile-delme-vfsstd", "apswfivfs")
+    try:
+        apsw.tests.__main__.vfstestdb(f"{tmpdir.name}/dbfile-delme-vfsstd", "apswfivfs")
+    except apsw.BusyError:
+        pass
 
     if expect_exception:
         return
+
+    apsw.set_default_vfs(apsw.vfs_names()[0])
+
+    del vfsinstance
+    del vfsinstance2
+
 
     if False:
         # This does recursion error, which also causes lots of last chance
@@ -712,11 +725,11 @@ def exercise(example_code, expect_exception):
         apsw.tests.vfstestdb(f"{tmpdir.name}/dbfile-delme-vfswal", "apswfivfs2", mode="wal")
         testing_recursion = False
 
-    apsw.set_default_vfs(apsw.vfs_names()[0])
-    apsw.unregister_vfs("apswfivfs")
-
-    del vfsinstance
-    del vfsinstance2
+    try:
+        exercise_examples(example_code, expect_exception)
+    except RuntimeError as exc:
+        if "apsw.async_run_coro has not been set" not in str(exc):
+            raise
 
     # unload all the modules - the sort ensures the base module is last
     for name in reversed(list(sys.modules.keys())):

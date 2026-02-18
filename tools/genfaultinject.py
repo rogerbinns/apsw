@@ -119,6 +119,7 @@ returns = {
             realloc
 
             Connection_fts5_api get_token_value fts5extensionapi_acquire
+            make_boxed_call
 
             sqlite3_malloc sqlite3_malloc64 sqlite3_mprintf
             sqlite3_realloc sqlite3_realloc64
@@ -151,7 +152,7 @@ returns = {
             sqlite3_load_extension
             sqlite3_open
             sqlite3_open_v2 sqlite3_overload_function
-            sqlite3_prepare_v3
+            sqlite3_prepare_v3 sqlite3_db_release_memory
             sqlite3_result_zeroblob64
             sqlite3_set_authorizer sqlite3_shutdown sqlite3_status64
             sqlite3_table_column_metadata sqlite3_threadsafe

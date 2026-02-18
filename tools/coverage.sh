@@ -5,7 +5,7 @@ set -e
 
 if [ $# = 0 ]
 then
-  args="-m apsw.tests"
+  args="-m apsw.tests -f"
 else
   args="$@"
 fi

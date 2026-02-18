@@ -203,9 +203,12 @@ static PyTypeObject BoxedCallType = {
   .tp_call = BoxedCall_call,
 };
 
+#undef make_boxed_call
 static BoxedCall *
 make_boxed_call(Py_ssize_t total_args)
 {
+#include "faultinject.h"
+
   BoxedCall *box = (BoxedCall *)_PyObject_NewVar(&BoxedCallType, total_args);
   if (box)
   {

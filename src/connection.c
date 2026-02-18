@@ -800,7 +800,8 @@ Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)
   if (!boxed_call)
     goto error;
 
-  connection = (Connection *)klass->tp_new(klass, NULL, NULL);
+  APSW_FAULT(ConnectionAsyncTpNewFails, connection = (Connection *)klass->tp_new(klass, NULL, NULL),
+             connection = PyErr_NoMemory);
   if (!connection)
     goto error;
   boxed_call->call_type = ConnectionInit;

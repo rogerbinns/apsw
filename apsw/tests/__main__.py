@@ -8736,6 +8736,7 @@ class APSW(unittest.TestCase):
         for v in "deFerreD", "IMMEDiAte", "EXCLUSive":
             setattr(self.db, "transaction_mode", v)
             self.assertEqual(v.upper(), self.db.transaction_mode)
+        self.assertRaises(TypeError, setattr, self.db, "transaction_mode", 3+4j)
 
         self.assertRaises(TypeError, setattr, self.db, 3)
 
@@ -11868,6 +11869,10 @@ class ZZFaultInjection(unittest.TestCase):
         self.db.read("main", 0, 0, 1)
         apsw.faultdict["ConnectionReadError"] = True
         self.assertRaises(apsw.IOError, self.db.read, "main", 0, 0, 1)
+
+        ## ConnectionAsyncTpNewFails
+        apsw.faultdict["ConnectionAsyncTpNewFails"] = True
+        self.assertRaises(MemoryError, apsw.Connection.as_async, "")
 
         ### vfs routines
 
