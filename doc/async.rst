@@ -480,59 +480,59 @@ results in more memory consumption and more CPU time to allocate it.
     :header: "Library", "Prefetch", "Wall", "CpuTotal", "CpuEvtLoop", "CpuDbWorker"
     :class: aiobench-table
 
-    apsw AsyncIO,"1",6.972,7.152,2.807,4.345
-    apsw AsyncIO uvloop,"1",4.425,4.530,1.236,3.294
-    apsw Trio,"1",10.282,11.209,6.472,4.738
-    apsw AnyIO asyncio,"1",15.018,17.296,6.930,10.367
-    apsw AnyIO asyncio uvloop,"1",9.360,10.539,3.592,6.947
-    apsw AnyIO trio,"1",15.775,18.287,9.164,9.123
-    aiosqlite,"1",7.740,8.031,3.537,4.494
-    aiosqlite uvloop,"1",4.894,5.073,1.691,3.382
-    apsw AsyncIO,"2",4.161,4.273,1.604,2.669
-    apsw AsyncIO uvloop,"2",2.769,2.804,0.721,2.082
-    apsw Trio,"2",6.136,6.560,3.460,3.100
-    apsw AnyIO asyncio,"2",8.060,9.218,3.592,5.627
-    apsw AnyIO asyncio uvloop,"2",5.046,5.642,1.828,3.815
-    apsw AnyIO trio,"2",8.493,9.762,4.805,4.956
-    aiosqlite,"2",4.056,4.204,1.797,2.407
-    aiosqlite uvloop,"2",2.787,2.900,0.910,1.990
-    apsw AsyncIO,"16",1.067,1.081,0.244,0.837
-    apsw AsyncIO uvloop,"16",0.888,0.890,0.135,0.755
-    apsw Trio,"16",1.328,1.394,0.521,0.873
-    apsw AnyIO asyncio,"16",1.828,1.947,0.587,1.360
-    apsw AnyIO asyncio uvloop,"16",1.287,1.349,0.327,1.021
-    apsw AnyIO trio,"16",1.687,1.848,0.666,1.182
-    aiosqlite,"16",1.065,1.064,0.307,0.757
-    aiosqlite uvloop,"16",0.815,0.816,0.180,0.636
-    apsw AsyncIO,"64",0.753,0.758,0.105,0.653
-    apsw AsyncIO uvloop,"64",0.670,0.671,0.063,0.608
-    apsw Trio,"64",0.826,0.846,0.173,0.674
-    apsw AnyIO asyncio,"64",0.937,0.971,0.202,0.769
-    apsw AnyIO asyncio uvloop,"64",0.783,0.807,0.119,0.688
-    apsw AnyIO trio,"64",0.936,0.981,0.226,0.756
-    aiosqlite,"64",0.666,0.664,0.141,0.523
-    aiosqlite uvloop,"64",0.622,0.618,0.101,0.517
-    apsw AsyncIO,"512",0.639,0.647,0.064,0.583
-    apsw AsyncIO uvloop,"512",0.600,0.599,0.043,0.556
-    apsw Trio,"512",0.661,0.673,0.087,0.586
-    apsw AnyIO asyncio,"512",0.677,0.688,0.080,0.607
-    apsw AnyIO asyncio uvloop,"512",0.645,0.652,0.064,0.588
-    apsw AnyIO trio,"512",0.685,0.707,0.099,0.608
-    aiosqlite,"512",0.536,0.536,0.091,0.444
-    aiosqlite uvloop,"512",0.508,0.508,0.067,0.440
-    apsw AsyncIO,"8,192",0.618,0.625,0.058,0.567
-    apsw AsyncIO uvloop,"8,192",0.599,0.599,0.047,0.552
-    apsw Trio,"8,192",0.636,0.648,0.078,0.569
-    apsw AnyIO asyncio,"8,192",0.666,0.680,0.087,0.592
-    apsw AnyIO asyncio uvloop,"8,192",0.643,0.647,0.068,0.579
-    apsw AnyIO trio,"8,192",0.667,0.686,0.087,0.599
-    aiosqlite,"8,192",0.536,0.536,0.076,0.460
-    aiosqlite uvloop,"8,192",0.504,0.500,0.064,0.436
-    apsw AsyncIO,"65,536",0.603,0.612,0.049,0.563
-    apsw AsyncIO uvloop,"65,536",0.610,0.603,0.053,0.550
-    apsw Trio,"65,536",0.640,0.651,0.080,0.571
-    apsw AnyIO asyncio,"65,536",0.662,0.675,0.079,0.596
-    apsw AnyIO asyncio uvloop,"65,536",0.633,0.638,0.061,0.578
-    apsw AnyIO trio,"65,536",0.660,0.677,0.080,0.597
-    aiosqlite,"65,536",0.531,0.530,0.084,0.445
-    aiosqlite uvloop,"65,536",0.507,0.505,0.065,0.440
+    apsw AsyncIO,1,7.721,8.010,3.168,4.841
+    apsw AsyncIO uvloop,1,5.064,5.256,1.521,3.735
+    apsw Trio,1,12.029,13.308,7.805,5.504
+    apsw AnyIO asyncio,1,15.202,18.158,7.660,10.499
+    apsw AnyIO asyncio uvloop,1,9.652,11.183,3.766,7.416
+    apsw AnyIO trio,1,16.670,19.597,10.028,9.570
+    aiosqlite,1,8.360,8.755,3.909,4.846
+    aiosqlite uvloop,1,5.358,5.635,1.867,3.769
+    apsw AsyncIO,2,4.287,4.441,1.684,2.758
+    apsw AsyncIO uvloop,2,2.895,2.987,0.797,2.190
+    apsw Trio,2,6.403,7.022,3.936,3.086
+    apsw AnyIO asyncio,2,8.175,9.702,3.919,5.783
+    apsw AnyIO asyncio uvloop,2,4.966,5.704,1.810,3.894
+    apsw AnyIO trio,2,8.683,10.140,5.081,5.059
+    aiosqlite,2,4.885,5.106,2.180,2.926
+    aiosqlite uvloop,2,3.288,3.454,1.129,2.326
+    apsw AsyncIO,16,1.231,1.271,0.324,0.947
+    apsw AsyncIO uvloop,16,0.977,0.993,0.162,0.831
+    apsw Trio,16,1.546,1.667,0.631,1.036
+    apsw AnyIO asyncio,16,1.671,1.877,0.570,1.306
+    apsw AnyIO asyncio uvloop,16,1.255,1.359,0.286,1.074
+    apsw AnyIO trio,16,1.776,1.990,0.738,1.253
+    aiosqlite,16,1.152,1.191,0.382,0.809
+    aiosqlite uvloop,16,0.868,0.888,0.191,0.697
+    apsw AsyncIO,64,0.847,0.868,0.145,0.723
+    apsw AsyncIO uvloop,64,0.740,0.744,0.072,0.671
+    apsw Trio,64,0.883,0.922,0.207,0.715
+    apsw AnyIO asyncio,64,0.984,1.044,0.212,0.832
+    apsw AnyIO asyncio uvloop,64,0.835,0.865,0.124,0.741
+    apsw AnyIO trio,64,0.983,1.056,0.249,0.807
+    aiosqlite,64,0.718,0.729,0.153,0.575
+    aiosqlite uvloop,64,0.619,0.623,0.102,0.521
+    apsw AsyncIO,512,0.702,0.715,0.071,0.644
+    apsw AsyncIO uvloop,512,0.668,0.668,0.053,0.615
+    apsw Trio,512,0.706,0.724,0.101,0.623
+    apsw AnyIO asyncio,512,0.746,0.767,0.090,0.676
+    apsw AnyIO asyncio uvloop,512,0.694,0.703,0.068,0.636
+    apsw AnyIO trio,512,0.736,0.762,0.105,0.657
+    aiosqlite,512,0.583,0.586,0.098,0.488
+    aiosqlite uvloop,512,0.561,0.563,0.084,0.479
+    apsw AsyncIO,"8,192",0.670,0.681,0.065,0.616
+    apsw AsyncIO uvloop,"8,192",0.652,0.653,0.042,0.610
+    apsw Trio,"8,192",0.703,0.720,0.089,0.630
+    apsw AnyIO asyncio,"8,192",0.711,0.724,0.078,0.646
+    apsw AnyIO asyncio uvloop,"8,192",0.697,0.707,0.064,0.643
+    apsw AnyIO trio,"8,192",0.733,0.761,0.098,0.663
+    aiosqlite,"8,192",0.564,0.566,0.091,0.475
+    aiosqlite uvloop,"8,192",0.542,0.543,0.076,0.467
+    apsw AsyncIO,"65.536",0.676,0.686,0.066,0.621
+    apsw AsyncIO uvloop,"65.536",0.658,0.659,0.051,0.608
+    apsw Trio,"65.536",0.700,0.713,0.093,0.620
+    apsw AnyIO asyncio,"65.536",0.724,0.738,0.090,0.648
+    apsw AnyIO asyncio uvloop,"65.536",0.698,0.706,0.072,0.634
+    apsw AnyIO trio,"65.536",0.743,0.769,0.115,0.654
+    aiosqlite,"65.536",0.560,0.562,0.092,0.471
+    aiosqlite uvloop,"65.536",0.542,0.543,0.073,0.470
