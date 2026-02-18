@@ -90,7 +90,7 @@
 /* used for calling sys.unraisablehook */
 static PyStructSequence_Field apsw_unraisable_info_fields[]
     = { { "exc_type", "Exception type" },
-        { "exc_value", "Execption value, can be None" },
+        { "exc_value", "Exception value, can be None" },
         { "exc_traceback", "Exception traceback, can be None" },
         { "err_msg", "Error message, can be None" },
         { "object", "Object causing the exception, can be None" },
