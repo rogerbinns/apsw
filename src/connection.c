@@ -830,6 +830,7 @@ Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)
   PyObject *result = async_send_boxed_call((PyObject *)connection, (PyObject*)boxed_call);
   /* send_boxed took the reference */
   boxed_call = NULL;
+  connection = NULL;
 
   if (result)
     return result;
