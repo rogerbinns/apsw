@@ -200,18 +200,12 @@ class AsyncConnectionController(Protocol):
         """
         ...
 
-    def send(self, call: Callable[[], Any]) -> Awaitable[Any]:
+    async def send(self, call: Callable[[], Any]) -> Any:
         """Called from outside the worker thread to send to worker thread
 
-        This should return an awaitable, and forward ``call`` to the worker
-        thread.  In the worker thread do the following.  The ``with`` ensures
-        passing on context vars, and cleanup.
-
-            with call:
-                result = call()
-
-        The result could also be an exception.  The awaitable should
-        be made ready with the result.
+        This should be async or return an awaitable, and forward
+        ``call`` to the worker thread where it is called with no
+        arguments, and return the result or exception
         """
         ...
 
