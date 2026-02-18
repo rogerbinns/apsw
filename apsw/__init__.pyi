@@ -201,18 +201,12 @@ class AsyncConnectionController(Protocol):
         """
         ...
 
-    def send(self, call: Callable[[], Any]) -> Awaitable[Any]:
+    async def send(self, call: Callable[[], Any]) -> Any:
         """Called from outside the worker thread to send to worker thread
 
-        This should return an awaitable, and forward ``call`` to the worker
-        thread.  In the worker thread do the following.  The ``with`` ensures
-        passing on context vars, and cleanup.
-
-            with call:
-                result = call()
-
-        The result could also be an exception.  The awaitable should
-        be made ready with the result.
+        This should be async or return an awaitable, and forward
+        ``call`` to the worker thread where it is called with no
+        arguments, and return the result or exception
         """
         ...
 
@@ -370,7 +364,7 @@ the new Connection object. If the hook raises an exception then
 the creation of the Connection fails."""
 
 def connections() -> list[Connection]:
-    """Returns a list of the connections"""
+    """Returns a list of the open connections"""
     ...
 
 def enable_shared_cache(enable: bool) -> None:
@@ -5889,6 +5883,13 @@ class AsyncBackup:
         """Async version of meth:`finish`"""
         ...
 
+    def close(self, force: bool = False) -> None:
+        """Does the same thing as :meth:`~Backup.finish`.  This extra api is
+        provided to give the same api as other APSW objects and files.
+        It is safe to call this method multiple  times.
+
+        :param force: If true then any exceptions are ignored."""
+        ...
 
     done: bool
     """A boolean that is True if the copy completed in the last call to :meth:`~Backup.step`."""
@@ -5959,6 +5960,26 @@ class AsyncBlob:
         """Async context manager exit"""
         ...
 
+    def close(self, force: bool = False) -> None:
+        """Closes the blob.  Note that even if an error occurs the blob is
+        still closed.
+
+        .. note::
+
+           In some cases errors that technically occurred in the
+           :meth:`~Blob.read` and :meth:`~Blob.write` routines may not be
+           reported until close is called.  Similarly errors that occurred
+           in those methods (eg calling :meth:`~Blob.write` on a read-only
+           blob) may also be re-reported in :meth:`~Blob.close`.  (This
+           behaviour is what the underlying SQLite APIs do - it is not APSW
+           doing it.)
+
+        It is okay to call :meth:`~Blob.close` multiple times.
+
+        :param force: Ignores any errors during close.
+
+        Calls: `sqlite3_blob_close <https://sqlite.org/c3ref/blob_close.html>`__"""
+        ...
 
 
 
@@ -6223,6 +6244,30 @@ class AsyncConnection:
         Calls: `sqlite3_changes64 <https://sqlite.org/c3ref/changes.html>`__"""
         ...
 
+    def close(self, force: bool = False) -> None:
+        """Closes the database.  If there are any outstanding :class:`cursors
+        <Cursor>`, :class:`blobs <Blob>` or :class:`backups <Backup>` then
+        they are closed too.  It is normally not necessary to call this
+        method as the database is automatically closed when there are no
+        more references.  It is ok to call the method multiple times.
+
+        If your user defined functions or collations have direct or indirect
+        references to the Connection then it won't be automatically garbage
+        collected because of circular referencing that can't be
+        automatically broken.  Calling *close* will free all those objects
+        and what they reference.
+
+        SQLite is designed to survive power failures at even the most
+        awkward moments.  Consequently it doesn't matter if it is closed
+        when the process is exited, or even if the exit is graceful or
+        abrupt.  In the worst case of having a transaction in progress, that
+        transaction will be rolled back by the next program to open the
+        database, reverting the database to a know good state.
+
+        If *force* is *True* then any exceptions are ignored.
+
+        Calls: `sqlite3_close <https://sqlite.org/c3ref/close.html>`__"""
+        ...
 
     async def collation_needed(self, callable: Callable[[Connection, str], None | Awaitable[None]] | None) -> None:
         """*callable* will be called if a statement requires a `collation
@@ -7270,6 +7315,25 @@ class AsyncCursor:
 
     Calls: `sqlite3_bind_parameter_name <https://sqlite.org/c3ref/bind_parameter_name.html>`__"""
 
+    def close(self, force: bool = False) -> None:
+        """It is very unlikely you will need to call this method.
+        Cursors are automatically garbage collected and when there
+        are none left will allow the connection to be garbage collected if
+        it has no other references.
+
+        It is safe to call the method multiple times.
+
+        A cursor is open if there are remaining statements to execute (if
+        your query included multiple statements), or if you called
+        :meth:`~Cursor.executemany` and not all of the sequence of bindings
+        have been used yet.
+
+        :param force: If False then you will get exceptions if there is
+         remaining work to do be in the Cursor such as more statements to
+         execute, more data from the executemany binding sequence etc. If
+         force is True then all remaining work and state information will be
+         silently discarded."""
+        ...
 
     connection: Connection
     """:class:`Connection` this cursor is using"""
@@ -7561,6 +7625,13 @@ class AsyncSession:
         Calls: `sqlite3session_changeset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__"""
         ...
 
+    def close(self) -> None:
+        """Ends the session object.  APSW ensures that all
+        Session objects are closed before the database is closed
+        so there is no need to manually call this.
+
+        Calls: `sqlite3session_delete <https://sqlite.org/session/sqlite3session_delete.html>`__"""
+        ...
 
     def config(self, op: int, *args: Any) -> Any:
         """Set or get `configuration values <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__

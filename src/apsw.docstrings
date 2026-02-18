@@ -112,7 +112,7 @@
 "Calls: `sqlite3_config <https://sqlite.org/c3ref/config.html>`__\n" 
 
 #define  Apsw_connections_DOC "apsw.connections() -> list[Connection]\n\n" \
-"Returns a list of the connections\n" 
+"Returns a list of the open connections\n" 
 
 #define  Apsw_enable_shared_cache_DOC "apsw.enable_shared_cache(enable: bool) -> None\n\n" \
 "`Discouraged\n" \
@@ -1114,6 +1114,8 @@
 
 
 #define  Changeset_apply_DOC "Changeset.apply(changeset: ChangesetInput, db: Connection | AsyncConnection, *, filter: Callable[[str], bool] | None = None, filter_change: Callable[[TableChange], bool] | None = None, conflict: Callable[[int,TableChange], int] | None = None, flags: int = 0, rebase: bool = False) -> bytes | None\n\n" \
+"|badge-async-dual|\n" \
+"\n" \
 "Applies a changeset to a database.\n" \
 "\n" \
 ":param source: The changeset either as the bytes, or a stream\n" \
@@ -1318,7 +1320,7 @@
 "  having to write your own.  The returned object will be of your\n" \
 "  Connection subclass.  The parameters can be any positional and keyword\n" \
 "  arguments, and will be passed to your ``__init__`` method in the\n" \
-"  worker thread first.  :meth:`Connection.__init__` should be called\n" \
+"  worker thread first.  ``super().__init__`` should be called\n" \
 "  from it as normal for inheritance.\n" 
 
 #define  Connection_async_controller_DOC ":type: AsyncConnectionController\n" \
@@ -2233,7 +2235,7 @@
 
 #define  Connection_in_transaction_DOC ":type: bool\n" \
 "\n" \
-"True if currently in a transaction, else False\n" \
+"It is recommended to use :meth:`txn_state` instead which is more reliable.\n" \
 "\n" \
 "Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__\n" 
 

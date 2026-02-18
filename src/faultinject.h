@@ -143,6 +143,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef jsonb_encode_object_key
 #undef jsonb_grow_buffer
 #undef jsonb_update_tag
+#undef make_boxed_call
 #undef realloc
 #undef sqlite3_aggregate_context
 #undef sqlite3_autovacuum_pages
@@ -186,6 +187,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef sqlite3_create_window_function
 #undef sqlite3_db_cacheflush
 #undef sqlite3_db_config
+#undef sqlite3_db_release_memory
 #undef sqlite3_db_status
 #undef sqlite3_declare_vtab
 #undef sqlite3_deserialize
@@ -2223,6 +2225,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                                \
     _res_jsonb_update_tag;                                                                                                                           \
 })
+#define make_boxed_call(...) \
+({                                                                                                                                                \
+    __auto_type _res_make_boxed_call = 0 ? make_boxed_call(__VA_ARGS__) : 0;                                                                      \
+                                                                                                                                                  \
+    _res_make_boxed_call = (typeof (_res_make_boxed_call))APSW_FaultInjectControl("make_boxed_call", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                  \
+    if ((typeof (_res_make_boxed_call))0x1FACADE == _res_make_boxed_call)                                                                         \
+       _res_make_boxed_call = make_boxed_call(__VA_ARGS__);                                                                                       \
+    else if ((typeof(_res_make_boxed_call))0x2FACADE == _res_make_boxed_call)                                                                     \
+    {                                                                                                                                             \
+        make_boxed_call(__VA_ARGS__);                                                                                                             \
+        _res_make_boxed_call = (typeof (_res_make_boxed_call))18;                                                                                 \
+    }                                                                                                                                             \
+    _res_make_boxed_call;                                                                                                                         \
+})
 #define realloc(...) \
 ({                                                                                                                        \
     __auto_type _res_realloc = 0 ? realloc(__VA_ARGS__) : 0;                                                              \
@@ -2867,6 +2884,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_sqlite3_db_config = (typeof (_res_sqlite3_db_config))18;                                                                                   \
     }                                                                                                                                                   \
     _res_sqlite3_db_config;                                                                                                                             \
+})
+#define sqlite3_db_release_memory(...) \
+({                                                                                                                                                                              \
+    __auto_type _res_sqlite3_db_release_memory = 0 ? sqlite3_db_release_memory(__VA_ARGS__) : 0;                                                                                \
+                                                                                                                                                                                \
+    _res_sqlite3_db_release_memory = (typeof (_res_sqlite3_db_release_memory))APSW_FaultInjectControl("sqlite3_db_release_memory", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                \
+    if ((typeof (_res_sqlite3_db_release_memory))0x1FACADE == _res_sqlite3_db_release_memory)                                                                                   \
+       _res_sqlite3_db_release_memory = sqlite3_db_release_memory(__VA_ARGS__);                                                                                                 \
+    else if ((typeof(_res_sqlite3_db_release_memory))0x2FACADE == _res_sqlite3_db_release_memory)                                                                               \
+    {                                                                                                                                                                           \
+        sqlite3_db_release_memory(__VA_ARGS__);                                                                                                                                 \
+        _res_sqlite3_db_release_memory = (typeof (_res_sqlite3_db_release_memory))18;                                                                                           \
+    }                                                                                                                                                                           \
+    _res_sqlite3_db_release_memory;                                                                                                                                             \
 })
 #define sqlite3_db_status(...) \
 ({                                                                                                                                                      \
