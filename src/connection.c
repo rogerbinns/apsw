@@ -808,6 +808,7 @@ Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)
   boxed_call->ConnectionInit.connection = Py_NewRef((PyObject *)connection);
   boxed_call->ConnectionInit.args = Py_NewRef(args);
   boxed_call->ConnectionInit.kwargs = Py_XNewRef(kwargs);
+  boxed_call->ConnectionInit.call_success = 0;
   connection->async_controller = NULL;
 
   if(!PyContextVar_Get(async_controller_context_var, NULL, &connection->async_controller))
@@ -827,17 +828,15 @@ Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)
   if (!connection->async_controller)
     goto error;
 
-  PyObject *result = async_send_boxed_call((PyObject *)connection, (PyObject*)boxed_call);
+  PyObject *result = async_send_boxed_call((PyObject *)connection, (PyObject *)boxed_call);
   /* send_boxed took the reference */
   boxed_call = NULL;
-  connection = NULL;
 
   if (result)
     return result;
 
 error:
   assert(PyErr_Occurred());
-  Py_XDECREF((PyObject *)connection);
   Py_XDECREF(boxed_call);
 
   return NULL;
