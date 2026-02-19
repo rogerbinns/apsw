@@ -2823,10 +2823,7 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
 
     PyObject *module = PyObject_GetAttr((PyObject *)Py_TYPE(apswfile->file), apst.__module__);
     if (module && PyUnicode_Check(module))
-    {
       modname = PyUnicode_AsUTF8(module);
-      PyErr_Clear();
-    }
 
     /* the above calls could have exceptions but they aren't useful,
        so ignore */
