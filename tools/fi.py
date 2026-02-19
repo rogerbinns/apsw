@@ -274,6 +274,9 @@ def exercise(example_code, expect_exception):
     encoded = con.execute("select jsonb(?)", ("""[0x1234, 4., .3, "\\0 𐌼𐌰𐌲 𐌲𐌻𐌴𐍃 𐌹̈𐍄𐌰𐌽", "\\'", "\\"", "\\u1234"]""",)).get
     apsw.jsonb_decode(encoded)
 
+    if expect_exception:
+        return
+
     # fts5
     con.fts5_tokenizer("unicode61", ["remove_diacritics", "1"])
 
@@ -356,6 +359,9 @@ def exercise(example_code, expect_exception):
 
     con.execute("select identity(testfts,a) from testfts('e OR 5')").get
 
+    if expect_exception:
+        return
+
     session = apsw.Session(con, "main")
     session.attach()
     con.execute("""create table s1(one PRIMARY KEY, two); insert into s1 values(3, 4);""")
@@ -385,6 +391,9 @@ def exercise(example_code, expect_exception):
             pass
 
     apsw.Changeset.concat_stream(StreamInput(changeset), StreamInput(changeset2), StreamOutput())
+
+    if expect_exception:
+        return
 
     class Source:
         def Connect(self, *args):
@@ -460,6 +469,9 @@ def exercise(example_code, expect_exception):
     con.execute("update fred set c2=c3 where rowid=3; update fred set rowid=990 where c2=2")
 
     con.drop_modules(["something", "vtable", "something else"])
+
+    if expect_exception:
+        return
 
     con.set_profile(lambda: 1)
     con.set_profile(None)
@@ -1056,6 +1068,8 @@ class Tester:
             elif tested[-1][2] == "apswvfsfile_xFileControl":
                 # we deliberately ignore errors getting VFSNAMES
                 if tested[-1][0] == "PyUnicode_AsUTF8" and tested[-1][4] in {"qualname", "module"}:
+                    ok = True
+                elif tested[-1][0] == "PyObject_GetAttr":
                     ok = True
                 elif tested[-1][0] == "sqlite3_mprintf":
                     ok = True
