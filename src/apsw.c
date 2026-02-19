@@ -2079,9 +2079,8 @@ PyInit_apsw(void)
 #define ADD(name, item)                                                                                                \
   do                                                                                                                   \
   {                                                                                                                    \
-    if (PyModule_AddObject(m, #name, (PyObject *)&item))                                                               \
+    if (PyModule_AddObjectRef(m, #name, (PyObject *)&item))                                                            \
       goto fail;                                                                                                       \
-    Py_INCREF(&item);                                                                                                  \
   } while (0)
 
   ADD(Connection, ConnectionType);
@@ -2155,10 +2154,10 @@ PyInit_apsw(void)
       */
 
 #ifdef APSW_USE_SQLITE_AMALGAMATION
-  if (PyModule_AddObject(m, "using_amalgamation", Py_NewRef(Py_True)))
+  if (PyModule_AddObjectRef(m, "using_amalgamation", Py_True))
     goto fail;
 #else
-  if (PyModule_AddObject(m, "using_amalgamation", Py_NewRef(Py_False)))
+  if (PyModule_AddObjectRef(m, "using_amalgamation", Py_False))
     goto fail;
 #endif
 
@@ -2244,7 +2243,7 @@ PyInit_apsw(void)
       goto fail;
   }
 
-  if (PyModule_AddObject(m, "no_change", Py_NewRef(apsw_no_change_object)))
+  if (PyModule_AddObjectRef(m, "no_change", apsw_no_change_object))
     goto fail;
 
   /* undocumented sentinel to do no bindings */
@@ -2253,11 +2252,11 @@ PyInit_apsw(void)
   if (!apsw_cursor_null_bindings)
     goto fail;
 
-  if (PyModule_AddObject(m, "_null_bindings", Py_NewRef(apsw_cursor_null_bindings)))
+  if (PyModule_AddObjectRef(m, "_null_bindings", apsw_cursor_null_bindings))
     goto fail;
 
 #ifdef APSW_FAULT_INJECT
-  if (PyModule_AddObject(m, "apsw_fault_inject", Py_NewRef(Py_True)))
+  if (PyModule_AddObjectRef(m, "apsw_fault_inject", Py_True))
     goto fail;
 #endif
 

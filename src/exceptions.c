@@ -114,15 +114,12 @@ init_exceptions(PyObject *m)
           { &ExcNoFTS5, "NoFTS5Error", NoFTS5Error_exc_DOC },
           { &ExcInvalidContext, "InvalidContextError", InvalidContextError_exc_DOC } };
 
-  /* PyModule_AddObject uses borrowed reference so we incref whatever
-     we give to it, so we still have a copy to use */
-
   /* custom ones first */
 
   APSWException = PyErr_NewExceptionWithDoc("apsw.Error", Error_exc_DOC, NULL, NULL);
   if (!APSWException)
     return -1;
-  if (PyModule_AddObject(m, "Error", Py_NewRef((PyObject *)APSWException)))
+  if (PyModule_AddObjectRef(m, "Error", (PyObject *)APSWException))
     return -1;
 
   for (i = 0; i < sizeof(apswexceptions) / sizeof(apswexceptions[0]); i++)
