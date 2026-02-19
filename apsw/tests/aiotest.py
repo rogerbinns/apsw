@@ -109,7 +109,9 @@ class Async(unittest.TestCase):
                 BC.configure = BC.configure1
                 BC.close = BC.close1
                 self.assertRaisesRegex(RuntimeError, ".*only be called once.*", apsw.Connection.as_async, "")
-                apsw.connections()[0].close()
+                # we can't guarantee exactly when gc runs for the failure above
+                if apsw.connections():
+                    apsw.connections()[0].close()
                 self.assertIs(unraised.exc_type, ZeroDivisionError)
                 unraised = None
         finally:

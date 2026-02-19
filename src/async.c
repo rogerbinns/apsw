@@ -31,7 +31,6 @@ typedef struct BoxedCall
       PyObject *connection;
       PyObject *args;
       PyObject *kwargs;
-      int call_success;
     } ConnectionInit;
 
     /* note this must be the largest member of the union because
@@ -79,16 +78,9 @@ BoxedCall_clear(PyObject *self_)
     return;
 
   case ConnectionInit:
-    Py_DECREF(self->ConnectionInit.connection);
     Py_DECREF(self->ConnectionInit.args);
     Py_XDECREF(self->ConnectionInit.kwargs);
-    if (!self->ConnectionInit.call_success)
-    {
-      /* this causes close on init failure so threads don't get leaked
-         because our original code in as_async can't know about
-         downstream failures  */
-      Py_DECREF(self->ConnectionInit.connection);
-    }
+    Py_DECREF(self->ConnectionInit.connection);
     break;
 
   case FastCallWithKeywords: {
@@ -143,11 +135,8 @@ BoxedCall_internal_call(BoxedCall *self)
       if (0
           == Py_TYPE(self->ConnectionInit.connection)
                  ->tp_init(self->ConnectionInit.connection, self->ConnectionInit.args, self->ConnectionInit.kwargs))
-      {
         result = Py_NewRef(self->ConnectionInit.connection);
-        self->ConnectionInit.call_success = 1;
-      }
-        break;
+      break;
     case FastCallWithKeywords:
       result = self->FastCallWithKeywords.function(
           self->FastCallWithKeywords.object, self->FastCallWithKeywords.fast_args + 1,

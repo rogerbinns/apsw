@@ -805,10 +805,10 @@ Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)
   if (!connection)
     goto error;
   boxed_call->call_type = ConnectionInit;
-  boxed_call->ConnectionInit.connection = Py_NewRef((PyObject *)connection);
+  /* the boxed call now owns the connection */
+  boxed_call->ConnectionInit.connection = ((PyObject *)connection);
   boxed_call->ConnectionInit.args = Py_NewRef(args);
   boxed_call->ConnectionInit.kwargs = Py_XNewRef(kwargs);
-  boxed_call->ConnectionInit.call_success = 0;
   connection->async_controller = NULL;
 
   if(!PyContextVar_Get(async_controller_context_var, NULL, &connection->async_controller))
