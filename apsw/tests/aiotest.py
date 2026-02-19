@@ -1014,7 +1014,7 @@ class Async(unittest.TestCase):
         e_wait.wait()
         s = get(str(scon))
         try:
-            self.assertIsNotNone(re.match(r"apsw.Connection \"\(unavailable\)\" at 0x[0-9a-f]+", s))
+            self.assertIsNotNone(re.match(r"apsw.Connection \"\(unavailable\)\" at 0x[0-9a-fA-F]+", s))
         finally:
             e_continue.set()
             t.join()
@@ -1055,7 +1055,7 @@ class Async(unittest.TestCase):
                     e_continue.set()
 
         try:
-            self.assertIsNotNone(re.match(r"apsw.Connection \(async\) \"\(unavailable\)\" at 0x[0-9a-f]+", s))
+            self.assertIsNotNone(re.match(r"apsw.Connection \(async\) \"\(unavailable\)\" at 0x[0-9a-fA-F]+", s))
         finally:
             await acon.aclose()
 

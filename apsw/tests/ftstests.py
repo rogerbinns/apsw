@@ -369,7 +369,7 @@ class FTS(unittest.TestCase):
 
     def testStr(self):
         foo = self.db.fts5_tokenizer("ascii")
-        self.assertIsNotNone(re.match(r'<apsw.FTS5Tokenizer \"ascii\" args \(\) at 0x[a-f0-9]+>', str(foo)))
+        self.assertIsNotNone(re.match(r'<apsw.FTS5Tokenizer \"ascii\" args \(\) at 0x[a-fA-F0-9]+>', str(foo)))
 
     def testAPSWFTSTokenizers(self):
         "Test apsw.fts5 tokenizers"

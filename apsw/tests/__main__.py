@@ -7345,11 +7345,11 @@ class APSW(unittest.TestCase):
 
             def xOpen(innerself, name, flags):
                 x=ObfuscatedVFSFile(innerself.basevfs, name, flags)
-                self.assertIsNotNone(re.match("<ObfuscatedVFSFile filename \".*\" at 0x[a-f0-9]+>", str(x)))
+                self.assertIsNotNone(re.match("<ObfuscatedVFSFile filename \".*\" at 0x[A-Fa-f0-9]+>", str(x)))
                 return x
 
         vfs = ObfuscatedVFS()
-        self.assertIsNotNone(re.match("<ObfuscatedVFS \"obfu\" inherits from \".*\" at 0x[0-9a-f]+>", str(vfs)))
+        self.assertIsNotNone(re.match("<ObfuscatedVFS \"obfu\" inherits from \".*\" at 0x[0-9a-fA-F]+>", str(vfs)))
 
         query = "create table foo(x,y); insert into foo values(1,2); insert into foo values(3,4)"
         self.db.cursor().execute(query)
