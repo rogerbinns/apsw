@@ -869,8 +869,13 @@ class Async(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="apsw-atestStr") as tempd:
 
             def get(x):
-                # extracts the useful bit
-                return re.match("<(.* at 0x[0-9a-fA-F]+)>", x).group(1)
+                # extracts the useful bit and normalizes the address
+                # which is libc dependent
+                mo = re.match("<(.*) at 0?[Xx]?([0-9a-fA-F]+)>", x)
+                return f"{mo.group(1)} at 0x{mo.group(2).lower().lstrip('0')}"
+
+            def saddr(o):
+                return f" at {hex(id(o))}"
 
             class Banana(apsw.Connection):
                 pass
@@ -944,54 +949,54 @@ class Async(unittest.TestCase):
             for sobj, aobj, async_run, klass_name in to_test:
                 # sync object
                 s = get(str(sobj))
-                addr = f" at {hex(id(sobj))}".lower()
+                addr=saddr(sobj)
                 self.assertNotIn(" object ", s)
                 self.assertNotIn(tag_a, s)
                 self.assertNotIn(tag_c, s)
                 self.assertNotIn(tag_aw, s)
                 self.assertStartsWith(s, klass_name)
-                self.assertEndsWith(s.lower(), addr)
+                self.assertEndsWith(s, addr)
 
                 # async object in event loop
                 s = get(str(aobj))
-                addr = f" at {hex(id(aobj))}"
+                addr = saddr(aobj)
                 self.assertNotIn(" object ", s)
                 self.assertIn(tag_a, s)
                 self.assertNotIn(tag_c, s)
                 self.assertNotIn(tag_aw, s)
                 self.assertStartsWith(s, klass_name)
-                self.assertEndsWith(s.lower(), addr)
+                self.assertEndsWith(s, addr)
 
                 # async object in worker thread
                 s = get(await async_run(lambda: str(aobj)))
-                addr = f" at {hex(id(aobj))}"
+                addr = saddr(aobj)
                 self.assertNotIn(" object ", s)
                 self.assertNotIn(tag_a, s)
                 self.assertNotIn(tag_c, s)
                 self.assertIn(tag_aw, s)
                 self.assertStartsWith(s, klass_name)
-                self.assertEndsWith(s.lower(), addr)
+                self.assertEndsWith(s, addr)
 
                 # after closing
                 sobj.close()
-                addr = f" at {hex(id(sobj))}"
+                addr = saddr(sobj)
                 s = get(str(sobj))
                 self.assertNotIn(" object ", s)
                 self.assertNotIn(tag_a, s)
                 self.assertIn(tag_c, s)
                 self.assertNotIn(tag_aw, s)
                 self.assertStartsWith(s, klass_name)
-                self.assertEndsWith(s.lower(), addr)
+                self.assertEndsWith(s, addr)
 
                 aobj.close()
                 s = get(str(aobj))
-                addr = f" at {hex(id(aobj))}"
+                addr = saddr(aobj)
                 self.assertNotIn(" object ", s)
                 self.assertNotIn(tag_a, s)
                 self.assertIn(tag_c, s)
                 self.assertNotIn(tag_aw, s)
                 self.assertStartsWith(s, klass_name)
-                self.assertEndsWith(s.lower(), addr)
+                self.assertEndsWith(s, addr)
 
         # get unavailable database name due to mutex being held in another thread
         scon = apsw.Connection("")
