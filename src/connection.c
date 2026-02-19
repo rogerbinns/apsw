@@ -4837,7 +4837,9 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
       sql = sqlite3_mprintf("ROLLBACK TO SAVEPOINT \"_apsw-%ld\"", self->savepointlevel);
       if (!sql)
       {
+        CHAIN_EXC_BEGIN
         PyErr_NoMemory();
+        CHAIN_EXC_END;
         goto exit;
       }
       connection_context_manager_exec(self, sql, 1, 0);
@@ -4846,7 +4848,9 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
     sql = sqlite3_mprintf("RELEASE SAVEPOINT \"_apsw-%ld\"", self->savepointlevel);
     if (!sql)
     {
+      CHAIN_EXC_BEGIN
       PyErr_NoMemory();
+      CHAIN_EXC_END;
       goto exit;
     }
     res = connection_context_manager_exec(self, sql, 1, 1);
