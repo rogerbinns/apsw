@@ -954,8 +954,8 @@ class Async(unittest.TestCase):
                 self.assertNotIn(tag_a, s)
                 self.assertNotIn(tag_c, s)
                 self.assertNotIn(tag_aw, s)
-                self.assertStartsWith(s, klass_name)
-                self.assertEndsWith(s, addr)
+                self.assertTrue(s.startswith(klass_name))
+                self.assertTrue(s.endswith(addr))
 
                 # async object in event loop
                 s = get(str(aobj))
@@ -964,8 +964,8 @@ class Async(unittest.TestCase):
                 self.assertIn(tag_a, s)
                 self.assertNotIn(tag_c, s)
                 self.assertNotIn(tag_aw, s)
-                self.assertStartsWith(s, klass_name)
-                self.assertEndsWith(s, addr)
+                self.assertTrue(s.startswith(klass_name))
+                self.assertTrue(s.endswith(addr))
 
                 # async object in worker thread
                 s = get(await async_run(lambda: str(aobj)))
@@ -974,8 +974,8 @@ class Async(unittest.TestCase):
                 self.assertNotIn(tag_a, s)
                 self.assertNotIn(tag_c, s)
                 self.assertIn(tag_aw, s)
-                self.assertStartsWith(s, klass_name)
-                self.assertEndsWith(s, addr)
+                self.assertTrue(s.startswith(klass_name))
+                self.assertTrue(s.endswith(addr))
 
                 # after closing
                 sobj.close()
@@ -985,8 +985,8 @@ class Async(unittest.TestCase):
                 self.assertNotIn(tag_a, s)
                 self.assertIn(tag_c, s)
                 self.assertNotIn(tag_aw, s)
-                self.assertStartsWith(s, klass_name)
-                self.assertEndsWith(s, addr)
+                self.assertTrue(s.startswith(klass_name))
+                self.assertTrue(s.endswith(addr))
 
                 aobj.close()
                 s = get(str(aobj))
@@ -995,8 +995,8 @@ class Async(unittest.TestCase):
                 self.assertNotIn(tag_a, s)
                 self.assertIn(tag_c, s)
                 self.assertNotIn(tag_aw, s)
-                self.assertStartsWith(s, klass_name)
-                self.assertEndsWith(s, addr)
+                self.assertTrue(s.startswith(klass_name))
+                self.assertTrue(s.endswith(addr))
 
         # get unavailable database name due to mutex being held in another thread
         scon = apsw.Connection("")
