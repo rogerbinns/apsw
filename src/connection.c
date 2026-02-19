@@ -731,8 +731,7 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
       hookresult = PyObject_Vectorcall_NoAsync(hook, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       if (!hookresult)
         goto pyexception;
-      Py_DECREF(hook);
-      hook = NULL;
+      Py_CLEAR(hook);
       Py_DECREF(hookresult);
     }
   }
@@ -814,10 +813,7 @@ Connection_as_async(PyObject *klass_, PyObject *args, PyObject *kwargs)
   if(!PyContextVar_Get(async_controller_context_var, NULL, &connection->async_controller))
   {
     if(Py_IsNone(connection->async_controller))
-    {
-      Py_DECREF(connection->async_controller);
-      connection->async_controller = PyImport_ImportModuleAttr(apst.apsw_aio, apst.Auto);
-    }
+      Py_SETREF(connection->async_controller, PyImport_ImportModuleAttr(apst.apsw_aio, apst.Auto));
     if(!connection->async_controller)
       goto error;
   }
@@ -1022,15 +1018,13 @@ Connection_backup(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   res = PyList_Append(self->dependents, weakref);
   if (res)
     goto finally;
-  Py_DECREF(weakref);
-  weakref = PyWeakref_NewRef((PyObject *)apswbackup, NULL);
+  Py_SETREF(weakref, PyWeakref_NewRef((PyObject *)apswbackup, NULL));
   if (!weakref)
     goto finally;
   res = PyList_Append(sourceconnection->dependents, weakref);
   if (res)
     goto finally;
-  Py_DECREF(weakref);
-  weakref = 0;
+  Py_CLEAR(weakref);
 
   result = (PyObject *)apswbackup;
   apswbackup = NULL;
@@ -1135,8 +1129,7 @@ Connection_set_busy_timeout(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     return NULL;
 
   /* free any explicit busyhandler we may have had */
-  Py_XDECREF(self->busyhandler);
-  self->busyhandler = 0;
+  Py_CLEAR(self->busyhandler);
 
   Py_RETURN_NONE;
 }
@@ -4552,8 +4545,7 @@ Connection_set_exec_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_
   }
 
   Py_XINCREF(callable);
-  Py_XDECREF(self->exectrace);
-  self->exectrace = callable;
+  Py_XSETREF(self->exectrace, callable);
 
   Py_RETURN_NONE;
 }
@@ -4579,8 +4571,7 @@ Connection_set_row_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
   }
 
   Py_XINCREF(callable);
-  Py_XDECREF(self->rowtrace);
-  self->rowtrace = callable;
+  Py_XSETREF(self->rowtrace, callable);
 
   Py_RETURN_NONE;
 }
@@ -6393,8 +6384,7 @@ Connection_fts5_tokenizer(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     goto error;
 
   /* fill in fields */
-  pytok->db = self;
-  Py_INCREF(self);
+  pytok->db = (Connection *)Py_NewRef(self);
   pytok->name = name_dup;
   name_dup = NULL;
   pytok->args = Py_NewRef(args_as_tuple);

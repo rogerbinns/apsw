@@ -185,8 +185,7 @@ static PyObject *apsw_no_change_object;
 static PyObject *
 apsw_no_change_repr(PyObject *self)
 {
-  Py_INCREF(apst.no_change);
-  return apst.no_change;
+  return Py_NewRef(apst.no_change);
 }
 
 static PyTypeObject apsw_no_change_type = {
@@ -1033,8 +1032,7 @@ get_apsw_exception_for(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py
     goto error;
   if (0 != PyObject_SetAttr(result, apst.extendedresult, tmp))
     goto error;
-  Py_DECREF(tmp);
-  tmp = PyLong_FromLong(code & 0xff);
+  Py_SETREF(tmp, PyLong_FromLong(code & 0xff));
   if (!tmp)
     goto error;
   if (0 != PyObject_SetAttr(result, apst.result, tmp))
@@ -2248,7 +2246,7 @@ PyInit_apsw(void)
 
   /* undocumented sentinel to do no bindings */
   if (!apsw_cursor_null_bindings)
-    apsw_cursor_null_bindings = PyObject_CallObject((PyObject *)&PyBaseObject_Type, NULL);
+    apsw_cursor_null_bindings = PyObject_CallNoArgs((PyObject *)&PyBaseObject_Type);
   if (!apsw_cursor_null_bindings)
     goto fail;
 

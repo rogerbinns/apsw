@@ -406,8 +406,7 @@ convert_column_to_pyobject(APSWCursor *self, int col)
       if (vargs[2])
         new_value = PyObject_Vectorcall(CONVERT_JSONB, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       Py_XDECREF(vargs[2]);
-      Py_DECREF(value);
-      value = new_value;
+      Py_SETREF(value, new_value);
     }
     return value;
   }
@@ -1820,8 +1819,7 @@ APSWCursor_set_exec_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     callable = Py_None;
 
   Py_XINCREF(callable);
-  Py_XDECREF(self->exectrace);
-  self->exectrace = callable;
+  Py_XSETREF(self->exectrace, callable);
 
   Py_RETURN_NONE;
 }
@@ -1851,8 +1849,7 @@ APSWCursor_set_row_trace(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
     callable = Py_None;
 
   Py_XINCREF(callable);
-  Py_XDECREF(self->rowtrace);
-  self->rowtrace = callable;
+  Py_XSETREF(self->rowtrace, callable);
 
   Py_RETURN_NONE;
 }

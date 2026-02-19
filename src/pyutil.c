@@ -349,8 +349,7 @@ PyObject_VectorcallMethod_AutoAsync(PyObject *name, PyObject *const *args, size_
   if (result && PyCoro_CheckExact(result))
   {
     PyObject *new_result = apsw_run_in_event_loop(result);
-    Py_DECREF(result);
-    result = new_result;
+    Py_SETREF(result, new_result);
   }
   return result;
 }
@@ -365,8 +364,7 @@ PyObject_Vectorcall_AutoAsync(PyObject *callable, PyObject *const *args, size_t 
   if (result && PyCoro_CheckExact(result))
   {
     PyObject *new_result = apsw_run_in_event_loop(result);
-    Py_DECREF(result);
-    result = new_result;
+    Py_SETREF(result, new_result);
   }
   return result;
 }

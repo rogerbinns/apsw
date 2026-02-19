@@ -53,6 +53,8 @@ apsw.aio Auto configure _coro_for_value _coro_for_exception
 _coro_for_stopasynciteration
 
 apsw.shell main Shell
+
+__module__
 """
 
 

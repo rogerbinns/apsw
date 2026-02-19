@@ -183,16 +183,14 @@ make_exception_with_message(int res, const char *errmsg, int error_offset)
   if (PyObject_SetAttr(exc, apst.result, tmp))
     goto error;
 
-  Py_DECREF(tmp);
-  tmp = PyLong_FromLongLong(res);
+  Py_SETREF(tmp, PyLong_FromLongLong(res));
   if (!tmp)
     goto error;
 
   if (PyObject_SetAttr(exc, apst.extendedresult, tmp))
     goto error;
-  Py_DECREF(tmp);
 
-  tmp = PyLong_FromLong(error_offset);
+  Py_SETREF(tmp, PyLong_FromLong(error_offset));
   if (!tmp)
     goto error;
 
@@ -241,15 +239,15 @@ MakeSqliteMsgFromPyException(char **errmsg)
     {
       res = exc_descriptors[i].code;
       /* do we have extended information available? */
-      if (PyObject_HasAttr(exc, apst.extendedresult))
+      PyObject *extended = PyObject_GetAttr(exc, apst.extendedresult);
+      if(extended)
       {
-        /* extract it */
-        PyObject *extended = PyObject_GetAttr(exc, apst.extendedresult);
-        if (extended && PyLong_Check(extended))
-          res = PyLong_AsInt(extended);
-        Py_XDECREF(extended);
-        PyErr_Clear();
+          if(PyLong_Check(extended))
+            res = PyLong_AsInt(extended);
+          Py_DECREF(extended);
       }
+      PyErr_Clear();
+
       /* this can happen with inopportune failures in the above */
       if (res < 1)
         res = SQLITE_ERROR;
