@@ -1011,8 +1011,11 @@ apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
       {
         if (utf8len > (Py_ssize_t)nByte - 1)
           utf8len = (Py_ssize_t)nByte - 1;
-        memcpy(zErrMsg, utf8, utf8len);
-        zErrMsg[utf8len] = 0;
+        if (zErrMsg && utf8len > 0)
+        {
+          memcpy(zErrMsg, utf8, utf8len);
+          zErrMsg[utf8len] = 0;
+        }
       }
     }
     else
@@ -1088,33 +1091,36 @@ apswvfs_xRandomness(sqlite3_vfs *vfs, int nByte, char *zOut)
   int result = 0;
   VFSPREAMBLE;
 
-  PyObject *vargs[] = { NULL, (PyObject *)(vfs->pAppData), PyLong_FromLong(nByte) };
-  if (vargs[2])
-    pyresult = PyObject_VectorcallMethod(apst.xRandomness, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-  Py_XDECREF(vargs[2]);
-
-  if (pyresult && !Py_IsNone(pyresult))
+  if (zOut && nByte > 0)
   {
-    int asrb;
-    Py_buffer py3buffer;
-    Py_ssize_t len;
+    PyObject *vargs[] = { NULL, (PyObject *)(vfs->pAppData), PyLong_FromLong(nByte) };
+    if (vargs[2])
+      pyresult = PyObject_VectorcallMethod(apst.xRandomness, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_XDECREF(vargs[2]);
 
-    asrb = PyObject_GetBufferContiguous(pyresult, &py3buffer, PyBUF_SIMPLE);
-    if (asrb == 0)
+    if (pyresult && !Py_IsNone(pyresult))
     {
-      len = py3buffer.len;
-      if (len > nByte)
-        len = nByte;
-      memcpy(zOut, py3buffer.buf, len);
-      result = len;
-      PyBuffer_Release(&py3buffer);
-    }
-    else
-      assert(PyErr_Occurred());
-  }
+      int asrb;
+      Py_buffer py3buffer;
+      Py_ssize_t len;
 
-  if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xRandomness", "{s: i, s: O}", "nByte", nByte, "result", OBJ(pyresult));
+      asrb = PyObject_GetBufferContiguous(pyresult, &py3buffer, PyBUF_SIMPLE);
+      if (asrb == 0)
+      {
+        len = py3buffer.len;
+        if (len > nByte)
+          len = nByte;
+        memcpy(zOut, py3buffer.buf, len);
+        result = len;
+        PyBuffer_Release(&py3buffer);
+      }
+      else
+        assert(PyErr_Occurred());
+    }
+
+    if (PyErr_Occurred())
+      AddTraceBackHere(__FILE__, __LINE__, "vfs.xRandomness", "{s: i, s: O}", "nByte", nByte, "result", OBJ(pyresult));
+  }
 
   Py_XDECREF(pyresult);
   VFSPOSTAMBLE;
@@ -1387,9 +1393,9 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
     utf8 = PyUnicode_AsUTF8AndSize(item1, &utf8len);
     if (utf8)
     {
-      /* Get size includes trailing null */
+      /* Get size */
       size_t len = utf8len;
-      if (zErrMsg && len > 0)
+      if (zErrMsg && len > 0 && nByte > 0)
       {
         if (len > (size_t)nByte)
           len = (size_t)nByte;
