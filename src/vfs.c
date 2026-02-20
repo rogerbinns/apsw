@@ -1628,7 +1628,7 @@ apswvfs_xNextSystemCall(sqlite3_vfs *vfs, const char *zName)
   const char *res = NULL;
 
   VFSPREAMBLE;
-  PyObject *vargs[] = { NULL, (PyObject *)(vfs->pAppData), PyUnicode_FromString(zName) };
+  PyObject *vargs[] = { NULL, (PyObject *)(vfs->pAppData), zName ? PyUnicode_FromString(zName) : Py_NewRef(Py_None) };
   if (vargs[2])
     pyresult = PyObject_VectorcallMethod(apst.xNextSystemCall, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_XDECREF(vargs[2]);
