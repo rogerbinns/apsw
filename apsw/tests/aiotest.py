@@ -1098,6 +1098,8 @@ class Async(unittest.TestCase):
 
             ver = tuple(map(int, importlib.metadata.version("trio").split(".")))
             if ver < (0, 20, 0):
+                if self.verbose:
+                    print(f"trio {ver=} is too old to run tests")
                 return
 
         except (ImportError, TypeError):
@@ -1126,6 +1128,8 @@ class Async(unittest.TestCase):
             ver = tuple(map(int, importlib.metadata.version("trio").split(".")))
             if ver >= (0, 31, 0):
                 backends.append("trio")
+            elif self.verbose:
+                print(f"trio {ver=} is too old for anyio")
         except (ImportError, TypeError):
             pass
 
@@ -1141,6 +1145,8 @@ class Async(unittest.TestCase):
         ver = tuple(map(int, importlib.metadata.version("anyio").split(".")))
         if ver < (4, 0):
             # our tests use the v4 apis
+            if self.verbose:
+                print(f"anyio {ver=} is too old to run the tests")
             return
 
         for be in backends:
