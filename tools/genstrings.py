@@ -69,6 +69,7 @@ def mangle(name):
         "null": "snull",
         "true": "strue",
         "false": "sfalse",
+        "__module__": "s_module",
     }.get(name, name).replace(".", "_")
 
 
