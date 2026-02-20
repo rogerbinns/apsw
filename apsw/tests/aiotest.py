@@ -11,6 +11,7 @@ import threading
 import unittest
 import tempfile
 import sys
+import math
 import inspect
 import re
 
@@ -638,6 +639,11 @@ class Async(unittest.TestCase):
         sleep = getattr(sys.modules[fw], "sleep")
         Event = getattr(sys.modules[fw], "Event")
 
+
+        apsw.aio.check_progress_steps.set(10)
+        db = await apsw.Connection.as_async("")
+
+
         match fw:
             case "asyncio":
                 time = asyncio.get_running_loop().time
@@ -648,12 +654,11 @@ class Async(unittest.TestCase):
             case "anyio":
                 time = anyio.current_time
                 timeout_exc_class = TimeoutError
+                # If not using AnyIO controller with trio, then trio's timeout can leak
+                if isinstance(db.async_controller, apsw.aio.Trio):
+                    timeout_exc_class = (TimeoutError, trio.TooSlowError)
 
         # check apsw.aio.deadline first
-
-        apsw.aio.check_progress_steps.set(10)
-        db = await apsw.Connection.as_async("")
-
         async def block():
             while True:
                 await sleep(0)
@@ -714,11 +719,19 @@ class Async(unittest.TestCase):
             # of check.  debug python builds also increase the delta
             this_ced = ced()
             that_ced = await (await db.execute("select ced()")).get
-            # The values should be exactly equal, but with anyio they
-            # differ by some of the digits after the decimal point on
-            # slow/debug builds, so we allow a divergence of up to 1
-            # second
-            self.assertLessEqual(that_ced - this_ced, 1)
+
+            if that_ced == math.inf and fw == "anyio":
+                # if using anyio < 4.11.0 with asyncio backend
+                # then out asyncio controller is used and so there
+                # is no current effective deadline to extract and it
+                # gives inf
+                pass
+            else:
+                # The values should be exactly equal, but with anyio they
+                # differ by some of the digits after the decimal point on
+                # slow/debug builds, so we allow a divergence of up to 1
+                # second
+                self.assertLessEqual(that_ced - this_ced, 1)
 
         timed_out = Event()
 
@@ -1105,10 +1118,20 @@ class Async(unittest.TestCase):
             backends.append("trio")
         except ImportError:
             pass
+
+        if not backends:
+            return
+
         try:
             global anyio
             import anyio
         except ImportError:
+            return
+
+        import importlib.metadata
+        ver = tuple(map(int, importlib.metadata.version("anyio").split(".")))
+        if ver < (4, 0):
+            # our tests use the v4 apis
             return
 
         for be in backends:

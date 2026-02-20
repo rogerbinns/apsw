@@ -132,6 +132,19 @@ values are direct, or need to be awaited.
 You can use :meth:`Connection.async_run` to run functions in the
 async Connection worker thread.
 
+.. _anyio_note:
+
+AnyIO note
+==========
+
+Version 4.11.0 (September 2025) or later is required for the APSW
+provided :class:`controller <apsw.aio.AnyIO>` due to the mechanisms
+for calling back from the worker thread to the event loop.  If you are
+using an earlier version of anyio, the APSW will use the corresponding
+event loop controller (:class:`~apsw.aio.AsyncIO` or
+:class:`~apsw.aio.Trio`).  The main effect is that you may see
+:class:`trio.TooSlowError` on timeouts with a trio event loop.
+
 Attributes
 ==========
 

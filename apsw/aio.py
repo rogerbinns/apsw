@@ -562,6 +562,9 @@ class AnyIO:
         self.token = anyio.lowlevel.current_token()
         threading.Thread(name=thread_name, target=self.worker_thread_run).start()
 
+# True means they can be tried, False means too old etc
+_anyio_usable = True
+_trio_usable = True
 
 def Auto() -> Trio | AsyncIO | AnyIO:
     """
@@ -584,12 +587,13 @@ def Auto() -> Trio | AsyncIO | AnyIO:
     :exc:`RuntimeError` is raised if the framework can't be detected.
 
     """
+    global _anyio_usable, _trio_usable
     # This variable tracks which class to use.  It is instantiated
     # outside of the try/except blocks so exceptions in its
     # initialization will be raised.
     found = None
 
-    if found is None and "anyio" in sys.modules:
+    if found is None and "anyio" in sys.modules and _anyio_usable:
         try:
             import anyio
 
@@ -606,6 +610,17 @@ def Auto() -> Trio | AsyncIO | AnyIO:
                     found = AnyIO
                     break
                 frame = frame.f_back
+
+            if found:
+                found = None
+                # check its version is ok
+                import importlib.metadata
+                ver = tuple(map(int, importlib.metadata.version("anyio").split(".")))
+                if  ver >= (4, 11, 0):
+                    found = AnyIO
+                else:
+                    _anyio_usable = False
+
         except:
             pass
 
