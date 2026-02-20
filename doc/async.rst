@@ -140,10 +140,22 @@ AnyIO note
 Version 4.11.0 (September 2025) or later is required for the APSW
 provided :class:`controller <apsw.aio.AnyIO>` due to the mechanisms
 for calling back from the worker thread to the event loop.  If you are
-using an earlier version of anyio, the APSW will use the corresponding
+using an earlier version of anyio, then APSW will use the corresponding
 event loop controller (:class:`~apsw.aio.AsyncIO` or
 :class:`~apsw.aio.Trio`).  The main effect is that you may see
 :class:`trio.TooSlowError` on timeouts with a trio event loop.
+
+The APSW tests run using version 4 of the anyio API.
+
+.. _trio_note:
+
+Trio note
+=========
+
+Version 0.20.0 (February 2022) or later is required for the APSW
+provided :class:`controller <apsw.aio.Trio>` due to the mechanisms
+for supporting :mod:`contextvars`.  You will need a custom controller
+to work with earlier versions.
 
 Attributes
 ==========

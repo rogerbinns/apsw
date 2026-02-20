@@ -1091,10 +1091,16 @@ class Async(unittest.TestCase):
                 asyncio.run(self.asyncTearDown(fn("asyncio")), debug=False)
 
     def testTrio(self):
+        import importlib.metadata
         global trio
         try:
             import trio
-        except ImportError:
+
+            ver = tuple(map(int, importlib.metadata.version("trio").split(".")))
+            if ver < (0, 20, 0):
+                return
+
+        except (ImportError, TypeError):
             return
 
         for fn in self.get_all_atests():
@@ -1102,6 +1108,8 @@ class Async(unittest.TestCase):
                 trio.run(self.asyncTearDown, fn("trio"))
 
     def testAnyIO(self):
+        import importlib.metadata
+
         backends = []
         try:
             global asyncio
@@ -1115,8 +1123,10 @@ class Async(unittest.TestCase):
             global trio
             import trio
 
-            backends.append("trio")
-        except ImportError:
+            ver = tuple(map(int, importlib.metadata.version("trio").split(".")))
+            if ver >= (0, 31, 0):
+                backends.append("trio")
+        except (ImportError, TypeError):
             pass
 
         if not backends:
@@ -1128,7 +1138,6 @@ class Async(unittest.TestCase):
         except ImportError:
             return
 
-        import importlib.metadata
         ver = tuple(map(int, importlib.metadata.version("anyio").split(".")))
         if ver < (4, 0):
             # our tests use the v4 apis

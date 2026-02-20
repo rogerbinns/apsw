@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import contextvars
+import logging
 import math
 import queue
 import sys
@@ -13,6 +14,8 @@ from collections.abc import Callable, Coroutine
 from typing import Any, TypeVar
 
 import apsw
+
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
@@ -619,17 +622,27 @@ def Auto() -> Trio | AsyncIO | AnyIO:
                 if  ver >= (4, 11, 0):
                     found = AnyIO
                 else:
+                    logger.error(f"anyio {ver} was found but is too old to be used with the AnyIO controller")
                     _anyio_usable = False
 
         except:
             pass
 
-    if found is None and "trio" in sys.modules:
+    if found is None and "trio" in sys.modules and _trio_usable:
         try:
             import trio
 
             trio.lowlevel.current_trio_token()
-            found = Trio
+
+            # check its version is ok
+            import importlib.metadata
+            ver = tuple(map(int, importlib.metadata.version("trio").split(".")))
+            if  ver >= (0, 20, 0):
+                found = Trio
+            else:
+                logger.error(f"trio {ver=} was found but is too old to be used with the Trio controller")
+                _trio_usable = False
+
         except:
             pass
 

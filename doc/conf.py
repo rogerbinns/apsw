@@ -36,7 +36,7 @@ rst_prolog = """
 
 .. |uvloop| replace:: `uvloop <https://uvloop.readthedocs.io/>`__
 
-.. |trio| replace:: :external+trio:doc:`trio <index>`
+.. |trio| replace:: :external+trio:doc:`trio <index>` (:ref:`note <trio_note>`)
 
 .. |aiosqlite| replace:: `aiosqlite <https://aiosqlite.omnilib.dev/en/stable/>`__
 
