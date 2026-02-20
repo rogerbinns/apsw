@@ -240,11 +240,11 @@ MakeSqliteMsgFromPyException(char **errmsg)
       res = exc_descriptors[i].code;
       /* do we have extended information available? */
       PyObject *extended = PyObject_GetAttr(exc, apst.extendedresult);
-      if(extended)
+      if (extended)
       {
-          if(PyLong_Check(extended))
-            res = PyLong_AsInt(extended);
-          Py_DECREF(extended);
+        if (PyLong_Check(extended))
+          res = PyLong_AsInt(extended);
+        Py_DECREF(extended);
       }
       PyErr_Clear();
 
