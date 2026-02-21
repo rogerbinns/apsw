@@ -47,6 +47,9 @@ is used in :func:`apsw.ext.format_query_table` to centre column names,
 and right align integers.  That updates the :doc:`shell <shell>` output.
 (:issue:`601`)
 
+Update :func:`fork_checker` and :func:`shutdown` for more robustness
+(:issue:`602`)
+
 3.51.2.0
 ========
 

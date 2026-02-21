@@ -283,6 +283,10 @@ static int allow_missing_dict_bindings = 0;
 /* constants */
 #include "constants.c"
 
+#ifdef APSW_FORK_CHECKER
+static sqlite3_mutex_methods apsw_orig_mutex_methods;
+#endif
+
 /* MODULE METHODS */
 
 /* Although pyobject is marked as a method, it is really a class but
@@ -499,32 +503,40 @@ initialize(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 
 /** .. method:: shutdown() -> None
 
-  It is unlikely you will want to call this method and there is no
-  need to do so.  It is a **really** bad idea to call it unless you
-  are absolutely sure all :class:`connections <Connection>`,
-  :class:`blobs <Blob>`, :class:`cursors <Cursor>`, :class:`vfs <VFS>`
-  etc have been closed, deleted and garbage collected.
+  It is unlikely you will want to call this method and there is no need
+  to do so.  You will get :exc:`MisuseError` if there are any
+  :func:`connections active <connections>` and need to close them first.
+
+  VFS remain registered across a shutdown and initialise.
 
   -* sqlite3_shutdown
 */
-#ifdef APSW_FORK_CHECKER
-static void free_fork_checker(void);
-#endif
-
 static PyObject *
 sqliteshutdown(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused2))
 {
   int res;
 
+  PyObject *conns = apsw_connections(NULL, NULL);
+  if (!conns)
+    return NULL;
+  Py_ssize_t count = PyList_Size(conns);
+  Py_DECREF(conns);
+
+  if (count != 0)
+    return PyErr_Format(get_exception_for_code(SQLITE_MISUSE), "All connections need to be closed to call shutdown");
+
   res = sqlite3_shutdown();
   SET_EXC(res, NULL);
 
+#ifdef APSW_FORK_CHECKER
+  if (apsw_orig_mutex_methods.xMutexInit)
+  {
+    sqlite3_config(SQLITE_CONFIG_MUTEX, &apsw_orig_mutex_methods);
+  }
+#endif
+
   if (PyErr_Occurred())
     return NULL;
-
-#ifdef APSW_FORK_CHECKER
-  free_fork_checker();
-#endif
 
   Py_RETURN_NONE;
 }
@@ -1137,8 +1149,6 @@ static apsw_mutex *apsw_mutexes[]
         NULL, /* from this point on corresponds to the various static mutexes */
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
-static sqlite3_mutex_methods apsw_orig_mutex_methods;
-
 static int
 apsw_xMutexInit(void)
 {
@@ -1151,10 +1161,6 @@ apsw_xMutexEnd(void)
   return apsw_orig_mutex_methods.xMutexEnd();
 }
 
-#define MUTEX_MAX_ALLOC 20
-static apsw_mutex *fork_checker_mutexes[MUTEX_MAX_ALLOC];
-static int current_apsw_fork_mutex = 0;
-
 static sqlite3_mutex *
 apsw_xMutexAlloc(int which)
 {
@@ -1166,15 +1172,16 @@ apsw_xMutexAlloc(int which)
     sqlite3_mutex *m = apsw_orig_mutex_methods.xMutexAlloc(which);
 
     if (!m)
-      return m;
-    assert(current_apsw_fork_mutex < MUTEX_MAX_ALLOC);
-    fork_checker_mutexes[current_apsw_fork_mutex++] = am = malloc(sizeof(apsw_mutex));
+      return NULL;
+    am = malloc(sizeof(apsw_mutex));
+    if (!am)
+      return NULL;
     am->pid = getpid();
     am->underlying_mutex = m;
     return (sqlite3_mutex *)am;
   }
   default:
-    /* verify we have space */
+    /* verify we have space for a static mutex */
     assert((unsigned)which < sizeof(apsw_mutexes) / sizeof(apsw_mutexes[0]));
     /* fill in if missing */
     if (!apsw_mutexes[which])
@@ -1185,23 +1192,6 @@ apsw_xMutexAlloc(int which)
     }
     return (sqlite3_mutex *)apsw_mutexes[which];
   }
-}
-
-static void
-free_fork_checker(void)
-{
-  unsigned i;
-  for (i = 0; i < sizeof(apsw_mutexes) / sizeof(apsw_mutexes[0]); i++)
-  {
-    free(apsw_mutexes[i]);
-    apsw_mutexes[i] = NULL;
-  }
-  for (i = 0; i < MUTEX_MAX_ALLOC; i++)
-  {
-    free(fork_checker_mutexes[i]);
-    fork_checker_mutexes[i] = 0;
-  }
-  current_apsw_fork_mutex = 0;
 }
 
 static int
@@ -1228,6 +1218,7 @@ apsw_xMutexFree(sqlite3_mutex *mutex)
   apsw_mutex *am = (apsw_mutex *)mutex;
   apsw_check_mutex(am);
   apsw_orig_mutex_methods.xMutexFree(am->underlying_mutex);
+  free(am);
 }
 
 static void
@@ -1300,7 +1291,7 @@ static sqlite3_mutex_methods apsw_mutex_methods
 
   One example of how you may end up using fork is if you use the
   :mod:`multiprocessing module <multiprocessing>` which can use
-  fork to make child processes.
+  fork to make child processes in less recent Python versions.
 
   If you do use fork or multiprocessing on a platform that supports fork
   then you **must** ensure database connections and their objects
@@ -1322,11 +1313,10 @@ static sqlite3_mutex_methods apsw_mutex_methods
   arose.  (Destructors of objects you didn't close also run between
   lines.)
 
-  You should only call this method as the first line after importing
-  APSW, as it has to shutdown and re-initialize SQLite.  If you have
-  any SQLite objects already allocated when calling the method then
-  the program will later crash.  The recommended use is to use the fork
-  checking as part of your test suite.
+  Calling this method requires doing a :func:`shutdown` which means there
+  can be no active connections.
+
+  The recommended use is to use the fork checking as part of your test suite.
 */
 static PyObject *
 apsw_fork_checker(PyObject *Py_UNUSED(self))
@@ -1336,6 +1326,16 @@ apsw_fork_checker(PyObject *Py_UNUSED(self))
   /* ignore multiple attempts to use this routine */
   if (apsw_orig_mutex_methods.xMutexInit)
     goto ok;
+
+  sqlite3_mutex_methods dummy;
+
+  rc = sqlite3_config(SQLITE_CONFIG_GETMUTEX, &dummy);
+  if (rc)
+  {
+    PyErr_Format(get_exception_for_code(rc),
+                 "SQLite needs to be shutdown while no connections are active in order to install the fork checker");
+    goto fail;
+  }
 
   /* Ensure mutex methods available and installed */
   rc = sqlite3_initialize();

@@ -16,12 +16,39 @@ def suppressWarning(name):
 # Name deliberate to make it run last
 class zzZForkChecker(unittest.TestCase):
 
+    def install(self):
+        gc.collect(2)
+        assert not apsw.connections()
+        apsw.shutdown()
+        apsw.fork_checker()
+
+    def testAlreadyInit(self):
+        apsw.initialize()
+        con = apsw.Connection(":memory:")
+        self.assertRaisesRegex(apsw.MisuseError, ".*All connections need to be closed.*", apsw.shutdown)
+        con.close()
+        self.assertRaisesRegex(apsw.MisuseError, ".*needs to be shutdown.*", apsw.fork_checker)
+
+    def testManyConnections(self):
+        # make sure dynamic stuff is done
+        self.install()
+        c = []
+        for i in range(50):
+            c.append(apsw.Connection(":memory:"))
+        while x:=apsw.connections():
+            x[0].close()
+
     def testForkChecker(self):
         "Test detection of using objects across fork"
-        # need to free up everything that already exists
-        gc.collect()
-        # install it
-        apsw.fork_checker()
+        self.install()
+
+        class Dummy(apsw.VFS):
+            def __init__(self):
+                super().__init__("one", "")
+
+        # grabs vfs mutex
+        d = Dummy()
+        del d
 
         # return some objects
         def getstuff():
@@ -119,8 +146,6 @@ class zzZForkChecker(unittest.TestCase):
         del child
         del parent
         gc.collect()
-        apsw.shutdown()
-        apsw.initialize()
 
 
 # Fork checker is becoming less useful on newer Pythons because
@@ -144,7 +169,7 @@ if hasattr(apsw, "fork_checker") and hasattr(os, "fork") and platform.python_imp
             pass
 
 if forkcheck:
-    __all__ = (zzZForkChecker,)
+    __all__ = ("zzZForkChecker",)
 else:
     __all__ = tuple()
 
