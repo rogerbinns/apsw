@@ -11,8 +11,6 @@
 # this code works through building and documenting them first
 # for later refactoring
 
-# doc for source file pattern is https://www.sqlite.org/src/file?ci=trunk&name=ext%2Fmisc%2Frandomjson.c
-
 from typing import Literal
 import dataclasses
 
@@ -21,18 +19,24 @@ import dataclasses
 class Extra:
     name: str
     "unique name for extra"
-    type: Literal["extension"] | Literal["executable"]
-    "what kind of extra"
-    sources: list[str]
-    "list of files making source for this extra relative to sqlite3 directory"
     description: str
     "what it is"
     doc: str | None = None
     "documentation link relative to sqlite websites.  if none the source will be used"
     lib_sqlite: bool = False
     "true if needing to link against sqlite3.c"
+    lib_sqlite_stdio: bool = False
+    "true if needing sqlite3_stdio"
+    sources: list[str] = dataclasses.field(default_factory=list[str])
+    "list of files making source for this extra relative to sqlite3 directory"
+    type: Literal["extension"] | Literal["executable"] = "extension"
+    "what kind of extra"
+    defines: list | None = None
+    "additional defines needed"
 
     def __post_init__(self):
+        if self.type == "extension" and not self.sources:
+            self.sources = [f"ext/misc/{self.name}.c"]
         assert len(self.sources)
         assert not any("\\" in source for source in self.sources)
         if self.doc:
@@ -44,10 +48,192 @@ class Extra:
 
 extras = [
     Extra(
+        name="amatch",
+        description="Approximate matches virtual table",
+    ),
+    Extra(
+        name="anycollseq",
+        description="Fake fallback collating function for any unknown collating sequence",
+    ),
+    Extra(
+        name="appendvfs",
+        description="A VFS shim that allows an SQLite database to be appended onto the end of some other file, such as an executable",
+    ),
+    Extra(
+        name="base64",
+        description="Convert either direction between base64 blob and text",
+    ),
+    Extra(
+        name="base85",
+        description="Convert either direction between base85 blob and text",
+    ),
+    Extra(
+        name="btreeinfo",
+        description="btreeinfo virtual table that shows information about all btrees in an SQLite database file",
+    ),
+    Extra(
+        name="cksumvfs",
+        description="A VFS shim that writes a checksum on each page of an SQLite database file",
+    ),
+    Extra(
+        name="closure",
+        description="A virtual table that finds the transitive closure of a parent/child relationship in a real table",
+    ),
+    Extra(
+        name="completion",
+        description="A virtual table that returns suggested completions for a partial SQL input",
+    ),
+    Extra(
+        name="csv",
+        description="A virtual table for reading CSV files",
+    ),
+    Extra(
+        name="decimal",
+        description="Routines to implement arbitrary-precision decimal math",
+    ),
+    Extra(
+        name="eval",
+        description="Implements SQL function eval() which runs SQL statements recursively",
+    ),
+    Extra(
+        name="fileio",
+        description="Implements SQL functions readfile() and writefile(), and eponymous virtual type 'fsdir'",
+    ),
+    # ::TODO:: fossildelta once RBU extension is wrapped
+    Extra(
+        name="fuzzer",
+        description="Virtual table that generates variations on an input word at increasing edit distances from the original",
+    ),
+    Extra(
+        name="ieee754",
+        description="functions for the exact display* and input of IEEE754 Binary64 floating-point numbers",
+    ),
+    Extra(
+        name="nextchar",
+        description="Finds all valid 'next' characters for a string given a vocabulary",
+    ),
+    Extra(
+        name="noop",
+        description="Implements noop() functions useful for testing",
+    ),
+    Extra(
+        name="prefixes",
+        description="Table valued function providing all prefixes of a string",
+    ),
+    Extra(
         name="randomjson",
-        type="extension",
-        sources=["ext/misc/randomjson.c"],
         description="Generates random json objects",
+    ),
+    Extra(
+        name="regexp",
+        description="Compact reasonably efficient posix extended regular expression matcher",
+    ),
+    Extra(
+        name="rot13",
+        description="rot13 function and collating sequence",
+    ),
+    Extra(
+        name="sha1",
+        description="SHA1 hash and query results hash",
+    ),
+    Extra(
+        name="sha3",
+        description="SHA3 hash and query results hash",
+    ),
+    Extra(
+        name="spellfix",
+        description="Search a large vocabulary for close matches",
+        doc="spellfix1.html",
+    ),
+    Extra(
+        name="stmt",
+        description="Virtual table with information about all prepared statements on a connection",
+    ),
+    Extra(
+        name="stmtrand",
+        description="Function that returns the same sequence of random integers is returned for each invocation of the statement",
+    ),
+    Extra(
+        name="tmstmpvfs",
+        description="VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files",
+    ),
+    # totype: hard codes byte order detection on processors from 2013
+    Extra(
+        name="uint",
+        description="UINT collating sequence",
+    ),
+    Extra(
+        name="unionvtab",
+        description="Virtual table combining underlying tables from other databases",
+    ),
+    Extra(
+        name="uuid",
+        description="uuid functions",
+    ),
+    # vfslog: has to be compiled into the amalgamation
+    Extra(
+        name="vfsstat",
+        description="VFS shim tracking call statistics",
+    ),
+    # vfstrace: has to be used with C code
+    Extra(
+        name="vtablog",
+        description="Virtual table printing diagnostic information for interactive analysis and debugging",
+    ),
+    # vtshim: not useful
+    # wholenumber: use generate_series
+    # zipfile: requires libz
+    Extra(
+        name="zorder",
+        description="Functions for z-order (Morton code) transformations",
+    ),
+    Extra(
+        name="sqlite3_dbdump",
+        type="executable",
+        description="Converts the content of a SQLite database into UTF-8 text SQL statements that can be used to exactly recreate the original database",
+        sources=["ext/misc/dbdump.c"],
+        defines=[("DBDUMP_STANDALONE", 1)],
+        lib_sqlite=True,
+    ),
+    Extra(
+        name="sqlite3_diff",
+        type="executable",
+        sources=["tool/sqldiff.c"],
+        description="Displays content differences between SQLite databases",
+        doc="sqldiff.html",
+        lib_sqlite_stdio=True,
+        lib_sqlite=True,
+    ),
+    Extra(
+        name="sqlire3_normalize",
+        type="executable",
+        sources=["ext/misc/normalize.c"],
+        description="Normalizes SQL text so private information can be removed, and to identify structurally identical queries",
+        defines=[("SQLITE_NORMALIZE_CLI", 1)],
+        lib_sqlite=True,
+    ),
+    Extra(
+        name="sqlite3_scrub",
+        type="executable",
+        sources=["ext/misc/scrub.c"],
+        defines=[("SCRUB_STANDALONE", 1)],
+        description="Makes a backup zeroing out all deleted content",
+        lib_sqlite=True,
+    ),
+    Extra(
+        name="sqlite3_shell",
+        type="executable",
+        sources=["shell.c"],
+        description="Command line shell",
+        doc="cli.html",
+        lib_sqlite=True,
+    ),
+    Extra(
+        name="sqlite3_expert",
+        type="executable",
+        sources=["ext/expert/expert.c", "ext/expert/sqlite3expert.c"],
+        description="A simple system to propose useful indexes given a database and a set of SQL queries",
+        lib_sqlite=True,
     ),
     Extra(
         name="sqlite3_rsync",
@@ -71,6 +257,14 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format="    %(message)s")
 
 
+def c_quote(value: str, quote='"'):
+    # I originally tried to backslash escape double quotes but rc
+    # required double backslashes and there was no way to make
+    # everyone happy except to ban them
+    assert '"' not in value
+    return quote + value + quote
+
+
 def make_windows_resource(**fields):
     assert "FileDescription" in fields
     source = (pathlib.Path() / "sqlite3" / "src" / "sqlite3.rc").read_text()
@@ -90,7 +284,7 @@ def make_windows_resource(**fields):
                 v = fields.pop(name)
                 if name == "FileDescription":
                     v += " (APSW packaged)"
-                out.append(f'      VALUE "{name}", "{v}"')
+                out.append(f'      VALUE "{name}", {c_quote(v)}')
             else:
                 out.append(line)
             continue
@@ -98,7 +292,7 @@ def make_windows_resource(**fields):
         if seen_value and line.strip() == "END":
             seen_value = False
             for k, v in fields.items():
-                out.append(f'      VALUE "{k}", "{v}"')
+                out.append(f'      VALUE "{k}", {c_quote(v)}')
         out.append(line)
     return "\r\n".join(out) + "\r\n"
 
@@ -133,7 +327,7 @@ def resource_file(extra: Extra):
         with open(build_dir / f"{extra.name}_rsrc.c", "wt") as f:
             f.write(f"""{unix_resource_header}
                 "Copyright: https://sqlite.org/copyright.html\\n"
-                "Description: {extra.description}\\n"
+                "Description: {c_quote(extra.description, quote="")}\\n"
                 "Documentation: {extra.doc}\\n"
             """)
             for k, v in sorted(Version.items()):
@@ -197,6 +391,16 @@ if cfg.exists():
 macros.append(("SQLITE_THREADSAFE", 1))
 lib_objs = compiler.compile([str(pathlib.Path("sqlite3") / "sqlite3.c")], output_dir=str(build_dir), macros=macros)
 
+# sqlite stdio
+print(">>> sqlite3 stdio library")
+lib_stdio_objs = compiler.compile(
+    [str(pathlib.Path("sqlite3") / "ext" / "misc" / "sqlite3_stdio.c")], output_dir=str(build_dir)
+)
+lib_stdio_include = pathlib.Path("sqlite3") / "ext" / "misc"
+
+
+## ::TODO:: build up a list of failures and the reason and output them at the end
+## ::TODO:: figure out what exceptions to catch for a failed compile or link
 for extra in extras:
     print(f">>> {extra.name}")
     missing = []
@@ -209,10 +413,13 @@ for extra in extras:
         continue
 
     resource = resource_file(extra)
+    include_dirs = [str(lib_stdio_include)] if extra.lib_sqlite_stdio else None
 
     objs = compiler.compile(
         [str(pathlib.Path("sqlite3") / filename) for filename in extra.sources] + [resource],
         output_dir=str(build_dir),
+        include_dirs=include_dirs,
+        macros=extra.defines,
     )
 
     if extra.lib_sqlite:
