@@ -226,7 +226,7 @@ compile-win-one:  ## Does one Windows build - set PYTHON variable
 	$(PYTHON)  -m pip --no-cache-dir wheel -v .
 	cmd /c FOR %i in (*.whl) DO $(PYTHON)  -m pip --no-cache-dir install --force-reinstall %i
 	$(PYTHON) setup.py build_test_extension
-	$(PYTHON) -m apsw.tests
+	$(PYTHON) -m apsw.tests -vf --locals
 	-del /q setup.apsw *.whl
 
 # We ensure that only master can be made source, and that the
