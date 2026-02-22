@@ -195,6 +195,11 @@ class build_test_extension(Command):
     def run(self):
         name = "testextension.sqlext"
 
+        try:
+            os.remove(name)
+        except FileNotFoundError:
+            pass
+
         compiler = ccompiler.new_compiler(verbose=True)
         customize_compiler(compiler)
 
