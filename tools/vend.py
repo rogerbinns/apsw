@@ -3,6 +3,11 @@
 # Package up all the SQLite extensions and binaries #547
 # most likely exposed as apsw.sqlite_extras
 
+# for windows we have to get and extract the full source, followed by
+# getting and extracting the amalgamation over the top.  It is too
+# painful to build the source otherwise.  may as well do this for
+# all platforms based on if fetch is --sqlite or --all --sqlite
+
 # this code works through building and documenting them first
 # for later refactoring
 
@@ -19,10 +24,11 @@ extras = {
         "sources": ["tool/sqlite3_rsync.c"],
         "description": "Database Remote-Copy Tool",
         "doc": "rsync.html",
-        "libsqlite": True
+        "libsqlite": True,
     },
 }
 
+import os
 import pathlib
 import setuptools._distutils.ccompiler as ccompiler
 from setuptools._distutils.sysconfig import customize_compiler
@@ -43,6 +49,11 @@ compiler.mkpath(str(build_dir))
 # where the final binaries go
 output_dir = pathlib.Path() / "apsw" / "sqlite_extras_binaries"
 compiler.mkpath(str(output_dir))
+
+# for windows we need rc -> res resource file
+# start with src/sqlite3.rc, in StringFileInfo block
+#   add Comments
+#   add FileDescription
 
 # build sqlite3 library
 print(">>> sqlite3 library")
@@ -87,11 +98,17 @@ for name, info in extras.items():
                     libraries = None
                 case _:
                     libraries = ["m"]
-            compiler.link_executable(objs, out_name, output_dir=str(build_dir), libraries=libraries)
+            compiler.link_executable(objs, name, output_dir=str(build_dir), libraries=libraries)
+            # macos xattr -d com.apple.quarantine str(build_dir / out_name)
 
         case _:
             raise NotImplementedError
 
-    compiler.move_file(str(build_dir / out_name), str(output_dir))
+    try:
+        os.remove(str(output_dir / out_name))
+    except FileNotFoundError:
+        pass
+
+    compiler.move_file(str(build_dir / out_name), str(output_dir / out_name))
 
     print()
