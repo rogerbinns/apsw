@@ -13,7 +13,6 @@ import time
 import zipfile
 import tarfile
 import subprocess
-import sysconfig
 import shutil
 import pathlib
 import contextlib
@@ -21,6 +20,9 @@ from dataclasses import dataclass
 
 from setuptools import setup, Extension, Command
 from setuptools.command import build_ext, sdist
+import setuptools._distutils.ccompiler as ccompiler
+from setuptools._distutils.sysconfig import customize_compiler
+
 
 try:
     # current setuptools has build
@@ -193,25 +195,16 @@ class build_test_extension(Command):
     def run(self):
         name = "testextension.sqlext"
 
-        def v(n):
-            return sysconfig.get_config_var(n)
+        compiler = ccompiler.new_compiler(verbose=True)
+        customize_compiler(compiler)
 
-        # unixy platforms have this, and is necessary to match the 32/64 bitness of Python itself
-        if v("CC"):
-            cc = f"{ v('CC') } { v('CFLAGS') } { v('CCSHARED') } -Isqlite3 -c src/testextension.c"
-            ld = f"{ v('LDSHARED') } testextension.o -o { name }"
+        compiler.add_include_dir("sqlite3")
 
-            for cmd in cc, ld:
-                print(cmd)
-                subprocess.run(cmd, shell=True, check=True)
-        else:
-            # windows mostly
-            compiler = distutils.ccompiler.new_compiler(verbose=True)
-            compiler.add_include_dir("sqlite3")
-            compiler.add_include_dir(".")
-            preargs = ["/Gd"] if "msvc" in str(compiler.__class__).lower() else ["-fPIC"]
-            objs = compiler.compile(["src/testextension.c"], extra_preargs=preargs)
-            compiler.link_shared_object(objs, name)
+        output_dir = "build/testextension"
+        compiler.mkpath(output_dir)
+        objs = compiler.compile(["src/testextension.c"], output_dir=output_dir)
+        compiler.link_shared_object(objs, name, output_dir=output_dir)
+        compiler.move_file(f"{output_dir}/{name}", ".")
 
 
 # deal with various python version compatibility issues with how
