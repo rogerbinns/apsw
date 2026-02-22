@@ -56,3 +56,4 @@ work/
 compile_commands.json
 .vscode/
 .cache/
+/apsw/sqlite_extras_binaries
