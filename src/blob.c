@@ -195,17 +195,25 @@ APSWBlob_close_internal(APSWBlob *self, int force)
   return setexc;
 }
 
+static int
+APSWBlob_dealloc_mutex(void *self_)
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  DBMUTEX_RETRY(self->connection, APSWBlob_dealloc_mutex);
+
+  APSWBlob_close_internal(self, 2);
+
+  Py_TpFree(self_);
+  return 0;
+}
+
 static void
 APSWBlob_dealloc(PyObject *self_)
 {
   APSWBlob *self = (APSWBlob *)self_;
   APSW_CLEAR_WEAKREFS;
 
-  if (self->connection)
-    DBMUTEX_FORCE(self->connection->dbmutex);
-  APSWBlob_close_internal(self, 2);
-
-  Py_TpFree(self_);
+  APSWBlob_dealloc_mutex(self);
 }
 
 /* If the blob is closed, we return the same error as normal python files */

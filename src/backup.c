@@ -121,22 +121,29 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   return setexc;
 }
 
+static int
+APSWBackup_dealloc_mutex(void *self_)
+{
+  APSWBackup *self = (APSWBackup *)self_;
+  if (self->backup)
+  {
+    DBMUTEX_RETRY_2(self->source, self->dest, APSWBackup_dealloc_mutex);
+    APSWBackup_close_internal(self, 2);
+  }
+  Py_CLEAR(self->done);
+
+  Py_TpFree(self_);
+
+  return 0;
+}
+
 static void
 APSWBackup_dealloc(PyObject *self_)
 {
   APSWBackup *self = (APSWBackup *)self_;
   APSW_CLEAR_WEAKREFS;
 
-  if (self->backup)
-  {
-    DBMUTEX_FORCE(self->source->dbmutex);
-    DBMUTEX_FORCE(self->dest->dbmutex);
-
-    APSWBackup_close_internal(self, 2);
-  }
-  Py_CLEAR(self->done);
-
-  Py_TpFree(self_);
+  APSWBackup_dealloc_mutex(self);
 }
 
 /** .. method:: step(npages: int = -1) -> bool

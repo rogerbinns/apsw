@@ -69,6 +69,49 @@
     }                                                                                                                  \
   } while (0)
 
+#define DBMUTEX_RETRY_2(conn1, conn2, func)                                                                            \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    sqlite3_mutex *mutex_one = NULL;                                                                                   \
+    if (conn1)                                                                                                         \
+    {                                                                                                                  \
+      mutex_one = (conn1)->dbmutex;                                                                                    \
+      switch (sqlite3_mutex_try(mutex_one))                                                                            \
+      {                                                                                                                \
+      case SQLITE_MISUSE:                                                                                              \
+        PyErr_SetString(ExcForkingViolation,                                                                           \
+                        "SQLite object allocated in one process is being used in another (across a fork)");            \
+        return -1;                                                                                                     \
+      case SQLITE_BUSY:                                                                                                \
+        return Py_AddPendingCall(func, self);                                                                          \
+      case SQLITE_OK:                                                                                                  \
+        break;                                                                                                         \
+      default:                                                                                                         \
+        Py_UNREACHABLE();                                                                                              \
+      }                                                                                                                \
+    }                                                                                                                  \
+    if (conn2)                                                                                                         \
+    {                                                                                                                  \
+      switch (sqlite3_mutex_try((conn2)->dbmutex))                                                                     \
+      {                                                                                                                \
+      case SQLITE_MISUSE:                                                                                              \
+        PyErr_SetString(ExcForkingViolation,                                                                           \
+                        "SQLite object allocated in one process is being used in another (across a fork)");            \
+        sqlite3_mutex_leave(mutex_one);                                                                                \
+        return -1;                                                                                                     \
+      case SQLITE_BUSY:                                                                                                \
+        sqlite3_mutex_leave(mutex_one);                                                                                \
+        return Py_AddPendingCall(func, self);                                                                          \
+      case SQLITE_OK:                                                                                                  \
+        break;                                                                                                         \
+      default:                                                                                                         \
+        Py_UNREACHABLE();                                                                                              \
+      }                                                                                                                \
+    }                                                                                                                  \
+  } while (0)
+
+#define DBMUTEX_RETRY(connection, func) DBMUTEX_RETRY_2(connection, (Connection*)0, func)
+
 /*
    The default Python PyErr_WriteUnraisable is almost useless, and barely used
    by CPython.  It gives the developer no clue whatsoever where in

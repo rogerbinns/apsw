@@ -282,28 +282,30 @@ APSWCursor_close_internal(APSWCursor *self, int force)
   return 0;
 }
 
+static int
+APSWCursor_dealloc_mutex(void * self_)
+{
+  APSWCursor *self = (APSWCursor *)self_;
+  DBMUTEX_RETRY(self->connection, APSWCursor_dealloc_mutex);
+
+  APSWCursor_close_internal(self, 2);
+
+  Py_TpFree(self_);
+
+  return 0;
+}
+
 static void
 APSWCursor_dealloc(PyObject *self_)
 {
   APSWCursor *self = (APSWCursor *)self_;
-  /* dealloc is not allowed to return an exception or
-     clear the current exception */
-  PY_ERR_FETCH(exc_save);
 
   assert(!self->in_query);
 
   PyObject_GC_UnTrack(self);
   APSW_CLEAR_WEAKREFS;
 
-  if (self->connection)
-    DBMUTEX_FORCE(self->connection->dbmutex);
-  APSWCursor_close_internal(self, 2);
-
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
-
-  PY_ERR_RESTORE(exc_save);
-  Py_TpFree(self_);
+  APSWCursor_dealloc_mutex(self);
 }
 
 /** .. method:: __init__(connection: Connection)

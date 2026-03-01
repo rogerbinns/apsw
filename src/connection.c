@@ -548,14 +548,12 @@ Connection_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   return async_return_value(Py_None);
 }
 
-static void
-Connection_dealloc(PyObject *self_)
+static int
+Connection_dealloc_mutex(void *self_)
 {
   Connection *self = (Connection *)self_;
-  PyObject_GC_UnTrack(self_);
-  APSW_CLEAR_WEAKREFS;
+  DBMUTEX_RETRY(self, Connection_dealloc_mutex);
 
-  DBMUTEX_FORCE(self->dbmutex);
   Connection_close_internal(self, 2);
 
   /* Our dependents all hold a refcount on us, so they must have all
@@ -564,6 +562,18 @@ Connection_dealloc(PyObject *self_)
   Py_CLEAR(self->dependents);
 
   Py_TpFree(self_);
+
+  return 0;
+}
+
+static void
+Connection_dealloc(PyObject *self_)
+{
+  Connection *self = (Connection *)self_;
+  PyObject_GC_UnTrack(self_);
+  APSW_CLEAR_WEAKREFS;
+
+  Connection_dealloc_mutex(self);
 }
 
 /** .. method:: __init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100)

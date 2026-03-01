@@ -365,9 +365,12 @@ error:
 static void
 APSWSession_close_internal(APSWSession *self)
 {
+  sqlite3_mutex *mutex = NULL;
+
   if (self->session)
   {
-    assert(sqlite3_mutex_held(self->connection->dbmutex));
+    mutex = self->connection->dbmutex;
+    assert(sqlite3_mutex_held(mutex));
     sqlite3session_delete(self->session);
     self->session = NULL;
   }
@@ -376,21 +379,30 @@ APSWSession_close_internal(APSWSession *self)
 
   if (self->connection)
   {
-    sqlite3_mutex_leave(self->connection->dbmutex);
+    sqlite3_mutex_leave(mutex);
     Connection_remove_dependent(self->connection, (PyObject *)self);
   }
   Py_CLEAR(self->connection);
+}
+
+static int
+APSWSession_dealloc_mutex(void *self_)
+{
+  APSWSession *self = (APSWSession *)self_;
+
+  DBMUTEX_RETRY(self->connection, APSWSession_dealloc_mutex);
+  APSWSession_close_internal(self);
+  Py_TpFree(self_);
+
+  return 0;
 }
 
 static void
 APSWSession_dealloc(PyObject *self_)
 {
   APSWSession *self = (APSWSession *)self_;
-  sqlite3_mutex *mutex = self->connection ? self->connection->dbmutex : NULL;
-  if (mutex)
-    DBMUTEX_FORCE(mutex);
-  APSWSession_close_internal(self);
-  Py_TpFree(self_);
+
+  APSWSession_dealloc_mutex(self);
 }
 
 /** .. method:: close() -> None
@@ -2048,26 +2060,30 @@ APSWChangesetBuilder_close_internal(APSWChangesetBuilder *self)
   }
   if (self->connection)
   {
-    assert(sqlite3_mutex_held(self->connection->dbmutex));
     Connection_remove_dependent(self->connection, (PyObject *)self);
     Py_CLEAR(self->connection);
   }
+}
+
+static int
+APSWChangesetBuilder_dealloc_mutex(void *self_)
+{
+  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
+  DBMUTEX_RETRY(self->connection, APSWChangesetBuilder_dealloc_mutex);
+
+  sqlite3_mutex *mutex = (self->connection) ? self->connection->dbmutex : NULL;
+  APSWChangesetBuilder_close_internal(self);
+  sqlite3_mutex_leave(mutex);
+
+  Py_TpFree(self_);
+  return 0;
 }
 
 static void
 APSWChangesetBuilder_dealloc(PyObject *self_)
 {
   APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
-  sqlite3_mutex *mutex = NULL;
-  if (self->connection)
-  {
-    mutex = self->connection->dbmutex;
-    DBMUTEX_FORCE(mutex);
-  }
-  APSWChangesetBuilder_close_internal(self);
-  if (mutex)
-    sqlite3_mutex_leave(mutex);
-  Py_TpFree(self_);
+  APSWChangesetBuilder_dealloc_mutex(self);
 }
 
 /** .. method:: close() -> None
