@@ -6105,8 +6105,7 @@ Connection_set_row_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(
   particular action is ok to be part of the statement.
 
   Typical usage would be if you are running user supplied SQL and want
-  to prevent harmful operations.  You should also
-  set the :class:`statementcachesize <Connection>` to zero.
+  to prevent harmful operations.
 
   The authorizer callback has 5 parameters:
 
@@ -6121,10 +6120,14 @@ Connection_set_row_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(
   (*SQLITE_DENY* is returned if there is an error in your
   Python code).
 
+  Changing the authorizer (including setting to :code:`None`) will not
+  affect currently executing statements.  Any cached statements
+  or currently executing ones will be prepared again on their
+  next use.
+
   .. seealso::
 
     * :ref:`Example <example_authorizer>`
-    * :ref:`statementcache`
 
   -* sqlite3_set_authorizer
 */
