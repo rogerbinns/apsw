@@ -86,6 +86,10 @@ Take advantage of :code:`SQLITE_UTF8_ZT` encoding and
 `sqlite3_carray_bind_v2
 <https://sqlite.org/draft/c3ref/carray_bind.html>`__ in the C code.
 
+A :class:`TableChange` for `SQLITE_CHANGESET_FOREIGN_KEY
+<https://sqlite.org/session.html#SQLITE_CHANGESET_CONFLICT>`__ returns
+:code:`None` for all fields except :attr:`~TableChange.fk_conflicts`
+
 3.51.2.0
 ========
 

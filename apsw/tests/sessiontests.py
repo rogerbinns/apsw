@@ -719,8 +719,19 @@ class Session(unittest.TestCase):
 
         def handler(reason, tc):
             self.assertEqual(reason, apsw.SQLITE_CHANGESET_FOREIGN_KEY)
-            self.assertEqual(tc.op, "Undocumented op 0")
+            self.assertEqual(tc.op, None)
             self.assertEqual(tc.fk_conflicts, 1)
+            self.assertIn("SQLITE_CHANGESET_FOREIGN_KEY", str(tc))
+            self.assertNotIn("op", str(tc))
+            self.assertIsNone(tc.column_count)
+            self.assertIsNone(tc.conflict)
+            self.assertIsNone(tc.indirect)
+            self.assertIsNone(tc.name)
+            self.assertIsNone(tc.new)
+            self.assertIsNone(tc.old)
+            self.assertIsNone(tc.op)
+            self.assertIsNone(tc.opcode)
+            self.assertIsNone(tc.pk_columns)
             return apsw.SQLITE_CHANGESET_OMIT
 
         apsw.Changeset.apply(changeset, self.db, filter=lambda n: n == "delete", conflict=handler)

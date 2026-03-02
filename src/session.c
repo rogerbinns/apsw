@@ -1038,6 +1038,10 @@ APSWSession_tp_repr(PyObject *self_)
   access fields when out of scope.  This means you can't save
   TableChanges for later, and need to copy out any information you need.
 
+  When a conflict handler is :code:`SQLITE_CHANGESET_FOREIGN_KEY` then
+  only the :attr:`fk_conflicts` field has information, and all the rest
+  will be :code:`None`.
+
  */
 
 #define CHECK_TABLE_SCOPE                                                                                              \
@@ -1082,7 +1086,7 @@ APSWTableChange_name(PyObject *self_, void *Py_UNUSED(unused))
   APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
-  return PyUnicode_FromString(self->table_name);
+  return self->operation ? PyUnicode_FromString(self->table_name) : Py_NewRef(Py_None);
 }
 
 /** .. attribute:: column_count
@@ -1096,7 +1100,7 @@ APSWTableChange_column_count(PyObject *self_, void *Py_UNUSED(unused))
   APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
-  return PyLong_FromLong(self->table_column_count);
+  return self->operation ? PyLong_FromLong(self->table_column_count) : Py_NewRef(Py_None);
 }
 
 /** .. attribute:: opcode
@@ -1113,7 +1117,7 @@ APSWTableChange_opcode(PyObject *self_, void *Py_UNUSED(unused))
   APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
-  return PyLong_FromLong(self->operation);
+  return self->operation ? PyLong_FromLong(self->operation) : Py_NewRef(Py_None);
 }
 
 /** .. attribute:: op
@@ -1135,8 +1139,8 @@ APSWTableChange_op(PyObject *self_, void *Py_UNUSED(unused))
     return Py_NewRef(apst.DELETE);
   if (self->operation == SQLITE_UPDATE)
     return Py_NewRef(apst.UPDATE);
-  /* https://sqlite.org/forum/forumpost/09c94dfb08 */
-  return PyUnicode_FromFormat("Undocumented op %d", self->operation);
+
+  Py_RETURN_NONE;
 }
 
 /** .. attribute:: indirect
@@ -1150,6 +1154,9 @@ APSWTableChange_indirect(PyObject *self_, void *Py_UNUSED(unused))
 {
   APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
+
+  if (!self->operation)
+    Py_RETURN_NONE;
   if (self->indirect)
     Py_RETURN_TRUE;
 
@@ -1170,6 +1177,9 @@ APSWTableChange_new(PyObject *self_, void *Py_UNUSED(unused))
 {
   APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
+
+  if (!self->operation)
+    Py_RETURN_NONE;
 
   sqlite3_value *value, *misuse_check;
   if (SQLITE_MISUSE == sqlite3changeset_new(self->iter, 0, &misuse_check))
@@ -1220,6 +1230,9 @@ APSWTableChange_old(PyObject *self_, void *Py_UNUSED(unused))
   APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
+  if (!self->operation)
+    Py_RETURN_NONE;
+
   sqlite3_value *value, *misuse_check;
   if (SQLITE_MISUSE == sqlite3changeset_old(self->iter, 0, &misuse_check))
     Py_RETURN_NONE;
@@ -1267,6 +1280,10 @@ APSWTableChange_conflict(PyObject *self_, void *Py_UNUSED(unused))
 {
   APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
+
+  if (!self->operation)
+    Py_RETURN_NONE;
+
   sqlite3_value *value;
   int res = sqlite3changeset_conflict(self->iter, 0, &value);
   if (res == SQLITE_MISUSE)
@@ -1344,6 +1361,9 @@ APSWTableChange_pk_columns(PyObject *self_, void *Py_UNUSED(unused))
   APSWTableChange *self = (APSWTableChange *)self_;
   CHECK_TABLE_SCOPE;
 
+  if (!self->operation)
+    Py_RETURN_NONE;
+
   unsigned char *abPK;
   int nCol;
 
@@ -1387,29 +1407,37 @@ APSWTableChange_tp_repr(PyObject *self_)
   if (!self->iter)
     return PyUnicode_FromFormat("<%s out of scope, at %p>", Py_TypeName(self_), self);
 
-  PyObject *op = NULL, *old = NULL, *new_vals = NULL, *conflict = NULL, *pk_columns = NULL, *fk_conflicts = NULL;
+  PyObject *op = NULL, *old = NULL, *new_vals = NULL, *conflict = NULL, *pk_columns = NULL, *fk_conflicts = NULL,
+           *res = NULL;
 
-  op = APSWTableChange_op(self_, NULL);
-  if (op)
-    old = APSWTableChange_old(self_, NULL);
-  if (old)
-    new_vals = APSWTableChange_new(self_, NULL);
-  if (new_vals)
-    conflict = APSWTableChange_conflict(self_, NULL);
-  if (conflict)
-    pk_columns = APSWTableChange_pk_columns(self_, NULL);
-  if (pk_columns)
+  if (!self->operation)
+  {
     fk_conflicts = APSWTableChange_fk_conflicts(self_, NULL);
+    if (fk_conflicts)
+      res = PyUnicode_FromFormat("<%s SQLITE_CHANGESET_FOREIGN_KEY fk_conflicts=%S, at %p>", Py_TypeName(self_),
+                                 fk_conflicts, self);
+  }
+  else
+  {
+    op = APSWTableChange_op(self_, NULL);
+    if (op)
+      old = APSWTableChange_old(self_, NULL);
+    if (old)
+      new_vals = APSWTableChange_new(self_, NULL);
+    if (new_vals)
+      conflict = APSWTableChange_conflict(self_, NULL);
+    if (conflict)
+      pk_columns = APSWTableChange_pk_columns(self_, NULL);
+    if (pk_columns)
+      fk_conflicts = APSWTableChange_fk_conflicts(self_, NULL);
 
-  PyObject *res = NULL;
-
-  if (fk_conflicts)
-    res = PyUnicode_FromFormat("<%s name=\"%s\", column_count=%d, pk_columns=%S, operation=%U, "
-                               "indirect=%S, old=%S, new=%S, conflict=%S, fk_conflicts=%S, at %p>",
-                               Py_TypeName(self_), self->table_name ? self->table_name : "(NULL)",
-                               self->table_column_count, pk_columns, op, (self->indirect) ? Py_True : Py_False, old,
-                               new_vals, conflict, fk_conflicts, self);
-
+    if (fk_conflicts)
+      res = PyUnicode_FromFormat("<%s name=\"%s\", column_count=%d, pk_columns=%S, operation=%U, "
+                                 "indirect=%S, old=%S, new=%S, conflict=%S, fk_conflicts=%S, at %p>",
+                                 Py_TypeName(self_), self->table_name ? self->table_name : "(NULL)",
+                                 self->table_column_count, pk_columns, op, (self->indirect) ? Py_True : Py_False, old,
+                                 new_vals, conflict, fk_conflicts, self);
+  }
   Py_XDECREF(op);
   Py_XDECREF(old);
   Py_XDECREF(new_vals);
