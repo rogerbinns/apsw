@@ -305,7 +305,11 @@ APSWCursor_dealloc(PyObject *self_)
   PyObject_GC_UnTrack(self);
   APSW_CLEAR_WEAKREFS;
 
+  PY_ERR_FETCH(exc);
   APSWCursor_dealloc_mutex(self);
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
+  PY_ERR_RESTORE(exc);
 }
 
 /** .. method:: __init__(connection: Connection)

@@ -1102,6 +1102,9 @@ apsw_fini(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
   Py_CLEAR(coro_for_value);
   Py_CLEAR(coro_for_exception);
   Py_CLEAR(coro_for_stopasynciteration);
+  PyMem_Free(pending_call_slots);
+  pending_call_slots = 0;
+  pending_call_slots_count = 0;
   Py_RETURN_NONE;
 }
 #endif

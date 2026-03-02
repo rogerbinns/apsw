@@ -213,7 +213,11 @@ APSWBlob_dealloc(PyObject *self_)
   APSWBlob *self = (APSWBlob *)self_;
   APSW_CLEAR_WEAKREFS;
 
+  PY_ERR_FETCH(exc);
   APSWBlob_dealloc_mutex(self);
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
+  PY_ERR_RESTORE(exc);
 }
 
 /* If the blob is closed, we return the same error as normal python files */

@@ -143,7 +143,11 @@ APSWBackup_dealloc(PyObject *self_)
   APSWBackup *self = (APSWBackup *)self_;
   APSW_CLEAR_WEAKREFS;
 
+  PY_ERR_FETCH(exc);
   APSWBackup_dealloc_mutex(self);
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
+  PY_ERR_RESTORE(exc);
 }
 
 /** .. method:: step(npages: int = -1) -> bool

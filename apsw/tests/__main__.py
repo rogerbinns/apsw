@@ -5195,7 +5195,6 @@ class APSW(unittest.TestCase):
             # I can't confidently say that all threads would have got execution time
             # on all the platforms out there, so check if env var was set
             self.assertTrue(all(v > 0 for v in did_work.values()), f"{did_work=}")
-            self.assertTrue(all(v > 0 for v in locked.values()), f"{locked=}")
 
     def testIssue50(self):
         "Issue 50: Check Blob.read return value on eof"

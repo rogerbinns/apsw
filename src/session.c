@@ -402,7 +402,11 @@ APSWSession_dealloc(PyObject *self_)
 {
   APSWSession *self = (APSWSession *)self_;
 
+  PY_ERR_FETCH(exc);
   APSWSession_dealloc_mutex(self);
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
+  PY_ERR_RESTORE(exc);
 }
 
 /** .. method:: close() -> None
@@ -2083,7 +2087,12 @@ static void
 APSWChangesetBuilder_dealloc(PyObject *self_)
 {
   APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
+
+  PY_ERR_FETCH(exc);
   APSWChangesetBuilder_dealloc_mutex(self);
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
+  PY_ERR_RESTORE(exc);
 }
 
 /** .. method:: close() -> None

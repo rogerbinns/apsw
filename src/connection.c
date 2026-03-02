@@ -573,7 +573,11 @@ Connection_dealloc(PyObject *self_)
   PyObject_GC_UnTrack(self_);
   APSW_CLEAR_WEAKREFS;
 
+  PY_ERR_FETCH(exc);
   Connection_dealloc_mutex(self);
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
+  PY_ERR_RESTORE(exc);
 }
 
 /** .. method:: __init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100)
