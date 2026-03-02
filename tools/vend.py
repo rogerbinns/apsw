@@ -207,7 +207,7 @@ extras = [
     Extra(
         name="vec1",
         description="Vector search.  !Experimental! !Under development! Loading on before 2013 CPU may crash process",
-        doc="vec1/doc/trunk/doc/vec1intro.md",
+        doc="vec1",
         sources=["vec1/vec1.c"],
     ),
     Extra(
