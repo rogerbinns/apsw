@@ -45,7 +45,9 @@ compiled.  These can be packaged with APSW for convenient access.  See
 Also included is the experimental under development `vec1 vector
 search extension <https://sqlite.org/vec1>`__.
 
-Added :meth:`Connection.reserve_bytes`.
+Added :meth:`Connection.reserve_bytes`.  This is useful for some of
+the :doc:`extras <extra>` like the `checksum VFS
+<https://sqlite.org/cksumvfs.html>`__.
 
 Fix wrapping, indents. and space for hyphens in
 :func:`apsw.unicode.text_wrap` under various conditions (:issue:`600`)

@@ -286,7 +286,7 @@ Extensions
         * Function: uuid uuid_blob uuid_str
 
     * - vec1
-      - `link <https://sqlite.org/vec1/doc/trunk/doc/vec1intro.md>`__
+      - `link <https://sqlite.org/vec1>`__
       - Vector search.  !Experimental! !Under development! Loading on before 2013 CPU may crash process
       -
         * Function: vec1_cos_distance vec1_from_json vec1_info vec1_l2_distance vec1_qinstr vec1_test_pq_decode vec1_test_pq_distortion vec1_test_pq_encode vec1_to_json vec1_to_json_f vec1_to_json_i vec1_train

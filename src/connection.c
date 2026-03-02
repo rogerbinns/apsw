@@ -2915,11 +2915,11 @@ Connection_enable_load_extension(PyObject *self_, PyObject *const *fast_args, Py
 
   Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_
 
-  :param filename: The file to load.
+  :param filename: The file to load, the extension is optional
 
   :param entrypoint: The initialization method to call.  If this
-    parameter is not supplied then the SQLite default of
-    ``sqlite3_extension_init`` is used.
+    parameter is not supplied, then SQLite tries :code:`sqlite3_extension_init`
+    and a name derived from the filename.
 
   :raises ExtensionLoadingError: If the extension could not be
     loaded.  The exception string includes more details.
@@ -2929,6 +2929,7 @@ Connection_enable_load_extension(PyObject *self_, PyObject *const *fast_args, Py
   .. seealso::
 
     * :meth:`~Connection.enable_load_extension`
+    * :func:`apsw.sqlite_extra.load`
 */
 static PyObject *
 Connection_load_extension(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)

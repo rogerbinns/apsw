@@ -18,7 +18,11 @@ class NotAvailable(Exception):
     pass
 
 def load(db: apsw.Connection, extension: str):
-    """Loads the extension into the provided database"""
+    """Loads the extension into the provided database
+
+    :meth:`Extension loading <apsw.Connection.enable_load_extension>` will
+    also be turned on.
+    """
     db.enable_load_extension(True)
     entry, path = _get_entry(extension)
     if entry["type"] != "extension":

@@ -2327,11 +2327,11 @@
 #define  Connection_load_extension_DOC "Connection.load_extension(filename: str, entrypoint: str | None = None) -> None\n\n" \
 "Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_\n" \
 "\n" \
-":param filename: The file to load.\n" \
+":param filename: The file to load, the extension is optional\n" \
 "\n" \
 ":param entrypoint: The initialization method to call.  If this\n" \
-"  parameter is not supplied then the SQLite default of\n" \
-"  ``sqlite3_extension_init`` is used.\n" \
+"  parameter is not supplied, then SQLite tries :code:`sqlite3_extension_init`\n" \
+"  and a name derived from the filename.\n" \
 "\n" \
 ":raises ExtensionLoadingError: If the extension could not be\n" \
 "  loaded.  The exception string includes more details.\n" \
@@ -2340,7 +2340,8 @@
 "\n" \
 ".. seealso::\n" \
 "\n" \
-"  * :meth:`~Connection.enable_load_extension`\n" 
+"  * :meth:`~Connection.enable_load_extension`\n" \
+"  * :func:`apsw.sqlite_extra.load`\n" 
 
 #define Connection_load_extension_KWNAMES "filename", "entrypoint"
 #define Connection_load_extension_USAGE "Connection.load_extension(filename: str, entrypoint: str | None = None) -> None"

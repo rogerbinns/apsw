@@ -2185,8 +2185,8 @@ Enter ".help" for instructions
         Note: Extension loading may not be enabled in the SQLite
         library version you are using.
 
-        By default sqlite3_extension_init is called in the library but
-        you can specify an alternate entry point.
+        By default sqlite3_extension_init and a name derived from the filename
+        is tried, or you can specify an alternate entry point.
 
         If you get an error about the extension not being found you
         may need to explicitly specify the directory.  For example if
@@ -2195,7 +2195,7 @@ Enter ".help" for instructions
           .load ./extension
 
         :doc:`sqlite_extra <extra>` will also be searched for
-        extensions if the parameter is not found.  Use --list to see a
+        extensions if the file is not found.  Use --list to see a
         list available in this installation.
         """
         if len(cmd) < 1 or len(cmd) > 2:
