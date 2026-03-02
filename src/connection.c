@@ -755,22 +755,17 @@ pyexception:
   /* clean up db since it is useless - no need for user to call close */
   assert(PyErr_Occurred());
   res = -1;
-  DBMUTEX_FORCE(self->dbmutex);
-  Connection_close_internal(self, 2);
-  assert(PyErr_Occurred());
 
 finally:
   Py_XDECREF(iterator);
   Py_XDECREF(hook);
   if (res == 0)
-  {
     res = apsw_connection_add(self);
-    if (res)
-    {
-      DBMUTEX_FORCE(self->dbmutex);
-      Connection_close_internal(self, 2);
-    }
-  }
+
+  /* proactively cleanup if possible */
+  if (res != 0 && sqlite3_mutex_try(self->dbmutex) == SQLITE_OK)
+    Connection_close_internal(self, 2);
+
   assert((PyErr_Occurred() && res != 0) || (res == 0 && !PyErr_Occurred()));
   return res;
 }
