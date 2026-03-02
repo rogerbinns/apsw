@@ -12104,11 +12104,7 @@ def setup():
     try:
         apsw.config(apsw.SQLITE_CONFIG_MEMSTATUS, True)  # ensure memory tracking is on
     except apsw.MisuseError:
-        # if using amalgamation then something went wrong
-        if apsw.using_amalgamation:
-            raise
-        # coverage uses sqlite and so the config call is too
-        # late
+        # sqlite was already initialized
         pass
     apsw.initialize()  # manual call for coverage
     memdb = apsw.Connection(":memory:")

@@ -86,6 +86,18 @@ API Reference
 #define SQLITE_ENABLE_SETLK_TIMEOUT 1
 #endif
 
+#ifndef SQLITE_OMIT_AUTOINIT
+#define SQLITE_OMIT_AUTOINIT 1
+#endif
+
+#ifndef SQLITE_STRICT_SUBTYPE
+#define SQLITE_STRICT_SUBTYPE 1
+#endif
+
+#ifndef SQLITE_LIKE_DOESNT_MATCH_BLOBS
+#define SQLITE_LIKE_DOESNT_MATCH_BLOBS 1
+#endif
+
 #ifndef SQLITE_DEBUG
 #define SQLITE_API static
 #define SQLITE_EXTERN static
@@ -2012,6 +2024,18 @@ PyInit_apsw(void)
     PyErr_Format(PyExc_EnvironmentError, "SQLite was compiled without thread safety and cannot be used.");
     goto fail;
   }
+
+#ifdef APSW_USE_SQLITE_AMALGAMATION
+  {
+    int rc = sqlite3_initialize();
+    if (rc != SQLITE_OK)
+    {
+      PyErr_Format(PyExc_RuntimeError, "SQLite failed to initialize with code %d", rc);
+      goto fail;
+    }
+  }
+#endif
+
   module_is_initialized = 0;
   if (ApswModuleType.tp_base == NULL)
   {

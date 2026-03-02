@@ -14,7 +14,7 @@ APSW changes by version
 ========
 
 Comprehensive async support - connections run in a dedicated worker
-with the event loop able to :code:`await` the results.
+thread with the event loop able to :code:`await` the results.
 
   * :mod:`asyncio`, |trio|, and |anyio| are supported and tested
   * Async callbacks can be used anywhere including:
@@ -59,6 +59,28 @@ and right align integers.  That updates the :doc:`shell <shell>` output.
 
 Update :func:`fork_checker` and :func:`shutdown` for more robustness
 (:issue:`602`)
+
+Amalgamation builds **only** (eg PyPI):  Following the `recommended
+compile time options
+<https://sqlite.org/compile.html#recommended_compile_time_options>`__,
+the following options are now set.  Other applicable recommendations
+were done in earlier releases.  You can use
+:attr:`apsw.compile_options` to see what is in effect.
+
+* `SQLITE_OMIT_AUTOINIT
+  <https://sqlite.org/compile.html#omit_autoinit>`__.
+  :func:`initialize` is called when APSW is loaded.  **Backwards
+  incompatible change:** This will only affect :func:`apsw.config` calls
+  made before anything else, and will now require an explicit :func:`apsw.shutdown`,
+  :func:`apsw.config`, and :func:`apsw.initialize`.
+
+* `SQLITE_STRICT_SUBTYPE <https://sqlite.org/compile.html#strict_subtype>`__ -
+  subtypes are not exposed in APSW, but are used by SQLite builtin functions.
+
+* `SQLITE_LIKE_DOESNT_MATCH_BLOBS
+  <https://sqlite.org/compile.html#like_doesnt_match_blobs>`__ which
+  is a **backwards incompatible change** if you deliberately use
+  :code:`LIKE` against blobs, which is not a good idea.
 
 Take advantage of :code:`SQLITE_UTF8_ZT` encoding and
 `sqlite3_carray_bind_v2
