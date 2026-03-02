@@ -6479,7 +6479,7 @@ Connection_fts5_tokenizer(PyObject *self_, PyObject *const *fast_args, Py_ssize_
     SET_EXC(rc, self->db);
     AddTraceBackHere(__FILE__, __LINE__, "Connection.fts5_tokenizer_v2.xCreate", "{s:s,s:i,s:O}", "name", name,
                      "len(args)", argc, "args", args_as_tuple);
-    APSWFTS5TokenizerType.tp_dealloc((PyObject *)pytok);
+    Py_DECREF(pytok);
     goto error;
   }
   Py_XDECREF(tmptuple);
