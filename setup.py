@@ -334,7 +334,7 @@ class fetch(Command):
             if sys.platform != "win32":
                 write("    Running configure to work out SQLite compilation flags")
                 env = os.environ.copy()
-                for v in "CC", "CFLAGS":
+                for v in "CC", "CFLAGS", "LDFLAGS", "CXX":
                     val = sysconfig.get_config_var(v)
                     if val:
                         env[v] = val
