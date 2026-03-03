@@ -79,4 +79,4 @@ Geopoly
 =======
 
 A Geojson `compatible interface to RTree
-<Mhttps://www.sqlite.org/geopoly.html>`__.
+<https://www.sqlite.org/geopoly.html>`__.

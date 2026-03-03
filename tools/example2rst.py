@@ -89,7 +89,7 @@ header_json = """\
 JSON Example/Tour
 ====================
 
-This example shows using `JSON <json.org>`__ with SQLite, and
+This example shows using `JSON <https://json.org>`__ with SQLite, and
 additional functionality provided by APSW to make it easier to use.
 
 .. code-block:: python
