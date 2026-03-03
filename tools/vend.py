@@ -17,8 +17,7 @@ import sysconfig
 from typing import Literal
 import dataclasses
 import sys
-import platform
-import shutil
+import pathlib
 
 
 @dataclasses.dataclass
@@ -235,7 +234,7 @@ extras = [
     Extra(
         name="sqlite3_diff",
         type="executable",
-        sources=["tool/sqldiff.c"] + (["tool/winmain.c"] if sys.platform == "win32" else []),
+        sources=["tool/sqldiff.c"] + (["tool/winmain.c"] if sys.platform == "win32" and pathlib.Path("sqlite3/tool/winmain.c").exists() else []),
         description="Displays content differences between SQLite databases",
         doc="sqldiff.html",
         lib_sqlite_stdio=True,
@@ -347,13 +346,14 @@ extras = [
 ]
 
 import os
-import pathlib
 import re
 import setuptools._distutils.ccompiler as ccompiler
 from setuptools._distutils.compilers.C.errors import CompileError, LinkError
 from setuptools._distutils.sysconfig import customize_compiler
 import subprocess
 import pprint
+import shutil
+import platform
 
 import logging
 
