@@ -1337,8 +1337,7 @@
 "particular action is ok to be part of the statement.\n" \
 "\n" \
 "Typical usage would be if you are running user supplied SQL and want\n" \
-"to prevent harmful operations.  You should also\n" \
-"set the :class:`statementcachesize <Connection>` to zero.\n" \
+"to prevent harmful operations.\n" \
 "\n" \
 "The authorizer callback has 5 parameters:\n" \
 "\n" \
@@ -1353,10 +1352,14 @@
 "(*SQLITE_DENY* is returned if there is an error in your\n" \
 "Python code).\n" \
 "\n" \
+"Changing the authorizer (including setting to :code:`None`) will not\n" \
+"affect currently executing statements.  Any cached statements\n" \
+"or currently executing ones will be prepared again on their\n" \
+"next use.\n" \
+"\n" \
 ".. seealso::\n" \
 "\n" \
 "  * :ref:`Example <example_authorizer>`\n" \
-"  * :ref:`statementcache`\n" \
 "\n" \
 "Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__\n" 
 
@@ -4431,7 +4434,11 @@
 "after your filter or conflict handler returns, or the iterator moves to the next\n" \
 "entry.  You will get :exc:`~apsw.InvalidContextError` if you try to\n" \
 "access fields when out of scope.  This means you can't save\n" \
-"TableChanges for later, and need to copy out any information you need.\n" 
+"TableChanges for later, and need to copy out any information you need.\n" \
+"\n" \
+"When a conflict handler is :code:`SQLITE_CHANGESET_FOREIGN_KEY` then\n" \
+"only the :attr:`fk_conflicts` field has information, and all the rest\n" \
+"will be :code:`None`.\n" 
 
 #define  TableChange_column_count_DOC ":type: int\n" \
 "\n" \

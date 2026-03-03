@@ -98,7 +98,7 @@ Extensions
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2famatch.c>`__
       - Approximate matches virtual table
       -
-        * VTable: approximate_match
+        * VTable: :code:`approximate_match`
 
     * - anycollseq
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fanycollseq.c>`__
@@ -109,205 +109,205 @@ Extensions
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fappendvfs.c>`__
       - A VFS shim that allows an SQLite database to be appended onto the end of some other file, such as an executable
       -
-        * VFS: apndvfs
+        * VFS: :code:`apndvfs`
 
     * - base64
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fbase64.c>`__
       - Convert either direction between base64 blob and text
       -
-        * Function: base64
+        * Function: :code:`base64`
 
     * - base85
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fbase85.c>`__
       - Convert either direction between base85 blob and text
       -
-        * Function: base85 is_base85
+        * Function: :code:`base85` :code:`is_base85`
 
     * - btreeinfo
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fbtreeinfo.c>`__
       - btreeinfo virtual table that shows information about all btrees in an SQLite database file
       -
-        * VTable: sqlite_btreeinfo
+        * VTable: :code:`sqlite_btreeinfo`
 
     * - cksumvfs
       - `link <https://sqlite.org/cksumvfs.html>`__
       - A VFS shim that writes a checksum on each page of an SQLite database file
       -
-        * Function: verify_checksum
-        * VFS: cksmvfs
+        * Function: :code:`verify_checksum`
+        * VFS: :code:`cksmvfs`
 
     * - closure
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fclosure.c>`__
       - A virtual table that finds the transitive closure of a parent/child relationship in a real table
       -
-        * VTable: transitive_closure
+        * VTable: :code:`transitive_closure`
 
     * - completion
       - `link <https://sqlite.org/completion.html>`__
       - A virtual table that returns suggested completions for a partial SQL input
       -
-        * VTable: completion
+        * VTable: :code:`completion`
 
     * - csv
       - `link <https://sqlite.org/csv.html>`__
       - A virtual table for reading CSV files
       -
-        * VTable: csv
+        * VTable: :code:`csv`
 
     * - decimal
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fdecimal.c>`__
       - Routines to implement arbitrary-precision decimal math
       -
-        * Collation: decimal
-        * Function: decimal decimal_add decimal_cmp decimal_exp decimal_mul decimal_pow2 decimal_sub decimal_sum
+        * Collation: :code:`decimal`
+        * Function: :code:`decimal` :code:`decimal_add` :code:`decimal_cmp` :code:`decimal_exp` :code:`decimal_mul` :code:`decimal_pow2` :code:`decimal_sub` :code:`decimal_sum`
 
     * - eval
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2feval.c>`__
       - Implements SQL function eval() which runs SQL statements recursively
       -
-        * Function: eval
+        * Function: :code:`eval`
 
     * - fileio
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ffileio.c>`__
       - Implements SQL functions readfile() and writefile(), and eponymous virtual type 'fsdir'
       -
-        * Function: lsmode readfile realpath writefile
-        * VTable: fsdir
+        * Function: :code:`lsmode` :code:`readfile` :code:`realpath` :code:`writefile`
+        * VTable: :code:`fsdir`
 
     * - fuzzer
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ffuzzer.c>`__
       - Virtual table that generates variations on an input word at increasing edit distances from the original
       -
-        * VTable: fuzzer
+        * VTable: :code:`fuzzer`
 
     * - ieee754
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fieee754.c>`__
       - functions for the exact display* and input of IEEE754 Binary64 floating-point numbers
       -
-        * Function: ieee754 ieee754_exponent ieee754_from_blob ieee754_from_int ieee754_inc ieee754_mantissa ieee754_to_blob ieee754_to_int
+        * Function: :code:`ieee754` :code:`ieee754_exponent` :code:`ieee754_from_blob` :code:`ieee754_from_int` :code:`ieee754_inc` :code:`ieee754_mantissa` :code:`ieee754_to_blob` :code:`ieee754_to_int`
 
     * - memstat
       - `link <https://sqlite.org/memstat.html>`__
       - Provides SQL access to the sqlite3_status64() and sqlite3_db_status() interfaces
       -
-        * VTable: sqlite_memstat
+        * VTable: :code:`sqlite_memstat`
 
     * - nextchar
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fnextchar.c>`__
       - Finds all valid 'next' characters for a string given a vocabulary
       -
-        * Function: next_char
+        * Function: :code:`next_char`
 
     * - noop
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fnoop.c>`__
       - Implements noop() functions useful for testing
       -
-        * Function: multitype_text noop noop_do noop_i noop_nd
+        * Function: :code:`multitype_text` :code:`noop` :code:`noop_do` :code:`noop_i` :code:`noop_nd`
 
     * - prefixes
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fprefixes.c>`__
       - Table valued function providing all prefixes of a string
       -
-        * Function: prefix_length
-        * VTable: prefixes
+        * Function: :code:`prefix_length`
+        * VTable: :code:`prefixes`
 
     * - randomjson
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2frandomjson.c>`__
       - Generates random json objects
       -
-        * Function: random_json random_json5
+        * Function: :code:`random_json` :code:`random_json5`
 
     * - regexp
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fregexp.c>`__
       - Compact reasonably efficient posix extended regular expression matcher
       -
-        * Function: regexp regexpi
+        * Function: :code:`regexpi`
 
     * - rot13
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2frot13.c>`__
       - rot13 function and collating sequence
       -
-        * Collation: rot13
-        * Function: rot13
+        * Collation: :code:`rot13`
+        * Function: :code:`rot13`
 
     * - sha1
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fsha1.c>`__
       - SHA1 hash and query results hash
       -
-        * Function: sha1 sha1_query sha1b
+        * Function: :code:`sha1` :code:`sha1_query` :code:`sha1b`
 
     * - shathree
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fshathree.c>`__
       - SHA3 hash and query results hash
       -
-        * Function: sha3 sha3_agg sha3_query
+        * Function: :code:`sha3` :code:`sha3_agg` :code:`sha3_query`
 
     * - spellfix
       - `link <https://sqlite.org/spellfix1.html>`__
       - Search a large vocabulary for close matches
       -
-        * Function: editdist3 spellfix1_editdist spellfix1_phonehash spellfix1_scriptcode spellfix1_translit
-        * VTable: spellfix1
+        * Function: :code:`editdist3` :code:`spellfix1_editdist` :code:`spellfix1_phonehash` :code:`spellfix1_scriptcode` :code:`spellfix1_translit`
+        * VTable: :code:`spellfix1`
 
     * - stmt
       - `link <https://sqlite.org/stmt.html>`__
       - Virtual table with information about all prepared statements on a connection
       -
-        * VTable: sqlite_stmt
+        * VTable: :code:`sqlite_stmt`
 
     * - stmtrand
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fstmtrand.c>`__
       - Function that returns the same sequence of random integers is returned for each invocation of the statement
       -
-        * Function: stmtrand
+        * Function: :code:`stmtrand`
 
     * - tmstmpvfs
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ftmstmpvfs.c>`__
       - VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files
       -
-        * VFS: tmstmpvfs
+        * VFS: :code:`tmstmpvfs`
 
     * - uint
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fuint.c>`__
       - UINT collating sequence
       -
-        * Collation: uint
+        * Collation: :code:`uint`
 
     * - unionvtab
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2funionvtab.c>`__
       - Virtual table combining underlying tables from other databases
       -
-        * VTable: swarmvtab unionvtab
+        * VTable: :code:`swarmvtab` :code:`unionvtab`
 
     * - uuid
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fuuid.c>`__
       - uuid functions
       -
-        * Function: uuid uuid_blob uuid_str
+        * Function: :code:`uuid` :code:`uuid_blob` :code:`uuid_str`
 
     * - vec1
       - `link <https://sqlite.org/vec1>`__
-      - Vector search.  !Experimental! !Under development! Loading on before 2013 CPU may crash process
+      - Vector search.  !Experimental! !Under development!
       -
-        * Function: vec1_cos_distance vec1_from_json vec1_info vec1_l2_distance vec1_qinstr vec1_test_pq_decode vec1_test_pq_distortion vec1_test_pq_encode vec1_to_json vec1_to_json_f vec1_to_json_i vec1_train
-        * VTable: vec1
+        * Function: :code:`vec1_cos_distance` :code:`vec1_from_json` :code:`vec1_info` :code:`vec1_l2_distance` :code:`vec1_qinstr` :code:`vec1_test_pq_decode` :code:`vec1_test_pq_distortion` :code:`vec1_test_pq_encode` :code:`vec1_to_json` :code:`vec1_to_json_f` :code:`vec1_to_json_i` :code:`vec1_train`
+        * VTable: :code:`vec1`
 
     * - vfsstat
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fvfsstat.c>`__
       - VFS shim tracking call statistics
       -
-        * VFS: vfslog
-        * VTable: vfsstat
+        * VFS: :code:`vfslog`
+        * VTable: :code:`vfsstat`
 
     * - vtablog
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fvtablog.c>`__
       - Virtual table printing diagnostic information for interactive analysis and debugging
       -
-        * VTable: vtablog
+        * VTable: :code:`vtablog`
 
     * - zorder
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fzorder.c>`__
       - Functions for z-order (Morton code) transformations
       -
-        * Function: unzorder zorder
+        * Function: :code:`unzorder` :code:`zorder`
 

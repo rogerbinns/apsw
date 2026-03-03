@@ -1205,8 +1205,7 @@ class Connection:
     particular action is ok to be part of the statement.
 
     Typical usage would be if you are running user supplied SQL and want
-    to prevent harmful operations.  You should also
-    set the :class:`statementcachesize <Connection>` to zero.
+    to prevent harmful operations.
 
     The authorizer callback has 5 parameters:
 
@@ -1221,10 +1220,14 @@ class Connection:
     (*SQLITE_DENY* is returned if there is an error in your
     Python code).
 
+    Changing the authorizer (including setting to :code:`None`) will not
+    affect currently executing statements.  Any cached statements
+    or currently executing ones will be prepared again on their
+    next use.
+
     .. seealso::
 
       * :ref:`Example <example_authorizer>`
-      * :ref:`statementcache`
 
     Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__"""
 
@@ -3395,7 +3398,11 @@ class TableChange:
     after your filter or conflict handler returns, or the iterator moves to the next
     entry.  You will get :exc:`~apsw.InvalidContextError` if you try to
     access fields when out of scope.  This means you can't save
-    TableChanges for later, and need to copy out any information you need."""
+    TableChanges for later, and need to copy out any information you need.
+
+    When a conflict handler is :code:`SQLITE_CHANGESET_FOREIGN_KEY` then
+    only the :attr:`fk_conflicts` field has information, and all the rest
+    will be :code:`None`."""
 
     column_count: int
     """ Number of columns in the affected table"""
@@ -6114,8 +6121,7 @@ class AsyncConnection:
     particular action is ok to be part of the statement.
 
     Typical usage would be if you are running user supplied SQL and want
-    to prevent harmful operations.  You should also
-    set the :class:`statementcachesize <Connection>` to zero.
+    to prevent harmful operations.
 
     The authorizer callback has 5 parameters:
 
@@ -6130,10 +6136,14 @@ class AsyncConnection:
     (*SQLITE_DENY* is returned if there is an error in your
     Python code).
 
+    Changing the authorizer (including setting to :code:`None`) will not
+    affect currently executing statements.  Any cached statements
+    or currently executing ones will be prepared again on their
+    next use.
+
     .. seealso::
 
       * :ref:`Example <example_authorizer>`
-      * :ref:`statementcache`
 
     Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__"""
 
