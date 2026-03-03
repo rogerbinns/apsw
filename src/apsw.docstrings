@@ -103,7 +103,7 @@
 
 
 #define  Apsw_config_DOC "apsw.config(op: int, *args: Any) -> None\n\n" \
-":param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_\n" \
+":param op: A `configuration operation <https://sqlite.org/c3ref/c_config_covering_index_scan.html>`_\n" \
 ":param args: Zero or more arguments as appropriate for *op*\n" \
 "\n" \
 "Some operations don't make sense from a Python program.  All the\n" \
@@ -136,9 +136,9 @@
 "particular SQLite `error code\n" \
 "<https://sqlite.org/c3ref/c_abort.html>`_ then call this function.\n" \
 "It also understands `extended error codes\n" \
-"<https://sqlite.org/c3ref/c_ioerr_access.html>`_.\n" \
+"<https://sqlite.org/c3ref/c_abort_rollback.html>`_.\n" \
 "\n" \
-"For example to raise `SQLITE_IOERR_ACCESS <https://sqlite.org/c3ref/c_ioerr_access.html>`_::\n" \
+"For example to raise `SQLITE_IOERR_ACCESS <https://sqlite.org/rescode.html#ioerr_access>`_::\n" \
 "\n" \
 "  raise apsw.exception_for(apsw.SQLITE_IOERR_ACCESS)\n" 
 
@@ -560,7 +560,7 @@
 #define  Apsw_status_DOC "apsw.status(op: int, reset: bool = False) -> tuple[int, int]\n\n" \
 "Returns current and highwater measurements.\n" \
 "\n" \
-":param op: A `status parameter <https://sqlite.org/c3ref/c_status_malloc_size.html>`_\n" \
+":param op: A `status parameter <https://sqlite.org/c3ref/c_status_malloc_count.html>`_\n" \
 ":param reset: If *True* then the highwater is set to the current value\n" \
 ":returns: A tuple of current value and highwater value\n" \
 "\n" \
@@ -1635,7 +1635,7 @@
 
 #define  Connection_config_DOC "Connection.config(op: int, *args: int) -> int\n\n" \
 ":param op: A `configuration operation\n" \
-"  <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__\n" \
+"  <https://sqlite.org/c3ref/c_dbconfig_defensive.html>`__\n" \
 ":param args: Zero or more arguments as appropriate for *op*\n" \
 "\n" \
 "This is how to get the fkey setting::\n" \
@@ -2099,7 +2099,7 @@
 "\n" \
 ":param dbname: The name of the database to affect.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
 ":param op: A `numeric code\n" \
-"  <https://sqlite.org/c3ref/c_fcntl_lockstate.html>`_ with values less\n" \
+"  <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__ with values less\n" \
 "  than 100 reserved for SQLite internal use.\n" \
 ":param pointer: A number which is treated as a ``void pointer`` at the C level.\n" \
 "\n" \
@@ -3345,7 +3345,7 @@
 "  :class:`zeroblob`, or a wrapped :ref:`Python object <pyobject>`\n" \
 ":param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be\n" \
 "  placed in the cache after execution\n" \
-":param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.html>`__ passed to\n" \
+":param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>`__ passed to\n" \
 "  `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__\n" \
 ":param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__\n" \
 "   where you can force it to not be an explain, or force explain or explain query plan.\n" \
