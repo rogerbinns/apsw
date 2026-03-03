@@ -108,7 +108,6 @@ extras = [
     Extra(
         name="fileio",
         description="Implements SQL functions readfile() and writefile(), and eponymous virtual type 'fsdir'",
-        lib_sqlite=True,  # only Windows actually needs this but enabled for all platforms for testing
     ),
     # ::TODO:: fossildelta once RBU extension is wrapped
     Extra(
@@ -752,22 +751,14 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
             match extra.type:
                 case "extension":
                     # we don't support these for extensions
-                    assert not extra.lib_sqlite_stdio
-
-                    libraries = [SQLITE_LIB_NAME] if extra.lib_sqlite else None
-                    library_dirs = [str(build_dir)] if extra.lib_sqlite else None
+                    assert not extra.lib_sqlite and not extra.lib_sqlite_stdio
 
                     # .so works just fine on macos, but sqlite only looks
                     # for ,dylib if you don't give the extension
                     out_name = f"{extra.name}{compiler.shared_lib_extension if sys.platform != 'darwin' else '.dylib'}"
                     try:
                         compiler.link_shared_object(
-                            objs,
-                            out_name,
-                            output_dir=str(build_dir),
-                            extra_preargs=link_extra_preargs,
-                            libraries=libraries,
-                            library_dirs=library_dirs
+                            objs, out_name, output_dir=str(build_dir), extra_preargs=link_extra_preargs
                         )
                     except Exception as exc:
                         failed.append((extra, f"Linking as extension {exc_type(exc)} error"))
