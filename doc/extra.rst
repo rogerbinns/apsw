@@ -16,8 +16,6 @@ vec1
 
 There is an experimental under development vector search library by
 the SQLite team.  It is also included with the extras if possible.
-**Note** if the extension is loaded on an x86 processor from before
-2013, then an illegal instruction exception will happen
 
 * `Forum post <https://sqlite.org/forum/forumpost/ceba048877>`__ to provide feedback
 * `Site <https://sqlite.org/vec1>`__ with tutorial and

@@ -200,7 +200,7 @@
         "type": "extension"
     },
     "vec1": {
-        "description": "Vector search.  !Experimental! !Under development! Loading on before 2013 CPU may crash process",
+        "description": "Vector search.  !Experimental! !Under development!",
         "type": "extension"
     },
     "vfsstat": {
