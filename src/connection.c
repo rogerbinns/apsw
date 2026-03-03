@@ -4101,7 +4101,7 @@ Connection_create_collation(PyObject *self_, PyObject *const *fast_args, Py_ssiz
 
   :param dbname: The name of the database to affect.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
   :param op: A `numeric code
-    <https://sqlite.org/c3ref/c_fcntl_lockstate.html>`_ with values less
+    <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__ with values less
     than 100 reserved for SQLite internal use.
   :param pointer: A number which is treated as a ``void pointer`` at the C level.
 
@@ -4942,7 +4942,7 @@ Connection_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
 /** .. method:: config(op: int, *args: int) -> int
 
     :param op: A `configuration operation
-      <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
+      <https://sqlite.org/c3ref/c_dbconfig_defensive.html>`__
     :param args: Zero or more arguments as appropriate for *op*
 
     This is how to get the fkey setting::

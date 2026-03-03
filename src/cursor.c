@@ -1184,7 +1184,7 @@ APSWCursor_step(APSWCursor *self)
       :class:`zeroblob`, or a wrapped :ref:`Python object <pyobject>`
     :param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be
       placed in the cache after execution
-    :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.html>`__ passed to
+    :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>`__ passed to
       `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
     :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
        where you can force it to not be an explain, or force explain or explain query plan.

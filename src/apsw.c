@@ -555,7 +555,7 @@ sqliteshutdown(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused2))
 
 /** .. method:: config(op: int, *args: Any) -> None
 
-  :param op: A `configuration operation <https://sqlite.org/c3ref/c_config_chunkalloc.html>`_
+  :param op: A `configuration operation <https://sqlite.org/c3ref/c_config_covering_index_scan.html>`_
   :param args: Zero or more arguments as appropriate for *op*
 
   Some operations don't make sense from a Python program.  All the
@@ -863,7 +863,7 @@ release_memory(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t
 
   Returns current and highwater measurements.
 
-  :param op: A `status parameter <https://sqlite.org/c3ref/c_status_malloc_size.html>`_
+  :param op: A `status parameter <https://sqlite.org/c3ref/c_status_malloc_count.html>`_
   :param reset: If *True* then the highwater is set to the current value
   :returns: A tuple of current value and highwater value
 
@@ -1018,9 +1018,9 @@ vfs_details(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
   particular SQLite `error code
   <https://sqlite.org/c3ref/c_abort.html>`_ then call this function.
   It also understands `extended error codes
-  <https://sqlite.org/c3ref/c_ioerr_access.html>`_.
+  <https://sqlite.org/c3ref/c_abort_rollback.html>`_.
 
-  For example to raise `SQLITE_IOERR_ACCESS <https://sqlite.org/c3ref/c_ioerr_access.html>`_::
+  For example to raise `SQLITE_IOERR_ACCESS <https://sqlite.org/rescode.html#ioerr_access>`_::
 
     raise apsw.exception_for(apsw.SQLITE_IOERR_ACCESS)
 

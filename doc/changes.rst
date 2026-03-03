@@ -752,7 +752,7 @@ the statement cache.
 
 :meth:`Cursor.execute` now uses `sqlite_prepare_v3
 <https://sqlite.org/c3ref/prepare.html>`__ which allows supplying
-`flags <https://sqlite.org/c3ref/c_prepare_normalize.html#sqlitepreparenormalize>`__.
+`flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>`__.
 
 :meth:`Cursor.execute` has a new `can_cache` parameter to control
 whether the query can use the statement cache.  One example use is
@@ -1121,7 +1121,7 @@ Many spelling fixes (thanks to Edward Betts for the review)
 3.20.1-r1
 =========
 
-Added `SQLITE_DBCONFIG_ENABLE_QPSG <https://www.sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__ constant.
+Added :code:`SQLITE_DBCONFIG_ENABLE_QPSG` constant.
 
 Added shell .open command (:issue:`240`)
 
@@ -1227,8 +1227,7 @@ Allow :class:`Connection` subclasses for backup api (:issue:`199`).
 :code:`--enable-all-extensions`.  It is recommended you wait a few more
 releases for these extensions to mature.
 
-Added a mapping for `virtual table scan flags
-<https://sqlite.org/c3ref/c_index_scan_unique.html>`__
+Added a mapping for virtual table scan flags
 
 Use `SQLITE_ENABLE_API_ARMOR
 <https://www.sqlite.org/compile.html#enable_api_armor>`__ for extra error
@@ -1615,26 +1614,22 @@ SQLITE_FCNTL_OVERWRITE constants.
 Updated documentation and tests due to an undocumented change in VFS
 xDelete semantics.
 
-Added SQLITE3_FCNTL_PERSIST_WAL and SQLITE3_FCNTL_WIN32_AV_RETRY `file
-controls <https://sqlite.org/c3ref/c_fcntl_chunk_size.html>`__.
+Added SQLITE3_FCNTL_PERSIST_WAL and SQLITE3_FCNTL_WIN32_AV_RETRY file
+controls.
 
 Wrapped sqlite3_sourceid (:issue:`120`)
 
 3.7.7.1-r1
 ==========
 
-Added `SQLITE_CONFIG_URI
-<https://sqlite.org/c3ref/c_config_getmalloc.html#sqliteconfiguri>`__
-and support for it in :meth:`config`, and the open flag
-`SQLITE_OPEN_URI
-<https://sqlite.org/c3ref/c_open_autoproxy.html>`__.  This makes it
-easy to use `URI filenames <https://sqlite.org/uri.html>`__.
+Added :code:`SQLITE_CONFIG_URI` and support for it in :meth:`config`,
+and the open flag :code:`SQLITE_OPEN_URI`.  This makes it easy to use
+`URI filenames <https://sqlite.org/uri.html>`__.
 
 The :ref:`shell` now uses `URI filenames
 <https://sqlite.org/uri.html>`__ by default.
 
-New `extended error constants
-<https://sqlite.org/c3ref/c_busy_recovery.html>`__:
+New extended error constants:
 SQLITE_CORRUPT_VTAB, SQLITE_IOERR_SEEK, SQLITE_IOERR_SHMMAP,
 SQLITE_READONLY_CANTLOCK and SQLITE_READONLY_RECOVERY.
 
@@ -1700,10 +1695,10 @@ Windows Python 3.2 binaries now available.
 Binary downloads for Windows 64 bit Python versions 2.6 and above
 including Python 3 are now available.
 
-:meth:`apsw.soft_heap_limit` now uses `sqlite3_soft_heap_limit64
-<https://sqlite.org/c3ref/soft_heap_limit64.html>`__ so you can
-provide values larger than 2GB.  It is now also able to return the
-previous value instead of None.
+:meth:`apsw.soft_heap_limit` now uses
+`:code:sqlite3_soft_heap_limit64` so you can provide values larger
+than 2GB.  It is now also able to return the previous value instead of
+None.
 
 Improve getting shell timer information for 64 bit Windows.
 
@@ -1737,8 +1732,7 @@ No changes to APSW.  Upgrading to this version of SQLite is
 3.7.1-r1
 ========
 
-Updated various constants including `SQLITE_FCNTL_CHUNK_SIZE
-<https://sqlite.org/c3ref/c_fcntl_chunk_size.html>`__ used with
+Updated various constants including SQLITE_FCNTL_CHUNK_SIZE used with
 :meth:`Connection.file_control`.
 
 Fixed Unicode output with some file objects from the shell (:issue:`108`).
@@ -2055,7 +2049,7 @@ SQLite.)
 3.6.13-r1
 =========
 
-Added SQLITE_LOCKED_SHAREDCACHE `extended error code <https://sqlite.org/c3ref/c_ioerr_access.html>`_.
+Added SQLITE_LOCKED_SHAREDCACHE extended error code.
 
 Updated tests as the VFS delete error handling code in SQLite now
 returns the same high level error code between Windows and
