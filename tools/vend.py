@@ -489,6 +489,17 @@ def exc_type(exc: Exception) -> str:
         raise
     return type(exc).__name__
 
+@dataclasses.dataclass
+class CompilerImplementation:
+    """What is the actual compiler
+
+    Sometimes call we know is it is cc so the implementation
+    details are determined by compile_check"""
+    name: Literal["gcc"] | Literal["clang"] | Literal["msvc"] | Literal["unknown"]
+    version: str
+    "random text"
+    misc: set[str]
+    "the various other things"
 
 def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
     get_version()
@@ -524,22 +535,20 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
                 subprocess.run(["strip", src], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         shutil.copy2(src, dest)
 
-    # check if compiler works
-    with open(build_dir / "compile_check.c", mode="wt") as f:
-        f.write("""#include <stdio.h>
-
-                int main(int argc, char **argv)
-                {
-                  printf("hello world %d\\n", argc);
-                  return 0;
-                }""")
     print("Checking if compiler works")
+    compile_check_name = get_compile_check(build_dir)
     try:
-        objs = compiler.compile([f.name], output_dir=str(build_dir))
+        objs = compiler.compile([compile_check_name], output_dir=str(build_dir))
         compiler.link_executable(objs, "compile_check", output_dir=str(build_dir))
+        out_name = f"{build_dir}/compile_check{compiler.exe_extension if compiler.exe_extension else ''}"
+        p =subprocess.run([out_name], capture_output=True, encoding="utf8", text=True)
+        p.check_returncode()
+        info = p.stdout.splitlines()
+        ci = CompilerImplementation(info[0], info[1], set(info[2:]))
+        print(ci)
         print("   OK")
     except Exception as exc:
-        print(f"      Failed to compile hello world because {exc_type(exc)}")
+        print(f"      Failed to compile hello world because {exc}")
         return
 
     # figure out if compile and link pre args work, and remove them if not
@@ -547,7 +556,9 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
     if compile_extra_preargs:
         print(f"Checking {compile_extra_preargs=}")
         try:
-            new_objs = compiler.compile([f.name], output_dir=str(build_dir), extra_preargs=compile_extra_preargs)
+            new_objs = compiler.compile(
+                [compile_check_name], output_dir=str(build_dir), extra_preargs=compile_extra_preargs
+            )
             print("   OK")
         except Exception as exc:
             if exc_type(exc):
@@ -692,7 +703,7 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
                         avx_pre_args.append("/fp:fast")
 
                     case "unix":
-                        if "clang" in compiler.compiler[0] or "gcc" in compiler.compiler[0]:
+                        if ci.name in ("gcc", "clang"):
                             avx_pre_args.append("-O3")
                             if is_x86:
                                 avx_pre_args.extend(("-mavx2", "-mfma"))
@@ -826,6 +837,44 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
                 print(reason)
                 pprint.pprint(extra)
                 print()
+
+
+def get_compile_check(build_dir):
+    with open(build_dir / "compile_check.c", mode="wt") as f:
+        f.write(r"""
+#include <stdio.h>
+
+int main(int argc, char **argv)
+{
+#ifdef __clang__
+    printf("clang\n");
+    printf("%d.%d.%d\n",__clang_major__, __clang_minor__, __clang_patchlevel__);
+#elif defined(_MSC_VER)
+    printf("msvc\n");
+    printf("%d\n", _MSC_FULL_VER);
+#elif defined(__GNUC__)
+    printf("gcc\n");
+    printf("%d.%d.%d\n", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+#else
+    printf("unknown\n");
+    printf("unknown\n");
+#endif
+#ifdef __STDC_VERSION__
+    printf("__STDC_VERSION__=%ld\n", (long)__STDC_VERSION__);
+#endif
+""")
+        for item in ("char", "int", "long", "long long", "int*", "void*"):
+            f.write(rf""" printf("sizeof({item})=%d\n", (int)sizeof({item}));""" + "\n")
+
+        for define in "NDEBUG __OPTIMIZE__ __OPTIMIZE_SIZE__ __NO_INLINE__ __STDC_HOSTED__ __FAST_MATH__ __STDC_NO_ATOMICS__ __STDC_NO_THREADS__ __PIC__ __PIE__ __SANITIZE_ADDRESS__ _MT _DLL _DEBUG __ELF__ __GLIBC__ __MUSL__ __GNUC_GNU_INLINE__ __STRICT_ANSI__".split():
+            f.write(rf"""
+#ifdef {define}
+    printf("{define}\n");
+#endif
+            """)
+
+        f.write("return 0;}")
+    return f.name
 
 
 if __name__ == "__main__":
