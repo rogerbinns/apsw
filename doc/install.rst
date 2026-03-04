@@ -28,6 +28,8 @@ When you install from PyPI:
 
 * All :doc:`extensions <extensions>` are enabled, except ICU.
 
+* :doc:`extra` are available
+
 * `SQLITE_ENABLE_COLUMN_METADATA <https://www.sqlite.org/compile.html#enable_column_metadata>`__
   is enabled, providing :attr:`Cursor.description_full`
 
@@ -234,7 +236,8 @@ Does the complete build.  This will invoke `build_ext` - use only one of
     :widths: auto
 
     * - ``--fetch``
-      - Fetches the corresponding SQLite version
+      - Fetches the corresponding SQLite version amalgamation and all source
+        to make :doc:`extra` available
     * - ``--enable-all-extensions``
       - Enables all the :doc:`standard extensions <extensions>`
     * - ``--enable``
@@ -265,9 +268,8 @@ This provides more fine grained control over what is fetched.
     * - ``--fetch-sqlite``
       - Downloads the SQLite amalgamation
     * - ``--all``
-      - Downloads all SQLite components other than the amalgamation.
-        Over time this has included additional extensions and SQLite
-        functions, but currently is nothing.
+      - Downloads all SQLite source which makes the :doc:`extra`
+        available
     * - ``--missing-checksum-ok``
       - APSW includes checksums of SQLite releases and will fail a
         fetch if you specify a version for which no checksum is known.
@@ -319,7 +321,7 @@ your own on a Linux host.
 
 You should first download the source distribution listed at the top of
 https://pypi.org/project/apsw/#files - the filename ends up being
-``apsw-3.47.0.0.tar.gz`` in this example.  The `cibuildwheel
+``apsw-3.52.0.0.tar.gz`` in this example.  The `cibuildwheel
 <https://cibuildwheel.pypa.io/>`__ tool is used for the building, and
 is the same tool used for the PyPI builds of APSW.
 
@@ -331,7 +333,7 @@ is the same tool used for the PyPI builds of APSW.
   $ venv/bin/pip3 install cibuildwheel
   # Do the building which will download the necessary compiler and
   # Python parts
-  $ venv/bin/cibuildwheel --platform pyodide apsw-3.47.0.0.tar.gz
+  $ venv/bin/cibuildwheel --platform pyodide apsw-3.52.0.0.tar.gz
   # When it has finished the result is in the wheelhouse directory
   $ ls wheelhouse/
 
@@ -341,7 +343,7 @@ You will then be able to install the wheel using `micropip
 .. code-block:: pycon
 
   >>> import micropip
-  >>> await micropip.install("https://url/apsw-3.47.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl")
+  >>> await micropip.install("https://url/apsw-3.52.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl")
   >>> import apsw
 
 At this point you will be able to use APSW as normal.
@@ -414,21 +416,22 @@ Test output will look similar to this.
 .. code-block:: output
 
   $ python3 -m apsw.tests
-                  Python  /space/apsw/.venv/bin/python3 sys.version_info(major=3, minor=14, micro=0, releaselevel='final', serial=0) 64bit ELF
+                  Python  /space/apsw/.venv-314/bin/python sys.version_info(major=3, minor=14, micro=0, releaselevel='final', serial=0) 64bit ELF
   Testing with APSW file  /space/apsw/apsw/__init__.cpython-314-x86_64-linux-gnu.so
-            APSW version  3.51.0.0
-      SQLite lib version  3.51.0
-  SQLite headers version  3051000
+            APSW version  3.51.2.0
+      SQLite lib version  3.51.2
+  SQLite headers version  3051002
       Using amalgamation  True
-      SQLITE_SCM_BRANCH  trunk
-        SQLITE_SCM_TAGS  release major-release version-3.51.0
-    SQLITE_SCM_DATETIME  2025-11-04T19:38:17.314Z
+       SQLITE_SCM_BRANCH  branch-3.51
+         SQLITE_SCM_TAGS  release version-3.51.2
+     SQLITE_SCM_DATETIME  2026-01-09T17:27:48.405Z
 
-  ................................................................................................................................................................................................................
+  ...............................................................................................................................................................................................................................
   ----------------------------------------------------------------------
-  Ran 208 tests in 44.591s
+  Ran 223 tests in 46.654s
 
   OK
+
 
 The tests also ensure that as much APSW code as possible is executed
 including alternate paths through the code.  95.5% of the APSW code is
