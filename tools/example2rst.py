@@ -3,6 +3,8 @@
 # The purpose of this file is to produce rst output interspersed into
 # the the text of the example codes
 
+from __future__ import annotations
+
 import contextlib
 import sys
 import re

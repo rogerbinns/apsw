@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import importlib.resources
 import io
 import json
@@ -20,7 +22,7 @@ class Extra(unittest.TestCase):
         self.verbose: bool = self._outcome.result.showAll
 
     def testLoadExtension(self):
-        db = apsw.Connection("")
+        db = apsw.Connection(":memory:")
         for name, extra in self.extras.items():
             if extra["type"] == "extension" and apsw.sqlite_extra.has(name):
                 with self.subTest(name=name):

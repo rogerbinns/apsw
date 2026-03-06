@@ -11,10 +11,13 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import setup
 
 sqlitevers = (
+    "3520000",
     "3510200",
     "3510100",
     "3510000",
 )
+
+vec1_urls = ("https://sqlite.org/vec1/zip/vec1-20260306155250-d070184523.zip",)
 
 fixup_download_url = setup.fixup_download_url
 
@@ -44,6 +47,13 @@ def check(url, data):
     else:
         print(url, d[0], d[1], d[2])
 
+for vec1 in vec1_urls:
+    try:
+        data = urllib.request.urlopen(vec1).read()
+    except:
+        print(vec1)
+        raise
+    check(vec1, data)
 
 for v in sqlitevers:
     # All platforms amalgamation

@@ -298,9 +298,9 @@ class fetch(Command):
 
             write("  Getting the experiment vec1 extension - no checksums available")
 
-            AURL = "https://sqlite.org/vec1/zip/vec1.zip"
+            AURL = "https://sqlite.org/vec1/zip/vec1-20260306155250-d070184523.zip"
 
-            data = self.download(AURL, checksum=False)
+            data = self.download(AURL, checksum=True)
 
             with zipfile.ZipFile(data) as zipf:
                 for zi in zipf.infolist():
