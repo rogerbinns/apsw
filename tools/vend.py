@@ -526,15 +526,6 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
     shutil.rmtree(output_dir, ignore_errors=True)
     compiler.mkpath(str(output_dir))
 
-    def strip_and_copy(src: str, dest: str):
-        # windows doesn't have strip
-        if compiler.compiler_type != "msvc":
-            # macos strip messes up code signing and doesn't save any space
-            if sys.platform != "darwin":
-                # we don't care if this fails
-                subprocess.run(["strip", src], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        shutil.copy2(src, dest)
-
     print("Checking if compiler works")
     compile_check_name = get_compile_check(build_dir)
     try:
@@ -550,6 +541,14 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
     except Exception as exc:
         print(f"      Failed to compile hello world because {exc}")
         return
+
+    # we want the linker to strip debug rather than trying to do so at
+    # copy time which caused various problems
+    if ci.name in ("gcc", "clang"):
+        if sys.platform == "darwin":
+            link_extra_preargs = ["-Wl,-S"]
+        else:
+            link_extra_preargs = ["-Wl,--strip-debug"]
 
     # figure out if compile and link pre args work, and remove them if not
     new_objs = objs
@@ -645,7 +644,7 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
             new_name = str(pathlib.Path(sqlite_lib_filename).with_suffix(".dylib"))
             os.rename(sqlite_lib_filename, new_name)
             sqlite_lib_filename = new_name
-        strip_and_copy(sqlite_lib_filename, str(output_dir))
+        shutil.copy2(sqlite_lib_filename, str(output_dir))
 
     except Exception as exc:
         print(f"Compiling SQLite failed {exc_type(exc)} - giving up")
@@ -826,7 +825,7 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
             except FileNotFoundError:
                 pass
 
-            strip_and_copy(str(build_dir / out_name), str(output_dir / out_name))
+            shutil.copy2(str(build_dir / out_name), str(output_dir / out_name))
 
             logging.info("")
 
