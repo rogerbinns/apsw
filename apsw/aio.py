@@ -37,31 +37,34 @@ event loop.  Typical usage is:
     # framework as documented below.
 
     with apsw.aio.contextvar_set(apsw.aio.deadline,
-            anyio.current_time() + 10):
+        anyio.current_time() + 10):
 
-            async for row in await db.execute("SELECT  time_consuming ..."):
-                print(f"{row=}")
+        async for row in await db.execute("time consuming query ..."):
+            print(f"{row=}")
 
 
 :class:`AsyncIO`
 
-    This is the only way to set a deadline.  :exc:`TimeoutError` will
+    :code:`apsw.aio.deadline` is the only way to set a deadline.
+    :exc:`TimeoutError` will
     be raised if the deadline is exceeded.  The current time is
     available from  :meth:`asyncio.get_running_loop().time()
     <asyncio.loop.time>`
 
 :class:`Trio`
 
-    If this is set then it is used for the deadline.  :exc:`trio.TooSlowError`
-    is raised.  The current time is available from :func:`trio.current_time`.
+    If :code:`apsw.aio.deadline` is set then it is used for the
+    deadline.  :exc:`trio.TooSlowError` is raised.  The current time
+    is available from :func:`trio.current_time`.
 
     Otherwise the :func:`trio.current_effective_deadline` where the
     call is made is used.
 
 AnyIO
 
-    If this is set then it is used for the deadline.  :exc:`TimeoutError` is raised.
-    The current time is available from :func:`anyio.current_time`.
+    If :code:`apsw.aio.deadline` is set then it is used for the
+    deadline.  :exc:`TimeoutError` is raised.  The current time is
+    available from :func:`anyio.current_time`.
 
     Otherwise the :func:`anyio.current_effective_deadline` where the
     call is made is used.
@@ -71,7 +74,7 @@ AnyIO
 check_progress_steps: contextvars.ContextVar[int] = contextvars.ContextVar(
     "apsw.aio.check_progress_steps", default=50_000
 )
-"""How many steps between checks to check for cancellation and deadlines
+"""How many internal SQLite steps between checks for cancellation and deadlines
 
 While SQLite queries are executing, periodic checks are made to see if
 the request has been cancelled, or the deadline exceeded.  This is
@@ -94,9 +97,9 @@ This is only used during connection creation.  Typical usage is:
 if sys.version_info >= (3, 14):
 
     def contextvar_set(var: contextvars.ContextVar[T], value: T) -> contextvars.Token[T]:
-        """wrapper for setting a contextvar during a with block
+        """Wrapper for setting a :class:`~contextvars.ContextVar` during a :code:`with` block
 
-        Python 3.14 lets you do::
+        Python 3.14+ lets you do::
 
             with var.set(value):
                 # code here
@@ -105,7 +108,7 @@ if sys.version_info >= (3, 14):
         This wrapper provides the same functionality for all
         Python versions::
 
-            with contextvar_set(var, value):
+            with apsw.aio.contextvar_set(var, value):
                 # code here
                 ...
 
@@ -238,7 +241,7 @@ async def _coro_for_stopasynciteration():
 
 
 class AsyncIO:
-    """Uses :mod:`asyncio` for async concurrency"""
+    """:class:`Controller <apsw.AsyncConnectionController>` for :mod:`asyncio`"""
 
     def configure(self, db: apsw.Connection):
         "Setup database, just after it is created"
@@ -323,7 +326,7 @@ class AsyncIO:
     if sys.version_info < (3, 11):
 
         async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
-            "executes the coro in the event loop"
+            "Executes the coro in the event loop"
 
             task = context.run(asyncio.create_task, coro)
             tracker.cancel_async_cb = task.cancel
@@ -337,7 +340,7 @@ class AsyncIO:
     elif sys.version_info < (3, 12):
 
         async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
-            "executes the coro in the event loop"
+            "Executes the coro in the event loop"
 
             task = context.run(asyncio.create_task, coro)
             tracker.cancel_async_cb = task.cancel
@@ -350,7 +353,7 @@ class AsyncIO:
     else:
 
         async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
-            "executes the coro in the event loop"
+            "Executes the coro in the event loop"
 
             # Note: we don't set cancel_async_cb back to None on exit
             # because cancelling an already completed task is doesn't
@@ -374,7 +377,7 @@ class AsyncIO:
 
 
 class Trio:
-    """Uses |trio| for async concurrency"""
+    """:class:`Controller <apsw.AsyncConnectionController>` for |trio|"""
 
     def configure(self, db: apsw.Connection):
         "Setup database, just after it is created"
@@ -450,7 +453,7 @@ class Trio:
             coro.close()
 
     async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker):
-        "executes the coro in the event loop"
+        "Executes the coro in the event loop"
         with trio.fail_at(deadline=math.inf if tracker.deadline_loop is None else tracker.deadline_loop) as scope:
             tracker.cancel_async_cb = scope.cancel
             if tracker.is_cancelled:
@@ -467,7 +470,7 @@ class Trio:
 
 
 class AnyIO:
-    """Uses |anyio| for async concurrency"""
+    """:class:`Controller <apsw.AsyncConnectionController>` for |anyio|"""
 
     def configure(self, db: apsw.Connection):
         "Setup database, just after it is created"
@@ -547,7 +550,7 @@ class AnyIO:
             coro.close()
 
     async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker):
-        "executes coro in the event loop"
+        "Executes coro in the event loop"
 
         with anyio.fail_after(
             math.inf if tracker.deadline_loop is None else tracker.deadline_loop - anyio.current_time()

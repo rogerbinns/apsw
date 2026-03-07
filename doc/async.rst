@@ -6,16 +6,18 @@ Concurrency & Async
 How SQLite concurrency works
 ----------------------------
 
-Each connection has a mutex to protect the SQLite data structure.  It
-is acquired on a call into the connection, and released on return of
-the call. The mutex can be acquired more times in the same thread,
-allowing nested calls, but cannot be acquired outside of the thread
-until the top level call in the original thread completes.
+Each connection has a lock (`mutex
+<https://en.wikipedia.org/wiki/Lock_(computer_science)>`__ to protect
+the SQLite data structure.  It is acquired on a call into the
+connection, and released on return of the call. The mutex can be
+acquired more times in the same thread, allowing nested calls, but
+cannot be acquired outside of the thread until the top level call in
+the original thread completes.
 
 This means you cannot get more concurrency per connection by using
 additional threads, although SQLite can do so internally (`pragma
-threads <https://www.sqlite.org/pragma.html#pragma_threads>`__)
-such as for sorting.  You can get concurrency with multiple connections.
+threads <https://www.sqlite.org/pragma.html#pragma_threads>`__) such
+as for sorting.  You can get concurrency with multiple connections.
 
 SQLite is inherently synchronous due to being written in C and using
 the C stack.
@@ -31,9 +33,9 @@ GIL (usual operation)
     second), with the operating system scheduler choosing which thread
     runs next.
 
-    The GIL can be released by C code when not using Python data structures
-    to allow other threads to run.  This is done during I/O operations
-    etc.
+    The GIL can be released by C code when not using Python data
+    structures to allow other threads Python to run.  This is done
+    during I/O and database operations etc.
 
 Free threaded (Python 3.14+)
 
@@ -43,7 +45,8 @@ Free threaded (Python 3.14+)
     not using the same objects.
 
     The extra locking can result in around a 50% performance hit
-    versus the single global lock in a single thread.
+    versus the single global lock in a single thread.  The operating
+    system scheduler can run all the threads at the same time.
 
 Async
 
@@ -57,6 +60,10 @@ Async
     points at which they can switch.  There is typically a 50%
     hit to throughput, but latencies and time to complete are
     far more uniform.
+
+    An async framework like :mod:`asyncio` or `trio
+    <https://trio.readthedocs.io>`__ runs the event loop and chooses
+    which code to run next.
 
 How APSW works
 --------------
@@ -126,11 +133,11 @@ async mode or not, and behave appropriately.  You can use
 :attr:`Connection.is_async` to check.
 
 However to make type checkers and IDEs work better, the type stubs
-included with APSW have those classes so it is clear when returned
-values are direct, or need to be awaited.
+included with APSW have those synthetic classes so it is clear when
+returned values are direct, or need to be awaited.
 
-You can use :meth:`Connection.async_run` to run functions in the
-async Connection worker thread.
+You can use :meth:`Connection.async_run` to run your own functions in
+the async Connection worker thread.
 
 .. _anyio_note:
 
@@ -249,29 +256,22 @@ Async object
 Close
 !!!!!
 
+You can call close on sync **and** async objects. When you call close on a
+:class:`Connection`, then it will close all the corresponding
+objects like :class:`Cursor`, :class:`Blob`, :class:`Session` etc.
+
+It is safe to call :code:`close` and :code:`aclose` multiple times,
+even on already closed objects.`
+
 Sync object
-    Closes this object, releasing its held resources.  It is safe to
-    call close multiple times.  When you call close on a
-    :class:`Connection`, then it will close all the corresponding
-    objects like :class:`Cursor`, :class:`Blob`, :class:`Session` etc.
+    :code:`close` closes this object in the foreground, releasing its
+    held resources.
 
 Async object
-    You should :code:`await` calling :code:`aclose` - the async
-    version of close.  It is safe to call multiple times.  It will
-    only be effective if the event loop is still running.
-    :func:`contextlib.aclosing` is a handy context manager.
-
-    This is important for the :class:`Connection` because the worker
-    thread will not exit until the connection is closed.  It will be
-    closed if normal garbage collection happens, but it is very easy
-    to have a stray reference preventing that.
-
-    It is allowed to call :code:`close` on async objects, which will
-    immediately close them and return :exc:`ConnectionClosedError` to
-    any subsequent calls made.  This is also the only way to close an
-    object after the event loop has finished.  You can use
-    :func:`apsw.connections` to get the currently open connections.
-
+    :code:`aclose` closes this object in the background.  You should
+    :code:`await` calling :code:`aclose` to know when it has
+    completed.  :code:`close` will close it in the foreground
+    which could take some time.
 
 Callbacks
 =========
@@ -339,8 +339,8 @@ Most configuration uses :mod:`contextvars`.
 
 :attr:`apsw.aio.deadline`
 
-    When SQLite queries or async callbacks should timeout.  (|trio|
-    and |anyio|) native timeout is also supported.
+    When SQLite queries or async callbacks should timeout.  |trio|
+    and |anyio|) native timeouts are also supported.
 
 :attr:`apsw.async_controller`
 
@@ -392,7 +392,7 @@ The controller is responsible for:
 * Sending calls from the event loop to the worker thread with
   awaitable results
 * Checking deadlines and cancellations
-* Running coroutines in the event loop, and providing their results
+* Forwarding coroutines in the event loop, and providing their results
 * Stopping the worker thread when told about database close
 
 Although it seems like a lot, they are around 50 lines of code, and
@@ -411,12 +411,13 @@ Extensions
 
 Session
 
-    You will need to use :func:`apsw.aio.make_session`
+    You should use :func:`apsw.aio.make_session` to make a
+    :class:`Session` in async mode.
 
 :class:`apsw.fts5.Table`
 
     Virtually every method and property needs to access the database.
-    Therefore you will need to run all of them in the database thread
+    Therefore you should run all of them in the database thread
     using :meth:`Connection.async_run`
 
     .. code-block:: python
@@ -497,9 +498,7 @@ CpuTotal / CpuEvtLoop / CpuDbWorker
     database worker thread.
 
 The results show that what is used only matters if you are doing very
-large numbers of calls because of very small row batch sizes.  APSW
-has to allocate space for results, so increasing the prefetch size
-results in more memory consumption and more CPU time to allocate it.
+large numbers of calls because of very small row batch sizes.
 
 .. csv-table:: Benchmark Results
     :widths: auto

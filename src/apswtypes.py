@@ -201,7 +201,7 @@ class AsyncConnectionController(Protocol):
         ...
 
     async def send(self, call: Callable[[], Any]) -> Any:
-        """Called from outside the worker thread to send to worker thread
+        """Called from outside the worker thread to send call to worker thread
 
         This should be async or return an awaitable, and forward
         ``call`` to the worker thread where it is called with no
