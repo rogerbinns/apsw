@@ -712,7 +712,8 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
                     # we have to compile the file twice with different defines and compiler flags
                     # first scalar and then avx2
                     macros1 = extra.defines or []
-                    macros1.append(("VEC1SIMD", "SCALAR"))
+                    if is_x86:
+                        macros1.append(("VEC1SIMD", "SCALAR"))
 
                     macros2 = extra.defines or []
                     macros2.append(("VEC1SIMD", "AVX2"))
@@ -733,15 +734,16 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
                         macros=macros1,
                     )
 
-                    objs.extend(
-                        compiler.compile(
-                            [avx_c],
-                            output_dir=str(build_dir),
-                            include_dirs=include_dirs,
-                            extra_preargs=preargs_2,
-                            macros=macros2,
+                    if is_x86:
+                        objs.extend(
+                            compiler.compile(
+                                [avx_c],
+                                output_dir=str(build_dir),
+                                include_dirs=include_dirs,
+                                extra_preargs=preargs_2,
+                                macros=macros2,
+                            )
                         )
-                    )
 
                 else:
                     objs = compiler.compile(
