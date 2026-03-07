@@ -26,9 +26,9 @@ import trio
 
 ### async_basics: Basics
 # Use :meth:`Connection.as_async` to get an async connection, and
-# async for to iterate results.  We also apply :doc:`best practice
-# <bestpractice>` and use :func:`contextlib.aclosing` to ensure the
-# database is closed while the event loop is still running.
+# :code:`async for` to iterate results.  We also apply :doc:`best
+# practice <bestpractice>` and use :func:`contextlib.aclosing` to
+# ensure the database is closed.
 
 apsw.bestpractice.apply(apsw.bestpractice.recommended)
 
@@ -132,12 +132,14 @@ anyio.run(callbacks)
 # any fail, then cancel uncompleted ones, and raise the resulting
 # exceptions.
 #
-# * :external+python:ref:`except * <except_star>` and
-#   :class:`ExceptionGroup` Python syntax for catching multiple
-#   exceptions such as from a group of tasks
-# * :class:`asyncio.TaskGroup`
-# * :external+trio:ref:`Trio tasks <tasks>`
-# * :external+anyio:doc:`AnyIO tasks <tasks>`
+# .. seealso::
+#
+#   * :external+python:ref:`except * <except_star>` and
+#     :class:`ExceptionGroup` - Python syntax for catching multiple
+#     exceptions such as from a group of tasks
+#   * :class:`asyncio.TaskGroup`
+#   * :external+trio:ref:`Trio tasks <tasks>`
+#   * :external+anyio:doc:`AnyIO tasks <tasks>`
 #
 # This example shows asyncio, but the principles are the same across
 # all the frameworks.
@@ -231,15 +233,17 @@ asyncio.run(cancellation())
 # deadlines for each framework, getting their current time, and
 # exceptions raised on timeout.
 #
-# * :meth:`asyncio.get_running_loop().time() <asyncio.loop.time>`
-# * :exc:`TimeoutError`
-# * :exc:`trio.TooSlowError`
-# * :func:`trio.current_time`
-# * :func:`trio.current_effective_deadline`
-# * :func:`trio.fail_after` :func:`trio.fail_at`
-# * :func:`anyio.current_time`
-# * :func:`anyio.current_effective_deadline`
-# * :func:`anyio.fail_after`
+# .. seealso::
+#
+#   * :meth:`asyncio.get_running_loop().time() <asyncio.loop.time>`
+#   * :exc:`TimeoutError`
+#   * :exc:`trio.TooSlowError`
+#   * :func:`trio.current_time`
+#   * :func:`trio.current_effective_deadline`
+#   * :func:`trio.fail_after` :func:`trio.fail_at`
+#   * :func:`anyio.current_time`
+#   * :func:`anyio.current_effective_deadline`
+#   * :func:`anyio.fail_after`
 
 
 # The query is not reproduced here but is used when running this
@@ -409,7 +413,7 @@ async def virtual_tables():
         ):
             print(row)
 
-        # SQLite will do the query work
+        # SQLite will figure out the review and order work
         async for row in await db.execute(
             "SELECT * FROM books WHERE server=? AND flags=?AND review > 9.55 "
             "   ORDER BY year DESC",
