@@ -296,7 +296,7 @@ class fetch(Command):
                     modtime = datetime.datetime(*zi.date_time).timestamp()
                     self.extract_entry(zipf.read(zi), zi.filename, modtime)
 
-            write("  Getting the experiment vec1 extension - no checksums available")
+            write("  Getting the experiment vec1 extension")
 
             AURL = "https://sqlite.org/vec1/zip/vec1-20260306155250-d070184523.zip"
 
