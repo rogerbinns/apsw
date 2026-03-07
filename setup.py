@@ -334,7 +334,7 @@ class fetch(Command):
             if sys.platform != "win32":
                 write("    Running configure to work out SQLite compilation flags")
                 env = os.environ.copy()
-                for v in "CC", "CFLAGS", "LDFLAGS", "CXX":
+                for v in "CC", "CFLAGS", "LDFLAGS":
                     val = sysconfig.get_config_var(v)
                     if val:
                         env[v] = val
@@ -858,7 +858,7 @@ def patch_amalgamation() -> bool:
     patch_file_name = pathlib.Path(__file__).parent / "tools" / "carray.patch"
 
     if get_amalgamation_version(source_file_name) >= 3052000:
-        print("No patches needed for this version")
+        print("No patches needed for this SQLite version")
         return True
 
     try:
