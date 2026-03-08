@@ -959,6 +959,9 @@ class Tester:
         if key[0] == 'PyObject_VectorcallMethod_NoAsync' and key[2]=="async_shutdown_controller":
             # we can't fail this otherwise the worker thread keeps running forever
             return self.Proceed
+        if key[0] == "sqlite3_initialize" and key[2] == "PyInit_apsw":
+            # causes problems in fault control
+            return self.Proceed
         if "misuse_check" in key[4]:
             # sqlite session stuff where we only care about misuse being returned
             return self.Proceed
