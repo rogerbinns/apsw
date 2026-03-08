@@ -223,9 +223,6 @@ apsw_write_unraisable(PyObject *hookobject)
   PyObject *result = NULL;
 
   /* fill in the rest of the traceback */
-#ifdef PYPY_VERSION
-  /* do nothing */
-#else
   PyFrameObject *prev = NULL, *frame = PyThreadState_GetFrame(PyThreadState_GET());
   while (frame)
   {
@@ -234,7 +231,6 @@ apsw_write_unraisable(PyObject *hookobject)
     Py_DECREF(frame);
     frame = prev;
   }
-#endif
 
   /* Get the exception details - we have to use the legacy deprecated API because
      unraisable hook structure has the three separate exception fields despite

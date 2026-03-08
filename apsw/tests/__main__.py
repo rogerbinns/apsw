@@ -3981,10 +3981,9 @@ class APSW(unittest.TestCase):
         self.assertTrue(frame.f_lineno > 100)
         self.assertTrue(frame.f_code.co_name.endswith("-badfunc"))
         # check local variables
-        if platform.python_implementation() != "PyPy":
-            l = frame.f_locals
-            self.assertIn("NumberOfArguments", l)
-            self.assertEqual(l["NumberOfArguments"], 3)
+        l = frame.f_locals
+        self.assertIn("NumberOfArguments", l)
+        self.assertEqual(l["NumberOfArguments"], 3)
 
     def testLoadExtension(self):
         "Check loading of extensions"
