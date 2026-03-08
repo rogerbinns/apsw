@@ -1,12 +1,15 @@
 SQLite extra
 ============
 
-In addition to the main library, SQLite has additional programs and
-loadable extensions.  However these need to be separately compiled and
-installed.  Full APSW builds such as those on PyPI include all the
-ones that compile for that platform, without any modifications.  This
-is for convenience and to help promote these great extras.  They add
-just over 1MB to the download and 3MB of disk space.
+In addition to the main library, SQLite has many additional programs
+and loadable extensions.  However these need to be separately compiled
+and installed.  They do not have the same level of testing and
+documentation as the main library.
+
+Full APSW builds such as those on PyPI include all the ones that
+compile for that platform, without any modifications.  This is for
+convenience and to help promote these great extras.  They add just
+over 1MB to the download and 3MB of disk space.
 
 Access is provided via an :ref:`API <extra_api>`, :ref:`command line
 <extra_cli>`, and :ref:`shell <extra_shell>`
