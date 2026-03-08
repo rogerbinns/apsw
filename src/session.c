@@ -1939,19 +1939,19 @@ APSWChangeset_apply(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
   else
   {
     Py_buffer changeset_buffer;
-    if (0 != PyObject_GetBufferContiguousBounded(changeset, &changeset_buffer, PyBUF_SIMPLE, INT32_MAX))
+    if (0 == PyObject_GetBufferContiguousBounded(changeset, &changeset_buffer, PyBUF_SIMPLE, INT32_MAX))
     {
-      assert(PyErr_Occurred());
-      return NULL;
+      res = filter ? sqlite3changeset_apply_v2(db->db, changeset_buffer.len, changeset_buffer.buf,
+                                               filter ? applyFilter : NULL, conflict ? applyConflict : conflictReject,
+                                               &aic, rebase ? &pRebase : NULL, rebase ? &nRebase : NULL, flags)
+                   : sqlite3changeset_apply_v3(db->db, changeset_buffer.len, changeset_buffer.buf,
+                                               filter_change ? applyFilterChange : NULL,
+                                               conflict ? applyConflict : conflictReject, &aic,
+                                               rebase ? &pRebase : NULL, rebase ? &nRebase : NULL, flags);
+      PyBuffer_Release(&changeset_buffer);
     }
-    res = filter ? sqlite3changeset_apply_v2(db->db, changeset_buffer.len, changeset_buffer.buf,
-                                             filter ? applyFilter : NULL, conflict ? applyConflict : conflictReject,
-                                             &aic, rebase ? &pRebase : NULL, rebase ? &nRebase : NULL, flags)
-                 : sqlite3changeset_apply_v3(db->db, changeset_buffer.len, changeset_buffer.buf,
-                                             filter_change ? applyFilterChange : NULL,
-                                             conflict ? applyConflict : conflictReject, &aic, rebase ? &pRebase : NULL,
-                                             rebase ? &nRebase : NULL, flags);
-    PyBuffer_Release(&changeset_buffer);
+    else
+      assert(PyErr_Occurred());
   }
 
   sqlite3_mutex_leave(db->dbmutex);
