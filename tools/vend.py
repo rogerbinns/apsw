@@ -299,6 +299,9 @@ extras = [
         description="Command line shell",
         doc="cli.html",
         lib_sqlite=True,
+        # work around sqlite's mistaken handling of utf8 on windows.  it should be
+        # using manifest but instead only has a hacky main thing going on
+        defines = [("main", "main")]
     ),
     Extra(
         name="sqlite3_showdb",
@@ -504,6 +507,7 @@ class CompilerImplementation:
 def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
     get_version()
     compiler = ccompiler.new_compiler(verbose=True)
+    # this configures compiler to have the same flags as python was built with
     customize_compiler(compiler)
 
     compile_extra_preargs = None
