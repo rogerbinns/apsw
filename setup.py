@@ -745,7 +745,7 @@ class apsw_sdist(sparent):
     def initialize_options(self):
         sparent.initialize_options(self)
         self.add_doc = False
-        self.for_pypi = False
+        self.for_pypi = "APSW_FOR_PYPI" in os.environ
         self.use_defaults = False  # they are useless
 
         # Make sure the manifest is regenerated

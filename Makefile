@@ -186,6 +186,9 @@ venv: ## Removes current venv and makes a new one
 	$(PYTHON) -m venv .venv
 	$(MAKE) dev-depends doc-depends PYTHON=.venv/bin/python
 
+pypi_build: ## Does a build in the same manner as for pypi
+	env APSW_FOR_PYPI=t $(PYTHON) -m build -o dist
+
 # set this to a commit id to grab that instead
 FOSSIL_URL="https://sqlite.org/src/tarball/sqlite.tar.gz"
 fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in sqlite3 directory
