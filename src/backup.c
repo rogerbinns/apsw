@@ -304,7 +304,7 @@ APSWBackup_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   Async version of :meth:`close`
 
 */
-PyObject *
+static PyObject *
 APSWBackup_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   APSWBackup *self = (APSWBackup *)self_;

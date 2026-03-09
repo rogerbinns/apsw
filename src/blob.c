@@ -600,7 +600,7 @@ APSWBlob_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
   Async version of :meth:`close`
 
 */
-PyObject *
+static PyObject *
 APSWBlob_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   APSWBlob *self = (APSWBlob *)self_;
