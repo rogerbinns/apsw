@@ -108,6 +108,7 @@ extras = [
     Extra(
         name="fileio",
         description="Implements SQL functions readfile() and writefile(), and eponymous virtual type 'fsdir'",
+        sources=["ext/misc/fileio.c", "../src/fileio_win32.c"],
     ),
     # ::TODO:: fossildelta once RBU extension is wrapped
     Extra(

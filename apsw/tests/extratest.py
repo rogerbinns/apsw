@@ -10,6 +10,7 @@ import pathlib
 import subprocess
 import sys
 import tempfile
+import random
 import unittest
 
 import apsw
@@ -25,6 +26,7 @@ class Extra(unittest.TestCase):
         db = apsw.Connection(":memory:")
         for name, extra in self.extras.items():
             if extra["type"] == "extension" and apsw.sqlite_extra.has(name):
+                self.assertEqual("extension", apsw.sqlite_extra.has(name))
                 with self.subTest(name=name):
                     if self.verbose:
                         print(f"  >> Extension {name}")
@@ -52,10 +54,10 @@ class Extra(unittest.TestCase):
                         self.assertGreater(num_diff, 0)
 
     def testExecutable(self):
-        with tempfile.TemporaryDirectory(prefix="apsw-extra-test") as tmpd:
-            # https://news.ycombinator.com/item?id=42647101 test case
+        spicy = "√π⁷≤∞"
 
-            spicy = "√π⁷≤∞"
+        with tempfile.TemporaryDirectory(prefix=f"apsw-extra-{spicy}-test") as tmpd:
+            # https://news.ycombinator.com/item?id=42647101 test case
 
             with open(pathlib.Path(tmpd) / f"{spicy}.sql", "wt", encoding="utf8") as sqlf:
                 print(f"CrEaTe       Table {spicy}(one, two);\ninsert into {spicy} values(7,8)", file=sqlf)
@@ -78,6 +80,7 @@ class Extra(unittest.TestCase):
 
             for name, extra in self.extras.items():
                 if extra["type"] == "executable" and apsw.sqlite_extra.has(name):
+                    self.assertEqual("executable", apsw.sqlite_extra.has(name))
                     with self.subTest(name=name):
                         if self.verbose:
                             print(f"  >> Executable {name}")
@@ -186,6 +189,51 @@ class Extra(unittest.TestCase):
 
         # deliberate error that shouldn't show sqlite_extra attempt
         self.assertRaises(apsw.ExtensionLoadingError, s.process_command, ".load thisdoesnotexistandshouldgiveanerror")
+
+    def testOther(self):
+        self.assertIsNone(apsw.sqlite_extra.has("kjldhsfk does not exist jhdskjfhdsfdsfsd"))
+        # we don't type check at the moment
+        self.assertIsNone(apsw.sqlite_extra.has(3 + 4j))
+        if apsw.sqlite_extra.has("sha1"):
+            self.assertTrue(os.path.exists(apsw.sqlite_extra.path("sha1")))
+
+    def testFileIO(self):
+        # we add some extra code to make it compile under windows, so
+        # test that works
+        if not apsw.sqlite_extra.has("fileio") or not hasattr(apsw, "enable_load_extension"):
+            return
+
+        spicy = "√π⁷≤∞"
+        with tempfile.TemporaryDirectory(prefix=f"apsw-extra-{spicy}-test") as tmpd:
+            db = apsw.Connection("")
+
+            size = 12345
+
+            blob = db.execute("SELECT randomblob(?)", (size,)).get
+            db.enable_load_extension(True)
+            db.load_extension(apsw.sqlite_extra.path("fileio"))
+
+            # the names came from gemini trying to get contrasting
+            # utf8 and utf16 encoded lengths
+            names = (
+                spicy,
+                "𐐀𐐁𐐂𐐃𐐄𐐅𐐆𐐇𐐈𐐉𐐊𐐋𐐌𐐍𐐎𐐏𐐐𐐑𐐒𐐓𐐔𐐕𐐖𐐗𐐘",
+                "The quick brown fox jumps over the lazy dog 1234567",
+                "😀😁😂🤣😃😄😅😆😉😊😋😎😍😘🥰😗😙😚☺️🙂🤗🤩🤔🤨😐😑😶🙄😏😣😥😮🤐",
+            )
+
+            for name in names:
+                fname = str(pathlib.Path(tmpd) / f"{name}.blob")
+                res = db.execute("SELECT writefile(?, ?)", (fname, blob)).get
+                self.assertEqual(res, size)
+
+                self.assertEqual(blob, db.execute("SELECT readfile(?)", (fname,)).get)
+
+
+            # check listing works
+            for name, data in db.execute("select name, data from fsdir(?)", (tmpd,)):
+                print(f"{name=}")
+                self.assertEqual(blob, data)
 
 
 __all__ = ("Extra",)
