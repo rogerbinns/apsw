@@ -528,8 +528,10 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
 
     # where the final binaries go
     output_dir = pathlib.Path() / "apsw" / "sqlite_extra_binaries"
-    shutil.rmtree(output_dir, ignore_errors=True)
-    compiler.mkpath(str(output_dir))
+    for p in output_dir.glob("*"):
+        if p.name.lower() == "readme.md":
+            continue
+        p.unlink()
 
     print("Checking if compiler works")
     compile_check_name = get_compile_check(build_dir)

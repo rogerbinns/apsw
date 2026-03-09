@@ -57,3 +57,4 @@ compile_commands.json
 .vscode/
 .cache/
 /apsw/sqlite_extra_binaries
+!/apsw/sqlite_extra_binaries/README.md
