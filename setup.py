@@ -1007,6 +1007,7 @@ def get_icu_config() -> IcuConfig | None:
 depends = [f for f in glob.glob("src/*.[ch]") if f != "src/apsw.c" and "unicode" not in f]
 
 if __name__ == "__main__":
+    os.makedirs("apsw/sqlite_extra_binaries", exist_ok=True)
     setup(
         name="apsw",
         version=version,
@@ -1050,7 +1051,7 @@ if __name__ == "__main__":
                 undef_macros=["NDEBUG"] if os.environ.get("UNICODE_DEBUG") else [],
             ),
         ],
-        packages=["apsw", "apsw.tests"],
+        packages=["apsw", "apsw.tests", "apsw.sqlite_extra_binaries"],
         package_data={
             "apsw": ["__init__.pyi", "py.typed", "fts_test_strings", "sqlite_extra.json"],
             "apsw.sqlite_extra_binaries": ["*"],
