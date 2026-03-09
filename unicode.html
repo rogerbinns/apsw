@@ -5,17 +5,27 @@
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Unicode Text Handling &mdash; APSW 3.51.2.0 documentation</title>
+  <title>Unicode Text Handling &mdash; APSW 3.52.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/unicode.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9edc6f0b"></script>
+      <script src="_static/documentation_options.js?v=a197bc32"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -80,6 +90,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.text_width"><code class="docutils literal notranslate"><span class="pre">text_width()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.text_width_substr"><code class="docutils literal notranslate"><span class="pre">text_width_substr()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.guess_paragraphs"><code class="docutils literal notranslate"><span class="pre">guess_paragraphs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.Justify"><code class="docutils literal notranslate"><span class="pre">Justify</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.unicode.Justify.LEFT"><code class="docutils literal notranslate"><span class="pre">Justify.LEFT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.unicode.Justify.CENTER"><code class="docutils literal notranslate"><span class="pre">Justify.CENTER</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.unicode.Justify.RIGHT"><code class="docutils literal notranslate"><span class="pre">Justify.RIGHT</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.text_wrap"><code class="docutils literal notranslate"><span class="pre">text_wrap()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.codepoint_name"><code class="docutils literal notranslate"><span class="pre">codepoint_name()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#apsw.unicode.version_added"><code class="docutils literal notranslate"><span class="pre">version_added()</span></code></a></li>
@@ -110,8 +126,11 @@
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async.html">Concurrency &amp; Async</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extra.html">SQLite extra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
@@ -431,9 +450,29 @@ determined to not mark a paragraph end.</p>
 </div>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.unicode.Justify">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">Justify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/unicode.html#Justify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.Justify" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.unicode.Justify.LEFT">
+<span class="sig-name descname"><span class="pre">LEFT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></span><a class="headerlink" href="#apsw.unicode.Justify.LEFT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.unicode.Justify.CENTER">
+<span class="sig-name descname"><span class="pre">CENTER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#apsw.unicode.Justify.CENTER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.unicode.Justify.RIGHT">
+<span class="sig-name descname"><span class="pre">RIGHT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#apsw.unicode.Justify.RIGHT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.unicode.text_wrap">
-<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">text_wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">70</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">tabsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyphen</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invalid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#text_wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.text_wrap" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.unicode.</span></span><span class="sig-name descname"><span class="pre">text_wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">70</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">tabsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyphen</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">combine_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invalid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'?'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">justify</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apsw.unicode.Justify" title="apsw.unicode.Justify"><span class="pre">Justify</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Justify.LEFT</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/apsw/unicode.html#text_wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.unicode.text_wrap" title="Link to this definition"></a></dt>
 <dd><p>Similar to <a class="reference external" href="https://docs.python.org/3/library/textwrap.html#textwrap.wrap" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">textwrap.wrap()</span></code></a> but Unicode grapheme cluster and line break aware</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -448,9 +487,11 @@ with newlines in them, then call <a class="reference internal" href="#apsw.unico
 <li><p><strong>tabsize</strong> – Tab stop spacing as tabs are expanded</p></li>
 <li><p><strong>hyphen</strong> – Used to show a segment was broken because it was wider than <code class="docutils literal notranslate"><span class="pre">width</span></code></p></li>
 <li><p><strong>combine_space</strong> – Leading space on each (indent) is always preserved.  Other spaces where
-multiple occur are combined into one space.</p></li>
+multiple occur are combined into one space.  If tabs matter then you’ll want this
+off.</p></li>
 <li><p><strong>invalid</strong> – If invalid codepoints are encountered such as control characters and surrogates
 then they are replaced with this.</p></li>
+<li><p><strong>justify</strong> – Where to align text within each line</p></li>
 </ul>
 </dd>
 </dl>
@@ -666,7 +707,7 @@ Note that the segment returned includes leading and trailing white space.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 10, 2026.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
       </span></p>
   </div>
 
@@ -684,18 +725,7 @@ Note that the segment returned includes leading and trailing white space.</p>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-    <!-- Theme Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-2NR9GDCQLT', {
-          'anonymize_ip': false,
-      });
-    </script> 
+  </script> 
 
 </body>
 </html>

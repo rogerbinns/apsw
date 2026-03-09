@@ -30,9 +30,13 @@ APSW |version| documentation
    vfs
    shell
    ext
-
+   example-async
+   async
    exceptions
    execution
+
+   extra
+
    dbapi
    pysqlite
    benchmarking

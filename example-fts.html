@@ -5,17 +5,27 @@
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Full Text Search Example/Tour &mdash; APSW 3.51.2.0 documentation</title>
+  <title>Full Text Search Example/Tour &mdash; APSW 3.52.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/example-fts.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9edc6f0b"></script>
+      <script src="_static/documentation_options.js?v=a197bc32"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -98,8 +108,11 @@
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async.html">Concurrency &amp; Async</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extra.html">SQLite extra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
@@ -333,9 +346,9 @@ order by to get the best results first.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">query=&#39;cream&#39;</span>
-<span class="go">┌───────────────────────────────────────────────────────────┐</span>
+<span class="go">╭───────────────────────────────────────────────────────────╮</span>
 <span class="go">│                          Snippet                          │</span>
-<span class="go">├───────────────────────────────────────────────────────────┤</span>
+<span class="go">╞═══════════════════════════════════════════════════════════╡</span>
 <span class="go">│ Find the recipe for Sour ►Cream◄ Ice ►Cream◄ and other... │</span>
 <span class="go">├───────────────────────────────────────────────────────────┤</span>
 <span class="go">│ 1 (8 ounce) package ►cream◄ cheese                        │</span>
@@ -343,12 +356,12 @@ order by to get the best results first.</p>
 <span class="go">├───────────────────────────────────────────────────────────┤</span>
 <span class="go">│ Want a Ice ►Cream◄ and Party?                             │</span>
 <span class="go">│ Here&#39;s a Ice-►Cream◄...                                   │</span>
-<span class="go">└───────────────────────────────────────────────────────────┘</span>
+<span class="go">╰───────────────────────────────────────────────────────────╯</span>
 
 <span class="go">query=&#39;orange NOT zest&#39;</span>
-<span class="go">┌───────────────────────────────────────────────────┐</span>
+<span class="go">╭───────────────────────────────────────────────────╮</span>
 <span class="go">│                      Snippet                      │</span>
-<span class="go">├───────────────────────────────────────────────────┤</span>
+<span class="go">╞═══════════════════════════════════════════════════╡</span>
 <span class="go">│ ice                                               │</span>
 <span class="go">│ 750ml blood ►orange◄ , or ►orange◄ juice          │</span>
 <span class="go">│ 750ml soda water...                               │</span>
@@ -358,20 +371,20 @@ order by to get the best results first.</p>
 <span class="go">├───────────────────────────────────────────────────┤</span>
 <span class="go">│ ...►orange◄-flavored liqueur                      │</span>
 <span class="go">│ Extra ►orange◄ slices for serving, or ►orange◄... │</span>
-<span class="go">└───────────────────────────────────────────────────┘</span>
+<span class="go">╰───────────────────────────────────────────────────╯</span>
 
 <span class="go">query=&#39;name:honey&#39;</span>
-<span class="go">┌────────────────────────────────────────────────────────────────────────┐</span>
+<span class="go">╭────────────────────────────────────────────────────────────────────────╮</span>
 <span class="go">│                                Snippet                                 │</span>
 <span class="go">│ Wildflower-►Honey◄ Semifreddo with ►Honey◄ Sesame Wafers               │</span>
 <span class="go">│ Roast Chicken with Saffron, Hazelnuts, and ►Honey◄                     │</span>
 <span class="go">│ Recipe Flash: Ginger-►Honey◄ Chicken WingsGinger-►Honey◄ Chicken Wings │</span>
-<span class="go">└────────────────────────────────────────────────────────────────────────┘</span>
+<span class="go">╰────────────────────────────────────────────────────────────────────────╯</span>
 
 <span class="go">query=&#39;pomegranate OR olives&#39;</span>
-<span class="go">┌─────────────────────────────────────────────────────────────────────────────┐</span>
+<span class="go">╭─────────────────────────────────────────────────────────────────────────────╮</span>
 <span class="go">│                                   Snippet                                   │</span>
-<span class="go">├─────────────────────────────────────────────────────────────────────────────┤</span>
+<span class="go">╞═════════════════════════════════════════════════════════════════════════════╡</span>
 <span class="go">│ A new way to serve ►olives◄ - marinated in ►pomegranate◄ juice...           │</span>
 <span class="go">├─────────────────────────────────────────────────────────────────────────────┤</span>
 <span class="go">│ Purple kale, oranges, feta cheese and ►olives◄ topped with ►pomegranate◄... │</span>
@@ -380,7 +393,7 @@ order by to get the best results first.</p>
 <span class="go">│ Seeds from a ►pomegranate◄                                                  │</span>
 <span class="go">│ 25g dried apricot pieces                                                    │</span>
 <span class="go">│ Quarter...                                                                  │</span>
-<span class="go">└─────────────────────────────────────────────────────────────────────────────┘</span>
+<span class="go">╰─────────────────────────────────────────────────────────────────────────────╯</span>
 </pre></div>
 </div>
 </section>
@@ -627,44 +640,44 @@ although you can see the snippets below.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">query=&#39;eam&#39;</span>
-<span class="go">┌───────────────────┐</span>
+<span class="go">╭───────────────────╮</span>
 <span class="go">│      Snippet      │</span>
 <span class="go">│ Sour Cr►eam◄ I... │</span>
 <span class="go">│ Cr►eam◄less Cr... │</span>
 <span class="go">│ Cr►eam◄ cheese... │</span>
-<span class="go">└───────────────────┘</span>
+<span class="go">╰───────────────────╯</span>
 
 <span class="go">query=&#39;ora&#39;</span>
-<span class="go">┌───────────────────┐</span>
+<span class="go">╭───────────────────╮</span>
 <span class="go">│      Snippet      │</span>
 <span class="go">│ Blood ►ora◄nge... │</span>
 <span class="go">│ ►Ora◄nge cake ... │</span>
 <span class="go">│ ►Ora◄nge Deser... │</span>
-<span class="go">└───────────────────┘</span>
+<span class="go">╰───────────────────╯</span>
 
 <span class="go">query=&#39;name:ney&#39;</span>
-<span class="go">┌──────────────────────┐</span>
+<span class="go">╭──────────────────────╮</span>
 <span class="go">│       Snippet        │</span>
 <span class="go">│ Ho►ney◄ed-Mang...    │</span>
 <span class="go">│ ...r-Ho►ney◄ Semi... │</span>
 <span class="go">│ ...h Ho►ney◄ed-Ma... │</span>
-<span class="go">└──────────────────────┘</span>
+<span class="go">╰──────────────────────╯</span>
 
 <span class="go">query=&#39;emo jui&#39;</span>
-<span class="go">┌────────────────────────┐</span>
+<span class="go">╭────────────────────────╮</span>
 <span class="go">│        Snippet         │</span>
 <span class="go">│ ... L►emo◄n ►Jui◄ce... │</span>
 <span class="go">│ ... l►emo◄n ►jui◄ce... │</span>
 <span class="go">│ ... l►emo◄n ►jui◄ce... │</span>
-<span class="go">└────────────────────────┘</span>
+<span class="go">╰────────────────────────╯</span>
 
 <span class="go">query=&#39;barbecue&#39;</span>
-<span class="go">┌───────────────────┐</span>
+<span class="go">╭───────────────────╮</span>
 <span class="go">│      Snippet      │</span>
 <span class="go">│ Classic ►Barb◄... │</span>
 <span class="go">│ ►Barbecue◄ Por... │</span>
 <span class="go">│ ►Barbecue◄d Ba... │</span>
-<span class="go">└───────────────────┘</span>
+<span class="go">╰───────────────────╯</span>
 </pre></div>
 </div>
 </section>
@@ -1573,7 +1586,7 @@ finding good matches, and increase the size of the index.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 10, 2026.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
       </span></p>
   </div>
 
@@ -1591,18 +1604,7 @@ finding good matches, and increase the size of the index.</p>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-    <!-- Theme Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-2NR9GDCQLT', {
-          'anonymize_ip': false,
-      });
-    </script> 
+  </script> 
 
 </body>
 </html>

@@ -297,27 +297,31 @@ programmatically.  The easy way is to use `pragma user_version
 <https://sqlite.org/pragma.html#pragma_user_version>`__ as in this example
 where each number handles the changes needed.::
 
-  def ensure_schema(db):
-    # a new database starts at user_version 0
-    if db.pragma("user_version") == 0:
-      with db:
+    # The upgrade is done as a transaction so it either
+    # fails without making changes, or completely succeeds.
+    with db:
+
+      # a new database starts at user_version 0
+      if db.pragma("user_version") == 0:
         db.execute("""
           CREATE TABLE foo(x,y,z);
           CREATE TABLE bar(x,y,z);
           PRAGMA user_version = 1;""")
 
-    if db.pragma("user_version") == 1:
-      with db:
+      if db.pragma("user_version") == 1:
         db.execute("""
         CREATE TABLE baz(x,y,z);
         CREATE INDEX ....
         PRAGMA user_version = 2;""")
 
-    if db.pragma("user_version") == 2:
-      with db:
+      if db.pragma("user_version") == 2:
         db.execute("""
         ALTER TABLE .....
         PRAGMA user_version = 3;""")
+
+      # we could exception here if user_version > 3 because it means
+      # a more recent schema is present than this code understands.
+      # Perhaps a version downgrade happened?
 
 This approach will automatically upgrade the schema as you expect.
 You can also use `pragma application_id

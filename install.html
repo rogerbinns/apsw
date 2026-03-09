@@ -5,17 +5,27 @@
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation and customization &mdash; APSW 3.51.2.0 documentation</title>
+  <title>Installation and customization &mdash; APSW 3.52.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/install.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9edc6f0b"></script>
+      <script src="_static/documentation_options.js?v=a197bc32"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -96,8 +106,11 @@
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async.html">Concurrency &amp; Async</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extra.html">SQLite extra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
@@ -154,6 +167,7 @@ uses SQLite, but will not know of or be affected by the SQLite
 inside APSW.</p>
 </li>
 <li><p>All <a class="reference internal" href="extensions.html"><span class="doc">extensions</span></a> are enabled, except ICU.</p></li>
+<li><p><a class="reference internal" href="extra.html"><span class="doc">SQLite extra</span></a> are available</p></li>
 <li><p><a class="reference external" href="https://www.sqlite.org/compile.html#enable_column_metadata">SQLITE_ENABLE_COLUMN_METADATA</a>
 is enabled, providing <a class="reference internal" href="cursor.html#apsw.Cursor.description_full" title="apsw.Cursor.description_full"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.description_full</span></code></a></p></li>
 </ul>
@@ -203,13 +217,13 @@ are currently on.</p>
 source from <a class="reference external" href="https://pypi.org/project/apsw/">PyPi</a> then ensure you
 edit the <code class="file docutils literal notranslate"><span class="pre">setup.apsw</span></code> file inside.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.51.2.0/apsw-3.51.2.0.zip">apsw-3.51.2.0.zip</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.52.0.0/apsw-3.52.0.0.zip">apsw-3.52.0.0.zip</a>
 (Source as zip, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.51.2.0/apsw-3.51.2.0.tar.gz">apsw-3.51.2.0.tar.gz</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.52.0.0/apsw-3.52.0.0.tar.gz">apsw-3.52.0.0.tar.gz</a>
 (Source as tar.gz, includes this HTML Help)</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.51.2.0/apsw-3.51.2.0.zip.cosign-bundle">apsw-3.51.2.0.zip.cosign-bundle</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.52.0.0/apsw-3.52.0.0.zip.cosign-bundle">apsw-3.52.0.0.zip.cosign-bundle</a>
 cosign signature for zip source</p></li>
-<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.51.2.0/apsw-3.51.2.0.tar.gz.cosign-bundle">apsw-3.51.2.0.tar.gz.cosign-bundle</a>
+<li><p><a class="reference external" href="https://github.com/rogerbinns/apsw/releases/download/3.52.0.0/apsw-3.52.0.0.tar.gz.cosign-bundle">apsw-3.52.0.0.tar.gz.cosign-bundle</a>
 cosign signature for tar.gz source</p></li>
 </ul>
 <section id="verifying-your-download">
@@ -226,18 +240,18 @@ recommended), and the <a class="reference external" href="https://pypi.org/proje
 cosign bundle, the maintainer id, and issuer.  The command is all
 one line shown here across multiple lines for clarity, along with
 the expected successful output.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.51.2.0.zip<span class="w">                        </span><span class="se">\</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>cosign<span class="w"> </span>verify-blob<span class="w"> </span>apsw-3.52.0.0.zip<span class="w">                        </span><span class="se">\</span>
 <span class="w">    </span>--new-bundle-format<span class="w">                                       </span><span class="se">\</span>
-<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.51.2.0.zip.cosign-bundle<span class="w">                  </span><span class="se">\</span>
+<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.52.0.0.zip.cosign-bundle<span class="w">                  </span><span class="se">\</span>
 <span class="w">    </span>--certificate-identity<span class="o">=</span>rogerb@rogerbinns.com<span class="w">              </span><span class="se">\</span>
 <span class="w">    </span>--certificate-oidc-issuer<span class="o">=</span>https://github.com/login/oauth
 <span class="go">Verified OK</span>
 
-<span class="gp">$ </span>python3<span class="w"> </span>-m<span class="w"> </span>sigstore<span class="w"> </span>verify<span class="w"> </span>identity<span class="w"> </span>apsw-3.51.2.0.zip<span class="w">       </span><span class="se">\</span>
-<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.51.2.0.zip.cosign-bundle<span class="w">                  </span><span class="se">\</span>
+<span class="gp">$ </span>python3<span class="w"> </span>-m<span class="w"> </span>sigstore<span class="w"> </span>verify<span class="w"> </span>identity<span class="w"> </span>apsw-3.52.0.0.zip<span class="w">       </span><span class="se">\</span>
+<span class="w">    </span>--bundle<span class="w"> </span>apsw-3.52.0.0.zip.cosign-bundle<span class="w">                  </span><span class="se">\</span>
 <span class="w">    </span>--cert-identity<span class="o">=</span>rogerb@rogerbinns.com<span class="w">                     </span><span class="se">\</span>
 <span class="w">    </span>--cert-oidc-issuer<span class="o">=</span>https://github.com/login/oauth
-<span class="go">OK: apsw-3.51.2.0.zip</span>
+<span class="go">OK: apsw-3.52.0.0.zip</span>
 </pre></div>
 </div>
 <p>Check for a success exit code, and verified message.</p>
@@ -315,7 +329,8 @@ APSW’s fetch does automatically by running <code class="file docutils literal 
 <table class="docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--fetch</span></code></p></td>
-<td><p>Fetches the corresponding SQLite version</p></td>
+<td><p>Fetches the corresponding SQLite version amalgamation and all source
+to make <a class="reference internal" href="extra.html"><span class="doc">SQLite extra</span></a> available</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--enable-all-extensions</span></code></p></td>
 <td><p>Enables all the <a class="reference internal" href="extensions.html"><span class="doc">standard extensions</span></a></p></td>
@@ -347,9 +362,8 @@ uppercased.  eg <code class="code docutils literal notranslate"><span class="pre
 <td><p>Downloads the SQLite amalgamation</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--all</span></code></p></td>
-<td><p>Downloads all SQLite components other than the amalgamation.
-Over time this has included additional extensions and SQLite
-functions, but currently is nothing.</p></td>
+<td><p>Downloads all SQLite source which makes the <a class="reference internal" href="extra.html"><span class="doc">SQLite extra</span></a>
+available</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--missing-checksum-ok</span></code></p></td>
 <td><p>APSW includes checksums of SQLite releases and will fail a
@@ -403,7 +417,7 @@ PyPI does not support pyodide binary packages yet, but you can compile
 your own on a Linux host.</p>
 <p>You should first download the source distribution listed at the top of
 <a class="reference external" href="https://pypi.org/project/apsw/#files">https://pypi.org/project/apsw/#files</a> - the filename ends up being
-<code class="docutils literal notranslate"><span class="pre">apsw-3.47.0.0.tar.gz</span></code> in this example.  The <a class="reference external" href="https://cibuildwheel.pypa.io/">cibuildwheel</a> tool is used for the building, and
+<code class="docutils literal notranslate"><span class="pre">apsw-3.52.0.0.tar.gz</span></code> in this example.  The <a class="reference external" href="https://cibuildwheel.pypa.io/">cibuildwheel</a> tool is used for the building, and
 is the same tool used for the PyPI builds of APSW.</p>
 <div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>Start<span class="w"> </span>out<span class="w"> </span>with<span class="w"> </span>a<span class="w"> </span>clean<span class="w"> </span>virtual<span class="w"> </span>environment
 <span class="gp">$ </span>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
@@ -411,14 +425,14 @@ is the same tool used for the PyPI builds of APSW.</p>
 <span class="gp">$ </span>venv/bin/pip3<span class="w"> </span>install<span class="w"> </span>cibuildwheel
 <span class="gp"># </span>Do<span class="w"> </span>the<span class="w"> </span>building<span class="w"> </span>which<span class="w"> </span>will<span class="w"> </span>download<span class="w"> </span>the<span class="w"> </span>necessary<span class="w"> </span>compiler<span class="w"> </span>and
 <span class="gp"># </span>Python<span class="w"> </span>parts
-<span class="gp">$ </span>venv/bin/cibuildwheel<span class="w"> </span>--platform<span class="w"> </span>pyodide<span class="w"> </span>apsw-3.47.0.0.tar.gz
+<span class="gp">$ </span>venv/bin/cibuildwheel<span class="w"> </span>--platform<span class="w"> </span>pyodide<span class="w"> </span>apsw-3.52.0.0.tar.gz
 <span class="gp"># </span>When<span class="w"> </span>it<span class="w"> </span>has<span class="w"> </span>finished<span class="w"> </span>the<span class="w"> </span>result<span class="w"> </span>is<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>wheelhouse<span class="w"> </span>directory
 <span class="gp">$ </span>ls<span class="w"> </span>wheelhouse/
 </pre></div>
 </div>
 <p>You will then be able to install the wheel using <a class="reference external" href="https://micropip.pyodide.org/">micropip</a>.</p>
 <div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">micropip</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">await</span> <span class="n">micropip</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="s2">&quot;https://url/apsw-3.47.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">await</span> <span class="n">micropip</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="s2">&quot;https://url/apsw-3.52.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
 </pre></div>
 </div>
@@ -475,19 +489,19 @@ run all the tests.  You can provide a <code class="docutils literal notranslate"
 as it is run.</p>
 <p>Test output will look similar to this.</p>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">$ python3 -m apsw.tests</span>
-<span class="go">                Python  /space/apsw/.venv/bin/python3 sys.version_info(major=3, minor=14, micro=0, releaselevel=&#39;final&#39;, serial=0) 64bit ELF</span>
+<span class="go">                Python  /space/apsw/.venv-314/bin/python sys.version_info(major=3, minor=14, micro=0, releaselevel=&#39;final&#39;, serial=0) 64bit ELF</span>
 <span class="go">Testing with APSW file  /space/apsw/apsw/__init__.cpython-314-x86_64-linux-gnu.so</span>
-<span class="go">          APSW version  3.51.0.0</span>
-<span class="go">    SQLite lib version  3.51.0</span>
-<span class="go">SQLite headers version  3051000</span>
+<span class="go">          APSW version  3.51.2.0</span>
+<span class="go">    SQLite lib version  3.51.2</span>
+<span class="go">SQLite headers version  3051002</span>
 <span class="go">    Using amalgamation  True</span>
-<span class="go">    SQLITE_SCM_BRANCH  trunk</span>
-<span class="go">      SQLITE_SCM_TAGS  release major-release version-3.51.0</span>
-<span class="go">  SQLITE_SCM_DATETIME  2025-11-04T19:38:17.314Z</span>
+<span class="go">     SQLITE_SCM_BRANCH  branch-3.51</span>
+<span class="go">       SQLITE_SCM_TAGS  release version-3.51.2</span>
+<span class="go">   SQLITE_SCM_DATETIME  2026-01-09T17:27:48.405Z</span>
 
-<span class="go">................................................................................................................................................................................................................</span>
+<span class="go">...............................................................................................................................................................................................................................</span>
 <span class="go">----------------------------------------------------------------------</span>
-<span class="go">Ran 208 tests in 44.591s</span>
+<span class="go">Ran 223 tests in 46.654s</span>
 
 <span class="go">OK</span>
 </pre></div>
@@ -520,7 +534,7 @@ supported versions running the tests.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 10, 2026.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
       </span></p>
   </div>
 
@@ -538,18 +552,7 @@ supported versions running the tests.</p>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-    <!-- Theme Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-2NR9GDCQLT', {
-          'anonymize_ip': false,
-      });
-    </script> 
+  </script> 
 
 </body>
 </html>

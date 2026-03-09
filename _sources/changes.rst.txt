@@ -10,6 +10,86 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.52.0.0
+========
+
+Comprehensive async support - connections run in a dedicated worker
+thread with the event loop able to :code:`await` the results.
+
+  * :mod:`asyncio`, |trio|, and |anyio| are supported and tested
+  * Async callbacks can be used anywhere including:
+      * scalar, window, and aggregate functions
+      * virtual tables (only the methods you want)
+      * :func:`apsw.ext.make_virtual_module`
+      * :doc:`VFS <vfs>` (again, only the methods you want)
+      * the various other SQLite hooks
+  * Cancellations and deadlines (timeouts) from the event loop
+    apply to executing SQL as well as async callbacks
+  * Type stubs as used by type checkers and IDEs reflect async usage
+
+Documentation:
+
+  * :doc:`SQLite, Python, and APSW concurrency <async>`
+  * :ref:`async_usage`
+  * :doc:`example-async`
+
+Regularised str and repr for APSW objects:
+
+* str and repr return the same value
+* async and closed are indicated
+* Subclasses name are used instead of the APSW parent class
+
+SQLite has many extra useful extensions and programs that have to be
+compiled.  These can be packaged with APSW for convenient access.  See
+:doc:`extra` documentation.  This is the default for PyPI builds.
+Also included is the experimental under development `vec1 vector
+search extension <https://sqlite.org/vec1>`__.
+
+Added :meth:`Connection.reserve_bytes`.  This is useful for some of
+the :doc:`extras <extra>` like the `checksum VFS
+<https://sqlite.org/cksumvfs.html>`__.
+
+Fix wrapping, indents. and space for hyphens in
+:func:`apsw.unicode.text_wrap` under various conditions (:issue:`600`)
+
+Added option to :func:`apsw.unicode.text_wrap`  for justifying text.  This
+is used in :func:`apsw.ext.format_query_table` to centre column names,
+and right align integers.  That updates the :doc:`shell <shell>` output.
+(:issue:`601`)
+
+Update :func:`fork_checker` and :func:`shutdown` for more robustness
+(:issue:`602`)
+
+Amalgamation builds **only** (eg PyPI):  Following the `recommended
+compile time options
+<https://sqlite.org/compile.html#recommended_compile_time_options>`__,
+the following options are now set.  Other applicable recommendations
+were done in earlier releases.  You can use
+:attr:`apsw.compile_options` to see what is in effect.
+
+* `SQLITE_OMIT_AUTOINIT
+  <https://sqlite.org/compile.html#omit_autoinit>`__.
+  :func:`initialize` is called when APSW is loaded.  **Backwards
+  incompatible change:** This will only affect :func:`apsw.config` calls
+  made before anything else, and will now require an explicit :func:`apsw.shutdown`,
+  :func:`apsw.config`, and :func:`apsw.initialize`.
+
+* `SQLITE_STRICT_SUBTYPE <https://sqlite.org/compile.html#strict_subtype>`__ -
+  subtypes are not exposed in APSW, but are used by SQLite builtin functions.
+
+* `SQLITE_LIKE_DOESNT_MATCH_BLOBS
+  <https://sqlite.org/compile.html#like_doesnt_match_blobs>`__ which
+  is a **backwards incompatible change** if you deliberately use
+  :code:`LIKE` against blobs, which is not a good idea.
+
+Take advantage of :code:`SQLITE_UTF8_ZT` encoding and
+`sqlite3_carray_bind_v2
+<https://sqlite.org/draft/c3ref/carray_bind.html>`__ in the C code.
+
+A :class:`TableChange` for `SQLITE_CHANGESET_FOREIGN_KEY
+<https://sqlite.org/session.html#SQLITE_CHANGESET_CONFLICT>`__ returns
+:code:`None` for all fields except :attr:`~TableChange.fk_conflicts`
+
 3.51.2.0
 ========
 
@@ -672,7 +752,7 @@ the statement cache.
 
 :meth:`Cursor.execute` now uses `sqlite_prepare_v3
 <https://sqlite.org/c3ref/prepare.html>`__ which allows supplying
-`flags <https://sqlite.org/c3ref/c_prepare_normalize.html#sqlitepreparenormalize>`__.
+`flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>`__.
 
 :meth:`Cursor.execute` has a new `can_cache` parameter to control
 whether the query can use the statement cache.  One example use is
@@ -782,8 +862,6 @@ fossil) version of SQLite.
 Shell exit for --version etc cleanly exits (:issue:`210`)
 
 Python 3.11 (:issue:`326`) now works.
-
-PyPy3 compiles and mostly works (:issue:`323`).
 
 3.38.1-r1
 =========
@@ -1041,7 +1119,7 @@ Many spelling fixes (thanks to Edward Betts for the review)
 3.20.1-r1
 =========
 
-Added `SQLITE_DBCONFIG_ENABLE_QPSG <https://www.sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__ constant.
+Added :code:`SQLITE_DBCONFIG_ENABLE_QPSG` constant.
 
 Added shell .open command (:issue:`240`)
 
@@ -1147,8 +1225,7 @@ Allow :class:`Connection` subclasses for backup api (:issue:`199`).
 :code:`--enable-all-extensions`.  It is recommended you wait a few more
 releases for these extensions to mature.
 
-Added a mapping for `virtual table scan flags
-<https://sqlite.org/c3ref/c_index_scan_unique.html>`__
+Added a mapping for virtual table scan flags
 
 Use `SQLITE_ENABLE_API_ARMOR
 <https://www.sqlite.org/compile.html#enable_api_armor>`__ for extra error
@@ -1535,26 +1612,22 @@ SQLITE_FCNTL_OVERWRITE constants.
 Updated documentation and tests due to an undocumented change in VFS
 xDelete semantics.
 
-Added SQLITE3_FCNTL_PERSIST_WAL and SQLITE3_FCNTL_WIN32_AV_RETRY `file
-controls <https://sqlite.org/c3ref/c_fcntl_chunk_size.html>`__.
+Added SQLITE3_FCNTL_PERSIST_WAL and SQLITE3_FCNTL_WIN32_AV_RETRY file
+controls.
 
 Wrapped sqlite3_sourceid (:issue:`120`)
 
 3.7.7.1-r1
 ==========
 
-Added `SQLITE_CONFIG_URI
-<https://sqlite.org/c3ref/c_config_getmalloc.html#sqliteconfiguri>`__
-and support for it in :meth:`config`, and the open flag
-`SQLITE_OPEN_URI
-<https://sqlite.org/c3ref/c_open_autoproxy.html>`__.  This makes it
-easy to use `URI filenames <https://sqlite.org/uri.html>`__.
+Added :code:`SQLITE_CONFIG_URI` and support for it in :meth:`config`,
+and the open flag :code:`SQLITE_OPEN_URI`.  This makes it easy to use
+`URI filenames <https://sqlite.org/uri.html>`__.
 
 The :ref:`shell` now uses `URI filenames
 <https://sqlite.org/uri.html>`__ by default.
 
-New `extended error constants
-<https://sqlite.org/c3ref/c_busy_recovery.html>`__:
+New extended error constants:
 SQLITE_CORRUPT_VTAB, SQLITE_IOERR_SEEK, SQLITE_IOERR_SHMMAP,
 SQLITE_READONLY_CANTLOCK and SQLITE_READONLY_RECOVERY.
 
@@ -1620,10 +1693,10 @@ Windows Python 3.2 binaries now available.
 Binary downloads for Windows 64 bit Python versions 2.6 and above
 including Python 3 are now available.
 
-:meth:`apsw.soft_heap_limit` now uses `sqlite3_soft_heap_limit64
-<https://sqlite.org/c3ref/soft_heap_limit64.html>`__ so you can
-provide values larger than 2GB.  It is now also able to return the
-previous value instead of None.
+:meth:`apsw.soft_heap_limit` now uses
+`:code:sqlite3_soft_heap_limit64` so you can provide values larger
+than 2GB.  It is now also able to return the previous value instead of
+None.
 
 Improve getting shell timer information for 64 bit Windows.
 
@@ -1657,8 +1730,7 @@ No changes to APSW.  Upgrading to this version of SQLite is
 3.7.1-r1
 ========
 
-Updated various constants including `SQLITE_FCNTL_CHUNK_SIZE
-<https://sqlite.org/c3ref/c_fcntl_chunk_size.html>`__ used with
+Updated various constants including SQLITE_FCNTL_CHUNK_SIZE used with
 :meth:`Connection.file_control`.
 
 Fixed Unicode output with some file objects from the shell (:issue:`108`).
@@ -1975,7 +2047,7 @@ SQLite.)
 3.6.13-r1
 =========
 
-Added SQLITE_LOCKED_SHAREDCACHE `extended error code <https://sqlite.org/c3ref/c_ioerr_access.html>`_.
+Added SQLITE_LOCKED_SHAREDCACHE extended error code.
 
 Updated tests as the VFS delete error handling code in SQLite now
 returns the same high level error code between Windows and

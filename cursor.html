@@ -5,17 +5,27 @@
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cursors (executing SQL) &mdash; APSW 3.51.2.0 documentation</title>
+  <title>Cursors (executing SQL) &mdash; APSW 3.52.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/cursor.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9edc6f0b"></script>
+      <script src="_static/documentation_options.js?v=a197bc32"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -59,8 +69,11 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Cursors (executing SQL)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#cursor-class">Cursor class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Cursor"><code class="docutils literal notranslate"><span class="pre">Cursor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Cursor.__aiter__"><code class="docutils literal notranslate"><span class="pre">Cursor.__aiter__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Cursor.__anext__"><code class="docutils literal notranslate"><span class="pre">Cursor.__anext__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Cursor.__iter__"><code class="docutils literal notranslate"><span class="pre">Cursor.__iter__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Cursor.__next__"><code class="docutils literal notranslate"><span class="pre">Cursor.__next__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Cursor.aclose"><code class="docutils literal notranslate"><span class="pre">Cursor.aclose()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Cursor.bindings_count"><code class="docutils literal notranslate"><span class="pre">Cursor.bindings_count</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Cursor.bindings_names"><code class="docutils literal notranslate"><span class="pre">Cursor.bindings_names</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Cursor.close"><code class="docutils literal notranslate"><span class="pre">Cursor.close()</span></code></a></li>
@@ -104,8 +117,11 @@
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async.html">Concurrency &amp; Async</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extra.html">SQLite extra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
@@ -186,21 +202,45 @@ committed.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="apsw.Cursor.__aiter__">
+<span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">__aiter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#apsw.Cursor.__aiter__" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="async.html#badge-async-async"><span class="std std-ref">Async only</span></a></p>
+<p>AsyncCursors are async iterators</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.Cursor.__anext__">
+<span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">__anext__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#apsw.Cursor.__anext__" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="async.html#badge-async-async"><span class="std std-ref">Async only</span></a></p>
+<p>Cursors are iterators</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.__iter__">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><span class="pre">Cursor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><span class="pre">Cursor</span></a></span></span><a class="headerlink" href="#apsw.Cursor.__iter__" title="Link to this definition"></a></dt>
-<dd><p>Cursors are iterators</p>
+<dd><p><a class="reference internal" href="async.html#badge-async-sync"><span class="std std-ref">Sync only</span></a></p>
+<p>Cursors are iterators</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.__next__">
-<span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">__next__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><span class="pre">Cursor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#apsw.Cursor.__next__" title="Link to this definition"></a></dt>
-<dd><p>Cursors are iterators</p>
+<span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">__next__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#apsw.Cursor.__next__" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="async.html#badge-async-sync"><span class="std std-ref">Sync only</span></a></p>
+<p>Cursors are iterators</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.Cursor.aclose">
+<span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">aclose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Cursor.aclose" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="async.html#badge-close"><span class="std std-ref">Close</span></a></p>
+<p>Async version of <a class="reference internal" href="#apsw.Cursor.close" title="apsw.Cursor.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">close()</span></code></a></p>
 </dd></dl>
 
 <dl class="py attribute" id="index-0">
 <dt class="sig sig-object py" id="apsw.Cursor.bindings_count">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">bindings_count</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.Cursor.bindings_count" title="Link to this definition"></a></dt>
-<dd><p>How many bindings are in the statement.  The <code class="docutils literal notranslate"><span class="pre">?</span></code> form
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>How many bindings are in the statement.  The <code class="docutils literal notranslate"><span class="pre">?</span></code> form
 results in the largest number.  For example you could do
 <code class="docutils literal notranslate"><span class="pre">SELECT</span> <span class="pre">?123`</span></code> in which case the count will be <code class="docutils literal notranslate"><span class="pre">123</span></code>.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/bind_parameter_count.html">sqlite3_bind_parameter_count</a></p>
@@ -209,7 +249,8 @@ results in the largest number.  For example you could do
 <dl class="py attribute" id="index-1">
 <dt class="sig sig-object py" id="apsw.Cursor.bindings_names">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">bindings_names</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#apsw.Cursor.bindings_names" title="Link to this definition"></a></dt>
-<dd><p>A tuple of the name of each bind parameter, or None for no name.  The
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+<p>A tuple of the name of each bind parameter, or None for no name.  The
 leading marker (<code class="docutils literal notranslate"><span class="pre">?:&#64;$</span></code>) is omitted</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -222,10 +263,12 @@ indexing starts at <code class="docutils literal notranslate"><span class="pre">
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.close">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Cursor.close" title="Link to this definition"></a></dt>
-<dd><p>It is very unlikely you will need to call this method.
+<dd><p><a class="reference internal" href="async.html#badge-close"><span class="std std-ref">Close</span></a></p>
+<p>It is very unlikely you will need to call this method.
 Cursors are automatically garbage collected and when there
 are none left will allow the connection to be garbage collected if
 it has no other references.</p>
+<p>It is safe to call the method multiple times.</p>
 <p>A cursor is open if there are remaining statements to execute (if
 your query included multiple statements), or if you called
 <a class="reference internal" href="#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> and not all of the sequence of bindings
@@ -244,13 +287,15 @@ silently discarded.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Cursor.connection">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">connection</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span><a class="headerlink" href="#apsw.Cursor.connection" title="Link to this definition"></a></dt>
-<dd><p><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> this cursor is using</p>
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a> this cursor is using</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Cursor.convert_binding">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">convert_binding</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.ConvertBinding" title="apsw.ConvertBinding"><span class="pre">ConvertBinding</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#apsw.Cursor.convert_binding" title="Link to this definition"></a></dt>
-<dd><p>Called with the <a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>, parameter number, and value when
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Called with the <a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>, parameter number, and value when
 an unsuppported type is used in a binding. Note that parameter
 numbers start at 1.</p>
 <p>If set to <code class="docutils literal notranslate"><span class="pre">None</span></code> then conversion is disabled for this cursor.</p>
@@ -266,7 +311,8 @@ numbers start at 1.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Cursor.convert_jsonb">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">convert_jsonb</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.ConvertJSONB" title="apsw.ConvertJSONB"><span class="pre">ConvertJSONB</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#apsw.Cursor.convert_jsonb" title="Link to this definition"></a></dt>
-<dd><p>Called with the <a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>, column number, and bytes value
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Called with the <a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>, column number, and bytes value
 when a blob value is valid JSONB.  The callback can <a class="reference internal" href="jsonb.html#apsw.jsonb_decode" title="apsw.jsonb_decode"><code class="xref py py-func docutils literal notranslate"><span class="pre">decode</span> <span class="pre">the</span></code></a> or return the bytes as is.</p>
 <p>If set to <code class="docutils literal notranslate"><span class="pre">None</span></code> then conversion is disabled for this cursor.</p>
 <div class="admonition seealso">
@@ -283,7 +329,8 @@ the value is intended to be JSONB.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Cursor.description">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">description</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#apsw.Cursor.description" title="Link to this definition"></a></dt>
-<dd><p>Based on the <a class="reference external" href="https://www.python.org/dev/peps/pep-0249/">DB-API cursor property</a>, this returns the
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+<p>Based on the <a class="reference external" href="https://www.python.org/dev/peps/pep-0249/">DB-API cursor property</a>, this returns the
 same as <a class="reference internal" href="#apsw.Cursor.get_description" title="apsw.Cursor.get_description"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_description()</span></code></a> but with 5 Nones appended because
 SQLite does not have the information.</p>
 </dd></dl>
@@ -291,7 +338,8 @@ SQLite does not have the information.</p>
 <dl class="py attribute" id="index-2">
 <dt class="sig sig-object py" id="apsw.Cursor.description_full">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">description_full</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#apsw.Cursor.description_full" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+</dd></dl>
 
 <p>Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at
 compile time.</p>
@@ -311,7 +359,8 @@ name, table name, and origin name.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Cursor.exec_trace">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">exec_trace</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.ExecTracer" title="apsw.ExecTracer"><span class="pre">ExecTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#apsw.Cursor.exec_trace" title="Link to this definition"></a></dt>
-<dd><p>Called with the cursor, statement and bindings for
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Called with the cursor, statement and bindings for
 each <a class="reference internal" href="#apsw.Cursor.execute" title="apsw.Cursor.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> or <a class="reference internal" href="#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> on this
 cursor.</p>
 <p>If <em>callable</em> is <em>None</em> then execution tracing is disabled for the cursor..</p>
@@ -328,7 +377,8 @@ cursor.</p>
 <dl class="py method" id="index-3">
 <dt class="sig sig-object py" id="apsw.Cursor.execute">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statements</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bindings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.Bindings" title="apsw.Bindings"><span class="pre">Bindings</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">can_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prepare_flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><span class="pre">Cursor</span></a></span></span><a class="headerlink" href="#apsw.Cursor.execute" title="Link to this definition"></a></dt>
-<dd><p>Executes the statements using the supplied bindings.  Execution
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+<p>Executes the statements using the supplied bindings.  Execution
 returns when the first row is available or all statements have
 completed.</p>
 <dl class="field-list simple">
@@ -341,7 +391,7 @@ completed.</p>
 <a class="reference internal" href="blob.html#apsw.zeroblob" title="apsw.zeroblob"><code class="xref py py-class docutils literal notranslate"><span class="pre">zeroblob</span></code></a>, or a wrapped <a class="reference internal" href="tips.html#pyobject"><span class="std std-ref">Python object</span></a></p></li>
 <li><p><strong>can_cache</strong> – If False then the statement cache will not be used to find an already prepared query, nor will it be
 placed in the cache after execution</p></li>
-<li><p><strong>prepare_flags</strong> – <a class="reference external" href="https://sqlite.org/c3ref/c_prepare_normalize.html">flags</a> passed to
+<li><p><strong>prepare_flags</strong> – <a class="reference external" href="https://sqlite.org/c3ref/c_prepare_dont_log.html">flags</a> passed to
 <a class="reference external" href="https://sqlite.org/c3ref/prepare.html">sqlite_prepare_v3</a></p></li>
 <li><p><strong>explain</strong> – If 0 or greater then the statement is passed to <a class="reference external" href="https://sqlite.org/c3ref/stmt_explain.html">sqlite3_stmt_explain</a>
 where you can force it to not be an explain, or force explain or explain query plan.</p></li>
@@ -381,7 +431,8 @@ where you can force it to not be an explain, or force explain or explain query p
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.executemany">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">executemany</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statements</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequenceofbindings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.Bindings" title="apsw.Bindings"><span class="pre">Bindings</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">can_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prepare_flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.Cursor" title="apsw.Cursor"><span class="pre">Cursor</span></a></span></span><a class="headerlink" href="#apsw.Cursor.executemany" title="Link to this definition"></a></dt>
-<dd><p>This method is for when you want to execute the same statements over
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+<p>This method is for when you want to execute the same statements over
 a sequence of bindings.  Conceptually it does this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">sequenceofbindings</span><span class="p">:</span>
     <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statements</span><span class="p">,</span> <span class="n">binding</span><span class="p">)</span>
@@ -395,7 +446,8 @@ information, and the <a class="reference internal" href="example.html#example-ex
 <dl class="py attribute" id="index-4">
 <dt class="sig sig-object py" id="apsw.Cursor.expanded_sql">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">expanded_sql</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#apsw.Cursor.expanded_sql" title="Link to this definition"></a></dt>
-<dd><p>The SQL text with bound parameters expanded.  For example:</p>
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+<p>The SQL text with bound parameters expanded.  For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ?, ?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;three&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -412,8 +464,9 @@ the expanded string would exceed <a class="reference external" href="https://www
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.fetchall">
-<span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">fetchall</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValue" title="apsw.SQLiteValue"><span class="pre">SQLiteValue</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.Cursor.fetchall" title="Link to this definition"></a></dt>
-<dd><p>Returns all remaining result rows as a list.  This method is defined
+<span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">fetchall</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="apsw.html#apsw.SQLiteValues" title="apsw.SQLiteValues"><span class="pre">SQLiteValues</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.Cursor.fetchall" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+<p>Returns all remaining result rows as a list.  This method is defined
 in DBAPI.  See <a class="reference internal" href="#apsw.Cursor.get" title="apsw.Cursor.get"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get()</span></code></a> which does the same thing, but with the least
 amount of structure to unpack.</p>
 </dd></dl>
@@ -421,13 +474,15 @@ amount of structure to unpack.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.fetchone">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">fetchone</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Cursor.fetchone" title="Link to this definition"></a></dt>
-<dd><p>Returns the next row of data or None if there are no more rows.</p>
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+<p>Returns the next row of data or None if there are no more rows.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Cursor.get">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">get</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></span><a class="headerlink" href="#apsw.Cursor.get" title="Link to this definition"></a></dt>
-<dd><p>Like <a class="reference internal" href="#apsw.Cursor.fetchall" title="apsw.Cursor.fetchall"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fetchall()</span></code></a> but returns the data with the least amount of structure
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+<p>Like <a class="reference internal" href="#apsw.Cursor.fetchall" title="apsw.Cursor.fetchall"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fetchall()</span></code></a> but returns the data with the least amount of structure
 possible.</p>
 <table class="docutils align-default" id="id1">
 <caption><span class="caption-text">Some examples</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
@@ -460,13 +515,15 @@ possible.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.get_connection">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">get_connection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></span><a class="headerlink" href="#apsw.Cursor.get_connection" title="Link to this definition"></a></dt>
-<dd><p>Returns the <a class="reference internal" href="#apsw.Cursor.connection" title="apsw.Cursor.connection"><code class="xref py py-attr docutils literal notranslate"><span class="pre">connection</span></code></a> this cursor is part of</p>
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Returns the <a class="reference internal" href="#apsw.Cursor.connection" title="apsw.Cursor.connection"><code class="xref py py-attr docutils literal notranslate"><span class="pre">connection</span></code></a> this cursor is part of</p>
 </dd></dl>
 
 <dl class="py method" id="index-5">
 <dt class="sig sig-object py" id="apsw.Cursor.get_description">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">get_description</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#apsw.Cursor.get_description" title="Link to this definition"></a></dt>
-<dd><p>If you are trying to get information about a table or view,
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+<p>If you are trying to get information about a table or view,
 then <a class="reference external" href="https://sqlite.org/pragma.html#pragma_table_info">pragma table_info</a>
 is better.  If you want to know up front what columns and other
 details a query does then <a class="reference internal" href="ext.html#apsw.ext.query_info" title="apsw.ext.query_info"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.ext.query_info()</span></code></a> is useful.</p>
@@ -489,7 +546,8 @@ whatever type you put in for that row and column.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.get_exec_trace">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">get_exec_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.ExecTracer" title="apsw.ExecTracer"><span class="pre">ExecTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Cursor.get_exec_trace" title="Link to this definition"></a></dt>
-<dd><p>Returns the currently installed <a class="reference internal" href="#apsw.Cursor.exec_trace" title="apsw.Cursor.exec_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">execution</span> <span class="pre">tracer</span></code></a></p>
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Returns the currently installed <a class="reference internal" href="#apsw.Cursor.exec_trace" title="apsw.Cursor.exec_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">execution</span> <span class="pre">tracer</span></code></a></p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
@@ -501,7 +559,8 @@ whatever type you put in for that row and column.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.get_row_trace">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">get_row_trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.RowTracer" title="apsw.RowTracer"><span class="pre">RowTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Cursor.get_row_trace" title="Link to this definition"></a></dt>
-<dd><p>Returns the currently installed (via <a class="reference internal" href="#apsw.Cursor.set_row_trace" title="apsw.Cursor.set_row_trace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_row_trace()</span></code></a>)
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Returns the currently installed (via <a class="reference internal" href="#apsw.Cursor.set_row_trace" title="apsw.Cursor.set_row_trace"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_row_trace()</span></code></a>)
 row tracer.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -514,14 +573,16 @@ row tracer.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Cursor.has_vdbe">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">has_vdbe</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#apsw.Cursor.has_vdbe" title="Link to this definition"></a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the SQL does anything.  Comments have nothing to
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the SQL does anything.  Comments have nothing to
 evaluate, and so are <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute" id="index-6">
 <dt class="sig sig-object py" id="apsw.Cursor.is_explain">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">is_explain</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.Cursor.is_explain" title="Link to this definition"></a></dt>
-<dd><p>Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
 and 2 if an EXPLAIN QUERY PLAN query.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/stmt_isexplain.html">sqlite3_stmt_isexplain</a></p>
 </dd></dl>
@@ -529,7 +590,8 @@ and 2 if an EXPLAIN QUERY PLAN query.</p>
 <dl class="py attribute" id="index-7">
 <dt class="sig sig-object py" id="apsw.Cursor.is_readonly">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">is_readonly</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#apsw.Cursor.is_readonly" title="Link to this definition"></a></dt>
-<dd><p>Returns True if the current query does not change the database.</p>
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Returns True if the current query does not change the database.</p>
 <p>Note that called functions, virtual tables etc could make changes though.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/stmt_readonly.html">sqlite3_stmt_readonly</a></p>
 </dd></dl>
@@ -537,7 +599,8 @@ and 2 if an EXPLAIN QUERY PLAN query.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Cursor.row_trace">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">row_trace</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.RowTracer" title="apsw.RowTracer"><span class="pre">RowTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#apsw.Cursor.row_trace" title="Link to this definition"></a></dt>
-<dd><p>Called with cursor and row being returned.  You can
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Called with cursor and row being returned.  You can
 change the data that is returned or cause the row to be skipped
 altogether.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">None</span></code> then row tracing is disabled for this cursor.</p>
@@ -554,20 +617,23 @@ altogether.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.set_exec_trace">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">set_exec_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.ExecTracer" title="apsw.ExecTracer"><span class="pre">ExecTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Cursor.set_exec_trace" title="Link to this definition"></a></dt>
-<dd><p>Sets the <a class="reference internal" href="#apsw.Cursor.exec_trace" title="apsw.Cursor.exec_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">execution</span> <span class="pre">tracer</span></code></a></p>
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Sets the <a class="reference internal" href="#apsw.Cursor.exec_trace" title="apsw.Cursor.exec_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">execution</span> <span class="pre">tracer</span></code></a></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Cursor.set_row_trace">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">set_row_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.RowTracer" title="apsw.RowTracer"><span class="pre">RowTracer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Cursor.set_row_trace" title="Link to this definition"></a></dt>
-<dd><p>Sets the <a class="reference internal" href="#apsw.Cursor.row_trace" title="apsw.Cursor.row_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">row</span> <span class="pre">tracer</span></code></a>.  If <code class="docutils literal notranslate"><span class="pre">None</span></code>
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Sets the <a class="reference internal" href="#apsw.Cursor.row_trace" title="apsw.Cursor.row_trace"><code class="xref py py-attr docutils literal notranslate"><span class="pre">row</span> <span class="pre">tracer</span></code></a>.  If <code class="docutils literal notranslate"><span class="pre">None</span></code>
 then row tracing is disabled for this cursor.</p>
 </dd></dl>
 
 <dl class="py attribute" id="index-8">
 <dt class="sig sig-object py" id="apsw.Cursor.sql">
 <span class="sig-prename descclassname"><span class="pre">Cursor.</span></span><span class="sig-name descname"><span class="pre">sql</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#apsw.Cursor.sql" title="Link to this definition"></a></dt>
-<dd><p>The SQL being executed</p>
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+<p>The SQL being executed</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/c3ref/expanded_sql.html">sqlite3_sql</a></p>
 </dd></dl>
 
@@ -586,7 +652,7 @@ then row tracing is disabled for this cursor.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 10, 2026.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
       </span></p>
   </div>
 
@@ -604,18 +670,7 @@ then row tracing is disabled for this cursor.</p>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-    <!-- Theme Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-2NR9GDCQLT', {
-          'anonymize_ip': false,
-      });
-    </script> 
+  </script> 
 
 </body>
 </html>

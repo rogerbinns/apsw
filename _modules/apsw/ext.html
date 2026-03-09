@@ -4,17 +4,27 @@
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.ext &mdash; APSW 3.51.2.0 documentation</title>
+  <title>apsw.ext &mdash; APSW 3.52.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
+      <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=ad5bd102" />
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/_modules/apsw/ext.html" />
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9edc6f0b"></script>
+      <script src="../../_static/documentation_options.js?v=a197bc32"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -67,8 +77,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../shell.html">Shell</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../async.html">Concurrency &amp; Async</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extra.html">SQLite extra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pysqlite.html">sqlite3 module differences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../benchmarking.html">Benchmarking</a></li>
@@ -128,7 +141,8 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">is_dataclass</span><span class="p">,</span> <span class="n">make_dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">fractions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Fraction</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">overload</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">AsyncIterable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Awaitable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoneType</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
@@ -242,7 +256,7 @@
             <span class="k">return</span> <span class="nb">bytes</span>
         <span class="k">if</span> <span class="s2">&quot;REAL&quot;</span> <span class="ow">in</span> <span class="n">t</span> <span class="ow">or</span> <span class="s2">&quot;FLOA&quot;</span> <span class="ow">in</span> <span class="n">t</span> <span class="ow">or</span> <span class="s2">&quot;DOUB&quot;</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">float</span>
-        <span class="k">return</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span></div>
 
 
 <div class="viewcode-block" id="DataClassRowFactory.__call__">
@@ -366,7 +380,6 @@
 </div>
 
 
-
 <div class="viewcode-block" id="Function">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.Function">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Function</span><span class="p">:</span>
@@ -378,17 +391,22 @@
 <span class="sd">        value = json_extract(some_json, &#39;$.c[2].f&#39;)</span>
 
 <span class="sd">    :attr:`~apsw.Cursor.get` is used to return the results</span>
+
+<span class="sd">    This works with both sync and async connections (await the</span>
+<span class="sd">    result).  It isn&#39;t currently possible to type annotate and</span>
+<span class="sd">    generate the documentation to accurately reflect that without one</span>
+<span class="sd">    of them having problems.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># This is tested in tests/jsonb.py because it was developed in</span>
     <span class="c1"># conjunction with jsonb</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
+        <span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">AsyncConnection</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">convert_binding</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">convert_jsonb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">exec_trace</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">convert_binding</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ConvertBinding</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">convert_jsonb</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ConvertJSONB</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">exec_trace</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ExecTracer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param connection: Connection to use</span>
@@ -403,13 +421,23 @@
         <span class="n">cursor</span><span class="o">.</span><span class="n">convert_jsonb</span> <span class="o">=</span> <span class="n">convert_jsonb</span>
         <span class="n">cursor</span><span class="o">.</span><span class="n">exec_trace</span> <span class="o">=</span> <span class="n">exec_trace</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span> <span class="o">=</span> <span class="n">cursor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_async</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">is_async</span>
 
 <div class="viewcode-block" id="Function.__call__">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.Function.__call__">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">:</span>
-        <span class="s2">&quot;Calls the function with zero or more parameters, returning the result&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SELECT &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot;(</span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">))</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">get</span></div>
-</div>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span> <span class="o">|</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calls the function with zero or more parameters, returning the result</span>
+
+<span class="sd">        If using a sync connection then you get the direct result,</span>
+<span class="sd">        while an async connection requires awaiting the result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_async</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SELECT &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot;(</span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">))</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__call_async</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">__call_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SELECT &quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot;(</span><span class="si">{</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">))</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span><span class="o">.</span><span class="n">get</span></div>
 
 
 
@@ -1027,7 +1055,7 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
+        <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">AsyncConnection</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">trigger</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">vtable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -1049,7 +1077,7 @@
         <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">text</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate</span> <span class="k">else</span> <span class="n">text</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__enter_core</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span>
 
@@ -1059,21 +1087,31 @@
         <span class="c1"># interleaving of queries</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last_emitted</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span>
             <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_STMT</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_ROW</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_PROFILE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sqlite_trace</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="s2">&quot;preupdate_hook&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">preupdate_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_preupdate</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">preupdate_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_preupdate</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">updates</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_commit_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commit</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_rollback_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rollback</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_commit_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commit</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_rollback_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rollback</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">transaction_state</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__enter_core</span><span class="p">():</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="fm">__aenter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__enter_core</span><span class="p">():</span>
+            <span class="k">await</span> <span class="n">v</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_commit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1192,13 +1230,21 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">last_emitted</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;sql&quot;</span><span class="p">]</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__exit_core</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">updates</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">preupdate_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">preupdate_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_commit_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_rollback_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span></div>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_commit_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">set_rollback_hook</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exit_core</span><span class="p">():</span>
+            <span class="k">pass</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="fm">__aexit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exit_core</span><span class="p">():</span>
+            <span class="k">await</span> <span class="n">v</span></div>
 
 
 
@@ -1224,7 +1270,7 @@
 <span class="sd">           Statistics from each SQL statement executed are added together.</span>
 <span class="sd">    :param scope: Get :data:`thread &lt;resource.RUSAGE_THREAD&gt;` or</span>
 <span class="sd">           :data:`process &lt;resource.RUSAGE_SELF&gt;` stats, or `None`.</span>
-<span class="sd">           Note that MacOS only supports process, and Windows doesn&#39;t support</span>
+<span class="sd">           Note that MacOS only provides process, and Windows doesn&#39;t support</span>
 <span class="sd">           either.</span>
 <span class="sd">    :param indent: Printed before each line of output</span>
 
@@ -1242,7 +1288,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">file</span><span class="p">:</span> <span class="n">TextIO</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">AsyncConnection</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">scope</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;thread&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;process&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">indent</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">):</span>
@@ -1258,7 +1304,7 @@
 
         <span class="n">_get_resource</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">getrusage</span>
         <span class="n">_get_resource_param</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;thread&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="s2">&quot;resource&quot;</span><span class="p">,</span> <span class="s2">&quot;RUSAGE_THREAD&quot;</span><span class="p">,</span> <span class="n">resource</span><span class="o">.</span><span class="n">RUSAGE_SELF</span><span class="p">),</span>
+            <span class="s2">&quot;thread&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="s2">&quot;RUSAGE_THREAD&quot;</span><span class="p">,</span> <span class="n">resource</span><span class="o">.</span><span class="n">RUSAGE_SELF</span><span class="p">),</span>
             <span class="s2">&quot;process&quot;</span><span class="p">:</span> <span class="n">resource</span><span class="o">.</span><span class="n">RUSAGE_SELF</span><span class="p">,</span>
         <span class="p">}</span>
 
@@ -1274,9 +1320,28 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_usage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_resource_param</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="p">])</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_PROFILE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sqlite_trace</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">stmt_status</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">db_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_status_get</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_enter</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">db_enter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;:meta private:&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_TRACE_PROFILE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sqlite_trace</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stmt_status</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_status_get</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">db_exit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;:meta private:&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_status_get</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="fm">__aenter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_times</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">process_time</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_usage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_resource_param</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_enter</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_sqlite_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
@@ -1301,20 +1366,37 @@
             <span class="s2">&quot;SQLITE_DBSTATUS_TEMPBUF_SPILL&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBSTATUS_TEMPBUF_SPILL</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
         <span class="p">}</span>
 
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="fm">__aexit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">times</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">process_time</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="n">usage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_resource_param</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="p">])</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">status_vals</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_exit</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">format_output</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">usage</span><span class="p">,</span> <span class="n">status_vals</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">:</span>
             <span class="k">return</span>
 
+        <span class="n">times</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">process_time</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="n">usage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_resource_param</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="p">])</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">status_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_exit</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">format_output</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">usage</span><span class="p">,</span> <span class="n">status_vals</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">format_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">usage</span><span class="p">,</span> <span class="n">status_vals</span><span class="p">):</span>
+        <span class="s2">&quot;:meta private:&quot;</span>
+
         <span class="n">vals</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="n">times</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">process_time</span><span class="p">(),</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.001</span><span class="p">:</span>
             <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_descriptions</span><span class="p">[</span><span class="s2">&quot;process_time&quot;</span><span class="p">],</span> <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_times</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
         <span class="k">if</span> <span class="n">times</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_times</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.001</span><span class="p">:</span>
             <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_descriptions</span><span class="p">[</span><span class="s2">&quot;monotonic&quot;</span><span class="p">],</span> <span class="n">times</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_times</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="p">:</span>
-            <span class="n">usage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_resource_param</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">scope</span><span class="p">])</span>
 
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">usage</span><span class="p">):</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;ru_&quot;</span><span class="p">):</span>
@@ -1324,13 +1406,12 @@
                     <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_descriptions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">delta</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">trace_v2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stmt_status</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stmt_status</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;SQLITE_STMTSTATUS_MEMUSED&quot;</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stmt_status</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="k">if</span> <span class="n">v</span><span class="p">:</span>
                         <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_descriptions</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">v</span><span class="p">))</span>
-                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_status_get</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">status_vals</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="n">diff</span> <span class="o">=</span> <span class="n">v</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_status</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">diff</span><span class="p">:</span>
                         <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_descriptions</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">diff</span><span class="p">))</span>
@@ -1348,7 +1429,7 @@
                 <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span><span class="p">,</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_width</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)),</span> <span class="n">k</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
     <span class="n">_descriptions</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;process_time&quot;</span><span class="p">:</span> <span class="s2">&quot;Total CPU consumption&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;process_time&quot;</span><span class="p">:</span> <span class="s2">&quot;Process CPU consumption&quot;</span><span class="p">,</span>
         <span class="s2">&quot;monotonic&quot;</span><span class="p">:</span> <span class="s2">&quot;Wall clock&quot;</span><span class="p">,</span>
         <span class="s2">&quot;SQLITE_STMTSTATUS_FULLSCAN_STEP&quot;</span><span class="p">:</span> <span class="s2">&quot;SQLite full table scan&quot;</span><span class="p">,</span>
         <span class="s2">&quot;SQLITE_STMTSTATUS_SORT&quot;</span><span class="p">:</span> <span class="s2">&quot;SQLite sort operations&quot;</span><span class="p">,</span>
@@ -1371,8 +1452,8 @@
         <span class="s2">&quot;SQLITE_DBSTATUS_CACHE_SPILL&quot;</span><span class="p">:</span> <span class="s2">&quot;SQLite pager cache writes during transaction&quot;</span><span class="p">,</span>
         <span class="s2">&quot;SQLITE_DBSTATUS_DEFERRED_FKS&quot;</span><span class="p">:</span> <span class="s2">&quot;SQLite unresolved foreign keys&quot;</span><span class="p">,</span>
         <span class="s2">&quot;SQLITE_DBSTATUS_TEMPBUF_SPILL&quot;</span><span class="p">:</span> <span class="s2">&quot;SQLite temp spill from full memory to disk&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ru_utime&quot;</span><span class="p">:</span> <span class="s2">&quot;Time in user mode&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;ru_stime&quot;</span><span class="p">:</span> <span class="s2">&quot;Time in system mode&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ru_utime&quot;</span><span class="p">:</span> <span class="s2">&quot;CPU time in user mode&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ru_stime&quot;</span><span class="p">:</span> <span class="s2">&quot;CPU time in system mode&quot;</span><span class="p">,</span>
         <span class="s2">&quot;ru_maxrss&quot;</span><span class="p">:</span> <span class="s2">&quot;Maximum resident set size&quot;</span><span class="p">,</span>
         <span class="s2">&quot;ru_ixrss&quot;</span><span class="p">:</span> <span class="s2">&quot;Shared memory size&quot;</span><span class="p">,</span>
         <span class="s2">&quot;ru_idrss&quot;</span><span class="p">:</span> <span class="s2">&quot;Unshared memory size&quot;</span><span class="p">,</span>
@@ -1833,9 +1914,9 @@
 <div class="viewcode-block" id="query_limit">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.query_limit">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">query_limit</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context manager to limit execution time and rows processed in the block</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context manager to limit execution time and rows produced in the block</span>
 
-<span class="sd">    When the total number of rows processed hits the row limit, or</span>
+<span class="sd">    When the total number of rows produced hits the row limit, or</span>
 <span class="sd">    timeout seconds have elapsed an exception is raised to exit the</span>
 <span class="sd">    block.</span>
 
@@ -1848,7 +1929,7 @@
 <span class="sd">            db.execute(&quot;...&quot;)</span>
 
 <span class="sd">    :param db: Connection to monitor</span>
-<span class="sd">    :param row_limit: Maximum number of rows to process, across all</span>
+<span class="sd">    :param row_limit: Maximum number of rows to produce, across all</span>
 <span class="sd">        queries.  :class:`None` (default) means no limit</span>
 <span class="sd">    :param timeout: Maximum elapsed time in seconds.  :class:`None`</span>
 <span class="sd">        (default) means no limit</span>
@@ -2145,7 +2226,7 @@
         <span class="k">def</span><span class="w"> </span><span class="nf">colour_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">kind</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">text</span>
 
-    <span class="n">colwidths</span> <span class="o">=</span> <span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">colnames</span><span class="p">]</span>
+    <span class="n">colwidths</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span> <span class="k">if</span> <span class="n">c</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">colnames</span><span class="p">]</span>
     <span class="n">coltypes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="nb">type</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">set</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">colnames</span><span class="p">]</span>
 
     <span class="c1"># type, measure and stringize each cell</span>
@@ -2228,7 +2309,7 @@
             <span class="k">break</span>
 
         <span class="c1"># this makes wider columns take more of the width blame</span>
-        <span class="n">proportions</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span> <span class="o">*</span> <span class="mf">1.1</span> <span class="o">/</span> <span class="n">total_width</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">colwidths</span><span class="p">]</span>
+        <span class="n">proportions</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span> <span class="o">*</span> <span class="mf">1.15</span> <span class="o">/</span> <span class="n">total_width</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">colwidths</span><span class="p">]</span>
 
         <span class="n">excess</span> <span class="o">=</span> <span class="n">total_width</span><span class="p">()</span> <span class="o">-</span> <span class="n">text_width</span>
 
@@ -2259,13 +2340,25 @@
         <span class="p">)</span>
 
     <span class="c1"># break headers and cells into lines</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">wrap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">width</span><span class="p">))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">justify</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">Justify</span><span class="p">,</span> <span class="n">hyphen</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="n">justify</span><span class="p">,</span> <span class="n">hyphen</span><span class="o">=</span><span class="n">hyphen</span><span class="p">))</span> <span class="ow">or</span> <span class="p">[</span><span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">width</span><span class="p">]</span>
 
-    <span class="n">colnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">wrap</span><span class="p">(</span><span class="n">colnames</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">colwidths</span><span class="p">))]</span>  <span class="c1"># type: ignore</span>
+    <span class="c1"># special formatting</span>
+    <span class="n">formats</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nb">int</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;justify&quot;</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">Justify</span><span class="o">.</span><span class="n">RIGHT</span><span class="p">,</span> <span class="s2">&quot;hyphen&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">},</span>
+        <span class="nb">float</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;justify&quot;</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">Justify</span><span class="o">.</span><span class="n">LEFT</span><span class="p">,</span> <span class="s2">&quot;hyphen&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;header&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;justify&quot;</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">Justify</span><span class="o">.</span><span class="n">CENTER</span><span class="p">,</span> <span class="s2">&quot;hyphen&quot;</span><span class="p">:</span> <span class="s2">&quot;-&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;_&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;justify&quot;</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">Justify</span><span class="o">.</span><span class="n">LEFT</span><span class="p">,</span> <span class="s2">&quot;hyphen&quot;</span><span class="p">:</span> <span class="s2">&quot;-&quot;</span><span class="p">},</span>
+    <span class="p">}</span>
+
+    <span class="n">colnames</span> <span class="o">=</span> <span class="p">[</span><span class="n">wrap</span><span class="p">(</span><span class="n">colnames</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">**</span><span class="n">formats</span><span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">colwidths</span><span class="p">))]</span>  <span class="c1"># type: ignore</span>
+
     <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>  <span class="c1"># type: ignore[misc]</span>
-            <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">wrap</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">t</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">row</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">wrap</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">**</span><span class="n">formats</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">formats</span><span class="p">[</span><span class="s2">&quot;_&quot;</span><span class="p">])),</span>
+                <span class="n">t</span><span class="p">,</span>
+            <span class="p">)</span>  <span class="c1"># type: ignore</span>
 
     <span class="c1">## output</span>
     <span class="c1"># are any cells more than one line?</span>
@@ -2289,38 +2382,33 @@
                 <span class="n">line</span> <span class="o">+=</span> <span class="n">chars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">do_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">centre</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">do_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">row</span><span class="p">)):</span>
             <span class="n">line</span> <span class="o">=</span> <span class="n">sep</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="n">cell</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
-                <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">text</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
-                <span class="n">lt</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">unicode</span><span class="o">.</span><span class="n">text_width</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-                <span class="n">extra</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">lt</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">centre</span><span class="p">:</span>
-                    <span class="n">lpad</span> <span class="o">=</span> <span class="n">extra</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span>
-                    <span class="n">rpad</span> <span class="o">=</span> <span class="n">extra</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="p">:]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">lpad</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-                    <span class="n">rpad</span> <span class="o">=</span> <span class="n">extra</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">cell</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">colwidths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="c1"># we do a space on each side</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">text</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
                 <span class="k">if</span> <span class="n">header</span><span class="p">:</span>
-                    <span class="n">text</span> <span class="o">=</span> <span class="n">colour_wrap</span><span class="p">(</span><span class="n">lpad</span> <span class="o">+</span> <span class="n">text</span> <span class="o">+</span> <span class="n">rpad</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">text</span> <span class="o">=</span> <span class="n">colour_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">text</span> <span class="o">=</span> <span class="n">lpad</span> <span class="o">+</span> <span class="n">colour_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="o">+</span> <span class="n">rpad</span>
+                    <span class="n">text</span> <span class="o">=</span> <span class="n">colour_wrap</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
                 <span class="n">line</span> <span class="o">+=</span> <span class="n">text</span> <span class="o">+</span> <span class="n">sep</span>
             <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
-    <span class="n">do_bar</span><span class="p">(</span><span class="s2">&quot;┌─┬┐&quot;</span> <span class="k">if</span> <span class="n">use_unicode</span> <span class="k">else</span> <span class="s2">&quot;+-++&quot;</span><span class="p">)</span>
-    <span class="n">do_row</span><span class="p">([(</span><span class="n">c</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">colnames</span><span class="p">],</span> <span class="s2">&quot;│&quot;</span> <span class="k">if</span> <span class="n">use_unicode</span> <span class="k">else</span> <span class="s2">&quot;|&quot;</span><span class="p">,</span> <span class="n">centre</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">do_bar</span><span class="p">(</span><span class="s2">&quot;╭─┬╮&quot;</span> <span class="k">if</span> <span class="n">use_unicode</span> <span class="k">else</span> <span class="s2">&quot;+-++&quot;</span><span class="p">)</span>
+    <span class="n">do_row</span><span class="p">([(</span><span class="n">c</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">colnames</span><span class="p">],</span> <span class="s2">&quot;│&quot;</span> <span class="k">if</span> <span class="n">use_unicode</span> <span class="k">else</span> <span class="s2">&quot;|&quot;</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="c1"># rows</span>
+    <span class="n">which</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">if</span> <span class="n">rows</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">multiline</span><span class="p">:</span>
-                <span class="n">do_bar</span><span class="p">(</span><span class="s2">&quot;├─┼┤&quot;</span> <span class="k">if</span> <span class="n">use_unicode</span> <span class="k">else</span> <span class="s2">&quot;+-++&quot;</span><span class="p">)</span>
+                <span class="n">do_bar</span><span class="p">([</span><span class="s2">&quot;╞═╪╡&quot;</span><span class="p">,</span> <span class="s2">&quot;├─┼┤&quot;</span><span class="p">][</span><span class="n">which</span><span class="p">]</span> <span class="k">if</span> <span class="n">use_unicode</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;+=++&quot;</span><span class="p">,</span> <span class="s2">&quot;+-++&quot;</span><span class="p">][</span><span class="n">which</span><span class="p">])</span>
+                <span class="n">which</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="n">do_row</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="s2">&quot;│&quot;</span> <span class="k">if</span> <span class="n">use_unicode</span> <span class="k">else</span> <span class="s2">&quot;|&quot;</span><span class="p">)</span>
 
-    <span class="n">do_bar</span><span class="p">(</span><span class="s2">&quot;└─┴┘&quot;</span> <span class="k">if</span> <span class="n">use_unicode</span> <span class="k">else</span> <span class="s2">&quot;+-++&quot;</span><span class="p">)</span>
+    <span class="n">do_bar</span><span class="p">(</span><span class="s2">&quot;╰─┴╯&quot;</span> <span class="k">if</span> <span class="n">use_unicode</span> <span class="k">else</span> <span class="s2">&quot;+-++&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
 
@@ -2400,18 +2488,66 @@
     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t figure out columns for </span><span class="si">{</span><span class="n">row</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="VirtualModuleCallable">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.VirtualModuleCallable">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VirtualModuleCallable</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    What :func:`make_virtual_module` takes as the callable</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">columns</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="s2">&quot;The columns names&quot;</span>
+    <span class="n">column_access</span><span class="p">:</span> <span class="n">VTColumnAccess</span>
+    <span class="s2">&quot;How to get values from each row&quot;</span>
+    <span class="n">primary_key</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="s2">&quot;Which column if any is a primary key&quot;</span>
+
+<div class="viewcode-block" id="VirtualModuleCallable.__call__">
+<a class="viewcode-back" href="../../ext.html#apsw.ext.VirtualModuleCallable.__call__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span> <span class="o">|</span> <span class="n">AsyncIterable</span><span class="p">:</span>
+        <span class="s2">&quot;It can either an iterator over the values&quot;</span>
+        <span class="o">...</span></div>
+</div>
+
+
+<span class="c1"># ::TODO:: sphinx barfs when these overloads are present even though TYPE_CHECKING</span>
+<span class="c1"># is False.  Will need to automate commenting out the block while sphinx runs</span>
+<span class="c1">#</span>
+<span class="c1">#  if TYPE_CHECKING:</span>
+<span class="c1">#      @overload</span>
+<span class="c1">#      def make_virtual_module(</span>
+<span class="c1">#          db: apsw.Connection,</span>
+<span class="c1">#          name: str,</span>
+<span class="c1">#          callable: VirtualModuleCallable,</span>
+<span class="c1">#          *,</span>
+<span class="c1">#          eponymous: bool = True,</span>
+<span class="c1">#          eponymous_only: bool = False,</span>
+<span class="c1">#          repr_invalid: bool = False,</span>
+<span class="c1">#      ) -&gt; None: ...</span>
+<span class="c1">#      @overload</span>
+<span class="c1">#      def make_virtual_module(</span>
+<span class="c1">#          db: apsw.AsyncConnection,</span>
+<span class="c1">#          name: str,</span>
+<span class="c1">#          callable: VirtualModuleCallable,</span>
+<span class="c1">#          *,</span>
+<span class="c1">#          eponymous: bool = True,</span>
+<span class="c1">#          eponymous_only: bool = False,</span>
+<span class="c1">#          repr_invalid: bool = False,</span>
+<span class="c1">#      ) -&gt; Awaitable[None]: ...</span>
+
 
 <div class="viewcode-block" id="make_virtual_module">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.make_virtual_module">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_virtual_module</span><span class="p">(</span>
-    <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span>
+    <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span> <span class="o">|</span> <span class="n">apsw</span><span class="o">.</span><span class="n">AsyncConnection</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="nb">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="nb">callable</span><span class="p">:</span> <span class="n">VirtualModuleCallable</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">eponymous</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">eponymous_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">repr_invalid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span> <span class="o">|</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Registers a read-only virtual table module with *db* based on</span>
 <span class="sd">    *callable*.  The *callable* must have an attribute named *columns*</span>
@@ -2457,11 +2593,10 @@
 <span class="sd">      SELECT * from table_name(1) WHERE</span>
 <span class="sd">            include_system=1;</span>
 
-<span class="sd">    :func:`iter` is called on *callable* with each iteration expected</span>
-<span class="sd">    to return the next row.  That means *callable* can return its data</span>
-<span class="sd">    all at once (eg a list of rows), or *yield* them one row at a</span>
-<span class="sd">    time.  The number of columns must always be the same, no matter</span>
-<span class="sd">    what the parameter values.</span>
+<span class="sd">    The callable can be sync or async.  It can return all the data in</span>
+<span class="sd">    one shot such as a list of rows, or it can ``yield`` one row at a</span>
+<span class="sd">    time.  The number of columns for each row must always be the same,</span>
+<span class="sd">    no matter what the parameter values.</span>
 
 <span class="sd">    :param eponymous: Lets you use the *name* as a table name without</span>
 <span class="sd">             having to create a virtual table</span>
@@ -2471,6 +2606,14 @@
 <span class="sd">       :func:`repr`</span>
 
 <span class="sd">    See the :ref:`example &lt;example_virtual_tables&gt;`</span>
+
+<span class="sd">    Async</span>
+<span class="sd">    +++++</span>
+
+<span class="sd">    If the db connection is in async mode, then you must ``await`` the</span>
+<span class="sd">    result of this function.  async callables can only be used when</span>
+<span class="sd">    the database is in async mode.  sync callables can be used in</span>
+<span class="sd">    either mode.</span>
 
 <span class="sd">    Advanced</span>
 <span class="sd">    ++++++++</span>
@@ -2589,7 +2732,7 @@
             <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Module</span><span class="p">,</span> <span class="n">param_values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">module</span> <span class="o">=</span> <span class="n">module</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">param_values</span> <span class="o">=</span> <span class="n">param_values</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">]</span> <span class="o">|</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">current_row</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">columns</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">repr_invalid</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">repr_invalid</span>
@@ -2602,11 +2745,23 @@
                     <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_Column_get&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Column&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">is_async</span> <span class="o">=</span> <span class="kc">False</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">Filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx_num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">idx_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                 <span class="n">params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">idx_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">),</span> <span class="n">args</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">callable</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">))</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">callable</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">is_async</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isasyncgen</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span> <span class="o">=</span> <span class="nb">aiter</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_impl_next</span> <span class="o">=</span> <span class="n">_get_anext</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">is_async</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">inspect</span><span class="o">.</span><span class="n">iscoroutine</span><span class="p">(</span><span class="n">values</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">async_run_coro</span><span class="p">(</span><span class="n">values</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_impl_next</span> <span class="o">=</span> <span class="nb">next</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_impl_next</span> <span class="o">=</span> <span class="nb">next</span>
                 <span class="c1"># proactively advance so we can tell if eof</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">Next</span><span class="p">()</span>
 
@@ -2619,7 +2774,10 @@
 
             <span class="k">def</span><span class="w"> </span><span class="nf">Close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_async</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">aclose</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">,</span> <span class="s2">&quot;aclose&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">apsw</span><span class="o">.</span><span class="n">async_run_coro</span><span class="p">(</span><span class="n">aclose</span><span class="p">())</span>
+                    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span><span class="p">):</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -2665,8 +2823,8 @@
 
             <span class="k">def</span><span class="w"> </span><span class="nf">Next</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">current_row</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
-                <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">current_row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">)</span>  <span class="c1"># type: ignore[arg-type]</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">StopIteration</span><span class="p">,</span> <span class="ne">StopAsyncIteration</span><span class="p">):</span>
                     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="p">,</span> <span class="s2">&quot;close&quot;</span><span class="p">):</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># type: ignore[union-attr]</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">iterating</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2684,9 +2842,7 @@
         <span class="n">repr_invalid</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="c1"># unregister any existing first</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">create_module</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">create_module</span><span class="p">(</span>
+    <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">create_module</span><span class="p">(</span>
         <span class="n">name</span><span class="p">,</span>
         <span class="n">mod</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
         <span class="n">use_bestindex_object</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -2696,6 +2852,11 @@
     <span class="p">)</span></div>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_anext</span><span class="p">(</span><span class="n">aiterator</span><span class="p">:</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">async_get_anext</span><span class="p">():</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">anext</span><span class="p">(</span><span class="n">aiterator</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">async_run_coro</span><span class="p">(</span><span class="n">async_get_anext</span><span class="p">())</span>
 
 <div class="viewcode-block" id="generate_series_sqlite">
 <a class="viewcode-back" href="../../ext.html#apsw.ext.generate_series_sqlite">[docs]</a>
@@ -3210,7 +3371,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 10, 2026.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
       </span></p>
   </div>
 
@@ -3228,18 +3389,7 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-    <!-- Theme Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-2NR9GDCQLT', {
-          'anonymize_ip': false,
-      });
-    </script> 
+  </script> 
 
 </body>
 </html>

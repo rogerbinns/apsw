@@ -4,17 +4,27 @@
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.unicode &mdash; APSW 3.51.2.0 documentation</title>
+  <title>apsw.unicode &mdash; APSW 3.52.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=3c7e2631" />
+      <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=ad5bd102" />
 
   
     <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/_modules/apsw/unicode.html" />
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=9edc6f0b"></script>
+      <script src="../../_static/documentation_options.js?v=a197bc32"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -67,8 +77,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../shell.html">Shell</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../async.html">Concurrency &amp; Async</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extra.html">SQLite extra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pysqlite.html">sqlite3 module differences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../benchmarking.html">Benchmarking</a></li>
@@ -220,6 +233,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Any</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">enum</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
 <span class="c1">### BEGIN UNICODE UPDATE SECTION ###</span>
@@ -710,6 +724,13 @@
     <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">paragraphs</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span></div>
 
 
+<div class="viewcode-block" id="Justify">
+<a class="viewcode-back" href="../../unicode.html#apsw.unicode.Justify">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Justify</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">LEFT</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">CENTER</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">RIGHT</span> <span class="o">=</span> <span class="mi">2</span></div>
+
 
 <div class="viewcode-block" id="text_wrap">
 <a class="viewcode-back" href="../../unicode.html#apsw.unicode.text_wrap">[docs]</a>
@@ -721,6 +742,7 @@
     <span class="n">hyphen</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span>
     <span class="n">combine_space</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">invalid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;?&quot;</span><span class="p">,</span>
+    <span class="n">justify</span><span class="p">:</span> <span class="n">Justify</span> <span class="o">=</span> <span class="n">Justify</span><span class="o">.</span><span class="n">LEFT</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Similar to :func:`textwrap.wrap` but Unicode grapheme cluster and line break aware</span>
 
@@ -734,9 +756,11 @@
 <span class="sd">    :param tabsize: Tab stop spacing as tabs are expanded</span>
 <span class="sd">    :param hyphen: Used to show a segment was broken because it was wider than ``width``</span>
 <span class="sd">    :param combine_space: Leading space on each (indent) is always preserved.  Other spaces where</span>
-<span class="sd">          multiple occur are combined into one space.</span>
+<span class="sd">          multiple occur are combined into one space.  If tabs matter then you&#39;ll want this</span>
+<span class="sd">          off.</span>
 <span class="sd">    :param invalid: If invalid codepoints are encountered such as control characters and surrogates</span>
 <span class="sd">          then they are replaced with this.</span>
+<span class="sd">    :param justify: Where to align text within each line</span>
 
 <span class="sd">    This yields one line of :class:`str` at a time, which will be</span>
 <span class="sd">    exactly ``width`` when output to a terminal.  It will be right</span>
@@ -745,9 +769,27 @@
 <span class="sd">    :func:`apsw.ext.format_query_table` uses this method to ensure</span>
 <span class="sd">    each column is the desired width.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">expand_tabs</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">tabsize</span><span class="p">,</span> <span class="n">invalid</span><span class="p">)</span>
+
     <span class="n">hyphen_width</span> <span class="o">=</span> <span class="n">text_width</span><span class="p">(</span><span class="n">hyphen</span><span class="p">)</span>
 
-    <span class="n">text</span> <span class="o">=</span> <span class="n">expand_tabs</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">tabsize</span><span class="p">,</span> <span class="n">invalid</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">do_justify</span><span class="p">(</span><span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_spaces</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">match</span> <span class="n">justify</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">Justify</span><span class="o">.</span><span class="n">LEFT</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">n_spaces</span>
+            <span class="k">case</span> <span class="n">Justify</span><span class="o">.</span><span class="n">RIGHT</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">n_spaces</span> <span class="o">+</span> <span class="n">line</span>
+            <span class="k">case</span> <span class="n">Justify</span><span class="o">.</span><span class="n">CENTER</span><span class="p">:</span>
+                <span class="n">l</span> <span class="o">=</span> <span class="n">n_spaces</span> <span class="o">//</span> <span class="mi">2</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">n_spaces</span> <span class="o">-</span> <span class="n">l</span>
+                <span class="k">return</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">l</span> <span class="o">+</span> <span class="n">line</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span><span class="n">r</span>
+
+    <span class="k">if</span> <span class="n">hyphen_width</span><span class="p">:</span>
+        <span class="c1"># we don&#39;t need a hyphen if the text already fits in one line</span>
+        <span class="c1"># which avoids truncating indent unnecessarily</span>
+        <span class="k">if</span> <span class="n">text_width</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">width</span><span class="p">:</span>
+            <span class="n">hyphen</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">hyphen_width</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">split_lines</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
         <span class="n">accumulated</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -758,8 +800,12 @@
             <span class="k">if</span> <span class="n">indent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">indent</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">segment</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">segment</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)))</span> <span class="k">if</span> <span class="n">segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot; &quot;</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indent</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">width</span> <span class="o">-</span> <span class="n">hyphen_width</span><span class="p">:</span>
-                    <span class="c1"># make space for double width char if indent wider than width</span>
-                    <span class="n">indent</span> <span class="o">=</span> <span class="n">indent</span><span class="p">[:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span> <span class="o">-</span> <span class="n">hyphen_width</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)]</span>
+                    <span class="c1"># make space for widest char if indent wider than</span>
+                    <span class="c1"># width but only if we have to hyphenate. issue 600</span>
+                    <span class="c1"># and its dedicated tests exercise this</span>
+                    <span class="n">widths</span> <span class="o">=</span> <span class="p">[</span><span class="n">text_width</span><span class="p">(</span><span class="n">gc</span><span class="p">)</span> <span class="k">for</span> <span class="n">gc</span> <span class="ow">in</span> <span class="n">grapheme_iter</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">segment</span><span class="p">)</span> <span class="p">:])]</span>
+                    <span class="n">widest</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">widths</span><span class="p">)</span> <span class="k">if</span> <span class="n">widths</span> <span class="k">else</span> <span class="mi">0</span>
+                    <span class="n">indent</span> <span class="o">=</span> <span class="n">indent</span><span class="p">[:</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span> <span class="o">-</span> <span class="p">(</span><span class="n">hyphen_width</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">widths</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">widest</span><span class="p">)]</span>
                 <span class="n">accumulated</span> <span class="o">=</span> <span class="p">[</span><span class="n">indent</span><span class="p">]</span>
                 <span class="n">line_width</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">indent</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">line_width</span><span class="p">:</span>
@@ -790,7 +836,7 @@
                     <span class="k">if</span> <span class="n">desired</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                         <span class="n">hyphen_out</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
                         <span class="n">desired</span> <span class="o">=</span> <span class="n">width</span> <span class="o">-</span> <span class="n">line_width</span>
-                    <span class="n">seg_width</span><span class="p">,</span> <span class="n">substr</span> <span class="o">=</span> <span class="n">text_width_substr</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="n">desired</span><span class="p">)</span>
+                    <span class="n">seg_width</span><span class="p">,</span> <span class="n">substr</span> <span class="o">=</span> <span class="n">text_width_substr</span><span class="p">(</span><span class="n">segment</span><span class="p">,</span> <span class="n">desired</span><span class="p">)</span> <span class="k">if</span> <span class="n">desired</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">seg_width</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                         <span class="c1"># the first grapheme cluster is wider than desired so</span>
                         <span class="c1"># we will display &#39;*&#39; instead for that first grapheme cluster</span>
@@ -805,7 +851,7 @@
                     <span class="n">line_width</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">indent</span><span class="p">)</span>
                     <span class="n">seg_width</span> <span class="o">=</span> <span class="n">text_width</span><span class="p">(</span><span class="n">segment</span><span class="p">)</span>
                     <span class="k">continue</span>
-                <span class="k">yield</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">accumulated</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="n">line_width</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">do_justify</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">accumulated</span><span class="p">),</span> <span class="n">width</span> <span class="o">-</span> <span class="n">line_width</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">combine_space</span> <span class="ow">and</span> <span class="n">segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot; &quot;</span><span class="p">:</span>
                     <span class="c1"># we added a space, but don&#39;t need it on new line</span>
                     <span class="n">segment</span> <span class="o">=</span> <span class="n">segment</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
@@ -816,11 +862,10 @@
             <span class="k">if</span> <span class="n">segment</span><span class="p">:</span>
                 <span class="n">accumulated</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">segment</span><span class="p">)</span>
             <span class="n">line_width</span> <span class="o">+=</span> <span class="n">seg_width</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">accumulated</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="c1"># only indent</span>
-            <span class="k">yield</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">width</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">accumulated</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="n">line_width</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">accumulated</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># length 1 means it is only indent which we don&#39;t output</span>
+            <span class="c1"># as last line</span>
+            <span class="k">yield</span> <span class="n">do_justify</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">accumulated</span><span class="p">),</span> <span class="n">width</span> <span class="o">-</span> <span class="n">line_width</span><span class="p">)</span></div>
 
 
 
@@ -2041,7 +2086,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 10, 2026.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
       </span></p>
   </div>
 
@@ -2059,18 +2104,7 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-    <!-- Theme Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-2NR9GDCQLT', {
-          'anonymize_ip': false,
-      });
-    </script> 
+  </script> 
 
 </body>
 </html>

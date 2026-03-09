@@ -111,9 +111,7 @@ you run in order then the cache will not help.
 
 If you are using :attr:`authorizers <Connection.authorizer>` then be
 aware authorizer callback is only called while statements are being
-prepared.  You can :class:`specify zero <Connection>` which will
-disable the statement cache completely, use use `can_cache = False`
-flag to `execute`/`executemany`.
+prepared.
 
 .. _tracing:
 

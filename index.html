@@ -5,17 +5,27 @@
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APSW 3.51.2.0 documentation &mdash; APSW 3.51.2.0 documentation</title>
+  <title>APSW 3.52.0.0 documentation &mdash; APSW 3.52.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/index.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9edc6f0b"></script>
+      <script src="_static/documentation_options.js?v=a197bc32"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -69,8 +79,11 @@
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async.html">Concurrency &amp; Async</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extra.html">SQLite extra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
@@ -94,7 +107,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">APSW 3.51.2.0 documentation</li>
+      <li class="breadcrumb-item active">APSW 3.52.0.0 documentation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -107,9 +120,9 @@
            <div itemprop="articleBody">
              
   <section id="apsw-version-documentation">
-<h1>APSW 3.51.2.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Link to this heading"></a></h1>
+<h1>APSW 3.52.0.0 documentation<a class="headerlink" href="#apsw-version-documentation" title="Link to this heading"></a></h1>
 <p class="centered">
-<strong>APSW 3.51.2.0 released 9 January 2026</strong></p><div class="toctree-wrapper compound">
+<strong>APSW 3.52.0.0 released 9 March 2026</strong></p><div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="about.html">About</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="about.html#what-apsw-does">What APSW does</a></li>
@@ -315,6 +328,7 @@
 <li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.text_width"><code class="docutils literal notranslate"><span class="pre">text_width()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.text_width_substr"><code class="docutils literal notranslate"><span class="pre">text_width_substr()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.guess_paragraphs"><code class="docutils literal notranslate"><span class="pre">guess_paragraphs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.Justify"><code class="docutils literal notranslate"><span class="pre">Justify</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.text_wrap"><code class="docutils literal notranslate"><span class="pre">text_wrap()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.codepoint_name"><code class="docutils literal notranslate"><span class="pre">codepoint_name()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="unicode.html#apsw.unicode.version_added"><code class="docutils literal notranslate"><span class="pre">version_added()</span></code></a></li>
@@ -401,6 +415,30 @@
 <li class="toctree-l2"><a class="reference internal" href="ext.html#module-apsw.ext">API Reference</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="example-async.html">Async Example/Tour</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#basics">Basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#functions-and-callbacks">Functions and callbacks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#cancellation">Cancellation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#timeouts">Timeouts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#worker-thread">Worker thread</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#virtual-tables">Virtual tables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#tracing-in-a-block">Tracing in a block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#resource-usage-in-a-block">Resource usage in a block</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#blob">Blob</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#backup">Backup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#full-text-search">Full Text Search</a></li>
+<li class="toctree-l2"><a class="reference internal" href="example-async.html#session">Session</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="async.html">Concurrency &amp; Async</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="async.html#how-sqlite-concurrency-works">How SQLite concurrency works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="async.html#how-python-concurrency-works">How Python concurrency works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="async.html#how-apsw-works">How APSW works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="async.html#async-usage">Async usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="async.html#module-apsw.aio">apsw.aio module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="async.html#async-performance">Async Performance</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="exceptions.html#chaining">Chaining</a></li>
 <li class="toctree-l2"><a class="reference internal" href="exceptions.html#unraisable">Unraisable</a></li>
@@ -415,6 +453,17 @@
 <li class="toctree-l2"><a class="reference internal" href="execution.html#statement-cache">Statement Cache</a></li>
 <li class="toctree-l2"><a class="reference internal" href="execution.html#tracing">Tracing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="execution.html#apsw-trace">APSW Trace</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="extra.html">SQLite extra</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="extra.html#vec1">vec1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extra.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extra.html#marking">Marking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extra.html#programs">Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extra.html#extensions">Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extra.html#command-line">Command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extra.html#shell">Shell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extra.html#module-apsw.sqlite_extra">API</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a><ul>
@@ -457,7 +506,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 10, 2026.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
       </span></p>
   </div>
 
@@ -475,18 +524,7 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-    <!-- Theme Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-2NR9GDCQLT', {
-          'anonymize_ip': false,
-      });
-    </script> 
+  </script> 
 
 </body>
 </html>

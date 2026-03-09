@@ -179,9 +179,17 @@ Session class
 
   Calls: `sqlite3session_create <https://sqlite.org/session/sqlite3session_create.html>`__
 
+.. method:: Session.aclose() -> None
+
+  |badge-close|
+
+  Async close
+
 .. index:: sqlite3session_attach
 
-.. method:: Session.attach(name: Optional[str] = None) -> None
+.. method:: Session.attach(name: str | None = None) -> None
+
+ |badge-async-dual|
 
  Attach to a specific table, or all tables if no name is provided.  The
  table does not need to exist at the time of the call.  You can call
@@ -197,6 +205,8 @@ Session class
 
 .. method:: Session.changeset() -> bytes
 
+  |badge-async-dual|
+
   Produces a changeset of the session so far.
 
   Calls: `sqlite3session_changeset <https://sqlite.org/session/sqlite3session_changeset.html>`__
@@ -205,6 +215,8 @@ Session class
 
 .. attribute:: Session.changeset_size
     :type: int
+
+    |badge-async-value|
 
     Returns upper limit on changeset size, but only if :meth:`Session.config`
     was used to enable it.  Otherwise it will be zero.
@@ -215,6 +227,8 @@ Session class
 
 .. method:: Session.changeset_stream(output: SessionStreamOutput) -> None
 
+  |badge-async-dual|
+
   Produces a changeset of the session so far in a stream
 
   Calls: `sqlite3session_changeset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
@@ -222,6 +236,8 @@ Session class
 .. index:: sqlite3session_delete
 
 .. method:: Session.close() -> None
+
+  |badge-close|
 
   Ends the session object.  APSW ensures that all
   Session objects are closed before the database is closed
@@ -233,6 +249,8 @@ Session class
 
 .. method:: Session.config(op: int, *args: typing.Any) -> typing.Any
 
+  |badge-async-value|
+
   Set or get `configuration values <https://www.sqlite.org/session/c_session_objconfig_rowid.html>`__
 
   For example :code:`session.config(apsw.SQLITE_SESSION_OBJCONFIG_SIZE, -1)` tells you
@@ -243,6 +261,8 @@ Session class
 .. index:: sqlite3session_diff
 
 .. method:: Session.diff(from_schema: str, table: str) -> None
+
+  |badge-async-dual|
 
   Loads the changes necessary to update the named ``table`` in the attached database
   ``from_schema`` to match the same named table in the database this session is
@@ -262,6 +282,8 @@ Session class
 .. attribute:: Session.enabled
     :type: bool
 
+    |badge-async-dual|
+
     Get or change if this session is recording changes.  Disabling only
     stops recording rows not already part of the changeset.
 
@@ -272,6 +294,8 @@ Session class
 .. attribute:: Session.indirect
     :type: bool
 
+    |badge-async-dual|
+
     Get or change if this session is in indirect mode
 
     Calls: `sqlite3session_indirect <https://sqlite.org/session/sqlite3session_indirect.html>`__
@@ -280,6 +304,8 @@ Session class
 
 .. attribute:: Session.is_empty
     :type: bool
+
+    |badge-async-dual|
 
     True if no changes have been recorded.
 
@@ -290,6 +316,8 @@ Session class
 .. attribute:: Session.memory_used
     :type: int
 
+    |badge-async-value|
+
     How many bytes of memory have been used to record session changes.
 
     Calls: `sqlite3session_memory_used <https://sqlite.org/session/sqlite3session_memory_used.html>`__
@@ -297,6 +325,8 @@ Session class
 .. index:: sqlite3session_patchset
 
 .. method:: Session.patchset() -> bytes
+
+  |badge-async-dual|
 
   Produces a patchset of the session so far.  Patchsets do not include
   before values of changes, making them smaller, but also harder to detect
@@ -308,6 +338,8 @@ Session class
 
 .. method:: Session.patchset_stream(output: SessionStreamOutput) -> None
 
+  |badge-async-dual|
+
   Produces a patchset of the session so far in a stream
 
   Calls: `sqlite3session_patchset_strm <https://sqlite.org/session/sqlite3changegroup_add_strm.html>`__
@@ -315,6 +347,8 @@ Session class
 .. index:: sqlite3session_table_filter
 
 .. method:: Session.table_filter(callback: typing.Callable[[str], bool]) -> None
+
+  |badge-async-value|
 
   Register a callback that says if changes to the named table should be
   recorded.  If your callback has an exception then ``False`` is
@@ -343,6 +377,10 @@ TableChange class
   access fields when out of scope.  This means you can't save
   TableChanges for later, and need to copy out any information you need.
 
+  When a conflict handler is :code:`SQLITE_CHANGESET_FOREIGN_KEY` then
+  only the :attr:`fk_conflicts` field has information, and all the rest
+  will be :code:`None`.
+
 .. attribute:: TableChange.column_count
   :type: int
 
@@ -351,7 +389,7 @@ TableChange class
 .. index:: sqlite3changeset_conflict
 
 .. attribute:: TableChange.conflict
-  :type: tuple[SQLiteValue, ...] | None
+  :type: SQLiteValues | None
 
   :class:`None` if not applicable (not in a conflict).  Otherwise a
   tuple of values for the conflicting row.
@@ -443,7 +481,9 @@ Changeset class
 
 .. index:: sqlite3changeset_apply_v2, sqlite3changeset_apply_v2_strm, sqlite3changeset_apply_v3, sqlite3changeset_apply_v3_strm
 
-.. method:: Changeset.apply(changeset: ChangesetInput, db: Connection, *, filter: Optional[typing.Callable[[str], bool]] = None, filter_change: Optional[typing.Callable[[TableChange], bool]] = None, conflict: Optional[typing.Callable[[int,TableChange], int]] = None, flags: int = 0, rebase: bool = False) -> bytes | None
+.. method:: Changeset.apply(changeset: ChangesetInput, db: Connection | AsyncConnection, *, filter: typing.Callable[[str], bool] | None = None, filter_change: typing.Callable[[TableChange], bool] | None = None, conflict: typing.Callable[[int,TableChange], int] | None = None, flags: int = 0, rebase: bool = False) -> bytes | None
+
+  |badge-async-dual|
 
   Applies a changeset to a database.
 
@@ -605,7 +645,7 @@ ChangesetBuilder class
 
 .. index:: sqlite3changegroup_schema
 
-.. method:: ChangesetBuilder.schema(db: Connection, schema: str) -> None
+.. method:: ChangesetBuilder.schema(db: Connection | AsyncConnection, schema: str) -> None
 
   Ensures the changesets comply with the tables in the database
 

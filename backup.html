@@ -5,17 +5,27 @@
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Backup &mdash; APSW 3.51.2.0 documentation</title>
+  <title>Backup &mdash; APSW 3.52.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/backup.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9edc6f0b"></script>
+      <script src="_static/documentation_options.js?v=a197bc32"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -62,8 +72,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#important-details">Important details</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#backup-class">Backup class</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Backup"><code class="docutils literal notranslate"><span class="pre">Backup</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Backup.__aenter__"><code class="docutils literal notranslate"><span class="pre">Backup.__aenter__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Backup.__aexit__"><code class="docutils literal notranslate"><span class="pre">Backup.__aexit__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Backup.__enter__"><code class="docutils literal notranslate"><span class="pre">Backup.__enter__()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Backup.__exit__"><code class="docutils literal notranslate"><span class="pre">Backup.__exit__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Backup.aclose"><code class="docutils literal notranslate"><span class="pre">Backup.aclose()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.Backup.afinish"><code class="docutils literal notranslate"><span class="pre">Backup.afinish()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Backup.close"><code class="docutils literal notranslate"><span class="pre">Backup.close()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Backup.done"><code class="docutils literal notranslate"><span class="pre">Backup.done</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.Backup.finish"><code class="docutils literal notranslate"><span class="pre">Backup.finish()</span></code></a></li>
@@ -85,8 +99,11 @@
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async.html">Concurrency &amp; Async</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extra.html">SQLite extra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
@@ -150,24 +167,55 @@ come back and copy those changes too until the backup is complete.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="apsw.Backup.__aenter__">
+<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">__aenter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#apsw.Backup.__aenter__" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="async.html#badge-async-async"><span class="std std-ref">Async only</span></a></p>
+<p>Async context manager enter</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.Backup.__aexit__">
+<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">__aexit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.14)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.14)"><span class="pre">BaseException</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">etraceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.TracebackType" title="(in Python v3.14)"><span class="pre">TracebackType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Backup.__aexit__" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="async.html#badge-async-async"><span class="std std-ref">Async only</span></a></p>
+<p>Async context manager exit</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="apsw.Backup.__enter__">
 <span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.Backup" title="apsw.Backup"><span class="pre">Backup</span></a></span></span><a class="headerlink" href="#apsw.Backup.__enter__" title="Link to this definition"></a></dt>
-<dd><p>You can use the backup object as a <a class="reference external" href="https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers">context manager</a>
+<dd><p><a class="reference internal" href="async.html#badge-async-sync"><span class="std std-ref">Sync only</span></a></p>
+<p>You can use the backup object as a <a class="reference external" href="https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers">context manager</a>
 as defined in <span class="target" id="index-0"></span><a class="pep reference external" href="https://peps.python.org/pep-0343/"><strong>PEP 0343</strong></a>.  The <a class="reference internal" href="#apsw.Backup.__exit__" title="apsw.Backup.__exit__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__exit__()</span></code></a> method ensures that backup
 is <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Backup.__exit__">
-<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.14)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.14)"><span class="pre">BaseException</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">etraceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.TracebackType" title="(in Python v3.14)"><span class="pre">TracebackType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Backup.__exit__" title="Link to this definition"></a></dt>
-<dd><p>Implements context manager in conjunction with <a class="reference internal" href="#apsw.Backup.__enter__" title="apsw.Backup.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__enter__()</span></code></a> ensuring
+<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">etype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.14)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evalue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.14)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">etraceback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/types.html#types.TracebackType" title="(in Python v3.14)"><span class="pre">TracebackType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.Backup.__exit__" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="async.html#badge-async-sync"><span class="std std-ref">Sync only</span></a></p>
+<p>Implements context manager in conjunction with <a class="reference internal" href="#apsw.Backup.__enter__" title="apsw.Backup.__enter__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__enter__()</span></code></a> ensuring
 that the copy is <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.Backup.aclose">
+<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">aclose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Backup.aclose" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="async.html#badge-close"><span class="std std-ref">Close</span></a></p>
+<p>Async version of <a class="reference internal" href="#apsw.Backup.close" title="apsw.Backup.close"><code class="xref py py-meth docutils literal notranslate"><span class="pre">close()</span></code></a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.Backup.afinish">
+<span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">afinish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Backup.afinish" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="async.html#badge-async-async"><span class="std std-ref">Async only</span></a></p>
+<p>Async version of meth:<cite>finish</cite></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.Backup.close">
 <span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Backup.close" title="Link to this definition"></a></dt>
-<dd><p>Does the same thing as <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finish()</span></code></a>.  This extra api is
+<dd><p><a class="reference internal" href="async.html#badge-close"><span class="std std-ref">Close</span></a></p>
+<p>Does the same thing as <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finish()</span></code></a>.  This extra api is
 provided to give the same api as other APSW objects and files.
 It is safe to call this method multiple  times.</p>
 <dl class="field-list simple">
@@ -180,13 +228,15 @@ It is safe to call this method multiple  times.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="apsw.Backup.done">
 <span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">done</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#apsw.Backup.done" title="Link to this definition"></a></dt>
-<dd><p>A boolean that is True if the copy completed in the last call to <a class="reference internal" href="#apsw.Backup.step" title="apsw.Backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a>.</p>
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>A boolean that is True if the copy completed in the last call to <a class="reference internal" href="#apsw.Backup.step" title="apsw.Backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method" id="index-1">
 <dt class="sig sig-object py" id="apsw.Backup.finish">
 <span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">finish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Backup.finish" title="Link to this definition"></a></dt>
-<dd><p>Completes the copy process.  If all pages have been copied then the
+<dd><p><a class="reference internal" href="async.html#badge-async-sync"><span class="std std-ref">Sync only</span></a></p>
+<p>Completes the copy process.  If all pages have been copied then the
 transaction is committed on the destination database, otherwise it
 is rolled back.  This method must be called for your backup to take
 effect.  The backup object will always be finished even if there is
@@ -197,7 +247,8 @@ an exception.  It is safe to call this method multiple times.</p>
 <dl class="py attribute" id="index-2">
 <dt class="sig sig-object py" id="apsw.Backup.page_count">
 <span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">page_count</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.Backup.page_count" title="Link to this definition"></a></dt>
-<dd><p>Read only. How many pages were in the source database after the last
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Read only. How many pages were in the source database after the last
 step.  If you haven’t called <a class="reference internal" href="#apsw.Backup.step" title="apsw.Backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> or the backup
 object has been <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a> then zero is
 returned.</p>
@@ -207,7 +258,8 @@ returned.</p>
 <dl class="py attribute" id="index-3">
 <dt class="sig sig-object py" id="apsw.Backup.remaining">
 <span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">remaining</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#apsw.Backup.remaining" title="Link to this definition"></a></dt>
-<dd><p>Read only. How many pages were remaining to be copied after the last
+<dd><p><a class="reference internal" href="async.html#badge-async-value"><span class="std std-ref">Value</span></a></p>
+<p>Read only. How many pages were remaining to be copied after the last
 step.  If you haven’t called <a class="reference internal" href="#apsw.Backup.step" title="apsw.Backup.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> or the backup
 object has been <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a> then zero is
 returned.</p>
@@ -217,7 +269,8 @@ returned.</p>
 <dl class="py method" id="index-4">
 <dt class="sig sig-object py" id="apsw.Backup.step">
 <span class="sig-prename descclassname"><span class="pre">Backup.</span></span><span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">npages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#apsw.Backup.step" title="Link to this definition"></a></dt>
-<dd><p>Copies <em>npages</em> pages from the source to destination database.  The source database is locked during the copy so
+<dd><p><a class="reference internal" href="async.html#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+<p>Copies <em>npages</em> pages from the source to destination database.  The source database is locked during the copy so
 using smaller values allows other access to the source database.  The destination database is always locked until the
 backup object is <a class="reference internal" href="#apsw.Backup.finish" title="apsw.Backup.finish"><code class="xref py py-meth docutils literal notranslate"><span class="pre">finished</span></code></a>.</p>
 <dl class="field-list simple">
@@ -252,7 +305,7 @@ again.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 10, 2026.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
       </span></p>
   </div>
 
@@ -270,18 +323,7 @@ again.</p>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-    <!-- Theme Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-2NR9GDCQLT', {
-          'anonymize_ip': false,
-      });
-    </script> 
+  </script> 
 
 </body>
 </html>

@@ -5,6 +5,15 @@ Various interesting and useful bits of functionality
 
 You need to import `apsw.ext` to use this module.
 
+.. note:: Async usage
+
+  You can always use :meth:`Connection.async_run
+  <apsw.Connection.async_run>` for everything in this module
+  (:ref:`examples <example_async_worker_thread>`), with most also
+  supporting normal async usage - such needing to use :code:`async
+  with` instead of :code:`with`, and :code:`await` on results.  The
+  documentation for each provides more detail.
+
 Pretty printing
 ---------------
 

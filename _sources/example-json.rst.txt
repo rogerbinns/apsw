@@ -5,7 +5,7 @@
 JSON Example/Tour
 ====================
 
-This example shows using `JSON <json.org>`__ with SQLite, and
+This example shows using `JSON <https://json.org>`__ with SQLite, and
 additional functionality provided by APSW to make it easier to use.
 
 .. code-block:: python
@@ -53,7 +53,7 @@ additional functionality provided by APSW to make it easier to use.
    
    
 
-.. index:: Quick start (example code)
+.. index:: Quick start (JSON example code)
 
 .. _example_json_quick:
 
@@ -145,7 +145,7 @@ JSON as a native data type, then do the following.
                    'tags': ('citrus', 'sweet', 'juice')}))
 
 
-.. index:: SQLite JSON functions (example code)
+.. index:: SQLite JSON functions (JSON example code)
 
 .. _example_json_functions:
 
@@ -197,7 +197,7 @@ Here are some of the most useful.
      ('orange', 'round', 'juice')]
 
 
-.. index:: Customising conversion (example code)
+.. index:: Customising conversion (JSON example code)
 
 .. _example_custom_conversion:
 
@@ -342,11 +342,11 @@ This section shows all of these in action at once!
     ('test',
      {'binary': 'AXOUZQ==',
       'complex': (3+4j),
-      'date stamp': '2026-01-10T07:32:48.781444',
+      'date stamp': '2026-03-09T10:55:45.874537',
       'decimal': Decimal('0.7843262344923523492342352344523423423423')})
 
 
-.. index:: Cleanup (example code)
+.. index:: Cleanup (JSON example code)
 
 .. _example_jsonb_cleanup:
 

@@ -9,8 +9,16 @@ This code demonstrates usage of APSW.  It gives you a good overview of
 all the things that can be done.  Also included is output so you can
 see what gets printed when you run the code.
 
-There are also specific examples in the classes, functions,
-and attribute documentation.
+There are other dedicated examples:
+
+* :doc:`Async tour <example-async>` for :mod:`asyncio`, |trio|,
+  |anyio| etc :doc:`async support <async>`
+* :doc:`JSON tour <example-json>` for :doc:`JSON and JSONB support
+  <jsonb>`
+* :doc:`FTS5 tour <example-fts>` for :doc:`full text search
+  <textsearch>`
+* :doc:`Session tour <example-session>` for :doc:`session recording
+  and playback <session>`
 
 .. code-block:: python
 
@@ -21,7 +29,7 @@ and attribute documentation.
    # then you must include this future annotations line first.
    from __future__ import annotations
    
-   from typing import Optional, Iterator, Any
+   from typing import Iterator, Any
    
    import os
    import sys
@@ -69,9 +77,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-314-x86_64-linux-gnu.so
-             APSW version 3.51.2.0
-    SQLite header version 3051002
-       SQLite lib version 3.51.2
+             APSW version 3.52.0.0
+    SQLite header version 3052000
+       SQLite lib version 3.52.0
        Using amalgamation True
 
 
@@ -111,6 +119,12 @@ information about errors. Best practice also includes this.
    # You can also write to SQLite's log
    apsw.log(apsw.SQLITE_ERROR, "A message from Python")
    
+
+
+.. code-block:: output
+
+    ERROR:root:SQLITE_LOG: A message from Python (1) SQLITE_ERROR
+
 
 .. index:: Opening the database (example code)
 
@@ -374,7 +388,7 @@ code <example_ShowResourceUsage>`, and :ref:`SQLite's interface
    def my_tracer(
        cursor: apsw.Cursor,
        statement: str,
-       bindings: Optional[apsw.Bindings],
+       bindings: apsw.Bindings | None,
    ) -> bool:
        "Called just before executing each statement"
        print("SQL:", statement.strip())
@@ -876,11 +890,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2026, 1, 10, 7, 32, 44, 62419))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2026, 3, 9, 10, 55, 40, 849657))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2026, 1, 10, 15, 32, 44, 62419, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2026, 3, 9, 17, 55, 40, 849657, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Runtime Python objects (example code)
@@ -950,7 +964,7 @@ runtime.
 .. code-block:: output
 
     Bad binding argument type supplied - argument #1: type set
-    select ? {1, 2, <_io.StringIO object at 0x7b8a6b583c70>, (4+5j), 'three'}
+    select ? {1, 2, 'three', (4+5j), <__main__.TeeStringIO object at 0x7a572e8c57e0>}
     select typeof(?) null
     make_set got ((3+4j), <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello')
     select make_set(?, ?, ?) {'hello', <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, (3+4j)}
@@ -1028,7 +1042,7 @@ across all the queries within the block
 .. code-block:: output
 
     len(rows)=20
-    After 0.200 seconds, we hit number=318229
+    After 0.200 seconds, we hit number=290896
     exc=IndexError('query row limit hit')
 
 
@@ -1348,10 +1362,10 @@ You can allow, deny, or ignore what SQL does.  Use
    
    def auth(
        operation: int,
-       p1: Optional[str],
-       p2: Optional[str],
-       db_name: Optional[str],
-       trigger_or_view: Optional[str],
+       p1: str | None,
+       p2: str | None,
+       db_name: str | None,
+       trigger_or_view: str | None,
    ) -> int:
        """Called when each operation is prepared.  We can return SQLITE_OK, SQLITE_DENY or
        SQLITE_IGNORE"""
@@ -1447,7 +1461,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9981964807,)
+    (9947226800,)
 
 
 .. index:: File Control (example code)
@@ -1566,8 +1580,7 @@ with  :meth:`Connection.set_commit_hook`.
 .. code-block:: output
 
     in commit hook
-    no commits out of hours
-    commit was not allowed
+    commits okay at this time
 
 
 .. index:: Update hook (example code)
@@ -1795,84 +1808,144 @@ useful instead.
 
 .. code-block:: output
 
-    ┌───────┐
+    ╭───────╮
     │ value │
-    │ 90    │
-    │ 92    │
-    │ 94    │
-    │ 96    │
-    │ 98    │
-    │ 100   │
-    └───────┘
+    │    90 │
+    │    92 │
+    │    94 │
+    │    96 │
+    │    98 │
+    │   100 │
+    ╰───────╯
     
-    ┌───────┬───────┬──────┬──────┐
+    ╭───────┬───────┬──────┬──────╮
     │ value │ start │ stop │ step │
-    │ 89    │ 89    │ 100  │ 3    │
-    │ 92    │ 89    │ 100  │ 3    │
-    │ 95    │ 89    │ 100  │ 3    │
-    │ 98    │ 89    │ 100  │ 3    │
-    └───────┴───────┴──────┴──────┘
+    │    89 │    89 │  100 │    3 │
+    │    92 │    89 │  100 │    3 │
+    │    95 │    89 │  100 │    3 │
+    │    98 │    89 │  100 │    3 │
+    ╰───────┴───────┴──────┴──────╯
     
-    ┌──────────┬──────────┐
+    ╭──────────┬──────────╮
     │ count(*) │ category │
-    │ 65       │ Cc       │
-    │ 43       │ Cf       │
-    │ 1432     │ Cn       │
-    │ 6400     │ Co       │
-    │ 2048     │ Cs       │
-    │ 1448     │ Ll       │
-    │ 236      │ Lm       │
-    │ 46126    │ Lo       │
-    │ 31       │ Lt       │
-    │ 1132     │ Lu       │
-    └──────────┴──────────┘
+    │       65 │ Cc       │
+    │       43 │ Cf       │
+    │     1432 │ Cn       │
+    │     6400 │ Co       │
+    │     2048 │ Cs       │
+    │     1448 │ Ll       │
+    │      236 │ Lm       │
+    │    46126 │ Lo       │
+    │       31 │ Lt       │
+    │     1132 │ Lu       │
+    ╰──────────┴──────────╯
     
-    ┌─────────┬────────────────────────────────────────────┬───────────────────────┐
-    │ st_size │                 directory                  │         name          │
-    ├─────────┼────────────────────────────────────────────┼───────────────────────┤
-    │ 558634  │ /usr/lib/python3.14/pydoc_data/__pycache__ │ topics.cpython-314.p- │
-    │         │                                            │ yc                    │
-    ├─────────┼────────────────────────────────────────────┼───────────────────────┤
-    │ 558057  │ /usr/lib/python3.14/pydoc_data             │ topics.py             │
-    ├─────────┼────────────────────────────────────────────┼───────────────────────┤
-    │ 229038  │ /usr/lib/python3.14                        │ _pydecimal.py         │
-    └─────────┴────────────────────────────────────────────┴───────────────────────┘
+    ╭────────┬──────────────────────────────────────────────────────┬──────────────╮
+    │ st_si- │                      directory                       │     name     │
+    │   ze   │                                                      │              │
+    ╞════════╪══════════════════════════════════════════════════════╪══════════════╡
+    │ 639388 │ /space/apsw/.venv-314/lib/python3.14/site-packages/  │ lato-        │
+    │        │ sphinx_rtd_theme/static/fonts/Lato                   │ italic.ttf   │
+    ├────────┼──────────────────────────────────────────────────────┼──────────────┤
+    │ 622572 │ /space/apsw/.venv-314/lib/python3.14/site-packages/  │ lato-        │
+    │        │ sphinx_rtd_theme/static/fonts/Lato                   │ bolditalic.- │
+    │        │                                                      │ ttf          │
+    ├────────┼──────────────────────────────────────────────────────┼──────────────┤
+    │ 607720 │ /space/apsw/.venv-314/lib/python3.14/site-packages/  │ lato-        │
+    │        │ sphinx_rtd_theme/static/fonts/Lato                   │ regular.ttf  │
+    ╰────────┴──────────────────────────────────────────────────────┴──────────────╯
     
-    ┌────────────┬────────────────────────────────┬───────────────┐
-    │    date    │           directory            │     name      │
-    │ 2025-10-31 │ /usr/lib/python3.14/pydoc_data │ topics.py     │
-    │ 2025-10-31 │ /usr/lib/python3.14            │ _pydecimal.py │
-    │ 2025-10-31 │ /usr/lib/python3.14            │ turtle.py     │
-    └────────────┴────────────────────────────────┴───────────────┘
+    ╭────────────┬─────────────────────────────────────────────────────┬───────────╮
+    │    date    │                      directory                      │   name    │
+    ╞════════════╪═════════════════════════════════════════════════════╪═══════════╡
+    │ 2026-03-09 │ /usr/lib/python3.14/pydoc_data                      │ topics.py │
+    ├────────────┼─────────────────────────────────────────────────────┼───────────┤
+    │ 2026-03-09 │ /space/apsw/.venv-314/lib/python3.14/site-packages/ │ checker.- │
+    │            │ mypy                                                │ py        │
+    ├────────────┼─────────────────────────────────────────────────────┼───────────┤
+    │ 2026-03-09 │ /space/apsw/.venv-314/lib/python3.14/site-packages/ │ semanal.- │
+    │            │ mypy                                                │ py        │
+    ╰────────────┴─────────────────────────────────────────────────────┴───────────╯
     
-    ┌────────────┬────────────┐
+    ╭────────────┬────────────╮
     │ extension  │ total_size │
-    │            │ 259613     │
-    │ .a         │ 25842524   │
-    │ .allowlist │ 56         │
-    │ .bootstrap │ 1063       │
-    │ .c         │ 5406       │
-    │ .cfg       │ 341        │
-    │ .csh       │ 937        │
-    │ .css       │ 1325       │
-    │ .fish      │ 2208       │
-    │ .in        │ 1444       │
-    │ .ini       │ 2037       │
-    │ .json      │ 60181      │
-    │ .local     │ 676        │
-    │ .o         │ 11096      │
-    │ .patch     │ 2682       │
-    │ .ps1       │ 9031       │
-    │ .py        │ 11249551   │
-    │ .pyc       │ 12223539   │
-    │ .rst       │ 9561       │
-    │ .sh        │ 2752       │
-    │ .so        │ 8745952    │
-    │ .sql       │ 9749       │
-    │ .stdlib    │ 7244       │
-    │ .supp      │ 70         │
-    │ .txt       │ 13804      │
-    └────────────┴────────────┘
+    │            │    1670003 │
+    │ .APACHE    │      40696 │
+    │ .APACHE2   │      34074 │
+    │ .BSD       │       5376 │
+    │ .MIT       │       3183 │
+    │ .a         │   25837628 │
+    │ .allowlist │         56 │
+    │ .bootstrap │       1063 │
+    │ .c         │     331242 │
+    │ .cer       │       1214 │
+    │ .cfg       │        341 │
+    │ .cls       │       7497 │
+    │ .conf      │       3076 │
+    │ .csh       │        937 │
+    │ .css       │     256185 │
+    │ .css_t     │      15236 │
+    │ .dat       │   30339529 │
+    │ .eot       │    1367872 │
+    │ .exe       │     854016 │
+    │ .fish      │       2208 │
+    │ .gif       │         49 │
+    │ .h         │     241902 │
+    │ .hhc       │       1593 │
+    │ .hhp       │       2197 │
+    │ .html      │      72854 │
+    │ .html_t    │        403 │
+    │ .in        │       1444 │
+    │ .ini       │       2037 │
+    │ .ist       │        392 │
+    │ .jinja     │     143446 │
+    │ .js        │    2027936 │
+    │ .js_t      │       7243 │
+    │ .json      │      77575 │
+    │ .local     │        676 │
+    │ .md        │       4623 │
+    │ .mo        │    2310423 │
+    │ .o         │      11128 │
+    │ .odt       │      16500 │
+    │ .patch     │       3047 │
+    │ .pem       │     543395 │
+    │ .png       │     115919 │
+    │ .po        │    7955502 │
+    │ .pot       │     105216 │
+    │ .ps1       │       9031 │
+    │ .pth       │        930 │
+    │ .pxd       │      42465 │
+    │ .pxi       │       7220 │
+    │ .py        │   41197406 │
+    │ .pyc       │   52318573 │
+    │ .pyi       │    2860360 │
+    │ .pyx       │     327376 │
+    │ .qhcp      │        567 │
+    │ .qhp       │        863 │
+    │ .rst       │      41596 │
+    │ .scss      │      21409 │
+    │ .sh        │       2885 │
+    │ .so        │   62299016 │
+    │ .sql       │       9749 │
+    │ .stdlib    │       7244 │
+    │ .stp       │        330 │
+    │ .sty       │     315716 │
+    │ .supp      │         70 │
+    │ .svg       │     450645 │
+    │ .tex       │       2001 │
+    │ .tmpl      │       2231 │
+    │ .toml      │       3390 │
+    │ .ttf       │    2975764 │
+    │ .txt       │     358601 │
+    │ .typed     │        720 │
+    │ .unicode   │       2033 │
+    │ .woff      │    2987200 │
+    │ .woff2     │    1857936 │
+    │ .xdy       │      42919 │
+    │ .xml       │       1553 │
+    │ .xsd       │       2173 │
+    │ .xslt      │       8510 │
+    ╰────────────┴────────────╯
     
 
 
@@ -2143,9 +2216,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.51.2.0)
-    -- SQLite version 3.51.2
-    -- Date: Sat Jan 10 07:32:44 2026
+    -- SQLite dump (by APSW 3.52.0.0)
+    -- SQLite version 3.52.0
+    -- Date: Mon Mar  9 10:55:41 2026
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2194,8 +2267,8 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 517528 max 2494616
-    5048 bytes used to store schema for this connection
+    SQLite memory usage 522192 max 2499320
+    5360 bytes used to store schema for this connection
 
 
 .. index:: Tracing (example code)
@@ -2263,16 +2336,16 @@ This shows using :meth:`Connection.trace_v2`
     code is  SQLITE_TRACE_STMT
     {'code': 1,
      'explain': 0,
-     'id': 144959864,
+     'id': 193889624,
      'readonly': True,
      'total_changes': 146,
      'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 144959864}
+    {'code': 4, 'id': 193889624}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 144959864,
-     'nanoseconds': 15000000,
+     'id': 193889624,
+     'nanoseconds': 17000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
@@ -2315,19 +2388,18 @@ Only statistics that have changed are shown in the summary. There are
 
 .. code-block:: output
 
-                           Total CPU consumption 0.022
+                         Process CPU consumption 0.023
                                       Wall clock 1.323
-                       Maximum resident set size 612
-                            Page faults - no I/O 24
-                    Involuntary context switches 42
+                       Maximum resident set size 1,600
+                            Page faults - no I/O 287
+                    Involuntary context switches 24
                       Voluntary context switches 1
-                               Time in user mode 0.021
+                           CPU time in user mode 0.023
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,353
                      SQLite statements completed 1
-               SQLite allocations lookaside full 17,272
-    
+               SQLite allocations lookaside full 17,273
 
 
 .. index:: SQL statement tracing in a block (example code)
@@ -2415,12 +2487,12 @@ code.  This also shows behind the scenes SQL.
          Time: 0.000  Changes: 4
      > COMMIT
       !COMMIT
-         Time: 0.008
+         Time: 0.007
      > SELECT narg FROM pragma_function_list WHERE name='pow'
      V PRAGMA function_list
-         Time: 0.000  Rows: 215  VmStep: 1,509  Mem: 71.0KB
+         Time: 0.000  Rows: 217  VmStep: 1,523  Mem: 71.0KB
      < SELECT narg FROM pragma_function_list WHERE name='pow'
-         Time: 0.000  Rows: 1  VmStep: 656
+         Time: 0.000  Rows: 1  VmStep: 662
       !BEGIN
      > create trigger error after insert on multi
             begin
@@ -2434,8 +2506,7 @@ code.  This also shows behind the scenes SQL.
          UPD 6>106 (...)
       !ROLLBACK
      < insert into multi values(54)
-         Time: 0.000  Changes: 1
-    
+         Time: 0.000  Rows: 1  Changes: 1
 
 
 .. index:: Formatting query results table (example code)
@@ -2486,21 +2557,21 @@ truncation etc.
 
 .. code-block:: output
 
-    ┌──────────┬────────────────────────────────────────────────┬─────────────┐
+    ╭──────────┬────────────────────────────────────────────────┬─────────────╮
     │ quantity │                 spaces in name                 │    last     │
-    ├──────────┼────────────────────────────────────────────────┼─────────────┤
-    │ 3        │ some regular text to make this row interesting │ [ 3 bytes ] │
+    ╞══════════╪════════════════════════════════════════════════╪═════════════╡
+    │        3 │ some regular text to make this row interesting │ [ 3 bytes ] │
     ├──────────┼────────────────────────────────────────────────┼─────────────┤
     │ 3.14     │ Tiếng Việt                                     │ (null)      │
     ├──────────┼────────────────────────────────────────────────┼─────────────┤
     │          │ special                                        │             │
     │          │ \0 cha\\rs                                     │             │
-    └──────────┴────────────────────────────────────────────────┴─────────────┘
+    ╰──────────┴────────────────────────────────────────────────┴─────────────╯
     
     +----------+------------------------------------------------+-------------+
     | quantity |                 spaces in name                 |    last     |
-    +----------+------------------------------------------------+-------------+
-    | 3        | some.regular.text.to.make.this.row.interesting | [ 3 bytes ] |
+    +==========+================================================+=============+
+    |        3 | some.regular.text.to.make.this.row.interesting | [ 3 bytes ] |
     +----------+------------------------------------------------+-------------+
     | 3.14     | Ti.ng.Vi.t                                     | (null)      |
     +----------+------------------------------------------------+-------------+
@@ -2508,35 +2579,35 @@ truncation etc.
     |          | ...cha\rs                                      |             |
     +----------+------------------------------------------------+-------------+
     
-    ┌─────┬────────────────┬─────┐
+    ╭─────┬────────────────┬─────╮
     │ qu- │ spaces in name │ la- │
     │ an- │                │ st  │
     │ ti- │                │     │
     │ ty  │                │     │
-    ├─────┼────────────────┼─────┤
-    │ 3   │ some regular   │ [ 3 │
+    ╞═════╪════════════════╪═════╡
+    │   3 │ some regular   │ [ 3 │
     │     │ text to make   │ by- │
     │     │ this row       │ te- │
     │     │ interesting    │ s ] │
     ├─────┼────────────────┼─────┤
-    │ 3.- │ Tiếng Việt     │ (n- │
-    │ 14  │                │ ul- │
+    │ 3.1 │ Tiếng Việt     │ (n- │
+    │ 4   │                │ ul- │
     │     │                │ l)  │
     ├─────┼────────────────┼─────┤
     │     │ special        │     │
     │     │ \0 cha\\rs     │     │
-    └─────┴────────────────┴─────┘
+    ╰─────┴────────────────┴─────╯
     
-    ┌──────────┬──────────────────────────────────────────────────┬───────────┐
+    ╭──────────┬──────────────────────────────────────────────────┬───────────╮
     │ quantity │                  spaces in name                  │   last    │
-    ├──────────┼──────────────────────────────────────────────────┼───────────┤
-    │ 3        │ 'some regular text to make this row interesting' │ X'030709' │
+    ╞══════════╪══════════════════════════════════════════════════╪═══════════╡
+    │        3 │ 'some regular text to make this row interesting' │ X'030709' │
     ├──────────┼──────────────────────────────────────────────────┼───────────┤
     │ 3.14     │ 'Tiếng Việt'                                     │ NULL      │
     ├──────────┼──────────────────────────────────────────────────┼───────────┤
     │ ''       │ 'special                                         │ ' '       │
     │          │ \0 cha\\rs'                                      │           │
-    └──────────┴──────────────────────────────────────────────────┴───────────┘
+    ╰──────────┴──────────────────────────────────────────────────┴───────────╯
     
 
 
@@ -2591,12 +2662,12 @@ is no guarantee if they will go up or down.
 
     SQLite cache = -2000  page_size =  4096
     Before values
-    connection.pragma("schema_version")=22
-    connection.data_version()=60
+    connection.pragma("schema_version")=23
+    connection.data_version()=61
     
     After values
-    connection.data_version()=60
-    connection.pragma("schema_version")=23
+    connection.data_version()=61
+    connection.pragma("schema_version")=24
 
 
 .. index:: The CARRAY extension (example code)

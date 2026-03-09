@@ -32,7 +32,7 @@ specific functionality and extras.
    import apsw.fts5query
    
 
-.. index:: Is FTS5 available? (example code)
+.. index:: Is FTS5 available? (Full text search example code)
 
 .. _example_fts5_check:
 
@@ -53,7 +53,7 @@ FTS5 is included as part of the SQLite library (usually).
     FTS5 available: True
 
 
-.. index:: Content setup (example code)
+.. index:: Content setup (Full text search example code)
 
 .. _example_fts_start:
 
@@ -83,7 +83,7 @@ The connection to use.  The database has a table with recipes.
     173278
 
 
-.. index:: Create/open search table (example code)
+.. index:: Create/open search table (Full text search example code)
 
 .. _example_fts_create:
 
@@ -144,7 +144,7 @@ Create a table containing the search index using recipes as an
     quoted name "main"."search"
 
 
-.. index:: Table structure and statistics (example code)
+.. index:: Table structure and statistics (Full text search example code)
 
 .. _example_fts_structure:
 
@@ -192,7 +192,7 @@ Examine the structure, options, and statistics
     search_table.tokens_per_column=[743406, 8064731, 3824644]
 
 
-.. index:: Content (example code)
+.. index:: Content (Full text search example code)
 
 .. _example_fts_update:
 
@@ -231,7 +231,7 @@ row, and also handles external content tables.
     search_table.row_by_id(rowid, 'name')='This ends up in the name field'
 
 
-.. index:: Searching with SQL. (example code)
+.. index:: Searching with SQL. (Full text search example code)
 
 .. _example_fts_search_sql:
 
@@ -268,9 +268,9 @@ order by to get the best results first.
 .. code-block:: output
 
     query='cream'
-    ┌───────────────────────────────────────────────────────────┐
+    ╭───────────────────────────────────────────────────────────╮
     │                          Snippet                          │
-    ├───────────────────────────────────────────────────────────┤
+    ╞═══════════════════════════════════════════════════════════╡
     │ Find the recipe for Sour ►Cream◄ Ice ►Cream◄ and other... │
     ├───────────────────────────────────────────────────────────┤
     │ 1 (8 ounce) package ►cream◄ cheese                        │
@@ -278,12 +278,12 @@ order by to get the best results first.
     ├───────────────────────────────────────────────────────────┤
     │ Want a Ice ►Cream◄ and Party?                             │
     │ Here's a Ice-►Cream◄...                                   │
-    └───────────────────────────────────────────────────────────┘
+    ╰───────────────────────────────────────────────────────────╯
     
     query='orange NOT zest'
-    ┌───────────────────────────────────────────────────┐
+    ╭───────────────────────────────────────────────────╮
     │                      Snippet                      │
-    ├───────────────────────────────────────────────────┤
+    ╞═══════════════════════════════════════════════════╡
     │ ice                                               │
     │ 750ml blood ►orange◄ , or ►orange◄ juice          │
     │ 750ml soda water...                               │
@@ -293,20 +293,20 @@ order by to get the best results first.
     ├───────────────────────────────────────────────────┤
     │ ...►orange◄-flavored liqueur                      │
     │ Extra ►orange◄ slices for serving, or ►orange◄... │
-    └───────────────────────────────────────────────────┘
+    ╰───────────────────────────────────────────────────╯
     
     query='name:honey'
-    ┌────────────────────────────────────────────────────────────────────────┐
+    ╭────────────────────────────────────────────────────────────────────────╮
     │                                Snippet                                 │
     │ Wildflower-►Honey◄ Semifreddo with ►Honey◄ Sesame Wafers               │
     │ Roast Chicken with Saffron, Hazelnuts, and ►Honey◄                     │
     │ Recipe Flash: Ginger-►Honey◄ Chicken WingsGinger-►Honey◄ Chicken Wings │
-    └────────────────────────────────────────────────────────────────────────┘
+    ╰────────────────────────────────────────────────────────────────────────╯
     
     query='pomegranate OR olives'
-    ┌─────────────────────────────────────────────────────────────────────────────┐
+    ╭─────────────────────────────────────────────────────────────────────────────╮
     │                                   Snippet                                   │
-    ├─────────────────────────────────────────────────────────────────────────────┤
+    ╞═════════════════════════════════════════════════════════════════════════════╡
     │ A new way to serve ►olives◄ - marinated in ►pomegranate◄ juice...           │
     ├─────────────────────────────────────────────────────────────────────────────┤
     │ Purple kale, oranges, feta cheese and ►olives◄ topped with ►pomegranate◄... │
@@ -315,11 +315,11 @@ order by to get the best results first.
     │ Seeds from a ►pomegranate◄                                                  │
     │ 25g dried apricot pieces                                                    │
     │ Quarter...                                                                  │
-    └─────────────────────────────────────────────────────────────────────────────┘
+    ╰─────────────────────────────────────────────────────────────────────────────╯
     
 
 
-.. index:: Search method (example code)
+.. index:: Search method (Full text search example code)
 
 .. _example_fts_search:
 
@@ -356,7 +356,7 @@ information about each matching row, best matches first.
     ("P.L's Guava Jelly", 'Delicious home-made guava jam')
 
 
-.. index:: Query correction and suggestion (example code)
+.. index:: Query correction and suggestion (Full text search example code)
 
 .. _example_fts_query_suggest:
 
@@ -391,7 +391,7 @@ that probably improve results.
     query='sweet onion' suggest=None
 
 
-.. index:: Working with tokens (example code)
+.. index:: Working with tokens (Full text search example code)
 
 .. _example_fts_tokens:
 
@@ -479,7 +479,7 @@ removed.
     Text for token='jalapeno' is Jalapeño
 
 
-.. index:: Key Tokens and More Like (example code)
+.. index:: Key Tokens and More Like (Full text search example code)
 
 .. _example_fts_more:
 
@@ -537,7 +537,7 @@ Both methods let you specify specific columns, or all columns
     Valentine's Day Steak Rub
 
 
-.. index:: Autocomplete (example code)
+.. index:: Autocomplete (Full text search example code)
 
 .. _example_fts_autocomplete:
 
@@ -618,48 +618,48 @@ although you can see the snippets below.
 .. code-block:: output
 
     query='eam'
-    ┌───────────────────┐
+    ╭───────────────────╮
     │      Snippet      │
     │ Sour Cr►eam◄ I... │
     │ Cr►eam◄less Cr... │
     │ Cr►eam◄ cheese... │
-    └───────────────────┘
+    ╰───────────────────╯
     
     query='ora'
-    ┌───────────────────┐
+    ╭───────────────────╮
     │      Snippet      │
     │ Blood ►ora◄nge... │
     │ ►Ora◄nge cake ... │
     │ ►Ora◄nge Deser... │
-    └───────────────────┘
+    ╰───────────────────╯
     
     query='name:ney'
-    ┌──────────────────────┐
+    ╭──────────────────────╮
     │       Snippet        │
     │ Ho►ney◄ed-Mang...    │
     │ ...r-Ho►ney◄ Semi... │
     │ ...h Ho►ney◄ed-Ma... │
-    └──────────────────────┘
+    ╰──────────────────────╯
     
     query='emo jui'
-    ┌────────────────────────┐
+    ╭────────────────────────╮
     │        Snippet         │
     │ ... L►emo◄n ►Jui◄ce... │
     │ ... l►emo◄n ►jui◄ce... │
     │ ... l►emo◄n ►jui◄ce... │
-    └────────────────────────┘
+    ╰────────────────────────╯
     
     query='barbecue'
-    ┌───────────────────┐
+    ╭───────────────────╮
     │      Snippet      │
     │ Classic ►Barb◄... │
     │ ►Barbecue◄ Por... │
     │ ►Barbecue◄d Ba... │
-    └───────────────────┘
+    ╰───────────────────╯
     
 
 
-.. index:: Auxiliary functions (example code)
+.. index:: Auxiliary functions (Full text search example code)
 
 .. _example_fts5_auxfunc:
 
@@ -823,7 +823,7 @@ This example shows all the information available during a query.
     Phrase phrase=('oran',) occurs 8,181 times
 
 
-.. index:: Query parsing and manipulation (example code)
+.. index:: Query parsing and manipulation (Full text search example code)
 
 .. _example_fts_query:
 
@@ -961,7 +961,7 @@ parse queries.  There are three forms of query.
     NEAR(drink Cup, 5) NOT Oran* OR {name description}: ("some thing blue" sunshine)
 
 
-.. index:: Tokenizers (example code)
+.. index:: Tokenizers (Full text search example code)
 
 .. _example_fts5_tokens:
 
@@ -1089,7 +1089,7 @@ the default SQLite tokenizer
     
 
 
-.. index:: apsw.fts5.UnicodeWordsTokenizer (example code)
+.. index:: apsw.fts5.UnicodeWordsTokenizer (Full text search example code)
 
 .. _example_fts_apsw_unicodewords:
 
@@ -1172,7 +1172,7 @@ well as emoji and regional indicators
     
 
 
-.. index:: apsw.fts5.SimplifyTokenizer (example code)
+.. index:: apsw.fts5.SimplifyTokenizer (Full text search example code)
 
 .. _example_fts_apsw_simplify:
 
@@ -1238,7 +1238,7 @@ to filter your own or other tokenizers.
     
 
 
-.. index:: Your own tokenizer (example code)
+.. index:: Your own tokenizer (Full text search example code)
 
 .. _example_fts_own:
 
@@ -1301,7 +1301,7 @@ takes the connection and list of string parameters.
     
 
 
-.. index:: Your own tokenizer, part 2 (example code)
+.. index:: Your own tokenizer, part 2 (Full text search example code)
 
 .. _example_fts_own_2:
 
@@ -1388,7 +1388,7 @@ parameters.
      (148, 150, 'OR')]
 
 
-.. index:: apsw.fts5.RegexTokenizer (example code)
+.. index:: apsw.fts5.RegexTokenizer (Full text search example code)
 
 .. _example_fts_apsw_regex:
 
@@ -1425,7 +1425,7 @@ brackets and other quoting going on.
     
 
 
-.. index:: apsw.fts5.RegexPreTokenizer (example code)
+.. index:: apsw.fts5.RegexPreTokenizer (Full text search example code)
 
 .. _example_fts_apsw_regexpre:
 
@@ -1471,7 +1471,7 @@ which ignores text not matching the pattern.
     
 
 
-.. index:: HTML tokenizer (example code)
+.. index:: HTML tokenizer (Full text search example code)
 
 .. _example_fts_html:
 
@@ -1498,7 +1498,7 @@ extracted text to another tokenizer.
     
 
 
-.. index:: JSON tokenizer (example code)
+.. index:: JSON tokenizer (Full text search example code)
 
 .. _example_fts_json:
 
@@ -1569,7 +1569,7 @@ processing by another tokenizer.
     
 
 
-.. index:: Synonym tokenizer (example code)
+.. index:: Synonym tokenizer (Full text search example code)
 
 .. _example_fts_synonym:
 
@@ -1622,7 +1622,7 @@ tokens.
     
 
 
-.. index:: Stopwords tokenizer (example code)
+.. index:: Stopwords tokenizer (Full text search example code)
 
 .. _example_fts_stopwords:
 
@@ -1674,7 +1674,7 @@ finding good matches, and increase the size of the index.
     
 
 
-.. index:: Transform tokenizer (example code)
+.. index:: Transform tokenizer (Full text search example code)
 
 .. _example_fts_transform:
 
@@ -1717,7 +1717,7 @@ Transform tokenizer
     
 
 
-.. index:: Cleanup (example code)
+.. index:: Cleanup (Full text search example code)
 
 .. _example_fts_end:
 

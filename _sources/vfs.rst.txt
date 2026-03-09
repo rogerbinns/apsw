@@ -94,7 +94,7 @@ VFS class
 
 .. index:: sqlite3_vfs_register, sqlite3_vfs_find
 
-.. class:: VFS(name: str, base: Optional[str] = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: Optional[set[str]] = None)
+.. class:: VFS(name: str, base: str | None = None, makedefault: bool = False, maxpathname: int = 1024, *, iVersion: int = 3, exclude: set[str] | None = None)
 
     Provides operating system access.  You can get an overview in the
     `SQLite documentation <https://sqlite.org/c3ref/vfs.html>`_.  To
@@ -128,7 +128,7 @@ VFS class
       * `sqlite3_vfs_register <https://sqlite.org/c3ref/vfs_find.html>`__
       * `sqlite3_vfs_find <https://sqlite.org/c3ref/vfs_find.html>`__
 
-.. method:: VFS.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) -> typing.Any
+.. method:: VFS.excepthook(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool
 
     Called when there has been an exception in a :class:`VFS` routine,
     and it can't be reported to the caller as usual.
@@ -240,12 +240,12 @@ VFS class
   Return an integer error code and (optional) text describing
   the last error code and message that happened in this thread.
 
-.. method:: VFS.xGetSystemCall(name: str) -> Optional[int]
+.. method:: VFS.xGetSystemCall(name: str) -> int | None
 
     Returns a pointer for the current method implementing the named
     system call.  Return None if the call does not exist.
 
-.. method:: VFS.xNextSystemCall(name: Optional[str]) -> Optional[str]
+.. method:: VFS.xNextSystemCall(name: str | None) -> str | None
 
     This method is repeatedly called to iterate over all of the system
     calls in the vfs.  When called with None you should return the
@@ -253,7 +253,7 @@ VFS class
     name after the one passed in.  If name is the last system call
     then return None.
 
-.. method:: VFS.xOpen(name: Optional[str | URIFilename], flags: list[int,int]) -> VFSFile
+.. method:: VFS.xOpen(name: str | URIFilename | None, flags: list[int,int]) -> VFSFile
 
     This method should return a new file object based on name.  You
     can return a :class:`VFSFile` from a completely different VFS.
@@ -279,7 +279,7 @@ VFS class
   number of bytes requested including None. If you return more then
   the surplus is ignored.
 
-.. method:: VFS.xSetSystemCall(name: Optional[str], pointer: int) -> bool
+.. method:: VFS.xSetSystemCall(name: str | None, pointer: int) -> bool
 
     Change a system call used by the VFS.  This is useful for testing
     and some other scenarios such as sandboxing.
@@ -336,7 +336,7 @@ VFSFile class
 
       :meth:`VFS.xOpen`
 
-.. method:: VFSFile.excepthook(etype: type[BaseException], evalue: BaseException, etraceback: Optional[types.TracebackType]) ->None
+.. method:: VFSFile.excepthook(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool
 
     Called when there has been an exception in a :class:`VFSFile`
     routine, and it can't be reported to the caller as usual.
@@ -512,7 +512,7 @@ URIFilename class
 
 .. index:: sqlite3_uri_parameter
 
-.. method:: URIFilename.uri_parameter(name: str) -> Optional[str]
+.. method:: URIFilename.uri_parameter(name: str) -> str | None
 
     Returns the value of parameter `name` or None.
 

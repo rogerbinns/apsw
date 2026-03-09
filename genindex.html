@@ -4,17 +4,27 @@
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; APSW 3.51.2.0 documentation</title>
+  <title>Index &mdash; APSW 3.52.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
-      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=3c7e2631" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
 
   
     <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/genindex.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=9edc6f0b"></script>
+      <script src="_static/documentation_options.js?v=a197bc32"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -67,8 +77,11 @@
 <li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async.html">Concurrency &amp; Async</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extra.html">SQLite extra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
 <li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
@@ -137,6 +150,26 @@
 <h2 id="_">_</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="backup.html#apsw.Backup.__aenter__">__aenter__() (apsw.Backup method)</a>
+
+      <ul>
+        <li><a href="blob.html#apsw.Blob.__aenter__">(apsw.Blob method)</a>
+</li>
+        <li><a href="connection.html#apsw.Connection.__aenter__">(apsw.Connection method)</a>
+</li>
+      </ul></li>
+      <li><a href="backup.html#apsw.Backup.__aexit__">__aexit__() (apsw.Backup method)</a>
+
+      <ul>
+        <li><a href="blob.html#apsw.Blob.__aexit__">(apsw.Blob method)</a>
+</li>
+        <li><a href="connection.html#apsw.Connection.__aexit__">(apsw.Connection method)</a>
+</li>
+      </ul></li>
+      <li><a href="cursor.html#apsw.Cursor.__aiter__">__aiter__() (apsw.Cursor method)</a>
+</li>
+      <li><a href="cursor.html#apsw.Cursor.__anext__">__anext__() (apsw.Cursor method)</a>
+</li>
       <li><a href="ext.html#apsw.ext.DataClassRowFactory.__call__">__call__() (apsw.ext.DataClassRowFactory method)</a>
 
       <ul>
@@ -144,9 +177,13 @@
 </li>
         <li><a href="ext.html#apsw.ext.TypesConverterCursorFactory.__call__">(apsw.ext.TypesConverterCursorFactory method)</a>
 </li>
+        <li><a href="ext.html#apsw.ext.VirtualModuleCallable.__call__">(apsw.ext.VirtualModuleCallable method)</a>
+</li>
         <li><a href="textsearch.html#apsw.FTS5Tokenizer.__call__">(apsw.FTS5Tokenizer method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="backup.html#apsw.Backup.__enter__">__enter__() (apsw.Backup method)</a>
 
       <ul>
@@ -155,8 +192,6 @@
         <li><a href="connection.html#apsw.Connection.__enter__">(apsw.Connection method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="backup.html#apsw.Backup.__exit__">__exit__() (apsw.Backup method)</a>
 
       <ul>
@@ -179,6 +214,18 @@
 </li>
       <li><a href="example.html#index-17">Accessing results by column name (example code)</a>
 </li>
+      <li><a href="backup.html#apsw.Backup.aclose">aclose() (apsw.Backup method)</a>
+
+      <ul>
+        <li><a href="blob.html#apsw.Blob.aclose">(apsw.Blob method)</a>
+</li>
+        <li><a href="connection.html#apsw.Connection.aclose">(apsw.Connection method)</a>
+</li>
+        <li><a href="cursor.html#apsw.Cursor.aclose">(apsw.Cursor method)</a>
+</li>
+        <li><a href="session.html#apsw.Session.aclose">(apsw.Session method)</a>
+</li>
+      </ul></li>
       <li><a href="ext.html#apsw.ext.QueryAction.action">action (apsw.ext.QueryAction attribute)</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.action_name">action_name (apsw.ext.QueryAction attribute)</a>
@@ -192,6 +239,8 @@
       <li><a href="session.html#apsw.ChangesetBuilder.add_change">add_change() (apsw.ChangesetBuilder method)</a>
 </li>
       <li><a href="ext.html#apsw.ext.VDBEInstruction.addr">addr (apsw.ext.VDBEInstruction attribute)</a>
+</li>
+      <li><a href="backup.html#apsw.Backup.afinish">afinish() (apsw.Backup method)</a>
 </li>
       <li><a href="apsw.html#apsw.AggregateClass">AggregateClass (class in apsw)</a>
 </li>
@@ -209,6 +258,8 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5query.AND">AND (class in apsw.fts5query)</a>
 </li>
+      <li><a href="async.html#apsw.aio.AnyIO">AnyIO (class in apsw.aio)</a>
+</li>
       <li><a href="textsearch.html#apsw.fts5query.applicable_columns">applicable_columns() (in module apsw.fts5query)</a>
 </li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo.application_id">application_id (apsw.ext.DatabaseFileInfo attribute)</a>
@@ -219,13 +270,20 @@
         <li><a href="bestpractice.html#apsw.bestpractice.apply">(in module apsw.bestpractice)</a>
 </li>
       </ul></li>
-      <li><a href="example-session.html#index-6">Applying changesets (example code)</a>
+      <li><a href="example-session.html#index-6">Applying changesets (Session example code)</a>
 </li>
       <li>
     apsw
 
       <ul>
         <li><a href="apsw.html#module-apsw">module</a>
+</li>
+      </ul></li>
+      <li>
+    apsw.aio
+
+      <ul>
+        <li><a href="async.html#module-apsw.aio">module</a>
 </li>
       </ul></li>
       <li>
@@ -242,8 +300,6 @@
         <li><a href="ext.html#module-apsw.ext">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     apsw.fts5
 
@@ -251,13 +307,15 @@
         <li><a href="textsearch.html#module-apsw.fts5">module</a>
 </li>
       </ul></li>
-      <li><a href="example-fts.html#index-19">apsw.fts5.RegexPreTokenizer (example code)</a>
+      <li><a href="example-fts.html#index-19">apsw.fts5.RegexPreTokenizer (Full text search example code)</a>
 </li>
-      <li><a href="example-fts.html#index-18">apsw.fts5.RegexTokenizer (example code)</a>
+      <li><a href="example-fts.html#index-18">apsw.fts5.RegexTokenizer (Full text search example code)</a>
 </li>
-      <li><a href="example-fts.html#index-15">apsw.fts5.SimplifyTokenizer (example code)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="example-fts.html#index-15">apsw.fts5.SimplifyTokenizer (Full text search example code)</a>
 </li>
-      <li><a href="example-fts.html#index-14">apsw.fts5.UnicodeWordsTokenizer (example code)</a>
+      <li><a href="example-fts.html#index-14">apsw.fts5.UnicodeWordsTokenizer (Full text search example code)</a>
 </li>
       <li>
     apsw.fts5aux
@@ -281,6 +339,13 @@
 </li>
       </ul></li>
       <li>
+    apsw.sqlite_extra
+
+      <ul>
+        <li><a href="extra.html#module-apsw.sqlite_extra">module</a>
+</li>
+      </ul></li>
+      <li>
     apsw.unicode
 
       <ul>
@@ -298,6 +363,36 @@
       </ul></li>
       <li><a href="textsearch.html#apsw.FTS5Tokenizer.args">args (apsw.FTS5Tokenizer attribute)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.as_async">as_async() (apsw.Connection class method)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.async_controller">async_controller (apsw.Connection attribute)</a>
+
+      <ul>
+        <li><a href="apsw.html#apsw.async_controller">(in module apsw)</a>
+</li>
+      </ul></li>
+      <li><a href="apsw.html#apsw.async_cursor_prefetch">async_cursor_prefetch (in module apsw)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.async_run">async_run() (apsw.Connection method)</a>
+</li>
+      <li><a href="apsw.html#apsw.async_run_coro">async_run_coro (in module apsw)</a>
+</li>
+      <li><a href="async.html#apsw.aio.AnyIO.async_run_coro">async_run_coro() (apsw.aio.AnyIO method)</a>
+
+      <ul>
+        <li><a href="async.html#apsw.aio.AsyncIO.async_run_coro">(apsw.aio.AsyncIO method)</a>
+</li>
+        <li><a href="async.html#apsw.aio.Trio.async_run_coro">(apsw.aio.Trio method)</a>
+</li>
+      </ul></li>
+      <li><a href="apsw.html#apsw.AsyncConnection">AsyncConnection (class in apsw)</a>
+</li>
+      <li><a href="apsw.html#apsw.AsyncConnectionController">AsyncConnectionController (class in apsw)</a>
+</li>
+      <li><a href="async.html#apsw.aio.AsyncIO">AsyncIO (class in apsw.aio)</a>
+</li>
+      <li><a href="apsw.html#apsw.AsyncSession">AsyncSession (class in apsw)</a>
+</li>
       <li><a href="session.html#apsw.Session.attach">attach() (apsw.Session method)</a>
 </li>
       <li><a href="exceptions.html#apsw.AuthError">AuthError</a>
@@ -308,7 +403,9 @@
 </li>
       <li><a href="example.html#index-24">Authorizer (control what SQL can do) (example code)</a>
 </li>
-      <li><a href="example-fts.html#index-10">Autocomplete (example code)</a>
+      <li><a href="async.html#apsw.aio.Auto">Auto() (in module apsw.aio)</a>
+</li>
+      <li><a href="example-fts.html#index-10">Autocomplete (Full text search example code)</a>
 </li>
       <li><a href="shell.html#index-0">autoimport (Shell command)</a>
 </li>
@@ -318,7 +415,7 @@
 </li>
       <li><a href="textsearch.html#apsw.FTS5ExtensionApi.aux_data">aux_data (apsw.FTS5ExtensionApi attribute)</a>
 </li>
-      <li><a href="example-fts.html#index-11">Auxiliary functions (example code)</a>
+      <li><a href="example-fts.html#index-11">Auxiliary functions (Full text search example code)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -326,8 +423,12 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="backup.html#apsw.Backup">Backup (class in apsw)</a>
+      <li><a href="example-async.html#index-9">Backup (Async example code)</a>
+
+      <ul>
+        <li><a href="backup.html#apsw.Backup">(class in apsw)</a>
 </li>
+      </ul></li>
       <li><a href="shell.html#index-1">backup (Shell command)</a>
 </li>
       <li><a href="example.html#index-23">Backup an open database (example code)</a>
@@ -335,6 +436,8 @@
       <li><a href="connection.html#apsw.Connection.backup">backup() (apsw.Connection method)</a>
 </li>
       <li><a href="shell.html#index-2">bail (Shell command)</a>
+</li>
+      <li><a href="example-async.html#index-0">Basics (Async example code)</a>
 </li>
       <li><a href="vtable.html#apsw.VTTable.Begin">Begin() (apsw.VTTable method)</a>
 </li>
@@ -354,14 +457,14 @@
 </li>
       <li><a href="example.html#index-6">Bindings (sequence) (example code)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cursor.html#apsw.Cursor.bindings_count">bindings_count (apsw.Cursor attribute)</a>
 
       <ul>
         <li><a href="ext.html#apsw.ext.QueryDetails.bindings_count">(apsw.ext.QueryDetails attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cursor.html#apsw.Cursor.bindings_names">bindings_names (apsw.Cursor attribute)</a>
 
       <ul>
@@ -370,8 +473,12 @@
       </ul></li>
       <li><a href="exceptions.html#apsw.BindingsError">BindingsError</a>
 </li>
-      <li><a href="blob.html#apsw.Blob">Blob (class in apsw)</a>
+      <li><a href="example-async.html#index-8">Blob (Async example code)</a>
+
+      <ul>
+        <li><a href="blob.html#apsw.Blob">(class in apsw)</a>
 </li>
+      </ul></li>
       <li><a href="example.html#index-22">Blob I/O (example code)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.blob_open">blob_open() (apsw.Connection method)</a>
@@ -414,6 +521,8 @@
       </ul></li>
       <li><a href="example.html#index-38">Caching (example code)</a>
 </li>
+      <li><a href="example-async.html#index-2">Cancellation (Async example code)</a>
+</li>
       <li><a href="exceptions.html#apsw.CantOpenError">CantOpenError</a>
 </li>
       <li><a href="apsw.html#apsw.carray">carray() (in module apsw)</a>
@@ -427,6 +536,8 @@
       <li><a href="shell.html#index-3">cd (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.PageUsage.cells">cells (apsw.ext.PageUsage attribute)</a>
+</li>
+      <li><a href="unicode.html#apsw.unicode.Justify.CENTER">CENTER (apsw.unicode.Justify attribute)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.Table.change_cookie">change_cookie (apsw.fts5.Table property)</a>
 </li>
@@ -447,10 +558,12 @@
       <li><a href="session.html#apsw.ChangesetBuilder">ChangesetBuilder (class in apsw)</a>
 
       <ul>
-        <li><a href="example-session.html#index-8">(example code)</a>
+        <li><a href="example-session.html#index-8">(Session example code)</a>
 </li>
       </ul></li>
       <li><a href="apsw.html#apsw.ChangesetInput">ChangesetInput (class in apsw)</a>
+</li>
+      <li><a href="async.html#apsw.aio.check_progress_steps">check_progress_steps (in module apsw.aio)</a>
 </li>
       <li><a href="example.html#index-0">Checking APSW and SQLite versions (example code)</a>
 </li>
@@ -462,13 +575,27 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5.TokenizerArgument.choices">choices (apsw.fts5.TokenizerArgument attribute)</a>
 </li>
-      <li><a href="example-fts.html#index-25">Cleanup (example code)</a>, <a href="example-json.html#index-3">[1]</a>, <a href="example-session.html#index-12">[2]</a>, <a href="example.html#index-40">[3]</a>
-</li>
-      <li><a href="shell.html#index-5">close (Shell command)</a>
-</li>
-      <li><a href="backup.html#apsw.Backup.close">close() (apsw.Backup method)</a>
+      <li><a href="example.html#index-40">Cleanup (example code)</a>
 
       <ul>
+        <li><a href="example-fts.html#index-25">(Full text search example code)</a>
+</li>
+        <li><a href="example-json.html#index-3">(JSON example code)</a>
+</li>
+        <li><a href="example-session.html#index-12">(Session example code)</a>
+</li>
+      </ul></li>
+      <li><a href="shell.html#index-5">close (Shell command)</a>
+</li>
+      <li><a href="async.html#apsw.aio.AnyIO.close">close() (apsw.aio.AnyIO method)</a>
+
+      <ul>
+        <li><a href="async.html#apsw.aio.AsyncIO.close">(apsw.aio.AsyncIO method)</a>
+</li>
+        <li><a href="async.html#apsw.aio.Trio.close">(apsw.aio.Trio method)</a>
+</li>
+        <li><a href="backup.html#apsw.Backup.close">(apsw.Backup method)</a>
+</li>
         <li><a href="blob.html#apsw.Blob.close">(apsw.Blob method)</a>
 </li>
         <li><a href="session.html#apsw.ChangesetBuilder.close">(apsw.ChangesetBuilder method)</a>
@@ -503,6 +630,8 @@
 </li>
       <li><a href="vtable.html#apsw.VTCursor.Column">Column() (apsw.VTCursor method)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.VirtualModuleCallable.column_access">column_access (apsw.ext.VirtualModuleCallable attribute)</a>
+</li>
       <li><a href="textsearch.html#apsw.FTS5ExtensionApi.column_count">column_count (apsw.FTS5ExtensionApi attribute)</a>
 
       <ul>
@@ -529,9 +658,11 @@
 </li>
       <li><a href="vtable.html#apsw.VTCursor.ColumnNoChange">ColumnNoChange() (apsw.VTCursor method)</a>
 </li>
-      <li><a href="textsearch.html#apsw.fts5.FTS5TableStructure.columns">columns (apsw.fts5.FTS5TableStructure attribute)</a>
+      <li><a href="ext.html#apsw.ext.VirtualModuleCallable.columns">columns (apsw.ext.VirtualModuleCallable attribute)</a>
 
       <ul>
+        <li><a href="textsearch.html#apsw.fts5.FTS5TableStructure.columns">(apsw.fts5.FTS5TableStructure attribute)</a>
+</li>
         <li><a href="textsearch.html#apsw.fts5.Table.columns">(apsw.fts5.Table property)</a>
 </li>
         <li><a href="textsearch.html#apsw.fts5query.COLUMNFILTER.columns">(apsw.fts5query.COLUMNFILTER attribute)</a>
@@ -563,6 +694,8 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.Commit">Commit() (apsw.VTTable method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.CommitHook">CommitHook (class in apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.compile_options">compile_options (in module apsw)</a>
@@ -573,8 +706,6 @@
         <li><a href="apsw.html#apsw.complete">(in module apsw)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="shell.html#apsw.shell.Shell.complete_command">complete_command() (apsw.shell.Shell method)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.complete_sql">complete_sql() (apsw.shell.Shell method)</a>
@@ -609,8 +740,16 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5.Table.config_usermerge">config_usermerge() (apsw.fts5.Table method)</a>
 </li>
-      <li><a href="session.html#apsw.Rebaser.configure">configure() (apsw.Rebaser method)</a>
+      <li><a href="async.html#apsw.aio.AnyIO.configure">configure() (apsw.aio.AnyIO method)</a>
+
+      <ul>
+        <li><a href="async.html#apsw.aio.AsyncIO.configure">(apsw.aio.AsyncIO method)</a>
 </li>
+        <li><a href="async.html#apsw.aio.Trio.configure">(apsw.aio.Trio method)</a>
+</li>
+        <li><a href="session.html#apsw.Rebaser.configure">(apsw.Rebaser method)</a>
+</li>
+      </ul></li>
       <li><a href="session.html#apsw.TableChange.conflict">conflict (apsw.TableChange attribute)</a>
 </li>
       <li><a href="vtable.html#apsw.VTModule.Connect">Connect() (apsw.VTModule method)</a>
@@ -651,15 +790,17 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5.FTS5TableStructure.content">content (apsw.fts5.FTS5TableStructure attribute)</a>
 </li>
-      <li><a href="example-fts.html#index-4">Content (example code)</a>
+      <li><a href="example-fts.html#index-4">Content (Full text search example code)</a>
 </li>
-      <li><a href="example-fts.html#index-1">Content setup (example code)</a>
+      <li><a href="example-fts.html#index-1">Content setup (Full text search example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.FTS5TableStructure.content_rowid">content_rowid (apsw.fts5.FTS5TableStructure attribute)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.FTS5TableStructure.contentless_delete">contentless_delete (apsw.fts5.FTS5TableStructure attribute)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.FTS5TableStructure.contentless_unindexed">contentless_unindexed (apsw.fts5.FTS5TableStructure attribute)</a>
+</li>
+      <li><a href="async.html#apsw.aio.contextvar_set">contextvar_set() (in module apsw.aio)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.convert_binding">convert_binding (apsw.Connection attribute)</a>
 
@@ -701,7 +842,7 @@
 </li>
       <li><a href="vtable.html#apsw.VTModule.Create">Create() (apsw.VTModule method)</a>
 </li>
-      <li><a href="example-fts.html#index-2">Create/open search table (example code)</a>
+      <li><a href="example-fts.html#index-2">Create/open search table (Full text search example code)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.create_aggregate_function">create_aggregate_function() (apsw.Connection method)</a>
 </li>
@@ -749,7 +890,7 @@
 </li>
       <li><a href="exceptions.html#apsw.CursorClosedError">CursorClosedError</a>
 </li>
-      <li><a href="example-json.html#index-2">Customising conversion (example code)</a>
+      <li><a href="example-json.html#index-2">Customising conversion (JSON example code)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -788,6 +929,8 @@
       <li><a href="shell.html#index-10">dbinfo (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.dbinfo">dbinfo() (in module apsw.ext)</a>
+</li>
+      <li><a href="async.html#apsw.aio.deadline">deadline (in module apsw.aio)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5query.QueryTokens.decode">decode() (apsw.fts5query.QueryTokens class method)</a>
 </li>
@@ -1020,10 +1163,10 @@
 </li>
       <li><a href="shell.html#apsw.shell.Shell.fixup_backslashes">fixup_backslashes() (apsw.shell.Shell method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="session.html#apsw.TableChange.fk_conflicts">fk_conflicts (apsw.TableChange attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.fork_checker">fork_checker() (in module apsw)</a>
 </li>
       <li><a href="exceptions.html#apsw.ForkingViolationError">ForkingViolationError</a>
@@ -1062,11 +1205,15 @@
 </li>
       <li><a href="shell.html#index-17">ftsq (Shell command)</a>
 </li>
+      <li><a href="example-async.html#index-10">Full Text Search (Async example code)</a>
+</li>
       <li><a href="exceptions.html#apsw.FullError">FullError</a>
 </li>
       <li><a href="ext.html#apsw.ext.Function">Function (class in apsw.ext)</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.function_name">function_name (apsw.ext.QueryAction attribute)</a>
+</li>
+      <li><a href="example-async.html#index-1">Functions and callbacks (Async example code)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1203,27 +1350,29 @@
 </li>
       <li><a href="apsw.html#apsw.hard_heap_limit">hard_heap_limit() (in module apsw)</a>
 </li>
+      <li><a href="extra.html#apsw.sqlite_extra.has">has() (in module apsw.sqlite_extra)</a>
+</li>
       <li><a href="cursor.html#apsw.Cursor.has_vdbe">has_vdbe (apsw.Cursor attribute)</a>
 
       <ul>
         <li><a href="ext.html#apsw.ext.QueryDetails.has_vdbe">(apsw.ext.QueryDetails attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo.header">header (apsw.ext.DatabaseFileInfo attribute)</a>
 
       <ul>
         <li><a href="ext.html#apsw.ext.JournalFileInfo.header">(apsw.ext.JournalFileInfo attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="shell.html#index-18">header(s) (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.JournalFileInfo.header_valid">header_valid (apsw.ext.JournalFileInfo attribute)</a>
 </li>
       <li><a href="shell.html#index-19">help (Shell command)</a>
 </li>
-      <li><a href="example-fts.html#index-20">HTML tokenizer (example code)</a>
+      <li><a href="example-fts.html#index-20">HTML tokenizer (Full text search example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.HTMLTokenizer">HTMLTokenizer() (in module apsw.fts5)</a>
 </li>
@@ -1265,7 +1414,7 @@
       </ul></li>
       <li><a href="textsearch.html#apsw.fts5query.PHRASE.initial">initial (apsw.fts5query.PHRASE attribute)</a>
 </li>
-      <li><a href="example-session.html#index-1">Initial database setup (example code)</a>
+      <li><a href="example-session.html#index-1">Initial database setup (Session example code)</a>
 </li>
       <li><a href="ext.html#apsw.ext.JournalFileInfo.initial_pages">initial_pages (apsw.ext.JournalFileInfo attribute)</a>
 </li>
@@ -1279,10 +1428,10 @@
 </li>
       <li><a href="exceptions.html#apsw.InternalError">InternalError</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.interrupt">interrupt() (apsw.Connection method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="exceptions.html#apsw.InterruptError">InterruptError</a>
 </li>
       <li><a href="exceptions.html#apsw.InvalidContextError">InvalidContextError</a>
@@ -1297,9 +1446,11 @@
 </li>
       <li><a href="exceptions.html#apsw.IOError">IOError</a>
 </li>
-      <li><a href="example-fts.html#index-0">Is FTS5 available? (example code)</a>
+      <li><a href="example-fts.html#index-0">Is FTS5 available? (Full text search example code)</a>
 </li>
-      <li><a href="example-session.html#index-0">Is Session available? (example code)</a>
+      <li><a href="example-session.html#index-0">Is Session available? (Session example code)</a>
+</li>
+      <li><a href="connection.html#apsw.Connection.is_async">is_async (apsw.Connection attribute)</a>
 </li>
       <li><a href="session.html#apsw.Session.is_empty">is_empty (apsw.Session attribute)</a>
 </li>
@@ -1339,7 +1490,7 @@
 </li>
       <li><a href="tips.html#index-1">JSON</a>
 </li>
-      <li><a href="example-fts.html#index-21">JSON tokenizer (example code)</a>
+      <li><a href="example-fts.html#index-21">JSON tokenizer (Full text search example code)</a>
 </li>
       <li><a href="jsonb.html#apsw.jsonb_decode">jsonb_decode() (in module apsw)</a>
 </li>
@@ -1353,13 +1504,15 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5.JSONTokenizer">JSONTokenizer() (in module apsw.fts5)</a>
 </li>
+      <li><a href="unicode.html#apsw.unicode.Justify">Justify (class in apsw.unicode)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="K">K</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="example-fts.html#index-9">Key Tokens and More Like (example code)</a>
+      <li><a href="example-fts.html#index-9">Key Tokens and More Like (Full text search example code)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -1374,6 +1527,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#apsw.Connection.last_insert_rowid">last_insert_rowid() (apsw.Connection method)</a>
+</li>
+      <li><a href="unicode.html#apsw.unicode.Justify.LEFT">LEFT (apsw.unicode.Justify attribute)</a>
 </li>
       <li><a href="blob.html#apsw.Blob.length">length() (apsw.Blob method)</a>
 
@@ -1398,6 +1553,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="shell.html#index-22">load (Shell command)</a>
+</li>
+      <li><a href="extra.html#apsw.sqlite_extra.load">load() (in module apsw.sqlite_extra)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.load_extension">load_extension() (apsw.Connection method)</a>
 </li>
@@ -1433,6 +1590,8 @@
       <li><a href="shell.html#apsw.shell.main">main() (in module apsw.shell)</a>
 </li>
       <li><a href="ext.html#apsw.ext.make_jsonb">make_jsonb() (in module apsw.ext)</a>
+</li>
+      <li><a href="async.html#apsw.aio.make_session">make_session() (in module apsw.aio)</a>
 </li>
       <li><a href="ext.html#apsw.ext.make_virtual_module">make_virtual_module() (in module apsw.ext)</a>
 </li>
@@ -1498,10 +1657,10 @@
 </li>
       <li><a href="apsw.html#apsw.mapping_status">mapping_status (in module apsw)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.mapping_sync">mapping_sync (in module apsw)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.mapping_trace_codes">mapping_trace_codes (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.mapping_txn_state">mapping_txn_state (in module apsw)</a>
@@ -1560,6 +1719,8 @@
       <ul>
         <li><a href="apsw.html#module-apsw">apsw</a>
 </li>
+        <li><a href="async.html#module-apsw.aio">apsw.aio</a>
+</li>
         <li><a href="bestpractice.html#module-apsw.bestpractice">apsw.bestpractice</a>
 </li>
         <li><a href="ext.html#module-apsw.ext">apsw.ext</a>
@@ -1572,12 +1733,14 @@
 </li>
         <li><a href="shell.html#module-apsw.shell">apsw.shell</a>
 </li>
+        <li><a href="extra.html#module-apsw.sqlite_extra">apsw.sqlite_extra</a>
+</li>
         <li><a href="unicode.html#module-apsw.unicode">apsw.unicode</a>
 </li>
       </ul></li>
       <li><a href="ext.html#apsw.ext.QueryAction.module_name">module_name (apsw.ext.QueryAction attribute)</a>
 </li>
-      <li><a href="example-session.html#index-2">Monitoring changes (example code)</a>
+      <li><a href="example-session.html#index-2">Monitoring changes (Session example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.Table.more_like">more_like() (apsw.fts5.Table method)</a>
 </li>
@@ -1628,6 +1791,8 @@
       <li><a href="textsearch.html#apsw.fts5query.NOT">NOT (class in apsw.fts5query)</a>
 </li>
       <li><a href="exceptions.html#apsw.NotADBError">NotADBError</a>
+</li>
+      <li><a href="extra.html#apsw.sqlite_extra.NotAvailable">NotAvailable</a>
 </li>
       <li><a href="exceptions.html#apsw.NotFoundError">NotFoundError</a>
 </li>
@@ -1757,13 +1922,15 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5query.ParseError">ParseError</a>
 </li>
-      <li><a href="example-fts.html#index-17">part 2 (example code)</a>
+      <li><a href="example-fts.html#index-17">part 2 (Full text search example code)</a>
 </li>
       <li><a href="session.html#apsw.Session.patchset">patchset() (apsw.Session method)</a>
 </li>
       <li><a href="session.html#apsw.Session.patchset_stream">patchset_stream() (apsw.Session method)</a>
 </li>
-      <li><a href="example-session.html#index-4">Patchsets and Changesets (example code)</a>
+      <li><a href="example-session.html#index-4">Patchsets and Changesets (Session example code)</a>
+</li>
+      <li><a href="extra.html#apsw.sqlite_extra.path">path() (in module apsw.sqlite_extra)</a>
 </li>
       <li><a href="exceptions.html#apsw.PermissionsError">PermissionsError</a>
 </li>
@@ -1823,6 +1990,8 @@
 </li>
       <li><a href="apsw.html#apsw.PreupdateHook">PreupdateHook (class in apsw)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.VirtualModuleCallable.primary_key">primary_key (apsw.ext.VirtualModuleCallable attribute)</a>
+</li>
       <li><a href="shell.html#index-31">print (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.print_augmented_traceback">print_augmented_traceback() (in module apsw.ext)</a>
@@ -1839,6 +2008,14 @@
 </li>
       <li><a href="example.html#index-25">Progress handler (example code)</a>
 </li>
+      <li><a href="async.html#apsw.aio.AnyIO.progress_checker">progress_checker() (apsw.aio.AnyIO method)</a>
+
+      <ul>
+        <li><a href="async.html#apsw.aio.AsyncIO.progress_checker">(apsw.aio.AsyncIO method)</a>
+</li>
+        <li><a href="async.html#apsw.aio.Trio.progress_checker">(apsw.aio.Trio method)</a>
+</li>
+      </ul></li>
       <li><a href="shell.html#index-32">prompt (Shell command)</a>
 </li>
       <li><a href="exceptions.html#apsw.ProtocolError">ProtocolError</a>
@@ -1892,13 +2069,13 @@
       </ul></li>
       <li><a href="textsearch.html#apsw.fts5query.QUERY">QUERY (in module apsw.fts5query)</a>
 </li>
-      <li><a href="example-fts.html#index-7">Query correction and suggestion (example code)</a>
+      <li><a href="example-fts.html#index-7">Query correction and suggestion (Full text search example code)</a>
 </li>
       <li><a href="example.html#index-21">Query details (example code)</a>
 </li>
       <li><a href="example.html#index-20">Query limiting (example code)</a>
 </li>
-      <li><a href="example-fts.html#index-12">Query parsing and manipulation (example code)</a>
+      <li><a href="example-fts.html#index-12">Query parsing and manipulation (Full text search example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.MatchInfo.query_info">query_info (apsw.fts5.MatchInfo attribute)</a>
 </li>
@@ -1908,10 +2085,10 @@
 </li>
       <li><a href="textsearch.html#apsw.FTS5ExtensionApi.query_phrase">query_phrase() (apsw.FTS5ExtensionApi method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.QueryDetails.query_plan">query_plan (apsw.ext.QueryDetails attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ext.html#apsw.ext.QueryDetails.query_remaining">query_remaining (apsw.ext.QueryDetails attribute)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.Table.query_suggest">query_suggest() (apsw.fts5.Table method)</a>
@@ -1932,7 +2109,15 @@
 </li>
       <li><a href="textsearch.html#apsw.fts5.QueryTokensTokenizer">QueryTokensTokenizer() (in module apsw.fts5)</a>
 </li>
-      <li><a href="example-json.html#index-0">Quick start (example code)</a>
+      <li><a href="async.html#apsw.aio.AnyIO.queue">queue (apsw.aio.AnyIO attribute)</a>
+
+      <ul>
+        <li><a href="async.html#apsw.aio.AsyncIO.queue">(apsw.aio.AsyncIO attribute)</a>
+</li>
+        <li><a href="async.html#apsw.aio.Trio.queue">(apsw.aio.Trio attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="example-json.html#index-0">Quick start (JSON example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5query.quote">quote() (in module apsw.fts5query)</a>
 </li>
@@ -1979,11 +2164,11 @@
 </li>
       <li><a href="session.html#apsw.Rebaser">Rebaser (class in apsw)</a>
 </li>
-      <li><a href="example-session.html#index-10">Rebasing (example code)</a>
+      <li><a href="example-session.html#index-10">Rebasing (Session example code)</a>
 </li>
       <li><a href="bestpractice.html#apsw.bestpractice.recommended">recommended (in module apsw.bestpractice)</a>
 </li>
-      <li><a href="example-session.html#index-5">redo (example code)</a>
+      <li><a href="example-session.html#index-5">redo (Session example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.RegexPreTokenizer">RegexPreTokenizer() (in module apsw.fts5)</a>
 </li>
@@ -2009,8 +2194,6 @@
         <li><a href="apsw.html#apsw.release_memory">(in module apsw)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     releasememory
 
@@ -2020,11 +2203,17 @@
       </ul></li>
       <li><a href="backup.html#apsw.Backup.remaining">remaining (apsw.Backup attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="vtable.html#apsw.VTTable.Rename">Rename() (apsw.VTTable method)</a>
 </li>
       <li><a href="blob.html#apsw.Blob.reopen">reopen() (apsw.Blob method)</a>
 </li>
+      <li><a href="connection.html#apsw.Connection.reserve_bytes">reserve_bytes() (apsw.Connection method)</a>
+</li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo.reserved_bytes">reserved_bytes (apsw.ext.DatabaseFileInfo attribute)</a>
+</li>
+      <li><a href="example-async.html#index-7">Resource usage in a block (Async example code)</a>
 </li>
       <li><a href="shell.html#index-35">restore (Shell command)</a>
 </li>
@@ -2043,6 +2232,8 @@
         <li><a href="jsonb.html#index-0">RFC 8259</a>
 </li>
       </ul></li>
+      <li><a href="unicode.html#apsw.unicode.Justify.RIGHT">RIGHT (apsw.unicode.Justify attribute)</a>
+</li>
       <li><a href="vtable.html#apsw.VTTable.Rollback">Rollback() (apsw.VTTable method)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.Row.row">row (apsw.shell.Shell.Row attribute)</a>
@@ -2084,6 +2275,14 @@
       </ul></li>
       <li><a href="apsw.html#apsw.RowTracer">RowTracer (class in apsw)</a>
 </li>
+      <li><a href="async.html#apsw.aio.AnyIO.run_coro_in_loop">run_coro_in_loop() (apsw.aio.AnyIO method)</a>
+
+      <ul>
+        <li><a href="async.html#apsw.aio.AsyncIO.run_coro_in_loop">(apsw.aio.AsyncIO method)</a>
+</li>
+        <li><a href="async.html#apsw.aio.Trio.run_coro_in_loop">(apsw.aio.Trio method)</a>
+</li>
+      </ul></li>
       <li><a href="example.html#index-19">Runtime Python objects (example code)</a>
 </li>
   </ul></td>
@@ -2110,16 +2309,24 @@
 </li>
       <li><a href="exceptions.html#apsw.SchemaChangeError">SchemaChangeError</a>
 </li>
-      <li><a href="example-fts.html#index-6">Search method (example code)</a>
+      <li><a href="example-fts.html#index-6">Search method (Full text search example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.Table.search">search() (apsw.fts5.Table method)</a>
 </li>
-      <li><a href="example-fts.html#index-5">Searching with SQL. (example code)</a>
+      <li><a href="example-fts.html#index-5">Searching with SQL. (Full text search example code)</a>
 </li>
       <li><a href="ext.html#apsw.ext.JournalFileInfo.sector_size">sector_size (apsw.ext.JournalFileInfo attribute)</a>
 </li>
       <li><a href="blob.html#apsw.Blob.seek">seek() (apsw.Blob method)</a>
 </li>
+      <li><a href="async.html#apsw.aio.AnyIO.send">send() (apsw.aio.AnyIO method)</a>
+
+      <ul>
+        <li><a href="async.html#apsw.aio.AsyncIO.send">(apsw.aio.AsyncIO method)</a>
+</li>
+        <li><a href="async.html#apsw.aio.Trio.send">(apsw.aio.Trio method)</a>
+</li>
+      </ul></li>
       <li><a href="unicode.html#apsw.unicode.sentence_iter">sentence_iter() (in module apsw.unicode)</a>
 </li>
       <li><a href="unicode.html#apsw.unicode.sentence_iter_with_offsets">sentence_iter_with_offsets() (in module apsw.unicode)</a>
@@ -2134,8 +2341,12 @@
 </li>
       <li><a href="connection.html#apsw.Connection.serialize">serialize() (apsw.Connection method)</a>
 </li>
-      <li><a href="session.html#apsw.Session">Session (class in apsw)</a>
+      <li><a href="example-async.html#index-11">Session (Async example code)</a>
+
+      <ul>
+        <li><a href="session.html#apsw.Session">(class in apsw)</a>
 </li>
+      </ul></li>
       <li><a href="session.html#apsw.session_config">session_config() (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.SessionStreamInput">SessionStreamInput (class in apsw)</a>
@@ -2166,6 +2377,10 @@
         <li><a href="cursor.html#apsw.Cursor.set_exec_trace">(apsw.Cursor method)</a>
 </li>
       </ul></li>
+      <li><a href="async.html#apsw.aio.AsyncIO.set_future_exception">set_future_exception() (apsw.aio.AsyncIO method)</a>
+</li>
+      <li><a href="async.html#apsw.aio.AsyncIO.set_future_result">set_future_result() (apsw.aio.AsyncIO method)</a>
+</li>
       <li><a href="connection.html#apsw.Connection.set_last_insert_rowid">set_last_insert_rowid() (apsw.Connection method)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.set_profile">set_profile() (apsw.Connection method)</a>
@@ -2306,13 +2521,13 @@
 </li>
       <li><a href="cursor.html#apsw.Cursor.sql">sql (apsw.Cursor attribute)</a>
 </li>
-      <li><a href="example-session.html#index-3">SQL equivalent of a changeset (example code)</a>
+      <li><a href="example-session.html#index-3">SQL equivalent of a changeset (Session example code)</a>
 </li>
       <li><a href="example.html#index-36">SQL statement tracing in a block (example code)</a>
 </li>
       <li><a href="exceptions.html#apsw.SQLError">SQLError</a>
 </li>
-      <li><a href="example-json.html#index-1">SQLite JSON functions (example code)</a>
+      <li><a href="example-json.html#index-1">SQLite JSON functions (JSON example code)</a>
 </li>
       <li><a href="connection.html#index-3">sqlite3_autovacuum_pages</a>
 </li>
@@ -2356,9 +2571,9 @@
 </li>
       <li><a href="blob.html#index-6">sqlite3_blob_write</a>
 </li>
-      <li><a href="connection.html#index-39">sqlite3_busy_handler</a>
+      <li><a href="connection.html#index-40">sqlite3_busy_handler</a>
 </li>
-      <li><a href="connection.html#index-40">sqlite3_busy_timeout</a>
+      <li><a href="connection.html#index-41">sqlite3_busy_timeout</a>
 </li>
       <li><a href="connection.html#index-7">sqlite3_changes64</a>
 </li>
@@ -2376,7 +2591,7 @@
 </li>
       <li><a href="cursor.html#index-2">sqlite3_column_table_name</a>
 </li>
-      <li><a href="connection.html#index-41">sqlite3_commit_hook</a>
+      <li><a href="connection.html#index-42">sqlite3_commit_hook</a>
 </li>
       <li><a href="apsw.html#index-0">sqlite3_compileoption_get</a>
 </li>
@@ -2404,7 +2619,7 @@
 </li>
       <li><a href="connection.html#index-37">sqlite3_db_release_memory</a>
 </li>
-      <li><a href="connection.html#index-49">sqlite3_db_status64</a>
+      <li><a href="connection.html#index-50">sqlite3_db_status64</a>
 </li>
       <li><a href="connection.html#index-20">sqlite3_deserialize</a>
 </li>
@@ -2414,7 +2629,7 @@
 </li>
       <li><a href="cursor.html#index-4">sqlite3_expanded_sql</a>
 </li>
-      <li><a href="connection.html#index-17">sqlite3_file_control</a>, <a href="connection.html#index-22">[1]</a>, <a href="connection.html#index-35">[2]</a>
+      <li><a href="connection.html#index-17">sqlite3_file_control</a>, <a href="connection.html#index-22">[1]</a>, <a href="connection.html#index-35">[2]</a>, <a href="connection.html#index-38">[3]</a>
 </li>
       <li><a href="connection.html#index-24">sqlite3_filename_journal</a>
 </li>
@@ -2426,14 +2641,14 @@
 </li>
       <li><a href="apsw.html#index-5">sqlite3_initialize</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#index-28">sqlite3_interrupt</a>
 </li>
       <li><a href="connection.html#index-29">sqlite3_is_interrupted</a>
 </li>
       <li><a href="apsw.html#index-6">sqlite3_keyword_count</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#index-6">sqlite3_keyword_name</a>
 </li>
       <li><a href="connection.html#index-30">sqlite3_last_insert_rowid</a>
@@ -2458,17 +2673,17 @@
 </li>
       <li><a href="cursor.html#index-3">sqlite3_prepare_v3</a>
 </li>
-      <li><a href="connection.html#index-59">sqlite3_preupdate_blobwrite</a>
+      <li><a href="connection.html#index-60">sqlite3_preupdate_blobwrite</a>
 </li>
-      <li><a href="connection.html#index-60">sqlite3_preupdate_depth</a>
+      <li><a href="connection.html#index-61">sqlite3_preupdate_depth</a>
 </li>
       <li><a href="connection.html#index-34">sqlite3_preupdate_hook</a>
 </li>
-      <li><a href="connection.html#index-61">sqlite3_preupdate_new</a>, <a href="connection.html#index-63">[1]</a>
+      <li><a href="connection.html#index-62">sqlite3_preupdate_new</a>, <a href="connection.html#index-64">[1]</a>
 </li>
-      <li><a href="connection.html#index-62">sqlite3_preupdate_old</a>, <a href="connection.html#index-63">[1]</a>
+      <li><a href="connection.html#index-63">sqlite3_preupdate_old</a>, <a href="connection.html#index-64">[1]</a>
 </li>
-      <li><a href="connection.html#index-44">sqlite3_progress_handler</a>
+      <li><a href="connection.html#index-45">sqlite3_progress_handler</a>
 </li>
       <li><a href="apsw.html#index-10">sqlite3_randomness</a>
 </li>
@@ -2476,15 +2691,15 @@
 </li>
       <li><a href="tips.html#index-2">sqlite3_result_pointer</a>
 </li>
-      <li><a href="connection.html#index-45">sqlite3_rollback_hook</a>
+      <li><a href="connection.html#index-46">sqlite3_rollback_hook</a>
 </li>
-      <li><a href="connection.html#index-38">sqlite3_serialize</a>
+      <li><a href="connection.html#index-39">sqlite3_serialize</a>
 </li>
       <li><a href="connection.html#index-2">sqlite3_set_authorizer</a>
 </li>
-      <li><a href="connection.html#index-42">sqlite3_set_last_insert_rowid</a>
+      <li><a href="connection.html#index-43">sqlite3_set_last_insert_rowid</a>
 </li>
-      <li><a href="connection.html#index-48">sqlite3_setlk_timeout</a>
+      <li><a href="connection.html#index-49">sqlite3_setlk_timeout</a>
 </li>
       <li><a href="apsw.html#index-13">sqlite3_shutdown</a>
 </li>
@@ -2508,7 +2723,7 @@
 </li>
       <li><a href="cursor.html#index-7">sqlite3_stmt_readonly</a>
 </li>
-      <li><a href="connection.html#index-53">sqlite3_stmt_status</a>
+      <li><a href="connection.html#index-54">sqlite3_stmt_status</a>
 </li>
       <li><a href="apsw.html#index-19">sqlite3_strglob</a>
 </li>
@@ -2518,17 +2733,17 @@
 </li>
       <li><a href="apsw.html#index-22">sqlite3_strnicmp</a>
 </li>
-      <li><a href="connection.html#index-50">sqlite3_system_errno</a>
+      <li><a href="connection.html#index-51">sqlite3_system_errno</a>
 </li>
-      <li><a href="connection.html#index-10">sqlite3_table_column_metadata</a>, <a href="connection.html#index-51">[1]</a>
+      <li><a href="connection.html#index-10">sqlite3_table_column_metadata</a>, <a href="connection.html#index-52">[1]</a>
 </li>
-      <li><a href="connection.html#index-52">sqlite3_total_changes64</a>
+      <li><a href="connection.html#index-53">sqlite3_total_changes64</a>
 </li>
-      <li><a href="connection.html#index-43">sqlite3_trace_v2</a>, <a href="connection.html#index-53">[1]</a>
+      <li><a href="connection.html#index-44">sqlite3_trace_v2</a>, <a href="connection.html#index-54">[1]</a>
 </li>
-      <li><a href="connection.html#index-54">sqlite3_txn_state</a>
+      <li><a href="connection.html#index-55">sqlite3_txn_state</a>
 </li>
-      <li><a href="connection.html#index-46">sqlite3_update_hook</a>
+      <li><a href="connection.html#index-47">sqlite3_update_hook</a>
 </li>
       <li><a href="vfs.html#index-3">sqlite3_uri_boolean</a>
 </li>
@@ -2548,7 +2763,7 @@
 </li>
       <li><a href="vtable.html#index-2">sqlite3_vtab_collation</a>
 </li>
-      <li><a href="connection.html#index-55">sqlite3_vtab_config</a>
+      <li><a href="connection.html#index-56">sqlite3_vtab_config</a>
 </li>
       <li><a href="vtable.html#index-0">sqlite3_vtab_distinct</a>
 </li>
@@ -2560,15 +2775,15 @@
 </li>
       <li><a href="vtable.html#index-5">sqlite3_vtab_nochange</a>
 </li>
-      <li><a href="connection.html#index-56">sqlite3_vtab_on_conflict</a>
+      <li><a href="connection.html#index-57">sqlite3_vtab_on_conflict</a>
 </li>
       <li><a href="vtable.html#index-3">sqlite3_vtab_rhs_value</a>
 </li>
-      <li><a href="connection.html#index-57">sqlite3_wal_autocheckpoint</a>
+      <li><a href="connection.html#index-58">sqlite3_wal_autocheckpoint</a>
 </li>
-      <li><a href="connection.html#index-58">sqlite3_wal_checkpoint_v2</a>
+      <li><a href="connection.html#index-59">sqlite3_wal_checkpoint_v2</a>
 </li>
-      <li><a href="connection.html#index-47">sqlite3_wal_hook</a>
+      <li><a href="connection.html#index-48">sqlite3_wal_hook</a>
 </li>
       <li><a href="session.html#index-28">sqlite3changegroup_add</a>
 </li>
@@ -2700,11 +2915,11 @@
       </ul></li>
       <li><a href="backup.html#apsw.Backup.step">step() (apsw.Backup method)</a>
 </li>
-      <li><a href="example-fts.html#index-23">Stopwords tokenizer (example code)</a>
+      <li><a href="example-fts.html#index-23">Stopwords tokenizer (Full text search example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.StopWordsTokenizer">StopWordsTokenizer() (in module apsw.fts5)</a>
 </li>
-      <li><a href="example-session.html#index-9">Streaming (example code)</a>
+      <li><a href="example-session.html#index-9">Streaming (Session example code)</a>
 </li>
       <li><a href="apsw.html#apsw.strglob">strglob() (in module apsw)</a>
 </li>
@@ -2730,9 +2945,9 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.Sync">Sync() (apsw.VTTable method)</a>
 </li>
-      <li><a href="example-session.html#index-7">Synchronising changes made by two users (example code)</a>
+      <li><a href="example-session.html#index-7">Synchronising changes made by two users (Session example code)</a>
 </li>
-      <li><a href="example-fts.html#index-22">Synonym tokenizer (example code)</a>
+      <li><a href="example-fts.html#index-22">Synonym tokenizer (Full text search example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.SynonymTokenizer">SynonymTokenizer() (in module apsw.fts5)</a>
 </li>
@@ -2748,9 +2963,9 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="textsearch.html#apsw.fts5.Table">Table (class in apsw.fts5)</a>
 </li>
-      <li><a href="example-session.html#index-11">Table diff (example code)</a>
+      <li><a href="example-session.html#index-11">Table diff (Session example code)</a>
 </li>
-      <li><a href="example-fts.html#index-3">Table structure and statistics (example code)</a>
+      <li><a href="example-fts.html#index-3">Table structure and statistics (Full text search example code)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.table_exists">table_exists() (apsw.Connection method)</a>
 </li>
@@ -2787,6 +3002,8 @@
       <li><a href="exceptions.html#apsw.ThreadingViolationError">ThreadingViolationError</a>
 </li>
       <li><a href="shell.html#index-41">timeout (Shell command)</a>
+</li>
+      <li><a href="example-async.html#index-3">Timeouts (Async example code)</a>
 </li>
       <li><a href="shell.html#index-42">timer (Shell command)</a>
 </li>
@@ -2826,7 +3043,7 @@
 </li>
       <li><a href="apsw.html#apsw.TokenizerResult">TokenizerResult (class in apsw)</a>
 </li>
-      <li><a href="example-fts.html#index-13">Tokenizers (example code)</a>
+      <li><a href="example-fts.html#index-13">Tokenizers (Full text search example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.Table.tokens">tokens (apsw.fts5.Table property)</a>
 
@@ -2855,19 +3072,23 @@
 </li>
       <li><a href="example.html#index-11">Tracing execution (example code)</a>
 </li>
+      <li><a href="example-async.html#index-6">Tracing in a block (Async example code)</a>
+</li>
       <li><a href="example.html#index-12">Tracing returned rows (example code)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.transaction_mode">transaction_mode (apsw.Connection attribute)</a>
 </li>
       <li><a href="example.html#index-8">Transactions (example code)</a>
 </li>
-      <li><a href="example-fts.html#index-24">Transform tokenizer (example code)</a>
+      <li><a href="example-fts.html#index-24">Transform tokenizer (Full text search example code)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5.TransformTokenizer">TransformTokenizer() (in module apsw.fts5)</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.trigger_name">trigger_name (apsw.ext.QueryAction attribute)</a>
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.trigger_or_view">trigger_or_view (apsw.ext.QueryAction attribute)</a>
+</li>
+      <li><a href="async.html#apsw.aio.Trio">Trio (class in apsw.aio)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.txn_state">txn_state() (apsw.Connection method)</a>
 </li>
@@ -2959,10 +3180,10 @@
 </li>
       <li><a href="shell.html#index-44">vfsinfo (Shell command)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="shell.html#index-45">vfslist (Shell command)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="shell.html#index-46">vfsname (Shell command)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.vfsname">vfsname() (apsw.Connection method)</a>
@@ -2978,7 +3199,13 @@
 </li>
       <li><a href="ext.html#apsw.ext.QueryAction.view_name">view_name (apsw.ext.QueryAction attribute)</a>
 </li>
-      <li><a href="example.html#index-29">Virtual tables (example code)</a>
+      <li><a href="example-async.html#index-5">Virtual tables (Async example code)</a>
+
+      <ul>
+        <li><a href="example.html#index-29">(example code)</a>
+</li>
+      </ul></li>
+      <li><a href="ext.html#apsw.ext.VirtualModuleCallable">VirtualModuleCallable (class in apsw.ext)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.vtab_config">vtab_config() (apsw.Connection method)</a>
 </li>
@@ -3022,12 +3249,12 @@
 </li>
       <li><a href="apsw.html#apsw.WindowT">WindowT (class in apsw)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.WindowValue">WindowValue (class in apsw)</a>
 </li>
       <li><a href="unicode.html#apsw.unicode.word_default_categories">word_default_categories (in module apsw.unicode)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="unicode.html#apsw.unicode.word_iter">word_iter() (in module apsw.unicode)</a>
 </li>
       <li><a href="unicode.html#apsw.unicode.word_iter_with_offsets">word_iter_with_offsets() (in module apsw.unicode)</a>
@@ -3036,7 +3263,17 @@
 </li>
       <li><a href="unicode.html#apsw.unicode.word_next_break">word_next_break() (in module apsw.unicode)</a>
 </li>
-      <li><a href="example-fts.html#index-8">Working with tokens (example code)</a>
+      <li><a href="example-async.html#index-4">Worker thread (Async example code)</a>
+</li>
+      <li><a href="async.html#apsw.aio.AnyIO.worker_thread_run">worker_thread_run() (apsw.aio.AnyIO method)</a>
+
+      <ul>
+        <li><a href="async.html#apsw.aio.AsyncIO.worker_thread_run">(apsw.aio.AsyncIO method)</a>
+</li>
+        <li><a href="async.html#apsw.aio.Trio.worker_thread_run">(apsw.aio.Trio method)</a>
+</li>
+      </ul></li>
+      <li><a href="example-fts.html#index-8">Working with tokens (Full text search example code)</a>
 </li>
       <li><a href="blob.html#apsw.Blob.write">write() (apsw.Blob method)</a>
 
@@ -3123,7 +3360,7 @@
       <li><a href="example-fts.html#index-17">Your own tokenizer</a>
 
       <ul>
-        <li><a href="example-fts.html#index-16">(example code)</a>
+        <li><a href="example-fts.html#index-16">(Full text search example code)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -3147,7 +3384,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jan 10, 2026.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
       </span></p>
   </div>
 
@@ -3165,18 +3402,7 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-    <!-- Theme Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-2NR9GDCQLT', {
-          'anonymize_ip': false,
-      });
-    </script> 
+  </script> 
 
 </body>
 </html>

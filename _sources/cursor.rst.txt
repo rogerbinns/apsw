@@ -49,18 +49,42 @@ Cursor class
 
  Use :meth:`Connection.cursor` to make a new cursor.
 
+.. method:: Cursor.__aiter__() -> Self
+
+    |badge-async-async|
+
+    AsyncCursors are async iterators
+
+.. method:: Cursor.__anext__() -> typing.Any
+
+    |badge-async-async|
+
+    Cursors are iterators
+
 .. method:: Cursor.__iter__(self: Cursor) -> Cursor
 
-    Cursors are iterators
-
-.. method:: Cursor.__next__(self: Cursor) -> typing.Any
+    |badge-async-sync|
 
     Cursors are iterators
+
+.. method:: Cursor.__next__() -> typing.Any
+
+    |badge-async-sync|
+
+    Cursors are iterators
+
+.. method:: Cursor.aclose(force: bool = False) -> None
+
+  |badge-close|
+
+  Async version of :meth:`close`
 
 .. index:: sqlite3_bind_parameter_count
 
 .. attribute:: Cursor.bindings_count
   :type: int
+
+  |badge-async-value|
 
   How many bindings are in the statement.  The ``?`` form
   results in the largest number.  For example you could do
@@ -72,6 +96,8 @@ Cursor class
 
 .. attribute:: Cursor.bindings_names
   :type: tuple[str | None]
+
+  |badge-async-dual|
 
   A tuple of the name of each bind parameter, or None for no name.  The
   leading marker (``?:@$``) is omitted
@@ -85,10 +111,14 @@ Cursor class
 
 .. method:: Cursor.close(force: bool = False) -> None
 
+  |badge-close|
+
   It is very unlikely you will need to call this method.
   Cursors are automatically garbage collected and when there
   are none left will allow the connection to be garbage collected if
   it has no other references.
+
+  It is safe to call the method multiple times.
 
   A cursor is open if there are remaining statements to execute (if
   your query included multiple statements), or if you called
@@ -104,10 +134,14 @@ Cursor class
 .. attribute:: Cursor.connection
   :type: Connection
 
+  |badge-async-value|
+
   :class:`Connection` this cursor is using
 
 .. attribute:: Cursor.convert_binding
   :type: ConvertBinding | None
+
+  |badge-async-value|
 
   Called with the :class:`Cursor`, parameter number, and value when
   an unsuppported type is used in a binding. Note that parameter
@@ -122,6 +156,8 @@ Cursor class
 
 .. attribute:: Cursor.convert_jsonb
   :type: ConvertJSONB | None
+
+  |badge-async-value|
 
   Called with the :class:`Cursor`, column number, and bytes value
   when a blob value is valid JSONB.  The callback can :func:`decode the
@@ -140,6 +176,8 @@ Cursor class
 .. attribute:: Cursor.description
     :type: tuple[tuple[str, str, None, None, None, None, None], ...]
 
+    |badge-async-dual|
+
     Based on the `DB-API cursor property
     <https://www.python.org/dev/peps/pep-0249/>`__, this returns the
     same as :meth:`get_description` but with 5 Nones appended because
@@ -149,6 +187,8 @@ Cursor class
 
 .. attribute:: Cursor.description_full
   :type: tuple[tuple[str, str, str, str, str], ...]
+
+  |badge-async-dual|
 
 Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at
 compile time.
@@ -167,6 +207,8 @@ Calls:
 .. attribute:: Cursor.exec_trace
   :type: ExecTracer | None
 
+  |badge-async-value|
+
   Called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
   cursor.
@@ -181,7 +223,9 @@ Calls:
 
 .. index:: sqlite3_prepare_v3, sqlite3_step, sqlite3_bind_int64, sqlite3_bind_null, sqlite3_bind_text64, sqlite3_bind_double, sqlite3_bind_blob64, sqlite3_bind_zeroblob64, sqlite3_stmt_explain
 
-.. method:: Cursor.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
+.. method:: Cursor.execute(statements: str, bindings: Bindings | None = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
+
+    |badge-async-dual|
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -194,7 +238,7 @@ Calls:
       :class:`zeroblob`, or a wrapped :ref:`Python object <pyobject>`
     :param can_cache: If False then the statement cache will not be used to find an already prepared query, nor will it be
       placed in the cache after execution
-    :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_normalize.html>`__ passed to
+    :param prepare_flags: `flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>`__ passed to
       `sqlite_prepare_v3 <https://sqlite.org/c3ref/prepare.html>`__
     :param explain: If 0 or greater then the statement is passed to `sqlite3_stmt_explain <https://sqlite.org/c3ref/stmt_explain.html>`__
        where you can force it to not be an explain, or force explain or explain query plan.
@@ -221,6 +265,8 @@ Calls:
 
 .. method:: Cursor.executemany(statements: str, sequenceofbindings: Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
+  |badge-async-dual|
+
   This method is for when you want to execute the same statements over
   a sequence of bindings.  Conceptually it does this::
 
@@ -235,6 +281,8 @@ Calls:
 
 .. attribute:: Cursor.expanded_sql
   :type: str
+
+  |badge-async-dual|
 
   The SQL text with bound parameters expanded.  For example::
 
@@ -253,18 +301,24 @@ Calls:
 
   Calls: `sqlite3_expanded_sql <https://sqlite.org/c3ref/expanded_sql.html>`__
 
-.. method:: Cursor.fetchall() -> list[tuple[SQLiteValue, ...]]
+.. method:: Cursor.fetchall() -> list[SQLiteValues]
+
+  |badge-async-dual|
 
   Returns all remaining result rows as a list.  This method is defined
   in DBAPI.  See :meth:`get` which does the same thing, but with the least
   amount of structure to unpack.
 
-.. method:: Cursor.fetchone() -> Optional[typing.Any]
+.. method:: Cursor.fetchone() -> typing.Any | None
+
+  |badge-async-dual|
 
   Returns the next row of data or None if there are no more rows.
 
 .. attribute:: Cursor.get
  :type: Any
+
+ |badge-async-dual|
 
  Like :meth:`fetchall` but returns the data with the least amount of structure
  possible.
@@ -290,11 +344,15 @@ Calls:
 
 .. method:: Cursor.get_connection() -> Connection
 
+  |badge-async-value|
+
   Returns the :attr:`connection` this cursor is part of
 
 .. index:: sqlite3_column_name, sqlite3_column_decltype
 
 .. method:: Cursor.get_description() -> tuple[tuple[str, str], ...]
+
+   |badge-async-dual|
 
    If you are trying to get information about a table or view,
    then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
@@ -317,6 +375,8 @@ Calls:
 
 .. method:: Cursor.get_exec_trace() -> ExecTracer | None
 
+  |badge-async-value|
+
   Returns the currently installed :attr:`execution tracer
   <Cursor.exec_trace>`
 
@@ -325,6 +385,8 @@ Calls:
     * :ref:`tracing`
 
 .. method:: Cursor.get_row_trace() -> RowTracer | None
+
+  |badge-async-value|
 
   Returns the currently installed (via :meth:`~Cursor.set_row_trace`)
   row tracer.
@@ -336,6 +398,8 @@ Calls:
 .. attribute:: Cursor.has_vdbe
   :type: bool
 
+  |badge-async-value|
+
   ``True`` if the SQL does anything.  Comments have nothing to
   evaluate, and so are ``False``.
 
@@ -343,6 +407,8 @@ Calls:
 
 .. attribute:: Cursor.is_explain
   :type: int
+
+  |badge-async-value|
 
   Returns 0 if executing a normal query, 1 if it is an EXPLAIN query,
   and 2 if an EXPLAIN QUERY PLAN query.
@@ -354,6 +420,8 @@ Calls:
 .. attribute:: Cursor.is_readonly
   :type: bool
 
+  |badge-async-value|
+
   Returns True if the current query does not change the database.
 
   Note that called functions, virtual tables etc could make changes though.
@@ -362,6 +430,8 @@ Calls:
 
 .. attribute:: Cursor.row_trace
   :type: RowTracer | None
+
+  |badge-async-value|
 
   Called with cursor and row being returned.  You can
   change the data that is returned or cause the row to be skipped
@@ -377,9 +447,13 @@ Calls:
 
 .. method:: Cursor.set_exec_trace(callable: ExecTracer | None) -> None
 
+  |badge-async-value|
+
   Sets the :attr:`execution tracer <Cursor.exec_trace>`
 
 .. method:: Cursor.set_row_trace(callable: RowTracer | None) -> None
+
+  |badge-async-value|
 
   Sets the :attr:`row tracer <Cursor.row_trace>`.  If ``None``
   then row tracing is disabled for this cursor.
@@ -388,6 +462,8 @@ Calls:
 
 .. attribute:: Cursor.sql
   :type: str
+
+  |badge-async-dual|
 
   The SQL being executed
 

@@ -18,7 +18,7 @@ Connection class
 
 .. index:: sqlite3_open_v2
 
-.. class:: Connection(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: Optional[str] = None, statementcachesize: int = 100)
+.. class:: Connection(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100)
 
   This object wraps a `sqlite3 pointer
   <https://sqlite.org/c3ref/sqlite3.html>`_.
@@ -42,7 +42,21 @@ Connection class
 
   Calls: `sqlite3_open_v2 <https://sqlite.org/c3ref/open.html>`__
 
+.. method:: Connection.__aenter__() -> Self
+
+  |badge-async-async|
+
+  Async version of :meth:`__enter__` context manager.
+
+.. method:: Connection.__aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None
+
+  |badge-async-async|
+
+  Async version of :meth:`__exit__` context manager.
+
 .. method:: Connection.__enter__() -> Connection
+
+  |badge-async-sync|
 
   You can use the database as a `context manager
   <https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers>`_
@@ -66,25 +80,69 @@ Connection class
   :attr:`transaction_mode` (default ``DEFERRED``).  Nested statements
   use `savepoints <https://sqlite.org/lang_savepoint.html>`__.
 
-.. method:: Connection.__exit__(etype: Optional[type[BaseException]], evalue: Optional[BaseException], etraceback: Optional[types.TracebackType]) -> Optional[bool]
+.. method:: Connection.__exit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool
+
+  |badge-async-sync|
 
   Implements context manager in conjunction with
   :meth:`~Connection.__enter__`.  If no exception happened then
   the pending transaction is committed, while an exception results in a
   rollback.
 
+.. method:: Connection.aclose(force: bool = False) -> None
+
+  |badge-close|
+
+  The async version of :meth:`close`
+
+.. method:: Connection.as_async(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100) -> Awaitable[AsyncConnection]
+  :classmethod:
+
+  Uses the :attr:`async_controller` to start a :class:`Connection`
+  with the parameters in a background worker thread.  The resulting
+  :class:`AsyncConnection` is the same as regular :class:`Connection`
+  but with most methods and attributes and related objects configured
+  for async operation.
+
+  See :mod:`apsw.aio` for some controller implementations and :doc:`async`
+  for more details.
+
+  .. note:: Inheritance
+
+    If you inherit from :class:`Connection` then this still works without
+    having to write your own.  The returned object will be of your
+    Connection subclass.  The parameters can be any positional and keyword
+    arguments, and will be passed to your ``__init__`` method in the
+    worker thread first.  ``super().__init__`` should be called
+    from it as normal for inheritance.
+
+.. attribute:: Connection.async_controller
+  :type: AsyncConnectionController
+
+  |badge-async-value|
+
+  The controller in effect in async mode.
+
+.. method:: Connection.async_run(call: typing.Callable, /, *args, **kwargs) -> typing.Any
+
+  |badge-async-async|
+
+  Calls ``call`` with the provided arguments in the async worker thread for this
+  connection.
+
 .. index:: sqlite3_set_authorizer
 
 .. attribute:: Connection.authorizer
-  :type: Optional[Authorizer]
+  :type: Authorizer | None
+
+  |badge-async-value|
 
   While `preparing <https://sqlite.org/c3ref/prepare.html>`_
   statements, SQLite will call any defined authorizer to see if a
   particular action is ok to be part of the statement.
 
   Typical usage would be if you are running user supplied SQL and want
-  to prevent harmful operations.  You should also
-  set the :class:`statementcachesize <Connection>` to zero.
+  to prevent harmful operations.
 
   The authorizer callback has 5 parameters:
 
@@ -99,16 +157,22 @@ Connection class
   (*SQLITE_DENY* is returned if there is an error in your
   Python code).
 
+  Changing the authorizer (including setting to :code:`None`) will not
+  affect currently executing statements.  Any cached statements
+  or currently executing ones will be prepared again on their
+  next use.
+
   .. seealso::
 
     * :ref:`Example <example_authorizer>`
-    * :ref:`statementcache`
 
   Calls: `sqlite3_set_authorizer <https://sqlite.org/c3ref/set_authorizer.html>`__
 
 .. index:: sqlite3_autovacuum_pages
 
-.. method:: Connection.autovacuum_pages(callable: Optional[typing.Callable[[str, int, int, int], int]]) -> None
+.. method:: Connection.autovacuum_pages(callable: typing.Callable[[str, int, int, int], int] | None) -> None
+
+  |badge-async-dual|
 
   Calls `callable` to find out how many pages to autovacuum.  The callback has 4 parameters:
 
@@ -129,7 +193,9 @@ Connection class
 
 .. index:: sqlite3_backup_init
 
-.. method:: Connection.backup(databasename: str, sourceconnection: Connection, sourcedatabasename: str)  -> Backup
+.. method:: Connection.backup(databasename: str, sourceconnection: Connection | AsyncConnection, sourcedatabasename: str)  -> Backup
+
+   |badge-async-dual|
 
    Opens a :ref:`backup object <Backup>`.  All data will be copied from source
    database to this database.
@@ -150,6 +216,8 @@ Connection class
 .. index:: sqlite3_blob_open
 
 .. method:: Connection.blob_open(database: str, table: str, column: str, rowid: int, writeable: bool)  -> Blob
+
+   |badge-async-dual|
 
    Opens a blob for :ref:`incremental I/O <blobio>`.
 
@@ -172,11 +240,15 @@ Connection class
 
 .. method:: Connection.cache_flush() -> None
 
+  |badge-async-dual|
+
   Flushes caches to disk mid-transaction.
 
   Calls: `sqlite3_db_cacheflush <https://sqlite.org/c3ref/db_cacheflush.html>`__
 
 .. method:: Connection.cache_stats(include_entries: bool = False) -> dict[str, int]
+
+|badge-async-value|
 
 Returns information about the statement cache as dict.
 
@@ -243,6 +315,8 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. method:: Connection.changes() -> int
 
+  |badge-async-value|
+
   Returns the number of database rows that were changed (or inserted
   or deleted) by the most recently completed INSERT, UPDATE, or DELETE
   statement.
@@ -252,6 +326,8 @@ If `entries` is present, then each list entry is a dict with the following infor
 .. index:: sqlite3_close
 
 .. method:: Connection.close(force: bool = False) -> None
+
+  |badge-close|
 
   Closes the database.  If there are any outstanding :class:`cursors
   <Cursor>`, :class:`blobs <Blob>` or :class:`backups <Backup>` then
@@ -278,7 +354,9 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_collation_needed
 
-.. method:: Connection.collation_needed(callable: Optional[typing.Callable[[Connection, str], None]]) -> None
+.. method:: Connection.collation_needed(callable: typing.Callable[[Connection, str], None] | None) -> None
+
+  |badge-async-dual|
 
   *callable* will be called if a statement requires a `collation
   <https://en.wikipedia.org/wiki/Collation>`_ that hasn't been
@@ -303,7 +381,9 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_table_column_metadata
 
-.. method:: Connection.column_metadata(dbname: Optional[str], table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]
+.. method:: Connection.column_metadata(dbname: str | None, table_name: str, column_name: str) -> tuple[str, str, bool, bool, bool]
+
+  |badge-async-dual|
 
   `dbname` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__, or None to search
   all databases.
@@ -326,8 +406,10 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. method:: Connection.config(op: int, *args: int) -> int
 
+    |badge-async-dual|
+
     :param op: A `configuration operation
-      <https://sqlite.org/c3ref/c_dbconfig_enable_fkey.html>`__
+      <https://sqlite.org/c3ref/c_dbconfig_defensive.html>`__
     :param args: Zero or more arguments as appropriate for *op*
 
     This is how to get the fkey setting::
@@ -342,6 +424,8 @@ If `entries` is present, then each list entry is a dict with the following infor
 .. attribute:: Connection.convert_binding
   :type: ConvertBinding | None
 
+  |badge-async-value|
+
   Called on a cursor when a binding is not a supported type.
   This connection value is used when the cursor does not set
   its own value.  See :attr:`Cursor.convert_binding`
@@ -349,13 +433,17 @@ If `entries` is present, then each list entry is a dict with the following infor
 .. attribute:: Connection.convert_jsonb
   :type: ConvertJSONB | None
 
+  |badge-async-value|
+
   Called on a cursor when a blob being returned is valid JSONB.
   This connection value is used when the cursor does not set
   its own value.  See :attr:`Cursor.convert_jsonb`
 
 .. index:: sqlite3_create_function_v2
 
-.. method:: Connection.create_aggregate_function(name: str, factory: Optional[AggregateFactory], numargs: int = -1, *, flags: int = 0) -> None
+.. method:: Connection.create_aggregate_function(name: str, factory: AggregateFactory | None, numargs: int = -1, *, flags: int = 0) -> None
+
+  |badge-async-dual|
 
   Registers an aggregate function.  Aggregate functions operate on all
   the relevant rows such as counting how many there are.
@@ -402,7 +490,9 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_create_collation_v2
 
-.. method:: Connection.create_collation(name: str, callback: Optional[typing.Callable[[str, str], int]]) -> None
+.. method:: Connection.create_collation(name: str, callback: typing.Callable[[str, str], int] | None) -> None
+
+  |badge-async-dual|
 
   You can control how SQLite sorts (termed `collation
   <https://en.wikipedia.org/wiki/Collation>`_) when giving the
@@ -433,7 +523,9 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_create_module_v2
 
-.. method:: Connection.create_module(name: str, datasource: Optional[VTModule], *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
+.. method:: Connection.create_module(name: str, datasource: VTModule | None, *, use_bestindex_object: bool = False, use_no_change: bool = False, iVersion: int = 1, eponymous: bool=False, eponymous_only: bool = False, read_only: bool = False) -> None
+
+    |badge-async-dual|
 
     Registers a virtual table, or drops it if *datasource* is *None*.
     See :ref:`virtualtables` for details.
@@ -455,7 +547,9 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_create_function_v2
 
-.. method:: Connection.create_scalar_function(name: str, callable: Optional[ScalarProtocol], numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None
+.. method:: Connection.create_scalar_function(name: str, callable: ScalarProtocol | None, numargs: int = -1, *, deterministic: bool = False, flags: int = 0) -> None
+
+  |badge-async-dual|
 
   Registers a scalar function.  Scalar functions operate on one set of parameters once.
 
@@ -492,7 +586,9 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_create_window_function
 
-.. method:: Connection.create_window_function(name:str, factory: Optional[WindowFactory], numargs: int =-1, *, flags: int = 0) -> None
+.. method:: Connection.create_window_function(name:str, factory: WindowFactory | None, numargs: int =-1, *, flags: int = 0) -> None
+
+    |badge-async-dual|
 
     Registers a `window function
     <https://sqlite.org/windowfunctions.html#user_defined_aggregate_window_functions>`__
@@ -523,12 +619,16 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. method:: Connection.cursor() -> Cursor
 
+  |badge-async-value|
+
   Creates a new :class:`Cursor` object on this database.
 
   :rtype: :class:`Cursor`
 
 .. attribute:: Connection.cursor_factory
   :type: Callable[[Connection], Any]
+
+  |badge-async-value|
 
   Defaults to :class:`Cursor`
 
@@ -543,7 +643,9 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. index:: sqlite3_file_control
 
-.. method:: Connection.data_version(schema: Optional[str] = None) -> int
+.. method:: Connection.data_version(schema: str | None = None) -> int
+
+  |badge-async-dual|
 
   Unlike `pragma data_version
   <https://sqlite.org/pragma.html#pragma_data_version>`__ this value
@@ -560,6 +662,8 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. method:: Connection.db_filename(name: str) -> str
 
+  |badge-async-dual|
+
   Returns the full filename of the named (attached) database.  The
   main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
@@ -568,6 +672,8 @@ If `entries` is present, then each list entry is a dict with the following infor
 .. index:: sqlite3_db_name
 
 .. method:: Connection.db_names() -> list[str]
+
+ |badge-async-dual|
 
  Returns the list of database names.  For example the first database
  is named 'main', the next 'temp', and the rest with the name provided
@@ -578,6 +684,8 @@ If `entries` is present, then each list entry is a dict with the following infor
 .. index:: sqlite3_deserialize
 
 .. method:: Connection.deserialize(name: str, contents: collections.abc.Buffer) -> None
+
+   |badge-async-dual|
 
    Replaces the named database with an in-memory copy of *contents*.
    *name* is `main`, `temp`, the name in `ATTACH
@@ -592,7 +700,9 @@ If `entries` is present, then each list entry is a dict with the following infor
 
    Calls: `sqlite3_deserialize <https://sqlite.org/c3ref/deserialize.html>`__
 
-.. method:: Connection.drop_modules(keep: Optional[Iterable[str]]) -> None
+.. method:: Connection.drop_modules(keep: Iterable[str] | None) -> None
+
+  |badge-async-dual|
 
   If *keep* is *None* then all registered virtual tables are dropped.
 
@@ -602,6 +712,8 @@ If `entries` is present, then each list entry is a dict with the following infor
 .. index:: sqlite3_enable_load_extension
 
 .. method:: Connection.enable_load_extension(enable: bool) -> None
+
+  |badge-async-dual|
 
   Enables/disables `extension loading
   <https://www.sqlite.org/loadext.html>`_
@@ -616,7 +728,9 @@ If `entries` is present, then each list entry is a dict with the following infor
   Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__
 
 .. attribute:: Connection.exec_trace
-  :type: Optional[ExecTracer]
+  :type: ExecTracer | None
+
+  |badge-async-value|
 
   Called with the cursor, statement and bindings for
   each :meth:`~Cursor.execute` or :meth:`~Cursor.executemany` on this
@@ -633,7 +747,9 @@ If `entries` is present, then each list entry is a dict with the following infor
     * :ref:`rowtracer`
     * :attr:`Cursor.exec_trace`
 
-.. method:: Connection.execute(statements: str, bindings: Optional[Bindings] = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
+.. method:: Connection.execute(statements: str, bindings: Bindings | None = None, *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
+
+    |badge-async-dual|
 
     Executes the statements using the supplied bindings.  Execution
     returns when the first row is available or all statements have
@@ -646,6 +762,8 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. method:: Connection.executemany(statements: str, sequenceofbindings:Iterable[Bindings], *, can_cache: bool = True, prepare_flags: int = 0, explain: int = -1) -> Cursor
 
+|badge-async-dual|
+
 This method is for when you want to execute the same statements over a
 sequence of bindings, such as inserting into a database.  (A cursor is
 automatically obtained).
@@ -656,20 +774,24 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.file_control(dbname: str, op: int, pointer: int) -> bool
 
+  |badge-async-dual|
+
   Calls the :meth:`~VFSFile.xFileControl` method on the :ref:`VFS`
   implementing :class:`file access <VFSFile>` for the database.
 
   :param dbname: The name of the database to affect.  `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
   :param op: A `numeric code
-    <https://sqlite.org/c3ref/c_fcntl_lockstate.html>`_ with values less
+    <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html>`__ with values less
     than 100 reserved for SQLite internal use.
   :param pointer: A number which is treated as a ``void pointer`` at the C level.
 
   :returns: True or False indicating if the VFS understood the op.
 
-  The :ref:`example <example_filecontrol>` shows getting
+  :meth:`reserve_bytes` does :code:`SQLITE_FCNTL_RESERVE_BYTES`.  The
+  :ref:`example <example_filecontrol>` shows getting
   `SQLITE_FCNTL_DATA_VERSION
   <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntldataversion>`__.
+  You will find :meth:`data_version` more convenient.
 
   If you want data returned back then the *pointer* needs to point to
   something mutable.  Here is an example using :mod:`ctypes` of
@@ -711,6 +833,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 .. attribute:: Connection.filename
   :type: str
 
+  |badge-async-dual|
+
   The filename of the database.
 
   Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
@@ -719,6 +843,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. attribute:: Connection.filename_journal
   :type: str
+
+  |badge-async-dual|
 
   The journal filename of the database,
 
@@ -729,11 +855,15 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 .. attribute:: Connection.filename_wal
   :type: str
 
+  |badge-async-dual|
+
   The WAL filename of the database,
 
   Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__
 
 .. method:: Connection.fts5_tokenizer(name: str, args: list[str] | None = None) -> apsw.FTS5Tokenizer
+
+  |badge-async-dual|
 
   Returns the named tokenizer initialized with ``args``.  Names are case insensitive.
 
@@ -743,6 +873,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
       * :doc:`textsearch`
 
 .. method:: Connection.fts5_tokenizer_available(name: str) -> bool
+
+  |badge-async-dual|
 
   Checks if the named tokenizer is registered.
 
@@ -756,16 +888,22 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.get_autocommit() -> bool
 
+  |badge-async-value|
+
   Returns if the Connection is in auto commit mode (ie not in a transaction).
 
   Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__
 
-.. method:: Connection.get_exec_trace() -> Optional[ExecTracer]
+.. method:: Connection.get_exec_trace() -> ExecTracer | None
+
+  |badge-async-value|
 
   Returns the currently installed :attr:`execution tracer
   <Connection.exec_trace>`
 
-.. method:: Connection.get_row_trace() -> Optional[RowTracer]
+.. method:: Connection.get_row_trace() -> RowTracer | None
+
+  |badge-async-value|
 
   Returns the currently installed :attr:`row tracer
   <Connection.row_trace>`
@@ -775,13 +913,17 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 .. attribute:: Connection.in_transaction
   :type: bool
 
-  True if currently in a transaction, else False
+  |badge-async-value|
+
+  It is recommended to use :meth:`txn_state` instead which is more reliable.
 
   Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__
 
 .. index:: sqlite3_interrupt
 
 .. method:: Connection.interrupt() -> None
+
+  |badge-async-value|
 
   Causes all pending operations on the database to abort at the
   earliest opportunity. You can call this from any thread.  For
@@ -791,10 +933,19 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   Calls: `sqlite3_interrupt <https://sqlite.org/c3ref/interrupt.html>`__
 
+.. attribute:: Connection.is_async
+  :type: bool
+
+  |badge-async-value|
+
+  `True` if this connection is operating in async mode.
+
 .. index:: sqlite3_is_interrupted
 
 .. attribute:: Connection.is_interrupted
    :type: bool
+
+   |badge-async-value|
 
    Indicates if this connection has been interrupted.
 
@@ -804,6 +955,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.last_insert_rowid() -> int
 
+  |badge-async-value|
+
   Returns the integer key of the most recent insert in the database.
 
   Calls: `sqlite3_last_insert_rowid <https://sqlite.org/c3ref/last_insert_rowid.html>`__
@@ -811,6 +964,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 .. index:: sqlite3_limit
 
 .. method:: Connection.limit(id: int, newval: int = -1) -> int
+
+  |badge-async-value|
 
   If called with one parameter then the current limit for that *id* is
   returned.  If called with two then the limit is set to *newval*.
@@ -828,15 +983,17 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_load_extension
 
-.. method:: Connection.load_extension(filename: str, entrypoint: Optional[str] = None) -> None
+.. method:: Connection.load_extension(filename: str, entrypoint: str | None = None) -> None
+
+  |badge-async-dual|
 
   Loads *filename* as an `extension <https://www.sqlite.org/loadext.html>`_
 
-  :param filename: The file to load.
+  :param filename: The file to load, the extension is optional
 
   :param entrypoint: The initialization method to call.  If this
-    parameter is not supplied then the SQLite default of
-    ``sqlite3_extension_init`` is used.
+    parameter is not supplied, then SQLite tries :code:`sqlite3_extension_init`
+    and a name derived from the filename.
 
   :raises ExtensionLoadingError: If the extension could not be
     loaded.  The exception string includes more details.
@@ -844,22 +1001,29 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
   .. seealso::
 
     * :meth:`~Connection.enable_load_extension`
+    * :func:`apsw.sqlite_extra.load`
 
   Calls: `sqlite3_load_extension <https://sqlite.org/c3ref/load_extension.html>`__
 
 .. attribute:: Connection.open_flags
   :type: int
 
+  |badge-async-value|
+
   The combination of :attr:`flags <apsw.mapping_open_flags>` used to open the database.
 
 .. attribute:: Connection.open_vfs
   :type: str
+
+  |badge-async-value|
 
   The string name of the vfs used to open the database.
 
 .. index:: sqlite3_overload_function
 
 .. method:: Connection.overload_function(name: str, nargs: int) -> None
+
+  |badge-async-dual|
 
   Registers a placeholder function so that a virtual table can provide an implementation via
   :meth:`VTTable.FindFunction`.
@@ -869,7 +1033,9 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   Calls: `sqlite3_overload_function <https://sqlite.org/c3ref/overload_function.html>`__
 
-.. method:: Connection.pragma(name: str, value: Optional[SQLiteValue] = None, *, schema: Optional[str] = None) -> typing.Any
+.. method:: Connection.pragma(name: str, value: SQLiteValue | None = None, *, schema: str | None = None) -> typing.Any
+
+  |badge-async-dual|
 
   Issues the pragma (with the value if supplied) and returns the result with
   :attr:`the least amount of structure <Cursor.get>`.  For example
@@ -890,7 +1056,9 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_preupdate_hook
 
-.. method:: Connection.preupdate_hook(callback: Optional[PreupdateHook], *, id: Optional[typing.Any] = None) -> None
+.. method:: Connection.preupdate_hook(callback: PreupdateHook | None, *, id: typing.Any = None) -> None
+
+ |badge-async-dual|
 
  A callback just after a database row is updated.  You can have multiple hooks at once
  (managed by APSW) by specifying different ``id`` for each.  Using :class:`None` for
@@ -923,6 +1091,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.read(schema: str, which: int, offset: int, amount: int) -> tuple[bool, bytes]
 
+  |badge-async-dual|
+
   Invokes the underlying VFS method to read data from the database.  It
   is strongly recommended to read aligned complete pages, since that is
   only what SQLite does.
@@ -947,6 +1117,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.readonly(name: str) -> bool
 
+  |badge-async-dual|
+
   True or False if the named (attached) database was opened readonly or file
   permissions don't allow writing.  The name is `main`, `temp`, the
   name in `ATTACH <https://sqlite.org/lang_attach.html>`__
@@ -957,6 +1129,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.register_fts5_function(name: str, function: FTS5Function) -> None
 
+  |badge-async-dual|
+
   Registers the (case insensitive) named function used as an `auxiliary
   function  <https://www.sqlite.org/fts5.html#custom_auxiliary_functions>`__.
 
@@ -964,6 +1138,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
   and the rest will be the function arguments at the SQL level.
 
 .. method:: Connection.register_fts5_tokenizer(name: str, tokenizer_factory: FTS5TokenizerFactory) -> None
+
+  |badge-async-dual|
 
   Registers a tokenizer factory.  Names are case insensitive.  It is not possible to
   unregister a tokenizer.
@@ -978,12 +1154,44 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.release_memory() -> None
 
+  |badge-async-dual|
+
   Attempts to free as much heap memory as possible used by this connection.
 
   Calls: `sqlite3_db_release_memory <https://sqlite.org/c3ref/db_release_memory.html>`__
 
+.. index:: sqlite3_file_control
+
+.. method:: Connection.reserve_bytes(schema: str | None = None, reserve: int = -1) -> int
+
+  |badge-async-dual|
+
+  Each database page can have `some bytes at the end set aside for other
+  use by the VFS
+  <https://sqlite.org/fileformat.html#reserved_bytes_per_page>`__.  For
+  example encryption will store signature information, and the `checksum
+  VFS <https://sqlite.org/cksumvfs.html>`__ stores a checksum.
+
+  It is recommended to do a :code:`VACUUM` after a change to ensure it
+  takes effect.  You can use :func:`apsw.ext.dbinfo` to get the
+  :class:`~apsw.ext.DatabaseFileInfo` to see what the database file
+  is using right now.
+
+  :param schema: `schema` is `main`, `temp`, the name in `ATTACH
+      <https://sqlite.org/lang_attach.html>`__, defaulting to `main` if not
+      supplied.
+  :param reserve: The new value to apply.  SQLite only supports values
+      between 0 and 255 inclusive.
+
+  The current value is returned.  Note that it may be waiting for a
+  :code:`VACUUM` before it gets applied.
+
+  Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__
+
 .. attribute:: Connection.row_trace
-  :type: Optional[RowTracer]
+  :type: RowTracer | None
+
+  |badge-async-value|
 
   Called with the cursor and row being returned for
   :class:`cursors <Cursor>` associated with this Connection, unless
@@ -1003,6 +1211,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.serialize(name: str) -> bytes
 
+  |badge-async-dual|
+
   Returns a memory copy of the database. *name* is `main`, `temp`, the name
   in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
@@ -1019,13 +1229,17 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   Calls: `sqlite3_serialize <https://sqlite.org/c3ref/serialize.html>`__
 
-.. method:: Connection.set_authorizer(callable: Optional[Authorizer]) -> None
+.. method:: Connection.set_authorizer(callable: Authorizer | None) -> None
+
+  |badge-async-dual|
 
   Sets the :attr:`authorizer`
 
 .. index:: sqlite3_busy_handler
 
-.. method:: Connection.set_busy_handler(callable: Optional[typing.Callable[[int], bool]]) -> None
+.. method:: Connection.set_busy_handler(callable: typing.Callable[[int], bool] | None) -> None
+
+   |badge-async-dual|
 
    Sets the busy handler to callable. callable will be called with one
    integer argument which is the number of prior calls to the busy
@@ -1050,6 +1264,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.set_busy_timeout(milliseconds: int) -> None
 
+  |badge-async-dual|
+
   If the database is locked such as when another connection is making
   changes, SQLite will keep retrying.  This sets the maximum amount of
   time SQLite will keep retrying before giving up.  If the database is
@@ -1069,7 +1285,9 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_commit_hook
 
-.. method:: Connection.set_commit_hook(callable: Optional[CommitHook], *, id: Optional[typing.Any] = None) -> None
+.. method:: Connection.set_commit_hook(callable: CommitHook | None, *, id: typing.Any = None) -> None
+
+  |badge-async-dual|
 
   *callable* will be called just before a commit.  It should return
   False for the commit to go ahead and True for it to be turned
@@ -1086,7 +1304,9 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   Calls: `sqlite3_commit_hook <https://sqlite.org/c3ref/commit_hook.html>`__
 
-.. method:: Connection.set_exec_trace(callable: Optional[ExecTracer]) -> None
+.. method:: Connection.set_exec_trace(callable: ExecTracer | None) -> None
+
+   |badge-async-value|
 
    Method to set :attr:`Connection.exec_trace`
 
@@ -1094,13 +1314,17 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.set_last_insert_rowid(rowid: int) -> None
 
+  |badge-async-dual|
+
   Sets the value calls to :meth:`last_insert_rowid` will return.
 
   Calls: `sqlite3_set_last_insert_rowid <https://sqlite.org/c3ref/set_last_insert_rowid.html>`__
 
 .. index:: sqlite3_trace_v2
 
-.. method:: Connection.set_profile(callable: Optional[typing.Callable[[str, int], None]]) -> None
+.. method:: Connection.set_profile(callable: typing.Callable[[str, int], None] | None) -> None
+
+  |badge-async-dual|
 
   Sets a callable which is invoked at the end of execution of each
   statement and passed the statement string and how long it took to
@@ -1112,7 +1336,9 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_progress_handler
 
-.. method:: Connection.set_progress_handler(callable: Optional[typing.Callable[[], bool]], nsteps: int = 100, *, id: Optional[typing.Any] = None) -> None
+.. method:: Connection.set_progress_handler(callable: typing.Callable[[], bool] | None, nsteps: int = 100, *, id: typing.Any = None) -> None
+
+  |badge-async-dual|
 
   Sets a callable which is invoked every *nsteps* SQLite inststructions.
   The callable should return True to abort or False to continue. (If
@@ -1136,7 +1362,9 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_rollback_hook
 
-.. method:: Connection.set_rollback_hook(callable: Optional[typing.Callable[[], None]], *, id: Optional[typing.Any] = None) -> None
+.. method:: Connection.set_rollback_hook(callable: typing.Callable[[], None] | None, *, id: typing.Any = None) -> None
+
+  |badge-async-dual|
 
   Sets a callable which is invoked during a rollback.  If *callable*
   is *None* then any existing rollback hook is unregistered.
@@ -1148,13 +1376,17 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   Calls: `sqlite3_rollback_hook <https://sqlite.org/c3ref/commit_hook.html>`__
 
-.. method:: Connection.set_row_trace(callable: Optional[RowTracer]) -> None
+.. method:: Connection.set_row_trace(callable: RowTracer | None) -> None
+
+  |badge-async-value|
 
   Method to set :attr:`Connection.row_trace`
 
 .. index:: sqlite3_update_hook
 
-.. method:: Connection.set_update_hook(callable: Optional[typing.Callable[[int, str, str, int], None]]) -> None
+.. method:: Connection.set_update_hook(callable: typing.Callable[[int, str, str, int], None] | None) -> None
+
+  |badge-async-dual|
 
   Calls *callable* whenever a row is updated, deleted or inserted.  If
   *callable* is *None* then any existing update hook is
@@ -1181,7 +1413,9 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. index:: sqlite3_wal_hook
 
-.. method:: Connection.set_wal_hook(callable: Optional[typing.Callable[[Connection, str, int], int]]) -> None
+.. method:: Connection.set_wal_hook(callable: typing.Callable[[Connection, str, int], int] | None) -> None
+
+ |badge-async-dual|
 
  *callable* will be called just after data is committed in :ref:`wal`
  mode.  It should return *SQLITE_OK* or an error code.  The
@@ -1199,11 +1433,15 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.setlk_timeout(ms: int, flags: int) -> None
 
+  |badge-async-dual|
+
   Sets a VFS level timeout.
 
   Calls: `sqlite3_setlk_timeout <https://sqlite.org/c3ref/setlk_timeout.html>`__
 
 .. method:: Connection.sqlite3_pointer() -> int
+
+|badge-async-value|
 
 Returns the underlying `sqlite3 *
 <https://sqlite.org/c3ref/sqlite3.html>`_ for the connection. This
@@ -1220,6 +1458,8 @@ libraries.
 .. index:: sqlite3_db_status64
 
 .. method:: Connection.status(op: int, reset: bool = False) -> tuple[int, int]
+
+  |badge-async-dual|
 
   Returns current and highwater measurements for the database.
 
@@ -1239,13 +1479,17 @@ libraries.
 .. attribute:: Connection.system_errno
  :type: int
 
+ |badge-async-value|
+
  The underlying system error code for the most recent I/O error.
 
  Calls: `sqlite3_system_errno <https://sqlite.org/c3ref/system_errno.html>`__
 
 .. index:: sqlite3_table_column_metadata
 
-.. method:: Connection.table_exists(dbname: Optional[str], table_name: str) -> bool
+.. method:: Connection.table_exists(dbname: str | None, table_name: str) -> bool
+
+  |badge-async-dual|
 
   Returns True if the named table exists, else False.
 
@@ -1259,6 +1503,8 @@ libraries.
 
 .. method:: Connection.total_changes() -> int
 
+  |badge-async-value|
+
   Returns the total number of database rows that have be modified,
   inserted, or deleted since the database connection was opened.
 
@@ -1266,7 +1512,9 @@ libraries.
 
 .. index:: sqlite3_trace_v2, sqlite3_stmt_status
 
-.. method:: Connection.trace_v2(mask: int, callback: Optional[typing.Callable[[dict], None]] = None, *, id: Optional[typing.Any] = None) -> None
+.. method:: Connection.trace_v2(mask: int, callback: typing.Callable[[dict], None] | None = None, *, id: typing.Any = None) -> None
+
+  |badge-async-dual|
 
   Registers a trace callback.  Multiple traces can be active at once
   (implemented by APSW).  A callback of :class:`None` unregisters a
@@ -1346,6 +1594,8 @@ libraries.
 .. attribute:: Connection.transaction_mode
    :type: str
 
+   |badge-async-value|
+
    The mode used for the outermost transaction when using the
    :meth:`context manager (with) <__enter__>`.
 
@@ -1355,7 +1605,9 @@ libraries.
 
 .. index:: sqlite3_txn_state
 
-.. method:: Connection.txn_state(schema: Optional[str] = None) -> int
+.. method:: Connection.txn_state(schema: str | None = None) -> int
+
+  |badge-async-dual|
 
   Returns the current transaction state of the database, or a specific schema
   if provided.  :attr:`apsw.mapping_txn_state` contains the values returned.
@@ -1363,6 +1615,8 @@ libraries.
   Calls: `sqlite3_txn_state <https://sqlite.org/c3ref/txn_state.html>`__
 
 .. method:: Connection.vfsname(dbname: str) -> str | None
+
+|badge-async-dual|
 
 Issues the `SQLITE_FCNTL_VFSNAME
 <https://sqlite.org/c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlvfsname>`__
@@ -1380,6 +1634,8 @@ database name, or an error occurred then ``None`` is returned.
 
 .. method:: Connection.vtab_config(op: int, val: int = 0) -> None
 
+ |badge-async-sync|
+
  Callable during virtual table :meth:`~VTModule.Connect`/:meth:`~VTModule.Create`.
 
  Calls: `sqlite3_vtab_config <https://sqlite.org/c3ref/vtab_config.html>`__
@@ -1387,6 +1643,8 @@ database name, or an error occurred then ``None`` is returned.
 .. index:: sqlite3_vtab_on_conflict
 
 .. method:: Connection.vtab_on_conflict() -> int
+
+ |badge-async-sync|
 
  Callable during virtual table :meth:`insert <VTTable.UpdateInsertRow>` or
  :meth:`update <VTTable.UpdateChangeRow>`
@@ -1397,6 +1655,8 @@ database name, or an error occurred then ``None`` is returned.
 
 .. method:: Connection.wal_autocheckpoint(n: int) -> None
 
+    |badge-async-dual|
+
     Sets how often the :ref:`wal` checkpointing is run.
 
     :param n: A number representing the checkpointing interval or
@@ -1406,7 +1666,9 @@ database name, or an error occurred then ``None`` is returned.
 
 .. index:: sqlite3_wal_checkpoint_v2
 
-.. method:: Connection.wal_checkpoint(dbname: Optional[str] = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]
+.. method:: Connection.wal_checkpoint(dbname: str | None = None, mode: int = apsw.SQLITE_CHECKPOINT_PASSIVE) -> tuple[int, int]
+
+    |badge-async-dual|
 
     Does a WAL checkpoint.  Has no effect if the database(s) are not in WAL mode.
 
@@ -1472,7 +1734,7 @@ PreUpdate class
 .. index:: sqlite3_preupdate_new
 
 .. attribute:: PreUpdate.new
-  :type: tuple[SQLiteValue, ...] | None
+  :type: SQLiteValues | None
 
   Row values for an INSERT, or after an UPDATE.  :class:`None` for
   DELETE.  See also :attr:`old` and :attr:`update`.
@@ -1482,7 +1744,7 @@ PreUpdate class
 .. index:: sqlite3_preupdate_old
 
 .. attribute:: PreUpdate.old
-  :type: tuple[SQLiteValue, ...] | None
+  :type: SQLiteValues | None
 
   Row values for a DELETE, or before an UPDATE. :class:`None` for
   INSERT.  See also :attr:`new` and :attr:`update`.
