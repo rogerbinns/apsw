@@ -46,7 +46,7 @@ def path(name:str):
 _exts = ("", ".so", ".dll", ".exe", ".dylib")
 
 def _get_entry(name: str):
-    extras = json.loads(importlib.resources.files(apsw).joinpath("sqlite_extra.json").read_text())
+    extras = json.loads(importlib.resources.files(apsw).joinpath("sqlite_extra.json").read_text(encoding="utf8"))
     if name not in extras:
         raise LookupError(f"{name=} is not a known extra")
     bin_dir = importlib.resources.files(apsw).joinpath("sqlite_extra_binaries")
@@ -83,7 +83,7 @@ python3 -m apsw.sqlite_extra `name` args...
             usage()
 
         case "--list":
-            extras = json.loads(importlib.resources.files(apsw).joinpath("sqlite_extra.json").read_text())
+            extras = json.loads(importlib.resources.files(apsw).joinpath("sqlite_extra.json").read_text(encoding="utf8"))
             for name in extras:
                 try:
                     extra, path = _get_entry(name)

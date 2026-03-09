@@ -35,7 +35,7 @@ def get_meta(
 ) -> Literal["sync" | "async" | "dual" | "value"]:
     assert kind in {"function", "attribute"}
 
-    data = json.loads(importlib.resources.files("apsw.tests").joinpath("async_meta.json").read_text())
+    data = json.loads(importlib.resources.files("apsw.tests").joinpath("async_meta.json").read_text(encoding="utf8"))
 
     assert klass in data, f"{klass} not found"
 

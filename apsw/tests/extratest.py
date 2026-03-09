@@ -19,7 +19,7 @@ import apsw.sqlite_extra
 
 class Extra(unittest.TestCase):
     def setUp(self):
-        self.extras = json.loads(importlib.resources.files(apsw).joinpath("sqlite_extra.json").read_text())
+        self.extras = json.loads(importlib.resources.files(apsw).joinpath("sqlite_extra.json").read_text(encoding="utf8"))
         self.verbose: bool = self._outcome.result.showAll
 
     def testLoadExtension(self):
@@ -32,7 +32,8 @@ class Extra(unittest.TestCase):
                         print(f"  >> Extension {name}")
                     fn_before = set(row[0] for row in db.execute("select name from pragma_function_list"))
                     vfs_before = set(apsw.vfs_names())
-                    mod_before = set(row[0] for row in db.execute("SELECT name FROM pragma_module_list"))
+                    # some builds have sqlite_stmt builtin so we won't detect it
+                    mod_before = set(row[0] for row in db.execute("SELECT name FROM pragma_module_list WHERE name NOT IN ('sqlite_stmt')"))
                     col_before = set(row[0] for row in db.execute("SELECT name FROM pragma_collation_list"))
                     apsw.sqlite_extra.load(db, name)
                     fn_after = set(db.execute("select name from pragma_function_list").get)

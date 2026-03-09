@@ -64,13 +64,13 @@ def dotest(pyver, logdir, pybin, pylib, workdir, sqlitever, debug, config, gil):
             venv/bin/python3 {pyflags} setup.py fetch --version={sqlitever} --all
             venv/bin/python3 tools/vend.py compile -v
             venv/bin/python3 {pyflags} setup.py build_test_extension build_ext --inplace --force \
-                {extdebug} {build_ext_flags} test -v --locals;"""
+                {extdebug} {build_ext_flags} test -vf --locals"""
         + (
             """
             cp tools/setup-pypi.cfg setup.apsw ;
             venv/bin/python3 -m pip wheel -v . ;
             venv/bin/python3 -m pip install --no-index --force-reinstall --find-links=. apsw ;
-            venv/bin/python3 -m apsw.tests --locals"""
+            venv/bin/python3 -m apsw.tests -vf --locals"""
             if not debug
             else ""
         )
@@ -240,9 +240,9 @@ PYVERS = (
     "3.15.0a6",
     "3.14.3",
     "3.13.12",
-    "3.12.12",
-    "3.11.14",
-    "3.10.19",
+    "3.12.13",
+    "3.11.15",
+    "3.10.20",
     "system",
 )
 

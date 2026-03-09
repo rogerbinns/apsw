@@ -2210,7 +2210,7 @@ Enter ".help" for instructions
         except Exception:
             if len(cmd) == 1:
                 if cmd[0] == "--list":
-                    extras = json.loads(importlib.resources.files(apsw).joinpath("sqlite_extra.json").read_text())
+                    extras = json.loads(importlib.resources.files(apsw).joinpath("sqlite_extra.json").read_text(encoding="utf8"))
                     for name, extra in sorted(extras.items()):
                         if extra["type"] == "extension" and apsw.sqlite_extra.has(name):
                             self.write_value(name, fmt = str)
