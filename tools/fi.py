@@ -854,7 +854,7 @@ class Tester:
                 "sqlite3_create_function_v2",
                 "sqlite3_window_function",
                 "sqlite3_carray_bind_apsw",
-                "sqlite3_carray_bind",
+                "sqlite3_carray_bind_v2",
             }:
                 self.expect_exception.append(apsw_attr("ConnectionNotClosedError"))
                 self.expect_exception.append(apsw_attr("TooBigError"))  # code 18

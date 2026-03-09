@@ -202,7 +202,7 @@ class AsyncConnectionController(Protocol):
         ...
 
     async def send(self, call: Callable[[], Any]) -> Any:
-        """Called from outside the worker thread to send to worker thread
+        """Called from outside the worker thread to send call to worker thread
 
         This should be async or return an awaitable, and forward
         ``call`` to the worker thread where it is called with no
@@ -4635,6 +4635,8 @@ SQLITE_DBCONFIG_ENABLE_TRIGGER: int = 1003
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_ENABLE_VIEW: int = 1015
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
+SQLITE_DBCONFIG_FP_DIGITS: int = 1023
+"""For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_LEGACY_ALTER_TABLE: int = 1012
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_LEGACY_FILE_FORMAT: int = 1016
@@ -4643,7 +4645,7 @@ SQLITE_DBCONFIG_LOOKASIDE: int = 1001
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_MAINDBNAME: int = 1000
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
-SQLITE_DBCONFIG_MAX: int = 1022
+SQLITE_DBCONFIG_MAX: int = 1023
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE: int = 1006
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
@@ -4999,6 +5001,8 @@ SQLITE_LIMIT_LENGTH: int = 0
 """For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
 SQLITE_LIMIT_LIKE_PATTERN_LENGTH: int = 8
 """For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
+SQLITE_LIMIT_PARSER_DEPTH: int = 12
+"""For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
 SQLITE_LIMIT_SQL_LENGTH: int = 1
 """For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
 SQLITE_LIMIT_TRIGGER_DEPTH: int = 10
@@ -5100,6 +5104,8 @@ SQLITE_PERM: int = 3
 SQLITE_PRAGMA: int = 19
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_PREPARE_DONT_LOG: int = 16
+"""For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>'__"""
+SQLITE_PREPARE_FROM_DDL: int = 32
 """For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>'__"""
 SQLITE_PREPARE_NORMALIZE: int = 2
 """For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>'__"""

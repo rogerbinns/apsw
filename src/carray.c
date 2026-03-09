@@ -11,11 +11,6 @@ struct iovec
 #endif
 #endif
 
-/* The destructor API does a callback on the void * passed in, but we
-could have multiple PyObject owners referencing the same array so the
-data always has to be duplicated when passed to sqlite3_carray_bind/.
-   */
-
 typedef struct
 {
   PyObject_HEAD
@@ -303,13 +298,11 @@ CArrayBind_dealloc(PyObject *self_)
   Py_TpFree(self_);
 }
 
-#if defined(APSW_MODIFIED_CARRAY) || SQLITE_VERSION_NUMBER >= 3052000
 static void
 CArrayBind_bind_destructor(void *pCtx)
 {
   Py_DECREF((PyObject *)pCtx);
 }
-#endif
 
 static PyTypeObject CArrayBindType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.carray",

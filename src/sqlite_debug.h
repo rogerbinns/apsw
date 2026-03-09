@@ -128,9 +128,12 @@
 #undef sqlite3_cancel_auto_extension
 #define sqlite3_cancel_auto_extension *not used*
 
-#define sqlite3_carray_bind(one, two, three, four, five, six) ({              \
-    assert (sqlite3_mutex_held(sqlite3_db_mutex(sqlite3_db_handle((one)))));  \
-    sqlite3_carray_bind((one), (two), (three), (four), (five), (six));        \
+#undef sqlite3_carray_bind
+#define sqlite3_carray_bind *not used*
+
+#define sqlite3_carray_bind_v2(one, two, three, four, five, six, seven) ({          \
+    assert (sqlite3_mutex_held(sqlite3_db_mutex(sqlite3_db_handle((one)))));        \
+    sqlite3_carray_bind_v2((one), (two), (three), (four), (five), (six), (seven));  \
 })
 
 #undef sqlite3_changes
@@ -736,6 +739,9 @@
 #undef sqlite3_str_finish
 #define sqlite3_str_finish *not used*
 
+#undef sqlite3_str_free
+#define sqlite3_str_free *not used*
+
 #undef sqlite3_str_length
 #define sqlite3_str_length *not used*
 
@@ -744,6 +750,9 @@
 
 #undef sqlite3_str_reset
 #define sqlite3_str_reset *not used*
+
+#undef sqlite3_str_truncate
+#define sqlite3_str_truncate *not used*
 
 #undef sqlite3_str_value
 #define sqlite3_str_value *not used*

@@ -83,6 +83,7 @@ functions_not_used = (
     "sqlite3_version",  # we use sqlite3_libversion
     "sqlite3_wal_checkpoint",
     "sqlite3_win32_set_directory.*",
+    "sqlite3_carray_bind",
 )
 
 # used for debugging etc
@@ -175,8 +176,7 @@ functions_arg = (
     ("sqlite3_bind_(double|int64|zeroblob64)", 3, "sqlite3_db_handle((one))"),
     ("sqlite3_bind_(blob64|pointer)", 5, "sqlite3_db_handle((one))"),
     ("sqlite3_bind_text64", 6, "sqlite3_db_handle((one))"),
-    ("sqlite3_carray_bind", 6, "sqlite3_db_handle((one))"),
-    ("sqlite3_carray_bind_apsw", 7, "sqlite3_db_handle((one))"),
+    ("sqlite3_carray_bind_v2", 7, "sqlite3_db_handle((one))"),
     ("sqlite3_clear_bindings", 1, "sqlite3_db_handle((one))"),
     ("sqlite3_column_count", 1, "sqlite3_db_handle((one))"),
     (
@@ -402,7 +402,7 @@ for f in sorted(functions):
     if f in functions_special:
         continue
     # we have to exclude this file ...
-    res = subprocess.run(["git", "grep", "-wFq", f, "--", "*.c"])
+    res = subprocess.run(["git", "grep", "-wFq", f, "--", "*.c", ":(exclude)src/fileio_win32.c"])
     assert res.returncode >= 0
 
     for pat in functions_not_used:
