@@ -1,0 +1,1348 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Concurrency &amp; Async &mdash; APSW 3.52.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/async.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=a197bc32"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="Exceptions and Errors" href="exceptions.html" />
+    <link rel="prev" title="Async Example/Tour" href="example-async.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            APSW
+              <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jsonb.html">JSON (Javascript Object Notation)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unicode.html">Unicode Text Handling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Concurrency &amp; Async</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-sqlite-concurrency-works">How SQLite concurrency works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-python-concurrency-works">How Python concurrency works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-apsw-works">How APSW works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#async-usage">Async usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#anyio-note">AnyIO note</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trio-note">Trio note</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#api-results">API results</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#sync-only">Sync only</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#async-only">Async only</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#sync-async">Sync / Async</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#value">Value</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#close">Close</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#callbacks">Callbacks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#contextvars">Contextvars</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration">Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#deadlines-and-cancellation">Deadlines and Cancellation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#async-controllers">Async controllers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-in-thread-alternative">Run in thread (alternative)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#extensions">Extensions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-apsw.aio">apsw.aio module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.aio.deadline"><code class="docutils literal notranslate"><span class="pre">deadline</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.aio.check_progress_steps"><code class="docutils literal notranslate"><span class="pre">check_progress_steps</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.aio.contextvar_set"><code class="docutils literal notranslate"><span class="pre">contextvar_set()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.aio.make_session"><code class="docutils literal notranslate"><span class="pre">make_session()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.aio.AsyncIO"><code class="docutils literal notranslate"><span class="pre">AsyncIO</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AsyncIO.configure"><code class="docutils literal notranslate"><span class="pre">AsyncIO.configure()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AsyncIO.send"><code class="docutils literal notranslate"><span class="pre">AsyncIO.send()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AsyncIO.close"><code class="docutils literal notranslate"><span class="pre">AsyncIO.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AsyncIO.progress_checker"><code class="docutils literal notranslate"><span class="pre">AsyncIO.progress_checker()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AsyncIO.worker_thread_run"><code class="docutils literal notranslate"><span class="pre">AsyncIO.worker_thread_run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AsyncIO.set_future_result"><code class="docutils literal notranslate"><span class="pre">AsyncIO.set_future_result()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AsyncIO.set_future_exception"><code class="docutils literal notranslate"><span class="pre">AsyncIO.set_future_exception()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AsyncIO.async_run_coro"><code class="docutils literal notranslate"><span class="pre">AsyncIO.async_run_coro()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AsyncIO.run_coro_in_loop"><code class="docutils literal notranslate"><span class="pre">AsyncIO.run_coro_in_loop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AsyncIO.queue"><code class="docutils literal notranslate"><span class="pre">AsyncIO.queue</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.aio.Trio"><code class="docutils literal notranslate"><span class="pre">Trio</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.Trio.configure"><code class="docutils literal notranslate"><span class="pre">Trio.configure()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.Trio.send"><code class="docutils literal notranslate"><span class="pre">Trio.send()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.Trio.close"><code class="docutils literal notranslate"><span class="pre">Trio.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.Trio.progress_checker"><code class="docutils literal notranslate"><span class="pre">Trio.progress_checker()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.Trio.worker_thread_run"><code class="docutils literal notranslate"><span class="pre">Trio.worker_thread_run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.Trio.async_run_coro"><code class="docutils literal notranslate"><span class="pre">Trio.async_run_coro()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.Trio.run_coro_in_loop"><code class="docutils literal notranslate"><span class="pre">Trio.run_coro_in_loop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.Trio.queue"><code class="docutils literal notranslate"><span class="pre">Trio.queue</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.aio.AnyIO"><code class="docutils literal notranslate"><span class="pre">AnyIO</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AnyIO.configure"><code class="docutils literal notranslate"><span class="pre">AnyIO.configure()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AnyIO.send"><code class="docutils literal notranslate"><span class="pre">AnyIO.send()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AnyIO.close"><code class="docutils literal notranslate"><span class="pre">AnyIO.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AnyIO.progress_checker"><code class="docutils literal notranslate"><span class="pre">AnyIO.progress_checker()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AnyIO.worker_thread_run"><code class="docutils literal notranslate"><span class="pre">AnyIO.worker_thread_run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AnyIO.async_run_coro"><code class="docutils literal notranslate"><span class="pre">AnyIO.async_run_coro()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AnyIO.run_coro_in_loop"><code class="docutils literal notranslate"><span class="pre">AnyIO.run_coro_in_loop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#apsw.aio.AnyIO.queue"><code class="docutils literal notranslate"><span class="pre">AnyIO.queue</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.aio.Auto"><code class="docutils literal notranslate"><span class="pre">Auto()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#async-performance">Async Performance</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extra.html">SQLite extra</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Concurrency &amp; Async</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/async.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="example-async.html" class="btn btn-neutral float-left" title="Async Example/Tour" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="exceptions.html" class="btn btn-neutral float-right" title="Exceptions and Errors" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="concurrency-async">
+<h1>Concurrency &amp; Async<a class="headerlink" href="#concurrency-async" title="Link to this heading"></a></h1>
+<section id="how-sqlite-concurrency-works">
+<h2>How SQLite concurrency works<a class="headerlink" href="#how-sqlite-concurrency-works" title="Link to this heading"></a></h2>
+<p>Each connection has a lock (<a class="reference external" href="https://en.wikipedia.org/wiki/Lock_(computer_science)">mutex</a> to protect
+the SQLite data structure.  It is acquired on a call into the
+connection, and released on return of the call. The mutex can be
+acquired more times in the same thread, allowing nested calls, but
+cannot be acquired outside of the thread until the top level call in
+the original thread completes.</p>
+<p>This means you cannot get more concurrency per connection by using
+additional threads, although SQLite can do so internally (<a class="reference external" href="https://www.sqlite.org/pragma.html#pragma_threads">pragma
+threads</a>) such
+as for sorting.  You can get concurrency with multiple connections.</p>
+<p>SQLite is inherently synchronous due to being written in C and using
+the C stack.</p>
+</section>
+<section id="how-python-concurrency-works">
+<h2>How Python concurrency works<a class="headerlink" href="#how-python-concurrency-works" title="Link to this heading"></a></h2>
+<p>GIL (usual operation)</p>
+<blockquote>
+<div><p>A single lock (global interpreter lock) protects all Python data
+structures.  It can only be held by one thread at a time.  By
+default it will switch the active thread every 5ms (200 times a
+second), with the operating system scheduler choosing which thread
+runs next.</p>
+<p>The GIL can be released by C code when not using Python data
+structures to allow other threads Python to run.  This is done
+during I/O and database operations etc.</p>
+</div></blockquote>
+<p>Free threaded (Python 3.14+)</p>
+<blockquote>
+<div><p>Each Python data structure gets its own lock.  C code has to
+acquire and release the locks on individual Python objects being
+used, which allows code in other threads to run providing they are
+not using the same objects.</p>
+<p>The extra locking can result in around a 50% performance hit
+versus the single global lock in a single thread.  The operating
+system scheduler can run all the threads at the same time.</p>
+</div></blockquote>
+<p>Async</p>
+<blockquote>
+<div><p>async is a language level concurrency mechanism, contrasted with
+the traditional library mechanism in <a class="reference external" href="https://docs.python.org/3/library/concurrent.futures.html#module-concurrent.futures" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">concurrent.futures</span></code></a>.
+It is done with the <code class="code docutils literal notranslate"><span class="pre">async</span></code> and <code class="code docutils literal notranslate"><span class="pre">await</span></code> keywords.</p>
+<p>An event loop does fine grained management of multiple tasks
+as their results become available, timeouts, cancellations,
+task groups etc, with the tasks cooperatively defining the
+points at which they can switch.  There is typically a 50%
+hit to throughput, but latencies and time to complete are
+far more uniform.</p>
+<p>An async framework like <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a> or <a class="reference external" href="https://trio.readthedocs.io">trio</a> runs the event loop and chooses
+which code to run next.</p>
+</div></blockquote>
+</section>
+<section id="how-apsw-works">
+<h2>How APSW works<a class="headerlink" href="#how-apsw-works" title="Link to this heading"></a></h2>
+<p>GIL (usual operation)</p>
+<blockquote>
+<div><p>The GIL protects APSW Python objects.  When making a SQLite call,
+the GIL is released and SQLite acquires its connection  mutex.
+This means other Python code can run concurrently with SQLite
+connections.  APSW is thread safe in that you can use any thread to
+make any call on any object, due to the GIL protection.</p>
+</div></blockquote>
+<p>Free threaded</p>
+<blockquote>
+<div><p>APSW has not yet been updated.  (<a class="extlink-issue reference external" href="https://github.com/rogerbinns/apsw/issues/568">APSW issue 568</a>)  It requires
+extensive code changes to lock all APSW objects (connections,
+cursors, backups etc) as well as inputs and outputs such as lists
+for executemany.</p>
+<p>A free threaded build is available on pypi, but loading the module
+will re-enable GIL.  You can use <code class="code docutils literal notranslate"><span class="pre">-X</span> <span class="pre">nogil</span></code> when starting Python
+and that won’t happen, but you can get crashes if you use the same
+objects and inputs concurrently across threads, especially if
+making concurrent modifications.</p>
+</div></blockquote>
+<p>Async</p>
+<blockquote>
+<div><p>APSW fully supports async operation.  This is done by running each
+connection in its own dedicated worker thread.  Calls made in the
+event loop get forwarded to the worker thread, and the results can
+then be awaited.</p>
+<p><strong>All</strong> callbacks such as user defined functions, virtual tables,
+various hooks, VFS etc can be async functions.  The async function
+(coroutine) is forwarded from the worker thread back to the event
+loop with the worker thread blocked until getting a result back.</p>
+</div></blockquote>
+</section>
+<section id="async-usage">
+<span id="id1"></span><h2>Async usage<a class="headerlink" href="#async-usage" title="Link to this heading"></a></h2>
+<p>APSW async usage has been developed and tested with <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>,
+<a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>), and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>) with asyncio and trio event loops.
+This includes cancellations and deadlines/timeouts.  There is a
+controller interface (described below) providing event loop
+integration, or you can write/adapt your own if you have more
+specialised needs, or a different async framework.</p>
+<p>Use <a class="reference internal" href="connection.html#apsw.Connection.as_async" title="apsw.Connection.as_async"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.as_async()</span></code></a> (a class method) to get an async
+<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>.  Related objects like <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>,
+<a class="reference internal" href="blob.html#apsw.Blob" title="apsw.Blob"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blob</span></code></a>, <a class="reference internal" href="backup.html#apsw.Backup" title="apsw.Backup"><code class="xref py py-class docutils literal notranslate"><span class="pre">Backup</span></code></a>, <a class="reference internal" href="session.html#apsw.Session" title="apsw.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a> etc will also be
+async.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;database.db&quot;</span><span class="p">)</span>
+
+<span class="c1"># note awaiting the db.execute call to get the cursor, and then</span>
+<span class="c1"># using async for to iterate</span>
+<span class="k">async</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">price</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT name, price FROM ...&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="o">=</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="n">price</span><span class="o">=</span><span class="p">}</span><span class="s2">&quot;)&quot;</span>
+</pre></div>
+</div>
+<p>There is no separate <code class="code docutils literal notranslate"><span class="pre">AsyncConnection</span></code> (or <code class="code docutils literal notranslate"><span class="pre">AsyncCursor</span></code>,
+<code class="code docutils literal notranslate"><span class="pre">AsyncBlob</span></code> etc) class.  The existing instances know if they are in
+async mode or not, and behave appropriately.  You can use
+<a class="reference internal" href="connection.html#apsw.Connection.is_async" title="apsw.Connection.is_async"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.is_async</span></code></a> to check.</p>
+<p>However to make type checkers and IDEs work better, the type stubs
+included with APSW have those synthetic classes so it is clear when
+returned values are direct, or need to be awaited.</p>
+<p>You can use <a class="reference internal" href="connection.html#apsw.Connection.async_run" title="apsw.Connection.async_run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.async_run()</span></code></a> to run your own functions in
+the async Connection worker thread.</p>
+<section id="anyio-note">
+<span id="id2"></span><h3>AnyIO note<a class="headerlink" href="#anyio-note" title="Link to this heading"></a></h3>
+<p>Version 4.11.0 (September 2025) or later is required for the APSW
+provided <a class="reference internal" href="#apsw.aio.AnyIO" title="apsw.aio.AnyIO"><code class="xref py py-class docutils literal notranslate"><span class="pre">controller</span></code></a> due to the mechanisms
+for calling back from the worker thread to the event loop.  If you are
+using an earlier version of anyio, then APSW will use the corresponding
+event loop controller (<a class="reference internal" href="#apsw.aio.AsyncIO" title="apsw.aio.AsyncIO"><code class="xref py py-class docutils literal notranslate"><span class="pre">AsyncIO</span></code></a> or
+<a class="reference internal" href="#apsw.aio.Trio" title="apsw.aio.Trio"><code class="xref py py-class docutils literal notranslate"><span class="pre">Trio</span></code></a>).  The main effect is that you may see
+<a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.TooSlowError" title="(in Trio v0.32.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">trio.TooSlowError</span></code></a> on timeouts with a trio event loop.</p>
+<p>The APSW tests run using version 4 of the anyio API.</p>
+</section>
+<section id="trio-note">
+<span id="id3"></span><h3>Trio note<a class="headerlink" href="#trio-note" title="Link to this heading"></a></h3>
+<p>Version 0.20.0 (February 2022) or later is required for the APSW
+provided <a class="reference internal" href="#apsw.aio.Trio" title="apsw.aio.Trio"><code class="xref py py-class docutils literal notranslate"><span class="pre">controller</span></code></a> due to the mechanisms
+for supporting <a class="reference external" href="https://docs.python.org/3/library/contextvars.html#module-contextvars" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">contextvars</span></code></a>.  You will need a custom controller
+to work with earlier versions.</p>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h3>
+<p>Some SQLite functions are provided in APSW as attributes such as
+<a class="reference internal" href="connection.html#apsw.Connection.authorizer" title="apsw.Connection.authorizer"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.authorizer</span></code></a>.  For an async connection, you will need
+to await the result.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">auth</span> <span class="o">=</span> <span class="k">await</span> <span class="n">connection</span><span class="o">.</span><span class="n">authorizer</span>
+</pre></div>
+</div>
+<p>To set them, you will need to use <code class="code docutils literal notranslate"><span class="pre">setattr</span></code> in the worker thread.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">connection</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span><span class="nb">setattr</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;authorizer&quot;</span><span class="p">,</span> <span class="n">my_auth</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The type stubs will make this clear to your IDE and type checker.</p>
+</section>
+<section id="api-results">
+<h3>API results<a class="headerlink" href="#api-results" title="Link to this heading"></a></h3>
+<p>Each API has an indicator of its behaviour in sync and async modes.
+You can find out if an object is in async mode by checking its
+corresponding <a class="reference internal" href="connection.html#apsw.Connection.is_async" title="apsw.Connection.is_async"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Connection.is_async</span></code></a>.</p>
+<p>The included type stubs will show correct usage for your IDE and type
+checker.</p>
+<p id="badge-async-sync"><a class="reference internal" href="#badge-async-sync"><span class="std std-ref">Sync only</span></a></p>
+<section id="sync-only">
+<h4>Sync only<a class="headerlink" href="#sync-only" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>Sync object</dt><dd><p>A direct result will be provided</p>
+</dd>
+<dt>Async object</dt><dd><p>A <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TypeError</span></code></a> will be raised.  There may be an async
+equivalent such as <code class="code docutils literal notranslate"><span class="pre">aclose</span></code> instead of <code class="code docutils literal notranslate"><span class="pre">close</span></code>, or you
+may need <code class="code docutils literal notranslate"><span class="pre">async</span> <span class="pre">with</span></code> instead of <code class="code docutils literal notranslate"><span class="pre">with</span></code>, <code class="code docutils literal notranslate"><span class="pre">async</span> <span class="pre">for</span></code> instead
+of <code class="code docutils literal notranslate"><span class="pre">for</span></code></p>
+</dd>
+</dl>
+<blockquote id="badge-async-async">
+<div><p><a class="reference internal" href="#badge-async-async"><span class="std std-ref">Async only</span></a></p>
+</div></blockquote>
+</section>
+<section id="async-only">
+<h4>Async only<a class="headerlink" href="#async-only" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>Sync object</dt><dd><p>A <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TypeError</span></code></a> will be raised. Omit the leasing <code class="code docutils literal notranslate"><span class="pre">async</span></code>
+and use plain <code class="code docutils literal notranslate"><span class="pre">with</span></code> and <code class="code docutils literal notranslate"><span class="pre">for</span></code>.  There may be a sync
+equivalent without a leading <code class="code docutils literal notranslate"><span class="pre">a</span></code>.</p>
+</dd>
+<dt>Async object</dt><dd><p>You will need to <code class="code docutils literal notranslate"><span class="pre">await</span></code> the result when ready</p>
+</dd>
+</dl>
+<blockquote id="badge-async-dual">
+<div><p><a class="reference internal" href="#badge-async-dual"><span class="std std-ref">Sync / Async</span></a></p>
+</div></blockquote>
+</section>
+<section id="sync-async">
+<h4>Sync / Async<a class="headerlink" href="#sync-async" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>Sync object</dt><dd><p>A direct result will be provided</p>
+</dd>
+<dt>Async object</dt><dd><p>You will need to <code class="code docutils literal notranslate"><span class="pre">await</span></code> the result when ready.  When objects
+are returned like <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>, <a class="reference internal" href="blob.html#apsw.Blob" title="apsw.Blob"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blob</span></code></a>, <a class="reference internal" href="backup.html#apsw.Backup" title="apsw.Backup"><code class="xref py py-class docutils literal notranslate"><span class="pre">Backup</span></code></a>
+etc, they will also be in async mode.`</p>
+</dd>
+</dl>
+<blockquote id="badge-async-value">
+<div><p><a class="reference internal" href="#badge-async-value"><span class="std std-ref">Value</span></a></p>
+</div></blockquote>
+</section>
+<section id="value">
+<h4>Value<a class="headerlink" href="#value" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>Sync object</dt><dd><p>A direct result will be provided</p>
+</dd>
+<dt>Async object</dt><dd><p>A direct result will be provided.  Do not <code class="code docutils literal notranslate"><span class="pre">await</span></code> it.</p>
+</dd>
+</dl>
+<blockquote id="badge-close">
+<div><p><a class="reference internal" href="#badge-close"><span class="std std-ref">Close</span></a></p>
+</div></blockquote>
+</section>
+<section id="close">
+<h4>Close<a class="headerlink" href="#close" title="Link to this heading"></a></h4>
+<p>You can call close on sync <strong>and</strong> async objects. When you call close on a
+<a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>, then it will close all the corresponding
+objects like <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a>, <a class="reference internal" href="blob.html#apsw.Blob" title="apsw.Blob"><code class="xref py py-class docutils literal notranslate"><span class="pre">Blob</span></code></a>, <a class="reference internal" href="session.html#apsw.Session" title="apsw.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a> etc.</p>
+<p>It is safe to call <code class="code docutils literal notranslate"><span class="pre">close</span></code> and <code class="code docutils literal notranslate"><span class="pre">aclose</span></code> multiple times,
+even on already closed objects.`</p>
+<dl class="simple">
+<dt>Sync object</dt><dd><p><code class="code docutils literal notranslate"><span class="pre">close</span></code> closes this object in the foreground, releasing its
+held resources.</p>
+</dd>
+<dt>Async object</dt><dd><p><code class="code docutils literal notranslate"><span class="pre">aclose</span></code> closes this object in the background.  You should
+<code class="code docutils literal notranslate"><span class="pre">await</span></code> calling <code class="code docutils literal notranslate"><span class="pre">aclose</span></code> to know when it has
+completed.  <code class="code docutils literal notranslate"><span class="pre">close</span></code> will close it in the foreground
+which could take some time.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="callbacks">
+<h3>Callbacks<a class="headerlink" href="#callbacks" title="Link to this heading"></a></h3>
+<p>SQLite has numerous hooks and callbacks such as <a class="reference internal" href="connection.html#apsw.Connection.create_scalar_function" title="apsw.Connection.create_scalar_function"><code class="xref py py-meth docutils literal notranslate"><span class="pre">functions</span></code></a>, <a class="reference internal" href="connection.html#apsw.Connection.set_update_hook" title="apsw.Connection.set_update_hook"><code class="xref py py-meth docutils literal notranslate"><span class="pre">hooks</span></code></a>, <a class="reference internal" href="vtable.html"><span class="doc">virtual tables</span></a>, and
+<a class="reference internal" href="vfs.html"><span class="doc">VFS</span></a>.</p>
+<p>If you provide sync versions they get called in the connection worker
+thread.  You can also provide an async callback/method.  The async
+controller will suspend execution in the worker thread, send the
+callback back to the event loop, and resume execution on getting a
+result (or exception).</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>DEADLOCK</p>
+<p>If your async callback makes a request back into the connection
+<strong>and</strong> awaits it, then you will get a deadlock.  The connection
+cannot proceed until it gets a result, and the callback is waiting
+on the suspended connection.</p>
+</div>
+</section>
+<section id="contextvars">
+<h3>Contextvars<a class="headerlink" href="#contextvars" title="Link to this heading"></a></h3>
+<p><a class="reference external" href="https://docs.python.org/3/library/contextvars.html#module-contextvars" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">contextvars</span></code></a> let you provide thread local and async context
+specific values.   It saves having to provide a parameter to every
+function in a call chain, instead letting those that care reach out
+and find the current value for their context.</p>
+<p>contextvar values at the point of a query in the event loop are
+propagated to their processing in the database worker thread, being
+available to any callbacks, and are also propagated back to the event
+loop if any callbacks are async.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Not a regular variable</p>
+<p>Each time you <a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar.set" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set()</span></code></a> a value, the
+previous value is saved behind the scenes so it can be
+<a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar.reset" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">restored</span></code></a>.  You will get
+ever increasing memory consumption if you do not
+<a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar.reset" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset()</span></code></a>.
+<a class="reference internal" href="#apsw.aio.contextvar_set" title="apsw.aio.contextvar_set"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.aio.contextvar_set()</span></code></a> shows a convenient way of doing
+so.</p>
+<p>The context is copied (a trivial internal operation) as it passes
+from async to worker thread and back to async again.  Setting a
+variable is not visible to code earlier in the call chain.  Use a
+dict or similar as the value set by the initial code to provide
+somewhere all the code in the chain can see and make changes.</p>
+</div>
+</section>
+<section id="configuration">
+<h3>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h3>
+<p>Most configuration uses <a class="reference external" href="https://docs.python.org/3/library/contextvars.html#module-contextvars" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">contextvars</span></code></a>.</p>
+<p><a class="reference internal" href="apsw.html#apsw.async_cursor_prefetch" title="apsw.async_cursor_prefetch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.async_cursor_prefetch</span></code></a></p>
+<blockquote>
+<div><p>How many rows are fetched at once when iterating query results.</p>
+</div></blockquote>
+<p><a class="reference internal" href="#apsw.aio.check_progress_steps" title="apsw.aio.check_progress_steps"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.aio.check_progress_steps</span></code></a></p>
+<blockquote>
+<div><p>How frequently running SQLite queries check for cancellations and
+timeouts</p>
+</div></blockquote>
+<p><a class="reference internal" href="#apsw.aio.deadline" title="apsw.aio.deadline"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code></a></p>
+<blockquote>
+<div><p>When SQLite queries or async callbacks should timeout.  <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>)
+and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>)) native timeouts are also supported.</p>
+</div></blockquote>
+<p><a class="reference internal" href="apsw.html#apsw.async_controller" title="apsw.async_controller"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.async_controller</span></code></a></p>
+<blockquote>
+<div><p>Interface between async framework and worker thread.</p>
+</div></blockquote>
+<p><a class="reference internal" href="apsw.html#apsw.async_run_coro" title="apsw.async_run_coro"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.async_run_coro</span></code></a></p>
+<blockquote>
+<div><p>How the worker thread runs an async callback back in the event
+loop.</p>
+</div></blockquote>
+</section>
+<section id="deadlines-and-cancellation">
+<h3>Deadlines and Cancellation<a class="headerlink" href="#deadlines-and-cancellation" title="Link to this heading"></a></h3>
+<p>The native cancellation of each framework is supported.  This is often
+used to cancel all tasks in a group if one fails, and to support
+timeouts/deadlines.</p>
+<p>An example usage of deadlines is if you use a function or virtual
+table that makes network requests.  When executing a query you can
+ensure reasonable bounds for how long it takes, bounding the internal
+functions and virtual tables used to answer the query.</p>
+<p>You can set a deadline by which an API request must timeout if not
+completed.  This includes sync and async callbacks that are made to
+satisfy the request.  The deadline is captured at the point the call
+is made, and subsequent changes are not observed.</p>
+<p>You can use <a class="reference internal" href="#apsw.aio.deadline" title="apsw.aio.deadline"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code></a> to set the deadline - its
+documentation provides more details.</p>
+<p>Trio and anyio have timeout managers.  If <a class="reference internal" href="#apsw.aio.deadline" title="apsw.aio.deadline"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code></a> is
+not set, then their <code class="code docutils literal notranslate"><span class="pre">current_effective_deadline</span></code> used.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.fail_at" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.fail_at()</span></code></a>,  <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.fail_after" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.fail_after()</span></code></a>, <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_effective_deadline" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.current_effective_deadline()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.fail_after" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.fail_after()</span></code></a>, <a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_effective_deadline()</span></code></a></p></li>
+</ul>
+</section>
+<section id="async-controllers">
+<h3>Async controllers<a class="headerlink" href="#async-controllers" title="Link to this heading"></a></h3>
+<p>A controller configured via <a class="reference internal" href="apsw.html#apsw.async_controller" title="apsw.async_controller"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.async_controller</span></code></a> is used to
+integrate with the async framework.  <a class="reference internal" href="#module-apsw.aio" title="apsw.aio"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apsw.aio</span></code></a> contains
+implementations for <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>, <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>), <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>), and
+auto-detection (the default).</p>
+<p>The controller is responsible for:</p>
+<ul class="simple">
+<li><p>Starting the worker thread</p></li>
+<li><p>Configuring the connection in the worker thread</p></li>
+<li><p>Sending calls from the event loop to the worker thread with
+awaitable results</p></li>
+<li><p>Checking deadlines and cancellations</p></li>
+<li><p>Forwarding coroutines in the event loop, and providing their results</p></li>
+<li><p>Stopping the worker thread when told about database close</p></li>
+</ul>
+<p>Although it seems like a lot, they are around 50 lines of code, and
+conform to the <a class="reference internal" href="apsw.html#apsw.AsyncConnectionController" title="apsw.AsyncConnectionController"><code class="xref py py-class docutils literal notranslate"><span class="pre">AsyncConnectionController</span></code></a> protocol.</p>
+</section>
+<section id="run-in-thread-alternative">
+<h3>Run in thread (alternative)<a class="headerlink" href="#run-in-thread-alternative" title="Link to this heading"></a></h3>
+<p>Instead of using APSW in async mode, you can request your framework
+run expensive operations in a thread.  For example
+<a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">asyncio.to_thread()</span></code></a>, <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.to_thread.run_sync" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.to_thread.run_sync()</span></code></a> and
+<a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.to_thread.run_sync" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.to_thread.run_sync()</span></code></a> can do that for you.</p>
+</section>
+<section id="extensions">
+<h3>Extensions<a class="headerlink" href="#extensions" title="Link to this heading"></a></h3>
+<p>Session</p>
+<blockquote>
+<div><p>You should use <a class="reference internal" href="#apsw.aio.make_session" title="apsw.aio.make_session"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.aio.make_session()</span></code></a> to make a
+<a class="reference internal" href="session.html#apsw.Session" title="apsw.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a> in async mode.</p>
+</div></blockquote>
+<p><a class="reference internal" href="textsearch.html#apsw.fts5.Table" title="apsw.fts5.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.fts5.Table</span></code></a></p>
+<blockquote>
+<div><p>Virtually every method and property needs to access the database.
+Therefore you should run all of them in the database thread
+using <a class="reference internal" href="connection.html#apsw.Connection.async_run" title="apsw.Connection.async_run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.async_run()</span></code></a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;my.db&quot;</span><span class="p">)</span>
+
+<span class="c1"># creating a table</span>
+<span class="n">table</span> <span class="o">=</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
+    <span class="c1"># table creation method</span>
+    <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">create</span><span class="p">,</span>
+    <span class="c1"># the various parameters</span>
+    <span class="n">db</span><span class="p">,</span> <span class="s2">&quot;search&quot;</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;recipes&quot;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=...</span>
+<span class="p">)</span>
+
+<span class="c1"># loading existing table</span>
+<span class="n">table</span> <span class="o">=</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
+    <span class="c1"># load method</span>
+    <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">Table</span><span class="p">,</span>
+    <span class="c1"># parameters</span>
+    <span class="n">db</span><span class="p">,</span> <span class="s2">&quot;search&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># row count (attribute)</span>
+<span class="n">row_count</span> <span class="o">=</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
+    <span class="nb">getattr</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="s2">&quot;row_count&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># query suggestions (method)</span>
+<span class="n">suggest</span> <span class="o">=</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">query_suggest</span><span class="p">,</span> <span class="n">query</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</section>
+</section>
+<section id="module-apsw.aio">
+<span id="apsw-aio-module"></span><h2>apsw.aio module<a class="headerlink" href="#module-apsw.aio" title="Link to this heading"></a></h2>
+<p>Implements async framework controllers, configuration, and helpers</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="apsw.aio.deadline">
+<span class="sig-prename descclassname"><span class="pre">apsw.aio.</span></span><span class="sig-name descname"><span class="pre">deadline</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar" title="(in Python v3.14)"><span class="pre">ContextVar</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;ContextVar</span> <span class="pre">name='apsw.aio.deadline'</span> <span class="pre">default=None&gt;</span></span><a class="headerlink" href="#apsw.aio.deadline" title="Link to this definition"></a></dt>
+<dd><p>Absolute time deadline for a request in seconds</p>
+<p>This makes a best effort to timeout a database operation including any
+sync and async callbacks if the deadline is passed.  The default
+(<code class="docutils literal notranslate"><span class="pre">None</span></code>) is no deadline.</p>
+<p>The deadline is set at the point an APSW call is made, and changes
+after that are not observed.  It is based on the clock used by the
+event loop.  Typical usage is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 10 seconds from now.  You&#39;ll need to get the time from your</span>
+<span class="c1"># framework as documented below.</span>
+
+<span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">contextvar_set</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">deadline</span><span class="p">,</span>
+    <span class="n">anyio</span><span class="o">.</span><span class="n">current_time</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span><span class="p">):</span>
+
+    <span class="k">async</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;time consuming query ...&quot;</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><a class="reference internal" href="#apsw.aio.AsyncIO" title="apsw.aio.AsyncIO"><code class="xref py py-class docutils literal notranslate"><span class="pre">AsyncIO</span></code></a></p>
+<blockquote>
+<div><p><code class="code docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code> is the only way to set a deadline.
+<a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TimeoutError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TimeoutError</span></code></a> will
+be raised if the deadline is exceeded.  The current time is
+available from  <a class="reference external" href="https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.time" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">asyncio.get_running_loop().time()</span></code></a></p>
+</div></blockquote>
+<p><a class="reference internal" href="#apsw.aio.Trio" title="apsw.aio.Trio"><code class="xref py py-class docutils literal notranslate"><span class="pre">Trio</span></code></a></p>
+<blockquote>
+<div><p>If <code class="code docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code> is set then it is used for the
+deadline.  <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.TooSlowError" title="(in Trio v0.32.0)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">trio.TooSlowError</span></code></a> is raised.  The current time
+is available from <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_time" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.current_time()</span></code></a>.</p>
+<p>Otherwise the <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_effective_deadline" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.current_effective_deadline()</span></code></a> where the
+call is made is used.</p>
+</div></blockquote>
+<p>AnyIO</p>
+<blockquote>
+<div><p>If <code class="code docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code> is set then it is used for the
+deadline.  <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TimeoutError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TimeoutError</span></code></a> is raised.  The current time is
+available from <a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_time" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_time()</span></code></a>.</p>
+<p>Otherwise the <a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_effective_deadline()</span></code></a> where the
+call is made is used.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="apsw.aio.check_progress_steps">
+<span class="sig-prename descclassname"><span class="pre">apsw.aio.</span></span><span class="sig-name descname"><span class="pre">check_progress_steps</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar" title="(in Python v3.14)"><span class="pre">ContextVar</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;ContextVar</span> <span class="pre">name='apsw.aio.check_progress_steps'</span> <span class="pre">default=50000&gt;</span></span><a class="headerlink" href="#apsw.aio.check_progress_steps" title="Link to this definition"></a></dt>
+<dd><p>How many internal SQLite steps between checks for cancellation and deadlines</p>
+<p>While SQLite queries are executing, periodic checks are made to see if
+the request has been cancelled, or the deadline exceeded.  This is
+done in the <a class="reference internal" href="connection.html#apsw.Connection.set_progress_handler" title="apsw.Connection.set_progress_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">progress</span> <span class="pre">handler</span></code></a>.</p>
+<p>The default should correspond to around 10 checks per second, but will
+vary a lot based on the queries.  The smaller the number, the more
+frequent the checks, but also more time consumed making the checks.</p>
+<p>This is only used during connection creation.  Typical usage is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">contextvar_set</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">check_progress_steps</span><span class="p">,</span> <span class="mi">500</span><span class="p">):</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.aio.contextvar_set">
+<span class="sig-prename descclassname"><span class="pre">apsw.aio.</span></span><span class="sig-name descname"><span class="pre">contextvar_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar" title="(in Python v3.14)"><span class="pre">ContextVar</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Token" title="(in Python v3.14)"><span class="pre">Token</span></a></span></span><a class="reference internal" href="_modules/apsw/aio.html#contextvar_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.contextvar_set" title="Link to this definition"></a></dt>
+<dd><p>Wrapper for setting a <a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContextVar</span></code></a> during a <code class="code docutils literal notranslate"><span class="pre">with</span></code> block</p>
+<p>Python 3.14+ lets you do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="c1"># code here</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>This wrapper provides the same functionality for all
+Python versions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">contextvar_set</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="c1"># code here</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.aio.make_session">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.aio.</span></span><span class="sig-name descname"><span class="pre">make_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.AsyncConnection" title="apsw.AsyncConnection"><span class="pre">AsyncConnection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="apsw.html#apsw.AsyncSession" title="apsw.AsyncSession"><span class="pre">AsyncSession</span></a></span></span><a class="reference internal" href="_modules/apsw/aio.html#make_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.make_session" title="Link to this definition"></a></dt>
+<dd><p>Helper to create a <a class="reference internal" href="session.html#apsw.Session" title="apsw.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a> in async mode for an async database</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.aio.AsyncIO">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.aio.</span></span><span class="sig-name descname"><span class="pre">AsyncIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">thread_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'asyncio</span> <span class="pre">apsw</span> <span class="pre">background</span> <span class="pre">worker'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AsyncIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AsyncIO" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="apsw.html#apsw.AsyncConnectionController" title="apsw.AsyncConnectionController"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a> for <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AsyncIO.configure">
+<span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AsyncIO.configure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AsyncIO.configure" title="Link to this definition"></a></dt>
+<dd><p>Setup database, just after it is created</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AsyncIO.send">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AsyncIO.send"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AsyncIO.send" title="Link to this definition"></a></dt>
+<dd><p>Send call to worker</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AsyncIO.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AsyncIO.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AsyncIO.close" title="Link to this definition"></a></dt>
+<dd><p>Called on connection close, so the worker thread can be stopped</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AsyncIO.progress_checker">
+<span class="sig-name descname"><span class="pre">progress_checker</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AsyncIO.progress_checker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AsyncIO.progress_checker" title="Link to this definition"></a></dt>
+<dd><p>Periodic check for cancellation and deadlines</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AsyncIO.worker_thread_run">
+<span class="sig-name descname"><span class="pre">worker_thread_run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AsyncIO.worker_thread_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AsyncIO.worker_thread_run" title="Link to this definition"></a></dt>
+<dd><p>Does the enqueued call processing in the worker thread</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AsyncIO.set_future_result">
+<span class="sig-name descname"><span class="pre">set_future_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">future</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/asyncio-future.html#asyncio.Future" title="(in Python v3.14)"><span class="pre">Future</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AsyncIO.set_future_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AsyncIO.set_future_result" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AsyncIO.set_future_exception">
+<span class="sig-name descname"><span class="pre">set_future_exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">future</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/asyncio-future.html#asyncio.Future" title="(in Python v3.14)"><span class="pre">Future</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#BaseException" title="(in Python v3.14)"><span class="pre">BaseException</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AsyncIO.set_future_exception"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AsyncIO.set_future_exception" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AsyncIO.async_run_coro">
+<span class="sig-name descname"><span class="pre">async_run_coro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coro</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Coroutine" title="(in Python v3.14)"><span class="pre">Coroutine</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AsyncIO.async_run_coro"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AsyncIO.async_run_coro" title="Link to this definition"></a></dt>
+<dd><p>Called in worker thread to run a coroutine in the event loop</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AsyncIO.run_coro_in_loop">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">run_coro_in_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coro</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Coroutine" title="(in Python v3.14)"><span class="pre">Coroutine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tracker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_CallTracker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.Context" title="(in Python v3.14)"><span class="pre">Context</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="_modules/apsw/aio.html#AsyncIO.run_coro_in_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AsyncIO.run_coro_in_loop" title="Link to this definition"></a></dt>
+<dd><p>Executes the coro in the event loop</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.aio.AsyncIO.queue">
+<span class="sig-name descname"><span class="pre">queue</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">SimpleQueue</span><span class="p"><span class="pre">[</span></span><span class="pre">_CallTracker</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#apsw.aio.AsyncIO.queue" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.aio.Trio">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.aio.</span></span><span class="sig-name descname"><span class="pre">Trio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">thread_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'trio</span> <span class="pre">apsw</span> <span class="pre">background</span> <span class="pre">worker'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#Trio"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.Trio" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="apsw.html#apsw.AsyncConnectionController" title="apsw.AsyncConnectionController"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a> for <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.Trio.configure">
+<span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#Trio.configure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.Trio.configure" title="Link to this definition"></a></dt>
+<dd><p>Setup database, just after it is created</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.Trio.send">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#Trio.send"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.Trio.send" title="Link to this definition"></a></dt>
+<dd><p>Enqueues call to worker thread</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.Trio.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#Trio.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.Trio.close" title="Link to this definition"></a></dt>
+<dd><p>Called on connection close, so the worker thread can be stopped</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.Trio.progress_checker">
+<span class="sig-name descname"><span class="pre">progress_checker</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#Trio.progress_checker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.Trio.progress_checker" title="Link to this definition"></a></dt>
+<dd><p>Periodic check for cancellation and deadlines</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.Trio.worker_thread_run">
+<span class="sig-name descname"><span class="pre">worker_thread_run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#Trio.worker_thread_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.Trio.worker_thread_run" title="Link to this definition"></a></dt>
+<dd><p>Does the enqueued call processing in the worker thread</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.Trio.async_run_coro">
+<span class="sig-name descname"><span class="pre">async_run_coro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coro</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Coroutine" title="(in Python v3.14)"><span class="pre">Coroutine</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#Trio.async_run_coro"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.Trio.async_run_coro" title="Link to this definition"></a></dt>
+<dd><p>Called in worker thread to run a coroutine in the event loop</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.Trio.run_coro_in_loop">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">run_coro_in_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coro</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Coroutine" title="(in Python v3.14)"><span class="pre">Coroutine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tracker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_CallTracker</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#Trio.run_coro_in_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.Trio.run_coro_in_loop" title="Link to this definition"></a></dt>
+<dd><p>Executes the coro in the event loop</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.aio.Trio.queue">
+<span class="sig-name descname"><span class="pre">queue</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">SimpleQueue</span><span class="p"><span class="pre">[</span></span><span class="pre">_CallTracker</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#apsw.aio.Trio.queue" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="apsw.aio.AnyIO">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.aio.</span></span><span class="sig-name descname"><span class="pre">AnyIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">thread_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'anyio</span> <span class="pre">apsw</span> <span class="pre">background</span> <span class="pre">worker'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AnyIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AnyIO" title="Link to this definition"></a></dt>
+<dd><p><a class="reference internal" href="apsw.html#apsw.AsyncConnectionController" title="apsw.AsyncConnectionController"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a> for <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AnyIO.configure">
+<span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AnyIO.configure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AnyIO.configure" title="Link to this definition"></a></dt>
+<dd><p>Setup database, just after it is created</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AnyIO.send">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">call</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AnyIO.send"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AnyIO.send" title="Link to this definition"></a></dt>
+<dd><p>Enqueues call to worker thread</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AnyIO.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AnyIO.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AnyIO.close" title="Link to this definition"></a></dt>
+<dd><p>Called on connection close, so the worker thread can be stopped</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AnyIO.progress_checker">
+<span class="sig-name descname"><span class="pre">progress_checker</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AnyIO.progress_checker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AnyIO.progress_checker" title="Link to this definition"></a></dt>
+<dd><p>Periodic check for cancellation and deadlines</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AnyIO.worker_thread_run">
+<span class="sig-name descname"><span class="pre">worker_thread_run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AnyIO.worker_thread_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AnyIO.worker_thread_run" title="Link to this definition"></a></dt>
+<dd><p>Does the enqueued call processing in the worker thread</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AnyIO.async_run_coro">
+<span class="sig-name descname"><span class="pre">async_run_coro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coro</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Coroutine" title="(in Python v3.14)"><span class="pre">Coroutine</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AnyIO.async_run_coro"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AnyIO.async_run_coro" title="Link to this definition"></a></dt>
+<dd><p>Called in worker thread to run a coroutine in the event loop</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="apsw.aio.AnyIO.run_coro_in_loop">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">run_coro_in_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coro</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Coroutine" title="(in Python v3.14)"><span class="pre">Coroutine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tracker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_CallTracker</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AnyIO.run_coro_in_loop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AnyIO.run_coro_in_loop" title="Link to this definition"></a></dt>
+<dd><p>Executes coro in the event loop</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="apsw.aio.AnyIO.queue">
+<span class="sig-name descname"><span class="pre">queue</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">SimpleQueue</span><span class="p"><span class="pre">[</span></span><span class="pre">_CallTracker</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#apsw.aio.AnyIO.queue" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.aio.Auto">
+<span class="sig-prename descclassname"><span class="pre">apsw.aio.</span></span><span class="sig-name descname"><span class="pre">Auto</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#apsw.aio.Trio" title="apsw.aio.Trio"><span class="pre">Trio</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#apsw.aio.AsyncIO" title="apsw.aio.AsyncIO"><span class="pre">AsyncIO</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#apsw.aio.AnyIO" title="apsw.aio.AnyIO"><span class="pre">AnyIO</span></a></span></span><a class="reference internal" href="_modules/apsw/aio.html#Auto"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.Auto" title="Link to this definition"></a></dt>
+<dd><p>Automatically detects the current async framework running event
+loop and returns the appropriate controller.  This is the default
+for <a class="reference internal" href="apsw.html#apsw.async_controller" title="apsw.async_controller"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.async_controller</span></code></a>.</p>
+<p><strong>AnyIO note</strong></p>
+<blockquote>
+<div><p>The <a class="reference internal" href="#apsw.aio.AnyIO" title="apsw.aio.AnyIO"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyIO</span></code></a> controller is only returned if
+<a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.run()</span></code></a> is in the call stack.</p>
+<p>If you are simultaneously using anyio and another framework
+then you should manually configure
+<a class="reference internal" href="apsw.html#apsw.async_controller" title="apsw.async_controller"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.async_controller</span></code></a> to get the one you want.</p>
+<p>This matters especially for timeouts and cancellations where
+each framework is different.</p>
+</div></blockquote>
+<p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">RuntimeError</span></code></a> is raised if the framework can’t be detected.</p>
+</dd></dl>
+
+</section>
+<section id="async-performance">
+<h2>Async Performance<a class="headerlink" href="#async-performance" title="Link to this heading"></a></h2>
+<p>Performance is dominated by the overhead of sending calls to the
+worker thread, and getting the result.  <a class="extlink-source reference external" href="https://github.com/rogerbinns/apsw/blob/master/tools/aio_bench.py">tools/aio_bench.py</a>
+is a small benchmark that keeps reading rows from a dummy memory
+database, and then appending 1,000 more rows to the end of the table,
+until there are 300,000 rows in the table.</p>
+<p><strong>Benchmarks aren’t real - use your own scenario for real testing!</strong></p>
+<p>Library</p>
+<blockquote>
+<div><p>apsw with <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>, asyncio using <a class="reference external" href="https://uvloop.readthedocs.io/">uvloop</a> as the inner
+loop, <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>), and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>) with asyncio and trio event loops.</p>
+<p>The <a class="reference external" href="https://aiosqlite.omnilib.dev/en/stable/">aiosqlite</a> library (asyncio only) is included for comparison
+which also sends calls to a worker thread.  Note that it doesn’t
+support cancellation, timeouts, or async callbacks.</p>
+</div></blockquote>
+<p>Prefetch</p>
+<blockquote>
+<div><p>How many rows are fetched in a batch for queries, controlled by
+<a class="reference internal" href="apsw.html#apsw.async_cursor_prefetch" title="apsw.async_cursor_prefetch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.async_cursor_prefetch</span></code></a> in APSW and
+<code class="code docutils literal notranslate"><span class="pre">iter_chunk_size</span></code> in <a class="reference external" href="https://aiosqlite.omnilib.dev/en/stable/">aiosqlite</a>.  A value of 1 as shown in
+the first rows ends up as 301 thousand messages and responses with
+the worker thread.  That is halved with 2 etc.  The default is 64.
+The benchmark queries return a maximum of 1,000 rows.</p>
+</div></blockquote>
+<p>Wall</p>
+<blockquote>
+<div><p>Wall clock time in seconds for the configuration to run.</p>
+</div></blockquote>
+<p>CpuTotal / CpuEvtLoop / CpuDbWorker</p>
+<blockquote>
+<div><p>The total CPU time used in seconds, with how much of that was in
+the async event loop thread, and how much in the background
+database worker thread.</p>
+</div></blockquote>
+<p>The results show that what is used only matters if you are doing very
+large numbers of calls because of very small row batch sizes.</p>
+<table class="aiobench-table docutils align-default" id="id4">
+<caption><span class="caption-text">Benchmark Results</span><a class="headerlink" href="#id4" title="Link to this table"></a></caption>
+<thead>
+<tr class="row-odd"><th class="head stub"><p>Library</p></th>
+<th class="head"><p>Prefetch</p></th>
+<th class="head"><p>Wall</p></th>
+<th class="head"><p>CpuTotal</p></th>
+<th class="head"><p>CpuEvtLoop</p></th>
+<th class="head"><p>CpuDbWorker</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><th class="stub"><p>apsw AsyncIO</p></th>
+<td><p>1</p></td>
+<td><p>7.721</p></td>
+<td><p>8.010</p></td>
+<td><p>3.168</p></td>
+<td><p>4.841</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AsyncIO uvloop</p></th>
+<td><p>1</p></td>
+<td><p>5.064</p></td>
+<td><p>5.256</p></td>
+<td><p>1.521</p></td>
+<td><p>3.735</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw Trio</p></th>
+<td><p>1</p></td>
+<td><p>12.029</p></td>
+<td><p>13.308</p></td>
+<td><p>7.805</p></td>
+<td><p>5.504</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO asyncio</p></th>
+<td><p>1</p></td>
+<td><p>15.202</p></td>
+<td><p>18.158</p></td>
+<td><p>7.660</p></td>
+<td><p>10.499</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AnyIO asyncio uvloop</p></th>
+<td><p>1</p></td>
+<td><p>9.652</p></td>
+<td><p>11.183</p></td>
+<td><p>3.766</p></td>
+<td><p>7.416</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO trio</p></th>
+<td><p>1</p></td>
+<td><p>16.670</p></td>
+<td><p>19.597</p></td>
+<td><p>10.028</p></td>
+<td><p>9.570</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>aiosqlite</p></th>
+<td><p>1</p></td>
+<td><p>8.360</p></td>
+<td><p>8.755</p></td>
+<td><p>3.909</p></td>
+<td><p>4.846</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>aiosqlite uvloop</p></th>
+<td><p>1</p></td>
+<td><p>5.358</p></td>
+<td><p>5.635</p></td>
+<td><p>1.867</p></td>
+<td><p>3.769</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AsyncIO</p></th>
+<td><p>2</p></td>
+<td><p>4.287</p></td>
+<td><p>4.441</p></td>
+<td><p>1.684</p></td>
+<td><p>2.758</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AsyncIO uvloop</p></th>
+<td><p>2</p></td>
+<td><p>2.895</p></td>
+<td><p>2.987</p></td>
+<td><p>0.797</p></td>
+<td><p>2.190</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw Trio</p></th>
+<td><p>2</p></td>
+<td><p>6.403</p></td>
+<td><p>7.022</p></td>
+<td><p>3.936</p></td>
+<td><p>3.086</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO asyncio</p></th>
+<td><p>2</p></td>
+<td><p>8.175</p></td>
+<td><p>9.702</p></td>
+<td><p>3.919</p></td>
+<td><p>5.783</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AnyIO asyncio uvloop</p></th>
+<td><p>2</p></td>
+<td><p>4.966</p></td>
+<td><p>5.704</p></td>
+<td><p>1.810</p></td>
+<td><p>3.894</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO trio</p></th>
+<td><p>2</p></td>
+<td><p>8.683</p></td>
+<td><p>10.140</p></td>
+<td><p>5.081</p></td>
+<td><p>5.059</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>aiosqlite</p></th>
+<td><p>2</p></td>
+<td><p>4.885</p></td>
+<td><p>5.106</p></td>
+<td><p>2.180</p></td>
+<td><p>2.926</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>aiosqlite uvloop</p></th>
+<td><p>2</p></td>
+<td><p>3.288</p></td>
+<td><p>3.454</p></td>
+<td><p>1.129</p></td>
+<td><p>2.326</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AsyncIO</p></th>
+<td><p>16</p></td>
+<td><p>1.231</p></td>
+<td><p>1.271</p></td>
+<td><p>0.324</p></td>
+<td><p>0.947</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AsyncIO uvloop</p></th>
+<td><p>16</p></td>
+<td><p>0.977</p></td>
+<td><p>0.993</p></td>
+<td><p>0.162</p></td>
+<td><p>0.831</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw Trio</p></th>
+<td><p>16</p></td>
+<td><p>1.546</p></td>
+<td><p>1.667</p></td>
+<td><p>0.631</p></td>
+<td><p>1.036</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO asyncio</p></th>
+<td><p>16</p></td>
+<td><p>1.671</p></td>
+<td><p>1.877</p></td>
+<td><p>0.570</p></td>
+<td><p>1.306</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AnyIO asyncio uvloop</p></th>
+<td><p>16</p></td>
+<td><p>1.255</p></td>
+<td><p>1.359</p></td>
+<td><p>0.286</p></td>
+<td><p>1.074</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO trio</p></th>
+<td><p>16</p></td>
+<td><p>1.776</p></td>
+<td><p>1.990</p></td>
+<td><p>0.738</p></td>
+<td><p>1.253</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>aiosqlite</p></th>
+<td><p>16</p></td>
+<td><p>1.152</p></td>
+<td><p>1.191</p></td>
+<td><p>0.382</p></td>
+<td><p>0.809</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>aiosqlite uvloop</p></th>
+<td><p>16</p></td>
+<td><p>0.868</p></td>
+<td><p>0.888</p></td>
+<td><p>0.191</p></td>
+<td><p>0.697</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AsyncIO</p></th>
+<td><p>64</p></td>
+<td><p>0.847</p></td>
+<td><p>0.868</p></td>
+<td><p>0.145</p></td>
+<td><p>0.723</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AsyncIO uvloop</p></th>
+<td><p>64</p></td>
+<td><p>0.740</p></td>
+<td><p>0.744</p></td>
+<td><p>0.072</p></td>
+<td><p>0.671</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw Trio</p></th>
+<td><p>64</p></td>
+<td><p>0.883</p></td>
+<td><p>0.922</p></td>
+<td><p>0.207</p></td>
+<td><p>0.715</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO asyncio</p></th>
+<td><p>64</p></td>
+<td><p>0.984</p></td>
+<td><p>1.044</p></td>
+<td><p>0.212</p></td>
+<td><p>0.832</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AnyIO asyncio uvloop</p></th>
+<td><p>64</p></td>
+<td><p>0.835</p></td>
+<td><p>0.865</p></td>
+<td><p>0.124</p></td>
+<td><p>0.741</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO trio</p></th>
+<td><p>64</p></td>
+<td><p>0.983</p></td>
+<td><p>1.056</p></td>
+<td><p>0.249</p></td>
+<td><p>0.807</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>aiosqlite</p></th>
+<td><p>64</p></td>
+<td><p>0.718</p></td>
+<td><p>0.729</p></td>
+<td><p>0.153</p></td>
+<td><p>0.575</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>aiosqlite uvloop</p></th>
+<td><p>64</p></td>
+<td><p>0.619</p></td>
+<td><p>0.623</p></td>
+<td><p>0.102</p></td>
+<td><p>0.521</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AsyncIO</p></th>
+<td><p>512</p></td>
+<td><p>0.702</p></td>
+<td><p>0.715</p></td>
+<td><p>0.071</p></td>
+<td><p>0.644</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AsyncIO uvloop</p></th>
+<td><p>512</p></td>
+<td><p>0.668</p></td>
+<td><p>0.668</p></td>
+<td><p>0.053</p></td>
+<td><p>0.615</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw Trio</p></th>
+<td><p>512</p></td>
+<td><p>0.706</p></td>
+<td><p>0.724</p></td>
+<td><p>0.101</p></td>
+<td><p>0.623</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO asyncio</p></th>
+<td><p>512</p></td>
+<td><p>0.746</p></td>
+<td><p>0.767</p></td>
+<td><p>0.090</p></td>
+<td><p>0.676</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AnyIO asyncio uvloop</p></th>
+<td><p>512</p></td>
+<td><p>0.694</p></td>
+<td><p>0.703</p></td>
+<td><p>0.068</p></td>
+<td><p>0.636</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO trio</p></th>
+<td><p>512</p></td>
+<td><p>0.736</p></td>
+<td><p>0.762</p></td>
+<td><p>0.105</p></td>
+<td><p>0.657</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>aiosqlite</p></th>
+<td><p>512</p></td>
+<td><p>0.583</p></td>
+<td><p>0.586</p></td>
+<td><p>0.098</p></td>
+<td><p>0.488</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>aiosqlite uvloop</p></th>
+<td><p>512</p></td>
+<td><p>0.561</p></td>
+<td><p>0.563</p></td>
+<td><p>0.084</p></td>
+<td><p>0.479</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AsyncIO</p></th>
+<td><p>8,192</p></td>
+<td><p>0.670</p></td>
+<td><p>0.681</p></td>
+<td><p>0.065</p></td>
+<td><p>0.616</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AsyncIO uvloop</p></th>
+<td><p>8,192</p></td>
+<td><p>0.652</p></td>
+<td><p>0.653</p></td>
+<td><p>0.042</p></td>
+<td><p>0.610</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw Trio</p></th>
+<td><p>8,192</p></td>
+<td><p>0.703</p></td>
+<td><p>0.720</p></td>
+<td><p>0.089</p></td>
+<td><p>0.630</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO asyncio</p></th>
+<td><p>8,192</p></td>
+<td><p>0.711</p></td>
+<td><p>0.724</p></td>
+<td><p>0.078</p></td>
+<td><p>0.646</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AnyIO asyncio uvloop</p></th>
+<td><p>8,192</p></td>
+<td><p>0.697</p></td>
+<td><p>0.707</p></td>
+<td><p>0.064</p></td>
+<td><p>0.643</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO trio</p></th>
+<td><p>8,192</p></td>
+<td><p>0.733</p></td>
+<td><p>0.761</p></td>
+<td><p>0.098</p></td>
+<td><p>0.663</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>aiosqlite</p></th>
+<td><p>8,192</p></td>
+<td><p>0.564</p></td>
+<td><p>0.566</p></td>
+<td><p>0.091</p></td>
+<td><p>0.475</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>aiosqlite uvloop</p></th>
+<td><p>8,192</p></td>
+<td><p>0.542</p></td>
+<td><p>0.543</p></td>
+<td><p>0.076</p></td>
+<td><p>0.467</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AsyncIO</p></th>
+<td><p>65.536</p></td>
+<td><p>0.676</p></td>
+<td><p>0.686</p></td>
+<td><p>0.066</p></td>
+<td><p>0.621</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AsyncIO uvloop</p></th>
+<td><p>65.536</p></td>
+<td><p>0.658</p></td>
+<td><p>0.659</p></td>
+<td><p>0.051</p></td>
+<td><p>0.608</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw Trio</p></th>
+<td><p>65.536</p></td>
+<td><p>0.700</p></td>
+<td><p>0.713</p></td>
+<td><p>0.093</p></td>
+<td><p>0.620</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO asyncio</p></th>
+<td><p>65.536</p></td>
+<td><p>0.724</p></td>
+<td><p>0.738</p></td>
+<td><p>0.090</p></td>
+<td><p>0.648</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>apsw AnyIO asyncio uvloop</p></th>
+<td><p>65.536</p></td>
+<td><p>0.698</p></td>
+<td><p>0.706</p></td>
+<td><p>0.072</p></td>
+<td><p>0.634</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>apsw AnyIO trio</p></th>
+<td><p>65.536</p></td>
+<td><p>0.743</p></td>
+<td><p>0.769</p></td>
+<td><p>0.115</p></td>
+<td><p>0.654</p></td>
+</tr>
+<tr class="row-even"><th class="stub"><p>aiosqlite</p></th>
+<td><p>65.536</p></td>
+<td><p>0.560</p></td>
+<td><p>0.562</p></td>
+<td><p>0.092</p></td>
+<td><p>0.471</p></td>
+</tr>
+<tr class="row-odd"><th class="stub"><p>aiosqlite uvloop</p></th>
+<td><p>65.536</p></td>
+<td><p>0.542</p></td>
+<td><p>0.543</p></td>
+<td><p>0.073</p></td>
+<td><p>0.470</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="example-async.html" class="btn btn-neutral float-left" title="Async Example/Tour" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="exceptions.html" class="btn btn-neutral float-right" title="Exceptions and Errors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

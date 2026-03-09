@@ -1,0 +1,658 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQLite extra &mdash; APSW 3.52.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/extra.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=a197bc32"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="copyright" title="Copyright" href="copyright.html" />
+    <link rel="next" title="DBAPI notes" href="dbapi.html" />
+    <link rel="prev" title="Execution and tracing" href="execution.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            APSW
+              <img src="_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation and customization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bestpractice.html">Best Practice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jsonb.html">JSON (Javascript Object Notation)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unicode.html">Unicode Text Handling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-session.html">Session Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="session.html">Session extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="async.html">Concurrency &amp; Async</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="execution.html">Execution and tracing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SQLite extra</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#vec1">vec1</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#marking">Marking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#programs">Programs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#extensions">Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#command-line">Command line</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#shell">Shell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-apsw.sqlite_extra">API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.sqlite_extra.NotAvailable"><code class="docutils literal notranslate"><span class="pre">NotAvailable</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.sqlite_extra.load"><code class="docutils literal notranslate"><span class="pre">load()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.sqlite_extra.has"><code class="docutils literal notranslate"><span class="pre">has()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.sqlite_extra.path"><code class="docutils literal notranslate"><span class="pre">path()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">SQLite extra</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/extra.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul><div class="rst-breadcrumbs-buttons" role="navigation" aria-label="Sequential page navigation">
+        <a href="execution.html" class="btn btn-neutral float-left" title="Execution and tracing" accesskey="p"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dbapi.html" class="btn btn-neutral float-right" title="DBAPI notes" accesskey="n">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+  </div>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="sqlite-extra">
+<h1>SQLite extra<a class="headerlink" href="#sqlite-extra" title="Link to this heading"></a></h1>
+<p>In addition to the main library, SQLite has many additional programs
+and loadable extensions.  However these need to be separately compiled
+and installed.  They do not have the same level of testing and
+documentation as the main library.</p>
+<p>Full APSW builds such as those on PyPI include all the ones that
+compile for that platform, without any modifications.  This is for
+convenience and to help promote these great extras.  They add just
+over 1MB to the download and 3MB of disk space.</p>
+<p>Access is provided via an <a class="reference internal" href="#extra-api"><span class="std std-ref">API</span></a>, <a class="reference internal" href="#extra-cli"><span class="std std-ref">command line</span></a>, and <a class="reference internal" href="#extra-shell"><span class="std std-ref">shell</span></a></p>
+<section id="vec1">
+<h2>vec1<a class="headerlink" href="#vec1" title="Link to this heading"></a></h2>
+<p>There is an experimental under development vector search library by
+the SQLite team.  It is also included with the extras if possible.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://sqlite.org/forum/forumpost/ceba048877">Forum post</a> to provide feedback</p></li>
+<li><p><a class="reference external" href="https://sqlite.org/vec1">Site</a> with tutorial and
+reference documentation</p></li>
+</ul>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
+<p>There are no dependencies for the extensions and programs.  That means
+they can be used on other compatible systems.  Some of the programs
+require the SQLite library alongside the program which <strong>must</strong> be
+placed in the same directory as the program if you copy the program
+elsewhere.  (The SQLite library in that directory deliberately has a
+different name to avoid interactions with the standard system SQLite
+library.)</p>
+<p>Extensions and programs that require third party libraries (eg
+compression), or TCL are not included, and optional third party
+libraries (eg readline) are not used.</p>
+</section>
+<section id="marking">
+<h2>Marking<a class="headerlink" href="#marking" title="Link to this heading"></a></h2>
+<p>The extensions and programs are all marked as packaged by APSW.  Under
+Windows this is indicated in the detailed properties listing.  On
+other platforms running <code class="code docutils literal notranslate"><span class="pre">strings</span></code> should show it, with ELF
+binaries having a <code class="code docutils literal notranslate"><span class="pre">note.apsw</span></code> section and MacOS (Mach-O)
+binaries having a <code class="code docutils literal notranslate"><span class="pre">apsw</span></code> section.</p>
+<p>The marking includes the version details.</p>
+</section>
+<section id="programs">
+<h2>Programs<a class="headerlink" href="#programs" title="Link to this heading"></a></h2>
+<p>sqlite3_dbdump (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fdbdump.c">doc</a>)</p>
+<blockquote>
+<div><p>Converts the content of a SQLite database into UTF-8 text SQL statements that can be used to exactly recreate the original database</p>
+</div></blockquote>
+<p>sqlite3_dbhash (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fdbhash.c">doc</a>)</p>
+<blockquote>
+<div><p>Computes SHA1 of the contents of a SQLite database</p>
+</div></blockquote>
+<p>sqlite3_dbtotxt (<a class="reference external" href="https://sqlite.org/src/file?name=tool/dbtotxt.md&amp;ci=trunk">doc</a>)</p>
+<blockquote>
+<div><p>Converts a binary file like a database into a friendly human readable text format</p>
+</div></blockquote>
+<p>sqlite3_diff (<a class="reference external" href="https://sqlite.org/sqldiff.html">doc</a>)</p>
+<blockquote>
+<div><p>Displays content differences between SQLite databases</p>
+</div></blockquote>
+<p>sqlite3_expert (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fexpert%2fexpert.c">doc</a>)</p>
+<blockquote>
+<div><p>A simple system to propose useful indexes given a database and a set of SQL queries</p>
+</div></blockquote>
+<p>sqlite3_getlock (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fgetlock.c">doc</a>)</p>
+<blockquote>
+<div><p>Unix only shows if and who is holding a database lock</p>
+</div></blockquote>
+<p>sqlite3_index_usage (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2findex_usage.c">doc</a>)</p>
+<blockquote>
+<div><p>Given a database and a log database, shows how many times each index is used</p>
+</div></blockquote>
+<p>sqlite3_normalize (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fnormalize.c">doc</a>)</p>
+<blockquote>
+<div><p>Normalizes SQL text so private information can be removed, and to identify structurally identical queries</p>
+</div></blockquote>
+<p>sqlite3_offsets (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2foffsets.c">doc</a>)</p>
+<blockquote>
+<div><p>Shows length and offset for every TEXT or BLOB for a column of a table</p>
+</div></blockquote>
+<p>sqlite3_rsync (<a class="reference external" href="https://sqlite.org/rsync.html">doc</a>)</p>
+<blockquote>
+<div><p>Database Remote-Copy Tool</p>
+</div></blockquote>
+<p>sqlite3_scrub (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fscrub.c">doc</a>)</p>
+<blockquote>
+<div><p>Makes a backup zeroing out all deleted content</p>
+</div></blockquote>
+<p>sqlite3_shell (<a class="reference external" href="https://sqlite.org/cli.html">doc</a>)</p>
+<blockquote>
+<div><p>Command line shell</p>
+</div></blockquote>
+<p>sqlite3_showdb (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fshowdb.c">doc</a>)</p>
+<blockquote>
+<div><p>Prints low level details about a database file</p>
+</div></blockquote>
+<p>sqlite3_showjournal (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fshowjournal.c">doc</a>)</p>
+<blockquote>
+<div><p>Prints low level content of a journal</p>
+</div></blockquote>
+<p>sqlite3_showlocks (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fshowlocks.c">doc</a>)</p>
+<blockquote>
+<div><p>Shows all posix advisory locks on a file</p>
+</div></blockquote>
+<p>sqlite3_showshm (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fshowshm.c">doc</a>)</p>
+<blockquote>
+<div><p>Shows low level content of shm and wal-index files</p>
+</div></blockquote>
+<p>sqlite3_showstat4 (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fshowstat4.c">doc</a>)</p>
+<blockquote>
+<div><p>Shows contents of stat4 index of a database</p>
+</div></blockquote>
+<p>sqlite3_showtmlog (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fshowtmlog.c">doc</a>)</p>
+<blockquote>
+<div><p>Makes human/csv readable output from a tmstmpvfs log file</p>
+</div></blockquote>
+<p>sqlite3_showwal (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fshowwal.c">doc</a>)</p>
+<blockquote>
+<div><p>Shows low level content of a WAL file</p>
+</div></blockquote>
+</section>
+<section id="extensions">
+<h2>Extensions<a class="headerlink" href="#extensions" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Doc</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Registers</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>amatch</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2famatch.c">link</a></p></td>
+<td><p>Approximate matches virtual table</p></td>
+<td><ul class="simple">
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">approximate_match</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>anycollseq</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fanycollseq.c">link</a></p></td>
+<td><p>Fake fallback collating function for any unknown collating sequence</p></td>
+<td><p>Fallback collation</p></td>
+</tr>
+<tr class="row-even"><td><p>appendvfs</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fappendvfs.c">link</a></p></td>
+<td><p>A VFS shim that allows an SQLite database to be appended onto the end of some other file, such as an executable</p></td>
+<td><ul class="simple">
+<li><p>VFS: <code class="code docutils literal notranslate"><span class="pre">apndvfs</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>base64</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fbase64.c">link</a></p></td>
+<td><p>Convert either direction between base64 blob and text</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">base64</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>base85</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fbase85.c">link</a></p></td>
+<td><p>Convert either direction between base85 blob and text</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">base85</span></code> <code class="code docutils literal notranslate"><span class="pre">is_base85</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>btreeinfo</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fbtreeinfo.c">link</a></p></td>
+<td><p>btreeinfo virtual table that shows information about all btrees in an SQLite database file</p></td>
+<td><ul class="simple">
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">sqlite_btreeinfo</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>cksumvfs</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/cksumvfs.html">link</a></p></td>
+<td><p>A VFS shim that writes a checksum on each page of an SQLite database file</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">verify_checksum</span></code></p></li>
+<li><p>VFS: <code class="code docutils literal notranslate"><span class="pre">cksmvfs</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>closure</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fclosure.c">link</a></p></td>
+<td><p>A virtual table that finds the transitive closure of a parent/child relationship in a real table</p></td>
+<td><ul class="simple">
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">transitive_closure</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>completion</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/completion.html">link</a></p></td>
+<td><p>A virtual table that returns suggested completions for a partial SQL input</p></td>
+<td><ul class="simple">
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">completion</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>csv</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/csv.html">link</a></p></td>
+<td><p>A virtual table for reading CSV files</p></td>
+<td><ul class="simple">
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">csv</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>decimal</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fdecimal.c">link</a></p></td>
+<td><p>Routines to implement arbitrary-precision decimal math</p></td>
+<td><ul class="simple">
+<li><p>Collation: <code class="code docutils literal notranslate"><span class="pre">decimal</span></code></p></li>
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">decimal</span></code> <code class="code docutils literal notranslate"><span class="pre">decimal_add</span></code> <code class="code docutils literal notranslate"><span class="pre">decimal_cmp</span></code> <code class="code docutils literal notranslate"><span class="pre">decimal_exp</span></code> <code class="code docutils literal notranslate"><span class="pre">decimal_mul</span></code> <code class="code docutils literal notranslate"><span class="pre">decimal_pow2</span></code> <code class="code docutils literal notranslate"><span class="pre">decimal_sub</span></code> <code class="code docutils literal notranslate"><span class="pre">decimal_sum</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>eval</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2feval.c">link</a></p></td>
+<td><p>Implements SQL function eval() which runs SQL statements recursively</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">eval</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>fileio</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2ffileio.c">link</a></p></td>
+<td><p>Implements SQL functions readfile() and writefile(), and eponymous virtual type ‘fsdir’</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">lsmode</span></code> <code class="code docutils literal notranslate"><span class="pre">readfile</span></code> <code class="code docutils literal notranslate"><span class="pre">realpath</span></code> <code class="code docutils literal notranslate"><span class="pre">writefile</span></code></p></li>
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">fsdir</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>fuzzer</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2ffuzzer.c">link</a></p></td>
+<td><p>Virtual table that generates variations on an input word at increasing edit distances from the original</p></td>
+<td><ul class="simple">
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">fuzzer</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>ieee754</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fieee754.c">link</a></p></td>
+<td><p>functions for the exact display* and input of IEEE754 Binary64 floating-point numbers</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">ieee754</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_exponent</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_from_blob</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_from_int</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_inc</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_mantissa</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_to_blob</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_to_int</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>memstat</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/memstat.html">link</a></p></td>
+<td><p>Provides SQL access to the sqlite3_status64() and sqlite3_db_status() interfaces</p></td>
+<td><ul class="simple">
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">sqlite_memstat</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>nextchar</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fnextchar.c">link</a></p></td>
+<td><p>Finds all valid ‘next’ characters for a string given a vocabulary</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">next_char</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>noop</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fnoop.c">link</a></p></td>
+<td><p>Implements noop() functions useful for testing</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">multitype_text</span></code> <code class="code docutils literal notranslate"><span class="pre">noop</span></code> <code class="code docutils literal notranslate"><span class="pre">noop_do</span></code> <code class="code docutils literal notranslate"><span class="pre">noop_i</span></code> <code class="code docutils literal notranslate"><span class="pre">noop_nd</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>prefixes</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fprefixes.c">link</a></p></td>
+<td><p>Table valued function providing all prefixes of a string</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">prefix_length</span></code></p></li>
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">prefixes</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>randomjson</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2frandomjson.c">link</a></p></td>
+<td><p>Generates random json objects</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">random_json</span></code> <code class="code docutils literal notranslate"><span class="pre">random_json5</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>regexp</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fregexp.c">link</a></p></td>
+<td><p>Compact reasonably efficient posix extended regular expression matcher</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">regexpi</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>rot13</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2frot13.c">link</a></p></td>
+<td><p>rot13 function and collating sequence</p></td>
+<td><ul class="simple">
+<li><p>Collation: <code class="code docutils literal notranslate"><span class="pre">rot13</span></code></p></li>
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">rot13</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>sha1</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fsha1.c">link</a></p></td>
+<td><p>SHA1 hash and query results hash</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">sha1</span></code> <code class="code docutils literal notranslate"><span class="pre">sha1_query</span></code> <code class="code docutils literal notranslate"><span class="pre">sha1b</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>shathree</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fshathree.c">link</a></p></td>
+<td><p>SHA3 hash and query results hash</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">sha3</span></code> <code class="code docutils literal notranslate"><span class="pre">sha3_agg</span></code> <code class="code docutils literal notranslate"><span class="pre">sha3_query</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>spellfix</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/spellfix1.html">link</a></p></td>
+<td><p>Search a large vocabulary for close matches</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">editdist3</span></code> <code class="code docutils literal notranslate"><span class="pre">spellfix1_editdist</span></code> <code class="code docutils literal notranslate"><span class="pre">spellfix1_phonehash</span></code> <code class="code docutils literal notranslate"><span class="pre">spellfix1_scriptcode</span></code> <code class="code docutils literal notranslate"><span class="pre">spellfix1_translit</span></code></p></li>
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">spellfix1</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>stmt</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/stmt.html">link</a></p></td>
+<td><p>Virtual table with information about all prepared statements on a connection</p></td>
+<td><ul class="simple">
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">sqlite_stmt</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>stmtrand</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fstmtrand.c">link</a></p></td>
+<td><p>Function that returns the same sequence of random integers is returned for each invocation of the statement</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">stmtrand</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>tmstmpvfs</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2ftmstmpvfs.c">link</a></p></td>
+<td><p>VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files</p></td>
+<td><ul class="simple">
+<li><p>VFS: <code class="code docutils literal notranslate"><span class="pre">tmstmpvfs</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>uint</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fuint.c">link</a></p></td>
+<td><p>UINT collating sequence</p></td>
+<td><ul class="simple">
+<li><p>Collation: <code class="code docutils literal notranslate"><span class="pre">uint</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>unionvtab</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2funionvtab.c">link</a></p></td>
+<td><p>Virtual table combining underlying tables from other databases</p></td>
+<td><ul class="simple">
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">swarmvtab</span></code> <code class="code docutils literal notranslate"><span class="pre">unionvtab</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>uuid</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fuuid.c">link</a></p></td>
+<td><p>uuid functions</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">uuid</span></code> <code class="code docutils literal notranslate"><span class="pre">uuid_blob</span></code> <code class="code docutils literal notranslate"><span class="pre">uuid_str</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>vec1</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/vec1">link</a></p></td>
+<td><p>Vector search.  !Experimental! !Under development!</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">vec1_cos_distance</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_from_json</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_info</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_l2_distance</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_qinstr</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json_f</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json_i</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_train</span></code></p></li>
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">vec1</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>vfsstat</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fvfsstat.c">link</a></p></td>
+<td><p>VFS shim tracking call statistics</p></td>
+<td><ul class="simple">
+<li><p>VFS: <code class="code docutils literal notranslate"><span class="pre">vfslog</span></code></p></li>
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">vfsstat</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>vtablog</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fvtablog.c">link</a></p></td>
+<td><p>Virtual table printing diagnostic information for interactive analysis and debugging</p></td>
+<td><ul class="simple">
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">vtablog</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>zorder</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fzorder.c">link</a></p></td>
+<td><p>Functions for z-order (Morton code) transformations</p></td>
+<td><ul class="simple">
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">unzorder</span></code> <code class="code docutils literal notranslate"><span class="pre">zorder</span></code></p></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="command-line">
+<span id="extra-cli"></span><h2>Command line<a class="headerlink" href="#command-line" title="Link to this heading"></a></h2>
+<p>Programs can be run by giving their name and parameters. For example
+<code class="code docutils literal notranslate"><span class="pre">sqlite3_scrub</span></code> program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">apsw</span><span class="o">.</span><span class="n">sqlite_extra</span> <span class="n">sqlite3_scrub</span> <span class="n">source</span><span class="o">.</span><span class="n">db</span> <span class="n">dest</span><span class="o">.</span><span class="n">db</span>
+</pre></div>
+</div>
+<p>You can also get the filename for any program or extension.  For example the
+<code class="code docutils literal notranslate"><span class="pre">sqlite3_rsync</span></code> program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">apsw</span><span class="o">.</span><span class="n">sqlite_extra</span> <span class="o">--</span><span class="n">path</span> <span class="n">sqlite3_rsync</span>
+</pre></div>
+</div>
+<p>The <code class="code docutils literal notranslate"><span class="pre">csv</span></code> extension path.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">apsw</span><span class="o">.</span><span class="n">sqlite_extra</span> <span class="o">--</span><span class="n">path</span> <span class="n">csv</span>
+</pre></div>
+</div>
+<p>List what is available:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">apsw</span><span class="o">.</span><span class="n">sqlite_extra</span> <span class="o">--</span><span class="nb">list</span>
+</pre></div>
+</div>
+</section>
+<section id="shell">
+<span id="extra-shell"></span><h2>Shell<a class="headerlink" href="#shell" title="Link to this heading"></a></h2>
+<p>The <a class="reference internal" href="shell.html"><span class="doc">shell</span></a> is also integrated.  Use <a class="reference internal" href="shell.html#shell-cmd-load"><span class="std std-ref">.load</span></a> with <code class="code docutils literal notranslate"><span class="pre">--list</span></code> to see all available
+extensions, and you can load just giving the name.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">sqlite&gt; .load --list</span>
+<span class="go">sqlite&gt; .load csv</span>
+</pre></div>
+</div>
+</section>
+<section id="module-apsw.sqlite_extra">
+<span id="api"></span><span id="extra-api"></span><h2>API<a class="headerlink" href="#module-apsw.sqlite_extra" title="Link to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="apsw.sqlite_extra.NotAvailable">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.sqlite_extra.</span></span><span class="sig-name descname"><span class="pre">NotAvailable</span></span><a class="reference internal" href="_modules/apsw/sqlite_extra.html#NotAvailable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.sqlite_extra.NotAvailable" title="Link to this definition"></a></dt>
+<dd><p>Raised if a specified item is not available in this installation</p>
+<p>It can be because it did not compile, the APSW installation
+didn’t include it, or APSW is a zipped / frozen package but
+requires filesystem installation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.sqlite_extra.load">
+<span class="sig-prename descclassname"><span class="pre">apsw.sqlite_extra.</span></span><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/sqlite_extra.html#load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.sqlite_extra.load" title="Link to this definition"></a></dt>
+<dd><p>Loads the extension into the provided database</p>
+<p><a class="reference internal" href="connection.html#apsw.Connection.enable_load_extension" title="apsw.Connection.enable_load_extension"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Extension</span> <span class="pre">loading</span></code></a> will
+also be turned on.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.sqlite_extra.has">
+<span class="sig-prename descclassname"><span class="pre">apsw.sqlite_extra.</span></span><span class="sig-name descname"><span class="pre">has</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/sqlite_extra.html#has"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.sqlite_extra.has" title="Link to this definition"></a></dt>
+<dd><p>Returns ‘executable’ or ‘extension’ if extra name is available else None</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="apsw.sqlite_extra.path">
+<span class="sig-prename descclassname"><span class="pre">apsw.sqlite_extra.</span></span><span class="sig-name descname"><span class="pre">path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/sqlite_extra.html#path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.sqlite_extra.path" title="Link to this definition"></a></dt>
+<dd><p>Filesystem path for named extra including extension</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="execution.html" class="btn btn-neutral float-left" title="Execution and tracing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dbapi.html" class="btn btn-neutral float-right" title="DBAPI notes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

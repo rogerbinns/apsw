@@ -1,0 +1,902 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2NR9GDCQLT"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-2NR9GDCQLT');
+    </script>
+    
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>apsw.aio &mdash; APSW 3.52.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=ad5bd102" />
+
+  
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="canonical" href="https://rogerbinns.github.io/apsw/_modules/apsw/aio.html" />
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=a197bc32"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="copyright" title="Copyright" href="../../copyright.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            APSW
+              <img src="../../_static/apswlogo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tips.html">Tips</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example.html">Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation and customization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extensions.html">Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bestpractice.html">Best Practice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../apsw.html">APSW Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../connection.html">Connections to a database</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cursor.html">Cursors (executing SQL)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../blob.html">Blob Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../backup.html">Backup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-json.html">JSON Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../jsonb.html">JSON (Javascript Object Notation)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-fts.html">Full Text Search Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../textsearch.html">Full text search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../unicode.html">Unicode Text Handling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-session.html">Session Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../session.html">Session extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vtable.html">Virtual Tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../vfs.html">Virtual File System (VFS)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../shell.html">Shell</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ext.html">Various interesting and useful bits of functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-async.html">Async Example/Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../async.html">Concurrency &amp; Async</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../exceptions.html">Exceptions and Errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../execution.html">Execution and tracing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extra.html">SQLite extra</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dbapi.html">DBAPI notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pysqlite.html">sqlite3 module differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../benchmarking.html">Benchmarking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../copyright.html">Copyright and License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changes.html">Change History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../py-modindex.html">Module Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">APSW</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../apsw.html">apsw</a></li>
+      <li class="breadcrumb-item active">apsw.aio</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for apsw.aio</h1><div class="highlight"><pre>
+<span></span><span class="s2">&quot;Implements async framework controllers, configuration, and helpers&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextvars</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">queue</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Coroutine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+
+<span class="n">deadline</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">(</span><span class="s2">&quot;apsw.aio.deadline&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;Absolute time deadline for a request in seconds</span>
+
+<span class="sd">This makes a best effort to timeout a database operation including any</span>
+<span class="sd">sync and async callbacks if the deadline is passed.  The default</span>
+<span class="sd">(``None``) is no deadline.</span>
+
+<span class="sd">The deadline is set at the point an APSW call is made, and changes</span>
+<span class="sd">after that are not observed.  It is based on the clock used by the</span>
+<span class="sd">event loop.  Typical usage is:</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    # 10 seconds from now.  You&#39;ll need to get the time from your</span>
+<span class="sd">    # framework as documented below.</span>
+
+<span class="sd">    with apsw.aio.contextvar_set(apsw.aio.deadline,</span>
+<span class="sd">        anyio.current_time() + 10):</span>
+
+<span class="sd">        async for row in await db.execute(&quot;time consuming query ...&quot;):</span>
+<span class="sd">            print(f&quot;{row=}&quot;)</span>
+
+
+<span class="sd">:class:`AsyncIO`</span>
+
+<span class="sd">    :code:`apsw.aio.deadline` is the only way to set a deadline.</span>
+<span class="sd">    :exc:`TimeoutError` will</span>
+<span class="sd">    be raised if the deadline is exceeded.  The current time is</span>
+<span class="sd">    available from  :meth:`asyncio.get_running_loop().time()</span>
+<span class="sd">    &lt;asyncio.loop.time&gt;`</span>
+
+<span class="sd">:class:`Trio`</span>
+
+<span class="sd">    If :code:`apsw.aio.deadline` is set then it is used for the</span>
+<span class="sd">    deadline.  :exc:`trio.TooSlowError` is raised.  The current time</span>
+<span class="sd">    is available from :func:`trio.current_time`.</span>
+
+<span class="sd">    Otherwise the :func:`trio.current_effective_deadline` where the</span>
+<span class="sd">    call is made is used.</span>
+
+<span class="sd">AnyIO</span>
+
+<span class="sd">    If :code:`apsw.aio.deadline` is set then it is used for the</span>
+<span class="sd">    deadline.  :exc:`TimeoutError` is raised.  The current time is</span>
+<span class="sd">    available from :func:`anyio.current_time`.</span>
+
+<span class="sd">    Otherwise the :func:`anyio.current_effective_deadline` where the</span>
+<span class="sd">    call is made is used.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">check_progress_steps</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">(</span>
+    <span class="s2">&quot;apsw.aio.check_progress_steps&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">50_000</span>
+<span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;How many internal SQLite steps between checks for cancellation and deadlines</span>
+
+<span class="sd">While SQLite queries are executing, periodic checks are made to see if</span>
+<span class="sd">the request has been cancelled, or the deadline exceeded.  This is</span>
+<span class="sd">done in the :meth:`progress handler</span>
+<span class="sd">&lt;apsw.Connection.set_progress_handler&gt;`.</span>
+
+<span class="sd">The default should correspond to around 10 checks per second, but will</span>
+<span class="sd">vary a lot based on the queries.  The smaller the number, the more</span>
+<span class="sd">frequent the checks, but also more time consumed making the checks.</span>
+
+<span class="sd">This is only used during connection creation.  Typical usage is:</span>
+
+<span class="sd">.. code-block:: python</span>
+
+<span class="sd">    with apsw.aio.contextvar_set(apsw.aio.check_progress_steps, 500):</span>
+<span class="sd">        db = await apsw.Connection.as_async(...)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">14</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">contextvar_set</span><span class="p">(</span><span class="n">var</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">Token</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrapper for setting a :class:`~contextvars.ContextVar` during a :code:`with` block</span>
+
+<span class="sd">        Python 3.14+ lets you do::</span>
+
+<span class="sd">            with var.set(value):</span>
+<span class="sd">                # code here</span>
+<span class="sd">                ...</span>
+
+<span class="sd">        This wrapper provides the same functionality for all</span>
+<span class="sd">        Python versions::</span>
+
+<span class="sd">            with apsw.aio.contextvar_set(var, value):</span>
+<span class="sd">                # code here</span>
+<span class="sd">                ...</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+<span class="k">else</span><span class="p">:</span>
+
+<div class="viewcode-block" id="contextvar_set">
+<a class="viewcode-back" href="../../async.html#apsw.aio.contextvar_set">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">contextvar_set</span><span class="p">(</span><span class="n">var</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">Token</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+        <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_contextvar_set_wrapper</span><span class="p">():</span>
+            <span class="n">token</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">token</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">var</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_contextvar_set_wrapper</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="make_session">
+<a class="viewcode-back" href="../../async.html#apsw.aio.make_session">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">make_session</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">AsyncConnection</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">apsw</span><span class="o">.</span><span class="n">AsyncSession</span><span class="p">:</span>
+    <span class="s2">&quot;Helper to create a :class:`~apsw.Session` in async mode for an async database&quot;</span>
+    <span class="c1"># This mainly exists to give IDEs and type checkers the clues they need</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="s2">&quot;Session&quot;</span><span class="p">):</span>
+        <span class="c1"># misuse is what SQLite uses</span>
+        <span class="k">raise</span> <span class="n">apsw</span><span class="o">.</span><span class="n">MisuseError</span><span class="p">(</span><span class="s2">&quot;The session extension is not enabled and available&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_Cancelled</span><span class="p">(</span><span class="ne">BaseException</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Raised in the worker thread on seeing call cancellation.</span>
+
+<span class="sd">    The original caller in async will get their framework&#39;s</span>
+<span class="sd">    cancellation exception - this is just to terminate call processing</span>
+<span class="sd">    back through the call stacks</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">pass</span>
+
+
+<span class="c1"># this is used to track the currently processing call for all controllers</span>
+<span class="c1"># as _tls.current_call</span>
+<span class="n">_tls</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_CallTracker</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    All the details for the lifecycle of a call.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="c1"># Used for result ready.  asyncio uses Future which also</span>
+        <span class="c1"># includes the result/exception, while trio/anyio use the</span>
+        <span class="c1"># result/is_exception fields</span>
+        <span class="s2">&quot;completion&quot;</span><span class="p">,</span>
+        <span class="c1"># result value or exception</span>
+        <span class="s2">&quot;result&quot;</span><span class="p">,</span>
+        <span class="c1"># is it an exception?</span>
+        <span class="s2">&quot;is_exception&quot;</span><span class="p">,</span>
+        <span class="c1"># BoxedCall to make</span>
+        <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+        <span class="c1"># deadline in event loop clock</span>
+        <span class="s2">&quot;deadline_loop&quot;</span><span class="p">,</span>
+        <span class="c1"># deadline in worker thread relative to monotonic clock</span>
+        <span class="s2">&quot;deadline_monotonic&quot;</span><span class="p">,</span>
+        <span class="c1"># cancel indication</span>
+        <span class="s2">&quot;is_cancelled&quot;</span><span class="p">,</span>
+        <span class="c1"># if a callback is async and run back in the event loop then</span>
+        <span class="c1"># this can be called to cancel it</span>
+        <span class="s2">&quot;cancel_async_cb&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">completion</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span> <span class="o">|</span> <span class="n">anyio</span><span class="o">.</span><span class="n">Event</span> <span class="o">|</span> <span class="n">trio</span><span class="o">.</span><span class="n">Event</span>
+    <span class="n">result</span><span class="p">:</span> <span class="n">Any</span> <span class="o">|</span> <span class="ne">BaseException</span>
+    <span class="n">is_exception</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">call</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="n">deadline_loop</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span>
+    <span class="n">deadline_monotonic</span><span class="p">:</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span>
+    <span class="n">is_cancelled</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">cancel_async_cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">completion</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span> <span class="o">|</span> <span class="n">anyio</span><span class="o">.</span><span class="n">Event</span> <span class="o">|</span> <span class="n">trio</span><span class="o">.</span><span class="n">Event</span><span class="p">,</span> <span class="n">call</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_exception</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_cancelled</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completion</span> <span class="o">=</span> <span class="n">completion</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">call</span> <span class="o">=</span> <span class="n">call</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deadline_loop</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deadline_monotonic</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cancel_async_cb</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_deadline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">,</span> <span class="n">loop_time</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deadline_loop</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deadline_monotonic</span> <span class="o">=</span> <span class="n">value</span> <span class="o">-</span> <span class="n">loop_time</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">monotonic_exceeded</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">deadline_monotonic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">deadline_monotonic</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;Cancel the call&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_cancelled</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cancel_async_cb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cancel_async_cb</span><span class="p">()</span>
+
+
+<span class="c1"># These are used to directly return values and exceptions without</span>
+<span class="c1"># sending to the worker thread such as prefetched query rows.</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_coro_for_value</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">12</span><span class="p">):</span>
+    <span class="c1"># Python 3.12 unified the exc type, value, and traceback into the single</span>
+    <span class="c1"># exception object.</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_coro_for_exception</span><span class="p">(</span><span class="n">exc</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">exc</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="n">exc</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">with_traceback</span><span class="p">(</span><span class="n">exc</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+<span class="k">else</span><span class="p">:</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_coro_for_exception</span><span class="p">(</span><span class="n">exc</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">exc</span>
+
+
+<span class="c1"># this is separate to avoid the version issues above</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_coro_for_stopasynciteration</span><span class="p">():</span>
+    <span class="k">raise</span> <span class="ne">StopAsyncIteration</span>
+
+
+<div class="viewcode-block" id="AsyncIO">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AsyncIO">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AsyncIO</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`Controller &lt;apsw.AsyncConnectionController&gt;` for :mod:`asyncio`&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AsyncIO.configure">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AsyncIO.configure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">):</span>
+        <span class="s2">&quot;Setup database, just after it is created&quot;</span>
+        <span class="n">apsw</span><span class="o">.</span><span class="n">async_run_coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_run_coro</span>
+
+        <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">connection_hooks</span><span class="p">:</span>
+            <span class="n">hook</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">set_progress_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">progress_checker</span><span class="p">,</span> <span class="n">check_progress_steps</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AsyncIO.send">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AsyncIO.send">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">call</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]):</span>
+        <span class="s2">&quot;Send call to worker&quot;</span>
+        <span class="n">tracker</span> <span class="o">=</span> <span class="n">_CallTracker</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="o">.</span><span class="n">create_future</span><span class="p">(),</span> <span class="n">call</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">this_deadline</span> <span class="o">:=</span> <span class="n">deadline</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tracker</span><span class="o">.</span><span class="n">set_deadline</span><span class="p">(</span><span class="n">this_deadline</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">tracker</span><span class="o">.</span><span class="n">completion</span>
+            <span class="k">return</span> <span class="n">tracker</span><span class="o">.</span><span class="n">completion</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">tracker</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+            <span class="k">raise</span></div>
+
+
+<div class="viewcode-block" id="AsyncIO.close">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AsyncIO.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;Called on connection close, so the worker thread can be stopped&quot;</span>
+        <span class="c1"># How we tell the worker thread to exit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AsyncIO.progress_checker">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AsyncIO.progress_checker">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">progress_checker</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;Periodic check for cancellation and deadlines&quot;</span>
+        <span class="k">if</span> <span class="n">_tls</span><span class="o">.</span><span class="n">current_call</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_Cancelled</span><span class="p">(</span><span class="s2">&quot;cancelled in progress checked&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_tls</span><span class="o">.</span><span class="n">current_call</span><span class="o">.</span><span class="n">monotonic_exceeded</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="AsyncIO.worker_thread_run">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AsyncIO.worker_thread_run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">worker_thread_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;Does the enqueued call processing in the worker thread&quot;</span>
+
+        <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span>
+
+        <span class="k">while</span> <span class="p">(</span><span class="n">tracker</span> <span class="o">:=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+                <span class="c1"># we don&#39;t restore this because the queue is not</span>
+                <span class="c1"># re-entrant, so there is no point</span>
+                <span class="n">_tls</span><span class="o">.</span><span class="n">current_call</span> <span class="o">=</span> <span class="n">tracker</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># should we even start?</span>
+                    <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">monotonic_exceeded</span><span class="p">():</span>
+                        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="o">.</span><span class="n">call_soon_threadsafe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_future_result</span><span class="p">,</span> <span class="n">tracker</span><span class="o">.</span><span class="n">completion</span><span class="p">,</span> <span class="n">tracker</span><span class="o">.</span><span class="n">call</span><span class="p">())</span>
+
+                <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="c1"># BaseException is deliberately used because CancelledError</span>
+                    <span class="c1"># is a subclass of it</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="o">.</span><span class="n">call_soon_threadsafe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_future_exception</span><span class="p">,</span> <span class="n">tracker</span><span class="o">.</span><span class="n">completion</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AsyncIO.set_future_result">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AsyncIO.set_future_result">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_future_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">future</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">future</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+            <span class="n">future</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AsyncIO.set_future_exception">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AsyncIO.set_future_exception">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_future_exception</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">future</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">,</span> <span class="n">exc</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">future</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+            <span class="n">future</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AsyncIO.async_run_coro">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AsyncIO.async_run_coro">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">async_run_coro</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coro</span><span class="p">:</span> <span class="n">Coroutine</span><span class="p">):</span>
+        <span class="s2">&quot;Called in worker thread to run a coroutine in the event loop&quot;</span>
+
+        <span class="n">tracker</span> <span class="o">=</span> <span class="n">_tls</span><span class="o">.</span><span class="n">current_call</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">_Cancelled</span><span class="p">(</span><span class="s2">&quot;cancelled in async_run_coro&quot;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run_coroutine_threadsafe</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">run_coro_in_loop</span><span class="p">(</span><span class="n">coro</span><span class="p">,</span> <span class="n">tracker</span><span class="p">,</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">copy_context</span><span class="p">()),</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">coro</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
+
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_coro_in_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coro</span><span class="p">:</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">tracker</span><span class="p">:</span> <span class="n">_CallTracker</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="s2">&quot;Executes the coro in the event loop&quot;</span>
+
+            <span class="n">task</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">,</span> <span class="n">coro</span><span class="p">)</span>
+            <span class="n">tracker</span><span class="o">.</span><span class="n">cancel_async_cb</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">cancel</span>
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">deadline_loop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">tracker</span><span class="o">.</span><span class="n">deadline_loop</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">task</span>
+
+    <span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">12</span><span class="p">):</span>
+
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_coro_in_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coro</span><span class="p">:</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">tracker</span><span class="p">:</span> <span class="n">_CallTracker</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="s2">&quot;Executes the coro in the event loop&quot;</span>
+
+            <span class="n">task</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">,</span> <span class="n">coro</span><span class="p">)</span>
+            <span class="n">tracker</span><span class="o">.</span><span class="n">cancel_async_cb</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">cancel</span>
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="k">async</span> <span class="k">with</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">timeout_at</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">deadline_loop</span><span class="p">):</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="n">task</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+<div class="viewcode-block" id="AsyncIO.run_coro_in_loop">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AsyncIO.run_coro_in_loop">[docs]</a>
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_coro_in_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coro</span><span class="p">:</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">tracker</span><span class="p">:</span> <span class="n">_CallTracker</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="s2">&quot;Executes the coro in the event loop&quot;</span>
+
+            <span class="c1"># Note: we don&#39;t set cancel_async_cb back to None on exit</span>
+            <span class="c1"># because cancelling an already completed task is doesn&#39;t</span>
+            <span class="c1"># error or cause problems.</span>
+
+            <span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">coro</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+            <span class="n">tracker</span><span class="o">.</span><span class="n">cancel_async_cb</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">cancel</span>
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="k">async</span> <span class="k">with</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">timeout_at</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">deadline_loop</span><span class="p">):</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="n">task</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">thread_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;asyncio apsw background worker&quot;</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">asyncio</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">SimpleQueue</span><span class="p">[</span><span class="n">_CallTracker</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">SimpleQueue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_running_loop</span><span class="p">()</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">thread_name</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">worker_thread_run</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="Trio">
+<a class="viewcode-back" href="../../async.html#apsw.aio.Trio">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Trio</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`Controller &lt;apsw.AsyncConnectionController&gt;` for |trio|&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Trio.configure">
+<a class="viewcode-back" href="../../async.html#apsw.aio.Trio.configure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">):</span>
+        <span class="s2">&quot;Setup database, just after it is created&quot;</span>
+        <span class="n">apsw</span><span class="o">.</span><span class="n">async_run_coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_run_coro</span>
+
+        <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">connection_hooks</span><span class="p">:</span>
+            <span class="n">hook</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">set_progress_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">progress_checker</span><span class="p">,</span> <span class="n">check_progress_steps</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Trio.send">
+<a class="viewcode-back" href="../../async.html#apsw.aio.Trio.send">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">call</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]):</span>
+        <span class="s2">&quot;Enqueues call to worker thread&quot;</span>
+        <span class="n">tracker</span> <span class="o">=</span> <span class="n">_CallTracker</span><span class="p">(</span><span class="n">trio</span><span class="o">.</span><span class="n">Event</span><span class="p">(),</span> <span class="n">call</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">this_deadline</span> <span class="o">:=</span> <span class="n">deadline</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">this_deadline</span> <span class="o">=</span> <span class="n">trio</span><span class="o">.</span><span class="n">current_effective_deadline</span><span class="p">()</span>
+        <span class="n">tracker</span><span class="o">.</span><span class="n">set_deadline</span><span class="p">(</span><span class="n">this_deadline</span><span class="p">,</span> <span class="n">trio</span><span class="o">.</span><span class="n">current_time</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">tracker</span><span class="o">.</span><span class="n">completion</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_exception</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">tracker</span><span class="o">.</span><span class="n">result</span>
+            <span class="k">return</span> <span class="n">tracker</span><span class="o">.</span><span class="n">result</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">tracker</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+            <span class="k">raise</span></div>
+
+
+<div class="viewcode-block" id="Trio.close">
+<a class="viewcode-back" href="../../async.html#apsw.aio.Trio.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;Called on connection close, so the worker thread can be stopped&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Trio.progress_checker">
+<a class="viewcode-back" href="../../async.html#apsw.aio.Trio.progress_checker">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">progress_checker</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;Periodic check for cancellation and deadlines&quot;</span>
+        <span class="k">if</span> <span class="n">_tls</span><span class="o">.</span><span class="n">current_call</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_Cancelled</span><span class="p">(</span><span class="s2">&quot;cancelled in progress handler&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_tls</span><span class="o">.</span><span class="n">current_call</span><span class="o">.</span><span class="n">monotonic_exceeded</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">trio</span><span class="o">.</span><span class="n">TooSlowError</span><span class="p">(</span><span class="s2">&quot;deadline exceeded in progress handler&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="Trio.worker_thread_run">
+<a class="viewcode-back" href="../../async.html#apsw.aio.Trio.worker_thread_run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">worker_thread_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;Does the enqueued call processing in the worker thread&quot;</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span>
+
+        <span class="k">while</span> <span class="p">(</span><span class="n">tracker</span> <span class="o">:=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+                <span class="c1"># we don&#39;t restore this because the queue is not</span>
+                <span class="c1"># re-entrant, so there is no point</span>
+                <span class="n">_tls</span><span class="o">.</span><span class="n">current_call</span> <span class="o">=</span> <span class="n">tracker</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># should we even start?</span>
+                    <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">monotonic_exceeded</span><span class="p">():</span>
+                        <span class="k">raise</span> <span class="n">trio</span><span class="o">.</span><span class="n">TooSlowError</span><span class="p">()</span>
+                    <span class="n">tracker</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">call</span><span class="p">()</span>
+
+                <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="c1"># BaseException is deliberately used because Cancelled</span>
+                    <span class="c1"># is a subclass of it</span>
+                    <span class="n">tracker</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">exc</span>
+                    <span class="n">tracker</span><span class="o">.</span><span class="n">is_exception</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="o">.</span><span class="n">run_sync_soon</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">completion</span><span class="o">.</span><span class="n">set</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Trio.async_run_coro">
+<a class="viewcode-back" href="../../async.html#apsw.aio.Trio.async_run_coro">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">async_run_coro</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coro</span><span class="p">:</span> <span class="n">Coroutine</span><span class="p">):</span>
+        <span class="s2">&quot;Called in worker thread to run a coroutine in the event loop&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tracker</span> <span class="o">=</span> <span class="n">_tls</span><span class="o">.</span><span class="n">current_call</span>
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">_Cancelled</span><span class="p">(</span><span class="s2">&quot;Cancelled in async_run_coro&quot;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">trio</span><span class="o">.</span><span class="n">from_thread</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_coro_in_loop</span><span class="p">,</span> <span class="n">coro</span><span class="p">,</span> <span class="n">tracker</span><span class="p">,</span> <span class="n">trio_token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">coro</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Trio.run_coro_in_loop">
+<a class="viewcode-back" href="../../async.html#apsw.aio.Trio.run_coro_in_loop">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_coro_in_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coro</span><span class="p">:</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">tracker</span><span class="p">:</span> <span class="n">_CallTracker</span><span class="p">):</span>
+        <span class="s2">&quot;Executes the coro in the event loop&quot;</span>
+        <span class="k">with</span> <span class="n">trio</span><span class="o">.</span><span class="n">fail_at</span><span class="p">(</span><span class="n">deadline</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">deadline_loop</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">tracker</span><span class="o">.</span><span class="n">deadline_loop</span><span class="p">)</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+            <span class="n">tracker</span><span class="o">.</span><span class="n">cancel_async_cb</span> <span class="o">=</span> <span class="n">scope</span><span class="o">.</span><span class="n">cancel</span>
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">coro</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">thread_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;trio apsw background worker&quot;</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">trio</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">trio</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">SimpleQueue</span><span class="p">[</span><span class="n">_CallTracker</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">SimpleQueue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">trio</span><span class="o">.</span><span class="n">lowlevel</span><span class="o">.</span><span class="n">current_trio_token</span><span class="p">()</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">thread_name</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">worker_thread_run</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="AnyIO">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AnyIO">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AnyIO</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`Controller &lt;apsw.AsyncConnectionController&gt;` for |anyio|&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AnyIO.configure">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AnyIO.configure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">):</span>
+        <span class="s2">&quot;Setup database, just after it is created&quot;</span>
+        <span class="n">apsw</span><span class="o">.</span><span class="n">async_run_coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">async_run_coro</span>
+
+        <span class="k">for</span> <span class="n">hook</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">connection_hooks</span><span class="p">:</span>
+            <span class="n">hook</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">set_progress_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">progress_checker</span><span class="p">,</span> <span class="n">check_progress_steps</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AnyIO.send">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AnyIO.send">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">call</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]):</span>
+        <span class="s2">&quot;Enqueues call to worker thread&quot;</span>
+
+        <span class="n">tracker</span> <span class="o">=</span> <span class="n">_CallTracker</span><span class="p">(</span><span class="n">anyio</span><span class="o">.</span><span class="n">Event</span><span class="p">(),</span> <span class="n">call</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">this_deadline</span> <span class="o">:=</span> <span class="n">deadline</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">this_deadline</span> <span class="o">=</span> <span class="n">anyio</span><span class="o">.</span><span class="n">current_effective_deadline</span><span class="p">()</span>
+        <span class="n">tracker</span><span class="o">.</span><span class="n">set_deadline</span><span class="p">(</span><span class="n">this_deadline</span><span class="p">,</span> <span class="n">anyio</span><span class="o">.</span><span class="n">current_time</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">tracker</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">tracker</span><span class="o">.</span><span class="n">completion</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_exception</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">tracker</span><span class="o">.</span><span class="n">result</span>
+            <span class="k">return</span> <span class="n">tracker</span><span class="o">.</span><span class="n">result</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">tracker</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+            <span class="k">raise</span></div>
+
+
+<div class="viewcode-block" id="AnyIO.close">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AnyIO.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;Called on connection close, so the worker thread can be stopped&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AnyIO.progress_checker">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AnyIO.progress_checker">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">progress_checker</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;Periodic check for cancellation and deadlines&quot;</span>
+        <span class="n">tracker</span> <span class="o">=</span> <span class="n">_tls</span><span class="o">.</span><span class="n">current_call</span>
+        <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_Cancelled</span><span class="p">(</span><span class="s2">&quot;cancelled in progress handler&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">monotonic_exceeded</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">&quot;deadline exceeded in progress handler&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="AnyIO.worker_thread_run">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AnyIO.worker_thread_run">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">worker_thread_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s2">&quot;Does the enqueued call processing in the worker thread&quot;</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span>
+
+        <span class="k">while</span> <span class="p">(</span><span class="n">tracker</span> <span class="o">:=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">())</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+                <span class="c1"># we don&#39;t restore this because the queue is not</span>
+                <span class="c1"># re-entrant, so there is no point</span>
+                <span class="n">_tls</span><span class="o">.</span><span class="n">current_call</span> <span class="o">=</span> <span class="n">tracker</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># should we even start?</span>
+                    <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">monotonic_exceeded</span><span class="p">():</span>
+                        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">&quot;Deadline exceeded in queue&quot;</span><span class="p">)</span>
+                    <span class="n">tracker</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">call</span><span class="p">()</span>
+
+                <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="c1"># BaseException is deliberately used because CancelledError</span>
+                    <span class="c1"># is a subclass of it</span>
+                    <span class="n">tracker</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">exc</span>
+                    <span class="n">tracker</span><span class="o">.</span><span class="n">is_exception</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">anyio</span><span class="o">.</span><span class="n">from_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">completion</span><span class="o">.</span><span class="n">set</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AnyIO.async_run_coro">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AnyIO.async_run_coro">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">async_run_coro</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coro</span><span class="p">:</span> <span class="n">Coroutine</span><span class="p">):</span>
+        <span class="s2">&quot;Called in worker thread to run a coroutine in the event loop&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tracker</span> <span class="o">=</span> <span class="n">_tls</span><span class="o">.</span><span class="n">current_call</span>
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">_Cancelled</span><span class="p">(</span><span class="s2">&quot;Cancelled in async_run_coro&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">monotonic_exceeded</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">&quot;deadline exceeded in async_run_coro&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">anyio</span><span class="o">.</span><span class="n">from_thread</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_coro_in_loop</span><span class="p">,</span> <span class="n">coro</span><span class="p">,</span> <span class="n">tracker</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">coro</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="AnyIO.run_coro_in_loop">
+<a class="viewcode-back" href="../../async.html#apsw.aio.AnyIO.run_coro_in_loop">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_coro_in_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coro</span><span class="p">:</span> <span class="n">Coroutine</span><span class="p">,</span> <span class="n">tracker</span><span class="p">:</span> <span class="n">_CallTracker</span><span class="p">):</span>
+        <span class="s2">&quot;Executes coro in the event loop&quot;</span>
+
+        <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">fail_after</span><span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">deadline_loop</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">tracker</span><span class="o">.</span><span class="n">deadline_loop</span> <span class="o">-</span> <span class="n">anyio</span><span class="o">.</span><span class="n">current_time</span><span class="p">()</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">scope</span><span class="p">:</span>
+            <span class="n">tracker</span><span class="o">.</span><span class="n">cancel_async_cb</span> <span class="o">=</span> <span class="n">scope</span><span class="o">.</span><span class="n">cancel</span>
+            <span class="k">if</span> <span class="n">tracker</span><span class="o">.</span><span class="n">is_cancelled</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="n">coro</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">thread_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;anyio apsw background worker&quot;</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">anyio</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">anyio</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">SimpleQueue</span><span class="p">[</span><span class="n">_CallTracker</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">SimpleQueue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">anyio</span><span class="o">.</span><span class="n">lowlevel</span><span class="o">.</span><span class="n">current_token</span><span class="p">()</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">thread_name</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">worker_thread_run</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+<span class="c1"># True means they can be tried, False means too old etc</span>
+<span class="n">_anyio_usable</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">_trio_usable</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="Auto">
+<a class="viewcode-back" href="../../async.html#apsw.aio.Auto">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Auto</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Trio</span> <span class="o">|</span> <span class="n">AsyncIO</span> <span class="o">|</span> <span class="n">AnyIO</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Automatically detects the current async framework running event</span>
+<span class="sd">    loop and returns the appropriate controller.  This is the default</span>
+<span class="sd">    for :attr:`apsw.async_controller`.</span>
+
+<span class="sd">    **AnyIO note**</span>
+
+<span class="sd">        The :class:`AnyIO` controller is only returned if</span>
+<span class="sd">        :func:`anyio.run` is in the call stack.</span>
+
+<span class="sd">        If you are simultaneously using anyio and another framework</span>
+<span class="sd">        then you should manually configure</span>
+<span class="sd">        :attr:`apsw.async_controller` to get the one you want.</span>
+
+<span class="sd">        This matters especially for timeouts and cancellations where</span>
+<span class="sd">        each framework is different.</span>
+
+<span class="sd">    :exc:`RuntimeError` is raised if the framework can&#39;t be detected.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_anyio_usable</span><span class="p">,</span> <span class="n">_trio_usable</span>
+    <span class="c1"># This variable tracks which class to use.  It is instantiated</span>
+    <span class="c1"># outside of the try/except blocks so exceptions in its</span>
+    <span class="c1"># initialization will be raised.</span>
+    <span class="n">found</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;anyio&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span> <span class="ow">and</span> <span class="n">_anyio_usable</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">anyio</span>
+
+            <span class="c1"># this checks if an anyio supported event loop is running</span>
+            <span class="c1"># but anyio works with asyncio/trio as the loop ...</span>
+            <span class="n">anyio</span><span class="o">.</span><span class="n">get_current_task</span><span class="p">()</span>
+
+            <span class="c1"># ... so we need to check if anyio.run is in the call stack</span>
+            <span class="n">anyio_run_code</span> <span class="o">=</span> <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="vm">__code__</span>
+
+            <span class="n">frame</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span>
+            <span class="k">while</span> <span class="n">frame</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_code</span> <span class="ow">is</span> <span class="n">anyio_run_code</span><span class="p">:</span>
+                    <span class="n">found</span> <span class="o">=</span> <span class="n">AnyIO</span>
+                    <span class="k">break</span>
+                <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_back</span>
+
+            <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="c1"># check its version is ok</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.metadata</span>
+                <span class="n">ver</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="s2">&quot;anyio&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)))</span>
+                <span class="k">if</span>  <span class="n">ver</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                    <span class="n">found</span> <span class="o">=</span> <span class="n">AnyIO</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;anyio </span><span class="si">{</span><span class="n">ver</span><span class="si">}</span><span class="s2"> was found but is too old to be used with the AnyIO controller&quot;</span><span class="p">)</span>
+                    <span class="n">_anyio_usable</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;trio&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span> <span class="ow">and</span> <span class="n">_trio_usable</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">trio</span>
+
+            <span class="n">trio</span><span class="o">.</span><span class="n">lowlevel</span><span class="o">.</span><span class="n">current_trio_token</span><span class="p">()</span>
+
+            <span class="c1"># check its version is ok</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.metadata</span>
+            <span class="n">ver</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">importlib</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">version</span><span class="p">(</span><span class="s2">&quot;trio&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)))</span>
+            <span class="k">if</span>  <span class="n">ver</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="n">Trio</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;trio </span><span class="si">{</span><span class="n">ver</span><span class="si">=}</span><span class="s2"> was found but is too old to be used with the Trio controller&quot;</span><span class="p">)</span>
+                <span class="n">_trio_usable</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">&quot;asyncio&quot;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+            <span class="n">asyncio</span><span class="o">.</span><span class="n">get_running_loop</span><span class="p">()</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">AsyncIO</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Unable to determine current Async environment&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">found</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
+      <span class="lastupdated">Last updated on Mar 09, 2026.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
