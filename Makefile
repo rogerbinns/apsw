@@ -252,6 +252,7 @@ source_nocheck: src/apswversion.h checkversion
 	env APSW_NO_GA=t $(MAKE) doc
 	rm -rf doc/build/html/_static/fonts/ doc/build/html/_static/css/fonts/ doc/build/apsw.1
 	rst2man doc/cli.rst doc/build/apsw.1
+	git clean -fdx apsw/sqlite_extra_binaries
 	$(PYTHON) setup.py sdist --formats zip,gztar --add-doc
 
 source: source_nocheck # Make the source and then check it builds and tests correctly.  This will catch missing files etc
