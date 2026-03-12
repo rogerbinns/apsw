@@ -52,10 +52,6 @@ API Reference
 =============
 */
 
-#ifdef APSW_USE_SQLITE_CFG_H
-#include "sqlite_cfg.h"
-#endif
-
 #ifdef APSW_USE_SQLITE_CONFIG
 #include "sqlite3config.h"
 #endif

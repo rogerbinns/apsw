@@ -43,7 +43,7 @@ esac
 
 if [ -f sqlite3/sqlite_cfg.h ]
 then
-    CFLAGS="$CFLAGS -DAPSW_USE_SQLITE_CFG_H"
+    CFLAGS="$CFLAGS -D_HAVE_SQLITE_CONFIG_H"
 fi
 
 export APSW_TEST_LARGE=t COVERAGE_RUN=true

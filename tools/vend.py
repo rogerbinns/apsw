@@ -611,7 +611,7 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
     macros = [(f"SQLITE_ENABLE_{enable}", 1) for enable in lib_enables]
     cfg = pathlib.Path("sqlite3") / "sqlite_cfg.h"
     if cfg.exists():
-        macros.append(("SQLITE_CUSTOM_INCLUDE", "sqlite_cfg.h"))
+        macros.append(("_HAVE_SQLITE_CONFIG_H", 1))
     macros.append(("SQLITE_THREADSAFE", 1))
     if compiler.compiler_type == "msvc":
         macros.append(("SQLITE_API", "__declspec(dllexport)"))

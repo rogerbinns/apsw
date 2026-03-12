@@ -645,7 +645,7 @@ class apsw_build_ext(beparent):
         s3config = os.path.join(ext.include_dirs[0], "sqlite_cfg.h")
         if os.path.exists(s3config):
             write(f"SQLite: Using configure generated {s3config}")
-            ext.define_macros.append(("APSW_USE_SQLITE_CFG_H", "1"))
+            ext.define_macros.append(("_HAVE_SQLITE_CONFIG_H", "1"))
 
         # enables
         addicuinclib = False
