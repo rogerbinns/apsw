@@ -645,7 +645,7 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
     macros.extend(
         [
             ("SQLITE_USE_URI", 1),
-            ("SQLITE_THREADSAFE", 1),
+            ("SQLITE_THREADSAFE", 2),
         ]
     )
 
