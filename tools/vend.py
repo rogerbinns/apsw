@@ -212,8 +212,8 @@ extras = [
         name="zipfile",
         doc="zipfile.html",
         description="Read/Write access to simple archives",
+        lib_zlib=True,
     ),
-    # zipfile: requires libz
     Extra(
         name="zorder",
         description="Functions for z-order (Morton code) transformations",
@@ -545,6 +545,7 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
     link_extra_preargs = None
 
     compiler.add_include_dir("sqlite3")
+    compiler.add_include_dir("sqlite3/zlib")
 
     # where the build artifacts go
     build_dir = (
