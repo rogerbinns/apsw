@@ -85,7 +85,7 @@ class Extra(unittest.TestCase):
                             print(f"  >> Executable {name}")
                         cmd = apsw.sqlite_extra.path(name)
                         match name:
-                            case "sqlar":
+                            case "sqlite3_sqlar":
                                 self.run_cmd([cmd, pathlib.Path(tmpd) / f"{spicy}.sqlar", dbf])
 
                             case "sqlite3_dbdump" | "sqlite3_dbhash" | "sqlite3_dbtotxt":
