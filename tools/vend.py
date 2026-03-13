@@ -540,6 +540,12 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
     compiler = ccompiler.new_compiler(verbose=True)
     # this configures compiler to have the same flags as python was built with
     customize_compiler(compiler)
+    # we also want the same libraries which the above doesn't do and
+    # we need pthread/dl on various platforms.
+    if compiler.compiler_type == "unix" and (libs := sysconfig.get_config_var("LIBS")):
+        for lib in libs.split():
+            if lib.startswith("-l"):
+                compiler.add_library(lib[2:])
 
     compile_extra_preargs = None
     link_extra_preargs = None
