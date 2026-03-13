@@ -646,6 +646,7 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
         [
             ("SQLITE_USE_URI", 1),
             ("SQLITE_THREADSAFE", 2),
+            ("SQLITE_ENABLE_COLUMN_METADATA", 1),
         ]
     )
 
