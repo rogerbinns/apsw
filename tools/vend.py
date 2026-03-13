@@ -779,7 +779,9 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
                     shutil.copy2(pathlib.Path("sqlite3") / extra.sources[0], avx_c)
 
                     objs = compiler.compile(
-                        [str(pathlib.Path("sqlite3") / filename) for filename in extra.sources] + [resource],
+                        [str(pathlib.Path("sqlite3") / filename) for filename in extra.sources]
+                        + [resource]
+                        + (zlib_sources if extra.lib_zlib else []),
                         output_dir=str(build_dir),
                         include_dirs=include_dirs,
                         extra_preargs=compile_extra_preargs,
@@ -799,7 +801,9 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
 
                 else:
                     objs = compiler.compile(
-                        [str(pathlib.Path("sqlite3") / filename) for filename in extra.sources] + [resource],
+                        [str(pathlib.Path("sqlite3") / filename) for filename in extra.sources]
+                        + [resource]
+                        + (zlib_sources if extra.lib_zlib else []),
                         output_dir=str(build_dir),
                         include_dirs=include_dirs,
                         extra_preargs=compile_extra_preargs,
