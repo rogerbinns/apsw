@@ -389,8 +389,8 @@ class fetch(Command):
                 write(
                     "The download does not match the checksums distributed with APSW.\n"
                     "The download should not have changed since the checksums were\n"
-                    "generated.  The cause could be anything from network corruption\n"
-                    "to a malicious attack."
+                    "generated.  The causes could be anything from network corruption,\n"
+                    "overloaded server error message, to a malicious attack."
                 )
                 raise ValueError("Checksums do not match")
         # no matching line
