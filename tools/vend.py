@@ -169,6 +169,12 @@ extras = [
         doc="spellfix1.html",
     ),
     Extra(
+        name="sqlar",
+        description="Utility functions for SQL archives",
+        doc="sqlar.html#managing_sqlite_archives_from_application_code",
+        lib_zlib=True,
+    ),
+    Extra(
         name="stmt",
         description="Virtual table with information about all prepared statements on a connection",
         doc="stmt.html",
@@ -176,10 +182,6 @@ extras = [
     Extra(
         name="stmtrand",
         description="Function that returns the same sequence of random integers is returned for each invocation of the statement",
-    ),
-    Extra(
-        name="tmstmpvfs",
-        description="VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files",
     ),
     # totype: hard codes byte order detection on processors from 2013
     Extra(
@@ -349,25 +351,30 @@ extras = [
         lib_sqlite=True,
     ),
     Extra(
-        name="sqlite3_showtmlog",
-        type="executable",
-        sources=["tool/showtmlog.c"],
-        description="Makes human/csv readable output from a tmstmpvfs log file",
-    ),
-    Extra(
         name="sqlite3_showwal",
         type="executable",
         sources=["tool/showwal.c"],
         description="Shows low level content of a WAL file",
     ),
     Extra(
-        name="sqlar",
+        name="sqlite3_sqlar",
         type="executable",
         sources=["sqlar/sqlar.c"],
         doc="sqlar/",
         description="Command line SQL archive tool",
         lib_sqlite=True,
     ),
+    # these two are in the withdrawn 3.52.0 release
+    #Extra(
+    #    name="sqlite3_showtmlog",
+    #    type="executable",
+    #    sources=["tool/showtmlog.c"],
+    #    description="Makes human/csv readable output from a tmstmpvfs log file",
+    #),
+    #Extra(
+    #    name="tmstmpvfs",
+    #    description="VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files",
+    #),
 ]
 
 import os

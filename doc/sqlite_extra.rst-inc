@@ -5,10 +5,6 @@ Programs
 --------
 
                 
-sqlar (`doc <https://sqlite.org/sqlar/>`__)
-
-   Command line SQL archive tool
-
 sqlite3_dbdump (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fdbdump.c>`__)
 
    Converts the content of a SQLite database into UTF-8 text SQL statements that can be used to exactly recreate the original database
@@ -77,13 +73,13 @@ sqlite3_showstat4 (`doc <https://sqlite.org/src/file?ci=trunk&name=tool%2fshowst
 
    Shows contents of stat4 index of a database
 
-sqlite3_showtmlog (`doc <https://sqlite.org/src/file?ci=trunk&name=tool%2fshowtmlog.c>`__)
-
-   Makes human/csv readable output from a tmstmpvfs log file
-
 sqlite3_showwal (`doc <https://sqlite.org/src/file?ci=trunk&name=tool%2fshowwal.c>`__)
 
    Shows low level content of a WAL file
+
+sqlite3_sqlar (`doc <https://sqlite.org/sqlar/>`__)
+
+   Command line SQL archive tool
 
 
 Extensions
@@ -181,7 +177,7 @@ Extensions
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ffileio.c>`__
       - Implements SQL functions readfile() and writefile(), and eponymous virtual type 'fsdir'
       -
-        * Function: :code:`lsmode` :code:`readfile` :code:`realpath` :code:`writefile`
+        * Function: :code:`lsmode` :code:`readfile` :code:`writefile`
         * VTable: :code:`fsdir`
 
     * - fuzzer
@@ -194,7 +190,7 @@ Extensions
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fieee754.c>`__
       - functions for the exact display* and input of IEEE754 Binary64 floating-point numbers
       -
-        * Function: :code:`ieee754` :code:`ieee754_exponent` :code:`ieee754_from_blob` :code:`ieee754_from_int` :code:`ieee754_inc` :code:`ieee754_mantissa` :code:`ieee754_to_blob` :code:`ieee754_to_int`
+        * Function: :code:`ieee754` :code:`ieee754_exponent` :code:`ieee754_from_blob` :code:`ieee754_inc` :code:`ieee754_mantissa` :code:`ieee754_to_blob`
 
     * - memstat
       - `link <https://sqlite.org/memstat.html>`__
@@ -259,6 +255,12 @@ Extensions
         * Function: :code:`editdist3` :code:`spellfix1_editdist` :code:`spellfix1_phonehash` :code:`spellfix1_scriptcode` :code:`spellfix1_translit`
         * VTable: :code:`spellfix1`
 
+    * - sqlar
+      - `link <https://sqlite.org/sqlar.html#managing_sqlite_archives_from_application_code>`__
+      - Utility functions for SQL archives
+      -
+        * Function: :code:`sqlar_compress` :code:`sqlar_uncompress`
+
     * - stmt
       - `link <https://sqlite.org/stmt.html>`__
       - Virtual table with information about all prepared statements on a connection
@@ -270,12 +272,6 @@ Extensions
       - Function that returns the same sequence of random integers is returned for each invocation of the statement
       -
         * Function: :code:`stmtrand`
-
-    * - tmstmpvfs
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ftmstmpvfs.c>`__
-      - VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files
-      -
-        * VFS: :code:`tmstmpvfs`
 
     * - uint
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fuint.c>`__

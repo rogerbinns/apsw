@@ -40,7 +40,7 @@ statically for those extensions and programs.
 TCL
 +++
 
-Some of the tools require `TCL <https://www.tcl-lang.org/>`__ and are
+Some of the programs require `TCL <https://www.tcl-lang.org/>`__ and are
 omitted.
 
 Readline
