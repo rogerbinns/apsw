@@ -5,6 +5,10 @@ Programs
 --------
 
                 
+sqlar (`doc <https://sqlite.org/sqlar/>`__)
+
+   Command line SQL archive tool
+
 sqlite3_dbdump (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fdbdump.c>`__)
 
    Converts the content of a SQLite database into UTF-8 text SQL statements that can be used to exactly recreate the original database
@@ -147,6 +151,12 @@ Extensions
       - A virtual table that returns suggested completions for a partial SQL input
       -
         * VTable: :code:`completion`
+
+    * - compress
+      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fcompress.c>`__
+      - SQL compression functions
+      -
+        * Function: :code:`compress` :code:`uncompress`
 
     * - csv
       - `link <https://sqlite.org/csv.html>`__
@@ -304,6 +314,13 @@ Extensions
       - Virtual table printing diagnostic information for interactive analysis and debugging
       -
         * VTable: :code:`vtablog`
+
+    * - zipfile
+      - `link <https://sqlite.org/zipfile.html>`__
+      - Read/Write access to simple archives
+      -
+        * Function: :code:`zipfile` :code:`zipfile_cds`
+        * VTable: :code:`zipfile`
 
     * - zorder
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fzorder.c>`__

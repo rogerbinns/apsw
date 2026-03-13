@@ -32,6 +32,8 @@ class Extra:
     "true if needing to link against sqlite3.c"
     lib_sqlite_stdio: bool = False
     "true if needing sqlite3_stdio"
+    lib_zlib: bool = False
+    "true if needing zlib - we statically link in"
     sources: list[str] = dataclasses.field(default_factory=list[str])
     "list of files making source for this extra relative to sqlite3 directory"
     type: Literal["extension"] | Literal["executable"] = "extension"
@@ -90,6 +92,11 @@ extras = [
         name="completion",
         description="A virtual table that returns suggested completions for a partial SQL input",
         doc="completion.html",
+    ),
+    Extra(
+        name="compress",
+        description="SQL compression functions",
+        lib_zlib=True,
     ),
     Extra(
         name="csv",
@@ -199,6 +206,11 @@ extras = [
     ),
     # vtshim: not useful
     # wholenumber: use generate_series
+    Extra(
+        name="zipfile",
+        doc="zipfile.html",
+        description="Read/Write access to simple archives",
+    ),
     # zipfile: requires libz
     Extra(
         name="zorder",
@@ -302,7 +314,7 @@ extras = [
         lib_sqlite=True,
         # work around sqlite's mistaken handling of utf8 on windows.  it should be
         # using manifest but instead only has a hacky main thing going on
-        defines = [("main", "main")]
+        defines=[("main", "main")],
     ),
     Extra(
         name="sqlite3_showdb",
@@ -347,6 +359,14 @@ extras = [
         type="executable",
         sources=["tool/showwal.c"],
         description="Shows low level content of a WAL file",
+    ),
+    Extra(
+        name="sqlar",
+        type="executable",
+        sources=["sqlar/sqlar.c"],
+        doc="sqlar/",
+        description="Command line SQL archive tool",
+        lib_sqlite=True,
     ),
 ]
 
@@ -436,7 +456,7 @@ windows_manifest = """
 """
 
 
-def resource_file(build_dir, compiler, extra: Extra):
+def resource_file(build_dir, compiler, extra: Extra) -> str:
     if compiler.compiler_type == "msvc":
         if extra.type == "executable":
             with open(build_dir / "utf8_manifest", "wt") as mf:
@@ -493,17 +513,20 @@ def exc_type(exc: Exception) -> str:
         raise
     return type(exc).__name__
 
+
 @dataclasses.dataclass
 class CompilerImplementation:
     """What is the actual compiler
 
     Sometimes call we know is it is cc so the implementation
     details are determined by compile_check"""
+
     name: Literal["gcc"] | Literal["clang"] | Literal["msvc"] | Literal["unknown"]
     version: str
     "random text"
     misc: set[str]
     "the various other things"
+
 
 def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
     get_version()
@@ -539,7 +562,7 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
         objs = compiler.compile([compile_check_name], output_dir=str(build_dir))
         compiler.link_executable(objs, "compile_check", output_dir=str(build_dir))
         out_name = f"{build_dir}/compile_check{compiler.exe_extension if compiler.exe_extension else ''}"
-        p =subprocess.run([out_name], capture_output=True, encoding="utf8", text=True)
+        p = subprocess.run([out_name], capture_output=True, encoding="utf8", text=True)
         p.check_returncode()
         info = p.stdout.splitlines()
         ci = CompilerImplementation(info[0], info[1], set(info[2:]))
@@ -609,10 +632,25 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
     lib_enables = "CARRAY COLUMN_METADATA DBPAGE_VTAB DBSTAT_VTAB FTS4 FTS5 GEOPOLY MATH_FUNCTIONS PERCENTILE PREUPDATE_HOOK RTREE SESSION STAT4".split()
 
     macros = [(f"SQLITE_ENABLE_{enable}", 1) for enable in lib_enables]
+
+    # add in others
+    macros.extend(
+        [
+            ("SQLITE_CONFIG_URI", 1),
+            ("SQLITE_THREADSAFE", 1),
+        ]
+    )
+
     cfg = pathlib.Path("sqlite3") / "sqlite_cfg.h"
     if cfg.exists():
         macros.append(("_HAVE_SQLITE_CONFIG_H", 1))
-    macros.append(("SQLITE_THREADSAFE", 1))
+
+    # we need a subset of zlib source files
+    zlib_sources = [
+        str(pathlib.Path("sqlite3/zlib") / f"{name}.c")
+        for name in "adler32 crc32 deflate inflate inffast inftrees zutil trees compress uncompr".split()
+    ]
+
     if compiler.compiler_type == "msvc":
         macros.append(("SQLITE_API", "__declspec(dllexport)"))
     try:
@@ -620,7 +658,7 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
             build_dir, compiler, Extra(name="libsqlite3", description="SQLite 3 library", doc="")
         )
         lib_objs = compiler.compile(
-            [str(pathlib.Path("sqlite3") / "sqlite3.c"), lib_resource],
+            [str(pathlib.Path("sqlite3") / "sqlite3.c"), lib_resource] + zlib_sources,
             output_dir=str(build_dir),
             macros=macros,
             extra_preargs=compile_extra_preargs,

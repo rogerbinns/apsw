@@ -298,18 +298,32 @@ class fetch(Command):
                     modtime = datetime.datetime(*zi.date_time).timestamp()
                     self.extract_entry(zipf.read(zi), zi.filename, modtime)
 
-            write("  Getting the experiment vec1 extension")
+            for desc, url, replace in (
+                (
+                    "experimental vec1 extension source",
+                    "https://sqlite.org/vec1/zip/vec1-20260306155250-d070184523.zip",
+                    "sqlite3/vec1",
+                ),
+                (
+                    "sqlar tool source",
+                    "https://sqlite.org/sqlar/zip/sqlar-src-20180107193712-4824e73896.zip",
+                    "sqlite3/sqlar",
+                ),
+                (
+                    "zlib source",
+                    "https://www.zlib.net/zlib132.zip",
+                    "sqlite3/zlib",
+                ),
+            ):
+                write(f"  Getting the {desc}")
+                data = self.download(url, checksum=True)
 
-            AURL = "https://sqlite.org/vec1/zip/vec1-20260306155250-d070184523.zip"
-
-            data = self.download(AURL, checksum=True)
-
-            with zipfile.ZipFile(data) as zipf:
-                for zi in zipf.infolist():
-                    if zi.is_dir():
-                        continue
-                    modtime = datetime.datetime(*zi.date_time).timestamp()
-                    self.extract_entry(zipf.read(zi), zi.filename, modtime, replace="sqlite3/vec1")
+                with zipfile.ZipFile(data) as zipf:
+                    for zi in zipf.infolist():
+                        if zi.is_dir():
+                            continue
+                        modtime = datetime.datetime(*zi.date_time).timestamp()
+                        self.extract_entry(zipf.read(zi), zi.filename, modtime, replace=replace)
 
         ## The amalgamation is a .tar.gz
         if self.sqlite:

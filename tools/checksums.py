@@ -17,7 +17,9 @@ sqlitevers = (
     "3510000",
 )
 
-vec1_urls = ("https://sqlite.org/vec1/zip/vec1-20260306155250-d070184523.zip",)
+other_urls = ("https://sqlite.org/vec1/zip/vec1-20260306155250-d070184523.zip",
+              "https://sqlite.org/sqlar/zip/sqlar-src-20180107193712-4824e73896.zip",
+              "https://www.zlib.net/zlib132.zip",)
 
 fixup_download_url = setup.fixup_download_url
 
@@ -47,13 +49,13 @@ def check(url, data):
     else:
         print(url, d[0], d[1], d[2])
 
-for vec1 in vec1_urls:
+for url in other_urls:
     try:
-        data = urllib.request.urlopen(vec1).read()
+        data = urllib.request.urlopen(url).read()
     except:
-        print(vec1)
+        print(url)
         raise
-    check(vec1, data)
+    check(url, data)
 
 for v in sqlitevers:
     # All platforms amalgamation

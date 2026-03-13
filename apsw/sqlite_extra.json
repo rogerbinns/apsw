@@ -35,6 +35,10 @@
         "description": "A virtual table that returns suggested completions for a partial SQL input",
         "type": "extension"
     },
+    "compress": {
+        "description": "SQL compression functions",
+        "type": "extension"
+    },
     "csv": {
         "description": "A virtual table for reading CSV files",
         "type": "extension"
@@ -98,6 +102,10 @@
     "spellfix": {
         "description": "Search a large vocabulary for close matches",
         "type": "extension"
+    },
+    "sqlar": {
+        "description": "Command line SQL archive tool",
+        "type": "executable"
     },
     "sqlite3_dbdump": {
         "description": "Converts the content of a SQLite database into UTF-8 text SQL statements that can be used to exactly recreate the original database",
@@ -209,6 +217,10 @@
     },
     "vtablog": {
         "description": "Virtual table printing diagnostic information for interactive analysis and debugging",
+        "type": "extension"
+    },
+    "zipfile": {
+        "description": "Read/Write access to simple archives",
         "type": "extension"
     },
     "zorder": {
