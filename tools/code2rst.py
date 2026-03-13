@@ -12,6 +12,8 @@ import tempfile
 import json
 import pathlib
 
+from typing import Literal
+
 from apsw.tests.async_meta import get_meta as async_category
 from apsw.tests.async_meta import ASYNCABLE
 
@@ -248,7 +250,7 @@ def do_methods():
         op.extend(fixup(op, saop))
 
 
-def async_markup(klass: str, member: str, kind: Literal["function" | "attribute"], doclines: list[str]):
+def async_markup(klass: str, member: str, kind: Literal["function"] | Literal["attribute"], doclines: list[str]):
     "returned revised body lines marked up with async behaviour"
 
     # some we aren't going to markup

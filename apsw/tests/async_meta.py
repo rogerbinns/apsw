@@ -17,7 +17,7 @@ import importlib.resources
 import json
 
 import queue
-from typing import Literal
+from typing import Literal, Callable, Any
 
 import apsw
 import apsw.aio
@@ -31,8 +31,8 @@ import apsw.aio
 #
 # for attributes dual means awaitable get and worker thread set
 def get_meta(
-    klass: str, member: str, kind: Literal["function" | "attribute"]
-) -> Literal["sync" | "async" | "dual" | "value"]:
+    klass: str, member: str, kind: Literal["function"] | Literal["attribute"]
+) -> Literal["sync"] | Literal["async"] | Literal["dual"] | Literal["value"]:
     assert kind in {"function", "attribute"}
 
     data = json.loads(importlib.resources.files("apsw.tests").joinpath("async_meta.json").read_text(encoding="utf8"))
