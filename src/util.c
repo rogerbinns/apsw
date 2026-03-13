@@ -128,6 +128,7 @@ pending_call_callback(void *ignored)
       assert((res == 0 && !PyErr_Occurred()) || (res != 0 && PyErr_Occurred()));
       if (PyErr_Occurred())
         apsw_write_unraisable(NULL);
+      (void)res;
     }
     else
     {

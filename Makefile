@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.52.0
+SQLITEVERSION=3.51.3
 APSWSUFFIX=.0
 
-RELEASEDATE="9 March 2026"
+RELEASEDATE="13 March 2026"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -197,6 +197,8 @@ fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in
 	set -e ; cd sqlite3 ; curl --output - $(FOSSIL_URL) | tar xfz - --strip-components=1
 	set -e ; cd sqlite3 ; ./configure --quiet --all --column-metadata --disable-tcl $(CONFIGURE_OPTS) ; $(MAKE) sqlite3.c sqlite3 libsqlite3.so ; ln -s libsqlite3.so libsqlite3.so.0
 	set -e ; cd sqlite3 ; curl --output - https://sqlite.org/vec1/tarball/vec1.tar.gz | tar xfz -
+	set -e ; cd sqlite3 ; curl --output - https://sqlite.org/sqlar/tarball/sqlar.tar.gz | tar xfz -
+	set -e ; rm -rf sqlite3/zlib || true ; mkdir -p sqlite3/zlib ; cd sqlite3/zlib; curl --output -  https://www.zlib.net/current/zlib.tar.gz | tar xfz - --strip-components=1
 	$(PYTHON) setup.py patch
 
 # the funky test stuff is to exit successfully when grep has rc==1 since that means no lines found.

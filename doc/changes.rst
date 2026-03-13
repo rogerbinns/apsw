@@ -24,6 +24,11 @@ compression library <https://www.zlib.net/>`__, notably `zipfile
 3.52.0.0
 ========
 
+.. warning::
+
+  This SQLite release `was withdrawn
+  <https://sqlite.org/releaselog/3_52_0.html>`__
+
 Comprehensive async support - connections run in a dedicated worker
 thread with the event loop able to :code:`await` the results.
 

@@ -4992,7 +4992,10 @@ Connection_config(PyObject *self_, PyObject *args)
   case SQLITE_DBCONFIG_ENABLE_ATTACH_CREATE:
   case SQLITE_DBCONFIG_ENABLE_ATTACH_WRITE:
   case SQLITE_DBCONFIG_ENABLE_COMMENTS:
-  case SQLITE_DBCONFIG_FP_DIGITS: {
+#ifdef  SQLITE_DBCONFIG_FP_DIGITS
+  case SQLITE_DBCONFIG_FP_DIGITS:
+#endif
+  {
     int opdup, val, current;
     if (!PyArg_ParseTuple(args, "ii", &opdup, &val))
       return NULL;
