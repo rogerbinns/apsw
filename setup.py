@@ -9,6 +9,7 @@ import os
 import sys
 import shlex
 import glob
+import io
 import re
 import sysconfig
 import time
@@ -16,9 +17,12 @@ import zipfile
 import tarfile
 import subprocess
 import shutil
+import hashlib
 import types
 import pathlib
 import contextlib
+import urllib.request
+
 from dataclasses import dataclass
 
 from setuptools import setup, Extension, Command
@@ -287,7 +291,7 @@ class fetch(Command):
 
             AURL = fixup_download_url(AURL)
 
-            data = self.download(AURL, checksum=True)
+            data = download(AURL, checksum=True, missing_checksum_ok=self.missing_checksum_ok)
 
             import zipfile
 
@@ -316,7 +320,7 @@ class fetch(Command):
                 ),
             ):
                 write(f"  Getting the {desc}")
-                data = self.download(url, checksum=True)
+                data = download(url, checksum=True, missing_checksum_ok=self.missing_checksum_ok)
 
                 with zipfile.ZipFile(data) as zipf:
                     for zi in zipf.infolist():
@@ -333,7 +337,7 @@ class fetch(Command):
 
             AURL = fixup_download_url(AURL)
 
-            data = self.download(AURL, checksum=True)
+            data = download(AURL, checksum=True)
 
             with tarfile.open(mode="r", fileobj=data) as tarf:
                 while (info := tarf.next()) is not None:
@@ -357,90 +361,6 @@ class fetch(Command):
                 subprocess.check_call(["./configure"], cwd="sqlite3", env=env)
 
             patch_amalgamation()
-
-    # A function for verifying downloads
-    def verifyurl(self, url, data):
-        d = ["%s" % (len(data),)]
-        import hashlib
-
-        d.append(hashlib.sha256(data).hexdigest())
-        d.append(hashlib.sha3_256(data).hexdigest())
-
-        write("    Length:", d[0], " SHA256:", d[1], " SHA3_256:", d[2])
-        sums = os.path.join(os.path.dirname(__file__), "checksums")
-        for line in read_whole_file(sums, "rt").split("\n"):
-            line = line.strip()
-            if len(line) == 0 or line[0] == "#":
-                continue
-            l = [l.strip() for l in line.split()]
-            if len(l) != 4:
-                write("Invalid line in checksums file:", line, sys.stderr)
-                raise ValueError("Bad checksums file")
-            if l[0] == url:
-                if l[1:] == d:
-                    write("    Checksums verified")
-                    return
-                if l[1] != d[0]:
-                    write("Length does not match.  Expected", l[1], "download was", d[0])
-                if l[2] != d[1]:
-                    write("SHA256 does not match.  Expected", l[2], "download was", d[1])
-                if l[3] != d[2]:
-                    write("SHA3_256 does not match.  Expected", l[3], "download was", d[2])
-                write(
-                    "The download does not match the checksums distributed with APSW.\n"
-                    "The download should not have changed since the checksums were\n"
-                    "generated.  The causes could be anything from network corruption,\n"
-                    "overloaded server error message, to a malicious attack."
-                )
-                raise ValueError("Checksums do not match")
-        # no matching line
-        write("    (Not verified.  No match in checksums file)")
-        if not self.missing_checksum_ok:
-            raise ValueError("No checksum available.  Use --missing-checksum-ok option to continue")
-
-    # download a url
-    def download(self, url, text=False, checksum=True):
-        import urllib.request
-
-        urlopen = urllib.request.urlopen
-        import io
-
-        bytesio = io.BytesIO
-
-        write("    Fetching", url)
-        count = 0
-        while True:
-            try:
-                if count:
-                    write("        Try #", str(count + 1))
-                try:
-                    page = urlopen(url).read()
-                except:
-                    # Degrade to http if https is not supported
-                    e = sys.exc_info()[1]
-                    if count >= 4 and url.startswith("https:"):
-                        write("        [Python has https issues? - using http instead]")
-                        page = urlopen(url.replace("https://", "http://")).read()
-                    else:
-                        raise
-                break
-            except:
-                write("       Error ", str(sys.exc_info()[1]))
-                time.sleep(3.14 * count)
-                count += 1
-                if count >= 10:
-                    raise
-
-        if text:
-            page = page.decode("iso8859_1")
-
-        if checksum:
-            self.verifyurl(url, page)
-
-        if not text:
-            page = bytesio(page)
-
-        return page
 
 
 # We allow enable/omit to be specified to build and then pass them to build_ext
@@ -1037,6 +957,95 @@ def get_icu_config() -> IcuConfig | None:
         return IcuConfig(tool="icu-config", cflags=cflags, ldflags=ldflags)
 
     return None
+
+# A function for verifying downloads
+def verifyurl(url: str, data: bytes, missing_checksum_ok: bool) -> None:
+    d = ["%s" % (len(data),)]
+
+    d.append(hashlib.sha256(data).hexdigest())
+    d.append(hashlib.sha3_256(data).hexdigest())
+
+    write("    Length:", d[0], " SHA256:", d[1], " SHA3_256:", d[2])
+    sums = os.path.join(os.path.dirname(__file__), "checksums")
+    for line in read_whole_file(sums, "rt").split("\n"):
+        line = line.strip()
+        if len(line) == 0 or line[0] == "#":
+            continue
+        l = [l.strip() for l in line.split()]
+        if len(l) != 4:
+            write("Invalid line in checksums file:", line, sys.stderr)
+            raise ValueError("Bad checksums file")
+        if l[0] == url:
+            if l[1:] == d:
+                write("    Checksums verified")
+                return
+            if l[1] != d[0]:
+                write("Length does not match.  Expected", l[1], "download was", d[0])
+            if l[2] != d[1]:
+                write("SHA256 does not match.  Expected", l[2], "download was", d[1])
+            if l[3] != d[2]:
+                write("SHA3_256 does not match.  Expected", l[3], "download was", d[2])
+            write(
+                "The download does not match the checksums distributed with APSW.\n"
+                "The download should not have changed since the checksums were\n"
+                "generated.  The causes could be anything from network corruption,\n"
+                "overloaded server error message, to a malicious attack."
+            )
+            raise ValueError("Checksums do not match")
+    # no matching line
+    write("    (Not verified.  No match in checksums file)")
+    if not missing_checksum_ok:
+        raise ValueError("No checksum available.  Use --missing-checksum-ok option to continue")
+
+
+# download a url
+def download(url: str, checksum: bool = True, missing_checksum_ok: bool = False) -> io.BytesIO:
+
+    urlopen = urllib.request.urlopen
+
+    write("    Fetching", url)
+    count = 0
+    while True:
+        try:
+            if count:
+                write("        Try #", str(count + 1))
+            try:
+                page = urlopen(url).read()
+            except Exception:
+                # Degrade to http if https is not supported and we have a checksum
+                e = sys.exc_info()[1]
+                if count >= 4 and url.startswith("https:") and checksum:
+                    write("        [Python has https issues? - using http instead]")
+                    page = urlopen(url.replace("https://", "http://")).read()
+                else:
+                    raise
+            break
+        except Exception:
+            write("       Error ", str(sys.exc_info()[1]))
+            time.sleep(3.14 * count)
+            count += 1
+            if count >= 10:
+                raise
+
+    if checksum:
+        verifyurl(url, page, missing_checksum_ok)
+
+    return io.BytesIO(page)
+
+# cache directory and filename for url
+def get_cache_for(url: str) -> tuple[pathlib.Path, str]:
+    match sys.platform:
+        case "win32":
+            cache_dir = pathlib.Path(os.environ.get("LOCALAPPDATA", pathlib.Path.home() / "AppData/Local"))
+        case "darwin":
+            cache_dir = pathlib.Path.home() / "Library/Caches"
+        case _:
+            cache_dir = pathlib.Path(os.environ.get("XDG_CACHE_HOME", pathlib.Path.home() / ".cache"))
+
+    cache_dir = cache_dir / "apsw-setup"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    return cache_dir, hashlib.sha256(url.encode("utf8")).hexdigest()
 
 
 # We depend on every .[ch] file in src except unicode
