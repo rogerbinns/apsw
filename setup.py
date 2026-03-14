@@ -559,6 +559,9 @@ class apsw_build_ext(beparent):
 
         if os.environ.get("CIBUILDWHEEL"):
             # https://github.com/pypa/cibuildwheel/issues/331
+            # the extra link args work in local testing but not
+            # at github actions, but there isn't anything more
+            # I can do
             match sys.platform:
                 case "linux":
                     for ext in self.extensions:
