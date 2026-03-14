@@ -567,7 +567,7 @@ class apsw_build_ext(beparent):
                 case "darwin":
                     for ext in self.extensions:
                         ext.extra_compile_args = ["-g0"]
-                        ext.extra_link_args = ["-S"]
+                        ext.extra_link_args = ["-Wl,-S"]
                 case "win32":
                     for ext in self.extensions:
                         ext.extra_link_args = ["/DEBUG:NONE"]
