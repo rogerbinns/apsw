@@ -557,6 +557,25 @@ class apsw_build_ext(beparent):
     def finalize_options(self):
         v = beparent.finalize_options(self)
 
+        if os.environ.get("CIBUILDWHEEL"):
+            # https://github.com/pypa/cibuildwheel/issues/331
+            match sys.platform:
+                case "linux":
+                    for ext in self.extensions:
+                        ext.extra_compile_args = ["-g0"]
+                        ext.extra_link_args = ["-Wl,--strip-debug"]
+                case "darwin":
+                    for ext in self.extensions:
+                        ext.extra_compile_args = ["-g0"]
+                        ext.extra_link_args = ["-S"]
+                case "win32":
+                    for ext in self.extensions:
+                        ext.extra_link_args = ["/DEBUG:NONE"]
+                case _:
+                    # cibuildwheel doesn't support other platforms
+                    pass
+
+
         if self.enable_all_extensions:
             if self.use_system_sqlite_config:
                 raise OptionError("You can't enable both all extensions **and** using system SQLite config")
