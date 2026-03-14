@@ -10,8 +10,24 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.51.3.0
+========
+
+Includes all the changes from the 3.52.0.0 release listed below,
+except :code:`SQLITE_UTF8_ZT` and :code:`sqlite3_carray_bind_v2`.
+
+:doc:`extra` adds extensions and programs that require the `zlib
+compression library <https://www.zlib.net/>`__, notably `zipfile
+<https://sqlite.org/zipfile.html>`__ and `sqlar
+<https://sqlite.org/sqlar.html>`__
+
 3.52.0.0
 ========
+
+.. warning::
+
+  This SQLite release `was withdrawn
+  <https://sqlite.org/releaselog/3_52_0.html>`__
 
 Comprehensive async support - connections run in a dedicated worker
 thread with the event loop able to :code:`await` the results.

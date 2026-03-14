@@ -8,7 +8,7 @@ documentation as the main library.
 
 Full APSW builds such as those on PyPI include all the ones that
 compile for that platform, without any modifications.  This is for
-convenience and to help promote these great extras.  They add just
+convenience, and to help promote these great extras.  They add just
 over 1MB to the download and 3MB of disk space.
 
 Access is provided via an :ref:`API <extra_api>`, :ref:`command line
@@ -27,17 +27,30 @@ the SQLite team.  It is also included with the extras if possible.
 Dependencies
 ------------
 
-There are no dependencies for the extensions and programs.  That means
-they can be used on other compatible systems.  Some of the programs
-require the SQLite library alongside the program which **must** be
-placed in the same directory as the program if you copy the program
-elsewhere.  (The SQLite library in that directory deliberately has a
-different name to avoid interactions with the standard system SQLite
-library.)
+There are no dependencies for the extensions or tools.
 
-Extensions and programs that require third party libraries (eg
-compression), or TCL are not included, and optional third party
-libraries (eg readline) are not used.
+zlib
+++++
+
+Some of the extensions and programs use the `zlib compression library
+<https://www.zlib.net/>`__ (`license
+<https://www.zlib.net/zlib_license.html>`__) which is included
+statically for those extensions and programs.
+
+TCL
++++
+
+Some of the programs require `TCL <https://www.tcl-lang.org/>`__ and are
+omitted.
+
+Readline
+++++++++
+
+The shell can optionally use the readline (or editline) library for
+editing at the shell prompt.  This is disabled to avoid the
+dependency.  You can use the APSW :doc:`shell`, or the extra provided
+one with `rlwrap <https://linux.die.net/man/1/rlwrap>`__ if you need
+significant editing functionality.
 
 Marking
 -------

@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Async Example/Tour &mdash; APSW 3.52.0.0 documentation</title>
+  <title>Async Example/Tour &mdash; APSW 3.51.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/example-async.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=a197bc32"></script>
+      <script src="_static/documentation_options.js?v=ef092552"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -231,7 +231,7 @@ ensure the database is closed.</p>
 <span class="go">value=10 name=&#39;ten&#39;</span>
 <span class="go">value=3 name=&#39;three&#39;</span>
 <span class="go">value=1 name=&#39;one&#39;</span>
-<span class="go">There are 174 functions</span>
+<span class="go">There are 172 functions</span>
 <span class="go">journal_mode=memory</span>
 </pre></div>
 </div>
@@ -381,12 +381,12 @@ all the frameworks.</p>
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cancellation</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">got zero division error after 0.000096 seconds</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">got zero division error after 0.000115 seconds</span>
 <span class="go">task1.done()=True task1.cancelled()=True</span>
 <span class="go">task2.done()=True task2.cancelled()=True</span>
 <span class="go">task3.done()=True task3.cancelled()=True</span>
 <span class="go">task4.done()=True task4.cancelled()=False</span>
-<span class="go">After 0.000255 seconds, there are 212 registered SQLite functions</span>
+<span class="go">After 0.000592 seconds, there are 210 registered SQLite functions</span>
 </pre></div>
 </div>
 </section>
@@ -464,8 +464,8 @@ exceptions raised on timeout.</p>
 <span class="n">trio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">timeouts</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Got async function TooSlowError after 0.501280 seconds</span>
-<span class="go">Got sync function TooSlowError after 1.001975 seconds</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Got async function TooSlowError after 0.502348 seconds</span>
+<span class="go">Got sync function TooSlowError after 1.003476 seconds</span>
 </pre></div>
 </div>
 </section>
@@ -546,7 +546,7 @@ final result.  Use <a class="reference internal" href="connection.html#apsw.Conn
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">rows=1</span>
-<span class="go">Dump is 747 chars starting &quot;-- SQLite dump (by APSW 3.52.0.0)\n-- S</span>
+<span class="go">Dump is 747 chars starting &quot;-- SQLite dump (by APSW 3.51.3.0)\n-- S</span>
 </pre></div>
 </div>
 </section>
@@ -703,21 +703,21 @@ transaction control.</p>
 <span class="go">  DEL 2 (1)</span>
 <span class="go">  DEL 3 (2)</span>
 <span class="go">  DEL 4 (3)</span>
-<span class="go">    Time: 0.000  Changes: 4</span>
+<span class="go">    Time: 0.001  Changes: 4</span>
 <span class="go">&gt; COMMIT</span>
 <span class="go"> !COMMIT</span>
 <span class="go">    Time: 0.000</span>
 <span class="go">&gt; SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;</span>
 <span class="go">V PRAGMA function_list</span>
-<span class="go">    Time: 0.000  Rows: 211  VmStep: 1,481  Mem: 76.8KB</span>
+<span class="go">    Time: 0.000  Rows: 209  VmStep: 1,467  Mem: 76.7KB</span>
 <span class="go">&lt; SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;</span>
-<span class="go">    Time: 0.000  Rows: 1  VmStep: 644</span>
+<span class="go">    Time: 0.000  Rows: 1  VmStep: 638</span>
 <span class="go"> !BEGIN</span>
 <span class="go">&gt; create trigger error after insert on multi</span>
 <span class="go">               begin</span>
 <span class="go">         ...</span>
 <span class="go"> !COMMIT</span>
-<span class="go">    Time: 0.000</span>
+<span class="go">    Time: 0.001</span>
 <span class="go"> !BEGIN</span>
 <span class="go">&gt; insert into multi values(54)</span>
 <span class="go">  INS 6 (54)</span>
@@ -725,7 +725,7 @@ transaction control.</p>
 <span class="go">    UPD 6&gt;106 (...)</span>
 <span class="go"> !ROLLBACK</span>
 <span class="go">&lt; insert into multi values(54)</span>
-<span class="go">    Time: 0.001  Changes: 1</span>
+<span class="go">    Time: 0.000  Changes: 1</span>
 </pre></div>
 </div>
 </section>
@@ -769,8 +769,8 @@ transaction control.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">thread (async event loop)</span>
-<span class="go">                     Process CPU consumption 0.016</span>
-<span class="go">                                  Wall clock 0.517</span>
+<span class="go">                     Process CPU consumption 0.014</span>
+<span class="go">                                  Wall clock 0.515</span>
 <span class="go">                  Voluntary context switches 4</span>
 <span class="go">                      SQLite full table scan 1,365</span>
 <span class="go">                      SQLite sort operations 2</span>
@@ -783,12 +783,12 @@ transaction control.</p>
 <span class="go">                     SQLite statement memory 17,080</span>
 
 <span class="go">process (including background SQLite worker)</span>
-<span class="go">                     Process CPU consumption 0.015</span>
-<span class="go">                                  Wall clock 0.516</span>
+<span class="go">                     Process CPU consumption 0.014</span>
+<span class="go">                                  Wall clock 0.515</span>
 <span class="go">                        Page faults - no I/O 3</span>
-<span class="go">                Involuntary context switches 63</span>
+<span class="go">                Involuntary context switches 158</span>
 <span class="go">                  Voluntary context switches 8</span>
-<span class="go">                       CPU time in user mode 0.015</span>
+<span class="go">                       CPU time in user mode 0.013</span>
 <span class="go">                      SQLite full table scan 1,365</span>
 <span class="go">                      SQLite sort operations 2</span>
 <span class="go">                        SQLite vm operations 1,015,353</span>
@@ -1060,7 +1060,7 @@ connection.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 09, 2026.
+      <span class="lastupdated">Last updated on Mar 14, 2026.
       </span></p>
   </div>
 
