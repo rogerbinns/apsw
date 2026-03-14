@@ -689,8 +689,13 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
                     so_link_flags = ["-dynamiclib", "-install_name", f"@rpath/lib{SQLITE_LIB_NAME}.dylib"]
                     compiler.linker_so = [l for l in linker_so_orig if l != "-bundle"]
 
+        # this ensures the library has debug stripped
+        if link_extra_preargs:
+            so_link_flags = (so_link_flags or []) + link_extra_preargs
+
         # we have to figure out the library filename
         before = set(build_dir.glob("*"))
+
         compiler.link_shared_lib(lib_objs, SQLITE_LIB_NAME, output_dir=str(build_dir), extra_preargs=so_link_flags)
         if compiler.compiler_type == "unix":
             compiler.linker_so = linker_so_orig
