@@ -17,16 +17,3 @@ max-line-length = 120
 
 [tool.cibuildwheel]
 archs = ["auto64", "auto32"]
-
-# cibuildwheel keeps debug information resulting in very
-# large apsw extension (~3MB of code, 12MB of debug!)
-# Every project seems to work around this in a different way
-# https://github.com/pypa/cibuildwheel/issues/331
-
-[tool.cibuildwheel.linux.environment]
-CFLAGS = "-g0"
-LDFLAGS = "--strip-debug"
-
-[tool.cibuildwheel.macos.environment]
-CFLAGS = "-g0"
-LDFLAGS = "-S"
