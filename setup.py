@@ -1003,6 +1003,24 @@ def download(url: str, checksum: bool = True, missing_checksum_ok: bool = False)
 
     urlopen = urllib.request.urlopen
 
+    cache_dir, file_name = get_cache_for(url)
+
+    cache_name = cache_dir / file_name
+    if cache_name.exists():
+        try:
+            if abs(time.time() - cache_name.stat().st_mtime) < 7 *24 * 60 * 60:
+                page = (cache_dir / file_name).read_bytes()
+                write("    Cached", url)
+                if checksum:
+                    verifyurl(url, page, missing_checksum_ok)
+                return io.BytesIO(page)
+        except Exception:
+            # many things could go wrong in the above including being
+            # unable to stat, unable to read etc, so we fallback to a
+            # regular fetch
+            pass
+
+
     write("    Fetching", url)
     count = 0
     while True:
@@ -1013,7 +1031,6 @@ def download(url: str, checksum: bool = True, missing_checksum_ok: bool = False)
                 page = urlopen(url).read()
             except Exception:
                 # Degrade to http if https is not supported and we have a checksum
-                e = sys.exc_info()[1]
                 if count >= 4 and url.startswith("https:") and checksum:
                     write("        [Python has https issues? - using http instead]")
                     page = urlopen(url.replace("https://", "http://")).read()
@@ -1030,6 +1047,15 @@ def download(url: str, checksum: bool = True, missing_checksum_ok: bool = False)
     if checksum:
         verifyurl(url, page, missing_checksum_ok)
 
+    if not cache_name.exists():
+        tmpf = cache_dir / hashlib.sha256(str(time.time()).encode("utf8")).hexdigest()[:16]
+        tmpf.write_bytes(page)
+        try:
+            tmpf.rename(cache_name)
+        except Exception:
+            # we could have raced or something so fail safe
+            pass
+
     return io.BytesIO(page)
 
 # cache directory and filename for url
@@ -1045,7 +1071,7 @@ def get_cache_for(url: str) -> tuple[pathlib.Path, str]:
     cache_dir = cache_dir / "apsw-setup"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
-    return cache_dir, hashlib.sha256(url.encode("utf8")).hexdigest()
+    return cache_dir, hashlib.sha256(url.encode("utf8")).hexdigest()[:16]
 
 
 # We depend on every .[ch] file in src except unicode
