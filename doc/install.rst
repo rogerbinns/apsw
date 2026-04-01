@@ -311,8 +311,8 @@ This performs the compilation of the C code, and provides more control than buil
 
 .. _pyodide:
 
-Pyodide
--------
+Pyodide (WASM)
+--------------
 
 `Pyodide <https://pyodide.org/en/stable/index.html>`__ is a web
 assembly Python distribution that can run in the browser or via NPM.
@@ -365,8 +365,9 @@ distributions, who want APSW to use the system shared SQLite library.
   The file also includes a copy of the built documentation in HTML
   format with no analytics in the ``doc/`` subdirectory.
 
-* After extracting the zip, replace the file named ``setup.apsw`` that
-  sits alongside ``setup.py`` with the following contents:
+* After extracting the zip or tar, replace the file named
+  ``setup.apsw`` that sits alongside ``setup.py`` with the following
+  contents:
 
   .. code-block:: ini
 

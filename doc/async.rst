@@ -7,7 +7,7 @@ How SQLite concurrency works
 ----------------------------
 
 Each connection has a lock (`mutex
-<https://en.wikipedia.org/wiki/Lock_(computer_science)>`__ to protect
+<https://en.wikipedia.org/wiki/Lock_(computer_science)>`__) to protect
 the SQLite data structure.  It is acquired on a call into the
 connection, and released on return of the call. The mutex can be
 acquired more times in the same thread, allowing nested calls, but
@@ -34,8 +34,8 @@ GIL (usual operation)
     runs next.
 
     The GIL can be released by C code when not using Python data
-    structures to allow other threads Python to run.  This is done
-    during I/O and database operations etc.
+    structures to allow Python code in other threads to run.  This is
+    done during I/O and database operations etc.
 
 Free threaded (Python 3.14+)
 
