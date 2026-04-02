@@ -2062,6 +2062,8 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
   gilstate = PyGILState_Ensure();
 
   MakeExistingException();
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
 
   PyObject *vargs[] = { NULL, (PyObject *)self, PyUnicode_FromString(dbname), PyLong_FromLong(npages) };
   if (vargs[2] && vargs[3])
@@ -2652,6 +2654,8 @@ busyhandlercb(void *context, int ncall)
   gilstate = PyGILState_Ensure();
 
   MakeExistingException();
+  CHAIN_EXC_BEGIN
+
   PyObject *vargs[] = { NULL, PyLong_FromLong(ncall) };
   if (vargs[1])
     retval = PyObject_Vectorcall(self->busyhandler, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -2670,6 +2674,7 @@ busyhandlercb(void *context, int ncall)
   }
 
 finally:
+  CHAIN_EXC_END;
   PyGILState_Release(gilstate);
   return result;
 }
