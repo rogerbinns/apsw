@@ -4338,7 +4338,11 @@ Connection_wal_checkpoint(PyObject *self_, PyObject *const *fast_args, Py_ssize_
   ASYNC_FASTCALL(self, Connection_wal_checkpoint);
 
   DBMUTEX_ENSURE(self);
-  res = sqlite3_wal_checkpoint_v2(self->db, dbname, mode, &nLog, &nCkpt);
+
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_wal_checkpoint_v2(self->db, dbname, mode, &nLog, &nCkpt);
+  Py_END_ALLOW_THREADS;
+
   SET_EXC(res, self->db);
   sqlite3_mutex_leave(self->dbmutex);
 

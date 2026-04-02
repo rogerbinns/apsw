@@ -82,10 +82,13 @@ APSWBackup_close_internal(APSWBackup *self, int force)
 {
   int res, setexc = 0;
 
-  /* should not have been called with active backup */
+  /* should have been called with active backup */
   assert(self->backup);
 
-  res = sqlite3_backup_finish(self->backup);
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_backup_finish(self->backup);
+  Py_END_ALLOW_THREADS;
+
   if (res)
   {
     switch (force)
@@ -187,7 +190,9 @@ APSWBackup_step(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
                    "Backup destination Connection is busy in another thread");
 
-  res = sqlite3_backup_step(self->backup, npages);
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_backup_step(self->backup, npages);
+  Py_END_ALLOW_THREADS;
 
   /* this would happen if there were errors deep in the vfs */
   MakeExistingException();

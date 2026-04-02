@@ -1835,7 +1835,10 @@ apsw_sleep(PyObject *Py_UNUSED(module), PyObject *const *fast_args, Py_ssize_t f
   if (milliseconds < 0)
     milliseconds = 0;
 
-  res = sqlite3_sleep(milliseconds);
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_sleep(milliseconds);
+  Py_END_ALLOW_THREADS;
+
   return PyLong_FromLong(res);
 }
 
