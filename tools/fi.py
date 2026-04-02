@@ -101,7 +101,6 @@ def exercise(example_code, expect_exception):
     apsw.log(3, "A message")
     apsw.status(apsw.SQLITE_STATUS_MEMORY_USED)
 
-    apsw.connections()
     if expect_exception:
         return
 

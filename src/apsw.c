@@ -433,6 +433,8 @@ apsw_connections(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 {
   Py_ssize_t i;
   PyObject *res = PyList_New(0), *item = NULL;
+  if (!res)
+    goto fail;
   for (i = 0; i < PyList_GET_SIZE(the_connections); i++)
   {
     if (PyWeakref_GetRef(PyList_GET_ITEM(the_connections, i), &item) < 0)
