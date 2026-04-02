@@ -1463,9 +1463,9 @@ apswvfspy_xGetLastError(PyObject *self_, PyObject *Py_UNUSED(unused))
     goto error;
 
   PyTuple_SET_ITEM(res, 0, PyLong_FromLong(errval));
-  PyTuple_SET_ITEM(res, 1, text);
   if (PyErr_Occurred())
     goto error;
+  PyTuple_SET_ITEM(res, 1, text);
 
   sqlite3_free(buffer);
 
