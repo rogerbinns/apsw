@@ -1282,6 +1282,10 @@ class Conversion(unittest.TestCase):
         self.assertIsNone(self.db.convert_binding)
         self.assertIsNone(cur.convert_binding)
 
+        # leave around to ensure they are garbage collected and dynamically allocated lambdas
+        self.db.cursor().convert_binding = lambda: self * 7
+        self.db.convert_binding = lambda: self + 2
+
     def testConvertJSONB(self):
         "just convert jsonb"
         called = [0, 0]
@@ -1370,6 +1374,10 @@ class Conversion(unittest.TestCase):
         self.db.convert_jsonb = cur.convert_jsonb = None
         self.assertIsNone(self.db.convert_jsonb)
         self.assertIsNone(cur.convert_jsonb)
+
+        # leave around to ensure they are garbage collected and dynamically allocated lambdas
+        self.db.cursor().convert_jsonb = lambda: self * 7
+        self.db.convert_jsonb = lambda: self + 2
 
 
 class Ext(unittest.TestCase):

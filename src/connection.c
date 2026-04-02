@@ -275,6 +275,8 @@ Connection_internal_cleanup(Connection *self)
     async_shutdown_controller(self->async_controller);
     Py_CLEAR(self->async_controller);
   }
+  Py_CLEAR(self->convert_binding);
+  Py_CLEAR(self->convert_jsonb);
   Py_CLEAR(self->cursor_factory);
   Py_CLEAR(self->busyhandler);
   Py_CLEAR(self->updatehook);
