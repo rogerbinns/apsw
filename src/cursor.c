@@ -343,10 +343,13 @@ APSWCursor_tp_traverse(PyObject *self_, visitproc visit, void *arg)
 {
   APSWCursor *self = (APSWCursor *)self_;
   Py_VISIT(self->connection);
+  Py_VISIT(self -> bindings);
   Py_VISIT(self->exectrace);
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->convert_binding);
   Py_VISIT(self->convert_jsonb);
+  Py_VISIT(self->emiter);
+  Py_VISIT(self->emoriginalquery);
   for (int i = self->aiter_head; i < self->aiter_tail; i++)
     Py_VISIT(self->aiter_slots[i]);
   return 0;
