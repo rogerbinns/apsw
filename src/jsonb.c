@@ -879,15 +879,29 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
       /* the expected code path */
       Py_ssize_t pos = 0;
       PyObject *key, *value;
-      while (PyDict_Next(obj, &pos, &key, &value))
+
+      /* take a copy of the dict to avoid mutation crashes possible
+         when doing encoding */
+      PyObject *copy = PyDict_Copy(obj);
+      if (!copy)
+        goto error;
+
+      while (PyDict_Next(copy, &pos, &key, &value))
       {
         size_t offset = buf->size;
 
         if (jsonb_encode_object_key(buf, key))
+        {
+          Py_DECREF(copy);
           goto error;
+        }
         if (buf->size != offset && jsonb_encode_internal(buf, value))
+        {
+          Py_DECREF(copy);
           goto error;
+        }
       }
+      Py_DECREF(copy);
     }
     else
     {
