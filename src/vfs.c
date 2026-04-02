@@ -2256,10 +2256,7 @@ apswvfsfilepy_xRead(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
     while (amount && PyBytes_AS_STRING(buffy)[amount - 1] == 0)
       amount--;
     if (_PyBytes_Resize(&buffy, amount))
-    {
-      Py_DECREF(buffy);
       return NULL;
-    }
 
     return buffy;
   }
