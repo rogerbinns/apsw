@@ -402,6 +402,8 @@ APSWSession_dealloc(PyObject *self_)
 {
   APSWSession *self = (APSWSession *)self_;
 
+  APSW_CLEAR_WEAKREFS;
+
   PY_ERR_FETCH(exc);
   APSWSession_dealloc_mutex(self);
   if (PyErr_Occurred())
@@ -2115,6 +2117,7 @@ static void
 APSWChangesetBuilder_dealloc(PyObject *self_)
 {
   APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
+  APSW_CLEAR_WEAKREFS;
 
   PY_ERR_FETCH(exc);
   APSWChangesetBuilder_dealloc_mutex(self);
