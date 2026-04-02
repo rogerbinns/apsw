@@ -384,6 +384,9 @@ convert_column_to_pyobject(APSWCursor *self, int col)
     const char *data;
     size_t len;
     data = (const char *)sqlite3_column_text(stmt, col);
+    if (!data)
+      return PyErr_NoMemory();
+
     len = sqlite3_column_bytes(stmt, col);
     return PyUnicode_FromStringAndSize(data, len);
   }
@@ -402,6 +405,10 @@ convert_column_to_pyobject(APSWCursor *self, int col)
     size_t len;
     data = sqlite3_column_blob(stmt, col);
     len = sqlite3_column_bytes(stmt, col);
+
+    /* if length is zero then a null pointer is returned */
+    if (!data && len)
+      return PyErr_NoMemory();
 
     PyObject *value = PyBytes_FromStringAndSize(data, len);
 

@@ -124,6 +124,7 @@ returns = {
             sqlite3_malloc sqlite3_malloc64 sqlite3_mprintf
             sqlite3_realloc sqlite3_realloc64
             sqlite3_normalized_sql sqlite3_expanded_sql
+            sqlite3_column_text sqlite3_column_blob
             """.split(),
     # numeric return
     "sqlite": """
