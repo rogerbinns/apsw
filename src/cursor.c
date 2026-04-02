@@ -861,7 +861,13 @@ APSWCursor_dobindings(APSWCursor *self)
 
       if (PyDict_Check(self->bindings) && allow_missing_dict_bindings)
       {
-        obj = PyDict_GetItemString(self->bindings, key);
+        PyObject *keys = PyUnicode_FromString(key);
+        if (!keys)
+          return -1;
+        obj = PyDict_GetItemWithError(self->bindings, keys);
+        Py_DECREF(keys);
+        if (PyErr_Occurred())
+          return -1;
         /* it returns a borrowed reference */
         Py_XINCREF(obj);
       }
