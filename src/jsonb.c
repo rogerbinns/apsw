@@ -1419,14 +1419,21 @@ jsonb_decode_one_actual(struct JSONBDecodeBuffer *buf)
     {
       enum JSONBTag key_tag = buf->buffer[buf->offset] & 0x0f;
       if (key_tag != JT_TEXT && key_tag != JT_TEXTJ && key_tag != JT_TEXT5 && key_tag != JT_TEXTRAW)
+      {
+        Py_XDECREF(builder);
         return malformed(buf, "object key is not a string");
+      }
       PyObject *key = jsonb_decode_one(buf);
       if (!key)
+      {
+        Py_XDECREF(builder);
         return key;
+      }
       if (buf->offset >= buf->end_offset)
       {
         if (buf->alloc)
           Py_DECREF(key);
+        Py_XDECREF(builder);
         return malformed(buf, "no value for key");
       }
       PyObject *value = jsonb_decode_one(buf);
@@ -1434,6 +1441,7 @@ jsonb_decode_one_actual(struct JSONBDecodeBuffer *buf)
       {
         if (buf->alloc)
           Py_DECREF(key);
+        Py_XDECREF(builder);
         return value;
       }
       if (builder)
