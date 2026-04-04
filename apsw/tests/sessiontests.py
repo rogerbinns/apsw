@@ -893,6 +893,33 @@ class Session(unittest.TestCase):
             ),
         )
 
+    def testBuilderManual(self):
+        "Adding manual changes - updates from sqlite 3.53"
+
+        db=apsw.Connection("")
+        db.execute("""
+        create table "insert"(one PRIMARY KEY, two, three, four, five);
+                   """)
+
+        builder = apsw.ChangesetBuilder()
+
+        self.assertEqual(0, builder.config(apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET, 0))
+        self.assertEqual(1, builder.config(apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET, 1))
+        self.assertEqual(1, builder.config(apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET, -1))
+        self.assertEqual(0, builder.config(apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET, 0))
+
+        row =("one", 2, 3.3, b"\x04\x04\x04\x04", None)
+        self.assertRaisesRegex(apsw.SQLError, ".*no such table.*", builder.add_insert, "insert", True, row)
+
+        builder.schema(db, "main")
+        builder.add_insert("insert", True, row)
+
+        changeset_to_sql("add_insert", builder.output(), db)
+
+        builder.close()
+
+        self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.config, 1)
+
 
 # handy debugging functions
 def changeset_to_sql(title, changeset, db):
