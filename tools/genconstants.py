@@ -60,6 +60,7 @@ title_to_mapping = {
     "Constants Passed To The Conflict Handler": "session_conflict",
     "Values for sqlite3session_config": "session_config_options",
     "Options for sqlite3session_object_config": "session_object_config_options",
+    "Options for sqlite3changegroup_config()": "session_changegroup_config_options",
 }
 
 base_sqlite_url = "https://sqlite.org/"

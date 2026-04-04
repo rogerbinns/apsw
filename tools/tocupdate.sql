@@ -14,6 +14,8 @@ insert into toc values
     ('SQLITE_ABORT', 'constant', 0, 'Conflict resolution modes', 'c3ref/c_fail.html'),
 
     -- lots of session stuff, constants first
+    ('SQLITE_CHANGEGROUP_CONFIG_PATCHSET', 'constant', 0, 'Options for sqlite3changegroup_config()', 'session/c_changegroup_config_patchset.html'),
+
     ('SQLITE_CHANGESETAPPLY_NOSAVEPOINT', 'constant', 0, 'Flags for sqlite3changeset_apply_v2', 'session/c_changesetapply_fknoaction.html'),
     ('SQLITE_CHANGESETAPPLY_INVERT', 'constant', 0, 'Flags for sqlite3changeset_apply_v2', 'session/c_changesetapply_fknoaction.html'),
     ('SQLITE_CHANGESETAPPLY_IGNORENOOP', 'constant', 0, 'Flags for sqlite3changeset_apply_v2', 'session/c_changesetapply_fknoaction.html'),
@@ -35,6 +37,7 @@ insert into toc values
 
     ('SQLITE_SESSION_OBJCONFIG_SIZE', 'constant', 0, 'Options for sqlite3session_object_config', 'session/c_session_objconfig_rowid.html'),
     ('SQLITE_SESSION_OBJCONFIG_ROWID', 'constant', 0, 'Options for sqlite3session_object_config', 'session/c_session_objconfig_rowid.html'),
+
 
     -- functions
 
@@ -77,8 +80,10 @@ insert into toc values
     ('sqlite3changegroup_add', 'function', 0, 'Add A Changeset To A Changegroup', 'session/sqlite3changegroup_add.html'),
     ('sqlite3changegroup_add_change', 'function', 0, 'Add A Single Change To A Changegroup', 'session/sqlite3changegroup_add_change.html'),
     ('sqlite3changegroup_add_strm', 'function', 0, 'Streaming Versions of API functions.', 'session/sqlite3changegroup_add_strm.html'),
+    ('sqlite3changegroup_change_begin', 'function', 0, 'Begin adding a change to a changegroup', 'session/sqlite3changegroup_change_begin.html'),
     ('sqlite3changegroup_delete', 'function', 0, 'Delete A Changegroup Object', 'session/sqlite3changegroup_delete.html'),
     ('sqlite3changegroup_new', 'function', 0, 'Create A New Changegroup Object', 'session/sqlite3changegroup_new.html'),
+    ('sqlite3changegroup_config', 'function', 0, 'Configure a changegroup object', 'session/sqlite3changegroup_config.html'),
     ('sqlite3changegroup_output', 'function', 0, 'Obtain A Composite Changeset From A Changegroup', 'session/sqlite3changegroup_output.html'),
     ('sqlite3changegroup_output_strm', 'function', 0, 'Streaming Versions of API functions.', 'session/sqlite3changegroup_add_strm.html'),
     ('sqlite3changegroup_schema', 'function', 0, 'Add a Schema to a Changegroup', 'session/sqlite3changegroup_schema.html'),

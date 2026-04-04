@@ -1053,6 +1053,47 @@
 } while(0)
 
 
+#define  ChangesetBuilder_add_delete_DOC "ChangesetBuilder.add_delete(table: str, indirect: bool, row: SQLiteValues) -> None\n\n" \
+"Adds an ``delete`` change row.\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+"   * :meth:`add_insert`\n" \
+"   * :meth:`add_update`\n" \
+"\n" \
+"\n" \
+" Calls: `sqlite3changegroup_change_begin <https://sqlite.org/session/sqlite3changegroup_change_begin.html>`__\n" 
+
+#define  ChangesetBuilder_add_insert_DOC "ChangesetBuilder.add_insert(table: str, indirect: bool, row: SQLiteValues) -> None\n\n" \
+"Adds an ``insert`` change row.\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+"  * :meth:`add_delete`\n" \
+"  * :meth:`add_update`\n" \
+"\n" \
+"Calls: `sqlite3changegroup_change_begin <https://sqlite.org/session/sqlite3changegroup_change_begin.html>`__\n" 
+
+#define ChangesetBuilder_add_insert_KWNAMES "table", "indirect", "row"
+#define ChangesetBuilder_add_insert_USAGE "ChangesetBuilder.add_insert(table: str, indirect: bool, row: SQLiteValues) -> None"
+
+#define ChangesetBuilder_add_insert_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(table), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(indirect), int)); \
+  assert(__builtin_types_compatible_p(typeof(row), PyObject *)); \
+} while(0)
+
+
+#define  ChangesetBuilder_add_update_DOC "ChangesetBuilder.add_update(table: str, indirect: bool, old: SQLiteValues, new: SQLiteValues) -> None\n\n" \
+"Adds an ``update`` change giving old and new rows.\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+"  * :meth:`add_insert`\n" \
+"  * :meth:`add_delete`\n" \
+"\n" \
+"Calls: `sqlite3changegroup_change_begin <https://sqlite.org/session/sqlite3changegroup_change_begin.html>`__\n" 
+
 #define  ChangesetBuilder_class_DOC "This object wraps a `sqlite3_changegroup <https://sqlite.org/session/changegroup.html>`__\n" \
 "letting you concatenate changesets and individual :class:`TableChange` into one larger\n" \
 "changeset.\n" 
@@ -1061,6 +1102,11 @@
 "Releases the builder\n" \
 "\n" \
 "Calls: `sqlite3changegroup_delete <https://sqlite.org/session/sqlite3changegroup_delete.html>`__\n" 
+
+#define  ChangesetBuilder_config_DOC "ChangesetBuilder.config(op: int, *args: Any) -> int\n\n" \
+"Configures the changegroup.\n" \
+"\n" \
+"Calls: `sqlite3changegroup_config <https://sqlite.org/session/sqlite3changegroup_config.html>`__\n" 
 
 #define  ChangesetBuilder_init_DOC "ChangesetBuilder.__init__()\n\n" \
 "Creates a new empty builder.\n" \

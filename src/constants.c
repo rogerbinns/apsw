@@ -618,6 +618,24 @@ add_apsw_constants(PyObject *module)
     }
 
 #ifdef SQLITE_ENABLE_SESSION
+    /* Options for sqlite3changegroup_config() */
+    the_dict = Py_BuildValue(
+        "{siis}",
+        "SQLITE_CHANGEGROUP_CONFIG_PATCHSET", SQLITE_CHANGEGROUP_CONFIG_PATCHSET, SQLITE_CHANGEGROUP_CONFIG_PATCHSET, "SQLITE_CHANGEGROUP_CONFIG_PATCHSET");
+    if (!the_dict)
+    {
+        assert(PyErr_Occurred());
+        return -1;
+    }
+    if (PyModule_AddObject(module, "mapping_session_changegroup_config_options", the_dict))
+    {
+        assert(PyErr_Occurred());
+        Py_DECREF(the_dict);
+        return -1;
+    }
+#endif /* SQLITE_ENABLE_SESSION */
+
+#ifdef SQLITE_ENABLE_SESSION
     /* Options for sqlite3session_object_config */
     the_dict = Py_BuildValue(
         "{siissiis}",
@@ -1396,6 +1414,7 @@ add_apsw_constants(PyObject *module)
         || PyModule_AddIntConstant(module, "SQLITE_CARRAY_TEXT", SQLITE_CARRAY_TEXT)
 #endif /* SQLITE_ENABLE_CARRAY */
 #ifdef SQLITE_ENABLE_SESSION
+        || PyModule_AddIntConstant(module, "SQLITE_CHANGEGROUP_CONFIG_PATCHSET", SQLITE_CHANGEGROUP_CONFIG_PATCHSET)
         || PyModule_AddIntConstant(module, "SQLITE_CHANGESETAPPLY_FKNOACTION", SQLITE_CHANGESETAPPLY_FKNOACTION)
         || PyModule_AddIntConstant(module, "SQLITE_CHANGESETAPPLY_IGNORENOOP", SQLITE_CHANGESETAPPLY_IGNORENOOP)
         || PyModule_AddIntConstant(module, "SQLITE_CHANGESETAPPLY_INVERT", SQLITE_CHANGESETAPPLY_INVERT)
