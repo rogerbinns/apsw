@@ -81,6 +81,7 @@ insert into toc values
     ('sqlite3changegroup_add_change', 'function', 0, 'Add A Single Change To A Changegroup', 'session/sqlite3changegroup_add_change.html'),
     ('sqlite3changegroup_add_strm', 'function', 0, 'Streaming Versions of API functions.', 'session/sqlite3changegroup_add_strm.html'),
     ('sqlite3changegroup_change_begin', 'function', 0, 'Begin adding a change to a changegroup', 'session/sqlite3changegroup_change_begin.html'),
+    ('sqlite3changegroup_change_finish', 'function', 0, 'Finish adding one-at-at-time changes to a changegroup', 'session/sqlite3changegroup_change_finish.html'),
     ('sqlite3changegroup_delete', 'function', 0, 'Delete A Changegroup Object', 'session/sqlite3changegroup_delete.html'),
     ('sqlite3changegroup_new', 'function', 0, 'Create A New Changegroup Object', 'session/sqlite3changegroup_new.html'),
     ('sqlite3changegroup_config', 'function', 0, 'Configure a changegroup object', 'session/sqlite3changegroup_config.html'),

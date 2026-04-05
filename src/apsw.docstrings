@@ -1054,7 +1054,8 @@
 
 
 #define  ChangesetBuilder_add_delete_DOC "ChangesetBuilder.add_delete(table: str, indirect: bool, row: SQLiteValues) -> None\n\n" \
-"Adds an ``delete`` change row.\n" \
+"Adds an ``delete`` change row.  You must have called :meth:`schema` first so\n" \
+" the table can be verified.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -1062,17 +1063,30 @@
 "   * :meth:`add_update`\n" \
 "\n" \
 "\n" \
-" Calls: `sqlite3changegroup_change_begin <https://sqlite.org/session/sqlite3changegroup_change_begin.html>`__\n" 
+" Calls: `sqlite3changegroup_change_begin <https://sqlite.org/session/sqlite3changegroup_change_begin.html>`__\n" \
+" Calls: `sqlite3changegroup_change_finish <https://sqlite.org/session/sqlite3changegroup_change_finish.html>`__\n" 
+
+#define ChangesetBuilder_add_delete_KWNAMES "table", "indirect", "row"
+#define ChangesetBuilder_add_delete_USAGE "ChangesetBuilder.add_delete(table: str, indirect: bool, row: SQLiteValues) -> None"
+
+#define ChangesetBuilder_add_delete_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(table), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(indirect), int)); \
+  assert(__builtin_types_compatible_p(typeof(row), PyObject *)); \
+} while(0)
+
 
 #define  ChangesetBuilder_add_insert_DOC "ChangesetBuilder.add_insert(table: str, indirect: bool, row: SQLiteValues) -> None\n\n" \
-"Adds an ``insert`` change row.\n" \
+"Adds an ``insert`` change row.  You must have called :meth:`schema` first so\n" \
+"the table can be verified.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
 "  * :meth:`add_delete`\n" \
 "  * :meth:`add_update`\n" \
 "\n" \
-"Calls: `sqlite3changegroup_change_begin <https://sqlite.org/session/sqlite3changegroup_change_begin.html>`__\n" 
+"Calls: `sqlite3changegroup_change_begin <https://sqlite.org/session/sqlite3changegroup_change_begin.html>`__\n" \
+"Calls: `sqlite3changegroup_change_finish <https://sqlite.org/session/sqlite3changegroup_change_finish.html>`__\n" 
 
 #define ChangesetBuilder_add_insert_KWNAMES "table", "indirect", "row"
 #define ChangesetBuilder_add_insert_USAGE "ChangesetBuilder.add_insert(table: str, indirect: bool, row: SQLiteValues) -> None"
@@ -1085,18 +1099,38 @@
 
 
 #define  ChangesetBuilder_add_update_DOC "ChangesetBuilder.add_update(table: str, indirect: bool, old: SQLiteValues, new: SQLiteValues) -> None\n\n" \
-"Adds an ``update`` change giving old and new rows.\n" \
+"Adds an ``update`` change giving old and new rows. You must have called :meth:`schema` first so\n" \
+"the table can be verified.\n" \
+"\n" \
+"See `sqlite3changegroup_change_finish <https://sqlite.org/session/sqlite3changegroup_change_finish.html>`__\n" \
+"for details on which columns of old and new you must provide values for.  Where no value should be\n" \
+"provided, use :attr:`apsw.no_change`.\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
 "  * :meth:`add_insert`\n" \
 "  * :meth:`add_delete`\n" \
 "\n" \
-"Calls: `sqlite3changegroup_change_begin <https://sqlite.org/session/sqlite3changegroup_change_begin.html>`__\n" 
+"Calls: `sqlite3changegroup_change_begin <https://sqlite.org/session/sqlite3changegroup_change_begin.html>`__\n" \
+"Calls: `sqlite3changegroup_change_finish <https://sqlite.org/session/sqlite3changegroup_change_finish.html>`__\n" 
+
+#define ChangesetBuilder_add_update_KWNAMES "table", "indirect", "old", "new"
+#define ChangesetBuilder_add_update_USAGE "ChangesetBuilder.add_update(table: str, indirect: bool, old: SQLiteValues, new: SQLiteValues) -> None"
+
+#define ChangesetBuilder_add_update_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(table), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(indirect), int)); \
+  assert(__builtin_types_compatible_p(typeof(old), PyObject *)); \
+  assert(__builtin_types_compatible_p(typeof(new), PyObject *)); \
+} while(0)
+
 
 #define  ChangesetBuilder_class_DOC "This object wraps a `sqlite3_changegroup <https://sqlite.org/session/changegroup.html>`__\n" \
-"letting you concatenate changesets and individual :class:`TableChange` into one larger\n" \
-"changeset.\n" 
+"to build a changeset or patchset.   The contents can come from:\n" \
+"\n" \
+"* Existing changesets\n" \
+"* Individual :class:`TableChange`\n" \
+"* :meth:`add_insert`, :meth:`add_update`, :meth:`add_delete`\n" 
 
 #define  ChangesetBuilder_close_DOC "ChangesetBuilder.close() -> None\n\n" \
 "Releases the builder\n" \
