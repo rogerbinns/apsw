@@ -897,28 +897,64 @@ class Session(unittest.TestCase):
         "Adding manual changes - updates from sqlite 3.53"
 
         db=apsw.Connection("")
-        db.execute("""
-        create table "insert"(one PRIMARY KEY, two, three, four, five);
+        # this is why there are 5 columns
+        all_types = ("one", 2, 3.3, b"\x04\x04\x04\x04", None)
+        db.execute("""create table "insert"(one, two, three, four, five, PRIMARY KEY(one, three));
+                      create table "delete"(one, two, three, four, five, PRIMARY KEY(two, four));
+                      create table "update"(one, two, three PRIMARY KEY, four, five);
                    """)
 
         builder = apsw.ChangesetBuilder()
+
+        self.assertRaisesRegex(TypeError, ".*Unknown config.*", builder.config, 97)
+        self.assertRaises(TypeError, builder.config, apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET)
 
         self.assertEqual(0, builder.config(apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET, 0))
         self.assertEqual(1, builder.config(apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET, 1))
         self.assertEqual(1, builder.config(apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET, -1))
         self.assertEqual(0, builder.config(apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET, 0))
 
-        row =("one", 2, 3.3, b"\x04\x04\x04\x04", None)
-        self.assertRaisesRegex(apsw.SQLError, ".*no such table.*", builder.add_insert, "insert", True, row)
-
+        self.assertRaisesRegex(apsw.SQLError, ".*no such table.*", builder.add_insert, "insert", True, all_types)
         builder.schema(db, "main")
-        builder.add_insert("insert", True, row)
 
-        changeset_to_sql("add_insert", builder.output(), db)
+        # check it works
+        builder.add_insert("insert", True, all_types)
+        builder.add_delete("delete", False, all_types)
+        builder.add_update(
+            "update", True, all_types, (all_types[4], all_types[3], apsw.no_change, all_types[1], all_types[0])
+        )
+        seen = set()
+        for tc in apsw.Changeset.iter(builder.output()):
+            self.assertNotIn(tc.name, seen)
+            seen.add(tc.name)
+            self.assertEqual(getattr(apsw, f"SQLITE_{tc.name.upper()}"), tc.opcode)
+            self.assertEqual(tc.column_count, 5)
+            match tc.name:
+                case "insert":
+                    self.assertEqual(tc.pk_columns, {0, 2})
+                    self.assertIs(tc.indirect, True)
+                    self.assertIsNone(tc.old)
+                    self.assertEqual(tc.new, all_types)
+                case "delete":
+                    self.assertEqual(tc.pk_columns, {1, 3})
+                    self.assertIs(tc.indirect, False)
+                    self.assertIsNone(tc.new)
+                    self.assertEqual(tc.old, all_types)
+                case "update":
+                    self.assertEqual(tc.pk_columns, {2})
+                    self.assertIs(tc.indirect, True)
+                    self.assertEqual(tc.old, all_types)
+                    self.assertEqual(tc.new, (all_types[4], all_types[3], apsw.no_change, all_types[1], all_types[0]))
+                case _:
+                    raise Exception
 
+        self.assertTrue(builder)
         builder.close()
+        self.assertFalse(builder)
 
-        self.assertRaisesRegex(ValueError, ".*has been closed.*", builder.config, 1)
+        for attr in dir(builder):
+            if attr != "close" and not attr.startswith("_"):
+                self.assertRaisesRegex(ValueError, ".*has been closed.*", getattr(builder, attr))
 
 
 # handy debugging functions
