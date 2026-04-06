@@ -175,6 +175,10 @@
         "description": "Shows contents of stat4 index of a database",
         "type": "executable"
     },
+    "sqlite3_showtmlog": {
+        "description": "Makes human/csv readable output from a tmstmpvfs log file",
+        "type": "executable"
+    },
     "sqlite3_showwal": {
         "description": "Shows low level content of a WAL file",
         "type": "executable"
@@ -189,6 +193,10 @@
     },
     "stmtrand": {
         "description": "Function that returns the same sequence of random integers is returned for each invocation of the statement",
+        "type": "extension"
+    },
+    "tmstmpvfs": {
+        "description": "VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files",
         "type": "extension"
     },
     "uint": {

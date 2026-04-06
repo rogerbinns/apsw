@@ -73,6 +73,10 @@ sqlite3_showstat4 (`doc <https://sqlite.org/src/file?ci=trunk&name=tool%2fshowst
 
    Shows contents of stat4 index of a database
 
+sqlite3_showtmlog (`doc <https://sqlite.org/src/file?ci=trunk&name=tool%2fshowtmlog.c>`__)
+
+   Makes human/csv readable output from a tmstmpvfs log file
+
 sqlite3_showwal (`doc <https://sqlite.org/src/file?ci=trunk&name=tool%2fshowwal.c>`__)
 
    Shows low level content of a WAL file
@@ -177,7 +181,7 @@ Extensions
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ffileio.c>`__
       - Implements SQL functions readfile() and writefile(), and eponymous virtual type 'fsdir'
       -
-        * Function: :code:`lsmode` :code:`readfile` :code:`writefile`
+        * Function: :code:`lsmode` :code:`readfile` :code:`realpath` :code:`writefile`
         * VTable: :code:`fsdir`
 
     * - fuzzer
@@ -190,7 +194,7 @@ Extensions
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fieee754.c>`__
       - functions for the exact display* and input of IEEE754 Binary64 floating-point numbers
       -
-        * Function: :code:`ieee754` :code:`ieee754_exponent` :code:`ieee754_from_blob` :code:`ieee754_inc` :code:`ieee754_mantissa` :code:`ieee754_to_blob`
+        * Function: :code:`ieee754` :code:`ieee754_exponent` :code:`ieee754_from_blob` :code:`ieee754_from_int` :code:`ieee754_inc` :code:`ieee754_mantissa` :code:`ieee754_to_blob` :code:`ieee754_to_int`
 
     * - memstat
       - `link <https://sqlite.org/memstat.html>`__
@@ -227,7 +231,7 @@ Extensions
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fregexp.c>`__
       - Compact reasonably efficient posix extended regular expression matcher
       -
-        * Function: :code:`regexpi`
+        * Function: :code:`regexp` :code:`regexpi`
 
     * - rot13
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2frot13.c>`__
@@ -273,6 +277,12 @@ Extensions
       -
         * Function: :code:`stmtrand`
 
+    * - tmstmpvfs
+      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ftmstmpvfs.c>`__
+      - VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files
+      -
+        * VFS: :code:`tmstmpvfs`
+
     * - uint
       - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fuint.c>`__
       - UINT collating sequence
@@ -295,7 +305,7 @@ Extensions
       - `link <https://sqlite.org/vec1>`__
       - Vector search.  !Experimental! !Under development!
       -
-        * Function: :code:`vec1_cos_distance` :code:`vec1_from_json` :code:`vec1_info` :code:`vec1_l2_distance` :code:`vec1_qinstr` :code:`vec1_to_json` :code:`vec1_to_json_f` :code:`vec1_to_json_i` :code:`vec1_train`
+        * Function: :code:`vec1_config` :code:`vec1_cos_distance` :code:`vec1_from_json` :code:`vec1_info` :code:`vec1_l2_distance` :code:`vec1_qinstr` :code:`vec1_to_json` :code:`vec1_to_json_f` :code:`vec1_to_json_i` :code:`vec1_train`
         * VTable: :code:`vec1`
 
     * - vfsstat

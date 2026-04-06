@@ -364,17 +364,16 @@ extras = [
         description="Command line SQL archive tool",
         lib_sqlite=True,
     ),
-    # these two are in the withdrawn 3.52.0 release
-    # Extra(
-    #    name="sqlite3_showtmlog",
-    #    type="executable",
-    #    sources=["tool/showtmlog.c"],
-    #    description="Makes human/csv readable output from a tmstmpvfs log file",
-    # ),
-    # Extra(
-    #    name="tmstmpvfs",
-    #    description="VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files",
-    # ),
+    Extra(
+        name="sqlite3_showtmlog",
+        type="executable",
+        sources=["tool/showtmlog.c"],
+        description="Makes human/csv readable output from a tmstmpvfs log file",
+    ),
+    Extra(
+        name="tmstmpvfs",
+        description="VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files",
+    ),
 ]
 
 import os
