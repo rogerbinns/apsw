@@ -155,6 +155,7 @@ def exercise(example_code, expect_exception):
         str(table_change)
 
     cb = apsw.ChangesetBuilder()
+    cb.config(apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET, 0)
     cb.add(session.changeset())
 
     class StreamInput:

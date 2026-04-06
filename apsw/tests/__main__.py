@@ -6121,7 +6121,7 @@ class APSW(unittest.TestCase):
                 "order": ("scope",),
             },
             "APSWChangesetBuilder": {
-                "skip": {"dealloc", "dealloc_mutex", "close_internal", "close", "init", "tp_traverse", "bool"},
+                "skip": {"dealloc", "dealloc_mutex", "close_internal", "close", "init", "tp_traverse", "bool", "row"},
                 "req": {"closed": "CHECK_BUILDER_CLOSED"},
                 "order": ("closed",),
             },

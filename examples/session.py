@@ -316,11 +316,15 @@ show_changeset("Bob changseset", bob_changeset)
 
 ### changesetbuilder: ChangesetBuilder
 # The :class:`ChangesetBuilder` can be used to combine multiple
-# changesets and individual :class:`TableChange`.  In this example
-# we'll build up all the changes to the ``items`` table from
-# multiple changesets.  :meth:`ChangesetBuilder.schema` is used
-# to ensure the changes map to the expected database table
+# changesets, individual :class:`table changes <TableChange>`, plus
+# your own changes.
+#
+# In the first part we'll build up all the changes to the ``items``
+# table from multiple changesets.  :meth:`ChangesetBuilder.schema` is
+# used to ensure the changes map to the expected database table
 # structure (names, primary keys, number of columns).
+#
+# The second part is making our own changes.
 
 items = apsw.ChangesetBuilder()
 
@@ -334,6 +338,34 @@ for source in (changeset, alice_changeset, bob_changeset):
 only_items = items.output()
 
 show_changeset("Only items table changes", only_items)
+items.close()
+
+# Make our own
+builder = apsw.ChangesetBuilder()
+
+# The builder normally works out whether to be a changeset or a
+# patchset based on which of those gets added to it first.  Here we
+# will make it a patchset.  The output shown at the end has less
+# information as a result, with delete and update not showing
+# original values.
+builder.config(apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET, 1)
+
+# You won't be able to add anything unless the schema can be
+# verified - eg it needs to know which columns are the primary
+# key.
+builder.schema(connection, "main")
+
+connection.execute("CREATE TABLE manual(one, two, three, four, five, PRIMARY KEY(two, four));")
+
+builder.add_insert("manual", True, ("one", 1, 1.1, b"\x01\x01\x01", None))
+builder.add_delete("manual", True, ("two", 2, None, b"\x02\x02\x02", 2.2))
+
+# updates require the old and new rows. but new can't change the primary keys
+# so use no_change for those columns
+builder.add_update("manual", False, ("three", 3, 3.3, b"\x04\x04\x04", None),
+                   ("thirty", apsw.no_change, 30.30, apsw.no_change, 30))
+
+show_changeset("Manual builder", builder.output())
 
 ### streaming: Streaming
 # The changesets above were all produced as a single bytes in memory
