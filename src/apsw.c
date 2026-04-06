@@ -1950,15 +1950,18 @@ static int
 apsw_module_setattr(PyObject *module, PyObject *name, PyObject *value)
 {
   if (module_is_initialized
-      && (PyObject_RichCompareBool(name, apst.async_controller, Py_EQ) == 1
-          || PyObject_RichCompareBool(name, apst.async_cursor_prefetch, Py_EQ) == 1))
+      && (PyObject_RichCompareBool(apst.async_controller, name, Py_EQ) == 1
+          || (!PyErr_Occurred() && PyObject_RichCompareBool(apst.async_cursor_prefetch, name, Py_EQ) == 1)))
   {
     PyErr_Format(PyExc_AttributeError,
                  "Do not overwrite apsw.%S.  It is a context var - use its set method in your context", name);
     return -1;
   }
 
-  if (module_is_initialized && (PyObject_RichCompareBool(name, apst.async_run_coro, Py_EQ) == 1))
+  if (PyErr_Occurred())
+    return -1;
+
+  if (module_is_initialized && (PyObject_RichCompareBool(apst.async_run_coro, name, Py_EQ) == 1))
   {
     if (!Py_IsNone(value) && !PyCallable_Check(value))
     {
@@ -1974,7 +1977,7 @@ apsw_module_setattr(PyObject *module, PyObject *name, PyObject *value)
 static PyObject *
 apsw_module_getattr(PyObject *module, PyObject *name)
 {
-  if (module_is_initialized && (PyObject_RichCompareBool(name, apst.async_run_coro, Py_EQ) == 1))
+  if (module_is_initialized && (PyObject_RichCompareBool(apst.async_run_coro, name, Py_EQ) == 1))
   {
     PyObject *runner = PyDict_GetItemWithError(PyThreadState_GetDict(), async_run_coro_sentinel);
     if (PyErr_Occurred())
@@ -1983,13 +1986,16 @@ apsw_module_getattr(PyObject *module, PyObject *name)
       Py_RETURN_NONE;
     return Py_NewRef(runner);
   }
-  if (module_is_initialized && (PyObject_RichCompareBool(name, apst.main, Py_EQ) == 1))
+  if (PyErr_Occurred())
+    return NULL;
+  if (module_is_initialized && (PyObject_RichCompareBool(apst.main, name, Py_EQ) == 1))
     return PyImport_ImportModuleAttr(apst.apsw_shell, apst.main);
-
-  if (module_is_initialized && (PyObject_RichCompareBool(name, apst.Shell, Py_EQ) == 1))
+  if (PyErr_Occurred())
+    return NULL;
+  if (module_is_initialized && (PyObject_RichCompareBool(apst.Shell, name, Py_EQ) == 1))
     return PyImport_ImportModuleAttr(apst.apsw_shell, apst.Shell);
 
-  return PyObject_GenericGetAttr(module, name);
+  return PyErr_Occurred() ? NULL : PyObject_GenericGetAttr(module, name);
 }
 
 static PyTypeObject ApswModuleType = {

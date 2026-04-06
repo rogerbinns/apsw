@@ -962,6 +962,11 @@ class Tester:
         if key[0] == "sqlite3_initialize" and key[2] == "PyInit_apsw":
             # causes problems in fault control
             return self.Proceed
+        if key[0] == "PyObject_RichCompareBool" and "apsw" not in sys.modules:
+            # we don't want these in get/set attr while module is
+            # being constructed otherwise the module machinery
+            # disables the module
+            return self.Proceed
         if "misuse_check" in key[4]:
             # sqlite session stuff where we only care about misuse being returned
             return self.Proceed

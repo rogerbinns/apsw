@@ -73,6 +73,45 @@ class Async(unittest.TestCase):
 
         self.assertEqual(res, [None])
 
+    def testBadModAttr(self):
+        "Adversarial module attr shenanigans"
+
+        # this class causes errors in PyObject_RichCompareBool
+        # after count equality comparisons
+        class bad_str(str):
+            def __new__(cls, count, s):
+                obj = super().__new__(cls, s)
+                obj.count = count
+                return obj
+
+            def __eq__(self, other):
+                if self.count <= 0:
+                    1 / 0
+                self.count -= 1
+                return super().__eq__(other)
+
+            def __hash__(self):
+                return 7
+
+        count = 0
+        while True:
+            try:
+                getattr(apsw, bad_str(count, "strawberry"))
+            except ZeroDivisionError:
+                count += 1
+                continue
+            except AttributeError:
+                break
+
+        count = 0
+        while True:
+            try:
+                setattr(apsw, bad_str(count, "strawberry"), None)
+            except ZeroDivisionError:
+                count += 1
+                continue
+            break
+
     def testBadController(self):
         class BC:
             def send1(inner_self, call):
