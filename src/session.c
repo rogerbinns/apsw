@@ -2363,7 +2363,6 @@ APSWChangesetBuilder_row(APSWChangesetBuilder *self, int new, PyObject *row)
     break;
   }
 
-finally:
   Py_DECREF(row_fast);
 }
 
