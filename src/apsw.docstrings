@@ -1130,7 +1130,9 @@
 "\n" \
 "* Existing changesets\n" \
 "* Individual :class:`TableChange`\n" \
-"* :meth:`add_insert`, :meth:`add_update`, :meth:`add_delete`\n" 
+"* :meth:`add_insert`, :meth:`add_update`, :meth:`add_delete`\n" \
+"\n" \
+"See the :ref:`example <example_changesetbuilder>`\n" 
 
 #define  ChangesetBuilder_close_DOC "ChangesetBuilder.close() -> None\n\n" \
 "Releases the builder\n" \
