@@ -981,7 +981,8 @@ class Session(unittest.TestCase):
         # some more errors
         builder = apsw.ChangesetBuilder()
         builder.schema(db, "main")
-        builder.add_insert("insert", True, (0xffff_ffff_ffff,))
+        # max uint64
+        self.assertRaises(OverflowError, builder.add_insert, "insert", True, (0xffff_ffff_ffff_ffff,))
         # these should all work
         for t in (iter, list, tuple):
             builder.add_insert("insert", False, t(all_types))
