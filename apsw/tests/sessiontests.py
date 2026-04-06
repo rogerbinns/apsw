@@ -894,7 +894,8 @@ class Session(unittest.TestCase):
         )
 
     def testBuilderManual(self):
-        "Adding manual changes - updates from sqlite 3.53"
+        "Adding manual changes"
+        # from sqlite 3.53"
 
         db=apsw.Connection("")
         # this is why there are 5 columns
@@ -906,6 +907,8 @@ class Session(unittest.TestCase):
 
         builder = apsw.ChangesetBuilder()
 
+        self.assertRaises(TypeError, builder.config, "hello")
+        self.assertRaises(OverflowError, builder.config, 0xFFFF_FFFF_FFFF_FFFF_FFFF)
         self.assertRaisesRegex(TypeError, ".*Unknown config.*", builder.config, 97)
         self.assertRaises(TypeError, builder.config, apsw.SQLITE_CHANGEGROUP_CONFIG_PATCHSET)
 
@@ -918,11 +921,30 @@ class Session(unittest.TestCase):
         builder.schema(db, "main")
 
         # check it works
+        # - the * 22 should be rejected for too many columns and be undone
+        # - empty tuple should cause change_finish to fail
+        # - the complex number should type error
         builder.add_insert("insert", True, all_types)
+        self.assertRaises(apsw.RangeError, builder.add_insert, "insert", False, all_types * 22)
+        self.assertRaisesRegex(apsw.SQLError, ".*invalid change.*", builder.add_insert, "insert", False, tuple())
+        self.assertRaises(TypeError, builder.add_insert, "insert", False, (3, 4 + 5j))
+        self.assertRaises(TypeError, builder.add_insert, "insert", False, 4 + 5j)
         builder.add_delete("delete", False, all_types)
-        builder.add_update(
-            "update", True, all_types, (all_types[4], all_types[3], apsw.no_change, all_types[1], all_types[0])
-        )
+        self.assertRaises(apsw.RangeError, builder.add_delete, "delete", True, all_types * 22)
+        self.assertRaisesRegex(apsw.SQLError, ".*invalid change.*", builder.add_delete, "delete", True, tuple())
+        self.assertRaises(TypeError, builder.add_delete, "delete", True, (3, 4 + 5j))
+        self.assertRaises(TypeError, builder.add_delete, "delete", True, 4 + 5j)
+        old, new = all_types, (all_types[4], all_types[3], apsw.no_change, all_types[1], all_types[0])
+        builder.add_update("update", True, old, new)
+        self.assertRaises(apsw.RangeError, builder.add_update, "update", False, old, new * 22)
+        self.assertRaises(apsw.RangeError, builder.add_update, "update", False, old * 22, new)
+        self.assertRaisesRegex(apsw.SQLError, ".*invalid change.*", builder.add_update, "update", False, old, tuple())
+        self.assertRaisesRegex(apsw.SQLError, ".*invalid change.*", builder.add_update, "update", False, tuple(), new)
+        self.assertRaises(TypeError, builder.add_update, "update", False, old + (3 + 4j,), new)
+        self.assertRaises(TypeError, builder.add_update, "update", False, old, new + (3 + 4j,))
+        self.assertRaises(TypeError, builder.add_update, "update", False, 3 + 4j, new)
+        self.assertRaises(TypeError, builder.add_update, "update", False, old, 3 + 4j)
+
         seen = set()
         for tc in apsw.Changeset.iter(builder.output()):
             self.assertNotIn(tc.name, seen)
@@ -955,6 +977,15 @@ class Session(unittest.TestCase):
         for attr in dir(builder):
             if attr != "close" and not attr.startswith("_"):
                 self.assertRaisesRegex(ValueError, ".*has been closed.*", getattr(builder, attr))
+
+        # some more errors
+        builder = apsw.ChangesetBuilder()
+        builder.schema(db, "main")
+        builder.add_insert("insert", True, (0xffff_ffff_ffff,))
+        # these should all work
+        for t in (iter, list, tuple):
+            builder.add_insert("insert", False, t(all_types))
+        # and these should not  # ::TODO:: add set
 
 
 # handy debugging functions

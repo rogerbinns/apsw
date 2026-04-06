@@ -2051,6 +2051,8 @@ APSWChangesetIterator_dealloc(PyObject *self_)
   * Individual :class:`TableChange`
   * :meth:`add_insert`, :meth:`add_update`, :meth:`add_delete`
 
+  See the :ref:`example <example_changesetbuilder>`
+
  */
 
 #define CHECK_BUILDER_CLOSED(e)                                                                                        \
@@ -2265,7 +2267,7 @@ APSWChangesetBuilder_config(PyObject *self_, PyObject *args)
 }
 
 static void
-builder_row(APSWChangesetBuilder *self, int new, PyObject *row)
+APSWChangesetBuilder_row(APSWChangesetBuilder *self, int new, PyObject *row)
 {
   int res = 0;
   assert(new == 0 || new == 1);
@@ -2299,7 +2301,7 @@ builder_row(APSWChangesetBuilder *self, int new, PyObject *row)
       long long v = PyLong_AsLongLong(value);
       if (PyErr_Occurred())
         /* overflow */
-        goto finally;
+        goto change_failed;
 
       res = sqlite3changegroup_change_int64(self->group, new, i, v);
       if (res != SQLITE_OK)
@@ -2408,7 +2410,7 @@ APSWChangesetBuilder_add_insert(PyObject *self_, PyObject *const *fast_args, Py_
     return NULL;
   }
 
-  builder_row(self, 1, row);
+  APSWChangesetBuilder_row(self, 1, row);
 
   res = sqlite3changegroup_change_finish(self->group, !!PyErr_Occurred(), &zErr);
   if (res != SQLITE_OK)
@@ -2464,7 +2466,7 @@ APSWChangesetBuilder_add_delete(PyObject *self_, PyObject *const *fast_args, Py_
     return NULL;
   }
 
-  builder_row(self, 0, row);
+  APSWChangesetBuilder_row(self, 0, row);
 
   res = sqlite3changegroup_change_finish(self->group, !!PyErr_Occurred(), &zErr);
   if (res != SQLITE_OK)
@@ -2524,9 +2526,9 @@ APSWChangesetBuilder_add_update(PyObject *self_, PyObject *const *fast_args, Py_
     return NULL;
   }
 
-  builder_row(self, 0, old);
+  APSWChangesetBuilder_row(self, 0, old);
   if (!PyErr_Occurred())
-    builder_row(self, 1, new);
+    APSWChangesetBuilder_row(self, 1, new);
 
   res = sqlite3changegroup_change_finish(self->group, !!PyErr_Occurred(), &zErr);
   if (res != SQLITE_OK)
