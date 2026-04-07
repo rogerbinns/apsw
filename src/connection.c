@@ -5003,9 +5003,7 @@ Connection_config(PyObject *self_, PyObject *args)
   case SQLITE_DBCONFIG_ENABLE_ATTACH_CREATE:
   case SQLITE_DBCONFIG_ENABLE_ATTACH_WRITE:
   case SQLITE_DBCONFIG_ENABLE_COMMENTS:
-#ifdef  SQLITE_DBCONFIG_FP_DIGITS
   case SQLITE_DBCONFIG_FP_DIGITS:
-#endif
   {
     int opdup, val, current;
     if (!PyArg_ParseTuple(args, "ii", &opdup, &val))
@@ -5024,7 +5022,7 @@ Connection_config(PyObject *self_, PyObject *args)
     return PyLong_FromLong(current);
   }
   default:
-    return PyErr_Format(PyExc_ValueError, "Unknown config operation %d", (int)opt);
+    return PyErr_Format(PyExc_ValueError, "Unknown or unsupported config operation %d", (int)opt);
   }
 }
 
