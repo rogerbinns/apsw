@@ -10208,7 +10208,7 @@ test_types_vals = (
     False,
 )
 
-from .shelltests import *
+from .shelltest import *
 from .ftstests import *
 from .sessiontests import *
 from .jsonb import *
