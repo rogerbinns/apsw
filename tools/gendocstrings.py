@@ -56,7 +56,7 @@ subclassable = {"Connection", "Cursor", "VFS", "VFSFile", "zeroblob", "Session",
 def sqlite_links():
     global funclist, consts
 
-    basesqurl = "https://sqlite.org/"
+    basesqurl = os.environ.get("SQLITE_URL", "https://sqlite.org/")
     with tempfile.NamedTemporaryFile() as f:
         f.write(urllib.request.urlopen(basesqurl + "toc.db").read())
         f.flush()
