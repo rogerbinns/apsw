@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import sys
+import os
 import tempfile
 import urllib.request
 import pathlib
 
 import apsw
 import apsw.ext
-import apsw.shell
 
 title_to_mapping = {
     "Allowed return values from sqlite3_txn_state()": "txn_state",
@@ -63,7 +63,7 @@ title_to_mapping = {
     "Options for sqlite3changegroup_config()": "session_changegroup_config_options",
 }
 
-base_sqlite_url = "https://sqlite.org/"
+base_sqlite_url = os.environ.get("SQLITE_URL", "https://sqlite.org/")
 with tempfile.NamedTemporaryFile() as f:
     f.write(urllib.request.urlopen(base_sqlite_url + "toc.db").read())
     f.flush()
