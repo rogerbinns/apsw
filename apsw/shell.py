@@ -1922,11 +1922,9 @@ Enter ".help" for instructions
     def _csvin_wrapper(self, filename, dialect):
         # Returns a csv reader that works around python bugs and uses
         # dialect dict to configure reader
-        thefile = open(filename, "r", encoding=self.encoding[0])
-        for line in csv.reader(thefile, **dialect.copy()):
-            yield line
-        thefile.close()
-        return
+        with open(filename, "r", encoding=self.encoding[0]) as thefile:
+            for line in csv.reader(thefile, **dialect.copy()):
+                yield line
 
     def command_autoimport(self, cmd):
         """autoimport FILENAME ?TABLE?: Imports filename creating a table and automatically working out separators and data types (alternative to .import command)
