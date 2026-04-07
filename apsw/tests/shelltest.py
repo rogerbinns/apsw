@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 
-import io
-import os
-import json
-import sys
-import random
-import gc
-import re
 import contextlib
-import tempfile
-import shlex
-import textwrap
+import gc
+import io
+import json
+import os
 import pathlib
-import warnings
+import random
+import re
+import shlex
+import sys
+import tempfile
+import textwrap
 import unittest
+import warnings
 
 import apsw
 import apsw.shell
 
 TESTFILEPREFIX = os.environ.get("APSWTESTPREFIX", "")
 
-LOADEXTENSIONFILENAME = "./testextension.sqlext"
+LOAD_EXTENSION_FILENAME = "./testextension.sqlext"
 
-def deltempfiles():
+def del_temp_files():
     for name in (
         "testdb",
         "testdb2",
@@ -41,11 +41,11 @@ def deltempfiles():
             if p.exists():
                 p.unlink()
 
-def randomintegers(howmany):
+def random_integers(howmany):
     for i in range(howmany):
         yield (random.randint(0, 9999999999),)
 
-def suppressWarning(name):
+def suppress_warning(name):
     if hasattr(__builtins__, name):
         warnings.simplefilter("ignore", getattr(__builtins__, name))
 
@@ -53,12 +53,12 @@ def suppressWarning(name):
 class Shell(unittest.TestCase):
 
     def setUp(self):
-        deltempfiles()
+        del_temp_files()
 
     def tearDown(self):
         for c in apsw.connections():
             c.close()
-        deltempfiles()
+        del_temp_files()
 
     def assertTablesEqual(self, dbl, left, dbr, right):
         # Ensure tables have the same contents.  Rowids can be
@@ -715,7 +715,7 @@ class Shell(unittest.TestCase):
             reset()
             # create something that should take some time to execute
             s.db.cursor().execute("create table xyz(x); begin;")
-            s.db.cursor().executemany("insert into xyz values(?)", randomintegers(4000))
+            s.db.cursor().executemany("insert into xyz values(?)", random_integers(4000))
             s.db.cursor().execute("end")
             reset()
             # this takes .6 seconds on my machine so we should
@@ -783,7 +783,7 @@ class Shell(unittest.TestCase):
             if dbname:
                 fullname = dbname + "." + fullname
             cur.execute("begin;create table %s(x)" % (fullname,))
-            cur.executemany("insert into %s values(?)" % (fullname,), randomintegers(400))
+            cur.executemany("insert into %s values(?)" % (fullname,), random_integers(400))
             cur.execute("end")
             return name
 
@@ -1241,7 +1241,7 @@ insert into xxblah values(3);
         ###
         ### Command - encoding
         ###
-        suppressWarning("ResourceWarning")
+        suppress_warning("ResourceWarning")
         for i in ".encoding one two", ".encoding", ".encoding utf8 another":
             reset()
             cmd(i)
@@ -1639,7 +1639,7 @@ insert into xxblah values(3);
         ### Command - load
         ###
         if hasattr(s.db, "load_rxtension"):
-            lf = LOADEXTENSIONFILENAME
+            lf = LOAD_EXTENSION_FILENAME
             for i in ".load", ".load one two three":
                 reset()
                 cmd(i)
