@@ -136,6 +136,7 @@ leading ``.`` (period) - for example::
   * :ref:`help <shell-cmd-help>`
   * :ref:`import <shell-cmd-import>`
   * :ref:`indices <shell-cmd-indices>`
+  * :ref:`limit <shell-cmd-limit>`
   * :ref:`load <shell-cmd-load>`
   * :ref:`log <shell-cmd-log>`
   * :ref:`mode <shell-cmd-mode>`
@@ -496,6 +497,20 @@ indices TABLE
 -------------
 
 *Lists all indices on table TABLE*
+
+.. _shell-cmd-limit:
+.. index::
+    single: limit (Shell command)
+
+limit ?NAME VALUE?
+------------------
+
+*Show all limits, or set a specific one*
+
+With no arguments lists all limits.  Supply a name and value to change.  For
+example::
+
+   .limit attached 10
 
 .. _shell-cmd-load:
 .. index::

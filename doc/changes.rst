@@ -18,6 +18,8 @@ APSW changes by version
 :meth:`ChangesetBuilder.add_update`,  and
 :meth:`ChangesetBuilder.config`.
 
+Added :ref:`.limit <shell-cmd-limit>` command to the :doc:`shell`
+
 3.51.3.0
 ========
 

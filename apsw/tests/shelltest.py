@@ -1636,6 +1636,21 @@ insert into xxblah values(3);
             self.assertTrue(i in get(fh[1]))
 
         ###
+        ### Command - limit
+        ###
+        reset()
+        cmd(".limit")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertIn("trigger_depth:", get(fh[1]))
+        reset()
+        fa = s.db.limit(apsw.SQLITE_LIMIT_VARIABLE_NUMBER)
+        cmd(f".limit variable_numbER {fa - 1}")
+        s.cmdloop()
+        isempty(fh[2])
+        self.assertEqual(s.db.limit(apsw.SQLITE_LIMIT_VARIABLE_NUMBER), fa - 1)
+
+        ###
         ### Command - load
         ###
         if hasattr(s.db, "load_rxtension"):
