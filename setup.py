@@ -360,8 +360,6 @@ class fetch(Command):
                         env[v] = val
                 subprocess.check_call(["./configure"], cwd="sqlite3", env=env)
 
-            patch_amalgamation()
-
 
 # We allow enable/omit to be specified to build and then pass them to build_ext
 build_enable = None
@@ -720,120 +718,6 @@ class apsw_sdist(sparent):
         return v
 
 
-class apsw_patch_amalgamation(Command):
-    description = "Patches amalgamation"
-
-    user_options = []
-    boolean_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        if not patch_amalgamation():
-            raise Exception("Failed to patch amalgamation")
-
-
-def get_amalgamation_version(filename):
-    for line in pathlib.Path(filename).read_text(encoding="utf8").splitlines():
-        if mo := re.match(r"^#define\s+SQLITE_VERSION_NUMBER\s+([0-9]{7})\s*$", line):
-            return int(mo.group(1))
-    raise Exception(f"Unable to find version in {filename=}")
-
-
-# amalgamation patching
-def patch_amalgamation() -> bool:
-    "Returns bool if it succeeded"
-
-    def get_hunks(patch: list[str]):
-        # reads patch and yields each hunk as list of before lines and list of after lines
-
-        # skip headers
-        line_num = 0
-        while patch[line_num][:1] != "@":
-            line_num += 1
-        line_num += 1
-
-        # each hunk is @ separated
-        before = []
-        after = []
-        while line_num < len(patch):
-            line = patch[line_num]
-            if line[:1] == "@":
-                yield before, after
-                line_num += 1
-                before = []
-                after = []
-                continue
-            # blank line goes to both
-            if not line:
-                line = " "
-            if line[0] == "+":
-                after.append(line[1:])
-            elif line[0] == "-":
-                before.append(line[1:])
-            else:
-                before.append(line[1:])
-                after.append(line[1:])
-            line_num += 1
-
-        yield before, after
-
-    def apply_patch(patch_lines, source_lines):
-        # this is dumb compared to real patch tool.  that isn't
-        # available so this naively finds the first set of matching
-        # lines, completely ignoring the location given in the patch.
-        # the first match found is used.  the patch should be
-        # generated with more context lines to avoid confusion
-
-        # this can only ever increase
-        source_line = 0
-
-        for hunk_num, (before, after) in enumerate(get_hunks(patch_lines), 1):
-            line = before[0]
-            found = False
-            while source_line < len(source_lines):
-                if (
-                    source_lines[source_line] == line
-                    and before == source_lines[source_line : source_line + len(before)]
-                ):
-                    # found it
-                    source_lines[source_line : source_line + len(before)] = after
-                    source_line += len(after)
-                    found = True
-                    break
-                source_line += 1
-            if not found:
-                # print(f"Failed to find hunk #{hunk_num}")
-                return False
-
-        return True
-
-    source_file_name = pathlib.Path(__file__).parent / "sqlite3" / "sqlite3.c"
-    patch_file_name = pathlib.Path(__file__).parent / "tools" / "carray.patch"
-
-    if get_amalgamation_version(source_file_name) >= 3052000:
-        print("No patches needed for this SQLite version")
-        return True
-
-    try:
-        source_file_lines = source_file_name.read_text(encoding="utf8").splitlines()
-        patch_file_lines = patch_file_name.read_text(encoding="utf8").splitlines()
-    except OSError:
-        return False
-
-    if apply_patch(patch_file_lines, source_file_lines):
-        pathlib.Path(source_file_name).rename(str(source_file_name) + ".orig")
-        pathlib.Path(source_file_name).write_text("\n".join(source_file_lines) + "\n", encoding="utf8")
-        print("  Patched amalgamation with apsw carray update")
-        return True
-
-    return False
-
-
 def set_config_from_system(outputfilename: str):
     import ctypes, ctypes.util
 
@@ -1134,6 +1018,5 @@ if __name__ == "__main__":
             "build_ext": apsw_build_ext,
             "build": apsw_build,
             "sdist": apsw_sdist,
-            "patch": apsw_patch_amalgamation,
         },
     )
