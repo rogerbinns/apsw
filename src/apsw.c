@@ -2098,41 +2098,26 @@ PyInit_apsw(void)
   if (init_apsw_strings())
     goto fail;
 
-/* we can't avoid leaks with failures until multi-phase initialisation is done */
-#define ADD(name, item)                                                                                                \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    if (PyModule_AddObjectRef(m, #name, (PyObject *)&item))                                                            \
-      goto fail;                                                                                                       \
-  } while (0)
-
-  ADD(Connection, ConnectionType);
-  ADD(Cursor, APSWCursorType);
-  ADD(Blob, APSWBlobType);
-  ADD(Backup, APSWBackupType);
-  ADD(zeroblob, ZeroBlobBindType);
-  ADD(VFS, APSWVFSType);
-  ADD(VFSFile, APSWVFSFileType);
-  ADD(VFSFcntlPragma, apswfcntl_pragma_Type);
-  ADD(URIFilename, APSWURIFilenameType);
-  ADD(IndexInfo, SqliteIndexInfoType);
-  ADD(FTS5Tokenizer, APSWFTS5TokenizerType);
-  ADD(FTS5ExtensionApi, APSWFTS5ExtensionAPIType);
-  ADD(pyobject, PyObjectBindType);
+  if (PyModule_AddType(m, &ConnectionType) || PyModule_AddType(m, &ConnectionType)
+      || PyModule_AddType(m, &APSWCursorType) || PyModule_AddType(m, &APSWBlobType)
+      || PyModule_AddType(m, &APSWBackupType) || PyModule_AddType(m, &ZeroBlobBindType)
+      || PyModule_AddType(m, &APSWVFSType) || PyModule_AddType(m, &APSWVFSFileType)
+      || PyModule_AddType(m, &apswfcntl_pragma_Type) || PyModule_AddType(m, &APSWURIFilenameType)
+      || PyModule_AddType(m, &SqliteIndexInfoType) || PyModule_AddType(m, &APSWFTS5TokenizerType)
+      || PyModule_AddType(m, &APSWFTS5ExtensionAPIType) || PyModule_AddType(m, &PyObjectBindType)
 #ifdef SQLITE_ENABLE_CARRAY
-  ADD(carray, CArrayBindType);
+      || PyModule_AddType(m, &CArrayBindType)
 #endif
 #ifdef SQLITE_ENABLE_SESSION
-  ADD(Session, APSWSessionType);
-  ADD(Changeset, APSWChangesetType);
-  ADD(ChangesetBuilder, APSWChangesetBuilderType);
-  ADD(TableChange, APSWTableChangeType);
-  ADD(Rebaser, APSWRebaserType);
+      || PyModule_AddType(m, &APSWSessionType) || PyModule_AddType(m, &APSWChangesetType)
+      || PyModule_AddType(m, &APSWChangesetBuilderType) || PyModule_AddType(m, &APSWTableChangeType)
+      || PyModule_AddType(m, &APSWRebaserType)
 #endif
 #ifdef SQLITE_ENABLE_PREUPDATE_HOOK
-  ADD(PreUpdate, PreUpdateType);
+      || PyModule_AddType(m, &PreUpdateType)
 #endif
-#undef ADD
+  )
+    goto fail;
 
   /** .. attribute:: connection_hooks
        :type: list[Callable[[Connection], None]]
