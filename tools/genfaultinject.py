@@ -198,7 +198,7 @@ returns = {
         PyMapping_Size PySet_Discard PyModule_AddObjectRef
         PyContext_Enter PyContextVar_Get PyLong_AsDouble
         PyModule_AddFunctions PyObject_GenericSetAttr
-        PyObject_RichCompareBool
+        PyObject_RichCompareBool PyModule_AddType
 
         PyObject_GetBufferContiguous PyObject_GetBuffer PyObject_GetBufferContiguousBounded
         _PyTuple_Resize

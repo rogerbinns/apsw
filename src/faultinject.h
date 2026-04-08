@@ -68,6 +68,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyModule_AddObject
 #undef PyModule_AddObjectRef
 #undef PyModule_AddStringConstant
+#undef PyModule_AddType
 #undef PyModule_Create2
 #undef PyNumber_Float
 #undef PyNumber_Long
@@ -1071,6 +1072,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyModule_AddStringConstant = (typeof (_res_PyModule_AddStringConstant))18;                                                                                            \
     }                                                                                                                                                                              \
     _res_PyModule_AddStringConstant;                                                                                                                                               \
+})
+#define PyModule_AddType(...) \
+({                                                                                                                                                   \
+    __auto_type _res_PyModule_AddType = 0 ? PyModule_AddType(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_PyModule_AddType = (typeof (_res_PyModule_AddType))APSW_FaultInjectControl("PyModule_AddType", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_PyModule_AddType))0x1FACADE == _res_PyModule_AddType)                                                                          \
+       _res_PyModule_AddType = PyModule_AddType(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_PyModule_AddType))0x2FACADE == _res_PyModule_AddType)                                                                      \
+    {                                                                                                                                                \
+        PyModule_AddType(__VA_ARGS__);                                                                                                               \
+        _res_PyModule_AddType = (typeof (_res_PyModule_AddType))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_PyModule_AddType;                                                                                                                           \
 })
 #define PyModule_Create2(...) \
 ({                                                                                                                                                   \
