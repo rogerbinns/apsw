@@ -2100,6 +2100,10 @@ APSWChangesetBuilder_close_internal(APSWChangesetBuilder *self)
   if (self->connection)
   {
     Connection_remove_dependent(self->connection, (PyObject *)self);
+    /* we could hold the last reference to the connection so it will
+       close on the clear, but we can't have a hanging mutex hold
+       hence this release */
+    sqlite3_mutex_leave(self->connection->dbmutex);
     Py_CLEAR(self->connection);
   }
 }
@@ -2110,9 +2114,7 @@ APSWChangesetBuilder_dealloc_mutex(void *self_)
   APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
   DBMUTEX_RETRY(self->connection, APSWChangesetBuilder_dealloc_mutex);
 
-  sqlite3_mutex *mutex = (self->connection) ? self->connection->dbmutex : NULL;
   APSWChangesetBuilder_close_internal(self);
-  sqlite3_mutex_leave(mutex);
 
   Py_TpFree(self_);
   return 0;
@@ -2142,6 +2144,8 @@ APSWChangesetBuilder_close(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
 
+  if (self->connection)
+    DBMUTEX_ENSURE(self->connection);
   APSWChangesetBuilder_close_internal(self);
   MakeExistingException();
 
