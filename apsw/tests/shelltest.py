@@ -129,7 +129,7 @@ class Shell(unittest.TestCase):
 
         # input description
         reset()
-        pathlib.Path(TESTFILEPREFIX + "test-shell-1").write_text("syntax error")
+        pathlib.Path(TESTFILEPREFIX + "test-shell-1").write_text("syntax error", encoding="utf8")
         try:
             shellclass(args=[TESTFILEPREFIX + "testdb", ".read %stest-shell-1" % (TESTFILEPREFIX,)], **kwargs)
         except shellclass.Error:
@@ -165,7 +165,7 @@ class Shell(unittest.TestCase):
         ### --init
         ###
         reset()
-        pathlib.Path(TESTFILEPREFIX + "test-shell-1").write_text("syntax error")
+        pathlib.Path(TESTFILEPREFIX + "test-shell-1").write_text("syntax error", encoding="utf8")
         try:
             shellclass(args=["-init", TESTFILEPREFIX + "test-shell-1"], **kwargs)
         except shellclass.Error:
@@ -173,7 +173,7 @@ class Shell(unittest.TestCase):
             isempty(fh[1])
             self.assertTrue("syntax error" in get(fh[2]))
         reset()
-        pathlib.Path(TESTFILEPREFIX + "test-shell-1").write_text("select 3;")
+        pathlib.Path(TESTFILEPREFIX + "test-shell-1").write_text("select 3;", encoding="utf8")
         shellclass(args=["-init", TESTFILEPREFIX + "test-shell-1"], **kwargs)
         # we want to make sure it read the file
         isempty(fh[2])
@@ -1590,7 +1590,9 @@ insert into xxblah values(3);
             ),
         ):
             for seq in sequences:
-                pathlib.Path(TESTFILEPREFIX + "test-shell-1").write_text("a,b\nrow," + (fmt % seq) + "\n")
+                pathlib.Path(TESTFILEPREFIX + "test-shell-1").write_text(
+                    "a,b\nrow," + (fmt % seq) + "\n", encoding="utf8"
+                )
                 reset()
                 cmd("drop table [test-shell-1];\n.autoimport %stest-shell-1" % (TESTFILEPREFIX,))
                 s.cmdloop()
@@ -1607,7 +1609,7 @@ insert into xxblah values(3);
         ):
             if isinstance(content, bytes):
                 continue
-            pathlib.Path(TESTFILEPREFIX + "test-shell-1").write_text(content)
+            pathlib.Path(TESTFILEPREFIX + "test-shell-1").write_text(content, encoding="utf8")
             reset()
             cmd("drop table [test-shell-1];\n.autoimport %stest-shell-1" % (TESTFILEPREFIX,))
             s.cmdloop()
@@ -1786,14 +1788,13 @@ insert into xxblah values(3);
         ### Command read
         ###
         # pretty much thoroughly tested above
-        pathlib.Path(
-            TESTFILEPREFIX + "test-shell-1.py").write_text(
-
+        pathlib.Path(TESTFILEPREFIX + "test-shell-1.py").write_text(
             """
 assert apsw
 assert shell
 shell.write(shell.stdout, "hello world\\n")
 """,
+            encoding="utf8",
         )
         for i in ".read", ".read one two", ".read " + os.sep:
             reset()
