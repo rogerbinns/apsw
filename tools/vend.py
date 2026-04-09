@@ -685,7 +685,8 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
             [str(pathlib.Path("sqlite3") / "sqlite3.c"), lib_resource] + zlib_sources,
             output_dir=str(build_dir),
             macros=macros,
-            extra_preargs=(compile_extra_preargs or []) + optimize_for_size,
+            extra_preargs=compile_extra_preargs,
+            extra_postargs=optimize_for_size,
         )
         # dlopen libraries are different than shared libraries so flags have to be given
         so_link_flags = None
@@ -828,9 +829,8 @@ def do_build(what: set[str], verbose: bool, fail_fast: bool = False):
                         + (zlib_sources if extra.lib_zlib else []),
                         output_dir=str(build_dir),
                         include_dirs=include_dirs,
-                        extra_preargs=compile_extra_preargs
-                        if extra.type == "extension"
-                        else (compile_extra_preargs or []) + optimize_for_size,
+                        extra_preargs=compile_extra_preargs,
+                        extra_postargs=optimize_for_size if extra.type == "extension" else None,
                         macros=extra.defines,
                     )
 
