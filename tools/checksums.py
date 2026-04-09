@@ -11,15 +11,22 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import setup
 
 sqlitevers = (
+    "3530000",
     "3510300",
     "3510200",
     "3510100",
     "3510000",
 )
 
-other_urls = ("https://sqlite.org/vec1/zip/vec1-20260306155250-d070184523.zip",
-              "https://sqlite.org/sqlar/zip/sqlar-src-20180107193712-4824e73896.zip",
-              "https://www.zlib.net/zlib132.zip",)
+other_urls = (
+    # vec1
+    "https://sqlite.org/vec1/zip/vec1-20260330201854-5b7c141049.zip",
+    "https://sqlite.org/vec1/zip/vec1-20260306155250-d070184523.zip",
+    # sqlar
+    "https://sqlite.org/sqlar/zip/sqlar-src-20180107193712-4824e73896.zip",
+    # zlib
+    "https://www.zlib.net/zlib132.zip",
+)
 
 fixup_download_url = setup.fixup_download_url
 
@@ -48,6 +55,7 @@ def check(url, data):
             print("Download is", d)
     else:
         print(url, d[0], d[1], d[2])
+
 
 for url in other_urls:
     try:
