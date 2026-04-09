@@ -6,8 +6,8 @@ apsw
 A terminal interface to the APSW SQLite shell modelled after the SQLite shell
 -----------------------------------------------------------------------------
 
-:version: apsw 3.51.3.0
-:date: 13 March 2026
+:version: apsw 3.53.0.0
+:date: 9 April 2026
 :manual section: 1
 :manual group: General Commands Manual
 

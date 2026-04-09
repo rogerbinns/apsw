@@ -4692,6 +4692,8 @@ SQLITE_DBCONFIG_ENABLE_TRIGGER: int = 1003
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_ENABLE_VIEW: int = 1015
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
+SQLITE_DBCONFIG_FP_DIGITS: int = 1023
+"""For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_LEGACY_ALTER_TABLE: int = 1012
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_LEGACY_FILE_FORMAT: int = 1016
@@ -5056,6 +5058,8 @@ SQLITE_LIMIT_LENGTH: int = 0
 """For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
 SQLITE_LIMIT_LIKE_PATTERN_LENGTH: int = 8
 """For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
+SQLITE_LIMIT_PARSER_DEPTH: int = 12
+"""For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
 SQLITE_LIMIT_SQL_LENGTH: int = 1
 """For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
 SQLITE_LIMIT_TRIGGER_DEPTH: int = 10
@@ -5157,6 +5161,8 @@ SQLITE_PERM: int = 3
 SQLITE_PRAGMA: int = 19
 """For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_PREPARE_DONT_LOG: int = 16
+"""For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>'__"""
+SQLITE_PREPARE_FROM_DDL: int = 32
 """For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>'__"""
 SQLITE_PREPARE_NORMALIZE: int = 2
 """For `Prepare Flags <https://sqlite.org/c3ref/c_prepare_dont_log.html>'__"""
@@ -5381,12 +5387,13 @@ SQLITE_DBCONFIG_ENABLE_ATTACH_WRITE SQLITE_DBCONFIG_ENABLE_COMMENTS
 SQLITE_DBCONFIG_ENABLE_FKEY SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER
 SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION SQLITE_DBCONFIG_ENABLE_QPSG
 SQLITE_DBCONFIG_ENABLE_TRIGGER SQLITE_DBCONFIG_ENABLE_VIEW
-SQLITE_DBCONFIG_LEGACY_ALTER_TABLE SQLITE_DBCONFIG_LEGACY_FILE_FORMAT
-SQLITE_DBCONFIG_LOOKASIDE SQLITE_DBCONFIG_MAINDBNAME
-SQLITE_DBCONFIG_MAX SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE
-SQLITE_DBCONFIG_RESET_DATABASE SQLITE_DBCONFIG_REVERSE_SCANORDER
-SQLITE_DBCONFIG_STMT_SCANSTATUS SQLITE_DBCONFIG_TRIGGER_EQP
-SQLITE_DBCONFIG_TRUSTED_SCHEMA SQLITE_DBCONFIG_WRITABLE_SCHEMA"""
+SQLITE_DBCONFIG_FP_DIGITS SQLITE_DBCONFIG_LEGACY_ALTER_TABLE
+SQLITE_DBCONFIG_LEGACY_FILE_FORMAT SQLITE_DBCONFIG_LOOKASIDE
+SQLITE_DBCONFIG_MAINDBNAME SQLITE_DBCONFIG_MAX
+SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE SQLITE_DBCONFIG_RESET_DATABASE
+SQLITE_DBCONFIG_REVERSE_SCANORDER SQLITE_DBCONFIG_STMT_SCANSTATUS
+SQLITE_DBCONFIG_TRIGGER_EQP SQLITE_DBCONFIG_TRUSTED_SCHEMA
+SQLITE_DBCONFIG_WRITABLE_SCHEMA"""
 
 mapping_db_status: dict[str | int, int | str]
 """Status Parameters for database connections mapping names to int and int to names.
@@ -5500,9 +5507,10 @@ Doc at https://sqlite.org/c3ref/c_limit_attached.html
 
 SQLITE_LIMIT_ATTACHED SQLITE_LIMIT_COLUMN SQLITE_LIMIT_COMPOUND_SELECT
 SQLITE_LIMIT_EXPR_DEPTH SQLITE_LIMIT_FUNCTION_ARG SQLITE_LIMIT_LENGTH
-SQLITE_LIMIT_LIKE_PATTERN_LENGTH SQLITE_LIMIT_SQL_LENGTH
-SQLITE_LIMIT_TRIGGER_DEPTH SQLITE_LIMIT_VARIABLE_NUMBER
-SQLITE_LIMIT_VDBE_OP SQLITE_LIMIT_WORKER_THREADS"""
+SQLITE_LIMIT_LIKE_PATTERN_LENGTH SQLITE_LIMIT_PARSER_DEPTH
+SQLITE_LIMIT_SQL_LENGTH SQLITE_LIMIT_TRIGGER_DEPTH
+SQLITE_LIMIT_VARIABLE_NUMBER SQLITE_LIMIT_VDBE_OP
+SQLITE_LIMIT_WORKER_THREADS"""
 
 mapping_locking_level: dict[str | int, int | str]
 """File Locking Levels mapping names to int and int to names.
@@ -5528,8 +5536,9 @@ mapping_prepare_flags: dict[str | int, int | str]
 """Prepare Flags mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_prepare_dont_log.html
 
-SQLITE_PREPARE_DONT_LOG SQLITE_PREPARE_NORMALIZE
-SQLITE_PREPARE_NO_VTAB SQLITE_PREPARE_PERSISTENT"""
+SQLITE_PREPARE_DONT_LOG SQLITE_PREPARE_FROM_DDL
+SQLITE_PREPARE_NORMALIZE SQLITE_PREPARE_NO_VTAB
+SQLITE_PREPARE_PERSISTENT"""
 
 mapping_result_codes: dict[str | int, int | str]
 """Result Codes mapping names to int and int to names.
