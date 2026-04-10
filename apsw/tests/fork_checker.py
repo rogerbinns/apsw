@@ -155,7 +155,7 @@ class zzZForkChecker(unittest.TestCase):
 forkcheck = False
 
 if hasattr(apsw, "fork_checker") and hasattr(os, "fork") and platform.python_implementation() != "PyPy" \
-        and sys.version_info < (3, 13):
+        and sys.version_info < (3, 13) and "DEBUG" not in apsw.compile_options:
         try:
             import multiprocessing
 
