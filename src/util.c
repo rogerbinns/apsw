@@ -112,10 +112,7 @@ pending_call_callback(void *ignored)
 
   pending_call_registered = 0;
 
-  size_t ran = 0;
-
-  size_t i;
-  for (i = 0; i < pending_call_slots_count; i++)
+  for (size_t i = 0; i < pending_call_slots_count; i++)
   {
     if (pending_call_slots[i].func)
     {
@@ -123,7 +120,6 @@ pending_call_callback(void *ignored)
       void *arg = pending_call_slots[i].arg;
       pending_call_slots[i].func = 0;
       pending_call_slots[i].arg = 0;
-      ran++;
       int res = func(arg);
       assert((res == 0 && !PyErr_Occurred()) || (res != 0 && PyErr_Occurred()));
       if (PyErr_Occurred())
