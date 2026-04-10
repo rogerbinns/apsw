@@ -2362,7 +2362,7 @@ APSWChangesetBuilder_row(APSWChangesetBuilder *self, int new, PyObject *row)
 
   change_failed:
     SET_EXC(res, NULL);
-    AddTraceBackHere(__FILE__, __LINE__, "builder_row", "{s: O, s: L, s: O}", "row", row_fast, "column", i, "value",
+    AddTraceBackHere(__FILE__, __LINE__, "builder_row", "{s: O, s: n, s: O}", "row", row, "column", i, "value",
                      value);
     break;
   }
