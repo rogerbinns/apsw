@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Async Example/Tour &mdash; APSW 3.51.3.0 documentation</title>
+  <title>Async Example/Tour &mdash; APSW 3.53.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/example-async.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=ef092552"></script>
+      <script src="_static/documentation_options.js?v=5ce78374"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -138,7 +138,7 @@
   <section id="async-example-tour">
 <h1>Async Example/Tour<a class="headerlink" href="#async-example-tour" title="Link to this heading"></a></h1>
 <p>This shows how to use APSW in <a class="reference internal" href="async.html"><span class="doc">async</span></a> node.
-<a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>, <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="async.html#trio-note"><span class="std std-ref">note</span></a>), and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="async.html#anyio-note"><span class="std std-ref">note</span></a>) are supported.  A different one is
+<a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>, <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="async.html#trio-note"><span class="std std-ref">note</span></a>), and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v4.13.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="async.html#anyio-note"><span class="std std-ref">note</span></a>) are supported.  A different one is
 used for each block, although they all work.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -231,7 +231,7 @@ ensure the database is closed.</p>
 <span class="go">value=10 name=&#39;ten&#39;</span>
 <span class="go">value=3 name=&#39;three&#39;</span>
 <span class="go">value=1 name=&#39;one&#39;</span>
-<span class="go">There are 172 functions</span>
+<span class="go">There are 174 functions</span>
 <span class="go">journal_mode=memory</span>
 </pre></div>
 </div>
@@ -306,7 +306,7 @@ exceptions.</p>
 exceptions such as from a group of tasks</p></li>
 <li><p><a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.TaskGroup" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">asyncio.TaskGroup</span></code></a></p></li>
 <li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#tasks" title="(in Trio v0.32.0)"><span class="xref std std-ref">Trio tasks</span></a></p></li>
-<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/tasks.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">AnyIO tasks</span></a></p></li>
+<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/tasks.html" title="(in AnyIO v4.13.0)"><span class="xref std std-doc">AnyIO tasks</span></a></p></li>
 </ul>
 </div>
 <p>This example shows asyncio, but the principles are the same across
@@ -381,12 +381,12 @@ all the frameworks.</p>
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cancellation</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">got zero division error after 0.000115 seconds</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">got zero division error after 0.000152 seconds</span>
 <span class="go">task1.done()=True task1.cancelled()=True</span>
 <span class="go">task2.done()=True task2.cancelled()=True</span>
 <span class="go">task3.done()=True task3.cancelled()=True</span>
 <span class="go">task4.done()=True task4.cancelled()=False</span>
-<span class="go">After 0.000592 seconds, there are 210 registered SQLite functions</span>
+<span class="go">After 0.000161 seconds, there are 212 registered SQLite functions</span>
 </pre></div>
 </div>
 </section>
@@ -400,7 +400,7 @@ run to completion.</p>
 and tends to be accurate. The deadline for sync functions is based
 on SQLite periodically calling the <a class="reference internal" href="connection.html#apsw.Connection.set_progress_handler" title="apsw.Connection.set_progress_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">progress</span> <span class="pre">handler</span></code></a>.</p>
 <p>There is a dedicated <a class="reference internal" href="async.html#apsw.aio.deadline" title="apsw.aio.deadline"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code></a> which takes priority
-for all frameworks, For <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="async.html#trio-note"><span class="std std-ref">note</span></a>) and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="async.html#anyio-note"><span class="std std-ref">note</span></a>) their native timeouts are
+for all frameworks, For <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="async.html#trio-note"><span class="std std-ref">note</span></a>) and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v4.13.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="async.html#anyio-note"><span class="std std-ref">note</span></a>) their native timeouts are
 also supported if <a class="reference internal" href="async.html#apsw.aio.deadline" title="apsw.aio.deadline"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code></a> has not been set.  The
 <a class="reference internal" href="async.html#apsw.aio.deadline" title="apsw.aio.deadline"><code class="xref py py-attr docutils literal notranslate"><span class="pre">deadline</span></code></a> documentation has more details on setting
 deadlines for each framework, getting their current time, and
@@ -414,9 +414,9 @@ exceptions raised on timeout.</p>
 <li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_time" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.current_time()</span></code></a></p></li>
 <li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_effective_deadline" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.current_effective_deadline()</span></code></a></p></li>
 <li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.fail_after" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.fail_after()</span></code></a> <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.fail_at" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.fail_at()</span></code></a></p></li>
-<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_time" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_time()</span></code></a></p></li>
-<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_effective_deadline()</span></code></a></p></li>
-<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.fail_after" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.fail_after()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_time" title="(in AnyIO v4.13.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_time()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline" title="(in AnyIO v4.13.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_effective_deadline()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.fail_after" title="(in AnyIO v4.13.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.fail_after()</span></code></a></p></li>
 </ul>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># The query is not reproduced here but is used when running this</span>
@@ -464,8 +464,8 @@ exceptions raised on timeout.</p>
 <span class="n">trio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">timeouts</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Got async function TooSlowError after 0.502348 seconds</span>
-<span class="go">Got sync function TooSlowError after 1.003476 seconds</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Got async function TooSlowError after 0.501281 seconds</span>
+<span class="go">Got sync function TooSlowError after 1.001829 seconds</span>
 </pre></div>
 </div>
 </section>
@@ -546,7 +546,7 @@ final result.  Use <a class="reference internal" href="connection.html#apsw.Conn
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">rows=1</span>
-<span class="go">Dump is 747 chars starting &quot;-- SQLite dump (by APSW 3.51.3.0)\n-- S</span>
+<span class="go">Dump is 747 chars starting &quot;-- SQLite dump (by APSW 3.53.0.0)\n-- S</span>
 </pre></div>
 </div>
 </section>
@@ -703,21 +703,21 @@ transaction control.</p>
 <span class="go">  DEL 2 (1)</span>
 <span class="go">  DEL 3 (2)</span>
 <span class="go">  DEL 4 (3)</span>
-<span class="go">    Time: 0.001  Changes: 4</span>
+<span class="go">    Time: 0.000  Changes: 4</span>
 <span class="go">&gt; COMMIT</span>
 <span class="go"> !COMMIT</span>
 <span class="go">    Time: 0.000</span>
 <span class="go">&gt; SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;</span>
 <span class="go">V PRAGMA function_list</span>
-<span class="go">    Time: 0.000  Rows: 209  VmStep: 1,467  Mem: 76.7KB</span>
+<span class="go">    Time: 0.000  Rows: 211  VmStep: 1,481  Mem: 76.8KB</span>
 <span class="go">&lt; SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;</span>
-<span class="go">    Time: 0.000  Rows: 1  VmStep: 638</span>
+<span class="go">    Time: 0.000  Rows: 1  VmStep: 644</span>
 <span class="go"> !BEGIN</span>
 <span class="go">&gt; create trigger error after insert on multi</span>
 <span class="go">               begin</span>
 <span class="go">         ...</span>
 <span class="go"> !COMMIT</span>
-<span class="go">    Time: 0.001</span>
+<span class="go">    Time: 0.000</span>
 <span class="go"> !BEGIN</span>
 <span class="go">&gt; insert into multi values(54)</span>
 <span class="go">  INS 6 (54)</span>
@@ -769,8 +769,9 @@ transaction control.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">thread (async event loop)</span>
-<span class="go">                     Process CPU consumption 0.014</span>
-<span class="go">                                  Wall clock 0.515</span>
+<span class="go">                     Process CPU consumption 0.015</span>
+<span class="go">                                  Wall clock 0.516</span>
+<span class="go">                        Page faults - no I/O 3</span>
 <span class="go">                  Voluntary context switches 4</span>
 <span class="go">                      SQLite full table scan 1,365</span>
 <span class="go">                      SQLite sort operations 2</span>
@@ -783,12 +784,11 @@ transaction control.</p>
 <span class="go">                     SQLite statement memory 17,080</span>
 
 <span class="go">process (including background SQLite worker)</span>
-<span class="go">                     Process CPU consumption 0.014</span>
+<span class="go">                     Process CPU consumption 0.015</span>
 <span class="go">                                  Wall clock 0.515</span>
-<span class="go">                        Page faults - no I/O 3</span>
-<span class="go">                Involuntary context switches 158</span>
+<span class="go">                Involuntary context switches 1</span>
 <span class="go">                  Voluntary context switches 8</span>
-<span class="go">                       CPU time in user mode 0.013</span>
+<span class="go">                       CPU time in user mode 0.015</span>
 <span class="go">                      SQLite full table scan 1,365</span>
 <span class="go">                      SQLite sort operations 2</span>
 <span class="go">                        SQLite vm operations 1,015,353</span>
@@ -1060,7 +1060,7 @@ connection.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 14, 2026.
+      <span class="lastupdated">Last updated on Apr 10, 2026.
       </span></p>
   </div>
 

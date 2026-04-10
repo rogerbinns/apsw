@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Concurrency &amp; Async &mdash; APSW 3.51.3.0 documentation</title>
+  <title>Concurrency &amp; Async &mdash; APSW 3.53.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/async.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=ef092552"></script>
+      <script src="_static/documentation_options.js?v=5ce78374"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -195,7 +195,7 @@
 <h1>Concurrency &amp; Async<a class="headerlink" href="#concurrency-async" title="Link to this heading"></a></h1>
 <section id="how-sqlite-concurrency-works">
 <h2>How SQLite concurrency works<a class="headerlink" href="#how-sqlite-concurrency-works" title="Link to this heading"></a></h2>
-<p>Each connection has a lock (<a class="reference external" href="https://en.wikipedia.org/wiki/Lock_(computer_science)">mutex</a> to protect
+<p>Each connection has a lock (<a class="reference external" href="https://en.wikipedia.org/wiki/Lock_(computer_science)">mutex</a>) to protect
 the SQLite data structure.  It is acquired on a call into the
 connection, and released on return of the call. The mutex can be
 acquired more times in the same thread, allowing nested calls, but
@@ -218,8 +218,8 @@ default it will switch the active thread every 5ms (200 times a
 second), with the operating system scheduler choosing which thread
 runs next.</p>
 <p>The GIL can be released by C code when not using Python data
-structures to allow other threads Python to run.  This is done
-during I/O and database operations etc.</p>
+structures to allow Python code in other threads to run.  This is
+done during I/O and database operations etc.</p>
 </div></blockquote>
 <p>Free threaded (Python 3.14+)</p>
 <blockquote>
@@ -283,7 +283,7 @@ loop with the worker thread blocked until getting a result back.</p>
 <section id="async-usage">
 <span id="id1"></span><h2>Async usage<a class="headerlink" href="#async-usage" title="Link to this heading"></a></h2>
 <p>APSW async usage has been developed and tested with <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>,
-<a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>), and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>) with asyncio and trio event loops.
+<a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>), and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v4.13.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>) with asyncio and trio event loops.
 This includes cancellations and deadlines/timeouts.  There is a
 controller interface (described below) providing event loop
 integration, or you can write/adapt your own if you have more
@@ -483,7 +483,7 @@ timeouts</p>
 <p><a class="reference internal" href="#apsw.aio.deadline" title="apsw.aio.deadline"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code></a></p>
 <blockquote>
 <div><p>When SQLite queries or async callbacks should timeout.  <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>)
-and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>)) native timeouts are also supported.</p>
+and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v4.13.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>)) native timeouts are also supported.</p>
 </div></blockquote>
 <p><a class="reference internal" href="apsw.html#apsw.async_controller" title="apsw.async_controller"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.async_controller</span></code></a></p>
 <blockquote>
@@ -514,14 +514,14 @@ documentation provides more details.</p>
 not set, then their <code class="code docutils literal notranslate"><span class="pre">current_effective_deadline</span></code> used.</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.fail_at" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.fail_at()</span></code></a>,  <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.fail_after" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.fail_after()</span></code></a>, <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_effective_deadline" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.current_effective_deadline()</span></code></a></p></li>
-<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.fail_after" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.fail_after()</span></code></a>, <a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_effective_deadline()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.fail_after" title="(in AnyIO v4.13.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.fail_after()</span></code></a>, <a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline" title="(in AnyIO v4.13.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_effective_deadline()</span></code></a></p></li>
 </ul>
 </section>
 <section id="async-controllers">
 <h3>Async controllers<a class="headerlink" href="#async-controllers" title="Link to this heading"></a></h3>
 <p>A controller configured via <a class="reference internal" href="apsw.html#apsw.async_controller" title="apsw.async_controller"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.async_controller</span></code></a> is used to
 integrate with the async framework.  <a class="reference internal" href="#module-apsw.aio" title="apsw.aio"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apsw.aio</span></code></a> contains
-implementations for <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>, <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>), <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>), and
+implementations for <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>, <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>), <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v4.13.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>), and
 auto-detection (the default).</p>
 <p>The controller is responsible for:</p>
 <ul class="simple">
@@ -541,7 +541,7 @@ conform to the <a class="reference internal" href="apsw.html#apsw.AsyncConnectio
 <p>Instead of using APSW in async mode, you can request your framework
 run expensive operations in a thread.  For example
 <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">asyncio.to_thread()</span></code></a>, <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.to_thread.run_sync" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.to_thread.run_sync()</span></code></a> and
-<a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.to_thread.run_sync" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.to_thread.run_sync()</span></code></a> can do that for you.</p>
+<a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.to_thread.run_sync" title="(in AnyIO v4.13.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.to_thread.run_sync()</span></code></a> can do that for you.</p>
 </section>
 <section id="extensions">
 <h3>Extensions<a class="headerlink" href="#extensions" title="Link to this heading"></a></h3>
@@ -629,8 +629,8 @@ call is made is used.</p>
 <blockquote>
 <div><p>If <code class="code docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code> is set then it is used for the
 deadline.  <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TimeoutError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TimeoutError</span></code></a> is raised.  The current time is
-available from <a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_time" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_time()</span></code></a>.</p>
-<p>Otherwise the <a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_effective_deadline()</span></code></a> where the
+available from <a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_time" title="(in AnyIO v4.13.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_time()</span></code></a>.</p>
+<p>Otherwise the <a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline" title="(in AnyIO v4.13.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_effective_deadline()</span></code></a> where the
 call is made is used.</p>
 </div></blockquote>
 </dd></dl>
@@ -796,7 +796,7 @@ Python versions:</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="apsw.aio.AnyIO">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.aio.</span></span><span class="sig-name descname"><span class="pre">AnyIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">thread_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'anyio</span> <span class="pre">apsw</span> <span class="pre">background</span> <span class="pre">worker'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AnyIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AnyIO" title="Link to this definition"></a></dt>
-<dd><p><a class="reference internal" href="apsw.html#apsw.AsyncConnectionController" title="apsw.AsyncConnectionController"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a> for <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>)</p>
+<dd><p><a class="reference internal" href="apsw.html#apsw.AsyncConnectionController" title="apsw.AsyncConnectionController"><code class="xref py py-class docutils literal notranslate"><span class="pre">Controller</span></code></a> for <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v4.13.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>)</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="apsw.aio.AnyIO.configure">
 <span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/aio.html#AnyIO.configure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.aio.AnyIO.configure" title="Link to this definition"></a></dt>
@@ -855,7 +855,7 @@ for <a class="reference internal" href="apsw.html#apsw.async_controller" title="
 <p><strong>AnyIO note</strong></p>
 <blockquote>
 <div><p>The <a class="reference internal" href="#apsw.aio.AnyIO" title="apsw.aio.AnyIO"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyIO</span></code></a> controller is only returned if
-<a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run" title="(in AnyIO v0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.run()</span></code></a> is in the call stack.</p>
+<a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.run" title="(in AnyIO v4.13.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.run()</span></code></a> is in the call stack.</p>
 <p>If you are simultaneously using anyio and another framework
 then you should manually configure
 <a class="reference internal" href="apsw.html#apsw.async_controller" title="apsw.async_controller"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.async_controller</span></code></a> to get the one you want.</p>
@@ -877,7 +877,7 @@ until there are 300,000 rows in the table.</p>
 <p>Library</p>
 <blockquote>
 <div><p>apsw with <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>, asyncio using <a class="reference external" href="https://uvloop.readthedocs.io/">uvloop</a> as the inner
-loop, <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>), and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v0.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>) with asyncio and trio event loops.</p>
+loop, <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="#trio-note"><span class="std std-ref">note</span></a>), and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v4.13.0)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="#anyio-note"><span class="std std-ref">note</span></a>) with asyncio and trio event loops.</p>
 <p>The <a class="reference external" href="https://aiosqlite.omnilib.dev/en/stable/">aiosqlite</a> library (asyncio only) is included for comparison
 which also sends calls to a worker thread.  Note that it doesn’t
 support cancellation, timeouts, or async callbacks.</p>
@@ -1324,7 +1324,7 @@ large numbers of calls because of very small row batch sizes.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 14, 2026.
+      <span class="lastupdated">Last updated on Apr 10, 2026.
       </span></p>
   </div>
 

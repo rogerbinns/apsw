@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session extension &mdash; APSW 3.51.3.0 documentation</title>
+  <title>Session extension &mdash; APSW 3.53.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/session.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=ef092552"></script>
+      <script src="_static/documentation_options.js?v=5ce78374"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -129,7 +129,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.add"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.add()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.add_change"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.add_change()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.add_delete"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.add_delete()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.add_insert"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.add_insert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.add_update"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.add_update()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.close"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.close()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.config"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.config()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.output"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.output()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.output_stream"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.output_stream()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#apsw.ChangesetBuilder.schema"><code class="docutils literal notranslate"><span class="pre">ChangesetBuilder.schema()</span></code></a></li>
@@ -725,8 +729,13 @@ the bytes, or streamed via a callable.</p>
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ChangesetBuilder</span></span><a class="headerlink" href="#apsw.ChangesetBuilder" title="Link to this definition"></a></dt>
 <dd><blockquote>
 <div><p>This object wraps a <a class="reference external" href="https://sqlite.org/session/changegroup.html">sqlite3_changegroup</a>
-letting you concatenate changesets and individual <a class="reference internal" href="#apsw.TableChange" title="apsw.TableChange"><code class="xref py py-class docutils literal notranslate"><span class="pre">TableChange</span></code></a> into one larger
-changeset.</p>
+to build a changeset or patchset.   The contents can come from:</p>
+<ul class="simple">
+<li><p>Existing changesets</p></li>
+<li><p>Individual <a class="reference internal" href="#apsw.TableChange" title="apsw.TableChange"><code class="xref py py-class docutils literal notranslate"><span class="pre">TableChange</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.ChangesetBuilder.add_insert" title="apsw.ChangesetBuilder.add_insert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_insert()</span></code></a>, <a class="reference internal" href="#apsw.ChangesetBuilder.add_update" title="apsw.ChangesetBuilder.add_update"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_update()</span></code></a>, <a class="reference internal" href="#apsw.ChangesetBuilder.add_delete" title="apsw.ChangesetBuilder.add_delete"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_delete()</span></code></a></p></li>
+</ul>
+<p>See the <a class="reference internal" href="example-session.html#example-changesetbuilder"><span class="std std-ref">example</span></a></p>
 </div></blockquote>
 <p>Creates a new empty builder.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_new.html">sqlite3changegroup_new</a></p>
@@ -764,27 +773,84 @@ of <a class="reference internal" href="#apsw.Changeset.apply" title="apsw.Change
 </dd></dl>
 
 <dl class="py method" id="index-30">
+<dt class="sig sig-object py" id="apsw.ChangesetBuilder.add_delete">
+<span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">add_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">indirect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SQLiteValues" title="apsw.SQLiteValues"><span class="pre">SQLiteValues</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.add_delete" title="Link to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Adds an <code class="docutils literal notranslate"><span class="pre">delete</span></code> change row.  You must have called <a class="reference internal" href="#apsw.ChangesetBuilder.schema" title="apsw.ChangesetBuilder.schema"><code class="xref py py-meth docutils literal notranslate"><span class="pre">schema()</span></code></a> first so
+the table can be verified.</p>
+</div></blockquote>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#apsw.ChangesetBuilder.add_insert" title="apsw.ChangesetBuilder.add_insert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_insert()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.ChangesetBuilder.add_update" title="apsw.ChangesetBuilder.add_update"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_update()</span></code></a></p></li>
+</ul>
+</div>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_change_finish.html">sqlite3changegroup_change_finish</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-31">
+<dt class="sig sig-object py" id="apsw.ChangesetBuilder.add_insert">
+<span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">add_insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">indirect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SQLiteValues" title="apsw.SQLiteValues"><span class="pre">SQLiteValues</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.add_insert" title="Link to this definition"></a></dt>
+<dd><p>Adds an <code class="docutils literal notranslate"><span class="pre">insert</span></code> change row.  You must have called <a class="reference internal" href="#apsw.ChangesetBuilder.schema" title="apsw.ChangesetBuilder.schema"><code class="xref py py-meth docutils literal notranslate"><span class="pre">schema()</span></code></a> first so
+the table can be verified.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#apsw.ChangesetBuilder.add_delete" title="apsw.ChangesetBuilder.add_delete"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_delete()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.ChangesetBuilder.add_update" title="apsw.ChangesetBuilder.add_update"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_update()</span></code></a></p></li>
+</ul>
+</div>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_change_finish.html">sqlite3changegroup_change_finish</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-32">
+<dt class="sig sig-object py" id="apsw.ChangesetBuilder.add_update">
+<span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">add_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">indirect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">old</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SQLiteValues" title="apsw.SQLiteValues"><span class="pre">SQLiteValues</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">new</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SQLiteValues" title="apsw.SQLiteValues"><span class="pre">SQLiteValues</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.add_update" title="Link to this definition"></a></dt>
+<dd><p>Adds an <code class="docutils literal notranslate"><span class="pre">update</span></code> change giving old and new rows. You must have called <a class="reference internal" href="#apsw.ChangesetBuilder.schema" title="apsw.ChangesetBuilder.schema"><code class="xref py py-meth docutils literal notranslate"><span class="pre">schema()</span></code></a> first so
+the table can be verified.</p>
+<p>See <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_change_finish.html">sqlite3changegroup_change_finish</a>
+for details on which columns of old and new you must provide values for.  Where no value should be
+provided, use <a class="reference internal" href="apsw.html#apsw.no_change" title="apsw.no_change"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.no_change</span></code></a>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#apsw.ChangesetBuilder.add_insert" title="apsw.ChangesetBuilder.add_insert"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_insert()</span></code></a></p></li>
+<li><p><a class="reference internal" href="#apsw.ChangesetBuilder.add_delete" title="apsw.ChangesetBuilder.add_delete"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_delete()</span></code></a></p></li>
+</ul>
+</div>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_change_finish.html">sqlite3changegroup_change_finish</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-33">
 <dt class="sig sig-object py" id="apsw.ChangesetBuilder.close">
 <span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.close" title="Link to this definition"></a></dt>
 <dd><p>Releases the builder</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_delete.html">sqlite3changegroup_delete</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-31">
+<dl class="py method" id="index-34">
+<dt class="sig sig-object py" id="apsw.ChangesetBuilder.config">
+<span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.config" title="Link to this definition"></a></dt>
+<dd><p>Configures the changegroup.</p>
+<p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_config.html">sqlite3changegroup_config</a></p>
+</dd></dl>
+
+<dl class="py method" id="index-35">
 <dt class="sig sig-object py" id="apsw.ChangesetBuilder.output">
 <span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">output</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.output" title="Link to this definition"></a></dt>
 <dd><p>Produces a changeset of what was built so far</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_output.html">sqlite3changegroup_output</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-32">
+<dl class="py method" id="index-36">
 <dt class="sig sig-object py" id="apsw.ChangesetBuilder.output_stream">
 <span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">output_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamOutput" title="apsw.SessionStreamOutput"><span class="pre">SessionStreamOutput</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.output_stream" title="Link to this definition"></a></dt>
 <dd><p>Produces a streaming changeset of what was built so far</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3changegroup_add_strm.html">sqlite3changegroup_output_strm</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-33">
+<dl class="py method" id="index-37">
 <dt class="sig sig-object py" id="apsw.ChangesetBuilder.schema">
 <span class="sig-prename descclassname"><span class="pre">ChangesetBuilder.</span></span><span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="apsw.html#apsw.AsyncConnection" title="apsw.AsyncConnection"><span class="pre">AsyncConnection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.ChangesetBuilder.schema" title="Link to this definition"></a></dt>
 <dd><p>Ensures the changesets comply with the tables in the database</p>
@@ -804,7 +870,7 @@ already been called.</p>
 </section>
 <section id="rebaser-class">
 <h2>Rebaser class<a class="headerlink" href="#rebaser-class" title="Link to this heading"></a></h2>
-<dl class="py class" id="index-34">
+<dl class="py class" id="index-38">
 <dt class="sig sig-object py" id="apsw.Rebaser">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">Rebaser</span></span><a class="headerlink" href="#apsw.Rebaser" title="Link to this definition"></a></dt>
 <dd><p>This object wraps a <a class="reference external" href="https://www.sqlite.org/session/rebaser.html">sqlite3_rebaser</a> object.</p>
@@ -812,14 +878,14 @@ already been called.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3rebaser_create.html">sqlite3rebaser_create</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-35">
+<dl class="py method" id="index-39">
 <dt class="sig sig-object py" id="apsw.Rebaser.close">
 <span class="sig-prename descclassname"><span class="pre">Rebaser.</span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Rebaser.close" title="Link to this definition"></a></dt>
 <dd><p>Releases the rebaser.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3rebaser_delete.html">sqlite3rebaser_delete</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-36">
+<dl class="py method" id="index-40">
 <dt class="sig sig-object py" id="apsw.Rebaser.configure">
 <span class="sig-prename descclassname"><span class="pre">Rebaser.</span></span><span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.14)"><span class="pre">Buffer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Rebaser.configure" title="Link to this definition"></a></dt>
 <dd><p>Tells the rebaser about conflict resolutions made in an earlier
@@ -827,14 +893,14 @@ already been called.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3rebaser_configure.html">sqlite3rebaser_configure</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-37">
+<dl class="py method" id="index-41">
 <dt class="sig sig-object py" id="apsw.Rebaser.rebase">
 <span class="sig-prename descclassname"><span class="pre">Rebaser.</span></span><span class="sig-name descname"><span class="pre">rebase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">changeset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.14)"><span class="pre">Buffer</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)"><span class="pre">bytes</span></a></span></span><a class="headerlink" href="#apsw.Rebaser.rebase" title="Link to this definition"></a></dt>
 <dd><p>Produces a new changeset rebased according to <a class="reference internal" href="#apsw.Rebaser.configure" title="apsw.Rebaser.configure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">configure()</span></code></a> calls made.</p>
 <p>Calls: <a class="reference external" href="https://sqlite.org/session/sqlite3rebaser_rebase.html">sqlite3rebaser_rebase</a></p>
 </dd></dl>
 
-<dl class="py method" id="index-38">
+<dl class="py method" id="index-42">
 <dt class="sig sig-object py" id="apsw.Rebaser.rebase_stream">
 <span class="sig-prename descclassname"><span class="pre">Rebaser.</span></span><span class="sig-name descname"><span class="pre">rebase_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">changeset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamInput" title="apsw.SessionStreamInput"><span class="pre">SessionStreamInput</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="apsw.html#apsw.SessionStreamOutput" title="apsw.SessionStreamOutput"><span class="pre">SessionStreamOutput</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#apsw.Rebaser.rebase_stream" title="Link to this definition"></a></dt>
 <dd><p>Produces a new changeset rebased according to <a class="reference internal" href="#apsw.Rebaser.configure" title="apsw.Rebaser.configure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">configure()</span></code></a> calls made, using streaming
@@ -857,7 +923,7 @@ input and output.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 14, 2026.
+      <span class="lastupdated">Last updated on Apr 10, 2026.
       </span></p>
   </div>
 

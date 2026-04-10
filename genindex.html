@@ -14,7 +14,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; APSW 3.51.3.0 documentation</title>
+  <title>Index &mdash; APSW 3.53.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/genindex.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=ef092552"></script>
+      <script src="_static/documentation_options.js?v=5ce78374"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -238,6 +238,12 @@
 </li>
       <li><a href="session.html#apsw.ChangesetBuilder.add_change">add_change() (apsw.ChangesetBuilder method)</a>
 </li>
+      <li><a href="session.html#apsw.ChangesetBuilder.add_delete">add_delete() (apsw.ChangesetBuilder method)</a>
+</li>
+      <li><a href="session.html#apsw.ChangesetBuilder.add_insert">add_insert() (apsw.ChangesetBuilder method)</a>
+</li>
+      <li><a href="session.html#apsw.ChangesetBuilder.add_update">add_update() (apsw.ChangesetBuilder method)</a>
+</li>
       <li><a href="ext.html#apsw.ext.VDBEInstruction.addr">addr (apsw.ext.VDBEInstruction attribute)</a>
 </li>
       <li><a href="backup.html#apsw.Backup.afinish">afinish() (apsw.Backup method)</a>
@@ -307,12 +313,12 @@
         <li><a href="textsearch.html#module-apsw.fts5">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="example-fts.html#index-19">apsw.fts5.RegexPreTokenizer (Full text search example code)</a>
 </li>
       <li><a href="example-fts.html#index-18">apsw.fts5.RegexTokenizer (Full text search example code)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="example-fts.html#index-15">apsw.fts5.SimplifyTokenizer (Full text search example code)</a>
 </li>
       <li><a href="example-fts.html#index-14">apsw.fts5.UnicodeWordsTokenizer (Full text search example code)</a>
@@ -694,10 +700,10 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.Commit">Commit() (apsw.VTTable method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.CommitHook">CommitHook (class in apsw)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.compile_options">compile_options (in module apsw)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.complete">complete() (apsw.shell.Shell method)</a>
@@ -714,9 +720,11 @@
 </li>
       <li><a href="session.html#apsw.Changeset.concat_stream">concat_stream() (apsw.Changeset method)</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.config">config() (apsw.Connection method)</a>
+      <li><a href="session.html#apsw.ChangesetBuilder.config">config() (apsw.ChangesetBuilder method)</a>
 
       <ul>
+        <li><a href="connection.html#apsw.Connection.config">(apsw.Connection method)</a>
+</li>
         <li><a href="textsearch.html#apsw.fts5.Table.config">(apsw.fts5.Table method)</a>
 </li>
         <li><a href="session.html#apsw.Session.config">(apsw.Session method)</a>
@@ -1538,6 +1546,8 @@
       </ul></li>
       <li><a href="bestpractice.html#apsw.bestpractice.library_logging">library_logging() (in module apsw.bestpractice)</a>
 </li>
+      <li><a href="shell.html#index-22">limit (Shell command)</a>
+</li>
       <li><a href="connection.html#apsw.Connection.limit">limit() (apsw.Connection method)</a>
 </li>
       <li><a href="example.html#index-31">Limits (example code)</a>
@@ -1552,7 +1562,7 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="shell.html#index-22">load (Shell command)</a>
+      <li><a href="shell.html#index-23">load (Shell command)</a>
 </li>
       <li><a href="extra.html#apsw.sqlite_extra.load">load() (in module apsw.sqlite_extra)</a>
 </li>
@@ -1569,7 +1579,7 @@
 </li>
       <li><a href="exceptions.html#apsw.LockedError">LockedError</a>
 </li>
-      <li><a href="shell.html#index-23">log (Shell command)</a>
+      <li><a href="shell.html#index-24">log (Shell command)</a>
 </li>
       <li><a href="apsw.html#apsw.log">log() (in module apsw)</a>
 </li>
@@ -1639,6 +1649,8 @@
 </li>
       <li><a href="apsw.html#apsw.mapping_result_codes">mapping_result_codes (in module apsw)</a>
 </li>
+      <li><a href="apsw.html#apsw.mapping_session_changegroup_config_options">mapping_session_changegroup_config_options (in module apsw)</a>
+</li>
       <li><a href="apsw.html#apsw.mapping_session_changeset_apply_v2_flags">mapping_session_changeset_apply_v2_flags (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.mapping_session_changeset_start_v2_flags">mapping_session_changeset_start_v2_flags (in module apsw)</a>
@@ -1657,10 +1669,10 @@
 </li>
       <li><a href="apsw.html#apsw.mapping_status">mapping_status (in module apsw)</a>
 </li>
-      <li><a href="apsw.html#apsw.mapping_sync">mapping_sync (in module apsw)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apsw.html#apsw.mapping_sync">mapping_sync (in module apsw)</a>
+</li>
       <li><a href="apsw.html#apsw.mapping_trace_codes">mapping_trace_codes (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.mapping_txn_state">mapping_txn_state (in module apsw)</a>
@@ -1711,7 +1723,7 @@
 </li>
       <li><a href="exceptions.html#apsw.MisuseError">MisuseError</a>
 </li>
-      <li><a href="shell.html#index-24">mode (Shell command)</a>
+      <li><a href="shell.html#index-25">mode (Shell command)</a>
 </li>
       <li>
     module
@@ -1796,7 +1808,7 @@
 </li>
       <li><a href="exceptions.html#apsw.NotFoundError">NotFoundError</a>
 </li>
-      <li><a href="shell.html#index-25">nullvalue (Shell command)</a>
+      <li><a href="shell.html#index-26">nullvalue (Shell command)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1824,7 +1836,7 @@
         <li><a href="session.html#apsw.TableChange.opcode">(apsw.TableChange attribute)</a>
 </li>
       </ul></li>
-      <li><a href="shell.html#index-26">open (Shell command)</a>
+      <li><a href="shell.html#index-27">open (Shell command)</a>
 </li>
       <li><a href="vtable.html#apsw.VTTable.Open">Open() (apsw.VTTable method)</a>
 </li>
@@ -1842,7 +1854,7 @@
 </li>
       <li><a href="vtable.html#apsw.IndexInfo.orderByConsumed">orderByConsumed (apsw.IndexInfo attribute)</a>
 </li>
-      <li><a href="shell.html#index-27">output (Shell command)</a>
+      <li><a href="shell.html#index-28">output (Shell command)</a>
 </li>
       <li><a href="session.html#apsw.ChangesetBuilder.output">output() (apsw.ChangesetBuilder method)</a>
 </li>
@@ -1900,9 +1912,9 @@
         <li><a href="changes.html#index-13">Backup.page_count</a>
 </li>
       </ul></li>
-      <li><a href="shell.html#index-28">pages (Shell command)</a>
+      <li><a href="shell.html#index-29">pages (Shell command)</a>
 </li>
-      <li><a href="shell.html#index-29">pages-svg (Shell command)</a>
+      <li><a href="shell.html#index-30">pages-svg (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.DatabasePageUsage.pages_freelist">pages_freelist (apsw.ext.DatabasePageUsage attribute)</a>
 </li>
@@ -1912,7 +1924,7 @@
 </li>
       <li><a href="ext.html#apsw.ext.PageUsage">PageUsage (class in apsw.ext)</a>
 </li>
-      <li><a href="shell.html#index-30">parameter (Shell command)</a>
+      <li><a href="shell.html#index-31">parameter (Shell command)</a>
 </li>
       <li><a href="vfs.html#apsw.URIFilename.parameters">parameters (apsw.URIFilename attribute)</a>
 </li>
@@ -1992,7 +2004,7 @@
 </li>
       <li><a href="ext.html#apsw.ext.VirtualModuleCallable.primary_key">primary_key (apsw.ext.VirtualModuleCallable attribute)</a>
 </li>
-      <li><a href="shell.html#index-31">print (Shell command)</a>
+      <li><a href="shell.html#index-32">print (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.print_augmented_traceback">print_augmented_traceback() (in module apsw.ext)</a>
 </li>
@@ -2016,7 +2028,7 @@
         <li><a href="async.html#apsw.aio.Trio.progress_checker">(apsw.aio.Trio method)</a>
 </li>
       </ul></li>
-      <li><a href="shell.html#index-32">prompt (Shell command)</a>
+      <li><a href="shell.html#index-33">prompt (Shell command)</a>
 </li>
       <li><a href="exceptions.html#apsw.ProtocolError">ProtocolError</a>
 </li>
@@ -2024,7 +2036,7 @@
 </li>
       <li><a href="shell.html#apsw.shell.Shell.push_output">push_output() (apsw.shell.Shell method)</a>
 </li>
-      <li><a href="shell.html#index-33">py (Shell command)</a>
+      <li><a href="shell.html#index-34">py (Shell command)</a>
 </li>
       <li><a href="apsw.html#apsw.pyobject">pyobject() (in module apsw)</a>
 </li>
@@ -2135,7 +2147,7 @@
 </li>
       <li><a href="exceptions.html#apsw.RangeError">RangeError</a>
 </li>
-      <li><a href="shell.html#index-34">read (Shell command)</a>
+      <li><a href="shell.html#index-35">read (Shell command)</a>
 </li>
       <li><a href="blob.html#apsw.Blob.read">read() (apsw.Blob method)</a>
 
@@ -2215,7 +2227,7 @@
 </li>
       <li><a href="example-async.html#index-7">Resource usage in a block (Async example code)</a>
 </li>
-      <li><a href="shell.html#index-35">restore (Shell command)</a>
+      <li><a href="shell.html#index-36">restore (Shell command)</a>
 </li>
       <li><a href="exceptions.html#apsw.Error.result">result (apsw.Error attribute)</a>
 
@@ -2299,7 +2311,7 @@
 </li>
       <li><a href="apsw.html#apsw.ScalarProtocol">ScalarProtocol (class in apsw)</a>
 </li>
-      <li><a href="shell.html#index-36">schema (Shell command)</a>
+      <li><a href="shell.html#index-37">schema (Shell command)</a>
 </li>
       <li><a href="session.html#apsw.ChangesetBuilder.schema">schema() (apsw.ChangesetBuilder method)</a>
 </li>
@@ -2335,7 +2347,7 @@
 </li>
       <li><a href="unicode.html#apsw.unicode.sentence_next_break">sentence_next_break() (in module apsw.unicode)</a>
 </li>
-      <li><a href="shell.html#index-37">separator (Shell command)</a>
+      <li><a href="shell.html#index-38">separator (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.PageUsage.sequential_pages">sequential_pages (apsw.ext.PageUsage attribute)</a>
 </li>
@@ -2490,7 +2502,7 @@
         <li><a href="example.html#index-32">(example code)</a>
 </li>
       </ul></li>
-      <li><a href="shell.html#index-38">shell (Shell command)</a>
+      <li><a href="shell.html#index-39">shell (Shell command)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.Error">Shell.Error</a>
 </li>
@@ -2498,7 +2510,7 @@
 </li>
       <li><a href="shell.html#apsw.shell.Shell.Row">Shell.Row (class in apsw.shell)</a>
 </li>
-      <li><a href="shell.html#index-39">show (Shell command)</a>
+      <li><a href="shell.html#index-40">show (Shell command)</a>
 </li>
       <li><a href="ext.html#apsw.ext.ShowResourceUsage">ShowResourceUsage (class in apsw.ext)</a>
 </li>
@@ -2641,10 +2653,10 @@
 </li>
       <li><a href="apsw.html#index-5">sqlite3_initialize</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#index-28">sqlite3_interrupt</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="connection.html#index-29">sqlite3_is_interrupted</a>
 </li>
       <li><a href="apsw.html#index-6">sqlite3_keyword_count</a>
@@ -2791,15 +2803,19 @@
 </li>
       <li><a href="session.html#index-28">sqlite3changegroup_add_strm</a>
 </li>
-      <li><a href="session.html#index-30">sqlite3changegroup_delete</a>
+      <li><a href="session.html#index-30">sqlite3changegroup_change_finish</a>, <a href="session.html#index-31">[1]</a>, <a href="session.html#index-32">[2]</a>
+</li>
+      <li><a href="session.html#index-34">sqlite3changegroup_config</a>
+</li>
+      <li><a href="session.html#index-33">sqlite3changegroup_delete</a>
 </li>
       <li><a href="session.html#index-27">sqlite3changegroup_new</a>
 </li>
-      <li><a href="session.html#index-31">sqlite3changegroup_output</a>
+      <li><a href="session.html#index-35">sqlite3changegroup_output</a>
 </li>
-      <li><a href="session.html#index-32">sqlite3changegroup_output_strm</a>
+      <li><a href="session.html#index-36">sqlite3changegroup_output_strm</a>
 </li>
-      <li><a href="session.html#index-33">sqlite3changegroup_schema</a>
+      <li><a href="session.html#index-37">sqlite3changegroup_schema</a>
 </li>
       <li><a href="session.html#index-21">sqlite3changeset_apply_v2</a>
 </li>
@@ -2842,15 +2858,15 @@
         <li><a href="changes.html#index-42">Connection.sqlite3_pointer</a>
 </li>
       </ul></li>
-      <li><a href="session.html#index-36">sqlite3rebaser_configure</a>
+      <li><a href="session.html#index-40">sqlite3rebaser_configure</a>
 </li>
-      <li><a href="session.html#index-34">sqlite3rebaser_create</a>
+      <li><a href="session.html#index-38">sqlite3rebaser_create</a>
 </li>
-      <li><a href="session.html#index-35">sqlite3rebaser_delete</a>
+      <li><a href="session.html#index-39">sqlite3rebaser_delete</a>
 </li>
-      <li><a href="session.html#index-37">sqlite3rebaser_rebase</a>
+      <li><a href="session.html#index-41">sqlite3rebaser_rebase</a>
 </li>
-      <li><a href="session.html#index-38">sqlite3rebaser_rebase_strm</a>
+      <li><a href="session.html#index-42">sqlite3rebaser_rebase_strm</a>
 </li>
       <li><a href="session.html#index-2">sqlite3session_attach</a>
 </li>
@@ -2982,7 +2998,7 @@
       <li><a href="ext.html#apsw.ext.PageUsage.tables">tables (apsw.ext.PageUsage attribute)</a>
 
       <ul>
-        <li><a href="shell.html#index-40">(Shell command)</a>
+        <li><a href="shell.html#index-41">(Shell command)</a>
 </li>
       </ul></li>
       <li><a href="blob.html#apsw.Blob.tell">tell() (apsw.Blob method)</a>
@@ -3001,11 +3017,11 @@
 </li>
       <li><a href="exceptions.html#apsw.ThreadingViolationError">ThreadingViolationError</a>
 </li>
-      <li><a href="shell.html#index-41">timeout (Shell command)</a>
+      <li><a href="shell.html#index-42">timeout (Shell command)</a>
 </li>
       <li><a href="example-async.html#index-3">Timeouts (Async example code)</a>
 </li>
-      <li><a href="shell.html#index-42">timer (Shell command)</a>
+      <li><a href="shell.html#index-43">timer (Shell command)</a>
 </li>
       <li><a href="textsearch.html#apsw.fts5query.to_dict">to_dict() (in module apsw.fts5query)</a>
 </li>
@@ -3156,7 +3172,7 @@
 </li>
       <li><a href="ext.html#apsw.ext.VDBEInstruction">VDBEInstruction (class in apsw.ext)</a>
 </li>
-      <li><a href="shell.html#index-43">version (Shell command)</a>
+      <li><a href="shell.html#index-44">version (Shell command)</a>
 </li>
       <li><a href="unicode.html#apsw.unicode.version_added">version_added() (in module apsw.unicode)</a>
 </li>
@@ -3178,13 +3194,13 @@
 </li>
       <li><a href="exceptions.html#apsw.VFSFileClosedError">VFSFileClosedError</a>
 </li>
-      <li><a href="shell.html#index-44">vfsinfo (Shell command)</a>
+      <li><a href="shell.html#index-45">vfsinfo (Shell command)</a>
 </li>
-      <li><a href="shell.html#index-45">vfslist (Shell command)</a>
+      <li><a href="shell.html#index-46">vfslist (Shell command)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="shell.html#index-46">vfsname (Shell command)</a>
+      <li><a href="shell.html#index-47">vfsname (Shell command)</a>
 </li>
       <li><a href="connection.html#apsw.Connection.vfsname">vfsname() (apsw.Connection method)</a>
 </li>
@@ -3235,7 +3251,7 @@
 </li>
       <li><a href="example.html#index-5">Why you use bindings to provide values (example code)</a>
 </li>
-      <li><a href="shell.html#index-47">width (Shell command)</a>
+      <li><a href="shell.html#index-48">width (Shell command)</a>
 </li>
       <li><a href="apsw.html#apsw.WindowClass">WindowClass (class in apsw)</a>
 </li>
@@ -3384,7 +3400,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 14, 2026.
+      <span class="lastupdated">Last updated on Apr 10, 2026.
       </span></p>
   </div>
 

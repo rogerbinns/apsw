@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SQLite extra &mdash; APSW 3.51.3.0 documentation</title>
+  <title>SQLite extra &mdash; APSW 3.53.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/extra.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=ef092552"></script>
+      <script src="_static/documentation_options.js?v=5ce78374"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -158,7 +158,7 @@ over 1MB to the download and 3MB of disk space.</p>
 <p>There is an experimental under development vector search library by
 the SQLite team.  It is also included with the extras if possible.</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://sqlite.org/forum/forumpost/ceba048877">Forum post</a> to provide feedback</p></li>
+<li><p><a class="reference external" href="https://sqlite.org/forum/forumpost/9fea7e0fbb6ddd2f">Forum post</a> to provide feedback</p></li>
 <li><p><a class="reference external" href="https://sqlite.org/vec1">Site</a> with tutorial and
 reference documentation</p></li>
 </ul>
@@ -263,6 +263,10 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 <p>sqlite3_showstat4 (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fshowstat4.c">doc</a>)</p>
 <blockquote>
 <div><p>Shows contents of stat4 index of a database</p>
+</div></blockquote>
+<p>sqlite3_showtmlog (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fshowtmlog.c">doc</a>)</p>
+<blockquote>
+<div><p>Makes human/csv readable output from a tmstmpvfs log file</p>
 </div></blockquote>
 <p>sqlite3_showwal (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=tool%2fshowwal.c">doc</a>)</p>
 <blockquote>
@@ -391,7 +395,7 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 <td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2ffileio.c">link</a></p></td>
 <td><p>Implements SQL functions readfile() and writefile(), and eponymous virtual type ‘fsdir’</p></td>
 <td><ul class="simple">
-<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">lsmode</span></code> <code class="code docutils literal notranslate"><span class="pre">readfile</span></code> <code class="code docutils literal notranslate"><span class="pre">writefile</span></code></p></li>
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">lsmode</span></code> <code class="code docutils literal notranslate"><span class="pre">readfile</span></code> <code class="code docutils literal notranslate"><span class="pre">realpath</span></code> <code class="code docutils literal notranslate"><span class="pre">writefile</span></code></p></li>
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">fsdir</span></code></p></li>
 </ul>
 </td>
@@ -408,7 +412,7 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 <td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fieee754.c">link</a></p></td>
 <td><p>functions for the exact display* and input of IEEE754 Binary64 floating-point numbers</p></td>
 <td><ul class="simple">
-<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">ieee754</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_exponent</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_from_blob</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_inc</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_mantissa</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_to_blob</span></code></p></li>
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">ieee754</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_exponent</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_from_blob</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_from_int</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_inc</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_mantissa</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_to_blob</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_to_int</span></code></p></li>
 </ul>
 </td>
 </tr>
@@ -519,7 +523,15 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>uint</p></td>
+<tr class="row-odd"><td><p>tmstmpvfs</p></td>
+<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2ftmstmpvfs.c">link</a></p></td>
+<td><p>VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files</p></td>
+<td><ul class="simple">
+<li><p>VFS: <code class="code docutils literal notranslate"><span class="pre">tmstmpvfs</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>uint</p></td>
 <td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fuint.c">link</a></p></td>
 <td><p>UINT collating sequence</p></td>
 <td><ul class="simple">
@@ -527,7 +539,7 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>unionvtab</p></td>
+<tr class="row-odd"><td><p>unionvtab</p></td>
 <td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2funionvtab.c">link</a></p></td>
 <td><p>Virtual table combining underlying tables from other databases</p></td>
 <td><ul class="simple">
@@ -535,7 +547,7 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>uuid</p></td>
+<tr class="row-even"><td><p>uuid</p></td>
 <td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fuuid.c">link</a></p></td>
 <td><p>uuid functions</p></td>
 <td><ul class="simple">
@@ -543,16 +555,16 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>vec1</p></td>
+<tr class="row-odd"><td><p>vec1</p></td>
 <td><p><a class="reference external" href="https://sqlite.org/vec1">link</a></p></td>
 <td><p>Vector search.  !Experimental! !Under development!</p></td>
 <td><ul class="simple">
-<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">vec1_cos_distance</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_from_json</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_info</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_l2_distance</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_qinstr</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json_f</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json_i</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_train</span></code></p></li>
-<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">vec1</span></code></p></li>
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">vec1_config</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_cos_distance</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_from_json</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_info</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_l2_distance</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_qinstr</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json_f</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json_i</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_train</span></code></p></li>
+<li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">vec1</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1cat</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>vfsstat</p></td>
+<tr class="row-even"><td><p>vfsstat</p></td>
 <td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fvfsstat.c">link</a></p></td>
 <td><p>VFS shim tracking call statistics</p></td>
 <td><ul class="simple">
@@ -561,7 +573,7 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>vtablog</p></td>
+<tr class="row-odd"><td><p>vtablog</p></td>
 <td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fvtablog.c">link</a></p></td>
 <td><p>Virtual table printing diagnostic information for interactive analysis and debugging</p></td>
 <td><ul class="simple">
@@ -569,7 +581,7 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>zipfile</p></td>
+<tr class="row-even"><td><p>zipfile</p></td>
 <td><p><a class="reference external" href="https://sqlite.org/zipfile.html">link</a></p></td>
 <td><p>Read/Write access to simple archives</p></td>
 <td><ul class="simple">
@@ -578,7 +590,7 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>zorder</p></td>
+<tr class="row-odd"><td><p>zorder</p></td>
 <td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fzorder.c">link</a></p></td>
 <td><p>Functions for z-order (Morton code) transformations</p></td>
 <td><ul class="simple">
@@ -665,7 +677,7 @@ also be turned on.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Mar 14, 2026.
+      <span class="lastupdated">Last updated on Apr 10, 2026.
       </span></p>
   </div>
 

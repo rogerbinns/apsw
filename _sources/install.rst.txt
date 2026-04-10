@@ -84,20 +84,20 @@ edit the :file:`setup.apsw` file inside.
 
 .. downloads-begin
 
-* `apsw-3.51.3.0.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.51.3.0/apsw-3.51.3.0.zip>`__
+* `apsw-3.53.0.0.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.53.0.0/apsw-3.53.0.0.zip>`__
   (Source as zip, includes this HTML Help)
 
-* `apsw-3.51.3.0.tar.gz
-  <https://github.com/rogerbinns/apsw/releases/download/3.51.3.0/apsw-3.51.3.0.tar.gz>`__
+* `apsw-3.53.0.0.tar.gz
+  <https://github.com/rogerbinns/apsw/releases/download/3.53.0.0/apsw-3.53.0.0.tar.gz>`__
   (Source as tar.gz, includes this HTML Help)
 
-* `apsw-3.51.3.0.zip.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.51.3.0/apsw-3.51.3.0.zip.cosign-bundle>`__
+* `apsw-3.53.0.0.zip.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.53.0.0/apsw-3.53.0.0.zip.cosign-bundle>`__
   cosign signature for zip source
 
-* `apsw-3.51.3.0.tar.gz.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.51.3.0/apsw-3.51.3.0.tar.gz.cosign-bundle>`__
+* `apsw-3.53.0.0.tar.gz.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.53.0.0/apsw-3.53.0.0.tar.gz.cosign-bundle>`__
   cosign signature for tar.gz source
 
 .. downloads-end
@@ -129,18 +129,18 @@ Verify
 
   .. code-block:: console
 
-    $ cosign verify-blob apsw-3.51.3.0.zip                        \
+    $ cosign verify-blob apsw-3.53.0.0.zip                        \
         --new-bundle-format                                       \
-        --bundle apsw-3.51.3.0.zip.cosign-bundle                  \
+        --bundle apsw-3.53.0.0.zip.cosign-bundle                  \
         --certificate-identity=rogerb@rogerbinns.com              \
         --certificate-oidc-issuer=https://github.com/login/oauth
     Verified OK
 
-    $ python3 -m sigstore verify identity apsw-3.51.3.0.zip       \
-        --bundle apsw-3.51.3.0.zip.cosign-bundle                  \
+    $ python3 -m sigstore verify identity apsw-3.53.0.0.zip       \
+        --bundle apsw-3.53.0.0.zip.cosign-bundle                  \
         --cert-identity=rogerb@rogerbinns.com                     \
         --cert-oidc-issuer=https://github.com/login/oauth
-    OK: apsw-3.51.3.0.zip
+    OK: apsw-3.53.0.0.zip
 
   .. verify-end
 
@@ -311,8 +311,8 @@ This performs the compilation of the C code, and provides more control than buil
 
 .. _pyodide:
 
-Pyodide
--------
+Pyodide (WASM)
+--------------
 
 `Pyodide <https://pyodide.org/en/stable/index.html>`__ is a web
 assembly Python distribution that can run in the browser or via NPM.
@@ -365,8 +365,9 @@ distributions, who want APSW to use the system shared SQLite library.
   The file also includes a copy of the built documentation in HTML
   format with no analytics in the ``doc/`` subdirectory.
 
-* After extracting the zip, replace the file named ``setup.apsw`` that
-  sits alongside ``setup.py`` with the following contents:
+* After extracting the zip or tar, replace the file named
+  ``setup.apsw`` that sits alongside ``setup.py`` with the following
+  contents:
 
   .. code-block:: ini
 

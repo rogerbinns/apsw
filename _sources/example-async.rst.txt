@@ -114,7 +114,7 @@ ensure the database is closed.
     value=10 name='ten'
     value=3 name='three'
     value=1 name='one'
-    There are 172 functions
+    There are 174 functions
     journal_mode=memory
 
 
@@ -285,12 +285,12 @@ all the frameworks.
 
 .. code-block:: output
 
-    got zero division error after 0.000115 seconds
+    got zero division error after 0.000152 seconds
     task1.done()=True task1.cancelled()=True
     task2.done()=True task2.cancelled()=True
     task3.done()=True task3.cancelled()=True
     task4.done()=True task4.cancelled()=False
-    After 0.000592 seconds, there are 210 registered SQLite functions
+    After 0.000161 seconds, there are 212 registered SQLite functions
 
 
 .. index:: Timeouts (Async example code)
@@ -381,8 +381,8 @@ exceptions raised on timeout.
 
 .. code-block:: output
 
-    Got async function TooSlowError after 0.502348 seconds
-    Got sync function TooSlowError after 1.003476 seconds
+    Got async function TooSlowError after 0.501281 seconds
+    Got sync function TooSlowError after 1.001829 seconds
 
 
 .. index:: Worker thread (Async example code)
@@ -476,7 +476,7 @@ In the worker thread, the connection is a regular sync connection.
 .. code-block:: output
 
     rows=1
-    Dump is 747 chars starting "-- SQLite dump (by APSW 3.51.3.0)\n-- S
+    Dump is 747 chars starting "-- SQLite dump (by APSW 3.53.0.0)\n-- S
 
 
 .. index:: Virtual tables (Async example code)
@@ -655,21 +655,21 @@ transaction control.
        DEL 2 (1)
        DEL 3 (2)
        DEL 4 (3)
-         Time: 0.001  Changes: 4
+         Time: 0.000  Changes: 4
      > COMMIT
       !COMMIT
          Time: 0.000
      > SELECT narg FROM pragma_function_list WHERE name='pow'
      V PRAGMA function_list
-         Time: 0.000  Rows: 209  VmStep: 1,467  Mem: 76.7KB
+         Time: 0.000  Rows: 211  VmStep: 1,481  Mem: 76.8KB
      < SELECT narg FROM pragma_function_list WHERE name='pow'
-         Time: 0.000  Rows: 1  VmStep: 638
+         Time: 0.000  Rows: 1  VmStep: 644
       !BEGIN
      > create trigger error after insert on multi
                     begin
               ...
       !COMMIT
-         Time: 0.001
+         Time: 0.000
       !BEGIN
      > insert into multi values(54)
        INS 6 (54)
@@ -732,8 +732,9 @@ The async equivalent of :ref:`the sync example
 .. code-block:: output
 
     thread (async event loop)
-                         Process CPU consumption 0.014
-                                      Wall clock 0.515
+                         Process CPU consumption 0.015
+                                      Wall clock 0.516
+                            Page faults - no I/O 3
                       Voluntary context switches 4
                           SQLite full table scan 1,365
                           SQLite sort operations 2
@@ -746,12 +747,11 @@ The async equivalent of :ref:`the sync example
                          SQLite statement memory 17,080
     
     process (including background SQLite worker)
-                         Process CPU consumption 0.014
+                         Process CPU consumption 0.015
                                       Wall clock 0.515
-                            Page faults - no I/O 3
-                    Involuntary context switches 158
+                    Involuntary context switches 1
                       Voluntary context switches 8
-                           CPU time in user mode 0.013
+                           CPU time in user mode 0.015
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,353

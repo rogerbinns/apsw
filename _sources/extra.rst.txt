@@ -20,7 +20,7 @@ vec1
 There is an experimental under development vector search library by
 the SQLite team.  It is also included with the extras if possible.
 
-* `Forum post <https://sqlite.org/forum/forumpost/ceba048877>`__ to provide feedback
+* `Forum post <https://sqlite.org/forum/forumpost/9fea7e0fbb6ddd2f>`__ to provide feedback
 * `Site <https://sqlite.org/vec1>`__ with tutorial and
   reference documentation
 

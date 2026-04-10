@@ -589,8 +589,13 @@ ChangesetBuilder class
 .. class:: ChangesetBuilder()
 
   This object wraps a `sqlite3_changegroup <https://sqlite.org/session/changegroup.html>`__
-  letting you concatenate changesets and individual :class:`TableChange` into one larger
-  changeset.
+  to build a changeset or patchset.   The contents can come from:
+
+  * Existing changesets
+  * Individual :class:`TableChange`
+  * :meth:`add_insert`, :meth:`add_update`, :meth:`add_delete`
+
+  See the :ref:`example <example_changesetbuilder>`
 
  Creates a new empty builder.
 
@@ -619,6 +624,52 @@ ChangesetBuilder class
 
   Calls: `sqlite3changegroup_add_change <https://sqlite.org/session/sqlite3changegroup_add_change.html>`__
 
+.. index:: sqlite3changegroup_change_finish
+
+.. method:: ChangesetBuilder.add_delete(table: str, indirect: bool, row: SQLiteValues) -> None
+
+  Adds an ``delete`` change row.  You must have called :meth:`schema` first so
+  the table can be verified.
+
+ .. seealso::
+
+    * :meth:`add_insert`
+    * :meth:`add_update`
+
+ Calls: `sqlite3changegroup_change_finish <https://sqlite.org/session/sqlite3changegroup_change_finish.html>`__
+
+.. index:: sqlite3changegroup_change_finish
+
+.. method:: ChangesetBuilder.add_insert(table: str, indirect: bool, row: SQLiteValues) -> None
+
+  Adds an ``insert`` change row.  You must have called :meth:`schema` first so
+  the table can be verified.
+
+  .. seealso::
+
+    * :meth:`add_delete`
+    * :meth:`add_update`
+
+  Calls: `sqlite3changegroup_change_finish <https://sqlite.org/session/sqlite3changegroup_change_finish.html>`__
+
+.. index:: sqlite3changegroup_change_finish
+
+.. method:: ChangesetBuilder.add_update(table: str, indirect: bool, old: SQLiteValues, new: SQLiteValues) -> None
+
+  Adds an ``update`` change giving old and new rows. You must have called :meth:`schema` first so
+  the table can be verified.
+
+  See `sqlite3changegroup_change_finish <https://sqlite.org/session/sqlite3changegroup_change_finish.html>`__
+  for details on which columns of old and new you must provide values for.  Where no value should be
+  provided, use :attr:`apsw.no_change`.
+
+  .. seealso::
+
+    * :meth:`add_insert`
+    * :meth:`add_delete`
+
+  Calls: `sqlite3changegroup_change_finish <https://sqlite.org/session/sqlite3changegroup_change_finish.html>`__
+
 .. index:: sqlite3changegroup_delete
 
 .. method:: ChangesetBuilder.close() -> None
@@ -626,6 +677,14 @@ ChangesetBuilder class
   Releases the builder
 
   Calls: `sqlite3changegroup_delete <https://sqlite.org/session/sqlite3changegroup_delete.html>`__
+
+.. index:: sqlite3changegroup_config
+
+.. method:: ChangesetBuilder.config(op: int, *args: typing.Any) -> int
+
+  Configures the changegroup.
+
+  Calls: `sqlite3changegroup_config <https://sqlite.org/session/sqlite3changegroup_config.html>`__
 
 .. index:: sqlite3changegroup_output
 
