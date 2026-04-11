@@ -1028,7 +1028,6 @@ Extensions
     :widths: auto
 
     * - Name
-      - Doc
       - Description
       - Registers
                 """,
@@ -1042,7 +1041,7 @@ Extensions
                 # cause it to be created now
                 db.execute("select * from pragma_collation_list").get
 
-                def details(name):
+                def details(name: str):
                     fn_before = set(row[0] for row in db.execute("select name from pragma_function_list"))
                     vfs_before = set(apsw.vfs_names())
                     mod_before = set(row[0] for row in db.execute("SELECT name FROM pragma_module_list"))
@@ -1070,8 +1069,7 @@ Extensions
                     if extra.type != "extension":
                         continue
 
-                    print(f"    * - {extra.name}", file=f)
-                    print(f"      - `link <{extra.doc}>`__", file=f)
+                    print(f"    * - {extra.name} (`doc <{extra.doc}>`__)", file=f)
                     print(f"      - {extra.description}", file=f)
                     details(extra.name)
                     print(file=f)

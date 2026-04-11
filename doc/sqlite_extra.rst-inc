@@ -94,242 +94,203 @@ Extensions
     :widths: auto
 
     * - Name
-      - Doc
       - Description
       - Registers
                 
-    * - amatch
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2famatch.c>`__
+    * - amatch (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2famatch.c>`__)
       - Approximate matches virtual table
       -
         * VTable: :code:`approximate_match`
 
-    * - anycollseq
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fanycollseq.c>`__
+    * - anycollseq (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fanycollseq.c>`__)
       - Fake fallback collating function for any unknown collating sequence
       - Fallback collation
 
-    * - appendvfs
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fappendvfs.c>`__
+    * - appendvfs (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fappendvfs.c>`__)
       - A VFS shim that allows an SQLite database to be appended onto the end of some other file, such as an executable
       -
         * VFS: :code:`apndvfs`
 
-    * - base64
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fbase64.c>`__
+    * - base64 (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fbase64.c>`__)
       - Convert either direction between base64 blob and text
       -
         * Function: :code:`base64`
 
-    * - base85
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fbase85.c>`__
+    * - base85 (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fbase85.c>`__)
       - Convert either direction between base85 blob and text
       -
         * Function: :code:`base85` :code:`is_base85`
 
-    * - btreeinfo
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fbtreeinfo.c>`__
+    * - btreeinfo (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fbtreeinfo.c>`__)
       - btreeinfo virtual table that shows information about all btrees in an SQLite database file
       -
         * VTable: :code:`sqlite_btreeinfo`
 
-    * - cksumvfs
-      - `link <https://sqlite.org/cksumvfs.html>`__
+    * - cksumvfs (`doc <https://sqlite.org/cksumvfs.html>`__)
       - A VFS shim that writes a checksum on each page of an SQLite database file
       -
         * Function: :code:`verify_checksum`
         * VFS: :code:`cksmvfs`
 
-    * - closure
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fclosure.c>`__
+    * - closure (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fclosure.c>`__)
       - A virtual table that finds the transitive closure of a parent/child relationship in a real table
       -
         * VTable: :code:`transitive_closure`
 
-    * - completion
-      - `link <https://sqlite.org/completion.html>`__
+    * - completion (`doc <https://sqlite.org/completion.html>`__)
       - A virtual table that returns suggested completions for a partial SQL input
       -
         * VTable: :code:`completion`
 
-    * - compress
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fcompress.c>`__
+    * - compress (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fcompress.c>`__)
       - SQL compression functions
       -
         * Function: :code:`compress` :code:`uncompress`
 
-    * - csv
-      - `link <https://sqlite.org/csv.html>`__
+    * - csv (`doc <https://sqlite.org/csv.html>`__)
       - A virtual table for reading CSV files
       -
         * VTable: :code:`csv`
 
-    * - decimal
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fdecimal.c>`__
+    * - decimal (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fdecimal.c>`__)
       - Routines to implement arbitrary-precision decimal math
       -
         * Collation: :code:`decimal`
         * Function: :code:`decimal` :code:`decimal_add` :code:`decimal_cmp` :code:`decimal_exp` :code:`decimal_mul` :code:`decimal_pow2` :code:`decimal_sub` :code:`decimal_sum`
 
-    * - eval
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2feval.c>`__
+    * - eval (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2feval.c>`__)
       - Implements SQL function eval() which runs SQL statements recursively
       -
         * Function: :code:`eval`
 
-    * - fileio
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ffileio.c>`__
+    * - fileio (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ffileio.c>`__)
       - Implements SQL functions readfile() and writefile(), and eponymous virtual type 'fsdir'
       -
         * Function: :code:`lsmode` :code:`readfile` :code:`realpath` :code:`writefile`
         * VTable: :code:`fsdir`
 
-    * - fuzzer
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ffuzzer.c>`__
+    * - fuzzer (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ffuzzer.c>`__)
       - Virtual table that generates variations on an input word at increasing edit distances from the original
       -
         * VTable: :code:`fuzzer`
 
-    * - ieee754
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fieee754.c>`__
+    * - ieee754 (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fieee754.c>`__)
       - functions for the exact display* and input of IEEE754 Binary64 floating-point numbers
       -
         * Function: :code:`ieee754` :code:`ieee754_exponent` :code:`ieee754_from_blob` :code:`ieee754_from_int` :code:`ieee754_inc` :code:`ieee754_mantissa` :code:`ieee754_to_blob` :code:`ieee754_to_int`
 
-    * - memstat
-      - `link <https://sqlite.org/memstat.html>`__
+    * - memstat (`doc <https://sqlite.org/memstat.html>`__)
       - Provides SQL access to the sqlite3_status64() and sqlite3_db_status() interfaces
       -
         * VTable: :code:`sqlite_memstat`
 
-    * - nextchar
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fnextchar.c>`__
+    * - nextchar (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fnextchar.c>`__)
       - Finds all valid 'next' characters for a string given a vocabulary
       -
         * Function: :code:`next_char`
 
-    * - noop
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fnoop.c>`__
+    * - noop (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fnoop.c>`__)
       - Implements noop() functions useful for testing
       -
         * Function: :code:`multitype_text` :code:`noop` :code:`noop_do` :code:`noop_i` :code:`noop_nd`
 
-    * - prefixes
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fprefixes.c>`__
+    * - prefixes (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fprefixes.c>`__)
       - Table valued function providing all prefixes of a string
       -
         * Function: :code:`prefix_length`
         * VTable: :code:`prefixes`
 
-    * - randomjson
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2frandomjson.c>`__
+    * - randomjson (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2frandomjson.c>`__)
       - Generates random json objects
       -
         * Function: :code:`random_json` :code:`random_json5`
 
-    * - regexp
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fregexp.c>`__
+    * - regexp (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fregexp.c>`__)
       - Compact reasonably efficient posix extended regular expression matcher
       -
         * Function: :code:`regexpi`
 
-    * - rot13
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2frot13.c>`__
+    * - rot13 (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2frot13.c>`__)
       - rot13 function and collating sequence
       -
         * Collation: :code:`rot13`
         * Function: :code:`rot13`
 
-    * - sha1
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fsha1.c>`__
+    * - sha1 (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fsha1.c>`__)
       - SHA1 hash and query results hash
       -
         * Function: :code:`sha1` :code:`sha1_query` :code:`sha1b`
 
-    * - shathree
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fshathree.c>`__
+    * - shathree (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fshathree.c>`__)
       - SHA3 hash and query results hash
       -
         * Function: :code:`sha3` :code:`sha3_agg` :code:`sha3_query`
 
-    * - spellfix
-      - `link <https://sqlite.org/spellfix1.html>`__
+    * - spellfix (`doc <https://sqlite.org/spellfix1.html>`__)
       - Search a large vocabulary for close matches
       -
         * Function: :code:`editdist3` :code:`spellfix1_editdist` :code:`spellfix1_phonehash` :code:`spellfix1_scriptcode` :code:`spellfix1_translit`
         * VTable: :code:`spellfix1`
 
-    * - sqlar
-      - `link <https://sqlite.org/sqlar.html#managing_sqlite_archives_from_application_code>`__
+    * - sqlar (`doc <https://sqlite.org/sqlar.html#managing_sqlite_archives_from_application_code>`__)
       - Utility functions for SQL archives
       -
         * Function: :code:`sqlar_compress` :code:`sqlar_uncompress`
 
-    * - stmt
-      - `link <https://sqlite.org/stmt.html>`__
+    * - stmt (`doc <https://sqlite.org/stmt.html>`__)
       - Virtual table with information about all prepared statements on a connection
       -
         * VTable: :code:`sqlite_stmt`
 
-    * - stmtrand
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fstmtrand.c>`__
+    * - stmtrand (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fstmtrand.c>`__)
       - Function that returns the same sequence of random integers is returned for each invocation of the statement
       -
         * Function: :code:`stmtrand`
 
-    * - tmstmpvfs
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ftmstmpvfs.c>`__
+    * - tmstmpvfs (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2ftmstmpvfs.c>`__)
       - VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files
       -
         * VFS: :code:`tmstmpvfs`
 
-    * - uint
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fuint.c>`__
+    * - uint (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fuint.c>`__)
       - UINT collating sequence
       -
         * Collation: :code:`uint`
 
-    * - unionvtab
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2funionvtab.c>`__
+    * - unionvtab (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2funionvtab.c>`__)
       - Virtual table combining underlying tables from other databases
       -
         * VTable: :code:`swarmvtab` :code:`unionvtab`
 
-    * - uuid
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fuuid.c>`__
+    * - uuid (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fuuid.c>`__)
       - uuid functions
       -
         * Function: :code:`uuid` :code:`uuid_blob` :code:`uuid_str`
 
-    * - vec1
-      - `link <https://sqlite.org/vec1>`__
+    * - vec1 (`doc <https://sqlite.org/vec1>`__)
       - Vector search.  !Experimental! !Under development!
       -
         * Function: :code:`vec1_config` :code:`vec1_cos_distance` :code:`vec1_from_json` :code:`vec1_info` :code:`vec1_l2_distance` :code:`vec1_qinstr` :code:`vec1_to_json` :code:`vec1_to_json_f` :code:`vec1_to_json_i` :code:`vec1_train`
         * VTable: :code:`vec1` :code:`vec1cat`
 
-    * - vfsstat
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fvfsstat.c>`__
+    * - vfsstat (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fvfsstat.c>`__)
       - VFS shim tracking call statistics
       -
         * VFS: :code:`vfslog`
         * VTable: :code:`vfsstat`
 
-    * - vtablog
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fvtablog.c>`__
+    * - vtablog (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fvtablog.c>`__)
       - Virtual table printing diagnostic information for interactive analysis and debugging
       -
         * VTable: :code:`vtablog`
 
-    * - zipfile
-      - `link <https://sqlite.org/zipfile.html>`__
+    * - zipfile (`doc <https://sqlite.org/zipfile.html>`__)
       - Read/Write access to simple archives
       -
         * Function: :code:`zipfile` :code:`zipfile_cds`
         * VTable: :code:`zipfile`
 
-    * - zorder
-      - `link <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fzorder.c>`__
+    * - zorder (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fzorder.c>`__)
       - Functions for z-order (Morton code) transformations
       -
         * Function: :code:`unzorder` :code:`zorder`
