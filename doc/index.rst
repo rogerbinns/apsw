@@ -17,6 +17,7 @@ APSW |version| documentation
    apsw
    connection
    cursor
+   query
    blob
    backup
    example-json

@@ -31,11 +31,14 @@ from file, text, import, resource
 """
 
 
-class _ChainMapRO:
-    "Internal read-only chainmap for execute bindings"
+class ChainMapRO:
+    """Internal read-only chainmap for execute bindings
+
+    This only implements enough to be useful for bindings.
+    """
 
     def __init__(self):
-        self.maps = []
+        self.maps: list[collections.abc.Mapping] = []
 
     def __getitem__(self, key: Any) -> Any:
         for map in self.maps:
@@ -46,6 +49,7 @@ class _ChainMapRO:
         raise KeyError(str(key))
 
     def items(self):
+        # Called when displaying locals
         seen = set()
         for map in self.maps:
             for k, v in map.items():
@@ -54,9 +58,10 @@ class _ChainMapRO:
                     yield (k, v)
 
 
-# _ChainMapRO doesn't implement the full abc such as iter and len but
-# they aren't used so we don't care!
-collections.abc.Mapping.register(_ChainMapRO)
+# ChainMapRO doesn't implement the full abc such as iter and len but
+# they aren't used so we don't care!  That is why we register rather
+# thank inherit
+collections.abc.Mapping.register(ChainMapRO)
 
 
 class NotSetType:
@@ -73,16 +78,33 @@ NotSet: Final = NotSetType()
 _template_parse = Formatter().parse
 
 
-def _is_template_string(string: str) -> bool:
-    "Checks if it is f-string style using {}, colons etc"
-    print(f"{string=!r}")
-    for literal, field, spec, conversion in _template_parse(string):
-        if field is not None or spec is not None or conversion is not None:
-            return True
-    return False
+def validate_template_string(string: str) -> bool:
+    """Checks if it is f-string style using {}, colons etc
+
+    Returns False if not a template, True otherwise.  If a template
+    then it is checked for validity and raises an exception if not.
+    """
+
+    for i, (literal, field, spec, conversion) in enumerate(_template_parse(string)):
+        if i == 0 and field is None and spec is None and conversion is None:
+            return False
+        match conversion:
+            case "r" | "s" | "a" | None:
+                pass
+            case _:
+                raise ValueError(f"Unknown conversion !{conversion}")
+        if spec is not None:
+            s = set(spec.split(":"))
+            if "eval" in s:
+                s.discard("eval")
+            if s == {"id"} or s == {"seq"} or s == {"id", "seq"} or s == set():
+                pass
+            else:
+                raise ValueError(f"Spec :{spec} not understood")
+    return True
 
 
-def template_expand(template: str, vars: _ChainMapRO) -> str:
+def template_expand(template: str, vars: ChainMapRO) -> str:
     res: list[str] = []
     bindings = {}
 
@@ -116,7 +138,12 @@ def template_expand(template: str, vars: _ChainMapRO) -> str:
                 spec.remove("eval")
                 # ::TODO:: does this need __builtins__ for middle param so
                 # eg len() works
-                value = eval(field, None, vars)
+                try:
+                    value = eval(field, None, vars)
+                except Exception as exc:
+                    # Python 3.10 doesn't have add_note
+                    getattr(exc, "add_note", lambda x: None)(f"Evaluating: {field}")
+                    raise
             else:
                 value = vars[field]
 
@@ -161,7 +188,7 @@ from __future__ import annotations
 
 import sys
 import apsw
-from apsw.query import _ChainMapRO, NotSet, NotSetType, template_expand
+from apsw.query import ChainMapRO, NotSet, NotSetType, template_expand
 
 """.splitlines()
     )
@@ -176,18 +203,31 @@ from apsw.query import _ChainMapRO, NotSet, NotSetType, template_expand
                 res.append("")
                 res.append("")
             case "name":
-                # ::TODO:: if body is a template then validate all the
-                # spec and conversions
-
                 meta = _parse_name(value)
+                try:
+                    is_template = validate_template_string(body)
+                except Exception as exc:
+                    # Another py 3.10 compat
+                    getattr(exc, "add_note", lambda x: None)(f"""In query '{meta["name"]}'""")
+                    raise
                 res.append(f"class {meta['name']}:")
                 if comments.strip():
                     res.extend(_triple_quote(comments, "    "))
                     res.append("")
 
+                res.append(f"    {'template' if is_template else 'sql'} = \\")
+                res.extend(_triple_quote(body))
+
+                # ::TODO:: if last arg is "locals", no type or default, then caller
+                # locals are also used.  Think through better annotation.
+                # only
+
+                # ::TODO:: reject *args and handle **kwargs
+
                 # this is going to need an overload or similar to handle async connection
                 signature = "(cls, db: apsw.Connection"
                 if meta["args"]:
+                    # ::TODO:: only add * if locals is in use?
                     signature += ", *"
                     for name, details in meta["args"].items():
                         signature += f", {name}"
@@ -204,9 +244,9 @@ from apsw.query import _ChainMapRO, NotSet, NotSetType, template_expand
                 signature += "apsw.Cursor" if meta["return_type"] is None else meta["return_type"]
                 res.append("    @classmethod")
                 res.append(f"    def __call__{signature}:")
-                res.append("        vals = _ChainMapRO()")
+                res.append("        vals = ChainMapRO()")
                 if meta["args"]:
-                    res.append("        vals._maps.append({")
+                    res.append("        vals.maps.append({")
                     for name in meta["args"]:
                         res.append(f'            "{name}": {name},')
                     res.append("        })")
@@ -217,20 +257,24 @@ from apsw.query import _ChainMapRO, NotSet, NotSetType, template_expand
             vals.maps[1] = vals.maps[-1].copy()
 """.splitlines()
                 )
-                if _is_template_string(body):
-                    res.append("        sql = template_expand(")
-                    res.extend(_triple_quote(body))
-                    res.append("              , vals)")
+                res.append("        try:")
+                if validate_template_string(body):
+                    res.append("            sql = template_expand(cls.template, vals)")
+                    var = "sql"
                 else:
-                    res.append("        sql = \\")
-                    res.extend(_triple_quote(body))
-                    res.append("")
+                    var = "cls.sql"
 
                 if meta["return_type"] is None:
-                    res.append("        return db.execute(sql, vals)")
+                    res.append(f"            return db.execute({var}, vals)")
                 else:
                     # ::TODO::
-                    pass
+                    res.append("            raise NotImplementedError")
+                res.append("        except Exception as exc:")
+                res.append("            # py 3.10 doesn't have add_note")
+                res.append(
+                    f"""            getattr(exc, 'add_note', lambda x: None)("In query named '{meta["name"]}'")"""
+                )
+                res.append("            raise")
 
                 res.append("")
                 res.append(f"{meta['name']} = {meta['name']}()")
@@ -256,6 +300,7 @@ def _parse_name(text: str):
     res = {}
     # we use ast to do all the work by pretending it is a function
     # definition.  It may not have any parameters listed, so add empty.
+    # ::TODO:: also could have no () but does have -> so handle that
     try:
         ast.parse(f"def {text}: pass")
     except SyntaxError:
