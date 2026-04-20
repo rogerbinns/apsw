@@ -8,7 +8,7 @@ import re
 import textwrap
 import collections.abc
 from string import Formatter
-from typing import Final
+from typing import Final, Any
 
 """
 Provides Python access to SQLite queries in a separate file or string
@@ -38,7 +38,7 @@ class ChainMapRO:
     """
 
     def __init__(self):
-        self.maps: list[collections.abc.Mapping] = []
+        self.maps: list[collections.abc.Mapping[str, Any]] = []
 
     def __getitem__(self, key: Any) -> Any:
         for map in self.maps:
@@ -168,6 +168,68 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
     return "".join(res)
 
 
+def _typed_results(node: ast.AST) -> str:
+    # given a return annotation, provide the code
+
+    # I originally tried to use match but was outsmarted
+    if isinstance(node, ast.Constant) and node.value is None and node.kind is None:
+        return """\
+for _ in cursor.execute(sql, vals):
+    pass
+return None"""
+
+    if isinstance(node, ast.Name) and node.id == "changes":
+        return """\
+changes_start = cursor.connection.total_changes()
+for _ in cursor.execute(sql, vals):
+    pass
+return cursor.connection.total_changes() - changes_start"""
+
+    if (
+        isinstance(node, ast.BinOp)
+        and isinstance(node.op, ast.BitOr)
+        and isinstance(node.left, ast.Name)
+        and isinstance(node.right, (ast.Constant, ast.Name))
+    ):
+        # one row - return left
+        # zero - return right
+        # more - raise exception
+        l = ast.unparse(node.left)
+        r = ast.unparse(node.right)
+        return f"""\
+retval = NotSet
+for row in cursor.execute(sql, vals):
+    if retval is not NotSet:
+        raise TooManyRows
+    desc = cursor.get_description()
+    retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row)))
+return {r} if retval is NotSet else retval
+"""
+
+    if isinstance(node, ast.Name):
+        r = ast.unparse(node)
+        return f"""\
+retval = NotSet
+for row in cursor.execute(sql, vals):
+    if retval is not NotSet:
+        raise TooManyRows
+    desc = cursor.get_description()
+    retval = {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))
+if retval is NotSet:
+    raise RowExpected
+return retval
+    """
+
+    if isinstance(node, ast.List) and len(node.elts) == 1 and isinstance(node.elts[0], ast.Name):
+        r = ast.unparse(node.elts[0])
+        return f"""\
+for row in cursor.execute(sql, vals):
+    desc = cursor.get_description()
+    yield {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))"""
+
+    raise ValueError(f"Return not understood {ast.unparse(node)!r} ")
+
+
 def py_from_file(filename: str | pathlib.Path) -> str:
     "Returns the Python code corresponding to the named file"
     return py_from_text(pathlib.Path(filename).read_text())
@@ -225,7 +287,7 @@ from apsw.query import ChainMapRO, NotSet, NotSetType, template_expand
                 # ::TODO:: reject *args and handle **kwargs
 
                 # this is going to need an overload or similar to handle async connection
-                signature = "(cls, db: apsw.Connection"
+                signature = "(cls, executor: apsw.Connection | apsw.Cursor"
                 if meta["args"]:
                     # ::TODO:: only add * if locals is in use?
                     signature += ", *"
@@ -241,7 +303,7 @@ from apsw.query import ChainMapRO, NotSet, NotSetType, template_expand
                             case _:
                                 signature += f"({details['annotation']}) = {details['default']}"
                 signature += ") -> "
-                signature += "apsw.Cursor" if meta["return_type"] is None else meta["return_type"]
+                signature += "apsw.Cursor" if meta["return_type"] is None else ast.unparse(meta["return_type"])
                 res.append("    @classmethod")
                 res.append(f"    def __call__{signature}:")
                 res.append("        vals = ChainMapRO()")
@@ -253,22 +315,23 @@ from apsw.query import ChainMapRO, NotSet, NotSetType, template_expand
                 res.extend(
                     """\
         vals.maps.append(sys._getframe(1).f_locals)
-        if db.is_async: # use copy as at call time
+        if executor.is_async: # use copy as at call time
             vals.maps[1] = vals.maps[-1].copy()
 """.splitlines()
                 )
                 res.append("        try:")
                 if validate_template_string(body):
                     res.append("            sql = template_expand(cls.template, vals)")
-                    var = "sql"
                 else:
-                    var = "cls.sql"
+                    res.append("            sql = cls.sql")
 
                 if meta["return_type"] is None:
-                    res.append(f"            return db.execute({var}, vals)")
+                    res.append("            return executor.execute(sql, vals)")
                 else:
-                    # ::TODO::
-                    res.append("            raise NotImplementedError")
+                    res.append(
+                        "            cursor = executor.cursor() if isinstance(executor, apsw.Connection) else executor"
+                    )
+                    res.extend(("            " + line) for line in _typed_results(meta["return_type"]).splitlines())
                 res.append("        except Exception as exc:")
                 res.append("            # py 3.10 doesn't have add_note")
                 res.append(
@@ -283,6 +346,8 @@ from apsw.query import ChainMapRO, NotSet, NotSetType, template_expand
                 res.append("")
             case _:
                 raise ValueError(f"Unknown section {block}")
+
+    # ::TODO:: add __all__=("each", "name")
 
     return "\n".join(res) + "\n"
 
@@ -299,15 +364,24 @@ def _triple_quote(text: str, indent: str = "") -> list[str]:
 def _parse_name(text: str):
     res = {}
     # we use ast to do all the work by pretending it is a function
-    # definition.  It may not have any parameters listed, so add empty.
-    # ::TODO:: also could have no () but does have -> so handle that
+    # definition.  It may not have any parameters listed, so add empty
+    # ones if necessary. ::TODO:: decide if **locals should be default
+    # params
+    parse_as = f"def {text}: pass"
     try:
-        ast.parse(f"def {text}: pass")
-    except SyntaxError:
-        # probably record this in res
-        text += "()"
+        ast.parse(parse_as)
+    except SyntaxError as exc:
+        # note offset/end_offset are 1 based not zero
 
-    parsed = ast.parse(f"def {text}: pass")
+        # -> without preceding ()
+        if exc.text[exc.offset - 1 : exc.end_offset - 1] == "->" and exc.msg == "expected '('":
+            parse_as = exc.text[: exc.offset - 1] + "()" + exc.text[exc.offset - 1 :]
+        elif exc.text[exc.offset - 1 : exc.end_offset - 1] == ":" and exc.msg == "expected '('":
+            parse_as = exc.text[: exc.offset - 1] + "()" + exc.text[exc.offset - 1 :]
+        else:
+            raise ValueError(f"Unable to parse {text!r}")
+
+    parsed = ast.parse(parse_as)
     fn = parsed.body[0]
     res["name"] = fn.name
     res["args"] = {}
@@ -318,7 +392,12 @@ def _parse_name(text: str):
             "default": ast.unparse(default) if default else None,
         }
 
-    res["return_type"] = ast.unparse(fn.returns) if fn.returns else None
+    res["return_type"] = fn.returns
+
+    import pprint
+
+    pprint.pprint(res)
+
     return res
 
 

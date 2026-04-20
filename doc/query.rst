@@ -136,7 +136,8 @@ The type is then invoked with the dict.  This works really well with
 .. note:: Advanced
 
     You can use :func:`dataclasses.__post_init__` to do additional
-    processing on your dataclass such as converting datestamps.
+    processing on your dataclass initialization such as converting
+    datestamps.
 
     `pydantic <https://pydantic.dev/>`__ provides even more dataclass
     like functionality including type validation.
@@ -144,6 +145,9 @@ The type is then invoked with the dict.  This works really well with
 .. list-table::  Type Annotations
     :header-rows: 1
     :widths: auto
+
+    *   - Return type
+        - Explanation
 
     *   - :code:`None`
         - The SQL is executed to completion, ignoring all rows that
@@ -154,13 +158,13 @@ The type is then invoked with the dict.  This works really well with
           are not isolated from each other so this will counts all
           database wide changes.  It is an :class:`int`
 
-    *   - :code:`Optional[a_type]`
+    *   - :code:`a_type | None`
         - If exactly one row was returned then conversion to
           :code:`a_type` will happen.  If no rows were then
           :code:`None` is returned.  If more than one then an
           exception (TODO which?) is raised.
 
-          You can also use :code:`Optional[a_type, value]` and
+          You can also use :code:`a_type | value` and
           :code:`value` is returned on no rows instead of
           :code:`None`.
 
@@ -170,8 +174,8 @@ The type is then invoked with the dict.  This works really well with
           then an exception (TODO which?) is raised.
 
     *   - :code:`[a_type]`
-        - Each row is converted to :code:`a_type` and the function is
-          an iterable (sync or async depending on the
+        - Each row is converted to :code:`a_type` and is iterable
+          (sync or async depending on the underlying
           :class:`Connection`)
 
 
@@ -181,3 +185,6 @@ apsw.query module
 TODO mention invoking at runtime vs AOT, ``python3 -m apsw.query`` etc
 
 .. automodule:: apsw.query
+    :members:
+    :undoc-members:
+    :member-order: bysource
