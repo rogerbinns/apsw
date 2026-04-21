@@ -8,7 +8,7 @@ import re
 import textwrap
 import collections.abc
 from string import Formatter
-from typing import Final, Any
+from typing import Final, Any, assert_never
 
 """
 Provides Python access to SQLite queries in a separate file or string
@@ -31,8 +31,14 @@ from file, text, import, resource
 """
 
 
+class changes(int):
+    "Indicates the number of rows deleted, inserted, and updated are returned"
+
+    pass
+
+
 class ChainMapRO:
-    """Internal read-only chainmap for execute bindings
+    """Read-only chainmap for execute bindings
 
     This only implements enough to be useful for bindings.
     """
@@ -230,6 +236,63 @@ for row in cursor.execute(sql, vals):
     raise ValueError(f"Return not understood {ast.unparse(node)!r} ")
 
 
+def _signature_for(meta: dict, is_async: bool, is_sync: bool) -> str:
+    "Call signature based on parsed name and async mode"
+
+    # the method gets declared 3 times - once sync, once async,
+    # and once with the union of both
+    assert (is_async or is_sync) or (is_async and is_sync)
+
+    sig = f"(cls, executor: "
+    take: list[str] = []
+    if is_async:
+        take.extend("apsw.AsyncConnection apsw.AsyncCursor".split())
+    if is_sync:
+        take.extend("apsw.Connection apsw.Cursor".split())
+    sig += " | ".join(take)
+
+    if meta["args"]:
+        for i, (name, details) in enumerate(meta["args"].items()):
+            if meta["kw_only_pos"] == i:
+                sig += ", *"
+            sig += f", {name}"
+            match (details["annotation"], details["default"]):
+                case (None, _):
+                    sig += f": apsw.SQLiteValue = {details['default']}"
+                case (_, None):
+                    sig += f": ({details['annotation']}) | NotSetType = NotSet"
+                case (None, None):
+                    sig += "apsw.SQLiteValue"
+                case _:
+                    sig += f"({details['annotation']}) = {details['default']}"
+    sig += ") -> "
+
+    if meta["return_type"] is None:
+        match (is_async, is_sync):
+            case (True, True):
+                sig += "apsw.AsyncCursor | apsw.Cursor"
+            case (True, False):
+                sig += "apsw.AsyncCursor"
+            case (False, True):
+                sig += "apsw.Cursor"
+            case _:
+                assert_never((False, False))
+    else:
+        # ::TODO:: correct return type
+        return_type = ast.unparse(meta["return_type"])
+        match (is_async, is_sync):
+            case (True, True):
+                sig += f"Awaitable[{return_type}] | {return_type}"
+            case (True, False):
+                sig += f"Awaitable[{return_type}]"
+            case (False, True):
+                sig += f"{return_type}"
+            case _:
+                assert_never((False, False))
+
+    return sig
+
+
 def py_from_file(filename: str | pathlib.Path) -> str:
     "Returns the Python code corresponding to the named file"
     return py_from_text(pathlib.Path(filename).read_text())
@@ -249,8 +312,10 @@ def py_from_text(text: str) -> str:
 from __future__ import annotations
 
 import sys
+from typing import overload, Awaitable
+
 import apsw
-from apsw.query import ChainMapRO, NotSet, NotSetType, template_expand
+from apsw.query import ChainMapRO, NotSet, NotSetType, template_expand, changes
 
 """.splitlines()
     )
@@ -279,46 +344,31 @@ from apsw.query import ChainMapRO, NotSet, NotSetType, template_expand
 
                 res.append(f"    {'template' if is_template else 'sql'} = \\")
                 res.extend(_triple_quote(body))
+                res.append("")
 
-                # ::TODO:: if last arg is "locals", no type or default, then caller
-                # locals are also used.  Think through better annotation.
-                # only
-
-                # ::TODO:: reject *args and handle **kwargs
-
-                # this is going to need an overload or similar to handle async connection
-                signature = "(cls, executor: apsw.Connection | apsw.Cursor"
-                if meta["args"]:
-                    # ::TODO:: only add * if locals is in use?
-                    signature += ", *"
-                    for name, details in meta["args"].items():
-                        signature += f", {name}"
-                        match (details["annotation"], details["default"]):
-                            case (None, _):
-                                signature += f" = {details['default']}"
-                            case (_, None):
-                                signature += f": ({details['annotation']}) | NotSetType = NotSet"
-                            case (None, None):
-                                signature += "apsw.SQLiteValue | NotSetType = NotSet"
-                            case _:
-                                signature += f"({details['annotation']}) = {details['default']}"
-                signature += ") -> "
-                signature += "apsw.Cursor" if meta["return_type"] is None else ast.unparse(meta["return_type"])
+                res.append("    @overload")
                 res.append("    @classmethod")
-                res.append(f"    def __call__{signature}:")
+                res.append(f"    def __call__{_signature_for(meta, True, False)}: ...")
+                res.append("    @overload")
+                res.append("    @classmethod")
+                res.append(f"    def __call__{_signature_for(meta, False, True)}: ...")
+                res.append("    @classmethod")
+                res.append(f"    def __call__{_signature_for(meta, True, True)}:")
+                res.append("        cursor = executor.cursor() if isinstance(executor, apsw.Connection) else executor")
                 res.append("        vals = ChainMapRO()")
                 if meta["args"]:
                     res.append("        vals.maps.append({")
                     for name in meta["args"]:
                         res.append(f'            "{name}": {name},')
                     res.append("        })")
-                res.extend(
-                    """\
+                if meta["locals"]:
+                    res.extend(
+                        """\
         vals.maps.append(sys._getframe(1).f_locals)
-        if executor.is_async: # use copy as at call time
+        if cursor.connection.is_async: # use copy as at call time
             vals.maps[1] = vals.maps[-1].copy()
 """.splitlines()
-                )
+                    )
                 res.append("        try:")
                 if validate_template_string(body):
                     res.append("            sql = template_expand(cls.template, vals)")
@@ -326,11 +376,8 @@ from apsw.query import ChainMapRO, NotSet, NotSetType, template_expand
                     res.append("            sql = cls.sql")
 
                 if meta["return_type"] is None:
-                    res.append("            return executor.execute(sql, vals)")
+                    res.append("            return cursor.execute(sql, vals)")
                 else:
-                    res.append(
-                        "            cursor = executor.cursor() if isinstance(executor, apsw.Connection) else executor"
-                    )
                     res.extend(("            " + line) for line in _typed_results(meta["return_type"]).splitlines())
                 res.append("        except Exception as exc:")
                 res.append("            # py 3.10 doesn't have add_note")
@@ -338,9 +385,6 @@ from apsw.query import ChainMapRO, NotSet, NotSetType, template_expand
                     f"""            getattr(exc, 'add_note', lambda x: None)("In query named '{meta["name"]}'")"""
                 )
                 res.append("            raise")
-
-                res.append("")
-                res.append(f"{meta['name']} = {meta['name']}()")
 
                 res.append("")
                 res.append("")
@@ -362,6 +406,7 @@ def _triple_quote(text: str, indent: str = "") -> list[str]:
 
 
 def _parse_name(text: str):
+    "parse query name similar to it being a function definition"
     res = {}
     # we use ast to do all the work by pretending it is a function
     # definition.  It may not have any parameters listed, so add empty
@@ -376,17 +421,32 @@ def _parse_name(text: str):
         # -> without preceding ()
         if exc.text[exc.offset - 1 : exc.end_offset - 1] == "->" and exc.msg == "expected '('":
             parse_as = exc.text[: exc.offset - 1] + "()" + exc.text[exc.offset - 1 :]
+        # no ()
         elif exc.text[exc.offset - 1 : exc.end_offset - 1] == ":" and exc.msg == "expected '('":
             parse_as = exc.text[: exc.offset - 1] + "()" + exc.text[exc.offset - 1 :]
         else:
-            raise ValueError(f"Unable to parse {text!r}")
+            raise ValueError(f"Unable to parse {text!r}: {exc.args[0]}") from None
 
     parsed = ast.parse(parse_as)
     fn = parsed.body[0]
     res["name"] = fn.name
     res["args"] = {}
-    for a, default in zip(fn.args.args, [None] * (len(fn.args.args) - len(fn.args.defaults)) + fn.args.defaults):
-        assert a.arg not in res["args"]
+    res["kw_only_pos"] = len(fn.args.args) if fn.args.kwonlyargs else None
+    res["locals"] = False
+    if fn.args.kwarg:
+        if fn.args.kwarg.arg != "locals" or fn.args.kwarg.annotation:
+            raise ValueError(
+                f"**locals without annotation to indicate using caller locals must be used.\nSaw {ast.unparse(fn.args.kwarg)!r} in {text!r}"
+            )
+        res["locals"] = True
+
+    for a, default in zip(
+        fn.args.args + fn.args.kwonlyargs,
+        ([None] * (len(fn.args.args) - len(fn.args.defaults))) + fn.args.defaults + fn.args.kw_defaults,
+    ):
+        assert isinstance(a, ast.arg)
+        if a.arg in res["args"]:
+            raise ValueError(f"Argument {a.arg!r} appears more than once in {text!r}")
         res["args"][a.arg] = {
             "annotation": ast.unparse(a.annotation) if a.annotation else None,
             "default": ast.unparse(default) if default else None,
@@ -396,6 +456,7 @@ def _parse_name(text: str):
 
     import pprint
 
+    print(text)
     pprint.pprint(res)
 
     return res
