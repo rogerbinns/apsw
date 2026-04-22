@@ -376,26 +376,27 @@ _NotSet = object()
                     # Another py 3.10 compat
                     getattr(exc, "add_note", lambda x: None)(f"""In query '{meta["name"]}'""")
                     raise
-                res.append(f"async def _async_{meta['name']}(cursor: apsw.AsyncCursor, sql: str, vals: ChainMapRO):")
-                res.append("    try:")
-                res.extend(_typed_results(meta["return_type"], True).splitlines())
-                res.append("    except Exception as exc:")
-                res.append("        # py 3.10 doesn't have add_note")
-                res.append("""        getattr(exc, 'add_note', lambda x: None)("In query named 'return_none'")""")
-                res.append("        raise")
-                res.append("")
+                res.append(f"""\
+async def _async_{meta["name"]}(cursor: apsw.AsyncCursor, sql: str, vals: ChainMapRO):
+    try:
 
-                res.append("@overload")
-                res.append(f"def {meta['name']}{_signature_for(meta, True, False)}: ...")
-                res.append("@overload")
-                res.append(f"def {meta['name']}{_signature_for(meta, False, True)}: ...")
-                res.append(f"def {meta['name']}{_signature_for(meta, True, True)}:")
-                if comments.strip():
-                    res.extend(_triple_quote(comments, "    "))
-                    res.append("")
-                res.append("    cursor = executor.cursor() if isinstance(executor, apsw.Connection) else executor")
-                res.append("    vals = ChainMapRO()")
+{_typed_results(meta["return_type"], True)}
+    except Exception as exc:
+        # py 3.10 doesn't have add_note")
+        getattr(exc, 'add_note', lambda x: None)("In query named 'return_none'")
+        raise
 
+@overload
+def {meta["name"]}{_signature_for(meta, True, False)}:
+     ...
+@overload
+def {meta["name"]}{_signature_for(meta, False, True)}:
+    ...
+def {meta["name"]}{_signature_for(meta, True, True)}:
+{"\n".join(_triple_quote(comments, "    ")) if comments.strip() else "    # Add SQL comments after name: for a docstring\n"}
+    cursor : apsw.Cursor | apsw.AsyncCursor = executor.cursor() if isinstance(executor, apsw.Connection) else executor
+    vals = ChainMapRO()
+""")
                 if meta["args"]:
                     res.append("    vals.maps.append({")
                     for name in meta["args"]:
