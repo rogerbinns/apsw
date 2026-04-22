@@ -2,16 +2,17 @@
 -- also more comments
 
 /*
-class Greeting(dict):
-    pass
 
+"Module docstring"
 
+import time
 */
 
--- name: fractal(width: int=30, height: int=20, iterations:int=40)
+-- name: fractal(width:int = 30, height:int = 20, iterations:int = 28) -> str
 -- Makes an ASCII art fractal
 
 -- Based on `outlandish example <https://sqlite.org/lang_with.html#outlandish_recursive_query_examples>`__
+-- with improved appearance by Gemini
 
 -- Increasing iterations does more CPU work which is useful in testing
 -- when you need queries that take a lot of time.
@@ -23,7 +24,6 @@ xaxis(x) AS (
     UNION ALL
     SELECT x + (3.2 / :width) FROM xaxis WHERE x < 1.2 - (3.2 / :width)
 ),
--- part of query
 yaxis(y) AS (
     SELECT -1.0
     UNION ALL
@@ -39,21 +39,11 @@ m2(iter, cx, cy) AS (
     SELECT max(iter), cx, cy FROM m GROUP BY cy, cx
 ),
 a(t) AS (
-    SELECT group_concat(substr(' .:-=+*#%@', 1+min(iter/10, 9), 1), '')
-    FROM m2 GROUP BY cy
+    SELECT group_concat(
+        substr(' .:-=+*#%@',
+            CASE WHEN iter = :iterations THEN 1 ELSE 2 + (iter * 8 / :iterations) END,
+            1),
+        '')
+    FROM m2 GROUP BY cy ORDER BY cy
 )
 SELECT group_concat(rtrim(t), x'0a') FROM a;
-
--- name: get_all_greetings() -> Greeting
-
--- Get all the greetings in the database
-
-select greeting_id, greeting
-  from greetings
- order by 1;
-
--- name: get_user_by_username
--- Get a user from the database using a named parameter
-select user_id, username, name
-  from users
-  where username = :username;
