@@ -13,22 +13,26 @@ from typing import Any, assert_never
 """
 Provides Python access to SQLite queries in a separate file or string
 
-this should end up in the rst doc inseat of here
-
-from file, text, import, resource
-
-
--- python:
-
-   everything in following /* */ (on lines by themselves is copied verbatim).
-   use to introduce types like :code:`from my mymod import mytype`
-
-
--- name:
-
-    names query, -- comments become docstring, everything up to EOF or next -- name: / python:
-
+See https://rogerbinns.github.io/apsw/query.html for details
 """
+
+
+# ::TODO:: figure out a way that queries can be bound to a connection
+# or cursor (including contextvar of one).  eg both of these should be
+# possible:
+#
+#   con = apsw.Connection()
+#   # by default have to provide connection | cursor as first param
+#   print(example.fractal(con, width=120))
+#
+#   # bind all methods to a connection | cursor
+#   example.bind(con)
+#   # now don't need to supply connection | cursor
+#   print(example.fractal(width=120))
+#
+#   # another alternative - add the methods to a connection | cursor
+#   example.bind(cursor)
+#   print(cursor.fractal(width=120))
 
 
 class changes(int):
