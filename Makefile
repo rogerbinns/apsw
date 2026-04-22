@@ -63,11 +63,10 @@ doc: docs ## Builds all the doc
 
 docs: build_ext docs-no-fetch
 
-docs-no-fetch: $(GENDOCS) doc/example.rst $(GENEXAMPLES) doc/typing.rstgen doc/renames.rstgen tools/docmissing.py tools/docupdate.py checkversion
+docs-no-fetch: $(GENDOCS) doc/example.rst $(GENEXAMPLES) doc/typing.rstgen doc/renames.rstgen tools/docmissing.py tools/docupdate.py checkversion apsw/__init__.pyi
 	rm -f testdb
 	env PYTHONPATH=. $(PYTHON) tools/docmissing.py
 	env PYTHONPATH=. $(PYTHON) tools/docupdate.py $(VERSION) $(RELEASEDATE)
-	-rm apsw/__init__.pyi
 	$(MAKE) PYTHONPATH="`pwd`" VERSION=$(VERSION) RELEASEDATE=$(RELEASEDATE) -C doc clean html ; rc=$$? ; $(MAKE) apsw/__init__.pyi ; exit $$rc
 	tools/spellcheck.sh
 	rst2html5 --strict --verbose --exit-status 1 README.rst >/dev/null
@@ -92,7 +91,7 @@ doc/renames.rstgen: tools/names.py tools/renames.json
 	env PYTHONPATH=. $(PYTHON) tools/names.py rst-gen > doc/renames.rstgen
 
 doc-depends: ## pip installs packages needed to build doc
-	$(PYTHON) -m pip install -U --upgrade-strategy eager sphinx sphinx_rtd_theme sphinxcontrib-googleanalytics
+	$(PYTHON) -m pip install -U --upgrade-strategy eager sphinx sphinx_rtd_theme sphinxcontrib-googleanalytics sphinx_autodoc_typehints
 
 dev-depends: ## pip installs packages useful for development (none are necessary except setuptools)
 	$(PYTHON) -m pip install -U --upgrade-strategy eager build wheel setuptools pip
