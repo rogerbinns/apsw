@@ -73,7 +73,7 @@ collections.abc.Mapping.register(ChainMapRO)
 _template_parse = Formatter().parse
 
 
-def validate_template_string(string: str) -> bool:
+def _validate_template_string(string: str) -> bool:
     """Checks if it is f-string style using {}, colons etc
 
     Returns False if not a template, True otherwise.  If a template
@@ -100,6 +100,7 @@ def validate_template_string(string: str) -> bool:
 
 
 def template_expand(template: str, vars: ChainMapRO) -> str:
+    "Expands template to SQL, using and updating vars"
     res: list[str] = []
     bindings = {}
 
@@ -165,12 +166,15 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
     return "".join(res)
 
 
-def _typed_results(node: ast.AST, is_async: bool) -> str:
+def _typed_results(node: ast.AST | None, is_async: bool) -> str:
     # given a return annotation, provide the code
 
     a = "async " if is_async else ""
 
     # I originally tried to use match but was outsmarted
+    if node is None:
+        return "        return cursor.execute(sql, vals)"
+
     if isinstance(node, ast.Constant) and node.value is None and node.kind is None:
         return f"""\
         {a}for _ in cursor.execute(sql, vals):
@@ -340,6 +344,9 @@ _NotSet = object()
 """.splitlines()
     )
 
+    # ::TODO:: if first block is python and it starts with a docstring
+    # then it needs to be put first
+
     for block, value, comments, body in _sections(text):
         match block:
             case "python":
@@ -352,7 +359,7 @@ _NotSet = object()
             case "name":
                 meta = _parse_name(value)
                 try:
-                    is_template = validate_template_string(body)
+                    is_template = _validate_template_string(body)
                 except Exception as exc:
                     # Another py 3.10 compat
                     getattr(exc, "add_note", lambda x: None)(f"""In query '{meta["name"]}'""")
@@ -385,16 +392,13 @@ _NotSet = object()
                 if meta["locals"]:
                     res.append("""    vals.maps.append(sys._getframe(1).f_locals)""")
                 res.append("    try:")
-                if validate_template_string(body):
+                if _validate_template_string(body):
                     res.append(f"        sql = template_expand({meta['name']}.template, vals)")
                 else:
                     res.append(f"        sql = {meta['name']}.sql")
                 res.append("        if cursor.connection.is_async:")
                 res.append(f"            return _async_{meta['name']}(cursor, sql, vals)")
-                if meta["return_type"] is None:
-                    res.append("            return cursor.execute(sql, vals)")
-                else:
-                    res.extend(_typed_results(meta["return_type"], False).splitlines())
+                res.extend(_typed_results(meta["return_type"], False).splitlines())
                 res.append("    except Exception as exc:")
                 res.append("        # py 3.10 doesn't have add_note")
                 res.append(f"""        getattr(exc, 'add_note', lambda x: None)("In query named '{meta["name"]}'")""")
@@ -473,11 +477,6 @@ def _parse_name(text: str):
         }
 
     res["return_type"] = fn.returns
-
-    import pprint
-
-    print(text)
-    pprint.pprint(res)
 
     return res
 
