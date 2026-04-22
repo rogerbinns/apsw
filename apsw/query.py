@@ -40,6 +40,14 @@ class changes(int):
 
     pass
 
+class TooManyRows(Exception):
+    """More than one row was returned by the SQL"""
+    pass
+
+class RowExpected(Exception):
+    """A row was was expected but not returned by the SQL"""
+    pass
+
 
 class ChainMapRO:
     """Read-only chainmap for execute bindings
@@ -340,7 +348,7 @@ from typing import overload
 from collections.abc import  Awaitable, Iterator, AsyncIterator # noqa:
 
 import apsw
-from apsw.query import ChainMapRO, template_expand, changes #  noqa:
+from apsw.query import ChainMapRO, template_expand, changes, TooManyRows, RowExpected #  noqa:
 
 _NotSet = object()
 "Sentinel for an unset value"
