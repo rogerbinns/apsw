@@ -7,8 +7,12 @@ import pathlib
 import re
 import textwrap
 import collections.abc
+import importlib.resources
+import importlib.abc
+import importlib.util
 from string import Formatter
 from typing import Any, assert_never
+from types import ModuleType
 
 """
 Provides Python access to SQLite queries in a separate file or string
@@ -40,12 +44,16 @@ class changes(int):
 
     pass
 
+
 class TooManyRows(Exception):
     """More than one row was returned by the SQL"""
+
     pass
+
 
 class RowExpected(Exception):
     """A row was was expected but not returned by the SQL"""
+
     pass
 
 
@@ -185,7 +193,7 @@ def _typed_results(node: ast.AST | None, is_async: bool) -> str:
 
     # I originally tried to use match but was outsmarted
     if node is None:
-        return "        return cursor.execute(sql, vals)"
+        return "        return cursor.execute(sql, vals)\n"
 
     if isinstance(node, ast.Constant) and node.value is None and node.kind is None:
         return f"""\
@@ -323,13 +331,91 @@ def _signature_for(meta: dict, is_async: bool, is_sync: bool) -> str:
     return sig
 
 
-def py_from_file(filename: str | pathlib.Path) -> str:
+def py_from_file(filename: str | pathlib.Path, encoding: str = "utf8") -> str:
     "Returns the Python code corresponding to the named file"
-    return py_from_text(pathlib.Path(filename).read_text())
+    return _make_py_from_text(pathlib.Path(filename).read_text(encoding=encoding))
 
 
 def py_from_text(text: str) -> str:
     "Returns the Python code corresponding to text containing queries"
+
+    return _make_py_from_text(text)
+
+
+def py_from_resource(anchor: importlib.resources.Anchor, name: str, encoding="utf8") -> str:
+    """Uses :mod:`importlib.resources` to find locate named file
+
+    The anchor should either be a module, or the name of a module.
+    The name is a file relative to the anchor, and should use ``/`` as
+    the directory separator on all platforms.
+
+    This lets you keep your SQL files alongside your code, and will
+    correctly handle wheels and other formats.
+
+    Setuptools has `data file support
+    <https://setuptools.pypa.io/en/latest/userguide/datafiles.html>`__
+    with other packaging tools providing something similar.
+    """
+
+    files = importlib.resources.files(anchor)
+
+    text = files.joinpath(name).read_text(encoding=encoding)
+
+    return _make_py_from_text(text)
+
+
+def install_import_hook():
+    """You can use this to allow directly importing .sql files as modules
+
+    An import hook will be installed, if not already installed.  It is
+    ok to call this function multiple times.
+
+    You can import :code:`.sql` files as though they were native
+    Python.  In the following example import, if ``my_queries.sql``
+    exists at the location where you would normally have
+    `my_queries.py`` then it automatically works.
+
+        import some_package.my_queries as queries
+
+    """
+    for inst in sys.meta_path:
+        if isinstance(inst, _Import_Hook):
+            return
+    sys.meta_path.append(_Import_Hook())
+
+class _Import_Hook(importlib.abc.MetaPathFinder):
+
+    def find_spec(self, fullname: str, path: collections.abc.Sequence[str] | None, target: ModuleType | None = None):
+        # ::TODO:: what to do when fullname is one.two where two is both a directory and a .sql file
+        print(f"find_spec {fullname=!r} {target=!r} {path=}")
+        name = fullname.split(".")[-1]
+        search_dirs = path if path else sys.path
+
+        for entry in search_dirs:
+            base_path = pathlib.Path(entry) / name
+            sql_path = base_path.with_suffix(".sql")
+
+            if sql_path.exists():
+                return importlib.util.spec_from_loader(fullname, _SQLSourceLoader(sql_path), origin=str(sql_path))
+
+        return None
+
+
+class _SQLSourceLoader(importlib.abc.SourceLoader):
+    # This only handles one file at a time which is why all the
+    # parameters are ignored
+    def __init__(self, path: pathlib.Path):
+        self.path = path
+
+    def get_filename(self, fullname: str):
+        return str(self.path)
+
+    def get_data(self, path: str):
+        return _make_py_from_text(self.path.read_text(encoding="utf8")).encode("utf8")
+
+
+def _make_py_from_text(text: str) -> str:
+    "Internal routine that converts SQL file to Python code"
     res: list[str] = []
 
     res.extend(
@@ -382,8 +468,8 @@ async def _async_{meta["name"]}(cursor: apsw.AsyncCursor, sql: str, vals: ChainM
 
 {_typed_results(meta["return_type"], True)}
     except Exception as exc:
-        # py 3.10 doesn't have add_note")
-        getattr(exc, 'add_note', lambda x: None)("In query named 'return_none'")
+        # py 3.10 doesn't have add_note
+        getattr(exc, 'add_note', lambda x: None)("In query named {meta["name"]!r}")
         raise
 
 @overload
@@ -414,7 +500,7 @@ def {meta["name"]}{_signature_for(meta, True, True)}:
                 res.extend(_typed_results(meta["return_type"], False).splitlines())
                 res.append("    except Exception as exc:")
                 res.append("        # py 3.10 doesn't have add_note")
-                res.append(f"""        getattr(exc, 'add_note', lambda x: None)("In query named '{meta["name"]}'")""")
+                res.append(f"""        getattr(exc, 'add_note', lambda x: None)("In query named {meta["name"]!r}")""")
                 res.append("        raise")
 
                 res.append("")
@@ -553,6 +639,7 @@ if __name__ == "__main__":
     group.add_argument("--file", help="Source is filename")
     group.add_argument(
         "--import",
+        dest="import_",
         metavar="MODULENAME",
         help="Source is a .sql file corresponding to named module.  ie there is a .sql file where normally there would be a .py file",
     )
@@ -573,6 +660,24 @@ if __name__ == "__main__":
 
     if options.file:
         res = py_from_file(options.file)
+        o = output()
+        try:
+            o.write(res)
+        finally:
+            o.close()
+    elif options.resource:
+        res = py_from_resource(options.resource[0], options.resource[1])
+        o = output()
+        try:
+            o.write(res)
+        finally:
+            o.close()
+    elif options.import_:
+        install_import_hook()
+        mod = importlib.import_module(options.import_)
+        if not isinstance(getattr(mod, "__loader__", None), _SQLSourceLoader):
+            sys.exit(f"{options.import_!r} was not imported from a SQL file")
+        res = py_from_file(mod.__loader__.path)
         o = output()
         try:
             o.write(res)
