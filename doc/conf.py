@@ -177,4 +177,6 @@ nitpick_ignore = [
 # autosummary etc fail to import modules even though python import
 # works just fine, so we cheat by importing them here
 
-import apsw, apsw.aio
+import apsw, apsw.aio, apsw.query
+
+apsw.query.install_import_hook()
