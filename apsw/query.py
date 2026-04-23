@@ -3,16 +3,17 @@
 from __future__ import annotations
 
 import ast
+import collections.abc
+import importlib.abc
+import importlib.resources
+import importlib.util
 import pathlib
 import re
+import sys
 import textwrap
-import collections.abc
-import importlib.resources
-import importlib.abc
-import importlib.util
 from string import Formatter
-from typing import Any, assert_never
 from types import ModuleType
+from typing import Any, assert_never
 
 """
 Provides Python access to SQLite queries in a separate file or string
