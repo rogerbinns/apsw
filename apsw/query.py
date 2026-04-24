@@ -387,8 +387,6 @@ def install_import_hook():
 class _Import_Hook(importlib.abc.MetaPathFinder):
 
     def find_spec(self, fullname: str, path: collections.abc.Sequence[str] | None, target: ModuleType | None = None):
-        # ::TODO:: what to do when fullname is one.two where two is both a directory and a .sql file
-        print(f"find_spec {fullname=!r} {target=!r} {path=}")
         name = fullname.split(".")[-1]
         search_dirs = path if path else sys.path
 
