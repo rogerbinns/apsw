@@ -407,10 +407,13 @@ class _SQLSourceLoader(importlib.abc.SourceLoader):
         self.path = path
 
     def get_filename(self, fullname: str):
-        return str(self.path)
+        return f"<apsw.query source {str(self.path)!r}>.py"
+
+    def get_source(self, fullname: str):
+        return _make_py_from_text(self.path.read_text(encoding="utf8"))
 
     def get_data(self, path: str):
-        return _make_py_from_text(self.path.read_text(encoding="utf8")).encode("utf8")
+        return self.get_source(path).encode("utf8")
 
 
 def _make_py_from_text(text: str) -> str:
