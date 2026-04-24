@@ -264,7 +264,7 @@ def _signature_for(meta: dict, is_async: bool, is_sync: bool) -> str:
     sig = f"(executor: "
     take: list[str] = []
     if is_async:
-        take.extend("apsw.AsyncConnection apsw.AsyncCursor".split())
+        take.extend('"apsw.AsyncConnection" "apsw.AsyncCursor"'.split())
     if is_sync:
         take.extend("apsw.Connection apsw.Cursor".split())
     sig += " | ".join(take)
@@ -276,11 +276,11 @@ def _signature_for(meta: dict, is_async: bool, is_sync: bool) -> str:
             sig += f", {name}"
             match (details["annotation"], details["default"]):
                 case (None, _):
-                    sig += f": apsw.SQLiteValue = {details['default']}"
+                    sig += f': "apsw.SQLiteValue" = {details['default']}'
                 case (_, None):
                     sig += f": {details['annotation']}"
                 case (None, None):
-                    sig += ": apsw.SQLiteValue"
+                    sig += ': "apsw.SQLiteValue"'
                 case _:
                     sig += f": ({details['annotation']}) = {details['default']}"
     sig += ") -> "
@@ -288,9 +288,9 @@ def _signature_for(meta: dict, is_async: bool, is_sync: bool) -> str:
     if meta["return_type"] is None:
         match (is_async, is_sync):
             case (True, True):
-                sig += "apsw.AsyncCursor | apsw.Cursor"
+                sig += '"apsw.AsyncCursor" | apsw.Cursor'
             case (True, False):
-                sig += "apsw.AsyncCursor"
+                sig += '"apsw.AsyncCursor"'
             case (False, True):
                 sig += "apsw.Cursor"
             case _:
@@ -462,7 +462,7 @@ _NotSet = object()
                     getattr(exc, "add_note", lambda x: None)(f"""In query '{meta["name"]}'""")
                     raise
                 res.append(f"""\
-async def _async_{meta["name"]}(cursor: apsw.AsyncCursor, sql: str, vals: ChainMapRO):
+async def _async_{meta["name"]}(cursor: "apsw.AsyncCursor", sql: str, vals: ChainMapRO):
     try:
 
 {_typed_results(meta["return_type"], True)}
@@ -479,7 +479,7 @@ def {meta["name"]}{_signature_for(meta, False, True)}:
     ...
 def {meta["name"]}{_signature_for(meta, True, True)}:
 {"\n".join(_triple_quote(comments, "    ")) if comments.strip() else "    # Add SQL comments after name: for a docstring\n"}
-    cursor : apsw.Cursor | apsw.AsyncCursor = executor.cursor() if isinstance(executor, apsw.Connection) else executor
+    cursor : apsw.Cursor | "apsw.AsyncCursor" = executor.cursor() if isinstance(executor, apsw.Connection) else executor
     vals = ChainMapRO()
 """)
                 if meta["args"]:
