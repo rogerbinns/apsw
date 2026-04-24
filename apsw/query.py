@@ -191,6 +191,7 @@ def _typed_results(node: ast.AST | None, is_async: bool) -> str:
     # given a return annotation, provide the code
 
     a = "async " if is_async else ""
+    aw = "await " if is_async else ""
 
     # I originally tried to use match but was outsmarted
     if node is None:
@@ -198,14 +199,14 @@ def _typed_results(node: ast.AST | None, is_async: bool) -> str:
 
     if isinstance(node, ast.Constant) and node.value is None and node.kind is None:
         return f"""\
-        {a}for _ in cursor.execute(sql, vals):
+        {a}for _ in {aw}cursor.execute(sql, vals):
             pass
         return None"""
 
     if isinstance(node, ast.Name) and node.id == "changes":
         return f"""\
         changes_start = cursor.connection.total_changes()
-        {a}for _ in cursor.execute(sql, vals):
+        {a}for _ in {aw}cursor.execute(sql, vals):
             pass
         return cursor.connection.total_changes() - changes_start"""
 
@@ -222,10 +223,10 @@ def _typed_results(node: ast.AST | None, is_async: bool) -> str:
         r = ast.unparse(node.right)
         return f"""\
         retval = _NotSet
-        {a}for row in cursor.execute(sql, vals):
+        {a}for row in {aw}cursor.execute(sql, vals):
             if retval is not _NotSet:
                 raise TooManyRows
-            desc = cursor.get_description()
+            desc = {aw}cursor.get_description()
             retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row)))
         return {r} if retval is _NotSet else retval
 """
@@ -234,10 +235,10 @@ def _typed_results(node: ast.AST | None, is_async: bool) -> str:
         r = ast.unparse(node)
         return f"""\
         retval = _NotSet
-        {a}for row in cursor.execute(sql, vals):
+        {a}for row in {aw}cursor.execute(sql, vals):
             if retval is not _NotSet:
                 raise TooManyRows
-            desc = cursor.get_description()
+            desc = {aw}cursor.get_description()
             retval = {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))
         if retval is _NotSet:
             raise RowExpected
@@ -247,8 +248,8 @@ def _typed_results(node: ast.AST | None, is_async: bool) -> str:
     if isinstance(node, ast.List) and len(node.elts) == 1 and isinstance(node.elts[0], ast.Name):
         r = ast.unparse(node.elts[0])
         return f"""\
-        {a}for row in cursor.execute(sql, vals):
-            desc = cursor.get_description()
+        {a}for row in {aw}cursor.execute(sql, vals):
+            desc = {aw}cursor.get_description()
             yield {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))"""
 
     raise ValueError(f"Return not understood {ast.unparse(node)!r} ")
