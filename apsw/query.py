@@ -13,7 +13,7 @@ import sys
 import textwrap
 from string import Formatter
 from types import ModuleType
-from typing import Any, assert_never
+from typing import Union, Any, assert_never
 
 """
 Provides Python access to SQLite queries in a separate file or string
@@ -261,13 +261,13 @@ def _signature_for(meta: dict, is_async: bool, is_sync: bool) -> str:
     # and once with the union of both
     assert (is_async or is_sync) or (is_async and is_sync)
 
-    sig = f"(executor: "
+    sig = f"(executor: Union["
     take: list[str] = []
     if is_async:
         take.extend('"apsw.AsyncConnection" "apsw.AsyncCursor"'.split())
     if is_sync:
         take.extend("apsw.Connection apsw.Cursor".split())
-    sig += " | ".join(take)
+    sig += ", ".join(take) + "]"
 
     if meta["args"]:
         for i, (name, details) in enumerate(meta["args"].items()):
@@ -288,7 +288,7 @@ def _signature_for(meta: dict, is_async: bool, is_sync: bool) -> str:
     if meta["return_type"] is None:
         match (is_async, is_sync):
             case (True, True):
-                sig += '"apsw.AsyncCursor" | apsw.Cursor'
+                sig += 'Union["apsw.AsyncCursor", apsw.Cursor]'
             case (True, False):
                 sig += '"apsw.AsyncCursor"'
             case (False, True):
@@ -429,7 +429,7 @@ from __future__ import annotations
 # some of the imports may not be used hence the noqa marking
 
 import sys # noqa:
-from typing import overload
+from typing import overload, Union
 from collections.abc import  Awaitable, Iterator, AsyncIterator # noqa:
 
 import apsw
@@ -479,7 +479,7 @@ def {meta["name"]}{_signature_for(meta, False, True)}:
     ...
 def {meta["name"]}{_signature_for(meta, True, True)}:
 {"\n".join(_triple_quote(comments, "    ")) if comments.strip() else "    # Add SQL comments after name: for a docstring\n"}
-    cursor : apsw.Cursor | "apsw.AsyncCursor" = executor.cursor() if isinstance(executor, apsw.Connection) else executor
+    cursor: Union[apsw.Cursor, "apsw.AsyncCursor"] = executor.cursor() if isinstance(executor, apsw.Connection) else executor
     vals = ChainMapRO()
 """)
                 if meta["args"]:
