@@ -277,7 +277,7 @@ def _signature_for(meta: dict, is_async: bool, is_sync: bool) -> str:
             sig += f", {name}"
             match (details["annotation"], details["default"]):
                 case (None, _):
-                    sig += f': "apsw.SQLiteValue" = {details['default']}'
+                    sig += f': "apsw.SQLiteValue" = {details["default"]}'
                 case (_, None):
                     sig += f": {details['annotation']}"
                 case (None, None):
