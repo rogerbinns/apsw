@@ -343,7 +343,7 @@ APSWCursor_tp_traverse(PyObject *self_, visitproc visit, void *arg)
 {
   APSWCursor *self = (APSWCursor *)self_;
   Py_VISIT(self->connection);
-  Py_VISIT(self -> bindings);
+  Py_VISIT(self->bindings);
   Py_VISIT(self->exectrace);
   Py_VISIT(self->rowtrace);
   Py_VISIT(self->convert_binding);
@@ -431,9 +431,12 @@ convert_column_to_pyobject(APSWCursor *self, int col)
 
 static const char *description_formats[] = { "(ss)", "(ssOOOOO)", "(sssss)" };
 
+#undef APSWCursor_internal_get_description
 static PyObject *
 APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
 {
+#include "faultinject.h"
+
   int ncols, i;
   PyObject *result = NULL;
   PyObject *column = NULL;
@@ -450,6 +453,7 @@ APSWCursor_internal_get_description(APSWCursor *self, int fmtnum)
     return PyErr_Format(ExcComplete, "Can't get description for statements that have completed execution");
   }
 
+  /* async cursor will end up getting things from the cache */
   if (self->description_cache[fmtnum])
     return Py_NewRef(self->description_cache[fmtnum]);
 
@@ -530,9 +534,7 @@ APSWCursor_get_description(PyObject *self_, PyObject *unused)
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
-  ASYNC_BINARY(self->connection, APSWCursor_get_description, self_, unused);
-
-  return APSWCursor_internal_get_description((APSWCursor *)self, 0);
+  return APSWCursor_internal_get_description(self, 0);
 }
 
 /** .. attribute:: description
@@ -550,9 +552,7 @@ APSWCursor_getdescription_dbapi(PyObject *self_, void *unused)
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
-  ASYNC_ATTR_GET(self->connection, APSWCursor_getdescription_dbapi, self_, unused);
-
-  return APSWCursor_internal_get_description((APSWCursor *)self, 1);
+  return APSWCursor_internal_get_description(self, 1);
 }
 
 /** .. attribute:: description_full
@@ -575,9 +575,7 @@ APSWCursor_get_description_full(PyObject *self_, void *unused)
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(NULL);
 
-  ASYNC_ATTR_GET(self->connection, APSWCursor_get_description_full, self_, unused);
-
-  return APSWCursor_internal_get_description((APSWCursor *)self, 2);
+  return APSWCursor_internal_get_description(self, 2);
 }
 #endif
 
@@ -1661,6 +1659,29 @@ again:
   while (self->aiter_tail < self->aiter_slots_allocated && self->aiter_state == AIter_On)
   {
     PyObject *next_value = APSWCursor_next(self_);
+    /* proactively get descriptions #613 which will happen on first iteration */
+    if (next_value
+        && (!self->description_cache[0] || !self->description_cache[1]
+#ifdef SQLITE_ENABLE_COLUMN_METADATA
+            || !self->description_cache[2]
+#endif
+            ))
+    {
+      PyObject *zero = APSWCursor_internal_get_description(self, 0);
+      Py_XDECREF(zero);
+      PyObject *one = zero ? APSWCursor_internal_get_description(self, 1) : NULL;
+      Py_XDECREF(one);
+#ifdef SQLITE_ENABLE_COLUMN_METADATA
+      PyObject *two = one ? APSWCursor_internal_get_description(self, 2) : NULL;
+      Py_XDECREF(two);
+#endif
+      if (PyErr_Occurred())
+      {
+        Py_CLEAR(next_value);
+        resetcursor(self, 2);
+      }
+    }
+
     if (!next_value)
     {
       /* stop iteration? */

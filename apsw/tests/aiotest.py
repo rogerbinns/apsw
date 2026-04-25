@@ -10,6 +10,7 @@ import functools
 import threading
 import unittest
 import tempfile
+import random
 import sys
 import math
 import inspect
@@ -538,6 +539,116 @@ class Async(unittest.TestCase):
                         self.assertTrue(seen_zerodiv or error >= NUM_ENTRIES)
 
                 self.assertEqual(values, list(range(min(NUM_ENTRIES, error))))
+
+    async def atestDescription(self, fw):
+        "cursor.description"
+
+        # This is to verify #613 needing to keep iteration, prefetch,
+        # and description in sync with each other.  Multiple tables
+        # with varying number of columns and content are selected from
+        # in a single SQL string and async iteration compared to sync
+
+        # used to name the tables, columns, and types with languages
+        # from wikipedia.org front page
+        names = """one two three four five six seven eight nine ten
+        eleven twelve thirteen fourteen fifteen sixteen seventeen
+        eighteen nineteen twenty العربية Deutsch English Español فارسی
+        Français Italiano مصرى Nederlands日本語Polski Português
+        Sinugboanong Binisaya Svenska Українська Tiếng Việt Winaray中
+        文Русский  articles Afrikaans Shqip Asturianu Azərbaycanca
+        Български閩南語  Bân-lâm-gú বাংলা Беларуская Català Čeština
+        Cymraeg Dansk Eesti Ελληνικά Esperanto Euskara Galego 한국어
+        Հայերեն हिन्दी Hrvatski Bahasa Indonesia עברית ქართული Ladin
+        Latina Latviešu Lietuvių Magyar Македонски Malagasy मराठी
+        Bahasa Melayu Bahaso Minangkabau မြန်မာဘာသာ Norskbokmålnynorsk
+        Нохчийн Oʻzbekcha  Ўзбекча Қазақша Qazaqşa قازاقشا Română
+        Simple English Slovenčina Slovenščina Српски Srpski
+        Srpskohrvatski  Српскохрватски Suomi Kiswahili தமிழ் Татарча
+        Tatarça తెలుగు ภาษาไทย Тоҷикӣ تۆرکجه Türkçe اردو粵語Bahsa Acèh
+        Alemannisch አማርኛ Aragonés Արեւմտահայերէն Bahasa Hulontalo Basa
+        Bali Bahasa Banjar Basa Banyumasan Башҡортса Беларуская
+        тарашкевіца Bikol Central বিষ্ণুপ্রিয়া মণিপুরী Boarisch
+        Bosanski Brezhoneg Чӑвашла Dagbanli الدارجة Diné Bizaad
+        Emigliàn–Rumagnòl Fiji Hindi Føroyskt Frysk Fulfulde Gaeilge
+        Gàidhlig گیلکی ગુજરાતી Hak-kâ-ngî  客家語Hausa Hornjoserbsce
+        Ido Igbo Ilokano Interlingua Interlingue Ирон Íslenska Jawa
+        ಕನ್ನಡ Kapampangan ភាសាខ្មែរ Kotava Kreyòl Ayisyen Kurdî كوردی
+        کوردیی ناوەندی Кыргызча Кырык мары Lëtzebuergesch Lìgure
+        Limburgs Lombard मैथिली മലയാളം მარგალური مازِرونی
+        Mìng-dĕ̤ng-ngṳ̄  閩東語Монгол Napulitano नेपाल भाषा Nordfriisk
+        Occitan Олык марий ଓଡି଼ଆ অসমীযা় ਪੰਜਾਬੀ پنجابی شاہ مکھی پښتو
+        Piemontèis Plattdüütsch Qaraqalpaqsha Qırımtatarca Runa Simi
+        Русиньскый संस्कृतम् ᱥᱟᱱᱛᱟᱲᱤ سرائیکی Саха Тыла Scots ChiShona
+        Sicilianu සිංහල سنڌي Ślůnski Soomaaliga Basa Sunda Taclḥit
+        Tagalog ၽႃႇသႃႇတႆး ⵜⴰⵎⴰⵣⵉⵖⵜ ⵜⴰⵏⴰⵡⴰⵢⵜ tolışi chiTumbuka Basa Ugi
+        Vèneto Volapük Walon文言吴语ייִדיש """.split()
+
+        con = apsw.Connection("")
+        acon = await apsw.Connection.as_async("")
+
+        try:
+            tables = []
+
+            table_columns = {}
+
+            for table in random.choices(names, k=20):
+                # choices can return duplicates
+                if table in tables:
+                    continue
+                tables.append(table)
+                sql = ""
+                sql += f'create table "{table}"('
+                columns = list(set(random.choices(names, k=random.randint(1, 10))))
+                table_columns[table] = columns
+
+                sql += ",".join(
+                    f'"{name}" "{coltype}"' for (name, coltype) in zip(columns, random.choices(names, k=len(columns)))
+                )
+                sql += ");"
+
+                con.execute(sql)
+                await acon.execute(sql)
+
+                insert = f'insert into "{table}" values(' + ",".join("?" * len(columns)) + ")"
+
+                for row in range(random.randint(0, 100)):
+                    con.execute(insert, [row] * len(columns))
+                    await acon.execute(insert, [row] * len(columns))
+
+            sql = ""
+            emsql = ""
+            emvalues = []
+
+            for _ in range(20):
+                sql += f'SELECT * FROM "{random.choice(tables)}" LIMIT {random.randint(0, 10)};'
+                table = random.choice(tables)
+                emsql += f'INSERT INTO "{table}" ("{random.choice(table_columns[table])}") VALUES(?) RETURNING rowid ;'
+                emvalues.append((random.randint(0, 10),))
+
+            for prefetch in (1, 2, 3, 7, 10, 50):
+                apsw.async_cursor_prefetch.set(prefetch)
+                # regular execute mode
+                sync_cur = con.execute(sql)
+                async_cur = await acon.execute(sql)
+                async for row in async_cur:
+                    self.assertEqual(row, next(sync_cur))
+                    self.assertEqual(sync_cur.description, async_cur.description)
+                    self.assertEqual(sync_cur.get_description(), async_cur.get_description())
+                    if hasattr(sync_cur, "description_full"):
+                        self.assertEqual(sync_cur.description_full, async_cur.description_full)
+                # executemany mode
+                sync_cur = con.executemany(emsql, emvalues)
+                async_cur = await acon.executemany(emsql, emvalues)
+                async for row in async_cur:
+                    self.assertEqual(row, next(sync_cur))
+                    self.assertEqual(sync_cur.description, async_cur.description)
+                    self.assertEqual(sync_cur.get_description(), async_cur.get_description())
+                    if hasattr(sync_cur, "description_full"):
+                        self.assertEqual(sync_cur.description_full, async_cur.description_full)
+
+        finally:
+            con.close(True)
+            acon.close(True)
 
     async def atestConfigure(self, fw):
         auto = apsw.aio.Auto()
