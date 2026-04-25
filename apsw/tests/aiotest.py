@@ -586,6 +586,8 @@ class Async(unittest.TestCase):
         con = apsw.Connection("")
         acon = await apsw.Connection.as_async("")
 
+        has_full = hasattr(apsw.Cursor, "description_full")
+
         try:
             tables = []
 
@@ -622,10 +624,13 @@ class Async(unittest.TestCase):
             for _ in range(20):
                 sql += f'SELECT * FROM "{random.choice(tables)}" LIMIT {random.randint(0, 10)};'
                 table = random.choice(tables)
-                emsql += f'INSERT INTO "{table}" ("{random.choice(table_columns[table])}") VALUES(?) RETURNING rowid ;'
-                emvalues.append((random.randint(0, 10),))
+                emsql += (
+                    f'INSERT INTO "{table}" ("{random.choice(table_columns[table])}") VALUES(:foo) RETURNING rowid ;'
+                )
+                emvalues.append({"foo": random.randint(0, 10)})
 
             for prefetch in (1, 2, 3, 7, 10, 50):
+                print(f"{prefetch=}")
                 apsw.async_cursor_prefetch.set(prefetch)
                 # regular execute mode
                 sync_cur = con.execute(sql)
@@ -634,8 +639,38 @@ class Async(unittest.TestCase):
                     self.assertEqual(row, next(sync_cur))
                     self.assertEqual(sync_cur.description, async_cur.description)
                     self.assertEqual(sync_cur.get_description(), async_cur.get_description())
-                    if hasattr(sync_cur, "description_full"):
+                    if has_full:
                         self.assertEqual(sync_cur.description_full, async_cur.description_full)
+
+                # check raises complete
+                self.assertRaises(StopIteration, next, sync_cur)
+                with self.assertRaises(StopAsyncIteration):
+                    await anext(async_cur)
+
+                self.assertRaises(apsw.ExecutionCompleteError, getattr, sync_cur, "description")
+                self.assertRaises(apsw.ExecutionCompleteError, getattr, async_cur, "description")
+                self.assertRaises(apsw.ExecutionCompleteError, sync_cur.get_description)
+                self.assertRaises(apsw.ExecutionCompleteError, async_cur.get_description)
+                if has_full:
+                    self.assertRaises(apsw.ExecutionCompleteError, getattr, sync_cur, "description_full")
+                    self.assertRaises(apsw.ExecutionCompleteError, getattr, async_cur, "description_full")
+
+                # errors
+                sql = "select 3; select syntax error"
+                sync_cur = con.execute(sql)
+                async_cur = aiter(await acon.execute(sql))
+
+                next(sync_cur)
+                await anext(async_cur)
+
+                self.assertRaises(apsw.SQLError, next, sync_cur)
+                with self.assertRaises(apsw.SQLError):
+                    await anext(async_cur)
+
+                self.assertRaises(StopIteration, next, sync_cur)
+                with self.assertRaises(StopAsyncIteration):
+                    await anext(async_cur)
+
                 # executemany mode
                 sync_cur = con.executemany(emsql, emvalues)
                 async_cur = await acon.executemany(emsql, emvalues)
@@ -643,8 +678,21 @@ class Async(unittest.TestCase):
                     self.assertEqual(row, next(sync_cur))
                     self.assertEqual(sync_cur.description, async_cur.description)
                     self.assertEqual(sync_cur.get_description(), async_cur.get_description())
-                    if hasattr(sync_cur, "description_full"):
+                    if has_full:
                         self.assertEqual(sync_cur.description_full, async_cur.description_full)
+
+                # check raises complete
+                self.assertRaises(StopIteration, next, sync_cur)
+                with self.assertRaises(StopAsyncIteration):
+                    await anext(async_cur)
+
+                self.assertRaises(apsw.ExecutionCompleteError, getattr, sync_cur, "description")
+                self.assertRaises(apsw.ExecutionCompleteError, getattr, async_cur, "description")
+                self.assertRaises(apsw.ExecutionCompleteError, sync_cur.get_description)
+                self.assertRaises(apsw.ExecutionCompleteError, async_cur.get_description)
+                if has_full:
+                    self.assertRaises(apsw.ExecutionCompleteError, getattr, sync_cur, "description_full")
+                    self.assertRaises(apsw.ExecutionCompleteError, getattr, async_cur, "description_full")
 
         finally:
             con.close(True)
