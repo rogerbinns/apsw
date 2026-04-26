@@ -624,10 +624,13 @@ class Async(unittest.TestCase):
             for _ in range(20):
                 sql += f'SELECT * FROM "{random.choice(tables)}" LIMIT {random.randint(0, 10)};'
                 table = random.choice(tables)
-                emsql += (
-                    f'INSERT INTO "{table}" ("{random.choice(table_columns[table])}") VALUES(:foo) RETURNING rowid ;'
-                )
-                emvalues.append({"foo": random.randint(0, 10)})
+                emsql+=f'SELECT * FROM "{table}" LIMIT ? ;'
+                emvalues.append(random.randint(0, 10))
+
+            embindings = []
+            for _ in range(5):
+                random.shuffle(emvalues)
+                embindings.append(emvalues)
 
             for prefetch in (1, 2, 3, 7, 10, 50):
                 print(f"{prefetch=}")
@@ -672,8 +675,8 @@ class Async(unittest.TestCase):
                     await anext(async_cur)
 
                 # executemany mode
-                sync_cur = con.executemany(emsql, emvalues)
-                async_cur = await acon.executemany(emsql, emvalues)
+                sync_cur = con.executemany(emsql, embindings)
+                async_cur = await acon.executemany(emsql, embindings)
                 async for row in async_cur:
                     self.assertEqual(row, next(sync_cur))
                     self.assertEqual(sync_cur.description, async_cur.description)
