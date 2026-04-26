@@ -1028,8 +1028,8 @@ APSWCursor_do_row_trace(APSWCursor *self, PyObject *retval)
   return out;
 }
 
-/* Returns a borrowed reference to self if all is ok, else NULL on error */
-static PyObject *
+/* zero on success, anything else on error */
+static int
 APSWCursor_step(APSWCursor *self)
 {
   int res;
@@ -1048,13 +1048,13 @@ APSWCursor_step(APSWCursor *self)
     {
     case SQLITE_ROW:
       self->status = C_ROW;
-      return (PyErr_Occurred()) ? (NULL) : ((PyObject *)self);
+      return PyErr_Occurred() ? -1 : 0;
 
     case SQLITE_DONE:
       if (PyErr_Occurred())
       {
         self->status = C_DONE;
-        return NULL;
+        return -1;
       }
       break;
 
@@ -1071,7 +1071,7 @@ APSWCursor_step(APSWCursor *self)
         res = resetcursor(self, 0); /* this will get the error code for us */
         assert(res != SQLITE_OK);
       }
-      return NULL;
+      return -1;
     }
     assert(res == SQLITE_DONE);
 
@@ -1087,7 +1087,7 @@ APSWCursor_step(APSWCursor *self)
         /* no more so we finalize */
         res = resetcursor(self, 0);
         assert(res == SQLITE_OK);
-        return (PyObject *)self;
+        return 0;
       }
 
       /* we are in executemany mode */
@@ -1095,14 +1095,14 @@ APSWCursor_step(APSWCursor *self)
       if (PyErr_Occurred())
       {
         assert(!next);
-        return NULL;
+        return -1;
       }
 
       if (!next)
       {
         res = resetcursor(self, 0);
         assert(res == SQLITE_OK);
-        return (PyObject *)self;
+        return 0;
       }
 
       /* we need to clear just completed and restart original executemany statement */
@@ -1120,7 +1120,7 @@ APSWCursor_step(APSWCursor *self)
         /* we no longer need next irrespective of what happens in line above */
         Py_DECREF(next);
         if (!self->bindings)
-          return NULL;
+          return -1;
       }
       assert(self->bindings);
     }
@@ -1144,7 +1144,7 @@ APSWCursor_step(APSWCursor *self)
     {
       assert((res & 0xff) != SQLITE_BUSY); /* finalize shouldn't be returning busy, only step */
       assert(!self->statement);
-      return NULL;
+      return -1;
     }
 
     assert(self->statement);
@@ -1159,7 +1159,7 @@ APSWCursor_step(APSWCursor *self)
     if (APSWCursor_dobindings(self))
     {
       assert(PyErr_Occurred());
-      return NULL;
+      return -1;
     }
 
     if (EXECTRACE)
@@ -1168,7 +1168,7 @@ APSWCursor_step(APSWCursor *self)
       {
         assert(self->status == C_DONE);
         assert(PyErr_Occurred());
-        return NULL;
+        return -1;
       }
     }
     assert(self->status == C_DONE);
@@ -1215,7 +1215,6 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   int prepare_flags = 0;
   int can_cache = 1;
   int explain = -1;
-  PyObject *retval = NULL;
   PyObject *statements, *bindings = NULL;
   APSWStatementOptions options;
 
@@ -1294,14 +1293,12 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   }
 
   self->status = C_BEGIN;
-  retval = APSWCursor_step(self);
-  if (!retval)
     goto error_out;
 
   sqlite3_mutex_leave(self->connection->dbmutex);
   self->in_query = 0;
 
-  return Py_NewRef(retval);
+  return Py_NewRef(self);
 
 error_out:
   assert(PyErr_Occurred());
@@ -1330,7 +1327,6 @@ APSWCursor_executemany(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
 {
   APSWCursor *self = (APSWCursor *)self_;
   int res;
-  PyObject *retval = NULL;
   PyObject *sequenceofbindings = NULL;
   PyObject *next = NULL;
   PyObject *statements = NULL;
@@ -1430,13 +1426,13 @@ APSWCursor_executemany(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
 
   self->status = C_BEGIN;
   self->in_query = 1;
-  retval = APSWCursor_step(self);
+  int step_ret = APSWCursor_step(self);
   self->in_query = 0;
-  if (!retval)
+  if (step_ret != 0)
     goto error_out;
 
   sqlite3_mutex_leave(self->connection->dbmutex);
-  return Py_NewRef(retval);
+  return Py_NewRef(self);
 
 error_out:
   assert(PyErr_Occurred());
@@ -1548,8 +1544,8 @@ again:
 
   if (self->status == C_BEGIN)
   {
-    int step = !!APSWCursor_step(self);
-    if (!step)
+    int step = APSWCursor_step(self);
+    if (step)
       goto error;
   }
 
@@ -2392,8 +2388,8 @@ APSWCursor_get(PyObject *self_, void *unused)
 {
   APSWCursor *self = (APSWCursor *)self_;
   PyObject *the_list = NULL, *the_row = NULL;
-  PyObject *step, *item;
-  int numcols, i;
+  PyObject *item;
+  int numcols, i, step;
 
   CHECK_CURSOR_CLOSED(NULL);
 
@@ -2445,7 +2441,7 @@ APSWCursor_get(PyObject *self_, void *unused)
       Py_CLEAR(the_row);
     }
     step = APSWCursor_step(self);
-    if (step == NULL)
+    if (step != 0)
       goto error;
   } while (self->status != C_DONE);
 
