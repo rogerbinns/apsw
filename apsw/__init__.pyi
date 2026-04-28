@@ -7500,13 +7500,13 @@ class AsyncCursor:
       * :attr:`Cursor.description_full`
       * :attr:`Cursor.description`"""
 
-    description: Awaitable[tuple[tuple[str, str, None, None, None, None, None], ...]]
+    description: tuple[tuple[str, str, None, None, None, None, None], ...]
     """Based on the `DB-API cursor property
     <https://www.python.org/dev/peps/pep-0249/>`__, this returns the
     same as :meth:`get_description` but with 5 Nones appended because
     SQLite does not have the information."""
 
-    description_full: Awaitable[tuple[tuple[str, str, str, str, str], ...]]
+    description_full: tuple[tuple[str, str, str, str, str], ...]
     """Only present if SQLITE_ENABLE_COLUMN_METADATA was defined at
     compile time.
 
@@ -7634,7 +7634,7 @@ class AsyncCursor:
         """Returns the :attr:`connection` this cursor is part of"""
         ...
 
-    async def get_description(self) -> tuple[tuple[str, str], ...]:
+    def get_description(self) -> tuple[tuple[str, str], ...]:
         """If you are trying to get information about a table or view,
         then `pragma table_info <https://sqlite.org/pragma.html#pragma_table_info>`__
         is better.  If you want to know up front what columns and other
