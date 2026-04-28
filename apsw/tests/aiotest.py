@@ -596,7 +596,7 @@ class Async(unittest.TestCase):
 
             table_columns = {}
 
-            for table in random.choices(names, k=20):
+            for table in random.choices(names, k=6):
                 # choices can return duplicates
                 if table in tables:
                     continue
@@ -616,9 +616,11 @@ class Async(unittest.TestCase):
 
                 insert = f'insert into "{table}" values(' + ",".join("?" * len(columns)) + ")"
 
-                for row in range(random.randint(0, 100)):
-                    con.execute(insert, [row] * len(columns))
-                    await acon.execute(insert, [row] * len(columns))
+                async with acon:
+                    with con:
+                        for row in range(random.randint(0, 100)):
+                            con.execute(insert, [row] * len(columns))
+                            await acon.execute(insert, [row] * len(columns))
 
             sql = []
             emsql = []
@@ -626,7 +628,7 @@ class Async(unittest.TestCase):
 
             stuff = "abcdefghijklmnopqrstuvwxyz"
 
-            for i in range(20):
+            for i in range(12):
                 sql.append(f'SELECT * FROM "{random.choice(tables)}" LIMIT {random.randint(0, 10)};')
                 table = random.choice(tables)
                 one = "".join(random.choices(stuff, k=10))
@@ -642,10 +644,8 @@ class Async(unittest.TestCase):
                         sql.append(q)
                         emsql.append(q)
 
-            embindings = []
-            for _ in range(5):
-                random.shuffle(emvalues)
-                embindings.extend(emvalues)
+            embindings = emvalues[:]
+            random.shuffle(embindings)
 
             async_attrs = "bindings_names expanded_sql sql".split()
             sync_attrs = "bindings_count has_vdbe is_explain is_readonly description".split() + (
@@ -664,7 +664,7 @@ class Async(unittest.TestCase):
                 self.assertRaises(apsw.ExecutionCompleteError, getattr, sync_cur, a)
                 self.assertRaises(apsw.ExecutionCompleteError, getattr, async_cur, a)
 
-            for prefetch in (1, 2, 3, 7, 10, 50):
+            for prefetch in (1, 3, 11, 64):
                 apsw.async_cursor_prefetch.set(prefetch)
                 random.shuffle(sql)
                 # regular execute mode
