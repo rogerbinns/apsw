@@ -6058,6 +6058,7 @@ class APSW(unittest.TestCase):
                     "get_description_full",
                     "getdescription_dbapi",
                     "bool",
+                    "next",
                 ),
                 "req": {
                     "closed": "CHECK_CURSOR_CLOSED",

@@ -119,7 +119,7 @@ returns = {
             realloc
 
             Connection_fts5_api get_token_value fts5extensionapi_acquire
-            make_boxed_call
+            make_boxed_call APSWCursor_internal_get_description
 
             sqlite3_malloc sqlite3_malloc64 sqlite3_mprintf
             sqlite3_realloc sqlite3_realloc64

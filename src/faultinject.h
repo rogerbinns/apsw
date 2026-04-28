@@ -15,6 +15,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 
 #ifdef APSW_FAULT_CLEAR
 
+#undef APSWCursor_internal_get_description
 #undef Connection_fts5_api
 #undef MakeExistingException
 #undef MakeTableChange
@@ -276,6 +277,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 
 #else
 
+#define APSWCursor_internal_get_description(...) \
+({                                                                                                                                                                                                            \
+    __auto_type _res_APSWCursor_internal_get_description = 0 ? APSWCursor_internal_get_description(__VA_ARGS__) : 0;                                                                                          \
+                                                                                                                                                                                                              \
+    _res_APSWCursor_internal_get_description = (typeof (_res_APSWCursor_internal_get_description))APSW_FaultInjectControl("APSWCursor_internal_get_description", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                                              \
+    if ((typeof (_res_APSWCursor_internal_get_description))0x1FACADE == _res_APSWCursor_internal_get_description)                                                                                             \
+       _res_APSWCursor_internal_get_description = APSWCursor_internal_get_description(__VA_ARGS__);                                                                                                           \
+    else if ((typeof(_res_APSWCursor_internal_get_description))0x2FACADE == _res_APSWCursor_internal_get_description)                                                                                         \
+    {                                                                                                                                                                                                         \
+        APSWCursor_internal_get_description(__VA_ARGS__);                                                                                                                                                     \
+        _res_APSWCursor_internal_get_description = (typeof (_res_APSWCursor_internal_get_description))18;                                                                                                     \
+    }                                                                                                                                                                                                         \
+    _res_APSWCursor_internal_get_description;                                                                                                                                                                 \
+})
 #define Connection_fts5_api(...) \
 ({                                                                                                                                                            \
     __auto_type _res_Connection_fts5_api = 0 ? Connection_fts5_api(__VA_ARGS__) : 0;                                                                          \

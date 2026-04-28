@@ -53,13 +53,14 @@
     "Cursor": {
         "dual": [
             "bindings_names",
-            "description",
-            "description_full",
             "expanded_sql",
             "get",
             "sql"
         ],
         "value": [
+            "get_description",
+            "description",
+            "description_full",
             "get_connection",
             "get_exec_trace",
             "get_row_trace",

@@ -10,6 +10,7 @@ import functools
 import threading
 import unittest
 import tempfile
+import random
 import sys
 import math
 import inspect
@@ -538,6 +539,209 @@ class Async(unittest.TestCase):
                         self.assertTrue(seen_zerodiv or error >= NUM_ENTRIES)
 
                 self.assertEqual(values, list(range(min(NUM_ENTRIES, error))))
+
+    async def atestCursorStatementAttributes(self, fw):
+
+        # This is to verify #613 needing to keep iteration, prefetch,
+        # and description in sync with each other, not to mention all
+        # the other cursor statement related attributes.  Multiple
+        # tables with varying number of columns and content are
+        # selected from in a single SQL string and async iteration
+        # compared to sync
+
+        # used to name the tables, columns, and types with languages
+        # from wikipedia.org front page
+        names = """one two three four five six seven eight nine ten
+        eleven twelve thirteen fourteen fifteen sixteen seventeen
+        eighteen nineteen twenty العربية Deutsch English Español فارسی
+        Français Italiano مصرى Nederlands日本語Polski Português
+        Sinugboanong Binisaya Svenska Українська Tiếng Việt Winaray中
+        文Русский  articles Afrikaans Shqip Asturianu Azərbaycanca
+        Български閩南語  Bân-lâm-gú বাংলা Беларуская Català Čeština
+        Cymraeg Dansk Eesti Ελληνικά Esperanto Euskara Galego 한국어
+        Հայերեն हिन्दी Hrvatski Bahasa Indonesia עברית ქართული Ladin
+        Latina Latviešu Lietuvių Magyar Македонски Malagasy मराठी
+        Bahasa Melayu Bahaso Minangkabau မြန်မာဘာသာ Norskbokmålnynorsk
+        Нохчийн Oʻzbekcha  Ўзбекча Қазақша Qazaqşa قازاقشا Română
+        Simple English Slovenčina Slovenščina Српски Srpski
+        Srpskohrvatski  Српскохрватски Suomi Kiswahili தமிழ் Татарча
+        Tatarça తెలుగు ภาษาไทย Тоҷикӣ تۆرکجه Türkçe اردو粵語Bahsa Acèh
+        Alemannisch አማርኛ Aragonés Արեւմտահայերէն Bahasa Hulontalo Basa
+        Bali Bahasa Banjar Basa Banyumasan Башҡортса Беларуская
+        тарашкевіца Bikol Central বিষ্ণুপ্রিয়া মণিপুরী Boarisch
+        Bosanski Brezhoneg Чӑвашла Dagbanli الدارجة Diné Bizaad
+        Emigliàn–Rumagnòl Fiji Hindi Føroyskt Frysk Fulfulde Gaeilge
+        Gàidhlig گیلکی ગુજરાતી Hak-kâ-ngî  客家語Hausa Hornjoserbsce
+        Ido Igbo Ilokano Interlingua Interlingue Ирон Íslenska Jawa
+        ಕನ್ನಡ Kapampangan ភាសាខ្មែរ Kotava Kreyòl Ayisyen Kurdî كوردی
+        کوردیی ناوەندی Кыргызча Кырык мары Lëtzebuergesch Lìgure
+        Limburgs Lombard मैथिली മലയാളം მარგალური مازِرونی
+        Mìng-dĕ̤ng-ngṳ̄  閩東語Монгол Napulitano नेपाल भाषा Nordfriisk
+        Occitan Олык марий ଓଡି଼ଆ অসমীযা় ਪੰਜਾਬੀ پنجابی شاہ مکھی پښتو
+        Piemontèis Plattdüütsch Qaraqalpaqsha Qırımtatarca Runa Simi
+        Русиньскый संस्कृतम् ᱥᱟᱱᱛᱟᱲᱤ سرائیکی Саха Тыла Scots ChiShona
+        Sicilianu සිංහල سنڌي Ślůnski Soomaaliga Basa Sunda Taclḥit
+        Tagalog ၽႃႇသႃႇတႆး ⵜⴰⵎⴰⵣⵉⵖⵜ ⵜⴰⵏⴰⵡⴰⵢⵜ tolışi chiTumbuka Basa Ugi
+        Vèneto Volapük Walon文言吴语ייִדיש """.split()
+
+        con = apsw.Connection("")
+        acon = await apsw.Connection.as_async("")
+
+        has_full = hasattr(apsw.Cursor, "description_full")
+
+        try:
+            apsw.allow_missing_dict_bindings(True)
+
+            tables = []
+
+            table_columns = {}
+
+            for table in random.choices(names, k=6):
+                # choices can return duplicates
+                if table in tables:
+                    continue
+                tables.append(table)
+                sql = ""
+                sql += f'create table "{table}"('
+                columns = list(set(random.choices(names, k=random.randint(1, 10))))
+                table_columns[table] = columns
+
+                sql += ",".join(
+                    f'"{name}" "{coltype}"' for (name, coltype) in zip(columns, random.choices(names, k=len(columns)))
+                )
+                sql += ");"
+
+                con.execute(sql)
+                await acon.execute(sql)
+
+                insert = f'insert into "{table}" values(' + ",".join("?" * len(columns)) + ")"
+
+                async with acon:
+                    with con:
+                        for row in range(random.randint(0, 100)):
+                            con.execute(insert, [row] * len(columns))
+                            await acon.execute(insert, [row] * len(columns))
+
+            sql = []
+            emsql = []
+            emvalues = []
+
+            stuff = "abcdefghijklmnopqrstuvwxyz"
+
+            for i in range(12):
+                sql.append(f'SELECT * FROM "{random.choice(tables)}" LIMIT {random.randint(0, 10)};')
+                table = random.choice(tables)
+                one = "".join(random.choices(stuff, k=10))
+                two = "".join(random.choices(stuff, k=10))
+                emsql.append(f'SELECT * FROM "{table}" WHERE coalesce(${one},:{two}, 3) is not null LIMIT :limit ;')
+                emvalues.append({"limit": random.randint(0, 10), one: 77, two: 94})
+                if i in {1, 3, 7, 11, 17}:
+                    for q in (
+                        "/* no vdbe for this */ ;",
+                        "explain query plan select * from sqlite_schema;",
+                        "create table if not exists orange(a,c);",
+                    ):
+                        sql.append(q)
+                        emsql.append(q)
+
+            embindings = emvalues[:]
+            random.shuffle(embindings)
+
+            async_attrs = "bindings_names expanded_sql sql".split()
+            sync_attrs = "bindings_count has_vdbe is_explain is_readonly description".split() + (
+                ["description_full"] if has_full else []
+            )
+
+            sync_cur = con.cursor()
+            async_cur = acon.cursor()
+            self.assertRaises(apsw.ExecutionCompleteError, sync_cur.get_description)
+            self.assertRaises(apsw.ExecutionCompleteError, async_cur.get_description)
+            for a in async_attrs:
+                self.assertRaises(apsw.ExecutionCompleteError, getattr, sync_cur, a)
+                with self.assertRaises(apsw.ExecutionCompleteError):
+                    await getattr(async_cur, a)
+            for a in sync_attrs:
+                self.assertRaises(apsw.ExecutionCompleteError, getattr, sync_cur, a)
+                self.assertRaises(apsw.ExecutionCompleteError, getattr, async_cur, a)
+
+            for prefetch in (1, 3, 11, 64):
+                apsw.async_cursor_prefetch.set(prefetch)
+                random.shuffle(sql)
+                # regular execute mode
+                sync_cur = con.execute("".join(sql))
+                async_cur = await acon.execute("".join(sql))
+
+                async for row in async_cur:
+                    self.assertEqual(row, next(sync_cur))
+                    self.assertEqual(sync_cur.get_description(), async_cur.get_description())
+                    for a in async_attrs:
+                        self.assertEqual(getattr(sync_cur, a), await getattr(async_cur, a))
+                    for a in sync_attrs:
+                        self.assertEqual(getattr(sync_cur, a), getattr(async_cur, a))
+
+                # check raises complete
+                self.assertRaises(StopIteration, next, sync_cur)
+                with self.assertRaises(StopAsyncIteration):
+                    await anext(async_cur)
+
+                self.assertRaises(apsw.ExecutionCompleteError, sync_cur.get_description)
+                self.assertRaises(apsw.ExecutionCompleteError, async_cur.get_description)
+                for a in async_attrs:
+                    self.assertRaises(apsw.ExecutionCompleteError, getattr, sync_cur, a)
+                    with self.assertRaises(apsw.ExecutionCompleteError):
+                        await getattr(async_cur, a)
+                for a in sync_attrs:
+                    self.assertRaises(apsw.ExecutionCompleteError, getattr, sync_cur, a)
+                    self.assertRaises(apsw.ExecutionCompleteError, getattr, async_cur, a)
+
+                # errors
+                error_sql = "select 3; select syntax error"
+                sync_cur = con.execute(error_sql)
+                async_cur = aiter(await acon.execute(error_sql))
+
+                next(sync_cur)
+                await anext(async_cur)
+
+                self.assertRaises(apsw.SQLError, next, sync_cur)
+                with self.assertRaises(apsw.SQLError):
+                    await anext(async_cur)
+
+                self.assertRaises(StopIteration, next, sync_cur)
+                with self.assertRaises(StopAsyncIteration):
+                    await anext(async_cur)
+
+                # executemany mode
+                random.shuffle(emsql)
+
+                sync_cur = con.executemany("".join(emsql), embindings)
+                async_cur = await acon.executemany("".join(emsql), embindings)
+                async for row in async_cur:
+                    self.assertEqual(row, next(sync_cur))
+                    self.assertEqual(sync_cur.get_description(), async_cur.get_description())
+                    for a in async_attrs:
+                        self.assertEqual(getattr(sync_cur, a), await getattr(async_cur, a))
+                    for a in sync_attrs:
+                        self.assertEqual(getattr(sync_cur, a), getattr(async_cur, a))
+
+                # check raises complete
+                self.assertRaises(StopIteration, next, sync_cur)
+                with self.assertRaises(StopAsyncIteration):
+                    await anext(async_cur)
+
+                self.assertRaises(apsw.ExecutionCompleteError, sync_cur.get_description)
+                self.assertRaises(apsw.ExecutionCompleteError, async_cur.get_description)
+                for a in async_attrs:
+                    self.assertRaises(apsw.ExecutionCompleteError, getattr, sync_cur, a)
+                    with self.assertRaises(apsw.ExecutionCompleteError):
+                        await getattr(async_cur, a)
+                for a in sync_attrs:
+                    self.assertRaises(apsw.ExecutionCompleteError, getattr, sync_cur, a)
+                    self.assertRaises(apsw.ExecutionCompleteError, getattr, async_cur, a)
+
+        finally:
+            apsw.allow_missing_dict_bindings(False)
+            con.close(True)
+            acon.close(True)
 
     async def atestConfigure(self, fw):
         auto = apsw.aio.Auto()
