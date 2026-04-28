@@ -10,6 +10,20 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+next
+====
+
+Async cursor iteration changes:  The :attr:`async_cursor_prefetch`
+mechanism gets batches of result rows for significantly improved
+performance.    Batches no longer include multiple SQL statement rows,
+and cursor attributes like :attr:`~Cursor.bindings_names`,
+:attr:`~Cursor.sql`, and :attr:`~Cursor.is_readonly` will always
+correctly reflect the current iterated row.  **Backwards incompatible
+change**: :attr:`~Cursor.description`,
+:meth:`~Cursor.get_description`, and :attr:`~Cursor.description_full`
+are now values - ie you can just use them directly and
+should not :code:`await` them.
+
 3.53.0
 ======
 
