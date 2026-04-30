@@ -811,9 +811,9 @@ def generate_typestubs(items: list[dict]) -> None:
                 if klass in virtual_table_classes:
                     extra = "(Protocol)"
                 if klass not in subclassable and klass not in virtual_table_classes:
-                    print("@final", file=out)
+                    print("@finalclass", file=out)
                     if asyncable:
-                        print("@final", file=async_out)
+                        print("@finalclass", file=async_out)
 
                 print(f"{ baseindent }class { klass }{ extra }:", file=out)
                 print(fmt_docstring(doc, indent=f"{ baseindent }    "), file=out)

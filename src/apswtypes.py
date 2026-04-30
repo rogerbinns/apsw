@@ -1,6 +1,7 @@
 import contextvars
 
-from typing import Callable, Any, Iterable, Sequence, Literal, Protocol, TypeAlias, final, Self, Coroutine, overload
+from typing import Callable, Any, Iterable, Sequence, Literal, Protocol, TypeAlias, Self, Coroutine, overload
+from typing import final as finalclass
 from collections.abc import Mapping, Buffer, Iterator, Awaitable
 
 import array
@@ -22,7 +23,7 @@ class CArrayBinding:
     ...
 
 Binding = SQLiteValue | zeroblob | PyObjectBinding | CArrayBinding
-"""An individual binding can be any of the SQLiteValues.
+"""An individual binding can be any type in SQLiteValue,
 zeroblob, :meth:`pyobject`, or :meth:`carray`"""
 
 Bindings = Sequence[Binding] | Mapping[str, Binding]
@@ -223,6 +224,10 @@ class AsyncConnectionController(Protocol):
 
 class AsyncConnection:
     "A type stub to indicate a Connection in async mode"
+    ...
+
+class AsyncCursor:
+    "A type stub to indicate a Cursor in async mode"
     ...
 
 class AsyncSession:
