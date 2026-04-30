@@ -23,7 +23,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
-    "sphinx_autodoc_typehints",
 ]
 
 if not os.getenv("APSW_NO_GA"):
@@ -177,6 +176,8 @@ nitpick_ignore = [
 # autosummary etc fail to import modules even though python import
 # works just fine, so we cheat by importing them here
 
-import apsw, apsw.aio, apsw.query
+import apsw, apsw.query
 
 apsw.query.install_import_hook()
+
+import apsw.sphinx
