@@ -187,88 +187,16 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
     return "".join(res)
 
 
-def _typed_results(node: ast.AST | None, is_async: bool) -> str:
-    # given a return annotation, provide the code
+def _gen_function(meta: dict[str, Any]) -> str:
+    "Generates the code for one query"
+    res: list[str] = []
+    comments: str | None = meta["comments"]
 
-    a = "async " if is_async else ""
-    aw = "await " if is_async else ""
+    async_sig = "(executor: apsw.AsyncCursor | apsw.AsyncConnection"
+    sync_sig = "(executor: apsw.Cursor | apsw.Connection"
+    both_sig = "(executor: apsw.Cursor | apsw.Connection | apsw.AsyncCursor | apsw.AsyncConnection"
 
-    # I originally tried to use match but was outsmarted
-    if node is None:
-        return "        return cursor.execute(sql, vals)\n"
-
-    if isinstance(node, ast.Constant) and node.value is None and node.kind is None:
-        return f"""\
-        {a}for _ in {aw}cursor.execute(sql, vals):
-            pass
-        return None"""
-
-    if isinstance(node, ast.Name) and node.id == "changes":
-        return f"""\
-        changes_start = cursor.connection.total_changes()
-        {a}for _ in {aw}cursor.execute(sql, vals):
-            pass
-        return cursor.connection.total_changes() - changes_start"""
-
-    if (
-        isinstance(node, ast.BinOp)
-        and isinstance(node.op, ast.BitOr)
-        and isinstance(node.left, ast.Name)
-        and isinstance(node.right, (ast.Constant, ast.Name))
-    ):
-        # one row - return left
-        # zero - return right
-        # more - raise exception
-        l = ast.unparse(node.left)
-        r = ast.unparse(node.right)
-        return f"""\
-        retval = _NotSet
-        {a}for row in {aw}cursor.execute(sql, vals):
-            if retval is not _NotSet:
-                raise TooManyRows
-            desc = {aw}cursor.get_description()
-            retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row)))
-        return {r} if retval is _NotSet else retval
-"""
-
-    if isinstance(node, ast.Name):
-        r = ast.unparse(node)
-        return f"""\
-        retval = _NotSet
-        {a}for row in {aw}cursor.execute(sql, vals):
-            if retval is not _NotSet:
-                raise TooManyRows
-            desc = {aw}cursor.get_description()
-            retval = {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))
-        if retval is _NotSet:
-            raise RowExpected
-        return retval
-    """
-
-    if isinstance(node, ast.List) and len(node.elts) == 1 and isinstance(node.elts[0], ast.Name):
-        r = ast.unparse(node.elts[0])
-        return f"""\
-        {a}for row in {aw}cursor.execute(sql, vals):
-            desc = {aw}cursor.get_description()
-            yield {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))"""
-
-    raise ValueError(f"Return not understood {ast.unparse(node)!r} ")
-
-
-def _signature_for(meta: dict, is_async: bool, is_sync: bool) -> str:
-    "Call signature based on parsed name and async mode"
-
-    # the method gets declared 3 times - once sync, once async,
-    # and once with the union of both
-    assert (is_async or is_sync) or (is_async and is_sync)
-
-    sig = f"(executor: Union["
-    take: list[str] = []
-    if is_async:
-        take.extend('"apsw.AsyncConnection" "apsw.AsyncCursor"'.split())
-    if is_sync:
-        take.extend("apsw.Connection apsw.Cursor".split())
-    sig += ", ".join(take) + "]"
+    sig = ""
 
     if meta["args"]:
         for i, (name, details) in enumerate(meta["args"].items()):
@@ -286,51 +214,178 @@ def _signature_for(meta: dict, is_async: bool, is_sync: bool) -> str:
                     sig += f": ({details['annotation']}) = {details['default']}"
     sig += ") -> "
 
-    if meta["return_type"] is None:
-        match (is_async, is_sync):
-            case (True, True):
-                sig += 'Union["apsw.AsyncCursor", apsw.Cursor]'
-            case (True, False):
-                sig += '"apsw.AsyncCursor"'
-            case (False, True):
-                sig += "apsw.Cursor"
-            case _:
-                assert_never((False, False))
+    async_sig += sig
+    sync_sig += sig
+    both_sig += sig
+
+    node = meta["return_type"]
+
+    if node is None:
+        async_sig += "apsw.AsyncCursor"
+        sync_sig += "apsw.Cursor"
+        both_sig += "apsw.AsyncCursor | apsw.Cursor"
+
+        inner = """
+    async def async_inner():
+        return await cursor.execute(sql, vals)
+
+    def sync_inner():
+        return cursor.execute(sql, vals)
+"""
+
+    elif isinstance(node, ast.Constant) and node.value is None and node.kind is None:
+        async_sig += "Awaitable[None]"
+        sync_sig += "None"
+        both_sig += "None | Awaitable[None]"
+
+        inner = """
+    async def async_inner():
+        async for _ in await cursor.execute(sql, vals):
+            pass
+        return None
+
+    def sync_inner():
+        for _ in cursor.execute(sql, vals):
+            pass
+        return None
+"""
+
+    elif isinstance(node, ast.Name) and node.id == "changes":
+        async_sig += "Awaitable[changes]"
+        sync_sig += "changes"
+        both_sig += "changes | Awaitable[changes]"
+
+        inner = """
+    async def async_inner():
+        count = cursor.connection.total_changes()
+        async for _ in await cursor.execute(sql, vals):
+            pass
+        return cursor.connection.total_changes() - count
+
+    def sync_inner():
+        count = cursor.connection.total_changes()
+        for _ in cursor.execute(sql, vals):
+            pass
+        return cursor.connection.total_changes() - count
+"""
+
+    elif (
+        isinstance(node, ast.BinOp)
+        and isinstance(node.op, ast.BitOr)
+        and isinstance(node.left, ast.Name)
+        and isinstance(node.right, (ast.Constant, ast.Name))
+    ):
+        # one row - return left
+        # zero - return right
+        # more - raise exception
+        l = ast.unparse(node.left)
+        r = ast.unparse(node.right)
+
+        async_sig += f"Awaitable[{l} | Literal[{r}]]"
+        sync_sig += f"{l} | Literal[{r}]"
+        both_sig += f"Awaitable[{l} | Literal[{r}]] | {l} | Literal[{r}]"
+
+        inner = f"""
+    async def async_inner():
+        retval = _NotSet
+        async for row in await cursor.execute(sql, vals):
+            if retval is not _NotSet:
+                raise TooManyRows
+            desc = cursor.get_description()
+            retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row)))
+        return {r} if retval is _NotSet else retval
+
+    def sync_inner():
+        retval = _NotSet
+        for row in cursor.execute(sql, vals):
+            if retval is not _NotSet:
+                raise TooManyRows
+            desc = cursor.get_description()
+            retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row)))
+        return {r} if retval is _NotSet else retval
+"""
+
+    elif isinstance(node, ast.Name):
+        r = ast.unparse(node)
+        async_sig += f"Awaitable[{r}]"
+        sync_sig += r
+        both_sig += f"Awaitable[{r}] | {r}"
+
+        inner = f"""
+    async def async_inner():
+        retval = _NotSet
+        async for row in await cursor.execute(sql, vals):
+            if retval is not _NotSet:
+                raise TooManyRows
+            desc = cursor.get_description()
+            retval = {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))
+        if retval is _NotSet:
+            raise RowExpected
+        return retval
+
+    def sync_inner():
+        retval = _NotSet
+        for row in cursor.execute(sql, vals):
+            if retval is not _NotSet:
+                raise TooManyRows
+            desc = cursor.get_description()
+            retval = {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))
+        if retval is _NotSet:
+            raise RowExpected
+        return retval
+"""
+
+    elif isinstance(node, ast.List) and len(node.elts) == 1 and isinstance(node.elts[0], ast.Name):
+        r = ast.unparse(node.elts[0])
+        async_sig += f"AsyncIterator[{r}]"
+        sync_sig += f"Iterator[{r}]"
+        both_sig += f"AsyncIterator[{r}] | Iterator[{r}]"
+
+        inner = f"""
+    async def async_inner():
+        async for row in await cursor.execute(sql, vals):
+            desc = cursor.get_description()
+            yield {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))
+
+    def sync_inner():
+        for row in cursor.execute(sql, vals):
+            desc = cursor.get_description()
+            yield {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))
+"""
     else:
-        # _typed_results does validation of return type so
-        # this just yolos it
+        raise ValueError(f"Return not understood {ast.unparse(node)!r} ")
 
-        node = meta["return_type"]
+    res.append(f"""
+@overload
+def {meta["name"]}{async_sig}:
+    ...
+@overload
+def {meta["name"]}{sync_sig}:
+    ...
+def {meta["name"]}{both_sig}:
+{"\n".join(_triple_quote(comments, "    ")) if comments else "    # Add -- SQL comments after name: line for a docstring\n"}
+    cursor: apsw.Cursor | apsw.AsyncCursor = executor.cursor() if isinstance(executor, apsw.Connection) else executor
+    vals = ChainMapRO()
+    sql = {meta["name"]}.sql
+""")
+    if meta["args"]:
+        res.append("    vals.maps.append({")
+        for name in meta["args"]:
+            res.append(f'        "{name}": {name},')
+        res.append("    })")
+    if meta["locals"]:
+        res.append("""    vals.maps.append(sys._getframe(1).f_locals)""")
+    if meta["is_template"]:
+        res.append("    sql = template_expand(sql, vals)")
+    res.append(inner)
+    res.append(f"""    return async_inner() if cursor.connection.is_async else sync_inner()
 
-        if isinstance(node, ast.List) and len(node.elts) == 1:
-            inner = ast.unparse(node.elts[0])
-            match (is_async, is_sync):
-                case (True, True):
-                    sig += f"Iterator[{inner}] | AsyncIterator[{inner}]"
-                case (True, False):
-                    sig += f"AsyncIterator[{inner}]"
-                case (False, True):
-                    sig += f"Iterator[{inner}]"
-                case _:
-                    assert_never((False, False))
+{meta["name"]}.sql = \\
+{"\n".join(_triple_quote(meta["sql"]))}
 
-        else:
-            if isinstance(node, ast.BinOp):
-                return_type = f"{ast.unparse(node.left)} | Literal[{ast.unparse(node.right)}]"
-            else:
-                return_type = ast.unparse(node)
+""")
 
-            match (is_async, is_sync):
-                case (True, True):
-                    sig += f"Awaitable[{return_type}] | {return_type}"
-                case (True, False):
-                    sig += f"Awaitable[{return_type}]"
-                case (False, True):
-                    sig += f"{return_type}"
-                case _:
-                    assert_never((False, False))
-
-    return sig
+    return "\n".join(res)
 
 
 def py_from_file(filename: str | pathlib.Path, encoding: str = "utf8") -> str:
@@ -385,8 +440,8 @@ def install_import_hook():
             return
     sys.meta_path.append(_Import_Hook())
 
-class _Import_Hook(importlib.abc.MetaPathFinder):
 
+class _Import_Hook(importlib.abc.MetaPathFinder):
     def find_spec(self, fullname: str, path: collections.abc.Sequence[str] | None, target: ModuleType | None = None):
         name = fullname.split(".")[-1]
         search_dirs = path if path else sys.path
@@ -421,7 +476,7 @@ def _make_py_from_text(text: str) -> str:
     "Internal routine that converts SQL file to Python code"
     res: list[str] = []
 
-    res.extend(
+    res.append(
         """\
 
 # This code was generated by apsw.query from ::TODO:: fill this in
@@ -442,7 +497,7 @@ from apsw.query import ChainMapRO, template_expand, changes, TooManyRows, RowExp
 _NotSet = object()
 "Sentinel for an unset value"
 
-""".splitlines()
+"""
     )
 
     # ::TODO:: if first block is python and it starts with a docstring
@@ -454,64 +509,20 @@ _NotSet = object()
                 res.append(f"# {value}")
                 res.extend(f"# {line}" for line in comments.splitlines())
                 res.append("")
-                res.extend(body.splitlines())
-                res.append("")
-                res.append("")
+                res.append(body)
+                res.append("\n")
             case "name":
                 meta = _parse_name(value)
                 try:
-                    is_template = _validate_template_string(body)
+                    meta["is_template"] = _validate_template_string(body)
                 except Exception as exc:
                     # Another py 3.10 compat
                     getattr(exc, "add_note", lambda x: None)(f"""In query '{meta["name"]}'""")
                     raise
-                res.append(f"""\
-async def _async_{meta["name"]}(cursor: "apsw.AsyncCursor", sql: str, vals: ChainMapRO):
-    try:
+                meta["comments"] = comments if comments.strip() else None
+                meta["sql"] = body
+                res.append(_gen_function(meta))
 
-{_typed_results(meta["return_type"], True)}
-    except Exception as exc:
-        # py 3.10 doesn't have add_note
-        getattr(exc, 'add_note', lambda x: None)("In query named {meta["name"]!r}")
-        raise
-
-@overload
-def {meta["name"]}{_signature_for(meta, True, False)}:
-     ...
-@overload
-def {meta["name"]}{_signature_for(meta, False, True)}:
-    ...
-def {meta["name"]}{_signature_for(meta, True, True)}:
-{"\n".join(_triple_quote(comments, "    ")) if comments.strip() else "    # Add SQL comments after name: for a docstring\n"}
-    cursor: Union[apsw.Cursor, "apsw.AsyncCursor"] = executor.cursor() if isinstance(executor, apsw.Connection) else executor
-    vals = ChainMapRO()
-""")
-                if meta["args"]:
-                    res.append("    vals.maps.append({")
-                    for name in meta["args"]:
-                        res.append(f'        "{name}": {name},')
-                    res.append("    })")
-                if meta["locals"]:
-                    res.append("""    vals.maps.append(sys._getframe(1).f_locals)""")
-                res.append("    try:")
-                if _validate_template_string(body):
-                    res.append(f"        sql = template_expand({meta['name']}.template, vals)")
-                else:
-                    res.append(f"        sql = {meta['name']}.sql")
-                res.append("        if cursor.connection.is_async:")
-                res.append(f"            return _async_{meta['name']}(cursor, sql, vals)")
-                res.extend(_typed_results(meta["return_type"], False).splitlines())
-                res.append("    except Exception as exc:")
-                res.append("        # py 3.10 doesn't have add_note")
-                res.append(f"""        getattr(exc, 'add_note', lambda x: None)("In query named {meta["name"]!r}")""")
-                res.append("        raise")
-
-                res.append("")
-                res.append(f"{meta['name']}.{'template' if is_template else 'sql'} = \\")
-                res.extend(_triple_quote(body))
-                res.append("")
-
-                res.append("")
             case _:
                 raise ValueError(f"Unknown section {block}")
 
