@@ -205,11 +205,11 @@ def _gen_function(meta: dict[str, Any]) -> str:
             sig += f", {name}"
             match (details["annotation"], details["default"]):
                 case (None, _):
-                    sig += f': "apsw.SQLiteValue" = {details["default"]}'
+                    sig += f': "apsw.Binding" = {details["default"]}'
                 case (_, None):
                     sig += f": {details['annotation']}"
                 case (None, None):
-                    sig += ': "apsw.SQLiteValue"'
+                    sig += ': "apsw.Binding"'
                 case _:
                     sig += f": ({details['annotation']}) = {details['default']}"
     sig += ") -> "
