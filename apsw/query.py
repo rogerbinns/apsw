@@ -13,12 +13,12 @@ import sys
 import textwrap
 from string import Formatter
 from types import ModuleType
-from typing import Union, Any, assert_never
+from typing import Any
 
 """
 Provides Python access to SQLite queries in a separate file or string
 
-See https://rogerbinns.github.io/apsw/query.html for details
+See :doc:`query` for details
 """
 
 
@@ -47,7 +47,7 @@ class changes(int):
 
 
 class TooManyRows(Exception):
-    """More than one row was returned by the SQL"""
+    """More than one row was returned by the SQL, but at most one was expected"""
 
     pass
 
@@ -205,11 +205,11 @@ def _gen_function(meta: dict[str, Any]) -> str:
             sig += f", {name}"
             match (details["annotation"], details["default"]):
                 case (None, _):
-                    sig += f': "apsw.Binding" = {details["default"]}'
+                    sig += f': apsw.Binding = {details["default"]}'
                 case (_, None):
                     sig += f": {details['annotation']}"
                 case (None, None):
-                    sig += ': "apsw.Binding"'
+                    sig += ': apsw.Binding'
                 case _:
                     sig += f": ({details['annotation']}) = {details['default']}"
     sig += ") -> "
@@ -226,10 +226,10 @@ def _gen_function(meta: dict[str, Any]) -> str:
         both_sig += "apsw.AsyncCursor | apsw.Cursor"
 
         inner = """
-    async def async_inner():
+    async def async_inner() -> apsw.AsyncCursor:
         return await cursor.execute(sql, vals)
 
-    def sync_inner():
+    def sync_inner() -> apsw.Cursor:
         return cursor.execute(sql, vals)
 """
 
@@ -239,15 +239,13 @@ def _gen_function(meta: dict[str, Any]) -> str:
         both_sig += "None | Awaitable[None]"
 
         inner = """
-    async def async_inner():
+    async def async_inner() -> None:
         async for _ in await cursor.execute(sql, vals):
             pass
-        return None
 
-    def sync_inner():
+    def sync_inner() -> None:
         for _ in cursor.execute(sql, vals):
             pass
-        return None
 """
 
     elif isinstance(node, ast.Name) and node.id == "changes":
@@ -256,13 +254,13 @@ def _gen_function(meta: dict[str, Any]) -> str:
         both_sig += "changes | Awaitable[changes]"
 
         inner = """
-    async def async_inner():
+    async def async_inner() -> changes:
         count = cursor.connection.total_changes()
         async for _ in await cursor.execute(sql, vals):
             pass
         return cursor.connection.total_changes() - count
 
-    def sync_inner():
+    def sync_inner() -> changes:
         count = cursor.connection.total_changes()
         for _ in cursor.execute(sql, vals):
             pass
@@ -286,22 +284,22 @@ def _gen_function(meta: dict[str, Any]) -> str:
         both_sig += f"Awaitable[{l} | Literal[{r}]] | {l} | Literal[{r}]"
 
         inner = f"""
-    async def async_inner():
+    async def async_inner() -> {l} | Literal[{r}]:
         retval = _NotSet
         async for row in await cursor.execute(sql, vals):
             if retval is not _NotSet:
                 raise TooManyRows
             desc = cursor.get_description()
-            retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row)))
+            retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row, strict=True)))
         return {r} if retval is _NotSet else retval
 
-    def sync_inner():
+    def sync_inner() -> {l} | Literal[{r}]:
         retval = _NotSet
         for row in cursor.execute(sql, vals):
             if retval is not _NotSet:
                 raise TooManyRows
             desc = cursor.get_description()
-            retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row)))
+            retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row, strict=True)))
         return {r} if retval is _NotSet else retval
 """
 
@@ -312,24 +310,24 @@ def _gen_function(meta: dict[str, Any]) -> str:
         both_sig += f"Awaitable[{r}] | {r}"
 
         inner = f"""
-    async def async_inner():
+    async def async_inner() -> {r}:
         retval = _NotSet
         async for row in await cursor.execute(sql, vals):
             if retval is not _NotSet:
                 raise TooManyRows
             desc = cursor.get_description()
-            retval = {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))
+            retval = {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row, strict=True)))
         if retval is _NotSet:
             raise RowExpected
         return retval
 
-    def sync_inner():
+    def sync_inner() -> {r}:
         retval = _NotSet
         for row in cursor.execute(sql, vals):
             if retval is not _NotSet:
                 raise TooManyRows
             desc = cursor.get_description()
-            retval = {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))
+            retval = {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row, strict=True)))
         if retval is _NotSet:
             raise RowExpected
         return retval
@@ -342,15 +340,15 @@ def _gen_function(meta: dict[str, Any]) -> str:
         both_sig += f"AsyncIterator[{r}] | Iterator[{r}]"
 
         inner = f"""
-    async def async_inner():
+    async def async_inner() -> AsyncIterator[{r}]:
         async for row in await cursor.execute(sql, vals):
             desc = cursor.get_description()
-            yield {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))
+            yield {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row, strict=True)))
 
-    def sync_inner():
+    def sync_inner() -> Iterator[{r}]:
         for row in cursor.execute(sql, vals):
             desc = cursor.get_description()
-            yield {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row)))
+            yield {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row, strict=True)))
 """
     else:
         raise ValueError(f"Return not understood {ast.unparse(node)!r} ")
@@ -374,7 +372,7 @@ def {meta["name"]}{both_sig}:
             res.append(f'        "{name}": {name},')
         res.append("    })")
     if meta["locals"]:
-        res.append("""    vals.maps.append(sys._getframe(1).f_locals)""")
+        res.append("""    vals.maps.append(sys._getframe(1).f_locals) # type: ignore[attr-defined]  # noqa: SLF001""")
     if meta["is_template"]:
         res.append("    sql = template_expand(sql, vals)")
     res.append(inner)
@@ -453,8 +451,6 @@ class _Import_Hook(importlib.abc.MetaPathFinder):
             if sql_path.exists():
                 return importlib.util.spec_from_loader(fullname, _SQLSourceLoader(sql_path), origin=str(sql_path))
 
-        return None
-
 
 class _SQLSourceLoader(importlib.abc.SourceLoader):
     # This only handles one file at a time which is why all the
@@ -476,23 +472,31 @@ def _make_py_from_text(text: str) -> str:
     "Internal routine that converts SQL file to Python code"
     res: list[str] = []
 
+    unused_import = "# type: ignore[unused-import]  # pyright: ignore[reportUnusedImport]"
+
     res.append(
-        """\
+        f"""\
 
 # This code was generated by apsw.query from ::TODO:: fill this in
 # and also use $SOURCE_DATE_EPOCH for reproducible build
 
+# Some of the lines end up too long - that is ok
+#
+# ruff: noqa: E501
+# flake8: noqa: E501
+# pylint: disable=line-too-long
+
 # do not evaluate annotations at import time (default in Python 3.14+)
 from __future__ import annotations
 
-# some of the imports may not be used hence the noqa marking
+# some of the imports may not be used hence the noqa markings
 
-import sys # noqa:
-from typing import overload, Union
-from collections.abc import  Awaitable, Iterator, AsyncIterator # noqa:
+import sys  {unused_import}
+from typing import overload, Literal  {unused_import}
+from collections.abc import  Awaitable, Iterator, AsyncIterator  {unused_import}
 
 import apsw
-from apsw.query import ChainMapRO, template_expand, changes, TooManyRows, RowExpected #  noqa:
+from apsw.query import ChainMapRO, template_expand, changes, TooManyRows, RowExpected  {unused_import}
 
 _NotSet = object()
 "Sentinel for an unset value"
