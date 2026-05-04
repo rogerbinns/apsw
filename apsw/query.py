@@ -173,7 +173,7 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
                         res.append(", ")
                     res.append('"' + conv(value).replace('"', '""') + '"')
             elif spec == {"seq"}:
-                for i, v in enumerate(values):
+                for i, v in enumerate(value):
                     if i:
                         res.append(", ")
                     add_binding(conv(v))
@@ -185,6 +185,13 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
     if bindings:
         vars.maps.insert(0, bindings)
     return "".join(res)
+
+
+def _unwrap(node: ast.AST, name: str) -> str | None:
+    # If a name[foo], return str(inside) - "foo" in this example - else None
+    if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name) and node.value.id == name:
+        return ast.unparse(node.slice)
+    return None
 
 
 def _gen_function(meta: dict[str, Any]) -> str:
@@ -205,11 +212,11 @@ def _gen_function(meta: dict[str, Any]) -> str:
             sig += f", {name}"
             match (details["annotation"], details["default"]):
                 case (None, _):
-                    sig += f': apsw.Binding = {details["default"]}'
+                    sig += f": apsw.Binding = {details['default']}"
                 case (_, None):
                     sig += f": {details['annotation']}"
                 case (None, None):
-                    sig += ': apsw.Binding'
+                    sig += ": apsw.Binding"
                 case _:
                     sig += f": ({details['annotation']}) = {details['default']}"
     sig += ") -> "
@@ -270,8 +277,8 @@ def _gen_function(meta: dict[str, Any]) -> str:
     elif (
         isinstance(node, ast.BinOp)
         and isinstance(node.op, ast.BitOr)
-        and isinstance(node.left, ast.Name)
-        and isinstance(node.right, (ast.Constant, ast.Name))
+        and isinstance(node.left, (ast.Name, ast.Attribute))
+        and isinstance(node.right, (ast.Constant, ast.Name, ast.Subscript))
     ):
         # one row - return left
         # zero - return right
@@ -279,19 +286,19 @@ def _gen_function(meta: dict[str, Any]) -> str:
         l = ast.unparse(node.left)
         r = ast.unparse(node.right)
 
-        async_sig += f"Awaitable[{l} | Literal[{r}]]"
-        sync_sig += f"{l} | Literal[{r}]"
-        both_sig += f"Awaitable[{l} | Literal[{r}]] | {l} | Literal[{r}]"
+        async_sig += f"Awaitable[{l} | {r}]"
+        sync_sig += f"{l} | {r}"
+        both_sig += f"Awaitable[{l} | {r}] | {l} | {r}"
 
         inner = f"""
-    async def async_inner() -> {l} | Literal[{r}]:
+    async def async_inner() -> {l} | {r}:
         retval = _NotSet
         async for row in await cursor.execute(sql, vals):
             if retval is not _NotSet:
                 raise TooManyRows
             desc = cursor.get_description()
             retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row, strict=True)))
-        return {r} if retval is _NotSet else retval
+        return ({_unwrap(node.right, "Literal") or r}) if retval is _NotSet else retval
 
     def sync_inner() -> {l} | Literal[{r}]:
         retval = _NotSet
@@ -300,10 +307,10 @@ def _gen_function(meta: dict[str, Any]) -> str:
                 raise TooManyRows
             desc = cursor.get_description()
             retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row, strict=True)))
-        return {r} if retval is _NotSet else retval
+        return ({_unwrap(node.right, "Literal") or r}) if retval is _NotSet else retval
 """
 
-    elif isinstance(node, ast.Name):
+    elif isinstance(node, (ast.Name, ast.Attribute)):
         r = ast.unparse(node)
         async_sig += f"Awaitable[{r}]"
         sync_sig += r
@@ -333,24 +340,46 @@ def _gen_function(meta: dict[str, Any]) -> str:
         return retval
 """
 
-    elif isinstance(node, ast.List) and len(node.elts) == 1 and isinstance(node.elts[0], ast.Name):
-        r = ast.unparse(node.elts[0])
-        async_sig += f"AsyncIterator[{r}]"
-        sync_sig += f"Iterator[{r}]"
-        both_sig += f"AsyncIterator[{r}] | Iterator[{r}]"
+    elif (i := _unwrap(node, "Iterator")) is not None:
+        async_sig += f"AsyncIterator[{i}]"
+        sync_sig += f"Iterator[{i}]"
+        both_sig += f"AsyncIterator[{i}] | Iterator[{i}]"
 
         inner = f"""
-    async def async_inner() -> AsyncIterator[{r}]:
+    async def async_inner() -> AsyncIterator[{i}]:
         async for row in await cursor.execute(sql, vals):
             desc = cursor.get_description()
-            yield {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row, strict=True)))
+            yield {i}(row[0]) if len(desc) == 1 else {i}(**dict(zip((d[0] for d in desc), row, strict=True)))
 
-    def sync_inner() -> Iterator[{r}]:
+    def sync_inner() -> Iterator[{i}]:
         for row in cursor.execute(sql, vals):
             desc = cursor.get_description()
-            yield {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row, strict=True)))
+            yield {i}(row[0]) if len(desc) == 1 else {i}(**dict(zip((d[0] for d in desc), row, strict=True)))
 """
+
+    elif (l := _unwrap(node, "list")) is not None:
+        async_sig += f"list[{l}]"
+        sync_sig += f"list[{l}]"
+        both_sig += f"list[{l}]"
+
+        inner = f"""
+    async def async_inner() -> list[{l}]:
+        res = []
+        async for row in await cursor.execute(sql, vals):
+            desc = cursor.get_description()
+            res.append({l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row, strict=True))))
+        return res
+
+    def sync_inner() -> list[{l}]:
+        res = []
+        for row in cursor.execute(sql, vals):
+            desc = cursor.get_description()
+            res.append({l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row, strict=True))))
+        return res
+"""
+
     else:
+        breakpoint()
         raise ValueError(f"Return not understood {ast.unparse(node)!r} ")
 
     res.append(f"""
