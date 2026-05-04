@@ -90,6 +90,14 @@ class ChainMapRO:
 # thank inherit
 collections.abc.Mapping.register(ChainMapRO)
 
+def bind_sql(sql: str):
+    "Binds `sql` to a function"
+    def decorator(func: collections.abc.Callable) -> collections.abc.Callable:
+        func.sql = sql
+        return func
+    return decorator
+
+
 # only need the parse method
 _template_parse = Formatter().parse
 
@@ -389,6 +397,7 @@ def {meta["name"]}{async_sig}:
 @overload
 def {meta["name"]}{sync_sig}:
     ...
+@bind_sql({"\n".join(_triple_quote(meta["sql"]))})
 def {meta["name"]}{both_sig}:
 {"\n".join(_triple_quote(comments, "    ")) if comments else "    # Add -- SQL comments after name: line for a docstring\n"}
     cursor: apsw.Cursor | apsw.AsyncCursor = executor.cursor() if isinstance(executor, apsw.Connection) else executor
@@ -405,10 +414,7 @@ def {meta["name"]}{both_sig}:
     if meta["is_template"]:
         res.append("    sql = template_expand(sql, vals)")
     res.append(inner)
-    res.append(f"""    return async_inner() if cursor.connection.is_async else sync_inner()
-
-{meta["name"]}.sql = \\
-{"\n".join(_triple_quote(meta["sql"]))}
+    res.append("""    return async_inner() if cursor.connection.is_async else sync_inner()
 
 """)
 
@@ -525,7 +531,7 @@ from typing import overload, Literal  {unused_import}
 from collections.abc import  Awaitable, Iterator, AsyncIterator  {unused_import}
 
 import apsw
-from apsw.query import ChainMapRO, template_expand, changes, TooManyRows, RowExpected  {unused_import}
+from apsw.query import bind_sql, ChainMapRO, template_expand, changes, TooManyRows, RowExpected  {unused_import}
 
 _NotSet = object()
 "Sentinel for an unset value"
