@@ -1,39 +1,49 @@
-Query
-*****
+Query (Separating SQL from Python code)
+***************************************
 .. currentmodule:: apsw
 
-* SQLAlchemy for ORM / multi-database support
+The documentation and examples have SQL as Python strings, mixed in
+with Python code to make it clear what is happening.  With
+:mod:`apsw.query` your SQL is in a separate files that can be syntax
+checked and highlighted, with the module providing each SQL as a
+Python function.
 
+Overview
+--------
 
-Instead of mingling your SQL within your Python code, you can keep the
-SQL separate but easily access it from Python.
+Create as many SQL files as needed.  A convention is to use ``.sql`` as the
+extension. Each file has multiple sections of SQL.  For each section:
 
-.. note:: Python 3.14+ tstrings
-
-    Must mingle SQL with Python, executing SQL with variables
-    same as described in following, more detail at end of this
-    doc
-
-Each SQL file has multiple sections of SQL.  Each section:
-
-* Has a name - you call this name from Python
-* Automatically sync or async depending on Connection
-* (Optional) parameters, their types, and default values.
-  You can also say that caller's local variables are used
+* There is a name - you call this name from Python
+* Automatically sync or async depending on the Connection
+* SQL comments become docstrings for the Python
+* (Optional) Specify Python parameters, their types, and default values.
+* You can also say that caller's local variables are used
   similar to how ``f`` and ``t`` strings work.
-* (Optional) return type with automatic conversion.
-  (:ref:`query_returns`)
+* (Optional) Return type with many conversions, going beyond cursors
 * Can have as many SQL statements separated by ; as you need
 * Can be a template rather than pure SQL.  This allows
   Python expressions, sequences, and identifiers (eg column and table names)
-  which can't be specified as bindings.  (:ref:`query_templates`)
+  which can't be specified as bindings.
 
-When executing the SQL, variables can come from:
+You can also have sections that are Python code, such as
+:code:`import`, and types.
 
-* (Optional) parameters specified
-* (Optional) locals of caller
+Python
+------
 
-Variables used for:
+
+
+  * file path
+  * importlib.resources (``__name__``, relative file path)
+  * regular import that looks for .sql extension instead of .py
+  * Can get Python at runtime or build time
+
+
+
+
+Variables used for
+------------------
 
 * Bindings (default)
 * Identifiers (automatically correctly quoted) such as column and
@@ -41,12 +51,24 @@ Variables used for:
 * Expressions like in fstrings
 * Sequences eg for ``WHERE column IN (`` `sequence` ``)``
 
-* SQL can be found via:
 
-  * file path
-  * importlib.resources (``__name__``, relative file path)
-  * regular import that looks for .sql extension instead of .py
-  * Can get Python at runtime or build time
+
+
+
+Tips
+----
+
+* Contextvar for executor
+* SQLAlchemy for ORM / multi-database support
+* sqlglot for multi-sql support
+
+Python 3.14+ tstrings
+---------------------
+
+Must mingle SQL with Python, executing SQL with variables
+same as described in following, more detail at end of this
+doc
+
 
 
 .. query_templates:
@@ -188,3 +210,10 @@ TODO mention invoking at runtime vs AOT, ``python3 -m apsw.query`` etc
     :members:
     :undoc-members:
     :member-order: bysource
+
+Testing
+-------
+
+.. automodule:: example2
+    :members:
+    :undoc-members:
