@@ -14,7 +14,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>typing &mdash; APSW 3.53.0.0 documentation</title>
+  <title>typing &mdash; APSW 3.53.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/apsw.css?v=ad5bd102" />
@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/_modules/typing.html" />
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5ce78374"></script>
+      <script src="../_static/documentation_options.js?v=2d32c92d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -1142,8 +1142,10 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_unpacked_typevartuple</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="c1"># Need to check &#39;is True&#39; here</span>
+    <span class="c1"># See: https://github.com/python/cpython/issues/137706</span>
     <span class="k">return</span> <span class="p">((</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">type</span><span class="p">))</span> <span class="ow">and</span>
-            <span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;__typing_is_unpacked_typevartuple__&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;__typing_is_unpacked_typevartuple__&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_typevar_like</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1213,7 +1215,7 @@
     <span class="n">params</span> <span class="o">=</span> <span class="n">alias</span><span class="o">.</span><span class="n">__parameters__</span>
     <span class="n">i</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_default</span><span class="p">():</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__default__</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__default__</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Too few arguments for </span><span class="si">{</span><span class="n">alias</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="c1"># Special case where Z[[int, str, bool]] == Z[int, str, bool] in PEP 612.</span>
@@ -1258,14 +1260,26 @@
                 <span class="sa">f</span><span class="s2">&quot;Parameters to </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">[...] must all be unique&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Subscripting a regular Generic subclass.</span>
-        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__parameters__</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__parameters__</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">init_subclass</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;__init_subclass__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">init_subclass</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="kc">None</span><span class="p">,</span> <span class="n">Generic</span><span class="o">.</span><span class="n">__init_subclass__</span><span class="p">}:</span>
+                <span class="n">e</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Note: this exception may have been caused by &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">init_subclass</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">!r}</span><span class="s2"> (or the &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;&#39;__init_subclass__&#39; method on a superclass) not &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;calling &#39;super().__init_subclass__()&#39;&quot;</span>
+                <span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
             <span class="n">prepare</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="s1">&#39;__typing_prepare_subst__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">prepare</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">args</span> <span class="o">=</span> <span class="n">prepare</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
         <span class="n">_check_generic_specialization</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
         <span class="n">new_args</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">new_arg</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__parameters__</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">new_arg</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">TypeVarTuple</span><span class="p">):</span>
                 <span class="n">new_args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">new_arg</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1649,9 +1663,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_nparams</span> <span class="o">=</span> <span class="n">nparams</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_defaults</span> <span class="o">=</span> <span class="n">defaults</span>
         <span class="k">if</span> <span class="n">origin</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">==</span> <span class="s1">&#39;builtins&#39;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;A generic version of </span><span class="si">{</span><span class="n">origin</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s1">.&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Deprecated alias to </span><span class="si">{</span><span class="n">origin</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s1">.&#39;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;A generic version of </span><span class="si">{</span><span class="n">origin</span><span class="o">.</span><span class="vm">__module__</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">origin</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s1">.&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Deprecated alias to </span><span class="si">{</span><span class="n">origin</span><span class="o">.</span><span class="vm">__module__</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">origin</span><span class="o">.</span><span class="vm">__qualname__</span><span class="si">}</span><span class="s1">.&#39;</span>
 
     <span class="nd">@_tp_cache</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
@@ -3966,7 +3980,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Apr 10, 2026.
+      <span class="lastupdated">Last updated on May 05, 2026.
       </span></p>
   </div>
 

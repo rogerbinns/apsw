@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>sqlite3 module differences &mdash; APSW 3.53.0.0 documentation</title>
+  <title>sqlite3 module differences &mdash; APSW 3.53.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/pysqlite.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=5ce78374"></script>
+      <script src="_static/documentation_options.js?v=2d32c92d"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -87,6 +87,7 @@
 <li class="toctree-l1"><a class="reference internal" href="extra.html">SQLite extra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dbapi.html">DBAPI notes</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">sqlite3 module differences</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#apsw-is-complete">APSW is complete</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-apsw-does-better">What APSW does better</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-sqlite3-does-better">What sqlite3 does better</a></li>
 </ul>
@@ -146,6 +147,22 @@ independence rather than DBAPI.  Use <a class="reference external" href="https:/
 your needs are simple, and you don’t want to use SQLite specific
 features, and want to easily switch to other databases.</p>
 </div>
+<section id="apsw-is-complete">
+<h2>APSW is complete<a class="headerlink" href="#apsw-is-complete" title="Link to this heading"></a></h2>
+<p>Using APSW gets you everything, with no need for additional
+dependencies.</p>
+<ul class="simple">
+<li><p>The entire SQLite API</p></li>
+<li><p>All functionality supported in regular and <a class="reference internal" href="async.html"><span class="doc">async</span></a>
+usage</p></li>
+<li><p><a class="reference internal" href="apsw.html#type-stubs"><span class="std std-ref">Type stubs</span></a> are included</p></li>
+<li><p>PyPI builds include the SQLite library and <a class="reference internal" href="extra.html"><span class="doc">extra</span></a>
+- all the SQLite extensions and command line tools</p></li>
+<li><p>Pythonic APIs for extensions that have C APIs</p></li>
+<li><p>Various Python APIs for convenience, developer productivity,
+and diagnostics</p></li>
+</ul>
+</section>
 <section id="what-apsw-does-better">
 <h2>What APSW does better<a class="headerlink" href="#what-apsw-does-better" title="Link to this heading"></a></h2>
 <p>APSW has the following enhancements/differences over the sqlite3
@@ -327,7 +344,7 @@ libraries that abstract away the database layer.</p></li>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Apr 10, 2026.
+      <span class="lastupdated">Last updated on May 05, 2026.
       </span></p>
   </div>
 

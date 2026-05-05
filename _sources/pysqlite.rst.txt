@@ -27,6 +27,21 @@ other databases.  Consequently it does hide some of SQLite's nuances.
    your needs are simple, and you don't want to use SQLite specific
    features, and want to easily switch to other databases.
 
+APSW is complete
+================
+
+Using APSW gets you everything, with no need for additional
+dependencies.
+
+* The entire SQLite API
+* All functionality supported in regular and :doc:`async <async>`
+  usage
+* :ref:`Type stubs <type_stubs>` are included
+* PyPI builds include the SQLite library and :doc:`extra <extra>`
+  - all the SQLite extensions and command line tools
+* Pythonic APIs for extensions that have C APIs
+* Various Python APIs for convenience, developer productivity,
+  and diagnostics
 
 What APSW does better
 =====================

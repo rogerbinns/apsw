@@ -10,8 +10,19 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
-3.53.0
-======
+3.53.1.0
+========
+
+Async cursor iteration:  Cursor attributes like
+:attr:`~Cursor.bindings_names`, :attr:`~Cursor.sql`, and
+:attr:`~Cursor.is_readonly` will always correctly reflect the current
+iterated row.  **Backwards incompatible change**:
+:attr:`~Cursor.description`, :meth:`~Cursor.get_description`, and
+:attr:`~Cursor.description_full` are now values - ie you can just use
+them directly and should not :code:`await` them.
+
+3.53.0.0
+========
 
 :class:`ChangesetBuilder` adds :meth:`ChangesetBuilder.add_insert`,
 :meth:`ChangesetBuilder.add_delete`,

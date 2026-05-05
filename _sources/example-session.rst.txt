@@ -211,29 +211,29 @@ a change or patch set is equivalent to.
 
     len(patchset)=241
     patchset
-    UPDATE items SET description='high gloss' WHERE id = 'F9764E';
-    INSERT INTO items(id, name, description) VALUES ('71D407', 'microwave', NULL);
-    INSERT INTO items(id, name, description) VALUES ('DA30B5', 'kitchen walls', NULL);
-    /* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('71D407', '825BE0', 'system');
-    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('DA30B5', '414ABB', NULL);
-    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('DA30B5', '92F84E', NULL);
-    /* indirect */ DELETE FROM item_tag_link WHERE item_id = 'DE2DFC' AND tag_id = '7733DE';
-    /* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('DA30B5', '825BE0', 'system');
-    UPDATE tags SET cost_centre=NULL WHERE id = '825BE0';
-    DELETE FROM tags WHERE id = '7733DE';
+    INSERT INTO items(id, name, description) VALUES ('CB939E', 'kitchen walls', NULL);
+    INSERT INTO items(id, name, description) VALUES ('8D7EAA', 'microwave', NULL);
+    UPDATE items SET description='high gloss' WHERE id = '538330';
+    /* indirect */ DELETE FROM item_tag_link WHERE item_id = 'FF62A9' AND tag_id = '0DF6AE';
+    /* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('8D7EAA', 'CDF065', 'system');
+    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('CB939E', '20CE0A', NULL);
+    /* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('CB939E', 'CDF065', 'system');
+    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('CB939E', '58EA1C', NULL);
+    DELETE FROM tags WHERE id = '0DF6AE';
+    UPDATE tags SET cost_centre=NULL WHERE id = 'CDF065';
     
     len(changeset)=274
     changeset
-    UPDATE items SET description='high gloss' WHERE id = 'F9764E' AND description IS NULL;
-    INSERT INTO items(id, name, description) VALUES ('71D407', 'microwave', NULL);
-    INSERT INTO items(id, name, description) VALUES ('DA30B5', 'kitchen walls', NULL);
-    /* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('71D407', '825BE0', 'system');
-    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('DA30B5', '414ABB', NULL);
-    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('DA30B5', '92F84E', NULL);
-    /* indirect */ DELETE FROM item_tag_link WHERE item_id = 'DE2DFC' AND tag_id = '7733DE' AND reason IS NULL;
-    /* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('DA30B5', '825BE0', 'system');
-    UPDATE tags SET cost_centre=NULL WHERE id = '825BE0' AND cost_centre = 100;
-    DELETE FROM tags WHERE id = '7733DE' AND label = 'battery' AND cost_centre = 300;
+    INSERT INTO items(id, name, description) VALUES ('CB939E', 'kitchen walls', NULL);
+    INSERT INTO items(id, name, description) VALUES ('8D7EAA', 'microwave', NULL);
+    UPDATE items SET description='high gloss' WHERE id = '538330' AND description IS NULL;
+    /* indirect */ DELETE FROM item_tag_link WHERE item_id = 'FF62A9' AND tag_id = '0DF6AE' AND reason IS NULL;
+    /* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('8D7EAA', 'CDF065', 'system');
+    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('CB939E', '20CE0A', NULL);
+    /* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('CB939E', 'CDF065', 'system');
+    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('CB939E', '58EA1C', NULL);
+    DELETE FROM tags WHERE id = '0DF6AE' AND label = 'battery' AND cost_centre = 300;
+    UPDATE tags SET cost_centre=NULL WHERE id = 'CDF065' AND cost_centre = 100;
     
 
 
@@ -262,16 +262,16 @@ where you store changesets allowing for a later undo or redo.
 .. code-block:: output
 
     undo
-    UPDATE items SET description=NULL WHERE id = 'F9764E' AND description = 'high gloss';
-    DELETE FROM items WHERE id = '71D407' AND name = 'microwave' AND description IS NULL;
-    DELETE FROM items WHERE id = 'DA30B5' AND name = 'kitchen walls' AND description IS NULL;
-    /* indirect */ DELETE FROM item_tag_link WHERE item_id = '71D407' AND tag_id = '825BE0' AND reason = 'system';
-    DELETE FROM item_tag_link WHERE item_id = 'DA30B5' AND tag_id = '414ABB' AND reason IS NULL;
-    DELETE FROM item_tag_link WHERE item_id = 'DA30B5' AND tag_id = '92F84E' AND reason IS NULL;
-    /* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('DE2DFC', '7733DE', NULL);
-    /* indirect */ DELETE FROM item_tag_link WHERE item_id = 'DA30B5' AND tag_id = '825BE0' AND reason = 'system';
-    UPDATE tags SET cost_centre=100 WHERE id = '825BE0' AND cost_centre IS NULL;
-    INSERT INTO tags(id, label, cost_centre) VALUES ('7733DE', 'battery', 300);
+    DELETE FROM items WHERE id = 'CB939E' AND name = 'kitchen walls' AND description IS NULL;
+    DELETE FROM items WHERE id = '8D7EAA' AND name = 'microwave' AND description IS NULL;
+    UPDATE items SET description=NULL WHERE id = '538330' AND description = 'high gloss';
+    /* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('FF62A9', '0DF6AE', NULL);
+    /* indirect */ DELETE FROM item_tag_link WHERE item_id = '8D7EAA' AND tag_id = 'CDF065' AND reason = 'system';
+    DELETE FROM item_tag_link WHERE item_id = 'CB939E' AND tag_id = '20CE0A' AND reason IS NULL;
+    /* indirect */ DELETE FROM item_tag_link WHERE item_id = 'CB939E' AND tag_id = 'CDF065' AND reason = 'system';
+    DELETE FROM item_tag_link WHERE item_id = 'CB939E' AND tag_id = '58EA1C' AND reason IS NULL;
+    INSERT INTO tags(id, label, cost_centre) VALUES ('0DF6AE', 'battery', 300);
+    UPDATE tags SET cost_centre=100 WHERE id = 'CDF065' AND cost_centre IS NULL;
     
 
 
@@ -380,38 +380,17 @@ going to undo our earlier changes.
 
     Exception exc=AbortError('query aborted')
     conflict SQLITE_CHANGESET_DATA change.op='UPDATE' change.opcode=23 
-     change.conflict=('F9764E', 'bathroom ceiling', 'Orange flavour') 
+     change.conflict=('538330', 'bathroom ceiling', 'Orange flavour') 
      change.name='items' change.column_count=3 
      change.fk_conflicts=None change.indirect=False 
-     change.old=('F9764E', <apsw.no_change>, 'high gloss')
+     change.old=('538330', <apsw.no_change>, 'high gloss')
      change.new=(<apsw.no_change>, <apsw.no_change>, None)
     
     conflict SQLITE_CHANGESET_CONSTRAINT change.op='DELETE' change.opcode=9 
      change.conflict=None 
      change.name='items' change.column_count=3 
      change.fk_conflicts=None change.indirect=False 
-     change.old=('71D407', 'microwave', None)
-     change.new=None
-    
-    filter_change excluding change.op='DELETE' change.opcode=9 
-     change.conflict=None 
-     change.name='item_tag_link' change.column_count=3 
-     change.fk_conflicts=None change.indirect=True 
-     change.old=('71D407', '825BE0', 'system')
-     change.new=None
-    
-    conflict SQLITE_CHANGESET_NOTFOUND change.op='DELETE' change.opcode=9 
-     change.conflict=None 
-     change.name='item_tag_link' change.column_count=3 
-     change.fk_conflicts=None change.indirect=False 
-     change.old=('DA30B5', '414ABB', None)
-     change.new=None
-    
-    conflict SQLITE_CHANGESET_NOTFOUND change.op='DELETE' change.opcode=9 
-     change.conflict=None 
-     change.name='item_tag_link' change.column_count=3 
-     change.fk_conflicts=None change.indirect=False 
-     change.old=('DA30B5', '92F84E', None)
+     change.old=('8D7EAA', 'microwave', None)
      change.new=None
     
     filter_change excluding change.op='INSERT' change.opcode=18 
@@ -419,20 +398,41 @@ going to undo our earlier changes.
      change.name='item_tag_link' change.column_count=3 
      change.fk_conflicts=None change.indirect=True 
      change.old=None
-     change.new=('DE2DFC', '7733DE', None)
+     change.new=('FF62A9', '0DF6AE', None)
     
     filter_change excluding change.op='DELETE' change.opcode=9 
      change.conflict=None 
      change.name='item_tag_link' change.column_count=3 
      change.fk_conflicts=None change.indirect=True 
-     change.old=('DA30B5', '825BE0', 'system')
+     change.old=('8D7EAA', 'CDF065', 'system')
+     change.new=None
+    
+    conflict SQLITE_CHANGESET_NOTFOUND change.op='DELETE' change.opcode=9 
+     change.conflict=None 
+     change.name='item_tag_link' change.column_count=3 
+     change.fk_conflicts=None change.indirect=False 
+     change.old=('CB939E', '20CE0A', None)
+     change.new=None
+    
+    filter_change excluding change.op='DELETE' change.opcode=9 
+     change.conflict=None 
+     change.name='item_tag_link' change.column_count=3 
+     change.fk_conflicts=None change.indirect=True 
+     change.old=('CB939E', 'CDF065', 'system')
+     change.new=None
+    
+    conflict SQLITE_CHANGESET_NOTFOUND change.op='DELETE' change.opcode=9 
+     change.conflict=None 
+     change.name='item_tag_link' change.column_count=3 
+     change.fk_conflicts=None change.indirect=False 
+     change.old=('CB939E', '58EA1C', None)
      change.new=None
     
     failed
-    UPDATE items SET description=NULL WHERE id = 'F9764E' AND description = 'high gloss';
-    DELETE FROM items WHERE id = '71D407' AND name = 'microwave' AND description IS NULL;
-    DELETE FROM item_tag_link WHERE item_id = 'DA30B5' AND tag_id = '414ABB' AND reason IS NULL;
-    DELETE FROM item_tag_link WHERE item_id = 'DA30B5' AND tag_id = '92F84E' AND reason IS NULL;
+    DELETE FROM items WHERE id = '8D7EAA' AND name = 'microwave' AND description IS NULL;
+    UPDATE items SET description=NULL WHERE id = '538330' AND description = 'high gloss';
+    DELETE FROM item_tag_link WHERE item_id = 'CB939E' AND tag_id = '20CE0A' AND reason IS NULL;
+    DELETE FROM item_tag_link WHERE item_id = 'CB939E' AND tag_id = '58EA1C' AND reason IS NULL;
     
 
 
@@ -559,15 +559,15 @@ for these more complicated situations.
     ╰──────────────────┴─────────────────┴─────────────╯
     
     Alice changeset
-    UPDATE tags SET label='painting' WHERE id = '92F84E' AND label = 'paint';
-    INSERT INTO tags(id, label, cost_centre) VALUES ('A38F62', 'approval needed', NULL);
-    INSERT INTO items(id, name, description) VALUES ('BB0CAD', 'storage closet', 'main storage space');
-    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('BB0CAD', 'A38F62', NULL);
+    INSERT INTO tags(id, label, cost_centre) VALUES ('A244F4', 'approval needed', NULL);
+    UPDATE tags SET label='painting' WHERE id = '58EA1C' AND label = 'paint';
+    INSERT INTO items(id, name, description) VALUES ('9D4FA5', 'storage closet', 'main storage space');
+    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('9D4FA5', 'A244F4', NULL);
     
     Bob changseset
-    UPDATE tags SET cost_centre='150' WHERE id = '8FD135' AND cost_centre = 145;
-    INSERT INTO items(id, name, description) VALUES ('07C7AF', 'storage B', NULL);
-    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('07C7AF', '8FD135', NULL);
+    UPDATE tags SET cost_centre='150' WHERE id = 'E4A0AC' AND cost_centre = 145;
+    INSERT INTO items(id, name, description) VALUES ('38426F', 'storage B', NULL);
+    INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('38426F', 'E4A0AC', NULL);
     
 
 
@@ -637,11 +637,11 @@ The second part is making our own changes.
 .. code-block:: output
 
     Only items table changes
-    INSERT INTO items(id, name, description) VALUES ('07C7AF', 'storage B', NULL);
-    UPDATE items SET description='high gloss' WHERE id = 'F9764E' AND description IS NULL;
-    INSERT INTO items(id, name, description) VALUES ('71D407', 'microwave', NULL);
-    INSERT INTO items(id, name, description) VALUES ('DA30B5', 'kitchen walls', NULL);
-    INSERT INTO items(id, name, description) VALUES ('BB0CAD', 'storage closet', 'main storage space');
+    INSERT INTO items(id, name, description) VALUES ('CB939E', 'kitchen walls', NULL);
+    INSERT INTO items(id, name, description) VALUES ('8D7EAA', 'microwave', NULL);
+    INSERT INTO items(id, name, description) VALUES ('9D4FA5', 'storage closet', 'main storage space');
+    INSERT INTO items(id, name, description) VALUES ('38426F', 'storage B', NULL);
+    UPDATE items SET description='high gloss' WHERE id = '538330' AND description IS NULL;
     
     Manual builder
     /* indirect */ INSERT INTO manual(one, two, three, four, five) VALUES ('one', 1, 1.1, X'010101', NULL);
@@ -720,8 +720,8 @@ chunks, such as with blobs, files, or network connections.
 .. code-block:: output
 
     default chunk size 1024
-    Before estimate session.changeset_size=278
-    After estimate session.changeset_size=65538
+    Before estimate session.changeset_size=281
+    After estimate session.changeset_size=65541
     Output file size is 65387
     Number of writes 27
     Number of reads 65

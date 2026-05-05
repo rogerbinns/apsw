@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Async Example/Tour &mdash; APSW 3.53.0.0 documentation</title>
+  <title>Async Example/Tour &mdash; APSW 3.53.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/example-async.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=5ce78374"></script>
+      <script src="_static/documentation_options.js?v=2d32c92d"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -381,12 +381,12 @@ all the frameworks.</p>
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cancellation</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">got zero division error after 0.000152 seconds</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">got zero division error after 0.000159 seconds</span>
 <span class="go">task1.done()=True task1.cancelled()=True</span>
 <span class="go">task2.done()=True task2.cancelled()=True</span>
 <span class="go">task3.done()=True task3.cancelled()=True</span>
 <span class="go">task4.done()=True task4.cancelled()=False</span>
-<span class="go">After 0.000161 seconds, there are 212 registered SQLite functions</span>
+<span class="go">After 0.000254 seconds, there are 212 registered SQLite functions</span>
 </pre></div>
 </div>
 </section>
@@ -464,8 +464,8 @@ exceptions raised on timeout.</p>
 <span class="n">trio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">timeouts</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Got async function TooSlowError after 0.501281 seconds</span>
-<span class="go">Got sync function TooSlowError after 1.001829 seconds</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Got async function TooSlowError after 0.501223 seconds</span>
+<span class="go">Got sync function TooSlowError after 1.002023 seconds</span>
 </pre></div>
 </div>
 </section>
@@ -546,7 +546,7 @@ final result.  Use <a class="reference internal" href="connection.html#apsw.Conn
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">rows=1</span>
-<span class="go">Dump is 747 chars starting &quot;-- SQLite dump (by APSW 3.53.0.0)\n-- S</span>
+<span class="go">Dump is 747 chars starting &quot;-- SQLite dump (by APSW 3.53.1.0)\n-- S</span>
 </pre></div>
 </div>
 </section>
@@ -703,7 +703,7 @@ transaction control.</p>
 <span class="go">  DEL 2 (1)</span>
 <span class="go">  DEL 3 (2)</span>
 <span class="go">  DEL 4 (3)</span>
-<span class="go">    Time: 0.000  Changes: 4</span>
+<span class="go">    Time: 0.001  Changes: 4</span>
 <span class="go">&gt; COMMIT</span>
 <span class="go"> !COMMIT</span>
 <span class="go">    Time: 0.000</span>
@@ -769,9 +769,9 @@ transaction control.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">thread (async event loop)</span>
-<span class="go">                     Process CPU consumption 0.015</span>
-<span class="go">                                  Wall clock 0.516</span>
-<span class="go">                        Page faults - no I/O 3</span>
+<span class="go">                     Process CPU consumption 0.018</span>
+<span class="go">                                  Wall clock 0.518</span>
+<span class="go">                        Page faults - no I/O 2</span>
 <span class="go">                  Voluntary context switches 4</span>
 <span class="go">                      SQLite full table scan 1,365</span>
 <span class="go">                      SQLite sort operations 2</span>
@@ -784,11 +784,11 @@ transaction control.</p>
 <span class="go">                     SQLite statement memory 17,080</span>
 
 <span class="go">process (including background SQLite worker)</span>
-<span class="go">                     Process CPU consumption 0.015</span>
-<span class="go">                                  Wall clock 0.515</span>
-<span class="go">                Involuntary context switches 1</span>
-<span class="go">                  Voluntary context switches 8</span>
-<span class="go">                       CPU time in user mode 0.015</span>
+<span class="go">                     Process CPU consumption 0.024</span>
+<span class="go">                                  Wall clock 0.525</span>
+<span class="go">                Involuntary context switches 22</span>
+<span class="go">                  Voluntary context switches 9</span>
+<span class="go">                       CPU time in user mode 0.024</span>
 <span class="go">                      SQLite full table scan 1,365</span>
 <span class="go">                      SQLite sort operations 2</span>
 <span class="go">                        SQLite vm operations 1,015,353</span>
@@ -1060,7 +1060,7 @@ connection.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Apr 10, 2026.
+      <span class="lastupdated">Last updated on May 05, 2026.
       </span></p>
   </div>
 

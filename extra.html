@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SQLite extra &mdash; APSW 3.53.0.0 documentation</title>
+  <title>SQLite extra &mdash; APSW 3.53.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/extra.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=5ce78374"></script>
+      <script src="_static/documentation_options.js?v=2d32c92d"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -282,59 +282,51 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
-<th class="head"><p>Doc</p></th>
 <th class="head"><p>Description</p></th>
 <th class="head"><p>Registers</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>amatch</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2famatch.c">link</a></p></td>
+<tr class="row-even"><td><p>amatch (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2famatch.c">doc</a>)</p></td>
 <td><p>Approximate matches virtual table</p></td>
 <td><ul class="simple">
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">approximate_match</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>anycollseq</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fanycollseq.c">link</a></p></td>
+<tr class="row-odd"><td><p>anycollseq (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fanycollseq.c">doc</a>)</p></td>
 <td><p>Fake fallback collating function for any unknown collating sequence</p></td>
 <td><p>Fallback collation</p></td>
 </tr>
-<tr class="row-even"><td><p>appendvfs</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fappendvfs.c">link</a></p></td>
+<tr class="row-even"><td><p>appendvfs (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fappendvfs.c">doc</a>)</p></td>
 <td><p>A VFS shim that allows an SQLite database to be appended onto the end of some other file, such as an executable</p></td>
 <td><ul class="simple">
 <li><p>VFS: <code class="code docutils literal notranslate"><span class="pre">apndvfs</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>base64</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fbase64.c">link</a></p></td>
+<tr class="row-odd"><td><p>base64 (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fbase64.c">doc</a>)</p></td>
 <td><p>Convert either direction between base64 blob and text</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">base64</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>base85</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fbase85.c">link</a></p></td>
+<tr class="row-even"><td><p>base85 (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fbase85.c">doc</a>)</p></td>
 <td><p>Convert either direction between base85 blob and text</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">base85</span></code> <code class="code docutils literal notranslate"><span class="pre">is_base85</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>btreeinfo</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fbtreeinfo.c">link</a></p></td>
+<tr class="row-odd"><td><p>btreeinfo (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fbtreeinfo.c">doc</a>)</p></td>
 <td><p>btreeinfo virtual table that shows information about all btrees in an SQLite database file</p></td>
 <td><ul class="simple">
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">sqlite_btreeinfo</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>cksumvfs</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/cksumvfs.html">link</a></p></td>
+<tr class="row-even"><td><p>cksumvfs (<a class="reference external" href="https://sqlite.org/cksumvfs.html">doc</a>)</p></td>
 <td><p>A VFS shim that writes a checksum on each page of an SQLite database file</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">verify_checksum</span></code></p></li>
@@ -342,40 +334,35 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>closure</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fclosure.c">link</a></p></td>
+<tr class="row-odd"><td><p>closure (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fclosure.c">doc</a>)</p></td>
 <td><p>A virtual table that finds the transitive closure of a parent/child relationship in a real table</p></td>
 <td><ul class="simple">
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">transitive_closure</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>completion</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/completion.html">link</a></p></td>
+<tr class="row-even"><td><p>completion (<a class="reference external" href="https://sqlite.org/completion.html">doc</a>)</p></td>
 <td><p>A virtual table that returns suggested completions for a partial SQL input</p></td>
 <td><ul class="simple">
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">completion</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>compress</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fcompress.c">link</a></p></td>
+<tr class="row-odd"><td><p>compress (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fcompress.c">doc</a>)</p></td>
 <td><p>SQL compression functions</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">compress</span></code> <code class="code docutils literal notranslate"><span class="pre">uncompress</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>csv</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/csv.html">link</a></p></td>
+<tr class="row-even"><td><p>csv (<a class="reference external" href="https://sqlite.org/csv.html">doc</a>)</p></td>
 <td><p>A virtual table for reading CSV files</p></td>
 <td><ul class="simple">
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">csv</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>decimal</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fdecimal.c">link</a></p></td>
+<tr class="row-odd"><td><p>decimal (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fdecimal.c">doc</a>)</p></td>
 <td><p>Routines to implement arbitrary-precision decimal math</p></td>
 <td><ul class="simple">
 <li><p>Collation: <code class="code docutils literal notranslate"><span class="pre">decimal</span></code></p></li>
@@ -383,16 +370,14 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>eval</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2feval.c">link</a></p></td>
+<tr class="row-even"><td><p>eval (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2feval.c">doc</a>)</p></td>
 <td><p>Implements SQL function eval() which runs SQL statements recursively</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">eval</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>fileio</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2ffileio.c">link</a></p></td>
+<tr class="row-odd"><td><p>fileio (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2ffileio.c">doc</a>)</p></td>
 <td><p>Implements SQL functions readfile() and writefile(), and eponymous virtual type ‘fsdir’</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">lsmode</span></code> <code class="code docutils literal notranslate"><span class="pre">readfile</span></code> <code class="code docutils literal notranslate"><span class="pre">realpath</span></code> <code class="code docutils literal notranslate"><span class="pre">writefile</span></code></p></li>
@@ -400,48 +385,42 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>fuzzer</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2ffuzzer.c">link</a></p></td>
+<tr class="row-even"><td><p>fuzzer (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2ffuzzer.c">doc</a>)</p></td>
 <td><p>Virtual table that generates variations on an input word at increasing edit distances from the original</p></td>
 <td><ul class="simple">
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">fuzzer</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>ieee754</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fieee754.c">link</a></p></td>
+<tr class="row-odd"><td><p>ieee754 (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fieee754.c">doc</a>)</p></td>
 <td><p>functions for the exact display* and input of IEEE754 Binary64 floating-point numbers</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">ieee754</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_exponent</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_from_blob</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_from_int</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_inc</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_mantissa</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_to_blob</span></code> <code class="code docutils literal notranslate"><span class="pre">ieee754_to_int</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>memstat</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/memstat.html">link</a></p></td>
+<tr class="row-even"><td><p>memstat (<a class="reference external" href="https://sqlite.org/memstat.html">doc</a>)</p></td>
 <td><p>Provides SQL access to the sqlite3_status64() and sqlite3_db_status() interfaces</p></td>
 <td><ul class="simple">
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">sqlite_memstat</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>nextchar</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fnextchar.c">link</a></p></td>
+<tr class="row-odd"><td><p>nextchar (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fnextchar.c">doc</a>)</p></td>
 <td><p>Finds all valid ‘next’ characters for a string given a vocabulary</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">next_char</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>noop</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fnoop.c">link</a></p></td>
+<tr class="row-even"><td><p>noop (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fnoop.c">doc</a>)</p></td>
 <td><p>Implements noop() functions useful for testing</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">multitype_text</span></code> <code class="code docutils literal notranslate"><span class="pre">noop</span></code> <code class="code docutils literal notranslate"><span class="pre">noop_do</span></code> <code class="code docutils literal notranslate"><span class="pre">noop_i</span></code> <code class="code docutils literal notranslate"><span class="pre">noop_nd</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>prefixes</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fprefixes.c">link</a></p></td>
+<tr class="row-odd"><td><p>prefixes (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fprefixes.c">doc</a>)</p></td>
 <td><p>Table valued function providing all prefixes of a string</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">prefix_length</span></code></p></li>
@@ -449,24 +428,21 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>randomjson</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2frandomjson.c">link</a></p></td>
+<tr class="row-even"><td><p>randomjson (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2frandomjson.c">doc</a>)</p></td>
 <td><p>Generates random json objects</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">random_json</span></code> <code class="code docutils literal notranslate"><span class="pre">random_json5</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>regexp</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fregexp.c">link</a></p></td>
+<tr class="row-odd"><td><p>regexp (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fregexp.c">doc</a>)</p></td>
 <td><p>Compact reasonably efficient posix extended regular expression matcher</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">regexpi</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>rot13</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2frot13.c">link</a></p></td>
+<tr class="row-even"><td><p>rot13 (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2frot13.c">doc</a>)</p></td>
 <td><p>rot13 function and collating sequence</p></td>
 <td><ul class="simple">
 <li><p>Collation: <code class="code docutils literal notranslate"><span class="pre">rot13</span></code></p></li>
@@ -474,24 +450,21 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>sha1</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fsha1.c">link</a></p></td>
+<tr class="row-odd"><td><p>sha1 (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fsha1.c">doc</a>)</p></td>
 <td><p>SHA1 hash and query results hash</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">sha1</span></code> <code class="code docutils literal notranslate"><span class="pre">sha1_query</span></code> <code class="code docutils literal notranslate"><span class="pre">sha1b</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>shathree</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fshathree.c">link</a></p></td>
+<tr class="row-even"><td><p>shathree (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fshathree.c">doc</a>)</p></td>
 <td><p>SHA3 hash and query results hash</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">sha3</span></code> <code class="code docutils literal notranslate"><span class="pre">sha3_agg</span></code> <code class="code docutils literal notranslate"><span class="pre">sha3_query</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>spellfix</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/spellfix1.html">link</a></p></td>
+<tr class="row-odd"><td><p>spellfix (<a class="reference external" href="https://sqlite.org/spellfix1.html">doc</a>)</p></td>
 <td><p>Search a large vocabulary for close matches</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">editdist3</span></code> <code class="code docutils literal notranslate"><span class="pre">spellfix1_editdist</span></code> <code class="code docutils literal notranslate"><span class="pre">spellfix1_phonehash</span></code> <code class="code docutils literal notranslate"><span class="pre">spellfix1_scriptcode</span></code> <code class="code docutils literal notranslate"><span class="pre">spellfix1_translit</span></code></p></li>
@@ -499,73 +472,64 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>sqlar</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/sqlar.html#managing_sqlite_archives_from_application_code">link</a></p></td>
+<tr class="row-even"><td><p>sqlar (<a class="reference external" href="https://sqlite.org/sqlar.html#managing_sqlite_archives_from_application_code">doc</a>)</p></td>
 <td><p>Utility functions for SQL archives</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">sqlar_compress</span></code> <code class="code docutils literal notranslate"><span class="pre">sqlar_uncompress</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>stmt</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/stmt.html">link</a></p></td>
+<tr class="row-odd"><td><p>stmt (<a class="reference external" href="https://sqlite.org/stmt.html">doc</a>)</p></td>
 <td><p>Virtual table with information about all prepared statements on a connection</p></td>
 <td><ul class="simple">
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">sqlite_stmt</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>stmtrand</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fstmtrand.c">link</a></p></td>
+<tr class="row-even"><td><p>stmtrand (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fstmtrand.c">doc</a>)</p></td>
 <td><p>Function that returns the same sequence of random integers is returned for each invocation of the statement</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">stmtrand</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>tmstmpvfs</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2ftmstmpvfs.c">link</a></p></td>
+<tr class="row-odd"><td><p>tmstmpvfs (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2ftmstmpvfs.c">doc</a>)</p></td>
 <td><p>VFS shim that writes timestamps and other tracing information to the reserved bytes of each page, and also generates corresponding log files</p></td>
 <td><ul class="simple">
 <li><p>VFS: <code class="code docutils literal notranslate"><span class="pre">tmstmpvfs</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>uint</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fuint.c">link</a></p></td>
+<tr class="row-even"><td><p>uint (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fuint.c">doc</a>)</p></td>
 <td><p>UINT collating sequence</p></td>
 <td><ul class="simple">
 <li><p>Collation: <code class="code docutils literal notranslate"><span class="pre">uint</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>unionvtab</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2funionvtab.c">link</a></p></td>
+<tr class="row-odd"><td><p>unionvtab (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2funionvtab.c">doc</a>)</p></td>
 <td><p>Virtual table combining underlying tables from other databases</p></td>
 <td><ul class="simple">
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">swarmvtab</span></code> <code class="code docutils literal notranslate"><span class="pre">unionvtab</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>uuid</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fuuid.c">link</a></p></td>
+<tr class="row-even"><td><p>uuid (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fuuid.c">doc</a>)</p></td>
 <td><p>uuid functions</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">uuid</span></code> <code class="code docutils literal notranslate"><span class="pre">uuid_blob</span></code> <code class="code docutils literal notranslate"><span class="pre">uuid_str</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>vec1</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/vec1">link</a></p></td>
+<tr class="row-odd"><td><p>vec1 (<a class="reference external" href="https://sqlite.org/vec1">doc</a>)</p></td>
 <td><p>Vector search.  !Experimental! !Under development!</p></td>
 <td><ul class="simple">
-<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">vec1_config</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_cos_distance</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_from_json</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_info</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_l2_distance</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_qinstr</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json_f</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json_i</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_train</span></code></p></li>
+<li><p>Function: <code class="code docutils literal notranslate"><span class="pre">vec1_config</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_cos_distance</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_from_json</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_info</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_l2_distance</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json_f</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_to_json_i</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1_train</span></code></p></li>
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">vec1</span></code> <code class="code docutils literal notranslate"><span class="pre">vec1cat</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>vfsstat</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fvfsstat.c">link</a></p></td>
+<tr class="row-even"><td><p>vfsstat (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fvfsstat.c">doc</a>)</p></td>
 <td><p>VFS shim tracking call statistics</p></td>
 <td><ul class="simple">
 <li><p>VFS: <code class="code docutils literal notranslate"><span class="pre">vfslog</span></code></p></li>
@@ -573,16 +537,14 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>vtablog</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fvtablog.c">link</a></p></td>
+<tr class="row-odd"><td><p>vtablog (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fvtablog.c">doc</a>)</p></td>
 <td><p>Virtual table printing diagnostic information for interactive analysis and debugging</p></td>
 <td><ul class="simple">
 <li><p>VTable: <code class="code docutils literal notranslate"><span class="pre">vtablog</span></code></p></li>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td><p>zipfile</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/zipfile.html">link</a></p></td>
+<tr class="row-even"><td><p>zipfile (<a class="reference external" href="https://sqlite.org/zipfile.html">doc</a>)</p></td>
 <td><p>Read/Write access to simple archives</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">zipfile</span></code> <code class="code docutils literal notranslate"><span class="pre">zipfile_cds</span></code></p></li>
@@ -590,8 +552,7 @@ binaries having a <code class="code docutils literal notranslate"><span class="p
 </ul>
 </td>
 </tr>
-<tr class="row-odd"><td><p>zorder</p></td>
-<td><p><a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fzorder.c">link</a></p></td>
+<tr class="row-odd"><td><p>zorder (<a class="reference external" href="https://sqlite.org/src/file?ci=trunk&amp;name=ext%2fmisc%2fzorder.c">doc</a>)</p></td>
 <td><p>Functions for z-order (Morton code) transformations</p></td>
 <td><ul class="simple">
 <li><p>Function: <code class="code docutils literal notranslate"><span class="pre">unzorder</span></code> <code class="code docutils literal notranslate"><span class="pre">zorder</span></code></p></li>
@@ -644,7 +605,7 @@ requires filesystem installation.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.sqlite_extra.load">
-<span class="sig-prename descclassname"><span class="pre">apsw.sqlite_extra.</span></span><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/sqlite_extra.html#load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.sqlite_extra.load" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.sqlite_extra.</span></span><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/sqlite_extra.html#load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.sqlite_extra.load" title="Link to this definition"></a></dt>
 <dd><p>Loads the extension into the provided database</p>
 <p><a class="reference internal" href="connection.html#apsw.Connection.enable_load_extension" title="apsw.Connection.enable_load_extension"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Extension</span> <span class="pre">loading</span></code></a> will
 also be turned on.</p>
@@ -652,13 +613,18 @@ also be turned on.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.sqlite_extra.has">
-<span class="sig-prename descclassname"><span class="pre">apsw.sqlite_extra.</span></span><span class="sig-name descname"><span class="pre">has</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/sqlite_extra.html#has"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.sqlite_extra.has" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.sqlite_extra.</span></span><span class="sig-name descname"><span class="pre">has</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/sqlite_extra.html#has"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.sqlite_extra.has" title="Link to this definition"></a></dt>
 <dd><p>Returns ‘executable’ or ‘extension’ if extra name is available else None</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.sqlite_extra.path">
-<span class="sig-prename descclassname"><span class="pre">apsw.sqlite_extra.</span></span><span class="sig-name descname"><span class="pre">path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/sqlite_extra.html#path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.sqlite_extra.path" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.sqlite_extra.</span></span><span class="sig-name descname"><span class="pre">path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/sqlite_extra.html#path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.sqlite_extra.path" title="Link to this definition"></a></dt>
 <dd><p>Filesystem path for named extra including extension</p>
 </dd></dl>
 
@@ -677,7 +643,7 @@ also be turned on.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Apr 10, 2026.
+      <span class="lastupdated">Last updated on May 05, 2026.
       </span></p>
   </div>
 
