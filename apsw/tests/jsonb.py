@@ -1109,11 +1109,11 @@ class JSONB(unittest.TestCase):
 
     def testRandomJSON(self):
         "sqlite randomjson extension if present"
-        if not os.path.exists("randomjson.so"):
+        import apsw.sqlite_extra
+        try:
+            apsw.sqlite_extra.load(self.db, "randomjson")
+        except apsw.sqlite_extra.NotAvailable:
             return
-
-        self.db.enable_load_extension(True)
-        self.db.load_extension("./randomjson")
 
         for seed in range(2000, 3000):
             # we round trip the json through as many combinations of SQLite, Python and APSW
