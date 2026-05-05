@@ -18,18 +18,12 @@ topdir = pathlib.Path(__file__).parent.parent.resolve()
 # grab text from this file
 words = pathlib.Path(__file__).read_text().split()
 
-randomjson = topdir / "randomjson.so"
-
-if not randomjson.exists():
-    sys.exit(f"{randomjson} needs to exist - compile it from sqlite3/ext/misc/randomjson.c")
-
 sys.path.insert(0, str(topdir))
 
-import apsw
+import apsw, apsw.sqlite_extra
 
 con = apsw.Connection(":memory:")
-con.enable_load_extension(True)
-con.load_extension(str(randomjson))
+apsw.sqlite_extra.load(con, "randomjson")
 
 import argparse
 

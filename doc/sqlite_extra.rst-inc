@@ -270,7 +270,7 @@ Extensions
     * - vec1 (`doc <https://sqlite.org/vec1>`__)
       - Vector search.  !Experimental! !Under development!
       -
-        * Function: :code:`vec1_config` :code:`vec1_cos_distance` :code:`vec1_from_json` :code:`vec1_info` :code:`vec1_l2_distance` :code:`vec1_qinstr` :code:`vec1_to_json` :code:`vec1_to_json_f` :code:`vec1_to_json_i` :code:`vec1_train`
+        * Function: :code:`vec1_config` :code:`vec1_cos_distance` :code:`vec1_from_json` :code:`vec1_info` :code:`vec1_l2_distance` :code:`vec1_to_json` :code:`vec1_to_json_f` :code:`vec1_to_json_i` :code:`vec1_train`
         * VTable: :code:`vec1` :code:`vec1cat`
 
     * - vfsstat (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fvfsstat.c>`__)
