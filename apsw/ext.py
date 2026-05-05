@@ -180,7 +180,7 @@ class TypesConverterCursorFactory:
         """Registers a callable that converts from a SQLite value"""
         self.converters[name] = callable
 
-    def __call__(self, connection: apsw.Connection) -> TypeConverterCursor:
+    def __call__(self, connection: apsw.Connection) -> TypesConverterCursorFactory.TypeConverterCursor:
         "Returns a new convertor :class:`cursor <apsw.Cursor>` for the `connection`"
         return TypesConverterCursorFactory.TypeConverterCursor(connection, self)
 
@@ -2224,7 +2224,7 @@ def get_column_names(row: Any) -> tuple[Sequence[str], VTColumnAccess]:
         * - Type
           - Access
           - Column names From
-        * - :external:func:`dataclasses.is_dataclass`
+        * - :func:`dataclasses.is_dataclass`
           - :attr:`VTColumnAccess.By_Attr`
           - :func:`dataclasses.fields`
         * - :func:`isinstance <isinstance>`\(:class:`tuple`) and :func:`hasattr <hasattr>`\(:code:`"_fields"`) - eg :func:`~collections.namedtuple`
