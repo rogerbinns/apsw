@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import contextvars
 import logging
@@ -368,9 +369,6 @@ class AsyncIO:
                 return await task
 
     def __init__(self, *, thread_name: str = "asyncio apsw background worker"):
-        global asyncio
-        import asyncio
-
         self.queue: queue.SimpleQueue[_CallTracker | None] = queue.SimpleQueue()
         self.loop = asyncio.get_running_loop()
         threading.Thread(name=thread_name, target=self.worker_thread_run).start()
@@ -651,8 +649,6 @@ def Auto() -> Trio | AsyncIO | AnyIO:
 
     if found is None and "asyncio" in sys.modules:
         try:
-            import asyncio
-
             asyncio.get_running_loop()
             found = AsyncIO
         except:
