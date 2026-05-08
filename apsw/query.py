@@ -134,7 +134,9 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
     bindings = {}
 
     def add_binding(v: Any):
-        name = f"_id_{id(v)}"
+        # Use incrementing numbers for the bindings as this is
+        # friendly to the statement cache
+        name = f"_binding_{len(bindings)}"
         res.append(f"${name}")
         bindings[name] = v
 
