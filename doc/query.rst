@@ -11,48 +11,127 @@ Python function.
 Overview
 --------
 
-Create as many SQL files as needed.  A convention is to use ``.sql`` as the
-extension. Each file has multiple sections of SQL.  For each section:
+Create as many SQL files as needed.  A convention is to use ``.sql``
+as the extension. Each file has multiple named sections of SQL.  For
+each section:
 
-* There is a name - you call this name from Python
+* There is a name - you call the SQL using the name from Python
 * Automatically sync or async depending on the Connection
 * SQL comments become docstrings for the Python
 * (Optional) Specify Python parameters, their types, and default values.
 * You can also say that caller's local variables are used
   similar to how ``f`` and ``t`` strings work.
 * (Optional) Return type with many conversions, going beyond cursors
-* Can have as many SQL statements separated by ; as you need
+* Can have as many SQL statements separated by ``;`` as you need
 * Can be a template rather than pure SQL.  This allows
   Python expressions, sequences, and identifiers (eg column and table names)
   which can't be specified as bindings.
+* Bindings are always used for values avoid `SQL injection attacks
+  <https://en.wikipedia.org/wiki/SQL_injection>`__
+* The Python exposing the SQL is fully typed, giving full integration
+  with your development and documentation tools.
 
-You can also have sections that are Python code, such as
+You can also have sections that are Python, such as overall docstrings,
 :code:`import`, and types.
 
-Python
-------
+Example
+-------
+
+This example covers a database of cities.  It shows segments from the
+SQL file and then the Python using that segment.  The section is
+copied into the Python, with any SQL comment of lines :code:`/*` and
+:code:`*/` omitted.
+
+.. code-block:: sql
+
+  -- python:
+  -- This will end up as a Python comment
+
+  /*
+  # Docstring for the file
+  "Python access for city queries"
+
+  # You would import your types here
+  @dataclass
+  class City:
+    name: str
+    population: int
+    country: str
+
+  */
+
+Two queries where the second uses parameters.  We use :code:`:` in the
+query to name a parameter, with SQLite also supporting :code:`$` and
+:code:`@`.
+
+.. code-block:: sql
+
+  -- name: all_cities
+  -- Gets all cities
+
+  SELECT * FROM cities;
+
+  -- name: min_pop
+  -- Gets all cities with a minumum population
+
+  SELECT * FROM cities
+  WHERE :population >= min_population;
+
+In Python code there are several ways of accessing the object
+representing the SQL file, including importing it.  (:ref:`More
+<python_access>`)
+
+.. code-block:: python
+
+  city = apsw.query.ns_from_file("city.sql")
+
+  # Regular cursor iteration of the SQL
+  for row in city.all_cities(connection):
+    print(row)
+
+  # And async
+  async for row in city.all_cities(async_connection):
+    print(row)
+
+A lot more is available:
+
+* Specifying parameters, types, default values LINK HERE
+* The SQL can have Python expressions and specifiers to
+  treat them as values (bindings), identifiers (column and table names),
+  sequences, evaluation and more LINK HERE
+* The result shape (eg list, single value, iterator) LINK HERE
+* A result type with automatic conversion (:code:`City` in this
+  example) LINK HERE
 
 
+.. code-block:: sql
+
+  -- name: by_population(millions: int) -> list[City]
+  -- This shows passing a parameter, getting a
+  -- a list of results using the dataclass from
+  -- earlier.
+
+  -- The column names must match those in the dataclass.
+  -- They do not have to be in the same order.
+
+  SELECT name, population, country FROM cities WHERE
+    population >= {millions * 1_000_000:eval};
+
+.. code-block:: python
+
+  big_cities = city.by_population(10)
+
+
+.. _python_access:
+
+Python access
+-------------
 
   * file path
   * importlib.resources (``__name__``, relative file path)
   * regular import that looks for .sql extension instead of .py
-  * Can get Python at runtime or build time
-
-
-
-
-Variables used for
-------------------
-
-* Bindings (default)
-* Identifiers (automatically correctly quoted) such as column and
-  table names which can't use bindings
-* Expressions like in fstrings
-* Sequences eg for ``WHERE column IN (`` `sequence` ``)``
-
-
-
+  * Can get Python at runtime, better namespace
+  * Build time using CLI
 
 
 Tips
@@ -69,60 +148,59 @@ Must mingle SQL with Python, executing SQL with variables
 same as described in following, more detail at end of this
 doc
 
+.. _sql_templates:
 
+SQL preprocessing
+-----------------
 
-.. query_templates:
+SQL can have segments like :code:`{expression:spec}` in them, just
+like `fstrings
+<https://docs.python.org/3/reference/lexical_analysis.html#f-strings>`__.
+The expression is a Python level expression, and is not seen by the
+executed SQL. The ``spec`` says how to treat the expression.
 
-Template processing
--------------------
+.. list-table:: Supported specs
+  :header-rows: 1
+  :width: auto
 
-Templates that have segments :code:`{name:spec}` in them.
-Some examples:
+  * - Spec Example
+    - Description
 
-:code:`{name}`
+  * - :code:`{name}`
+    - No spec means the name's value is used as a binding.
 
-   Uses parameter :code:`name` as a binding value
+  * - :code:`{name:id}`
+    - Uses the name's value as a SQL identifier, such as table and
+      column names.  You can't use bindings for identifiers.
+      Identifiers end up double quoted in the SQL, and any double
+      quotes inside are doubled up.
 
-:code:`{product["sku"]:eval}`
+  * - :code:`{product["sku"]:eval}`
+    - :code:`eval` Evaluates the expression.  This example would
+      use the resulting value as a binding.
 
-    Evaluates :code:`product["sku"]` and uses as a binding.  This
-    executes arbitrary code and is dangerous unless all values are
-    under your control.
+  * - :code:`{columns[3]:eval:id}`
+      You can have additional specs after :code:`eval` - this uses
+      the evaluation result as an :code:`id`.
 
-:code:`{name:id}`
+  * - :code:`{name:seq}`
+    - Treats name's value as a sequence.  This is useful for
+      :code:`IN`.  eg in the SQL use :code:`WHERE colour IN ({colours:seq})`
+      and the resulting SQL will have a comma separated list of
+      binding based on the values in :code:`colours`.
 
-    Gets the value of :code:`name` and uses it as a SQL identifier
-    (**not** binding).  This is necessary for column and table names
-    which can't be provided as bindings.
+      You can also use :code:`:seq:id` to instead have the SQL be a
+      comma separated list of identifiers, such as :code:`SELECT
+      {columns:seq:id} FROM table`.
 
-You can specify multiple ``spec`` by colon separating them - eg :code:`name+ext:eval:id` will
-evaluate :code:`name+ext` and then treat as an id.
+  * - :code:`{name:literal}`
+    - The value is copied exactly as is into the SQL.  **Beware** this
+      can easily result in SQL injection attacks.  An example would be
+      where you want to specify :code:`DESC` or :code:`ASC` for an
+      :code:`ORDER BY`.  That cannot be done via bindings or id, only
+      as a literal.
 
-.. list-table::  Complete list
-    :header-rows: 1
-    :widths: auto
-
-    * - Spec
-      - Explanation
-    * - :code:`name` (no spec)
-      - :code:`name` must be a parameter name, or a local variable if
-        enabled.  Its value will be used.
-    * - :code:`:eval`
-      - The :code:`name` portion will be evaluated as an expression.  This
-        can be very dangerous because there are no restrictions - eg it could
-        be :code:`shutil.rmtree("/")` which will delete all files!
-    * - :code:`:id`
-      - Rather then the default of using as a SQL value binding, it will be
-        treated as an identifier (table or column name etc)
-    * - :code:`:seq`
-      - Treat as a sequence of values.  By default treat as bindings
-        so :code:`SELECT ... WHERE colour IN ({colours:seq)` will make
-        a comma separated list of bindings for each member of
-        :code:`colours`.  If :code:`:seq:id` is used then it will
-        become a comma separated sequence of identifiers like column
-        or table names instead.
-
-.. query_returns:
+.. _query_returns:
 
 Return typing
 -------------
