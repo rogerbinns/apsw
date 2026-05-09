@@ -121,7 +121,7 @@ def _validate_template_string(string: str) -> bool:
             s = set(spec.split(":"))
             if "eval" in s:
                 s.discard("eval")
-            if s == {"id"} or s == {"seq"} or s == {"id", "seq"} or s == set():
+            if s == {"id"} or s == {"seq"} or s == {"id", "seq"} or s == set() or s=={"literal"}:
                 pass
             else:
                 raise ValueError(f"Spec :{spec} not understood")
@@ -187,6 +187,8 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
                     if i:
                         res.append(", ")
                     add_binding(conv(v))
+            elif spec == {"literal"}:
+                res.append(conv(v))
             elif spec == set():
                 add_binding(conv(value))
             else:
