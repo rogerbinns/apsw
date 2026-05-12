@@ -462,7 +462,9 @@ def install_import_hook():
     """You can use this to allow directly importing .sql files as modules
 
     An import hook will be installed, if not already installed.  It is
-    ok to call this function multiple times.
+    ok to call this function multiple times.  The hook is appended to
+    :data:`sys.meta_path` which means it only takes effect if there
+    isn't already a matching :code:`.py` file.
 
     You can import :code:`.sql` files as though they were native
     Python.  In the following example import, if ``my_queries.sql``
