@@ -12,7 +12,7 @@ import re
 import sys
 import textwrap
 from string import Formatter
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from typing import Any
 
 """
@@ -22,22 +22,12 @@ See :doc:`query` for details
 """
 
 
-# ::TODO:: figure out a way that queries can be bound to a connection
-# or cursor (including contextvar of one).  eg both of these should be
-# possible:
+# ::TODO::
 #
-#   con = apsw.Connection()
-#   # by default have to provide connection | cursor as first param
-#   print(example.fractal(con, width=120))
+# Add a type - eg ExecuteSequence - and if one of the params is that type
+# then do executemany instead of execute
 #
-#   # bind all methods to a connection | cursor
-#   example.bind(con)
-#   # now don't need to supply connection | cursor
-#   print(example.fractal(width=120))
-#
-#   # another alternative - add the methods to a connection | cursor
-#   example.bind(cursor)
-#   print(cursor.fractal(width=120))
+# Show convertors in the doc for params (eval) such as datetime and jsonb
 
 
 class changes(int):
@@ -90,11 +80,14 @@ class ChainMapRO:
 # thank inherit
 collections.abc.Mapping.register(ChainMapRO)
 
+
 def bind_sql(sql: str):
     "Binds `sql` to a function"
+
     def decorator(func: collections.abc.Callable) -> collections.abc.Callable:
         func.sql = sql
         return func
+
     return decorator
 
 
@@ -121,7 +114,7 @@ def _validate_template_string(string: str) -> bool:
             s = set(spec.split(":"))
             if "eval" in s:
                 s.discard("eval")
-            if s == {"id"} or s == {"seq"} or s == {"id", "seq"} or s == set() or s=={"literal"}:
+            if s == {"id"} or s == {"seq"} or s == {"id", "seq"} or s == set() or s == {"literal"}:
                 pass
             else:
                 raise ValueError(f"Spec :{spec} not understood")
@@ -391,7 +384,6 @@ def _gen_function(meta: dict[str, Any]) -> str:
 """
 
     else:
-        breakpoint()
         raise ValueError(f"Return not understood {ast.unparse(node)!r} ")
 
     res.append(f"""
@@ -424,25 +416,52 @@ def {meta["name"]}{both_sig}:
 
     return "\n".join(res)
 
+def _ns_from_py(py: str) -> SimpleNamespace:
+    "Internal method turning Python code into a namespace"
+    spec = importlib.util.spec_from_loader("Generated namespace", loader=None)
+    module = importlib.util.module_from_spec(spec)
+    exec(py, module.__dict__)
+    return module
 
 def py_from_file(filename: str | pathlib.Path, encoding: str = "utf8") -> str:
     "Returns the Python code corresponding to the named file"
     p = pathlib.Path(filename)
     return _make_py_from_text(p.read_text(encoding=encoding), f"File {p.name}")
 
+def ns_from_file(filename: str | pathlib.Path, encoding: str = "utf8") -> SimpleNamespace:
+    "Returns the namespace corresponding to the named file"
+
+    return _ns_from_py(py_from_file(filename, encoding))
 
 def py_from_text(text: str) -> str:
     "Returns the Python code corresponding to text containing queries"
 
     return _make_py_from_text(text, "Text")
 
+def ns_from_text(text: str) ->SimpleNamespace:
+    "Returns the namespace corresponding to text containing queries"
 
-def py_from_resource(anchor: importlib.resources.Anchor, name: str, encoding="utf8") -> str:
+    return _ns_from_py(_make_py_from_text(text, "Text"))
+
+
+def py_from_resource(anchor: importlib.resources.Anchor, name: str, encoding: str = "utf8") -> str:
+    """Return the Python code for a resource
+
+    See :func:`ns_from_resource` for details."""
+
+    files = importlib.resources.files(anchor)
+
+    text = files.joinpath(name).read_text(encoding=encoding)
+
+    return _make_py_from_text(text, f"Module {anchor if isinstance(anchor. str) else anchor.__name__} Resource {name}")
+
+def ns_from_resource(anchor: importlib.resources.Anchor, name: str, encoding: str = "utf8") -> SimpleNamespace:
     """Uses :mod:`importlib.resources` to find locate named file
 
     The anchor should either be a module, or the name of a module.
-    The name is a file relative to the anchor, and should use ``/`` as
-    the directory separator on all platforms.
+    Use :code:`__name__` within a module to reference itself.  The
+    name is a file relative to the anchor, and should use ``/`` as the
+    directory separator on all platforms.
 
     This lets you keep your SQL files alongside your code, and will
     correctly handle wheels and other formats.
@@ -451,13 +470,7 @@ def py_from_resource(anchor: importlib.resources.Anchor, name: str, encoding="ut
     <https://setuptools.pypa.io/en/latest/userguide/datafiles.html>`__
     with other packaging tools providing something similar.
     """
-
-    files = importlib.resources.files(anchor)
-
-    text = files.joinpath(name).read_text(encoding=encoding)
-
-    return _make_py_from_text(text, f"Module {anchor if isinstance(anchor. str) else anchor.__name__} Resource {name}")
-
+    return _ns_from_py(py_from_resource(anchor, name, encoding))
 
 def install_import_hook():
     """You can use this to allow directly importing .sql files as modules
