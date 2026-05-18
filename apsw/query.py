@@ -16,7 +16,7 @@ from types import ModuleType, SimpleNamespace
 from typing import Any
 
 """
-Provides Python access to SQLite queries in a separate file or string
+Provides Pythoninc interface to SQL in a file
 
 See :doc:`query` for details
 """
@@ -416,88 +416,53 @@ def {meta["name"]}{both_sig}:
 
     return "\n".join(res)
 
-def _ns_from_py(py: str) -> SimpleNamespace:
-    "Internal method turning Python code into a namespace"
-    spec = importlib.util.spec_from_loader("Generated namespace", loader=None)
-    module = importlib.util.module_from_spec(spec)
-    exec(py, module.__dict__)
-    return module
 
-def py_from_file(filename: str | pathlib.Path, encoding: str = "utf8") -> str:
-    "Returns the Python code corresponding to the named file"
-    p = pathlib.Path(filename)
-    return _make_py_from_text(p.read_text(encoding=encoding), f"File {p.name}")
-
-def ns_from_file(filename: str | pathlib.Path, encoding: str = "utf8") -> SimpleNamespace:
-    "Returns the namespace corresponding to the named file"
-
-    return _ns_from_py(py_from_file(filename, encoding))
-
-def py_from_text(text: str) -> str:
-    "Returns the Python code corresponding to text containing queries"
-
-    return _make_py_from_text(text, "Text")
-
-def ns_from_text(text: str) ->SimpleNamespace:
-    "Returns the namespace corresponding to text containing queries"
-
-    return _ns_from_py(_make_py_from_text(text, "Text"))
-
-
-def py_from_resource(anchor: importlib.resources.Anchor, name: str, encoding: str = "utf8") -> str:
-    """Return the Python code for a resource
-
-    See :func:`ns_from_resource` for details."""
-
-    files = importlib.resources.files(anchor)
-
-    text = files.joinpath(name).read_text(encoding=encoding)
-
-    return _make_py_from_text(text, f"Module {anchor if isinstance(anchor. str) else anchor.__name__} Resource {name}")
-
-def ns_from_resource(anchor: importlib.resources.Anchor, name: str, encoding: str = "utf8") -> SimpleNamespace:
-    """Uses :mod:`importlib.resources` to find locate named file
-
-    The anchor should either be a module, or the name of a module.
-    Use :code:`__name__` within a module to reference itself.  The
-    name is a file relative to the anchor, and should use ``/`` as the
-    directory separator on all platforms.
-
-    This lets you keep your SQL files alongside your code, and will
-    correctly handle wheels and other formats.
-
-    Setuptools has `data file support
-    <https://setuptools.pypa.io/en/latest/userguide/datafiles.html>`__
-    with other packaging tools providing something similar.
-    """
-    return _ns_from_py(py_from_resource(anchor, name, encoding))
-
-def install_import_hook():
-    """You can use this to allow directly importing .sql files as modules
+class import_hook:
+    """Use this to allow directly importing ``.sql`` files as Python modules
 
     An import hook will be installed, if not already installed.  It is
     ok to call this function multiple times.  The hook is appended to
     :data:`sys.meta_path` which means it only takes effect if there
     isn't already a matching :code:`.py` file.
 
-    You can import :code:`.sql` files as though they were native
-    Python.  In the following example import, if ``my_queries.sql``
-    exists at the location where you would normally have
-    `my_queries.py`` then it automatically works.
-
-        import some_package.my_queries as queries
-
     The resulting module is :class:`lazy loaded
-    <importlib.util.LazyLoader>` meaning the SQL won't be read until
-    first access.
+    <importlib.util.LazyLoader>` meaning the SQL won't be read and Python
+    generated until first access.
+
+    **Advanced**:  You can instead use as a context manager
+    (:code:`with`) in which case the hook is installed on exiting the
+    context.
     """
-    for inst in sys.meta_path:
-        if isinstance(inst, _Import_Hook):
-            return
-    sys.meta_path.append(_Import_Hook())
+
+    def __init__(self):
+        self._hook = _Import_Hook()
+
+        for inst in sys.meta_path:
+            if isinstance(inst, _Import_Hook) and not inst.context_owned:
+                return
+        sys.meta_path.append(self._hook)
+
+    def __enter__(self):
+        self._hook.context_owned = True
+        if self._hook not in sys.meta_path:
+            sys.meta_path.append(self._hook)
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        try:
+            sys.meta_path.remove(self._hook)
+        except ValueError:
+            pass
+        return False
 
 
 class _Import_Hook(importlib.abc.MetaPathFinder):
+    "apsw.query hook allowing importing .sql files as corresponding Python code"
+
+    def __init__(self):
+        # if owned by import_hook as a context manger
+        self.context_owned = False
+
     def find_spec(self, fullname: str, path: collections.abc.Sequence[str] | None, target: ModuleType | None = None):
         name = fullname.split(".")[-1]
         search_dirs = path if path else sys.path
@@ -722,12 +687,6 @@ if __name__ == "__main__":
         metavar="MODULENAME",
         help="Source is a .sql file corresponding to named module.  ie there is a .sql file where normally there would be a .py file",
     )
-    group.add_argument(
-        "--resource",
-        metavar=("MODULENAME", "FILENAME"),
-        nargs=2,
-        help="Uses importlib.resources given the module name and the filename relative to the module",
-    )
 
     options = parser.parse_args()
 
@@ -744,15 +703,8 @@ if __name__ == "__main__":
             o.write(res)
         finally:
             o.close()
-    elif options.resource:
-        res = py_from_resource(options.resource[0], options.resource[1])
-        o = output()
-        try:
-            o.write(res)
-        finally:
-            o.close()
     elif options.import_:
-        install_import_hook()
+        import_hook()
         mod = importlib.import_module(options.import_)
         if not isinstance(getattr(mod, "__loader__", None), _SQLSourceLoader):
             sys.exit(f"{options.import_!r} was not imported from a SQL file")
@@ -762,5 +714,3 @@ if __name__ == "__main__":
             o.write(res)
         finally:
             o.close()
-    else:
-        sys.exit("not implemented yet")

@@ -173,11 +173,9 @@ nitpick_ignore = [
     ('py:class', '_queue.SimpleQueue'),
 ]
 
-# autosummary etc fail to import modules even though python import
-# works just fine, so we cheat by importing them here
+# autosummary of .sql files
 
-import apsw, apsw.query
-
-apsw.query.install_import_hook()
+import apsw.query
+apsw.query.import_hook()
 
 import apsw.sphinx

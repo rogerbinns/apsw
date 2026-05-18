@@ -3,24 +3,26 @@ Query (Separating SQL from Python code)
 .. currentmodule:: apsw
 
 The documentation and examples have SQL as Python strings, mixed in
-with Python code to make it clear what is happening.  With
-:mod:`apsw.query` your SQL is in a separate files that can be syntax
-checked and highlighted, with the module providing each SQL as a
-Python function.
+with Python code to make it clear what is happening.
+:mod:`apsw.query` separates your SQL into their own files that can be
+syntax checked and highlighted as SQL.  You can then import those SQL
+files as though they were native Python code, with a Python function
+per section of SQL.
 
 Overview
 --------
 
-Create as many SQL files as needed.  A convention is to use ``.sql``
-as the extension. Each file has multiple named sections of SQL.  For
-each section:
+Create as many SQL files as needed in your Python source tree.  Use
+``.sql`` as the extension. Each file has multiple named sections of
+SQL.  For each section:
 
 * There is a name - you call the SQL using that name from Python
-* Automatically sync or async depending on the Connection
-* SQL comments become docstrings for the Python
+  providing the :class:`Connection` or :class:`Cursor` to use
+* Automatically sync or async depending on the underlying connection
+  used
 * Optionally specify Python parameters, their types, and default
-  values.
-* You can also say that caller's local variables are used
+  values that are available as SQL bindings.
+* You can also say that caller's local variables are available
   similar to how ``f`` and ``t`` strings work.
 * Optional return type with many conversions, going beyond cursors
 * Can have as many SQL statements separated by ``;`` as you need
@@ -32,11 +34,13 @@ each section:
 * The Python exposing the SQL is fully typed, giving full integration
   with your development and documentation tools.
 
-You can also have sections that are Python, which can provide top
-level docstrings, :code:`import`, and types.
+You can also have sections that are Python, which can provide a top
+level docstring, :code:`import`, and types.
 
 Example
 -------
+
+ADD rank, ratio of country population
 
 This example covers a database of cities.  It shows segments from the
 SQL file and then the Python using that segment.  The section is
@@ -50,15 +54,25 @@ copied into the Python, with any SQL comment of lines :code:`/*` and
 
   /*
   # Becomes docstring for the file
-  "Python access for city queries"
+  "City SQL queries"
 
-  # You would import your types here
-  @dataclass
-  class City:
+  # You would import your types here.  We'll define the
+  # result of a query inline here for demonstration
+
+  import datetime
+  import dataclasses
+
+  @dataclasses.dataclass
+  class CityInfo:
     name: str
     population: int
     country: str
+    rank: int
+    founded: datetime.date
 
+    def __post_init__(self):
+      # convert from SQLite YYYY-MM-DD representation back to Python
+      self.founded = datetime.date.fromisoformat(self.founded)
   */
 
 Two queries where the second uses parameters.  We use :code:`:` in the
@@ -72,11 +86,24 @@ query to name a parameter, with SQLite also supporting :code:`$` and
 
   SELECT * FROM cities;
 
-  -- name: min_pop
-  -- Gets all cities with a minimum population
+  -- name: city_info(founded_after:datetime.date) -> list[CityInfo]
+  -- Gets all cities founded after a date including their
+  -- population rank within the same country
 
-  SELECT * FROM cities
-  WHERE population >= :min_population;
+  -- You should name the result columns using AS
+
+  SELECT
+    name          AS name,
+    pop           AS population,
+    country       AS country,
+    RANK() OVER (
+      PARTITION BY country
+      ORDER BY pop DESC
+    )
+                  AS rank
+  FROM city
+  -- Converts Python date to SQLite representation
+  WHERE founded >= {founded_after.isoformat():eval};
 
 In Python code there are several ways of accessing the object
 representing the SQL file, including importing it.  (:ref:`More
@@ -84,15 +111,25 @@ representing the SQL file, including importing it.  (:ref:`More
 
 .. code-block:: python
 
-  city = apsw.query.ns_from_file("city.sql")
+  apsw.query.import_hook()
+
+  # if the file was city_queries.sql then use this
+  import city_queries
+
+  # Inside a pack you can use a relative import
+  from . import city_queries
 
   # Regular cursor iteration of the SQL
-  for row in city.all_cities(connection):
+  for row in city_queries.all_cities(connection):
     print(row)
 
   # And async
-  async for row in city.all_cities(async_connection):
+  async for row in city_queries.all_cities(async_connection):
     print(row)
+
+  # It is a regular Python function with named parameters
+  ranked_cities = city_queries.city_info(founded_after=datetime.date(1973, 6, 30))
+  print(len(ranked_cities))
 
 A lot more is available:
 
@@ -105,70 +142,15 @@ A lot more is available:
   automatic conversion - :code:`City` in this example. (:ref:`More
   <query_returns>`)
 
-
-.. code-block:: sql
-  :force:
-
-  -- name: by_population(millions: int) -> list[City]
-  -- This shows passing a parameter, getting a
-  -- a list of results using the dataclass from
-  -- earlier.
-
-  -- The column names must match those in the dataclass.
-  -- They do not have to be in the same order.
-
-  SELECT name, population, country FROM cities WHERE
-    population >= {millions * 1_000_000:eval};
-
-.. code-block:: python
-
-  big_cities = city.by_population(10)
-
-
 .. _python_access:
 
 Python access
 -------------
 
-The SQL can be provided in several ways:
-
-String
-
-  A :class:`str` containing the SQL
-
-Filename
-
-  String or :class:`pathlib.Path` naming a file
-
-Resource (recommended)
-
-  Uses :mod:`importlib.resources` - provide a module object or use
-  :code:`__name__` in a module, and a relative filename.  This
-  mechanism is the best way to bundle other files such as images,
-  text, data, and SQL alongside your code.  It will correctly handle
-  your code and files being on the filesystem, in wheel files etc.
-
-  Your packaging tool of choice will document how to include data
-  files.  This is `how setuptools does it
-  <https://setuptools.pypa.io/en/latest/userguide/datafiles.html>`__.
-
-Direct import
-
-  An import hook is available which lets you :code:`import` a
-  :code:`.sql` file as though it was a :code:`.py` file.  This is very
-  convenient during development.
-
-The Python corresponding to the SQL is available as:
-
-A namespace
-
-  This is the most convenient.  You get an object with each named SQL
-  being a function on the object.
-
-Python text
-
-  The raw Python as a :class:`str`.  This is evaluated to produce the
-  namespace.
+Call :class:`apsw.query.import_hook` which registers an import hook.
+(You can call it multiple times - only one hook will be registered.)
+Then :code:`import` your :code:`.sql` file as though it was a Python
+file.
 
 There is also a command line interface.  Use :code:`python3 -m
 apsw.query --help` to see the options.  This is useful if you want
@@ -176,8 +158,8 @@ Python generated code as part of a build process.
 
 .. _sql_templates:
 
-SQL preprocessing
------------------
+SQL Templates
+--------------
 
 SQL can have segments like :code:`{expression:spec}` in them, just
 like `fstrings
@@ -357,6 +339,11 @@ TODO mention invoking at runtime vs AOT, ``python3 -m apsw.query`` etc
 
 Testing
 -------
+
+
+.. automodule:: example
+    :members:
+    :undoc-members:
 
 .. automodule:: example2
     :members:
