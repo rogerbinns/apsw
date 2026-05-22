@@ -80,6 +80,7 @@ query to name a parameter, with SQLite also supporting :code:`$` and
 :code:`@`.
 
 .. code-block:: sql
+  :force:
 
   -- name: all_cities
   -- Gets all cities
