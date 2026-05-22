@@ -5,18 +5,17 @@ from __future__ import annotations
 import ast
 import collections.abc
 import importlib.abc
-import importlib.resources
 import importlib.util
 import pathlib
 import re
 import sys
 import textwrap
 from string import Formatter
-from types import ModuleType, SimpleNamespace
+from types import ModuleType
 from typing import Any
 
 """
-Provides Pythoninc interface to SQL in a file
+Provides Pythonic interface to SQL in a file
 
 See :doc:`query` for details
 """
@@ -27,7 +26,10 @@ See :doc:`query` for details
 # Add a type - eg ExecuteSequence - and if one of the params is that type
 # then do executemany instead of execute
 #
-# Show convertors in the doc for params (eval) such as datetime and jsonb
+# Figure out a way of indicating transaction - ie the SQL should be run wrapped
+# in with/savepoint.  It shouldn't be automatic for every SQL
+#
+# If return type is Any then don't do any conversion
 
 
 class changes(int):
@@ -95,29 +97,16 @@ def bind_sql(sql: str):
 _template_parse = Formatter().parse
 
 
-def _validate_template_string(string: str) -> bool:
-    """Checks if it is f-string style using {}, colons etc
+def _is_template_string(string: str) -> bool:
+    """Checks if it is f-string style using {}, colon etc
 
-    Returns False if not a template, True otherwise.  If a template
-    then it is checked for validity and raises an exception if not.
+    Returns False if not a template, True if it should be processed as
+    a template.
     """
 
     for i, (literal, field, spec, conversion) in enumerate(_template_parse(string)):
         if i == 0 and field is None and spec is None and conversion is None:
             return False
-        match conversion:
-            case "r" | "s" | "a" | None:
-                pass
-            case _:
-                raise ValueError(f"Unknown conversion !{conversion}")
-        if spec is not None:
-            s = set(spec.split(":"))
-            if "eval" in s:
-                s.discard("eval")
-            if s == {"id"} or s == {"seq"} or s == {"id", "seq"} or s == set() or s == {"literal"}:
-                pass
-            else:
-                raise ValueError(f"Spec :{spec} not understood")
     return True
 
 
@@ -137,6 +126,7 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
         if literal:
             res.append(literal)
         if field is None:
+            assert spec is None and conversion is None
             continue
         match conversion:
             case None:
@@ -148,14 +138,14 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
             case "a":
                 conv = ascii
             case _:
-                raise ValueError(f"Unknown {conversion=}")
+                raise ValueError(f"Unknown !{conversion=}")
         if not spec:
             add_binding(conv(vars[field]))
         else:
-            spec = set(spec.split(":"))
+            spec = [s.strip() for s in spec.split("|")]
 
-            if "eval" in spec:
-                spec.remove("eval")
+            if spec and spec[0] == "eval":
+                spec.pop(0)
                 # ::TODO:: does this need __builtins__ for middle param so
                 # eg len() works
                 try:
@@ -167,25 +157,31 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
             else:
                 value = vars[field]
 
-            if spec == {"id"}:
-                value = conv(value)
-                res.append('"' + value.replace('"', '""') + '"')
-            elif spec == {"seq", "id"}:
-                for i, v in enumerate(values):
-                    if i:
-                        res.append(", ")
-                    res.append('"' + conv(value).replace('"', '""') + '"')
-            elif spec == {"seq"}:
-                for i, v in enumerate(value):
-                    if i:
-                        res.append(", ")
-                    add_binding(conv(v))
-            elif spec == {"literal"}:
-                res.append(conv(v))
-            elif spec == set():
-                add_binding(conv(value))
-            else:
-                raise ValueError(f"Unknown specs {spec}")
+            match spec:
+                case ["id"]:
+                    value = conv(value)
+                    res.append('"' + value.replace('"', '""') + '"')
+
+                case ["seq", "id"]:
+                    for i, v in enumerate(values):
+                        if i:
+                            res.append(", ")
+                        res.append('"' + conv(value).replace('"', '""') + '"')
+
+                case ["seq"]:
+                    for i, v in enumerate(value):
+                        if i:
+                            res.append(", ")
+                        add_binding(conv(v))
+
+                case ["literal"]:
+                    res.append(conv(v))
+
+                case []:
+                    add_binding(conv(value))
+
+                case _:
+                    raise ValueError(f"Unknown {spec=}")
 
     if bindings:
         vars.maps.insert(0, bindings)
@@ -430,7 +426,7 @@ class import_hook:
     generated until first access.
 
     **Advanced**:  You can instead use as a context manager
-    (:code:`with`) in which case the hook is installed on exiting the
+    (:code:`with`) in which case the hook is uninstalled on exiting the
     context.
     """
 
@@ -464,6 +460,11 @@ class _Import_Hook(importlib.abc.MetaPathFinder):
         self.context_owned = False
 
     def find_spec(self, fullname: str, path: collections.abc.Sequence[str] | None, target: ModuleType | None = None):
+        # ::TODO:: this currently only works with filesystem and needs
+        # to be adjusted if there are zip files etc.  That involves
+        # invoking the corresponding finders to check for the .sql
+        # entry as well as saving the source to pass to
+        # _SQLSourceLoader
         name = fullname.split(".")[-1]
         search_dirs = path if path else sys.path
 
@@ -533,7 +534,7 @@ _NotSet = object()
     # ::TODO:: if first block is python and it starts with a docstring
     # then it needs to be put first
 
-    for block, value, comments, body in _sections(text):
+    for lineno, block, value, comments, body in _sections(text):
         match block:
             case "python":
                 res.append(f"# {value}")
@@ -542,16 +543,18 @@ _NotSet = object()
                 res.append(body)
                 res.append("\n")
             case "name":
-                meta = _parse_name(value)
                 try:
-                    meta["is_template"] = _validate_template_string(body)
-                except Exception as exc:
-                    # Another py 3.10 compat
-                    getattr(exc, "add_note", lambda x: None)(f"""In query '{meta["name"]}'""")
+                    meta = None
+                    meta = _parse_name(value)
+                    meta["is_template"] = _is_template_string(body)
+                    meta["comments"] = comments if comments.strip() else None
+                    meta["sql"] = body
+                    res.append(_gen_function(meta))
+                except BaseException as exc:
+                    #  Another py 3.10 compat
+                    getattr(exc, "add_note", lambda x: None)(f"""In section starting line {lineno}""" + (f" name {meta['name']!r}" if meta else ""))
                     raise
-                meta["comments"] = comments if comments.strip() else None
-                meta["sql"] = body
-                res.append(_gen_function(meta))
+
 
             case _:
                 raise ValueError(f"Unknown section {block}")
@@ -628,9 +631,10 @@ def _sections(text: str):
     title = None
     comments: list[str] = []
     body: list[str] = []
+    line_start = 0
 
     def part():
-        nonlocal title, comments, body
+        nonlocal title, comments, body, line_start
         if title:
             # remove /* and */ from python body
             if title[0] == "python":
@@ -644,12 +648,13 @@ def _sections(text: str):
                 while lines and not lines[-1].strip():
                     del lines[-1]
 
-            yield title[0], title[1], textwrap.dedent("\n".join(comments) + "\n"), "\n".join(body) + "\n"
+            yield line_start, title[0], title[1], textwrap.dedent("\n".join(comments) + "\n"), "\n".join(body) + "\n"
         title = None
         comments = []
         body = []
+        line_start=-1
 
-    for line in text.splitlines():
+    for lineno, line in enumerate(text.splitlines(), 1):
         # handle blanks
         if not line.strip():
             # no section yet
@@ -663,6 +668,7 @@ def _sections(text: str):
         if mo:
             yield from part()
             title = mo.group("type"), mo.group("value")
+            line_start = lineno
             continue
         if not body and line.startswith("--"):
             comments.append(line[2:])
