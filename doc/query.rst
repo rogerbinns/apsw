@@ -338,14 +338,13 @@ TODO mention invoking at runtime vs AOT, ``python3 -m apsw.query`` etc
     :undoc-members:
     :member-order: bysource
 
-Testing
+Example
 -------
 
+* corresponds to :source:`apsw/_fts5q.sql`
+* explain :code:`**locals` usage
+* explain :code:`eval` for self stuff
 
-.. automodule:: example
-    :members:
-    :undoc-members:
-
-.. automodule:: example2
+.. automodule:: apsw._fts5q
     :members:
     :undoc-members:

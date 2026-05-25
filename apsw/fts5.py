@@ -31,16 +31,22 @@ from dataclasses import dataclass
 from types import ModuleType
 
 try:
-    from typing import Any, Callable, Iterable, Iterator, Literal, Sequence, Self
+    from typing import Any, Literal, Self
 except ImportError:
     # Self is only available in py3.11+ but the other items import anyway
     pass
 
+from collections.abc import Callable, Iterable, Iterator, Sequence
+
 import apsw
 import apsw._unicode
-import apsw.ext
 import apsw.fts5query
 import apsw.unicode
+
+import apsw.query
+
+with apsw.query.import_hook():
+    from . import _fts5q as q
 
 unicode_categories = {
     "Lu": "Letter Uppercase",
@@ -1237,7 +1243,6 @@ class Table:
         # Do some sanity checking
         assert self.columns == self.structure.columns
 
-        # our helper functions
         register_functions(
             self._db, {func.__name__: func for func in (_apsw_get_statistical_info, _apsw_get_match_info)}
         )
@@ -1255,10 +1260,7 @@ class Table:
 
         This is useful to validate cached information.
         """
-        # See https://sqlite.org/forum/forumpost/2a726411b6974502
-        return hash(
-            self._db.execute(f"select block from { self._qschema }.{ quote_name(self._name + '_data')} where id=10").get
-        )
+        return hash(q.structure_record(self._db))
 
     change_cookie = property(_get_change_cookie)
 
@@ -1266,16 +1268,12 @@ class Table:
     def columns(self) -> tuple[str, ...]:
         "All columns of this table, including unindexed ones.  Unindexed columns are ignored in queries."
 
-        return tuple(row[1] for row in self._db.execute(f"pragma { self._qschema }.table_info({self._qname})"))
+        return tuple(q.column_names(self._db))
 
     @functools.cached_property
     def columns_indexed(self) -> tuple[str, ...]:
         "All columns of this table, excluding unindexed ones"
-        return tuple(
-            row[1]
-            for row in self._db.execute(f"pragma { self._qschema }.table_info({self._qname})")
-            if row[1] not in self.structure.unindexed
-        )
+        return tuple(q.columns_indexed(self._db))
 
     def column_named(self, name: str) -> str | None:
         """Returns the column matching `name` or `None` if it doesn't exist
