@@ -1289,15 +1289,7 @@ class Table:
     @functools.cached_property
     def structure(self) -> FTS5TableStructure:
         "Structure of the table from the declared SQL"
-        found = list(
-            sql
-            for (sql,) in self._db.execute(
-                f"select sql from { self._qschema }.sqlite_schema where type='table' and lower(tbl_name) = lower(?)",
-                (self._name,),
-            )
-        )
-        assert len(found) == 1
-        return _fts5_vtable_parse(found[0])
+        return _fts5_vtable_parse(q.table_sql(self._db))
 
     @functools.cached_property
     def quoted_table_name(self) -> str:
@@ -1384,7 +1376,7 @@ class Table:
                 # could be None or empty
                 continue
             column_number = self.columns.index(self.column_named(column))
-            locale = self._db.execute(f"select fts5_get_locale({self._qname}, {column_number}) from {self.quoted_table_name} where rowid=?", (rowid,)).get
+            locale = q.locale_for_cell(self._db, rowid, column_number)
             utf8: bytes = text.encode()
             for token in self.tokenize(utf8, include_colocated=False, include_offsets=False, locale=locale):
                 token_counter[token] += 1
