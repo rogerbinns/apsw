@@ -368,7 +368,7 @@ def main():
         "--reports", dest="reports", default=",".join(reports), help="Which reports to show [%(default)s]"
     )
     parser.add_argument("python-script", help="Python script to run")
-    parser.add_argument("script-args", nargs="*", help="Optional arguments for Python script")
+    parser.add_argument("script-args", nargs=argparse.REMAINDER, help="Optional arguments for Python script")
 
     options = parser.parse_args()
     # it doesn't make the dashes underscore for some reason
