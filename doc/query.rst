@@ -289,8 +289,8 @@ The type is then invoked with the dict.  This works really well with
     *   - :code:`a_type | None`
         - If exactly one row was returned then conversion to
           :code:`a_type` will happen.  If no rows were then
-          :code:`None` is returned.  If more than one then an
-          exception (TODO which?) is raised.
+          :code:`None` is returned.  If more than one then
+          :exc:`apsw.query.TooManyRows` is raised.
 
           You can also use :code:`a_type | Literal[value]` and
           :code:`value` is returned on no rows instead of
@@ -298,8 +298,8 @@ The type is then invoked with the dict.  This works really well with
 
     *   - :code:`a_type`
         - Exactly one row should return and will be converted to
-          :code:`a_type`.  If zero or more than one rows were returned
-          then an exception (TODO which?) is raised.
+          :code:`a_type`.  If not then :exc:`apsw.query.RowExpected`
+          is raised.
 
     *   - :code:`Iterator[a_type]`
         - Each row is converted to :code:`a_type` and is iterable
@@ -309,11 +309,17 @@ The type is then invoked with the dict.  This works really well with
     *   - :code:`list[a_type]`
         - Each row is converted to :code:`a_type`, as a :class:`list`.
 
+    *   - :code:`Any`
+        - In the above cases, using a *type* results in conversion.
+          If you use :code:`Any` as the type then no conversion
+          happens and the value (if only one column result) or row is
+          returned as is.
 
 Tips
 ----
 
 * Contextvar for executor
+* peewee for lightweight ORM
 * SQLAlchemy for ORM / multi-database support
 * sqlglot for multi-sql support
 

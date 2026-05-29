@@ -198,6 +198,12 @@ def _unwrap(node: ast.AST, name: str) -> str | None:
         return ast.unparse(node.slice)
     return None
 
+def _retval_for(a_type:ast.AST | str) -> str:
+    # how a row is converted to the type
+    t = ast.unparse(a_type) if not isinstance(a_type, str) else a_type
+    if t == "Any":
+            return  "row[0] if len(desc) == 1 else row"
+    return f"{t}(row[0]) if len(desc) == 1 else {t}(**dict(zip((d[0] for d in desc), row, strict=True)))"
 
 def _gen_function(meta: dict[str, Any]) -> str:
     "Generates the code for one query"
@@ -295,6 +301,8 @@ def _gen_function(meta: dict[str, Any]) -> str:
         sync_sig += f"{l} | {r}"
         both_sig += f"Awaitable[{l} | {r}] | {l} | {r}"
 
+
+
         inner = f"""
     async def async_inner() -> {l} | {r}:
         retval = _NotSet
@@ -302,7 +310,7 @@ def _gen_function(meta: dict[str, Any]) -> str:
             if retval is not _NotSet:
                 raise TooManyRows
             desc = cursor.get_description()
-            retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row, strict=True)))
+            retval = {_retval_for(node.left)}
         return ({_unwrap(node.right, "Literal") or r}) if retval is _NotSet else retval
 
     def sync_inner() -> {l} | Literal[{r}]:
@@ -311,7 +319,7 @@ def _gen_function(meta: dict[str, Any]) -> str:
             if retval is not _NotSet:
                 raise TooManyRows
             desc = cursor.get_description()
-            retval = {l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row, strict=True)))
+            retval = {_retval_for(node.left)}
         return ({_unwrap(node.right, "Literal") or r}) if retval is _NotSet else retval
 """
 
@@ -328,7 +336,7 @@ def _gen_function(meta: dict[str, Any]) -> str:
             if retval is not _NotSet:
                 raise TooManyRows
             desc = cursor.get_description()
-            retval = {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row, strict=True)))
+            retval = {_retval_for(node)}
         if retval is _NotSet:
             raise RowExpected
         return retval
@@ -339,7 +347,7 @@ def _gen_function(meta: dict[str, Any]) -> str:
             if retval is not _NotSet:
                 raise TooManyRows
             desc = cursor.get_description()
-            retval = {r}(row[0]) if len(desc) == 1 else {r}(**dict(zip((d[0] for d in desc), row, strict=True)))
+            retval = {_retval_for(node)}
         if retval is _NotSet:
             raise RowExpected
         return retval
@@ -354,12 +362,12 @@ def _gen_function(meta: dict[str, Any]) -> str:
     async def async_inner() -> AsyncIterator[{i}]:
         async for row in await cursor.execute(sql, vals):
             desc = cursor.get_description()
-            yield {i}(row[0]) if len(desc) == 1 else {i}(**dict(zip((d[0] for d in desc), row, strict=True)))
+            yield {_retval_for(i)}
 
     def sync_inner() -> Iterator[{i}]:
         for row in cursor.execute(sql, vals):
             desc = cursor.get_description()
-            yield {i}(row[0]) if len(desc) == 1 else {i}(**dict(zip((d[0] for d in desc), row, strict=True)))
+            yield {_retval_for(i)}
 """
 
     elif (l := _unwrap(node, "list")) is not None:
@@ -372,7 +380,7 @@ def _gen_function(meta: dict[str, Any]) -> str:
         res = []
         async for row in await cursor.execute(sql, vals):
             desc = cursor.get_description()
-            res.append({l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row, strict=True))))
+            res.append({_retval_for(l)})
         return res
 
     def sync_inner() -> list[{l}]:
