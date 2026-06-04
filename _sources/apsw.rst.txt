@@ -710,7 +710,7 @@ modules etc. For example::
 
     (Only present when :doc:`session extension <session>` is enabled)
 
-    `SQLITE_CHANGESETAPPLY_FKNOACTION <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__, `SQLITE_CHANGESETAPPLY_IGNORENOOP <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__, `SQLITE_CHANGESETAPPLY_INVERT <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__, `SQLITE_CHANGESETAPPLY_NOSAVEPOINT <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__
+    `SQLITE_CHANGESETAPPLY_FKNOACTION <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__, `SQLITE_CHANGESETAPPLY_IGNORENOOP <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__, `SQLITE_CHANGESETAPPLY_INVERT <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__, `SQLITE_CHANGESETAPPLY_NOSAVEPOINT <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__, `SQLITE_CHANGESETAPPLY_NOUPDATELOOP <https://sqlite.org/session/c_changesetapply_fknoaction.html>`__
 
 .. data:: mapping_session_changeset_start_v2_flags
     :type: dict[str | int, int | str]

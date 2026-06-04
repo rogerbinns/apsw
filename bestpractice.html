@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Best Practice &mdash; APSW 3.53.1.0 documentation</title>
+  <title>Best Practice &mdash; APSW 3.53.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/bestpractice.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=2d32c92d"></script>
+      <script src="_static/documentation_options.js?v=bf4d17c6"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -163,25 +163,17 @@ individual connections.</p>
 <p>Ensure SQLite usage prevents common mistakes, and get best performance.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.bestpractice.apply">
-<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/bestpractice.html#apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.apply" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">which</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.apply" title="Link to this definition"></a></dt>
 <dd><p>Applies library immediately and connection to new connections</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.bestpractice.connection_busy_timeout">
-<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_busy_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_ms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_busy_timeout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_busy_timeout" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_busy_timeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_ms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_busy_timeout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_busy_timeout" title="Link to this definition"></a></dt>
 <dd><p>Sets a short busy timeout</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>duration_ms</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – How many thousandths of a second to wait</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><strong>duration_ms</strong> – How many thousandths of a second to wait</p>
 </dd>
 </dl>
 <p>When another thread or process has locked the database, SQLite
@@ -192,36 +184,26 @@ a grace period during which SQLite retries.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.bestpractice.connection_dqs">
-<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_dqs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_dqs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_dqs" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_dqs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_dqs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_dqs" title="Link to this definition"></a></dt>
 <dd><p>Double quotes are for identifiers only, not strings</p>
 <p>Turns off <a class="reference external" href="https://www.sqlite.org/quirks.html#dblquote">allowing double quoted strings</a> if they don’t
 match any identifier (column/table names etc), making it an error
 to use double quotes around strings.  SQL strings use single
 quotes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.bestpractice.connection_enable_foreign_keys">
-<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_enable_foreign_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_enable_foreign_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_enable_foreign_keys" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_enable_foreign_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_enable_foreign_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_enable_foreign_keys" title="Link to this definition"></a></dt>
 <dd><p>Enables foreign key constraints</p>
 <p><a class="reference external" href="https://www.sqlite.org/foreignkeys.html">Foreign keys</a> need to
 <a class="reference external" href="https://www.sqlite.org/foreignkeys.html#fk_enable">be enabled</a>
 to have an effect.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.bestpractice.connection_optimize">
-<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_optimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_optimize" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_optimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_optimize" title="Link to this definition"></a></dt>
 <dd><p>Enables query planner optimization</p>
 <p>It enables the query planner to record cases when it would benefit
 from having accurate statistics about tables and indexes for the
@@ -232,48 +214,28 @@ periodically when the database is open for long periods of time.
 The statistics are recorded in the database and help with future
 queries during this connection, and all future connections.</p>
 <p>There is more detail in the <a class="reference external" href="https://sqlite.org/lang_analyze.html">documentation</a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.bestpractice.connection_recursive_triggers">
-<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_recursive_triggers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_recursive_triggers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_recursive_triggers" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_recursive_triggers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_recursive_triggers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_recursive_triggers" title="Link to this definition"></a></dt>
 <dd><p>Recursive triggers are off for historical backwards compatibility</p>
 <p>This <a class="reference external" href="https://www.sqlite.org/pragma.html#pragma_recursive_triggers">enables them</a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.bestpractice.connection_wal">
-<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_wal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_wal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_wal" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">connection_wal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><span class="pre">Connection</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#connection_wal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.connection_wal" title="Link to this definition"></a></dt>
 <dd><p>Turns on write ahead logging</p>
 <p>Reduces contention and improves write performance.  WAL is
 <a class="reference external" href="https://www.sqlite.org/wal.html">described here</a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="apsw.bestpractice.library_logging">
-<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">library_logging</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apsw/bestpractice.html#library_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.library_logging" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">apsw.bestpractice.</span></span><span class="sig-name descname"><span class="pre">library_logging</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/apsw/bestpractice.html#library_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#apsw.bestpractice.library_logging" title="Link to this definition"></a></dt>
 <dd><p>Forwards SQLite logging to Python logging module</p>
 <p>See <a class="reference internal" href="ext.html#apsw.ext.log_sqlite" title="apsw.ext.log_sqlite"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.ext.log_sqlite()</span></code></a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -297,7 +259,7 @@ queries during this connection, and all future connections.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 05, 2026.
+      <span class="lastupdated">Last updated on Jun 04, 2026.
       </span></p>
   </div>
 

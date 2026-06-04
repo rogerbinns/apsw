@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Example/Tour &mdash; APSW 3.53.1.0 documentation</title>
+  <title>Example/Tour &mdash; APSW 3.53.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/example.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=2d32c92d"></script>
+      <script src="_static/documentation_options.js?v=bf4d17c6"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -222,9 +222,9 @@ and playback</span></a></p></li>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">      Using APSW file /space/apsw/apsw/__init__.cpython-314-x86_64-linux-gnu.so</span>
-<span class="go">         APSW version 3.53.1.0</span>
-<span class="go">SQLite header version 3053001</span>
-<span class="go">   SQLite lib version 3.53.1</span>
+<span class="go">         APSW version 3.53.2.0</span>
+<span class="go">SQLite header version 3053002</span>
+<span class="go">   SQLite lib version 3.53.2</span>
 <span class="go">   Using amalgamation True</span>
 </pre></div>
 </div>
@@ -861,11 +861,11 @@ conversion, both for types you define and for other types.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">cursor_factory</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2026, 5, 5, 8, 39, 25, 836288))</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2026, 6, 4, 8, 48, 45, 414389))</span>
 <span class="go">querying data</span>
 <span class="go">column 0 = Point(5.2, 7.6)</span>
 <span class="go">column 1 = (3+4j)</span>
-<span class="go">column 2 = datetime.datetime(2026, 5, 5, 15, 39, 25, 836288, tzinfo=datetime.timezone.utc)</span>
+<span class="go">column 2 = datetime.datetime(2026, 6, 4, 15, 48, 45, 414389, tzinfo=datetime.timezone.utc)</span>
 </pre></div>
 </div>
 </section>
@@ -925,10 +925,10 @@ runtime.</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Bad binding argument type supplied - argument #1: type set</span>
-<span class="go">select ? {1, 2, &lt;__main__.TeeStringIO object at 0x7b03b91e7640&gt;, &#39;three&#39;, (4+5j)}</span>
+<span class="go">select ? {1, 2, &lt;__main__.TeeStringIO object at 0x78edb1a2b640&gt;, &#39;three&#39;, (4+5j)}</span>
 <span class="go">select typeof(?) null</span>
 <span class="go">make_set got ((3+4j), &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, &#39;hello&#39;)</span>
-<span class="go">select make_set(?, ?, ?) {&#39;hello&#39;, &lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, (3+4j)}</span>
+<span class="go">select make_set(?, ?, ?) {&lt;_io.TextIOWrapper name=&#39;&lt;stdin&gt;&#39; mode=&#39;r&#39; encoding=&#39;utf-8&#39;&gt;, &#39;hello&#39;, (3+4j)}</span>
 </pre></div>
 </div>
 </section>
@@ -992,7 +992,7 @@ across all the queries within the block</p>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">len(rows)=20</span>
-<span class="go">After 0.200 seconds, we hit number=239229</span>
+<span class="go">After 0.200 seconds, we hit number=272096</span>
 <span class="go">exc=IndexError(&#39;query row limit hit&#39;)</span>
 </pre></div>
 </div>
@@ -1362,7 +1362,7 @@ feedback and allows cancelling.</p>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
 <span class="go">progress handler called</span>
-<span class="go">(9999715084,)</span>
+<span class="go">(9917889186,)</span>
 </pre></div>
 </div>
 </section>
@@ -1714,16 +1714,16 @@ useful instead.</p>
 <span class="go">│ 2026-04- │ /usr/lib/python3.14/pydoc_data                 │ topics.py        │</span>
 <span class="go">│ -12      │                                                │                  │</span>
 <span class="go">├──────────┼────────────────────────────────────────────────┼──────────────────┤</span>
-<span class="go">│ 2026-04- │ /space/apsw/.venv/lib/python3.14/site-         │ checker.py       │</span>
-<span class="go">│ -24      │ packages/mypy                                  │                  │</span>
+<span class="go">│ 2026-06- │ /space/apsw/.venv/lib/python3.14/site-         │ fastjsonschema_- │</span>
+<span class="go">│ -04      │ packages/setuptools/config/_validate_pyproject │ validations.py   │</span>
 <span class="go">├──────────┼────────────────────────────────────────────────┼──────────────────┤</span>
-<span class="go">│ 2026-04- │ /space/apsw/.venv/lib/python3.14/site-         │ fastjsonschema_- │</span>
-<span class="go">│ -10      │ packages/setuptools/config/_validate_pyproject │ validations.py   │</span>
+<span class="go">│ 2026-06- │ /space/apsw/.venv/lib/python3.14/site-         │ uts46data.py     │</span>
+<span class="go">│ -04      │ packages/pip/_vendor/idna                      │                  │</span>
 <span class="go">╰──────────┴────────────────────────────────────────────────┴──────────────────╯</span>
 
 <span class="go">╭────────────┬────────────╮</span>
 <span class="go">│ extension  │ total_size │</span>
-<span class="go">│            │    1894278 │</span>
+<span class="go">│            │    1532522 │</span>
 <span class="go">│ .APACHE    │      40696 │</span>
 <span class="go">│ .APACHE2   │      34074 │</span>
 <span class="go">│ .BSD       │       5376 │</span>
@@ -1731,29 +1731,28 @@ useful instead.</p>
 <span class="go">│ .a         │  104132672 │</span>
 <span class="go">│ .allowlist │         56 │</span>
 <span class="go">│ .bootstrap │       2126 │</span>
-<span class="go">│ .c         │     508200 │</span>
+<span class="go">│ .c         │      15139 │</span>
 <span class="go">│ .cer       │       1214 │</span>
 <span class="go">│ .cfg       │        341 │</span>
 <span class="go">│ .cls       │       7497 │</span>
 <span class="go">│ .conf      │       3076 │</span>
 <span class="go">│ .csh       │        937 │</span>
-<span class="go">│ .css       │     256185 │</span>
+<span class="go">│ .css       │     238672 │</span>
 <span class="go">│ .css_t     │      15236 │</span>
 <span class="go">│ .dat       │   30339529 │</span>
 <span class="go">│ .eot       │    1367872 │</span>
 <span class="go">│ .exe       │     854016 │</span>
 <span class="go">│ .fish      │       2208 │</span>
 <span class="go">│ .gif       │         49 │</span>
-<span class="go">│ .h         │     300982 │</span>
 <span class="go">│ .hhc       │       1593 │</span>
 <span class="go">│ .hhp       │       2197 │</span>
-<span class="go">│ .html      │      72854 │</span>
+<span class="go">│ .html      │      57644 │</span>
 <span class="go">│ .html_t    │        403 │</span>
 <span class="go">│ .in        │       2888 │</span>
 <span class="go">│ .ini       │       2037 │</span>
 <span class="go">│ .ist       │        392 │</span>
 <span class="go">│ .jinja     │     143446 │</span>
-<span class="go">│ .js        │    2031613 │</span>
+<span class="go">│ .js        │    2006163 │</span>
 <span class="go">│ .js_t      │       7243 │</span>
 <span class="go">│ .json      │      75121 │</span>
 <span class="go">│ .local     │       1352 │</span>
@@ -1761,40 +1760,37 @@ useful instead.</p>
 <span class="go">│ .mo        │    2310423 │</span>
 <span class="go">│ .o         │      16072 │</span>
 <span class="go">│ .odt       │      16500 │</span>
-<span class="go">│ .pem       │     511082 │</span>
-<span class="go">│ .png       │     115919 │</span>
+<span class="go">│ .pem       │     508536 │</span>
+<span class="go">│ .png       │     105183 │</span>
 <span class="go">│ .po        │    7955502 │</span>
 <span class="go">│ .pot       │     105216 │</span>
 <span class="go">│ .ps1       │       9031 │</span>
-<span class="go">│ .pth       │        930 │</span>
-<span class="go">│ .py        │   42103068 │</span>
-<span class="go">│ .pyc       │   53192476 │</span>
-<span class="go">│ .pyi       │    2888759 │</span>
+<span class="go">│ .pth       │        725 │</span>
+<span class="go">│ .py        │   34591672 │</span>
+<span class="go">│ .pyc       │   17343570 │</span>
+<span class="go">│ .pyi       │      65184 │</span>
 <span class="go">│ .qhcp      │        567 │</span>
 <span class="go">│ .qhp       │        863 │</span>
 <span class="go">│ .rst       │      41424 │</span>
-<span class="go">│ .scss      │      21409 │</span>
 <span class="go">│ .sh        │       3202 │</span>
-<span class="go">│ .so        │   79928504 │</span>
-<span class="go">│ .sql       │      10334 │</span>
+<span class="go">│ .so        │   39141168 │</span>
+<span class="go">│ .sql       │      10476 │</span>
 <span class="go">│ .stdlib    │      14488 │</span>
 <span class="go">│ .stp       │        330 │</span>
 <span class="go">│ .sty       │     315716 │</span>
 <span class="go">│ .supp      │         70 │</span>
 <span class="go">│ .svg       │     450645 │</span>
 <span class="go">│ .tex       │       2001 │</span>
-<span class="go">│ .tmpl      │       2231 │</span>
+<span class="go">│ .tmpl      │        356 │</span>
 <span class="go">│ .toml      │       3390 │</span>
 <span class="go">│ .ttf       │    2975764 │</span>
-<span class="go">│ .txt       │     356360 │</span>
-<span class="go">│ .typed     │        813 │</span>
+<span class="go">│ .txt       │     345863 │</span>
+<span class="go">│ .typed     │        609 │</span>
 <span class="go">│ .unicode   │       2033 │</span>
 <span class="go">│ .woff      │    2987200 │</span>
 <span class="go">│ .woff2     │    1857936 │</span>
 <span class="go">│ .xdy       │      42919 │</span>
 <span class="go">│ .xml       │       1553 │</span>
-<span class="go">│ .xsd       │       2173 │</span>
-<span class="go">│ .xslt      │       8510 │</span>
 <span class="go">╰────────────┴────────────╯</span>
 </pre></div>
 </div>
@@ -2033,9 +2029,9 @@ Python.</p>
 
 <span class="go">Dump output</span>
 
-<span class="go">-- SQLite dump (by APSW 3.53.1.0)</span>
-<span class="go">-- SQLite version 3.53.1</span>
-<span class="go">-- Date: Tue May  5 08:39:26 2026</span>
+<span class="go">-- SQLite dump (by APSW 3.53.2.0)</span>
+<span class="go">-- SQLite version 3.53.2</span>
+<span class="go">-- Date: Thu Jun  4 08:48:46 2026</span>
 <span class="go">-- Tables like: csvtest%</span>
 <span class="go">-- Database: /space/apsw/dbfile</span>
 <span class="go">-- User: rogerb @ clamps</span>
@@ -2132,16 +2128,16 @@ for per connection statistics.</p>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">code is  SQLITE_TRACE_STMT</span>
 <span class="go">{&#39;code&#39;: 1,</span>
 <span class="go"> &#39;explain&#39;: 0,</span>
-<span class="go"> &#39;id&#39;: 806181064,</span>
+<span class="go"> &#39;id&#39;: 647642520,</span>
 <span class="go"> &#39;readonly&#39;: True,</span>
 <span class="go"> &#39;total_changes&#39;: 146,</span>
 <span class="go"> &#39;trigger&#39;: False}</span>
 <span class="go">code is  SQLITE_TRACE_ROW</span>
-<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 806181064}</span>
+<span class="go">{&#39;code&#39;: 4, &#39;id&#39;: 647642520}</span>
 <span class="go">code is  SQLITE_TRACE_PROFILE</span>
 <span class="go">{&#39;code&#39;: 2,</span>
-<span class="go"> &#39;id&#39;: 806181064,</span>
-<span class="go"> &#39;nanoseconds&#39;: 24000000,</span>
+<span class="go"> &#39;id&#39;: 647642520,</span>
+<span class="go"> &#39;nanoseconds&#39;: 15000000,</span>
 <span class="go"> &#39;stmt_status&#39;: {&#39;SQLITE_STMTSTATUS_AUTOINDEX&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_HIT&#39;: 0,</span>
 <span class="go">                 &#39;SQLITE_STMTSTATUS_FILTER_MISS&#39;: 0,</span>
@@ -2173,15 +2169,13 @@ block of code does.  We use the same query from above.</p>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.3</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">          Process CPU consumption 0.034</span>
-<span class="go">                       Wall clock 1.338</span>
-<span class="go">           Block input operations 416</span>
-<span class="go">        Maximum resident set size 404</span>
-<span class="go">             Page faults - no I/O 27</span>
-<span class="go">     Involuntary context switches 4</span>
-<span class="go">       Voluntary context switches 11</span>
-<span class="go">          CPU time in system mode 0.003</span>
-<span class="go">            CPU time in user mode 0.031</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">          Process CPU consumption 0.023</span>
+<span class="go">                       Wall clock 1.323</span>
+<span class="go">        Maximum resident set size 608</span>
+<span class="go">             Page faults - no I/O 26</span>
+<span class="go">     Involuntary context switches 26</span>
+<span class="go">       Voluntary context switches 1</span>
+<span class="go">            CPU time in user mode 0.023</span>
 <span class="go">           SQLite full table scan 1,365</span>
 <span class="go">           SQLite sort operations 2</span>
 <span class="go">             SQLite vm operations 1,015,353</span>
@@ -2264,7 +2258,7 @@ code.  This also shows behind the scenes SQL.</p>
 <span class="go">    Time: 0.000  Changes: 4</span>
 <span class="go">&gt; COMMIT</span>
 <span class="go"> !COMMIT</span>
-<span class="go">    Time: 0.008</span>
+<span class="go">    Time: 0.007</span>
 <span class="go">&gt; SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;</span>
 <span class="go">V PRAGMA function_list</span>
 <span class="go">    Time: 0.000  Rows: 217  VmStep: 1,523  Mem: 71.0KB</span>
@@ -2518,7 +2512,7 @@ rollback the incomplete transaction.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on May 05, 2026.
+      <span class="lastupdated">Last updated on Jun 04, 2026.
       </span></p>
   </div>
 

@@ -71,9 +71,9 @@ Command line
 ------------
 
 Programs can be run by giving their name and parameters. For example
-:code:`sqlite3_scrub` program::
+:code:`sqlite3_showstat4` program::
 
-    python3 -m apsw.sqlite_extra sqlite3_scrub source.db dest.db
+    python3 -m apsw.sqlite_extra sqlite3_showstat4 source.db
 
 You can also get the filename for any program or extension.  For example the
 :code:`sqlite3_rsync` program::

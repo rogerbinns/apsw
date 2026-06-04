@@ -339,6 +339,13 @@ Calls:
       - [(3, 4), (4, 5)]
     * - select 3,4; select 5
       - [(3, 4), 5]
+    * - select null
+      - None
+    * - select 'yes' where 1=2
+      - None
+
+ It is not possible to tell the difference between :code:`None`
+ returned, versus no matching rows.
 
  Row tracers are not called when using this method.
 
