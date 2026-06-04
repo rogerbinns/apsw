@@ -405,7 +405,7 @@ class apsw_build(bparent):
 
     def run(self):
         # this has to be done first ...
-        if all(pathlib.Path(f).exists() for f in ("sqlite3/tool/dbtotxt.c", "sqlite3/ext/misc/scrub.c")):
+        if all(pathlib.Path(f).exists() for f in ("sqlite3/tool/dbtotxt.c", "sqlite3/ext/misc/unionvtab.c")):
             # Call into vend which we can't import so do something similar
             vend = types.ModuleType("vend")
             sys.modules["vend"] = vend
