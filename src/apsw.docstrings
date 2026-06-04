@@ -3537,6 +3537,13 @@
 "     - [(3, 4), (4, 5)]\n" \
 "   * - select 3,4; select 5\n" \
 "     - [(3, 4), 5]\n" \
+"   * - select null\n" \
+"     - None\n" \
+"   * - select 'yes' where 1=2\n" \
+"     - None\n" \
+"\n" \
+"It is not possible to tell the difference between :code:`None`\n" \
+"returned, versus no matching rows.\n" \
 "\n" \
 "Row tracers are not called when using this method.\n" 
 

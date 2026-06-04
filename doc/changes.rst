@@ -10,6 +10,12 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.53.2.0
+========
+
+Reflects changes and updates in :doc:`extra`.  The ``sqlite3_scrub`` binary
+has been removed - use ``VACUUM INTO`` instead.
+
 3.53.1.0
 ========
 

@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import setup
 
 sqlitevers = (
+    "3530200",
     "3530100",
     "3530000",
     "3510300",
@@ -21,6 +22,7 @@ sqlitevers = (
 
 other_urls = (
     # vec1
+    "https://sqlite.org/vec1/zip/vec1-20260526165101-762865e44d.zip",
     "https://sqlite.org/vec1/zip/vec1-20260505104119-eb38e10fef.zip",
     "https://sqlite.org/vec1/zip/vec1-20260409204746-4b73767df0.zip",
     "https://sqlite.org/vec1/zip/vec1-20260306155250-d070184523.zip",

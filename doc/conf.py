@@ -23,7 +23,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
-    "sphinx_autodoc_typehints",
 ]
 
 if not os.getenv("APSW_NO_GA"):

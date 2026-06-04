@@ -2805,6 +2805,13 @@ class Cursor:
          - [(3, 4), (4, 5)]
        * - select 3,4; select 5
          - [(3, 4), 5]
+       * - select null
+         - None
+       * - select 'yes' where 1=2
+         - None
+
+    It is not possible to tell the difference between :code:`None`
+    returned, versus no matching rows.
 
     Row tracers are not called when using this method."""
 
@@ -4530,6 +4537,8 @@ SQLITE_CHANGESETAPPLY_INVERT: int = 2
 """For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
 SQLITE_CHANGESETAPPLY_NOSAVEPOINT: int = 1
 """For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
+SQLITE_CHANGESETAPPLY_NOUPDATELOOP: int = 16
+"""For `Flags for sqlite3changeset_apply_v2 <https://sqlite.org/session/c_changesetapply_fknoaction.html>'__"""
 SQLITE_CHANGESETSTART_INVERT: int = 2
 """For `Flags for sqlite3changeset_start_v2 <https://sqlite.org/session/c_changesetstart_invert.html>'__"""
 SQLITE_CHANGESET_ABORT: int = 2
@@ -5563,7 +5572,8 @@ mapping_session_changeset_apply_v2_flags: dict[str | int, int | str]
 Doc at https://sqlite.org/session/c_changesetapply_fknoaction.html
 
 SQLITE_CHANGESETAPPLY_FKNOACTION SQLITE_CHANGESETAPPLY_IGNORENOOP
-SQLITE_CHANGESETAPPLY_INVERT SQLITE_CHANGESETAPPLY_NOSAVEPOINT"""
+SQLITE_CHANGESETAPPLY_INVERT SQLITE_CHANGESETAPPLY_NOSAVEPOINT
+SQLITE_CHANGESETAPPLY_NOUPDATELOOP"""
 
 mapping_session_changeset_start_v2_flags: dict[str | int, int | str]
 """Flags for sqlite3changeset_start_v2 mapping names to int and int to names.
@@ -7627,6 +7637,13 @@ class AsyncCursor:
          - [(3, 4), (4, 5)]
        * - select 3,4; select 5
          - [(3, 4), 5]
+       * - select null
+         - None
+       * - select 'yes' where 1=2
+         - None
+
+    It is not possible to tell the difference between :code:`None`
+    returned, versus no matching rows.
 
     Row tracers are not called when using this method."""
 

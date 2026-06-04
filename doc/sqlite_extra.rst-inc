@@ -45,10 +45,6 @@ sqlite3_rsync (`doc <https://sqlite.org/rsync.html>`__)
 
    Database Remote-Copy Tool
 
-sqlite3_scrub (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fscrub.c>`__)
-
-   Makes a backup zeroing out all deleted content
-
 sqlite3_shell (`doc <https://sqlite.org/cli.html>`__)
 
    Command line shell
@@ -175,7 +171,7 @@ Extensions
         * VTable: :code:`fuzzer`
 
     * - ieee754 (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fieee754.c>`__)
-      - functions for the exact display* and input of IEEE754 Binary64 floating-point numbers
+      - functions for the exact display and input of IEEE754 Binary64 floating-point numbers
       -
         * Function: :code:`ieee754` :code:`ieee754_exponent` :code:`ieee754_from_blob` :code:`ieee754_from_int` :code:`ieee754_inc` :code:`ieee754_mantissa` :code:`ieee754_to_blob` :code:`ieee754_to_int`
 
