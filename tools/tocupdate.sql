@@ -20,6 +20,7 @@ insert into toc values
     ('SQLITE_CHANGESETAPPLY_INVERT', 'constant', 0, 'Flags for sqlite3changeset_apply_v2', 'session/c_changesetapply_fknoaction.html'),
     ('SQLITE_CHANGESETAPPLY_IGNORENOOP', 'constant', 0, 'Flags for sqlite3changeset_apply_v2', 'session/c_changesetapply_fknoaction.html'),
     ('SQLITE_CHANGESETAPPLY_FKNOACTION', 'constant', 0, 'Flags for sqlite3changeset_apply_v2', 'session/c_changesetapply_fknoaction.html'),
+    ('SQLITE_CHANGESETAPPLY_NOUPDATELOOP', 'constant', 0, 'Flags for sqlite3changeset_apply_v2', 'session/c_changesetapply_fknoaction.html'),
 
     ('SQLITE_CHANGESETSTART_INVERT', 'constant', 0, 'Flags for sqlite3changeset_start_v2', 'session/c_changesetstart_invert.html'),
 

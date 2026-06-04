@@ -124,7 +124,7 @@ extras = [
     ),
     Extra(
         name="ieee754",
-        description="functions for the exact display* and input of IEEE754 Binary64 floating-point numbers",
+        description="functions for the exact display and input of IEEE754 Binary64 floating-point numbers",
     ),
     Extra(
         name="memstat",
@@ -297,14 +297,6 @@ extras = [
         sources=["tool/sqlite3_rsync.c"],
         description="Database Remote-Copy Tool",
         doc="rsync.html",
-        lib_sqlite=True,
-    ),
-    Extra(
-        name="sqlite3_scrub",
-        type="executable",
-        sources=["ext/misc/scrub.c"],
-        defines=[("SCRUB_STANDALONE", 1)],
-        description="Makes a backup zeroing out all deleted content",
         lib_sqlite=True,
     ),
     Extra(

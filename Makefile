@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.53.1
+SQLITEVERSION=3.53.2
 APSWSUFFIX=.0
 
-RELEASEDATE="5 May 2026"
+RELEASEDATE="5 June 2026"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -91,7 +91,7 @@ doc/renames.rstgen: tools/names.py tools/renames.json
 	env PYTHONPATH=. $(PYTHON) tools/names.py rst-gen > doc/renames.rstgen
 
 doc-depends: ## pip installs packages needed to build doc
-	$(PYTHON) -m pip install -U --upgrade-strategy eager sphinx sphinx_rtd_theme sphinxcontrib-googleanalytics sphinx_autodoc_typehints
+	$(PYTHON) -m pip install -U --upgrade-strategy eager sphinx sphinx_rtd_theme sphinxcontrib-googleanalytics
 
 dev-depends: ## pip installs packages useful for development (none are necessary except setuptools)
 	$(PYTHON) -m pip install -U --upgrade-strategy eager build wheel setuptools pip

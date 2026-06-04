@@ -60,7 +60,7 @@
         "type": "extension"
     },
     "ieee754": {
-        "description": "functions for the exact display* and input of IEEE754 Binary64 floating-point numbers",
+        "description": "functions for the exact display and input of IEEE754 Binary64 floating-point numbers",
         "type": "extension"
     },
     "memstat": {
@@ -145,10 +145,6 @@
     },
     "sqlite3_rsync": {
         "description": "Database Remote-Copy Tool",
-        "type": "executable"
-    },
-    "sqlite3_scrub": {
-        "description": "Makes a backup zeroing out all deleted content",
         "type": "executable"
     },
     "sqlite3_shell": {
