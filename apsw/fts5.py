@@ -1462,19 +1462,9 @@ class Table:
 
         :returns: True if a row was deleted
         """
-        with self._db:
-            c = self._db.total_changes()
-            if self.structure.content:
-                target_table = f"{self._qschema}.{quote_name(self.structure.content)}"
-            else:
-                target_table = self.quoted_table_name
-
-            sql = f"delete from { target_table} where "
-            sql += quote_name(self.structure.content_rowid or "rowid")
-            sql += "=?"
-
-            self._db.execute(sql, (rowid,))
-            return c != self._db.total_changes()
+        if self.structure.content is not None:
+            return bool(q.delete_content(self._db, rowid))
+        return bool(q.delete(self._db, rowid))
 
     def upsert(self, *args: apsw.SQLiteValue, **kwargs: apsw.SQLiteValue) -> int:
         """Insert or update with columns by positional and keyword arguments
@@ -1588,17 +1578,14 @@ class Table:
         If you are using an external content table, it is better to use triggers on
         that table.
         """
-        self._db.execute(f"insert into { self._qschema}.{ self._qname }({ self._qname}) VALUES('delete-all')")
+        q.command(self._db, "delete-all")
 
     def command_integrity_check(self, external_content: bool = True) -> None:
         """Does `integrity check <https://www.sqlite.org/fts5.html#the_integrity_check_command>`__
 
         If `external_content` is True, then the FTS index is compared to the external content.
         """
-        self._db.execute(
-            f"insert into { self._qschema}.{ self._qname }({ self._qname}, rank) VALUES('integrity-check', ?)",
-            (int(external_content),),
-        )
+        q.command_integrity_check(self._db, external_content)
 
     def command_merge(self, n: int) -> int:
         """Does `merge <https://www.sqlite.org/fts5.html#the_merge_command>`__
@@ -1608,17 +1595,15 @@ class Table:
         :returns:  The difference between `sqlite3_total_changes() <https://sqlite.org/c3ref/total_changes.html>`__
                    before and after running the command.
         """
-        before = self._db.total_changes()
-        self._db.execute(f"insert into { self._qschema}.{ self._qname }({ self._qname}, rank) VALUES('merge', ?)", (n,))
-        return self._db.total_changes() - before
+        return q.command_merge(self._db, n)
 
     def command_optimize(self) -> None:
         "Does `optimize <https://www.sqlite.org/fts5.html#the_optimize_command>`__"
-        self._db.execute(f"insert into { self._qschema}.{ self._qname }({ self._qname}) VALUES('optimize')")
+        q.command(self._db, "optimize")
 
-    def command_rebuild(self):
+    def command_rebuild(self) -> None:
         "Does `rebuild <https://www.sqlite.org/fts5.html#the_rebuild_command>`__"
-        self._db.execute(f"insert into { self._qschema}.{ self._qname }({ self._qname}) VALUES('rebuild')")
+        q.command(self._db, "rebuild")
 
     # These are the defaults.  The _config table is not updated unless they are changed
     #
@@ -1671,9 +1656,7 @@ class Table:
     def _config_internal(self, name: str, val: apsw.SQLiteValue, default: apsw.SQLiteValue) -> apsw.SQLiteValue:
         "Internal config implementation"
         if val is not None:
-            self._db.execute(
-                f"insert into { self._qschema}.{ self._qname }({ self._qname}, rank) VALUES('{name}', ?)", (val,)
-            )
+            q.config_set(self._db, name, val)
         v = self.config(name, prefix="")
         return v if v is not None else default
 
@@ -1691,15 +1674,10 @@ class Table:
         The advantage of using this is that the names/values will
         survive the FTS5 table being renamed, backed up, restored etc.
         """
-        key = prefix + name
+
         if value is not None:
-            self._db.execute(
-                f"INSERT OR REPLACE into { self._qschema }.{ quote_name(self._name + '_config') }(k,v) values(?,?)",
-                (key, value),
-            )
-        return self._db.execute(
-            f"SELECT v from { self._qschema }.{ quote_name(self._name + '_config') } where k=?", (key,)
-        ).get
+            q.config_table_set(self._db, prefix, name, value)
+        return q.config_table_get(self._db, prefix, name)
 
     @functools.cached_property
     def tokenizer(self) -> apsw.FTS5Tokenizer:
@@ -1750,8 +1728,7 @@ class Table:
                         break
 
                 if tokens:
-                    n = self.fts5vocab_name("row")
-                    all_tokens = dict(self._db.execute(f"select term, doc from { n }"))
+                    all_tokens = dict(q.all_tokens(self._db))
                 else:
                     all_tokens = None
 
@@ -2268,6 +2245,18 @@ class Table:
             f"""create virtual table if not exists { name } using fts5vocab(
                     {self._qschema}, {self._qname}, "{ type }")"""
         )
+        return name
+
+    # ::TODO:: remove _new once all uses of original moved over
+    @functools.cache
+    def fts5vocab_name_new(self, type: Literal["row"] | Literal["col"] | Literal["instance"]) -> str:
+        """
+        Creates a `fts5vocab table <https://www.sqlite.org/fts5.html#the_fts5vocab_virtual_table_module>`__
+        in temp and returns fully quoted name
+        """
+
+        name = f"fts5vocab_{ self._schema }_{ self._name }_{ type }"
+        q.ensure_vocab(self._db, name, type)
         return name
 
     @classmethod

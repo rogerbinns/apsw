@@ -65,7 +65,9 @@ class ChainMapRO:
                 return map[key]
             except KeyError:
                 pass
-        raise KeyError(f"{key!r} in query but not in bindings. Does it need to be a parameter or local variable?")
+        exc = KeyError(key)
+        getattr(exc, "add_note", lambda x: None)(f"{key!r} in SQL template  but not in bindings. Does it need to be eval, a parameter. or local variable?")
+        raise exc
 
     def items(self):
         # Called when displaying locals

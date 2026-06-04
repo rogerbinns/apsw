@@ -62,3 +62,96 @@ FROM
     {self._schema:eval|id}.{self._name:eval|id}
 WHERE
     rowid = {rowid};
+
+-- name: delete(rowid: int, **locals) -> changes
+-- Deletes row from table when NOT using a content table
+
+DELETE
+FROM
+    {self._schema:eval|id}.{self._name:eval|id}
+WHERE
+    rowid = {rowid};
+
+-- name: delete_content(rowid: int, **locals) -> changes
+-- Deletes row from corresponding content table
+
+DELETE
+FROM
+    {self._schema:eval|id}.{self.structure.content:eval|id}
+WHERE
+    {self.structure.content_rowid if self.structure.content_rowid is not None else "rowid":eval|id}
+        = {rowid};
+
+-- name: command(cmd, **locals)
+
+INSERT
+INTO
+    {self._schema:eval|id}.{self._name:eval|id}
+        ({self._name:eval|id})
+VALUES
+    ({cmd});
+
+-- name: command_integrity_check(external_content: bool, **locals)
+
+INSERT
+INTO
+    {self._schema:eval|id}.{self._name:eval|id}
+        ({self._name:eval|id}, 'rank')
+VALUES
+    ('integrity-check', {external_content});
+
+-- name: command_merge(n: int, **locals) -> changes
+
+INSERT
+INTO
+    {self._schema:eval|id}.{self._name:eval|id}
+        ({self._name:eval|id}, rank)
+VALUES
+    ('merge', {n});
+
+-- name: config_set(name: str, value: apsw.SQLiteValue, **locals)
+
+INSERT
+INTO
+    {self._schema:eval|id}.{self._name:eval|id}
+        ({self._name:eval|id}, 'rank')
+VALUES
+    ({name}, {value});
+
+-- name: config_table_set(prefix: str, name: str, value: apsw.SQLiteValue, **locals)
+
+INSERT OR REPLACE
+INTO
+    {self._schema:eval|id}.{self._name + '_config':eval|id}
+    (k, v)
+VALUES
+    ({prefix + name:eval}, {value});
+
+-- name: config_table_get(prefix: str, name: str, **locals) -> Any | None
+
+SELECT
+    v
+FROM
+    {self._schema:eval|id}.{self._name + '_config':eval|id}
+WHERE
+    k = {prefix + name:eval};
+
+-- name: ensure_vocab(name: str, type: str, **locals) -> None
+
+CREATE VIRTUAL TABLE
+    IF NOT EXISTS
+temp.{name:id}
+    USING fts5vocab
+        (
+            {self._schema:eval},
+            {self._name:eval},
+            {type}
+        );
+
+-- name: all_tokens
+
+SELECT
+    term, doc
+FROM
+    temp.{self.fts5vocab_name_new("row"):eval|id};
+

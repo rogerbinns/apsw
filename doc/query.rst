@@ -3,11 +3,14 @@ Query (Separating SQL from Python code)
 .. currentmodule:: apsw
 
 The documentation and examples have SQL as Python strings, mixed in
-with Python code to make it clear what is happening.
-:mod:`apsw.query` separates your SQL into their own files that can be
-syntax checked and highlighted as SQL.  You can then import those SQL
-files as though they were native Python code, with a Python function
-per section of SQL.
+with Python code to make it clear what is happening. :mod:`apsw.query`
+separates your SQL into their own files.
+
+* The SQL files can be can be syntax checked and highlighted as SQL
+* You import the SQL files as though they were native Python code
+* Each SQL section becomes a Python function
+* Always executes to completion (explain why)
+* Automatically sync and async based on :class:`Connection` used
 
 Overview
 --------
@@ -18,8 +21,6 @@ SQL.  For each section:
 
 * There is a name - you call the SQL using that name from Python
   providing the :class:`Connection` or :class:`Cursor` to use
-* Automatically sync or async depending on the underlying connection
-  used
 * Optionally specify Python parameters, their types, and default
   values that are available as SQL bindings.
 * You can also say that caller's local variables are available
@@ -39,8 +40,6 @@ level docstring, :code:`import`, and types.
 
 Example
 -------
-
-ADD rank, ratio of country population
 
 This example covers a database of cities.  It shows segments from the
 SQL file and then the Python using that segment.  The section is
@@ -106,18 +105,18 @@ query to name a parameter, with SQLite also supporting :code:`$` and
   -- Converts Python date to SQLite representation
   WHERE founded >= {founded_after.isoformat():eval};
 
-In Python code there are several ways of accessing the object
-representing the SQL file, including importing it.  (:ref:`More
-<python_access>`)
+In Python code import the SQL file at runtime.  (You can also generate
+the Python ahead of time - :ref:`More <python_access>`).
 
 .. code-block:: python
 
+  # Use for runtime import
   apsw.query.import_hook()
 
   # if the file was city_queries.sql then use this
   import city_queries
 
-  # Inside a pack you can use a relative import
+  # Inside a package you can use a relative import
   from . import city_queries
 
   # Regular cursor iteration of the SQL
@@ -148,7 +147,7 @@ A lot more is available:
 Python access
 -------------
 
-Call :class:`apsw.query.import_hook` which registers an import hook.
+Call :class:`apsw.query.import_hook` which registers a runtime import hook.
 (You can call it multiple times - only one hook will be registered.)
 Then :code:`import` your :code:`.sql` file as though it was a Python
 file.
