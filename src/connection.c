@@ -6228,6 +6228,26 @@ Connection_is_async(PyObject *self_, void *Py_UNUSED(unused))
   Py_RETURN_FALSE;
 }
 
+/** .. attribute:: is_direct
+  :type: bool
+
+  Indicates if SQLite calls will be executed directly.
+
+  Always ``True`` for sync connections.   For async connections,
+  ``True`` if this is the worker thread, else ``False`` because
+  the calls have to be forwarded to the worker thread and awaited.
+*/
+static PyObject *
+Connection_is_direct(PyObject *self_, void *Py_UNUSED(unused))
+{
+  Connection *self = (Connection *)self_;
+  CHECK_CLOSED(self, NULL);
+
+  if (IN_WORKER_THREAD(self))
+    Py_RETURN_TRUE;
+  Py_RETURN_TRUE;
+}
+
 /** .. attribute:: async_controller
   :type: AsyncConnectionController
 
@@ -6800,6 +6820,7 @@ static PyGetSetDef Connection_getseters[] = {
   { "transaction_mode", Connection_get_transaction_mode, Connection_set_transaction_mode,
     Connection_transaction_mode_DOC },
   { "is_async", Connection_is_async, NULL, Connection_is_async_DOC },
+  { "is_direct", Connection_is_direct, NULL, Connection_is_direct_DOC },
   { "async_controller", Connection_async_controller, NULL, Connection_async_controller_DOC },
 #ifndef APSW_OMIT_OLD_NAMES
   { Connection_exec_trace_OLDNAME, Connection_get_exec_trace_attr, Connection_set_exec_trace_attr,

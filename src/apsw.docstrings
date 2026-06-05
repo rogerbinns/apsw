@@ -2372,6 +2372,14 @@
 "\n" \
 "`True` if this connection is operating in async mode.\n" 
 
+#define  Connection_is_direct_DOC ":type: bool\n" \
+"\n" \
+"Indicates if SQLite calls will be executed directly.\n" \
+"\n" \
+"Always ``True`` for sync connections.   For async connections,\n" \
+"``True`` if this is the worker thread, else ``False`` because\n" \
+"the calls have to be forwarded to the worker thread and awaited.\n" 
+
 #define  Connection_is_interrupted_DOC ":type: bool\n" \
 "\n" \
 "Indicates if this connection has been interrupted.\n" \

@@ -420,7 +420,7 @@ def {meta["name"]}{both_sig}:
     if meta["is_template"]:
         res.append("    sql = template_expand(sql, vals)")
     res.append(inner)
-    res.append("""    return async_inner() if cursor.connection.is_async else sync_inner()
+    res.append("""    return sync_inner() if cursor.connection.is_direct else async_inner()
 
 """)
 

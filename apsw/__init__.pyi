@@ -1987,6 +1987,13 @@ class Connection:
     is_async: bool
     """`True` if this connection is operating in async mode."""
 
+    is_direct: bool
+    """Indicates if SQLite calls will be executed directly.
+
+    Always ``True`` for sync connections.   For async connections,
+    ``True`` if this is the worker thread, else ``False`` because
+    the calls have to be forwarded to the worker thread and awaited."""
+
     is_interrupted: bool
     """Indicates if this connection has been interrupted.
 
@@ -6854,6 +6861,13 @@ class AsyncConnection:
 
     is_async: bool
     """`True` if this connection is operating in async mode."""
+
+    is_direct: bool
+    """Indicates if SQLite calls will be executed directly.
+
+    Always ``True`` for sync connections.   For async connections,
+    ``True`` if this is the worker thread, else ``False`` because
+    the calls have to be forwarded to the worker thread and awaited."""
 
     is_interrupted: bool
     """Indicates if this connection has been interrupted.
