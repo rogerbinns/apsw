@@ -321,6 +321,8 @@ Tips
 * peewee for lightweight ORM
 * SQLAlchemy for ORM / multi-database support
 * sqlglot for multi-sql support
+* :code:`import apsw.sphinx` in :code:`conf.py` to keep
+  sphinx happy
 
 Python 3.14+ tstrings
 ---------------------
@@ -349,6 +351,7 @@ Example
 * corresponds to :source:`apsw/_fts5q.sql`
 * explain :code:`**locals` usage
 * explain :code:`eval` for self stuff
+* explain clicking source to see SQL
 
 .. automodule:: apsw._fts5q
     :members:

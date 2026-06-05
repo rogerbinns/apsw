@@ -30,7 +30,7 @@ WHERE
 SELECT
     name
 FROM
-    pragma_table_info({self._name:eval|id}, {self._schema:eval|id});
+    pragma_table_info({self._name:eval}, {self._schema:eval});
 
 -- name: columns_indexed(**locals) -> list[str]
 -- Get column names that are indexed
@@ -143,9 +143,9 @@ CREATE VIRTUAL TABLE
 temp.{name:id}
     USING fts5vocab
         (
-            {self._schema:eval},
-            {self._name:eval},
-            {type}
+            {self._schema:eval|id},
+            {self._name:eval|id},
+            {type:id}
         );
 
 -- name: all_tokens
