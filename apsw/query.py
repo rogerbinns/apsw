@@ -736,7 +736,7 @@ if __name__ == "__main__":
 
     def output():
         if options.output:
-            return open(options.output, "wt")
+            return open(options.output, "wt", encoding="utf8")
         else:
             return sys.stdout
 

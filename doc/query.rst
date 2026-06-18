@@ -11,6 +11,8 @@ separates your SQL into their own files.
 * Each SQL section becomes a Python function
 * Always executes to completion (explain why)
 * Automatically sync and async based on :class:`Connection` used
+* Get doc and completions
+* Can use mocks for testing
 
 Overview
 --------

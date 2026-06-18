@@ -10212,6 +10212,7 @@ from .jsonb import *
 from .carray import *
 from .aiotest import *
 from .extratest import *
+from .querytest import *
 
 if "APSW_TEST_ITERATIONS" not in os.environ:
     from .fork_checker import *
