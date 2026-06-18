@@ -183,7 +183,7 @@ class BadIsTrue(int):
 class ThreadRunner(threading.Thread):
     def __init__(self, callable, *args, **kwargs):
         threading.Thread.__init__(self)
-        self.daemon - True
+        self.daemon = True
         self.callable = callable
         self.args = args
         self.kwargs = kwargs
