@@ -67,8 +67,8 @@ extlinks = {
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "trio": (" https://trio.readthedocs.io/en/stable/", None),
-    "anyio": (" https://anyio.readthedocs.io/en/stable/", None),
+    "trio": ("https://trio.readthedocs.io/en/stable/", None),
+    "anyio": ("https://anyio.readthedocs.io/en/stable/", None),
     }
 
 # Add any paths that contain templates here, relative to this directory.
