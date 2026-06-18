@@ -502,14 +502,14 @@ class _SQLSourceLoader(importlib.abc.SourceLoader):
         return f"<apsw.query source {str(self.path)!r}>.py"
 
     def get_source(self, fullname: str):
-        return _make_py_from_text(self.path.read_text(encoding="utf8"))
+        return python_from_text(self.path.read_text(encoding="utf8"))
 
     def get_data(self, path: str):
         return self.get_source(path).encode("utf8")
 
 
-def _make_py_from_text(text: str) -> str:
-    "Internal routine that converts SQL file to Python code"
+def python_from_text(text: str) -> str:
+    """Returns Python code corresponding to SQL source"""
 
     res: list[str] = []
 
@@ -741,7 +741,8 @@ if __name__ == "__main__":
             return sys.stdout
 
     if options.file:
-        res = py_from_file(options.file)
+
+        res = python_from_text(pathlib.Path(options.file).read_text(encoding="utf8"))
         o = output()
         try:
             o.write(res)

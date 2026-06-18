@@ -46,12 +46,37 @@ class Query(unittest.TestCase):
             f = td / " source! .sql"
             f.write_text("""-- name: select_1 -> int\nSELECT 1""")
 
-            proc=subprocess.run(cli+["--file", str(f)], capture_output=True)
+            proc = subprocess.run(cli + ["--file", str(f)], capture_output=True)
             self.assertEqual(0, proc.returncode)
             self.assertIn(b"async ", proc.stdout)
             self.assertIn(b"SELECT 1", proc.stdout)
 
+            outf = pathlib.Path(td) / "quack.howdy"
+            proc = subprocess.run(cli + ["--file", str(f), "--output", str(outf)], capture_output=True)
+            self.assertEqual(0, proc.returncode)
+            self.assertEqual(b"", proc.stdout)
+            self.assertEqual(b"", proc.stderr)
 
+            self.assertIn("SELECT 1", outf.read_text())
+
+            proc = subprocess.run(cli + ["--import", "apsw.tests._querytest"], capture_output=True)
+            self.assertEqual(0, proc.returncode)
+            self.assertIn(b"async ", proc.stdout)
+            self.assertIn(b"SELECT 2", proc.stdout)
+
+            proc = subprocess.run(
+                cli + ["--import", "apsw.tests._querytest", "--output", str(outf)], capture_output=True
+            )
+            self.assertEqual(0, proc.returncode)
+            self.assertEqual(b"", proc.stdout)
+            self.assertEqual(b"", proc.stderr)
+
+            self.assertIn("SELECT 2", outf.read_text())
+
+            proc = subprocess.run(cli + ["--import", "apsw.query"], capture_output=True)
+            self.assertNotEqual(0, proc.returncode)
+            self.assertEqual(b"", proc.stdout)
+            self.assertIn(b"was not imported", proc.stderr)
 
     def testStuff(self):
         # import hook
