@@ -16,6 +16,10 @@ class Query(unittest.TestCase):
         self.db = apsw.Connection("")
 
     def tearDown(self):
+        try:
+            del sys.modules['apsw.tests._querytest']
+        except KeyError:
+            pass
         for c in apsw.connections():
             c.close()
 
@@ -77,6 +81,51 @@ class Query(unittest.TestCase):
             self.assertNotEqual(0, proc.returncode)
             self.assertEqual(b"", proc.stdout)
             self.assertIn(b"was not imported", proc.stderr)
+
+    def testGeneral(self):
+        with apsw.query.import_hook():
+            import apsw.tests._querytest as q
+
+        self.assertEqual(3, q.pytest(2))
+
+        self.assertEqual((3, 4), q.no_bind(self.db))
+        self.assertEqual((b"abc", None), q.binding(self.db, b"abc", None))
+        y = "a local"
+        self.assertEqual((3.3, y), q.binding_locals(self.db, 3.3))
+
+        with self.assertRaises(KeyError):
+            del y
+            q.binding_locals(self.db, 3)
+
+
+
+    async def atestGeneral(self):
+        # same as above, but async
+
+        self.db=await apsw.Connection.as_async("")
+
+        with apsw.query.import_hook():
+            import apsw.tests._querytest as q
+
+        self.assertEqual(3, await q.apytest(2))
+
+        self.assertEqual((3, 4), await q.no_bind(self.db))
+        self.assertEqual((b"abc", None), await q.binding(self.db, b"abc", None))
+        y = "a local"
+        self.assertEqual((3.3, y), await q.binding_locals(self.db, 3.3))
+
+        with self.assertRaises(KeyError):
+            del y
+            await q.binding_locals(self.db, 3)
+
+
+
+    def testGeneralAsync(self):
+        try:
+            import asyncio
+        except ImportError:
+            return
+        asyncio.run(self.atestGeneral(), debug=True)
 
     def testStuff(self):
         # import hook

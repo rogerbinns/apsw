@@ -81,7 +81,7 @@ class ChainMapRO:
 
 # ChainMapRO doesn't implement the full abc such as iter and len but
 # they aren't used so we don't care!  That is why we register rather
-# thank inherit
+# than inherit
 collections.abc.Mapping.register(ChainMapRO)
 
 
@@ -111,6 +111,7 @@ def _is_template_string(string: str) -> bool:
     """
 
     for i, (literal, field, spec, conversion) in enumerate(_template_parse(string)):
+        # this means there are no fields - a single literal
         if i == 0 and field is None and spec is None and conversion is None:
             return False
     return True
