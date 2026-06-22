@@ -10,6 +10,11 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+query
+=====
+
+Added :meth:`Connection.is_direct`.
+
 3.53.2.0
 ========
 
