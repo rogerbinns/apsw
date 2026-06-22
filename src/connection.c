@@ -6245,7 +6245,7 @@ Connection_is_direct(PyObject *self_, void *Py_UNUSED(unused))
 
   if (IN_WORKER_THREAD(self))
     Py_RETURN_TRUE;
-  Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
 }
 
 /** .. attribute:: async_controller
