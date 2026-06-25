@@ -17,9 +17,15 @@ class Query(unittest.TestCase):
 
     def tearDown(self):
         try:
-            del sys.modules['apsw.tests._querytest']
+            del sys.modules["apsw.tests._querytest"]
         except KeyError:
             pass
+        try:
+            global q
+            del q
+        except NameError:
+            pass
+
         for c in apsw.connections():
             c.close()
 
@@ -97,12 +103,32 @@ class Query(unittest.TestCase):
             del y
             q.binding_locals(self.db, 3)
 
+        x = q.level1(self.db)
+        self.assertEqual(x.__class__.__name__, "ns_level1")
+        self.assertEqual(x.kwargs, {"one": 1, "T W O": 2})
+        y = q.level2(self.db)
+        self.assertEqual(y.__class__.__name__, "ns_level2")
+        self.assertEqual(y.kwargs, {"3": 3, "": 4})
+        z = q.level3(self.db)
+        self.assertEqual(z.__class__.__name__, "ns_level3")
+        self.assertEqual(z.kwargs, {"select": 5, "class": 6})
 
+        with self.assertRaises(apsw.query.RowExpected):
+            q.res_zero(self.db)
+
+        self.assertIsNone(q.res_zero_opt(self.db))
+
+        self.assertEqual("abcdef", q.res_zero_literal(self.db))
+
+        self.assertIs(q.ns_level1.ns_level2.ns_level3, q.res_zero_nested(self.db))
+
+        with self.assertRaises(apsw.query.TooManyRows):
+            q.too_many(self.db)
 
     async def atestGeneral(self):
         # same as above, but async
 
-        self.db=await apsw.Connection.as_async("")
+        self.db = await apsw.Connection.as_async("")
 
         with apsw.query.import_hook():
             import apsw.tests._querytest as q
@@ -117,8 +143,6 @@ class Query(unittest.TestCase):
         with self.assertRaises(KeyError):
             del y
             await q.binding_locals(self.db, 3)
-
-
 
     def testGeneralAsync(self):
         try:

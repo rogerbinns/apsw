@@ -292,7 +292,7 @@ def _gen_function(meta: dict[str, Any]) -> str:
         isinstance(node, ast.BinOp)
         and isinstance(node.op, ast.BitOr)
         and isinstance(node.left, (ast.Name, ast.Attribute))
-        and isinstance(node.right, (ast.Constant, ast.Name, ast.Subscript))
+        and isinstance(node.right, (ast.Constant, ast.Attribute, ast.Name, ast.Subscript))
     ):
         # one row - return left
         # zero - return right
