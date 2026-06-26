@@ -5598,6 +5598,8 @@ Connection_release_memory(PyObject *self_, PyObject *unused)
 
   Otherwise *keep* is a sequence of strings, naming the virtual tables that
   are kept, dropping all others.
+
+  -* sqlite3_drop_modules
 */
 static PyObject *
 Connection_drop_modules(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
