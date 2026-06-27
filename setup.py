@@ -315,7 +315,7 @@ class fetch(Command):
                 ),
                 (
                     "zlib source",
-                    "https://www.zlib.net/zlib132.zip",
+                    "https://github.com/madler/zlib/releases/download/v1.3.2/zlib132.zip",
                     "sqlite3/zlib",
                 ),
             ):

@@ -29,7 +29,7 @@ other_urls = (
     # sqlar
     "https://sqlite.org/sqlar/zip/sqlar-src-20180107193712-4824e73896.zip",
     # zlib
-    "https://www.zlib.net/zlib132.zip",
+    "https://github.com/madler/zlib/releases/download/v1.3.2/zlib132.zip",
 )
 
 fixup_download_url = setup.fixup_download_url
