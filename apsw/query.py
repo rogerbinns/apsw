@@ -274,6 +274,8 @@ def _gen_function(meta: dict[str, Any]) -> str:
         sync_sig += "changes"
         both_sig += "changes | Awaitable[changes]"
 
+        # ::TODO:: sqlite3_total_changes is going to require dbmutex
+        # in 3.54 so will have to await the total_changes call
         inner = """
     async def async_inner() -> changes:
         count = cursor.connection.total_changes()
@@ -390,7 +392,7 @@ def _gen_function(meta: dict[str, Any]) -> str:
         res = []
         for row in cursor.execute(sql, vals):
             desc = cursor.get_description()
-            res.append({l}(row[0]) if len(desc) == 1 else {l}(**dict(zip((d[0] for d in desc), row, strict=True))))
+            res.append({_retval_for(l)})
         return res
 """
 

@@ -50,6 +50,14 @@ SELECT * from sqlite_schema WHERE name='no exist';
 SELECT 3;
 SELECT 4;
 
+--name: no_ret
+
+SELECT * FROM pragma_function_list;
+
+--     name: list_ret -> list[Any]
+
+SELECT * FROM pragma_function_list
+
 --python:nested namespaces
 
 class ns_level1:

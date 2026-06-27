@@ -125,6 +125,12 @@ class Query(unittest.TestCase):
         with self.assertRaises(apsw.query.TooManyRows):
             q.too_many(self.db)
 
+        l = []
+        for row in q.no_ret(self.db):
+            l.append(row)
+
+        self.assertEqual(l, q.list_ret(self.db))
+
     async def atestGeneral(self):
         # same as above, but async
 
