@@ -566,6 +566,10 @@ apsw_logger(void *arg, int errcode, const char *message)
   PyGILState_STATE gilstate;
   PyObject *res = NULL;
 
+  /* Cannot call back into interpreter */
+  if (!Py_IsInitialized() || Py_IsFinalizing())
+    return;
+
   gilstate = PyGILState_Ensure();
   MakeExistingException();
   assert(arg == logger_cb);
