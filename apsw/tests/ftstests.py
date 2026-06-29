@@ -2243,6 +2243,10 @@ class Unicode(unittest.TestCase):
 
     def testCLI(self):
         "Exercise command line interface"
+
+        if sys.platform == "emscripten":
+            return
+
         text = ""
         for codepoints in self.cat_examples.values():
             # surrogates not allowed

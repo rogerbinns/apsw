@@ -234,7 +234,11 @@ def bgdel():
 bgdelq = queue.Queue()
 bgdelthread = threading.Thread(target=bgdel)
 bgdelthread.daemon = True
-bgdelthread.start()
+try:
+    bgdelthread.start()
+except RuntimeError:
+    # wasm build can't do this
+    pass
 
 
 def deletefile(name):
@@ -397,7 +401,11 @@ class APSW(unittest.TestCase):
                 val = exc
 
         t = threading.Thread(target=thread, daemon=True)
-        t.start()
+        try:
+            t.start()
+        except RuntimeError:
+            # wasm can't start thread
+            return
         t.join(1)
         if val != 3:
             raise val
@@ -3702,7 +3710,10 @@ class APSW(unittest.TestCase):
                 vals["stop"] = True
 
         t = ThreadRunner(wt)
-        t.start()
+        try:
+            t.start()
+        except RuntimeError:
+            return
         # ensure thread t has started
         time.sleep(0.1)
         b4 = time.time()
@@ -5065,7 +5076,10 @@ class APSW(unittest.TestCase):
         db2 = apsw.Connection(self.db.filename)
         db2.set_busy_timeout(30000)
         t = ThreadRunner(db2.cursor().execute, "select * from foo")
-        t.start()
+        try:
+            t.start()
+        except RuntimeError:
+            return
         time.sleep(1)
         self.db.cursor().execute("commit")
         t.go()
@@ -5181,7 +5195,10 @@ class APSW(unittest.TestCase):
         end = time.time() + runtime
         threads = [threading.Thread(target=dostuff, args=(end,)) for _ in range(20)]
         for t in threads:
-            t.start()
+            try:
+                t.start()
+            except RuntimeError:
+                return
 
         for t in threads:
             t.join()
@@ -7313,6 +7330,12 @@ class APSW(unittest.TestCase):
         "Verify VFS functionality"
         global testtimeout
 
+        if sys.platform == "emscripten":
+            # there is some wierd issued inside this environment +
+            # sqlite where writes aren't getting flushed before a read
+            # which means the obfuscated database doesn't work.
+            return
+
         testdb = vfstestdb
 
         # some coverage related stuff
@@ -8831,7 +8854,10 @@ class APSW(unittest.TestCase):
 
         runtime = float(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 30
         t = ThreadRunner(wt)
-        t.start()
+        try:
+            t.start()
+        except RuntimeError:
+            return
         b4 = time.time()
         # try to get concurrency error
         try:

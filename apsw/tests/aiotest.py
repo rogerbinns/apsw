@@ -69,7 +69,10 @@ class Async(unittest.TestCase):
             res.append(apsw.async_run_coro)
 
         t = threading.Thread(target=check)
-        t.start()
+        try:
+            t.start()
+        except RuntimeError:
+            return
         t.join()
 
         self.assertEqual(res, [None])
@@ -1331,7 +1334,12 @@ class Async(unittest.TestCase):
 
         for fn in self.get_all_atests():
             with self.subTest(fw="asyncio", fn=fn):
-                asyncio.run(self.asyncTearDown(fn("asyncio")), debug=False)
+                try:
+                    asyncio.run(self.asyncTearDown(fn("asyncio")), debug=False)
+                except RuntimeError as exc:
+                    if "can't start new thread" in str(exc):
+                        return
+                    raise
 
     def testTrio(self):
         import importlib.metadata
@@ -1408,7 +1416,7 @@ class Async(unittest.TestCase):
     def testNoIO(self):
         "no async running"
         self.assertRaisesRegex(
-            RuntimeError, "Unable to determine current Async environment", apsw.Connection.as_async, ""
+            RuntimeError, "(Unable to determine current Async environment|can't start new thread)", apsw.Connection.as_async, ""
         )
 
 
