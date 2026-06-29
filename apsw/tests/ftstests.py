@@ -512,6 +512,10 @@ class FTS(unittest.TestCase):
 
     def testCLI(self):
         "Test command line interface"
+
+        if sys.platform == "emscripten":
+            return
+
         if coverage_run:
             cov_params = ["-m", "coverage", "run", "--source", "apsw", "-p"]
             env = os.environ.copy()

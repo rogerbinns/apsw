@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pyver: [cp313, cp314]
+        pyver: [cp314]  # TEMP: add cp313 back
 
     steps:
       - uses: actions/checkout@v7
