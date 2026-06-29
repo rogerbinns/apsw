@@ -358,7 +358,9 @@ class fetch(Command):
                     val = sysconfig.get_config_var(v)
                     if val:
                         env[v] = val
-                subprocess.check_call(["./configure"], cwd="sqlite3", env=env)
+                # configure failing to run is ignored - this happens with
+                # linux host doing emscripten etc
+                subprocess.call(["./configure"], cwd="sqlite3", env=env)
 
 
 # We allow enable/omit to be specified to build and then pass them to build_ext
