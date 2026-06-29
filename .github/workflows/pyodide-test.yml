@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pyver: [cp314]  # TEMP: add cp313 back
+        pyver: [cp313, cp314]
 
     steps:
       - uses: actions/checkout@v7
@@ -29,7 +29,6 @@ jobs:
           path: ./wheelhouse/*.whl
 
   pypi_publish:
-    if: false
     needs: [pyodide]
     runs-on: ubuntu-latest
     permissions:
