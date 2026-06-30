@@ -139,6 +139,11 @@
 #undef sqlite3_changes
 #define sqlite3_changes *not used*
 
+#define sqlite3_changes64(one) ({                        \
+    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
+    sqlite3_changes64((one));                            \
+})
+
 #define sqlite3_clear_bindings(one) ({                                        \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(sqlite3_db_handle((one)))));  \
     sqlite3_clear_bindings((one));                                            \
@@ -421,6 +426,11 @@
 #undef sqlite3_free_table
 #define sqlite3_free_table *not used*
 
+#define sqlite3_get_autocommit(one) ({                   \
+    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
+    sqlite3_get_autocommit((one));                       \
+})
+
 #undef sqlite3_get_auxdata
 #define sqlite3_get_auxdata *not used*
 
@@ -432,6 +442,11 @@
 
 #undef sqlite3_keyword_check
 #define sqlite3_keyword_check *not used*
+
+#define sqlite3_last_insert_rowid(one) ({                \
+    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
+    sqlite3_last_insert_rowid((one));                    \
+})
 
 #undef sqlite3_libversion_number
 #define sqlite3_libversion_number *not used*
@@ -770,6 +785,11 @@
 
 #undef sqlite3_total_changes
 #define sqlite3_total_changes *not used*
+
+#define sqlite3_total_changes64(one) ({                  \
+    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
+    sqlite3_total_changes64((one));                      \
+})
 
 #define sqlite3_trace_v2(one, two, three, four) ({       \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
