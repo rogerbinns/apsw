@@ -2064,7 +2064,9 @@
 "If *keep* is *None* then all registered virtual tables are dropped.\n" \
 "\n" \
 "Otherwise *keep* is a sequence of strings, naming the virtual tables that\n" \
-"are kept, dropping all others.\n" 
+"are kept, dropping all others.\n" \
+"\n" \
+"Calls: `sqlite3_drop_modules <https://sqlite.org/c3ref/drop_modules.html>`__\n" 
 
 #define Connection_drop_modules_KWNAMES "keep"
 #define Connection_drop_modules_USAGE "Connection.drop_modules(keep: Iterable[str] | None) -> None"
@@ -2295,7 +2297,9 @@
 
 
 #define  Connection_get_autocommit_DOC "Connection.get_autocommit() -> bool\n\n" \
-"Returns if the Connection is in auto commit mode (ie not in a transaction).\n" \
+"Returns if the Connection is in auto commit mode (ie not in a\n" \
+"transaction).  It is recommended to use :meth:`txn_state` instead\n" \
+"which is more reliable.\n" \
 "\n" \
 "Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__\n" 
 
@@ -2380,6 +2384,9 @@
 
 #define  Connection_last_insert_rowid_DOC "Connection.last_insert_rowid() -> int\n\n" \
 "Returns the integer key of the most recent insert in the database.\n" \
+"It is recommended to use SQL `RETURNING <https://sqlite.org/lang_returning.html>`__\n" \
+"instead because that ensures you get the rowid directly from the\n" \
+"SQL that made the change.\n" \
 "\n" \
 "Calls: `sqlite3_last_insert_rowid <https://sqlite.org/c3ref/last_insert_rowid.html>`__\n" 
 

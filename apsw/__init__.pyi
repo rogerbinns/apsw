@@ -1748,7 +1748,9 @@ class Connection:
         """If *keep* is *None* then all registered virtual tables are dropped.
 
         Otherwise *keep* is a sequence of strings, naming the virtual tables that
-        are kept, dropping all others."""
+        are kept, dropping all others.
+
+        Calls: `sqlite3_drop_modules <https://sqlite.org/c3ref/drop_modules.html>`__"""
         ...
 
     def enable_load_extension(self, enable: bool) -> None:
@@ -1926,7 +1928,9 @@ class Connection:
         ...
 
     def get_autocommit(self) -> bool:
-        """Returns if the Connection is in auto commit mode (ie not in a transaction).
+        """Returns if the Connection is in auto commit mode (ie not in a
+        transaction).  It is recommended to use :meth:`txn_state` instead
+        which is more reliable.
 
         Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__"""
         ...
@@ -1993,6 +1997,9 @@ class Connection:
 
     def last_insert_rowid(self) -> int:
         """Returns the integer key of the most recent insert in the database.
+        It is recommended to use SQL `RETURNING <https://sqlite.org/lang_returning.html>`__
+        instead because that ensures you get the rowid directly from the
+        SQL that made the change.
 
         Calls: `sqlite3_last_insert_rowid <https://sqlite.org/c3ref/last_insert_rowid.html>`__"""
         ...
@@ -6354,7 +6361,7 @@ class AsyncConnection:
               the first statement"""
         ...
 
-    def changes(self) -> int:
+    async def changes(self) -> int:
         """Returns the number of database rows that were changed (or inserted
         or deleted) by the most recently completed INSERT, UPDATE, or DELETE
         statement.
@@ -6677,7 +6684,9 @@ class AsyncConnection:
         """If *keep* is *None* then all registered virtual tables are dropped.
 
         Otherwise *keep* is a sequence of strings, naming the virtual tables that
-        are kept, dropping all others."""
+        are kept, dropping all others.
+
+        Calls: `sqlite3_drop_modules <https://sqlite.org/c3ref/drop_modules.html>`__"""
         ...
 
     async def enable_load_extension(self, enable: bool) -> None:
@@ -6819,8 +6828,10 @@ class AsyncConnection:
             * `FTS5 documentation <https://www.sqlite.org/fts5.html#custom_tokenizers>`__"""
         ...
 
-    def get_autocommit(self) -> bool:
-        """Returns if the Connection is in auto commit mode (ie not in a transaction).
+    async def get_autocommit(self) -> bool:
+        """Returns if the Connection is in auto commit mode (ie not in a
+        transaction).  It is recommended to use :meth:`txn_state` instead
+        which is more reliable.
 
         Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__"""
         ...
@@ -6835,7 +6846,7 @@ class AsyncConnection:
         <Connection.row_trace>`"""
         ...
 
-    in_transaction: bool
+    in_transaction: Awaitable[bool]
     """It is recommended to use :meth:`txn_state` instead which is more reliable.
 
     Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__"""
@@ -6859,8 +6870,11 @@ class AsyncConnection:
 
     Calls: `sqlite3_is_interrupted <https://sqlite.org/c3ref/interrupt.html>`__"""
 
-    def last_insert_rowid(self) -> int:
+    async def last_insert_rowid(self) -> int:
         """Returns the integer key of the most recent insert in the database.
+        It is recommended to use SQL `RETURNING <https://sqlite.org/lang_returning.html>`__
+        instead because that ensures you get the rowid directly from the
+        SQL that made the change.
 
         Calls: `sqlite3_last_insert_rowid <https://sqlite.org/c3ref/last_insert_rowid.html>`__"""
         ...
@@ -7288,7 +7302,7 @@ class AsyncConnection:
         Calls: `sqlite3_table_column_metadata <https://sqlite.org/c3ref/table_column_metadata.html>`__"""
         ...
 
-    def total_changes(self) -> int:
+    async def total_changes(self) -> int:
         """Returns the total number of database rows that have be modified,
         inserted, or deleted since the database connection was opened.
 
