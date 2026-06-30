@@ -15,6 +15,14 @@ APSW changes by version
 
 pyodide (web assembly) builds are now published to pypi, thanks to
 version 4 of `cibuildwheel <https://cibuildwheel.pypa.io/>`__.
+
+Async breaking changes:  This SQLite release requires the database
+mutex for some APIs that it did not before.  The following were direct
+values, but now must be awaited: :meth:`Connection.changes`
+:meth:`Connection.get_autocommit` :attr:`Connection.in_transaction`
+:meth:`Connection.last_insert_rowid` :meth:`Connection.total_changes`
+
+
 3.53.2.0
 ========
 

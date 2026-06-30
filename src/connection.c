@@ -1154,12 +1154,18 @@ Connection_set_busy_timeout(PyObject *self_, PyObject *const *fast_args, Py_ssiz
   -* sqlite3_changes64
 */
 static PyObject *
-Connection_changes(PyObject *self_, PyObject *Py_UNUSED(unused))
+Connection_changes(PyObject *self_, PyObject *unused)
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
 
-  return PyLong_FromLongLong(sqlite3_changes64(self->db));
+  ASYNC_BINARY(self, Connection_changes, self_, unused);
+
+  DBMUTEX_ENSURE(self);
+  sqlite3_int64 changes = sqlite3_changes64(self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  return PyLong_FromLongLong(changes);
 }
 
 /** .. method:: total_changes() -> int
@@ -1170,12 +1176,18 @@ Connection_changes(PyObject *self_, PyObject *Py_UNUSED(unused))
   -* sqlite3_total_changes64
 */
 static PyObject *
-Connection_total_changes(PyObject *self_, PyObject *Py_UNUSED(unused))
+Connection_total_changes(PyObject *self_, PyObject *unused)
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
 
-  return PyLong_FromLongLong(sqlite3_total_changes64(self->db));
+  ASYNC_BINARY(self, Connection_total_changes, self_, unused);
+
+  DBMUTEX_ENSURE(self);
+  sqlite3_int64 changes = sqlite3_total_changes64(self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  return PyLong_FromLongLong(changes);
 }
 
 /** .. method:: get_autocommit() -> bool
@@ -1187,11 +1199,18 @@ Connection_total_changes(PyObject *self_, PyObject *Py_UNUSED(unused))
   -* sqlite3_get_autocommit
 */
 static PyObject *
-Connection_get_autocommit(PyObject *self_, PyObject *Py_UNUSED(unused))
+Connection_get_autocommit(PyObject *self_, PyObject *unused)
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
-  if (sqlite3_get_autocommit(self->db))
+
+  ASYNC_BINARY(self, Connection_get_autocommit, self_, unused);
+
+  DBMUTEX_ENSURE(self);
+  int ac = sqlite3_get_autocommit(self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (ac)
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
 }
@@ -1257,12 +1276,18 @@ error:
   -* sqlite3_last_insert_rowid
 */
 static PyObject *
-Connection_last_insert_rowid(PyObject *self_, PyObject *Py_UNUSED(unused))
+Connection_last_insert_rowid(PyObject *self_, PyObject *unused)
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
 
-  return PyLong_FromLongLong(sqlite3_last_insert_rowid(self->db));
+  ASYNC_BINARY(self, Connection_last_insert_rowid, self_, unused);
+
+  DBMUTEX_ENSURE(self);
+  sqlite3_int64 rowid = sqlite3_last_insert_rowid(self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  return PyLong_FromLongLong(rowid);
 }
 
 /** .. method:: set_last_insert_rowid(rowid: int) -> None
@@ -5892,11 +5917,18 @@ Connection_set_cursor_factory(PyObject *self_, PyObject *value, void *Py_UNUSED(
   -* sqlite3_get_autocommit
 */
 static PyObject *
-Connection_get_in_transaction(PyObject *self_, void *Py_UNUSED(unused))
+Connection_get_in_transaction(PyObject *self_, void *unused)
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
-  if (!sqlite3_get_autocommit(self->db))
+
+  ASYNC_ATTR_GET(self, Connection_get_in_transaction, self_, unused);
+
+  DBMUTEX_ENSURE(self);
+  int ac = sqlite3_get_autocommit(self->db);
+  sqlite3_mutex_leave(self->dbmutex);
+
+  if (!ac)
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
 }

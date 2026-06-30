@@ -24,9 +24,14 @@
             "async_run"
         ],
         "dual": [
+            "changes",
             "filename",
             "filename_journal",
-            "filename_wal"
+            "filename_wal",
+            "get_autocommit",
+            "last_insert_rowid",
+            "in_transaction",
+            "total_changes"
         ],
         "sync": [
             "vtab_config",
@@ -36,18 +41,14 @@
             "as_async",
             "async_controller",
             "cache_stats",
-            "changes",
             "cursor",
-            "get_autocommit",
             "get_exec_trace",
             "get_row_trace",
             "interrupt",
-            "last_insert_rowid",
             "limit",
             "set_exec_trace",
             "set_row_trace",
-            "sqlite3_pointer",
-            "total_changes"
+            "sqlite3_pointer"
         ]
     },
     "Cursor": {
