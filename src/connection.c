@@ -1180,7 +1180,9 @@ Connection_total_changes(PyObject *self_, PyObject *Py_UNUSED(unused))
 
 /** .. method:: get_autocommit() -> bool
 
-  Returns if the Connection is in auto commit mode (ie not in a transaction).
+  Returns if the Connection is in auto commit mode (ie not in a
+  transaction).  It is recommended to use :meth:`txn_state` instead
+  which is more reliable.
 
   -* sqlite3_get_autocommit
 */
@@ -1248,6 +1250,9 @@ error:
 /** .. method:: last_insert_rowid() -> int
 
   Returns the integer key of the most recent insert in the database.
+  It is recommended to use SQL `RETURNING <https://sqlite.org/lang_returning.html>`__
+  instead because that ensures you get the rowid directly from the
+  SQL that made the change.
 
   -* sqlite3_last_insert_rowid
 */
