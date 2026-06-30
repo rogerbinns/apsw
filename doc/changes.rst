@@ -22,6 +22,9 @@ values, but now must be awaited: :meth:`Connection.changes`
 :meth:`Connection.get_autocommit` :attr:`Connection.in_transaction`
 :meth:`Connection.last_insert_rowid` :meth:`Connection.total_changes`
 
+The closure extension was removed from :doc:`extra` by SQLite.
+`Common table expressions <https://sqlite.org/lang_with.html>`__ are a
+better approach.
 
 3.53.2.0
 ========
