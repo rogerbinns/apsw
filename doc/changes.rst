@@ -10,6 +10,11 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.53.3.0
+========
+
+pyodide (web assembly) builds are now published to pypi, thanks to
+version 4 of `cibuildwheel <https://cibuildwheel.pypa.io/>`__.
 3.53.2.0
 ========
 
