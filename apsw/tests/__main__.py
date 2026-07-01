@@ -7336,7 +7336,7 @@ class APSW(unittest.TestCase):
         global testtimeout
 
         if sys.platform == "emscripten":
-            # there is some wierd issued inside this environment +
+            # there is some weird issued inside this environment +
             # sqlite where writes aren't getting flushed before a read
             # which means the obfuscated database doesn't work.
             return
