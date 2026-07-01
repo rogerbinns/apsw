@@ -26,6 +26,8 @@ The closure extension was removed from :doc:`extra` by SQLite.
 `Common table expressions <https://sqlite.org/lang_with.html>`__ are a
 better approach.
 
+Remove the logger on module unload (:issue:`620`)
+
 3.53.2.0
 ========
 
