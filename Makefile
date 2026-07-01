@@ -131,7 +131,7 @@ build_ext_debug: src/apswversion.h src/faultinject.h ## Fetches SQLite and build
 coverage:  src/faultinject.h ## Coverage of the C code
 	-rm -f recipes.db*
 	cp ../apsw-extended-testing/recipes.db .
-	tools/coverage.sh ; rc=$$?; rm -f recipes.db* ; exit $rc
+	tools/coverage.sh ; rc=$$?; rm -f recipes.db* ; exit $$rc
 
 PYCOVERAGEOPTS=--source apsw -p
 PYCOVERAGEPREFIX=env COVERAGE_CORE=sysmon
