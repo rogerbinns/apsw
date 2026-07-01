@@ -309,45 +309,6 @@ This performs the compilation of the C code, and provides more control than buil
       - Excludes old non :pep:`8` :ref:`complaint name aliases
         <renaming>` from the extension and type stubs.
 
-.. _pyodide:
-
-Pyodide (WASM)
---------------
-
-`Pyodide <https://pyodide.org/en/stable/index.html>`__ is a web
-assembly Python distribution that can run in the browser or via NPM.
-PyPI does not support pyodide binary packages yet, but you can compile
-your own on a Linux host.
-
-You should first download the source distribution listed at the top of
-https://pypi.org/project/apsw/#files - the filename ends up being
-``apsw-3.52.0.0.tar.gz`` in this example.  The `cibuildwheel
-<https://cibuildwheel.pypa.io/>`__ tool is used for the building, and
-is the same tool used for the PyPI builds of APSW.
-
-.. code-block:: shell-session
-
-  # Start out with a clean virtual environment
-  $ python3 -m venv venv
-  # Get cibuildwheel
-  $ venv/bin/pip3 install cibuildwheel
-  # Do the building which will download the necessary compiler and
-  # Python parts
-  $ venv/bin/cibuildwheel --platform pyodide apsw-3.52.0.0.tar.gz
-  # When it has finished the result is in the wheelhouse directory
-  $ ls wheelhouse/
-
-You will then be able to install the wheel using `micropip
-<https://micropip.pyodide.org/>`__.
-
-.. code-block:: pycon
-
-  >>> import micropip
-  >>> await micropip.install("https://url/apsw-3.52.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl")
-  >>> import apsw
-
-At this point you will be able to use APSW as normal.
-
 .. _packagers:
 
 Advice for packagers
