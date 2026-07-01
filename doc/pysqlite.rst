@@ -76,7 +76,10 @@ module:
 
 * APSW on :ref:`PyPI <pypi>` includes SQLite statically inside which
   does not interfere with any system SQLite, so you have the latest
-  SQLite without disruptions.
+  SQLite without disruptions.  **Note** on non-Windows platforms it is
+  **not safe** to open the same database in two different SQLite
+  libraries in the same process (`details
+  <https://sqlite.org/howtocorrupt.html#multiple_copies_of_sqlite_linked_into_the_same_application>`__).
 
 * If you don't use PyPI, APSW :ref:`build instructions <building>`
   include extensive customisation options for SQLite.
