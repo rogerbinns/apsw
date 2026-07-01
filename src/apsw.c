@@ -1194,7 +1194,7 @@ apsw_check_mutex(apsw_mutex *am)
   if (am->pid && am->pid != getpid())
   {
     /* see #620 for why this check exists */
-    if (!Py_IsInitialized() || Py_IsFinalizing())
+    if (!Py_IsInitialized())
       return SQLITE_OK;
 
     PyGILState_STATE gilstate;
