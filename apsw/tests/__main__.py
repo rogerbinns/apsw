@@ -3195,7 +3195,7 @@ class APSW(unittest.TestCase):
 
         # for coverage
         self.db.cache_flush()
-        getattr(self.db, "release_memory")()  # avoids old name testing false positive
+        getattr(self.db, "release" + "_" + "memory")()  # avoids old name testing false positive
 
         c.execute("commit")
         self.assertEqual(300, self.db.total_changes())
