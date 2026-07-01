@@ -28,6 +28,30 @@ jobs:
           name: dist-${{ matrix.os }}-${{ matrix.pyver }}
           path: ./wheelhouse/*.whl
 
+  pyodide:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pyver: [cp313, cp314]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build pyodide wheel ${{ matrix.pyver }}
+        uses: pypa/cibuildwheel@v4.1
+        env:
+          CIBW_BUILD: ${{ matrix.pyver }}-*
+          CIBW_BEFORE_BUILD: python -c "import shutil ; shutil.copyfile('tools/setup-pypi.cfg','setup.apsw')"
+          CIBW_TEST_COMMAND: python -m apsw.tests -v
+          APSW_HEAVY_DURATION: 2
+          CIBW_PLATFORM: pyodide
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist-pyodide-${{ matrix.pyver }}
+          path: ./wheelhouse/*.whl
+
   source:
     runs-on: ubuntu-latest
 
@@ -43,7 +67,7 @@ jobs:
         path: ./dist/*
 
   pypi_publish:
-    needs: [source, binary]
+    needs: [source, binary, pyodide]
     runs-on: ubuntu-latest
     permissions:
         id-token: write
