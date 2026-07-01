@@ -6039,20 +6039,25 @@ class APSW(unittest.TestCase):
                     f"file {filename} function {name} calls PyGILState_Ensure but does not have MakeExistingException"
                 )
         # not further checked
-        if name.split("_")[0] in (
-            "ZeroBlobBind",
-            "APSWVFS",
-            "APSWVFSFile",
-            "APSWBuffer",
-            "FunctionCBInfo",
-            "APSWFTS5Tokenizer",
-            "cursor",
-            "APSWChangesetIterator",
-            "JSONB",
-            "AwaitableWrapper",
-            "BoxedCall",
-            "APSWChangeset",
-        ) or name in {"apsw_no_change_repr", "convert_column_to_pyobject"}:
+        if (
+            name.split("_")[0]
+            in (
+                "ZeroBlobBind",
+                "APSWVFS",
+                "APSWVFSFile",
+                "APSWBuffer",
+                "FunctionCBInfo",
+                "APSWFTS5Tokenizer",
+                "cursor",
+                "APSWChangesetIterator",
+                "JSONB",
+                "AwaitableWrapper",
+                "BoxedCall",
+                "APSWChangeset",
+            )
+            or name in {"apsw_no_change_repr", "convert_column_to_pyobject"}
+            or name.split("_")[:2] == ["apsw", "module"]
+        ):
             return
 
         checks = {

@@ -1175,9 +1175,6 @@ class Tester:
 
         if complete:
             print("\nAll faults exercised")
-            if hasattr(sys.modules["apsw"], "_fini"):
-                print("Running apsw fini()")
-                sys.modules["apsw"]._fini()
             del sys.modules["apsw"]
 
         print(f"Total faults: {len(self.has_faulted_ever)}")
