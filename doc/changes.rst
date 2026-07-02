@@ -10,11 +10,6 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
-query
-=====
-
-Added :meth:`Connection.is_direct`.
-
 3.53.2.0
 ========
 
@@ -330,7 +325,7 @@ SVG (`example <_static/samples/chinook.svg>`__).  Available as shell
 Documentation on how to :ref:`build for packagers <packagers>` such as
 those maintaining Linux and BSD distributions.
 
-Documentation on how to :ref:`build for pyodide <pyodide>`, the Python
+Documentation on how to build for pyodide, the Python
 WASM implementation that runs in the browser and NPM.  PyPI does not
 accept pyodide packages yet.
 

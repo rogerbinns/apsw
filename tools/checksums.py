@@ -11,13 +11,9 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import setup
 
 sqlitevers = (
+    "3530300",
     "3530200",
     "3530100",
-    "3530000",
-    "3510300",
-    "3510200",
-    "3510100",
-    "3510000",
 )
 
 other_urls = (
@@ -29,7 +25,7 @@ other_urls = (
     # sqlar
     "https://sqlite.org/sqlar/zip/sqlar-src-20180107193712-4824e73896.zip",
     # zlib
-    "https://www.zlib.net/zlib132.zip",
+    "https://github.com/madler/zlib/releases/download/v1.3.2/zlib132.zip",
 )
 
 fixup_download_url = setup.fixup_download_url
@@ -60,15 +56,6 @@ def check(url, data):
     else:
         print(url, d[0], d[1], d[2])
 
-
-for url in other_urls:
-    try:
-        data = urllib.request.urlopen(url).read()
-    except:
-        print(url)
-        raise
-    check(url, data)
-
 for v in sqlitevers:
     # All platforms amalgamation
     for filename in ("sqlite-autoconf-%s.tar.gz", "sqlite-src-%s.zip"):
@@ -80,3 +67,11 @@ for v in sqlitevers:
             print(AURL)
             raise
         check(AURL, data)
+
+for url in other_urls:
+    try:
+        data = urllib.request.urlopen(url).read()
+    except:
+        print(url)
+        raise
+    check(url, data)

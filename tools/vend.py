@@ -85,10 +85,6 @@ extras = [
         doc="cksumvfs.html",
     ),
     Extra(
-        name="closure",
-        description="A virtual table that finds the transitive closure of a parent/child relationship in a real table",
-    ),
-    Extra(
         name="completion",
         description="A virtual table that returns suggested completions for a partial SQL input",
         doc="completion.html",

@@ -19,7 +19,10 @@ embedded relational database engine from Python, and the most out of
 Python from SQLite.  APSW glues together the complete `SQLite C API
 <https://sqlite.org/c3ref/intro.html>`__ and `Python's C API
 <https://docs.python.org/3/c-api/index.html>`__, staying up to date
-with both SQLite and Python.
+with both SQLite and Python. :doc:`Async <async>` is builtin fully
+supporting all functionality.  APSW goes well beyond just executing
+SQL, including all other functionality such as :doc:`vfs` and
+:doc:`vtable`.
 
 It is recommended to use the builtin :mod:`sqlite3 <sqlite3>` module
 if you want SQLite to appear interchangeable with the other database
@@ -30,9 +33,10 @@ developer experience.  See more about the :doc:`differences between
 APSW and sqlite3 <pysqlite>`.
 
 Because of the complete integration with SQLite, APSW offers useful
-additional functionality such as :doc:`jsonb`, :doc:`these <ext>`,
-comprehensive :doc:`full text search support <textsearch>` (including
-Unicode), and the :doc:`session`.
+additional functionality such as :doc:`jsonb`, :doc:`interesting and
+useful Python code <ext>`, comprehensive :doc:`full text search
+support <textsearch>` (including Unicode), the :doc:`session` extension,
+
 
 Dependencies
 ------------

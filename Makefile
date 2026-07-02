@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.53.2
+SQLITEVERSION=3.53.3
 APSWSUFFIX=.0
 
-RELEASEDATE="5 June 2026"
+RELEASEDATE="30 June 2026"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -131,7 +131,7 @@ build_ext_debug: src/apswversion.h src/faultinject.h ## Fetches SQLite and build
 coverage:  src/faultinject.h ## Coverage of the C code
 	-rm -f recipes.db*
 	cp ../apsw-extended-testing/recipes.db .
-	tools/coverage.sh ; rc=$$?; rm -f recipes.db* ; exit $rc
+	tools/coverage.sh ; rc=$$?; rm -f recipes.db* ; exit $$rc
 
 PYCOVERAGEOPTS=--source apsw -p
 PYCOVERAGEPREFIX=env COVERAGE_CORE=sysmon
@@ -283,7 +283,7 @@ src/_unicodedb.c: tools/ucdprops2code.py ## Update generated Unicode database lo
 	$(PYTHON) tools/ucdprops2code.py $@
 
 # building a python debug interpreter
-PYDEBUG_VER=3.14.4
+PYDEBUG_VER=3.15.0b3
 PYDEBUG_DIR=/space/pydebug
 PYTHREAD_VER=$(PYDEBUG_VER)
 PYTHREAD_DIR=/space/pythread

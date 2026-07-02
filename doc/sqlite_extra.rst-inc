@@ -128,11 +128,6 @@ Extensions
         * Function: :code:`verify_checksum`
         * VFS: :code:`cksmvfs`
 
-    * - closure (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fclosure.c>`__)
-      - A virtual table that finds the transitive closure of a parent/child relationship in a real table
-      -
-        * VTable: :code:`transitive_closure`
-
     * - completion (`doc <https://sqlite.org/completion.html>`__)
       - A virtual table that returns suggested completions for a partial SQL input
       -

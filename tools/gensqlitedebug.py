@@ -135,12 +135,8 @@ functions_global = (
     "sqlite3_bind_parameter_count",
     "sqlite3_backup_(pagecount|remaining)",
     "sqlite3_blob_bytes",
-    "sqlite3_changes64",
-    "sqlite3_get_autocommit",
     "sqlite3_is_interrupted",
-    "sqlite3_last_insert_rowid",
     "sqlite3_limit",
-    "sqlite3_total_changes64",
     "sqlite3_stmt_(isexplain|readonly)",
     # can't get to db from these
     "sqlite3_filename_(database|journal|wal)",
@@ -204,13 +200,17 @@ functions_arg = (
 # the first parameter is sqlite3*.  key is number of args taken
 functions_arg_one = {
     1: (
+        "sqlite3_changes64",
         "sqlite3_db_cacheflush",
         "sqlite3_db_release_memory",
         "sqlite3_(errcode|errmsg|error_offset|extended_errcode)",
+        "sqlite3_get_autocommit",
+        "sqlite3_last_insert_rowid",
         "sqlite3_vtab_on_conflict",
         "sqlite3_preupdate_count",
         "sqlite3_preupdate_depth",
         "sqlite3_preupdate_blobwrite",
+        "sqlite3_total_changes64",
     ),
     2: (
         "sqlite3_busy_timeout",

@@ -55,6 +55,9 @@ class Extra(unittest.TestCase):
                         self.assertGreater(num_diff, 0)
 
     def testExecutable(self):
+        if sys.platform == "emscripten":
+            return
+
         spicy = "√π⁷≤∞"
 
         with tempfile.TemporaryDirectory(prefix=f"apsw-extra-{spicy}-test") as tmpd:
