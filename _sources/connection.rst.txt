@@ -315,7 +315,7 @@ If `entries` is present, then each list entry is a dict with the following infor
 
 .. method:: Connection.changes() -> int
 
-  |badge-async-value|
+  |badge-async-dual|
 
   Returns the number of database rows that were changed (or inserted
   or deleted) by the most recently completed INSERT, UPDATE, or DELETE
@@ -700,6 +700,8 @@ If `entries` is present, then each list entry is a dict with the following infor
 
    Calls: `sqlite3_deserialize <https://sqlite.org/c3ref/deserialize.html>`__
 
+.. index:: sqlite3_drop_modules
+
 .. method:: Connection.drop_modules(keep: Iterable[str] | None) -> None
 
   |badge-async-dual|
@@ -708,6 +710,8 @@ If `entries` is present, then each list entry is a dict with the following infor
 
   Otherwise *keep* is a sequence of strings, naming the virtual tables that
   are kept, dropping all others.
+
+  Calls: `sqlite3_drop_modules <https://sqlite.org/c3ref/drop_modules.html>`__
 
 .. index:: sqlite3_enable_load_extension
 
@@ -888,9 +892,11 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.get_autocommit() -> bool
 
-  |badge-async-value|
+  |badge-async-dual|
 
-  Returns if the Connection is in auto commit mode (ie not in a transaction).
+  Returns if the Connection is in auto commit mode (ie not in a
+  transaction).  It is recommended to use :meth:`txn_state` instead
+  which is more reliable.
 
   Calls: `sqlite3_get_autocommit <https://sqlite.org/c3ref/get_autocommit.html>`__
 
@@ -913,7 +919,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 .. attribute:: Connection.in_transaction
   :type: bool
 
-  |badge-async-value|
+  |badge-async-dual|
 
   It is recommended to use :meth:`txn_state` instead which is more reliable.
 
@@ -955,9 +961,12 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
 .. method:: Connection.last_insert_rowid() -> int
 
-  |badge-async-value|
+  |badge-async-dual|
 
   Returns the integer key of the most recent insert in the database.
+  It is recommended to use SQL `RETURNING <https://sqlite.org/lang_returning.html>`__
+  instead because that ensures you get the rowid directly from the
+  SQL that made the change.
 
   Calls: `sqlite3_last_insert_rowid <https://sqlite.org/c3ref/last_insert_rowid.html>`__
 
@@ -1503,7 +1512,7 @@ libraries.
 
 .. method:: Connection.total_changes() -> int
 
-  |badge-async-value|
+  |badge-async-dual|
 
   Returns the total number of database rows that have be modified,
   inserted, or deleted since the database connection was opened.

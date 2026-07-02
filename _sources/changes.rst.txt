@@ -10,6 +10,24 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.53.3.0
+========
+
+pyodide (web assembly) builds are now published to pypi, thanks to
+version 4 of `cibuildwheel <https://cibuildwheel.pypa.io/>`__.
+
+Async breaking changes:  This SQLite release requires the database
+mutex for some APIs that it did not before.  The following were direct
+values, but now must be awaited: :meth:`Connection.changes`
+:meth:`Connection.get_autocommit` :attr:`Connection.in_transaction`
+:meth:`Connection.last_insert_rowid` :meth:`Connection.total_changes`
+
+The closure extension was removed from :doc:`extra` by SQLite.
+`Common table expressions <https://sqlite.org/lang_with.html>`__ are a
+better approach.
+
+Remove the logger on module unload (:issue:`620`)
+
 3.53.2.0
 ========
 
@@ -325,7 +343,7 @@ SVG (`example <_static/samples/chinook.svg>`__).  Available as shell
 Documentation on how to :ref:`build for packagers <packagers>` such as
 those maintaining Linux and BSD distributions.
 
-Documentation on how to :ref:`build for pyodide <pyodide>`, the Python
+Documentation on how to build for pyodide, the Python
 WASM implementation that runs in the browser and NPM.  PyPI does not
 accept pyodide packages yet.
 

@@ -84,20 +84,20 @@ edit the :file:`setup.apsw` file inside.
 
 .. downloads-begin
 
-* `apsw-3.53.2.0.zip
-  <https://github.com/rogerbinns/apsw/releases/download/3.53.2.0/apsw-3.53.2.0.zip>`__
+* `apsw-3.53.3.0.zip
+  <https://github.com/rogerbinns/apsw/releases/download/3.53.3.0/apsw-3.53.3.0.zip>`__
   (Source as zip, includes this HTML Help)
 
-* `apsw-3.53.2.0.tar.gz
-  <https://github.com/rogerbinns/apsw/releases/download/3.53.2.0/apsw-3.53.2.0.tar.gz>`__
+* `apsw-3.53.3.0.tar.gz
+  <https://github.com/rogerbinns/apsw/releases/download/3.53.3.0/apsw-3.53.3.0.tar.gz>`__
   (Source as tar.gz, includes this HTML Help)
 
-* `apsw-3.53.2.0.zip.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.53.2.0/apsw-3.53.2.0.zip.cosign-bundle>`__
+* `apsw-3.53.3.0.zip.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.53.3.0/apsw-3.53.3.0.zip.cosign-bundle>`__
   cosign signature for zip source
 
-* `apsw-3.53.2.0.tar.gz.cosign-bundle
-  <https://github.com/rogerbinns/apsw/releases/download/3.53.2.0/apsw-3.53.2.0.tar.gz.cosign-bundle>`__
+* `apsw-3.53.3.0.tar.gz.cosign-bundle
+  <https://github.com/rogerbinns/apsw/releases/download/3.53.3.0/apsw-3.53.3.0.tar.gz.cosign-bundle>`__
   cosign signature for tar.gz source
 
 .. downloads-end
@@ -129,18 +129,18 @@ Verify
 
   .. code-block:: console
 
-    $ cosign verify-blob apsw-3.53.2.0.zip                        \
+    $ cosign verify-blob apsw-3.53.3.0.zip                        \
         --new-bundle-format                                       \
-        --bundle apsw-3.53.2.0.zip.cosign-bundle                  \
+        --bundle apsw-3.53.3.0.zip.cosign-bundle                  \
         --certificate-identity=rogerb@rogerbinns.com              \
         --certificate-oidc-issuer=https://github.com/login/oauth
     Verified OK
 
-    $ python3 -m sigstore verify identity apsw-3.53.2.0.zip       \
-        --bundle apsw-3.53.2.0.zip.cosign-bundle                  \
+    $ python3 -m sigstore verify identity apsw-3.53.3.0.zip       \
+        --bundle apsw-3.53.3.0.zip.cosign-bundle                  \
         --cert-identity=rogerb@rogerbinns.com                     \
         --cert-oidc-issuer=https://github.com/login/oauth
-    OK: apsw-3.53.2.0.zip
+    OK: apsw-3.53.3.0.zip
 
   .. verify-end
 
@@ -308,45 +308,6 @@ This performs the compilation of the C code, and provides more control than buil
     * - ``--apsw-no-old-names``
       - Excludes old non :pep:`8` :ref:`complaint name aliases
         <renaming>` from the extension and type stubs.
-
-.. _pyodide:
-
-Pyodide (WASM)
---------------
-
-`Pyodide <https://pyodide.org/en/stable/index.html>`__ is a web
-assembly Python distribution that can run in the browser or via NPM.
-PyPI does not support pyodide binary packages yet, but you can compile
-your own on a Linux host.
-
-You should first download the source distribution listed at the top of
-https://pypi.org/project/apsw/#files - the filename ends up being
-``apsw-3.52.0.0.tar.gz`` in this example.  The `cibuildwheel
-<https://cibuildwheel.pypa.io/>`__ tool is used for the building, and
-is the same tool used for the PyPI builds of APSW.
-
-.. code-block:: shell-session
-
-  # Start out with a clean virtual environment
-  $ python3 -m venv venv
-  # Get cibuildwheel
-  $ venv/bin/pip3 install cibuildwheel
-  # Do the building which will download the necessary compiler and
-  # Python parts
-  $ venv/bin/cibuildwheel --platform pyodide apsw-3.52.0.0.tar.gz
-  # When it has finished the result is in the wheelhouse directory
-  $ ls wheelhouse/
-
-You will then be able to install the wheel using `micropip
-<https://micropip.pyodide.org/>`__.
-
-.. code-block:: pycon
-
-  >>> import micropip
-  >>> await micropip.install("https://url/apsw-3.52.0.0-cp312-cp312-pyodide_2024_0_wasm32.whl")
-  >>> import apsw
-
-At this point you will be able to use APSW as normal.
 
 .. _packagers:
 
