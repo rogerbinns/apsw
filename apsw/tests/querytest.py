@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-import unittest
+import inspect
 import os
 import pathlib
 import subprocess
 import sys
 import tempfile
+import textwrap
+import unittest
 
 import apsw
 import apsw.query
@@ -89,52 +91,31 @@ class Query(unittest.TestCase):
             self.assertIn(b"was not imported", proc.stderr)
 
     def testGeneral(self):
-        with apsw.query.import_hook():
-            import apsw.tests._querytest as q
+        # see comment in atestGeneral
 
-        self.assertEqual(3, q.pytest(2))
+        source = inspect.getsource(self.atestGeneral).splitlines()
 
-        self.assertEqual((3, 4), q.no_bind(self.db))
-        self.assertEqual((b"abc", None), q.binding(self.db, b"abc", None))
-        y = "a local"
-        self.assertEqual((3.3, y), q.binding_locals(self.db, 3.3))
+        while "TEST CODE STARTS HERE" not in source[0]:
+            source.pop(0)
 
-        with self.assertRaises(KeyError):
-            del y
-            q.binding_locals(self.db, 3)
+        adjusted = textwrap.dedent("\n".join(source))
 
-        x = q.level1(self.db)
-        self.assertEqual(x.__class__.__name__, "ns_level1")
-        self.assertEqual(x.kwargs, {"one": 1, "T W O": 2})
-        y = q.level2(self.db)
-        self.assertEqual(y.__class__.__name__, "ns_level2")
-        self.assertEqual(y.kwargs, {"3": 3, "": 4})
-        z = q.level3(self.db)
-        self.assertEqual(z.__class__.__name__, "ns_level3")
-        self.assertEqual(z.kwargs, {"select": 5, "class": 6})
+        for sub, repl in (
+            ("apytest", "pytest"),
+            ("await ", ""),
+            ("async ", ""),
+        ):
+            adjusted = adjusted.replace(sub, repl)
 
-        with self.assertRaises(apsw.query.RowExpected):
-            q.res_zero(self.db)
-
-        self.assertIsNone(q.res_zero_opt(self.db))
-
-        self.assertEqual("abcdef", q.res_zero_literal(self.db))
-
-        self.assertIs(q.ns_level1.ns_level2.ns_level3, q.res_zero_nested(self.db))
-
-        with self.assertRaises(apsw.query.TooManyRows):
-            q.too_many(self.db)
-
-        l = []
-        for row in q.no_ret(self.db):
-            l.append(row)
-
-        self.assertEqual(l, q.list_ret(self.db))
+        exec(adjusted, globals=globals(), locals=locals())
 
     async def atestGeneral(self):
-        # same as above, but async
+        # this code is evaluated in the sync text version with all the
+        # async / await omitted to avoid having duplicate code
 
         self.db = await apsw.Connection.as_async("")
+
+        # TEST CODE STARTS HERE
 
         with apsw.query.import_hook():
             import apsw.tests._querytest as q
@@ -149,6 +130,34 @@ class Query(unittest.TestCase):
         with self.assertRaises(KeyError):
             del y
             await q.binding_locals(self.db, 3)
+
+        x = await q.level1(self.db)
+        self.assertEqual(x.__class__.__name__, "ns_level1")
+        self.assertEqual(x.kwargs, {"one": 1, "T W O": 2})
+        y = await q.level2(self.db)
+        self.assertEqual(y.__class__.__name__, "ns_level2")
+        self.assertEqual(y.kwargs, {"3": 3, "": 4})
+        z = await q.level3(self.db)
+        self.assertEqual(z.__class__.__name__, "ns_level3")
+        self.assertEqual(z.kwargs, {"select": 5, "class": 6})
+
+        with self.assertRaises(apsw.query.RowExpected):
+            await q.res_zero(self.db)
+
+        self.assertIsNone(await q.res_zero_opt(self.db))
+
+        self.assertEqual("abcdef", await q.res_zero_literal(self.db))
+
+        self.assertIs(q.ns_level1.ns_level2.ns_level3, await q.res_zero_nested(self.db))
+
+        with self.assertRaises(apsw.query.TooManyRows):
+            await q.too_many(self.db)
+
+        l = []
+        for row in await q.no_ret(self.db):
+            l.append(row)
+
+        self.assertEqual(l, q.list_ret(self.db))
 
     def testGeneralAsync(self):
         try:
