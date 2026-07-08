@@ -641,7 +641,11 @@ APSWBlob_enter(PyObject *self_, PyObject *Py_UNUSED(args))
   CHECK_BLOB_CLOSED;
 
   if (!IN_WORKER_THREAD(self->connection))
-    return error_sync_in_async_context();
+  {
+    error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Blob.__enter__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   return Py_NewRef((PyObject *)self);
 }
@@ -677,7 +681,11 @@ APSWBlob_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
   (void)etraceback;
 
   if (!IN_WORKER_THREAD(self->connection))
-    return error_sync_in_async_context();
+  {
+    error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Blob.__exit__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   DBMUTEX_ENSURE(self->connection);
   /* note: this releases the mutex */
@@ -700,7 +708,11 @@ APSWBlob_aenter(PyObject *self_, PyObject *Py_UNUSED(unused))
   CHECK_BLOB_CLOSED;
 
   if (IN_WORKER_THREAD(self->connection))
-    return error_async_in_sync_context();
+  {
+    error_async_in_sync_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Blob.__aenter__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   return async_return_value(self_);
 }
@@ -731,7 +743,9 @@ APSWBlob_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
   (void)etraceback;
 
   ASYNC_FASTCALL(self->connection, APSWBlob_exit);
-  return error_async_in_sync_context();
+  error_async_in_sync_context();
+  AddTraceBackHere(__FILE__, __LINE__, "Blob.__aexit__", "{s: O}", "self", self_);
+  return NULL;
 }
 
 /** .. method:: reopen(rowid: int) -> None

@@ -861,7 +861,11 @@ Connection_async_run(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
   CHECK_CLOSED(self, NULL);
 
   if(!self->async_controller)
-    return error_async_in_sync_context();
+  {
+    error_async_in_sync_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.async_run", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   Py_ssize_t nargs = PyVectorcall_NARGS(fast_nargs);
   if (nargs < 1)
@@ -4493,7 +4497,11 @@ Connection_vtab_config(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
   }
 
   if(!IN_WORKER_THREAD(self))
-    return error_sync_in_async_context();
+  {
+    error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.vtab_config", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   if (!CALL_CHECK(xConnect))
     return PyErr_Format(ExcInvalidContext,
@@ -4531,7 +4539,11 @@ Connection_vtab_on_conflict(PyObject *self_, PyObject *Py_UNUSED(unused))
   CHECK_CLOSED(self, NULL);
 
   if(!IN_WORKER_THREAD(self))
-    return error_sync_in_async_context();
+  {
+    error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.vtab_on_conflict", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   if (!CALL_CHECK(xUpdate))
     return PyErr_Format(ExcInvalidContext, "You can only call vtab_on_conflict while in a virtual table Update call");
@@ -4781,7 +4793,11 @@ Connection_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
   CHECK_CLOSED(self, NULL);
 
   if(!IN_WORKER_THREAD(self))
-    return error_sync_in_async_context();
+  {
+    error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.__enter__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   DBMUTEX_ENSURE(self);
 
@@ -4865,7 +4881,11 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   }
 
   if(!IN_WORKER_THREAD(self))
-    return error_sync_in_async_context();
+  {
+    error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.__exit__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   /* this protects us too */
   DBMUTEX_ENSURE(self);
@@ -4947,7 +4967,9 @@ Connection_aenter(PyObject *self_, PyObject *unused)
 
   ASYNC_BINARY(self, Connection_enter, self_, unused);
 
-  return error_async_in_sync_context();
+  error_async_in_sync_context();
+  AddTraceBackHere(__FILE__, __LINE__, "Connection.__aenter__", "{s: O}", "self", self_);
+  return NULL;
 }
 
 /** .. method:: __aexit__(etype: type[BaseException] | None, evalue: BaseException | None, etraceback: types.TracebackType | None) -> bool | None
@@ -4977,7 +4999,9 @@ Connection_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
 
   ASYNC_FASTCALL(self, Connection_exit);
 
-  return error_async_in_sync_context();
+  error_async_in_sync_context();
+  AddTraceBackHere(__FILE__, __LINE__, "Connection.__aexit__", "{s: O}", "self", self_);
+  return NULL;
 }
 
 /** .. method:: config(op: int, *args: int) -> int
@@ -6209,6 +6233,7 @@ Connection_set_authorizer_attr(PyObject *self_, PyObject *value, void *Py_UNUSED
   if (!IN_WORKER_THREAD(self))
   {
     error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.authorizer=", "{s: O}", "self", self_);
     return -1;
   }
 

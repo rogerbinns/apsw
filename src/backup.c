@@ -240,7 +240,11 @@ APSWBackup_finish(PyObject *self_, PyObject *Py_UNUSED(unused))
     Py_RETURN_NONE;
 
   if (!IN_WORKER_THREAD(self->dest))
-    return error_sync_in_async_context();
+  {
+    error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Backup.finish", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
                    "Backup destination Connection is busy in another thread");
@@ -266,7 +270,11 @@ APSWBackup_afinish(PyObject *self_, PyObject *unused)
     return async_return_value(Py_None);
 
   if (IN_WORKER_THREAD(self->dest))
-    return error_async_in_sync_context();
+  {
+    error_async_in_sync_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Backup.afinish", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   return do_async_binary((PyObject *)(self->dest), APSWBackup_finish, self_, unused);
 }
@@ -375,7 +383,11 @@ APSWBackup_enter(PyObject *self_, PyObject *Py_UNUSED(ignored))
   CHECK_BACKUP_CLOSED(NULL);
 
   if (!IN_WORKER_THREAD(self->dest))
-    return error_sync_in_async_context();
+  {
+    error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Backup.__enter__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   return Py_NewRef(self_);
 }
@@ -402,7 +414,11 @@ APSWBackup_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   }
 
   if (self->dest && !IN_WORKER_THREAD(self->dest))
-    return error_sync_in_async_context();
+  {
+    error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Backup.__exit__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   /* If already closed then we are fine - CHECK_BACKUP_CLOSED not needed*/
   if (!self->backup)
@@ -438,7 +454,11 @@ APSWBackup_aenter(PyObject *self_, PyObject *Py_UNUSED(unused))
   CHECK_BACKUP_CLOSED(NULL);
 
   if (IN_WORKER_THREAD(self->dest))
-    return error_async_in_sync_context();
+  {
+    error_async_in_sync_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Backup.__aenter__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   return async_return_value(self_);
 }
@@ -469,7 +489,10 @@ APSWBackup_aexit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   (void)etraceback;
 
   ASYNC_FASTCALL(self->dest, APSWBackup_exit);
-  return error_async_in_sync_context();
+
+  error_async_in_sync_context();
+  AddTraceBackHere(__FILE__, __LINE__, "Backup.__aexit__", "{s: O, s: O}", "self", self_);
+  return NULL;
 }
 
 static PyObject *

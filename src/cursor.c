@@ -1586,7 +1586,11 @@ APSWCursor_next_internal(PyObject *self_, int eager)
   CHECK_CURSOR_CLOSED(NULL);
 
   if (!IN_WORKER_THREAD(self->connection))
-    return error_sync_in_async_context();
+  {
+    error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Cursor.__next__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   if (0 != cursor_mutex_get(self))
     return NULL;
@@ -1767,7 +1771,11 @@ APSWCursor_anext(PyObject *self_)
   CHECK_CURSOR_CLOSED(NULL);
 
   if (IN_WORKER_THREAD(self->connection))
-    return error_async_in_sync_context();
+  {
+    error_async_in_sync_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Cursor.__anext__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   if (!self->aiter_slots)
   {
@@ -1810,7 +1818,11 @@ APSWCursor_iter(PyObject *self_)
   CHECK_CURSOR_CLOSED(NULL);
 
   if (!IN_WORKER_THREAD(self->connection))
-    return error_sync_in_async_context();
+  {
+    error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Cursor.__iter__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   return Py_NewRef(self_);
 }
@@ -1826,7 +1838,11 @@ APSWCursor_aiter(PyObject *self_)
   CHECK_CURSOR_CLOSED(NULL);
 
   if (IN_WORKER_THREAD(self->connection))
-    return error_async_in_sync_context();
+  {
+    error_async_in_sync_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Cursor.__aiter__", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   /* safety */
   self->aiter_state = AIter_End;

@@ -446,7 +446,11 @@ APSWSession_aclose(PyObject *self_, PyObject *unused)
 {
   APSWSession *self = (APSWSession *)self_;
   if (self->connection && IN_WORKER_THREAD(self->connection))
-    return error_async_in_sync_context();
+  {
+    error_async_in_sync_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Session.aclose", "{s: O}", "self", self_);
+    return NULL;
+  }
 
   if (self->connection)
     return do_async_binary((PyObject *)self->connection, APSWSession_close, self_, unused);
@@ -878,6 +882,7 @@ APSWSession_set_enabled(PyObject *self_, PyObject *value, void *Py_UNUSED(unused
   if (!IN_WORKER_THREAD(self->connection))
   {
     error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Session.enabled=", "{s: O}", "self", self_);
     return -1;
   }
 
@@ -926,6 +931,7 @@ APSWSession_set_indirect(PyObject *self_, PyObject *value, void *Py_UNUSED(unuse
   if (!IN_WORKER_THREAD(self->connection))
   {
     error_sync_in_async_context();
+    AddTraceBackHere(__FILE__, __LINE__, "Session.indirect=", "{s: O}", "self", self_);
     return -1;
   }
 
