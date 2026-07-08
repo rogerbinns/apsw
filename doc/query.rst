@@ -271,7 +271,7 @@ The type is then invoked with the dict.  This works really well with
     `pydantic <https://pydantic.dev/>`__ provides even more dataclass
     like functionality including type validation.
 
-.. list-table::  Type Annotations
+.. list-table::  Return Type Annotations
     :header-rows: 1
     :widths: auto
 
@@ -279,18 +279,19 @@ The type is then invoked with the dict.  This works really well with
         - Explanation
 
     *   - :code:`None`
-        - The SQL is executed to completion, ignoring any rows that
-          may have resulted.
+        - The SQL is executed to completion, raising
+          :exc:`apsw.query.TooManyRows` if any rows are returned.
 
     *   - :code:`changes`
-        - The number of rows added, deleted, or changed.  Cursors
-          are not isolated from each other so this will counts all
-          database wide changes.  It is an :class:`int`
+        - Returns the number of rows added, deleted, or changed.
+          Cursors are not isolated from each other so this will counts
+          all database wide changes from when it starts execution
+          until completion.  It is an :class:`int`
 
     *   - :code:`a_type | None`
         - If exactly one row was returned then conversion to
           :code:`a_type` will happen.  If no rows were then
-          :code:`None` is returned.  If more than one then
+          :code:`None` is returned.  If more than one row then
           :exc:`apsw.query.TooManyRows` is raised.
 
           You can also use :code:`a_type | Literal[value]` and
@@ -300,7 +301,7 @@ The type is then invoked with the dict.  This works really well with
     *   - :code:`a_type`
         - Exactly one row should return and will be converted to
           :code:`a_type`.  If not then :exc:`apsw.query.RowExpected`
-          is raised.
+          is raised.  CHECK if TooManyRows is raised
 
     *   - :code:`Iterator[a_type]`
         - Each row is converted to :code:`a_type` and is iterable

@@ -262,11 +262,12 @@ def _gen_function(meta: dict[str, Any]) -> str:
         inner = """
     async def async_inner() -> None:
         async for _ in await cursor.execute(sql, vals):
-            pass
+            raise TooManyRows
+
 
     def sync_inner() -> None:
         for _ in cursor.execute(sql, vals):
-            pass
+            raise TooManyRows
 """
 
     elif isinstance(node, ast.Name) and node.id == "changes":
