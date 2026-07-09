@@ -26,16 +26,8 @@ See :doc:`query` for details
 # Add a type - eg ExecuteSequence - and if one of the params is that type
 # then do executemany instead of execute
 #
-# Figure out a way of indicating transaction - ie the SQL should be run wrapped
+# Figure out a way of indicating atomic - ie the SQL should be run wrapped
 # in with/savepoint.  It shouldn't be automatic for every SQL
-#
-# If return type is Any then don't do any conversion
-
-
-class changes(int):
-    "Indicates the number of rows deleted, inserted, and updated are returned"
-
-    pass
 
 
 class TooManyRows(Exception):
@@ -66,7 +58,9 @@ class ChainMapRO:
             except KeyError:
                 pass
         exc = KeyError(key)
-        getattr(exc, "add_note", lambda x: None)(f"{key!r} in SQL template  but not in bindings. Does it need to be eval, a parameter. or local variable?")
+        getattr(exc, "add_note", lambda x: None)(
+            f"{key!r} in SQL template  but not in bindings. Does it need to be eval, a parameter. or local variable?"
+        )
         raise exc
 
     def items(self):
@@ -201,12 +195,14 @@ def _unwrap(node: ast.AST, name: str) -> str | None:
         return ast.unparse(node.slice)
     return None
 
-def _retval_for(a_type:ast.AST | str) -> str:
+
+def _retval_for(a_type: ast.AST | str) -> str:
     # how a row is converted to the type
     t = ast.unparse(a_type) if not isinstance(a_type, str) else a_type
     if t == "Any":
-            return  "row[0] if len(desc) == 1 else row"
+        return "row[0] if len(desc) == 1 else row"
     return f"{t}(row[0]) if len(desc) == 1 else {t}(**dict(zip((d[0] for d in desc), row, strict=True)))"
+
 
 def _gen_function(meta: dict[str, Any]) -> str:
     "Generates the code for one query"
@@ -271,23 +267,21 @@ def _gen_function(meta: dict[str, Any]) -> str:
 """
 
     elif isinstance(node, ast.Name) and node.id == "changes":
-        async_sig += "Awaitable[changes]"
-        sync_sig += "changes"
-        both_sig += "changes | Awaitable[changes]"
+        async_sig += "Awaitable[int]"
+        sync_sig += "int"
+        both_sig += "int | Awaitable[int]"
 
-        # ::TODO:: sqlite3_total_changes is going to require dbmutex
-        # in 3.54 so will have to await the total_changes call
         inner = """
-    async def async_inner() -> changes:
-        count = cursor.connection.total_changes()
+    async def async_inner() -> int:
+        count = await cursor.connection.total_changes()
         async for _ in await cursor.execute(sql, vals):
-            pass
-        return cursor.connection.total_changes() - count
+            raise TooManyRows
+        return await cursor.connection.total_changes() - count
 
-    def sync_inner() -> changes:
+    def sync_inner() -> int:
         count = cursor.connection.total_changes()
         for _ in cursor.execute(sql, vals):
-            pass
+            raise TooManyRows
         return cursor.connection.total_changes() - count
 """
 
@@ -306,8 +300,6 @@ def _gen_function(meta: dict[str, Any]) -> str:
         async_sig += f"Awaitable[{l} | {r}]"
         sync_sig += f"{l} | {r}"
         both_sig += f"Awaitable[{l} | {r}] | {l} | {r}"
-
-
 
         inner = f"""
     async def async_inner() -> {l} | {r}:
@@ -544,7 +536,7 @@ from typing import overload, Literal  {unused_import}
 from collections.abc import  Awaitable, Iterator, AsyncIterator  {unused_import}
 
 import apsw
-from apsw.query import bind_sql, ChainMapRO, template_expand, changes, TooManyRows, RowExpected  {unused_import}
+from apsw.query import bind_sql, ChainMapRO, template_expand, TooManyRows, RowExpected  {unused_import}
 
 _NotSet = object()
 "Sentinel for an unset value"
@@ -745,7 +737,6 @@ if __name__ == "__main__":
             return sys.stdout
 
     if options.file:
-
         res = python_from_text(pathlib.Path(options.file).read_text(encoding="utf8"))
         o = output()
         try:

@@ -3,6 +3,9 @@ this should be ignored
 
 -- python:
 
+r"""a"b\n
+d"""
+
 /*
 
 def pytest(x):
@@ -83,3 +86,25 @@ SELECT 3 as '3', 4 as '';
 --name:level3-> ns_level1    . ns_level2   . ns_level3
 
 SELECT 5 as 'select', 6 as 'class';
+
+--   name   : none_rows -> None
+
+SELECT 3
+
+--name:none->None
+
+CREATE TABLE victim(x,y);
+
+-- name: change_count() -> changes
+
+INSERT INTO victim VALUES(1,2), (3,4), (5,6);
+
+--name    :  iter1 -> Iterator[ns_level1.ns_level2.ns_level3]
+
+SELECT 3 as 'three', 4 as 'four';
+SELECT 'one' as 'one', 3.3 as 'two';
+
+--name:iter2->  Iterator                  [                   Any   ]
+
+SELECT 3 as 'three', 4 as 'four';
+SELECT 'one' as 'one', 3.3 as 'two';

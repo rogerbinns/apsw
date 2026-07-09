@@ -120,6 +120,8 @@ class Query(unittest.TestCase):
         with apsw.query.import_hook():
             import apsw.tests._querytest as q
 
+        self.assertEqual(q.__doc__, 'a"b\\n\nd')
+
         self.assertEqual(3, await q.apytest(2))
 
         self.assertEqual((3, 4), await q.no_bind(self.db))
@@ -154,10 +156,42 @@ class Query(unittest.TestCase):
             await q.too_many(self.db)
 
         l = []
-        for row in await q.no_ret(self.db):
+        async for row in await q.no_ret(self.db):
             l.append(row)
 
-        self.assertEqual(l, q.list_ret(self.db))
+        self.assertEqual(l, await q.list_ret(self.db))
+
+        with self.assertRaises(apsw.query.TooManyRows):
+            await q.none_rows(self.db)
+
+        self.assertIsNone(await q.none(self.db))
+
+        v = await q.change_count(self.db)
+        self.assertEqual(3, v)
+        self.assertIsSubclass(type(v), int)
+
+        iter1 = q.iter1(self.db)
+        self.assertNotIsInstance(iter1, apsw.Cursor)
+        rows = []
+        async for row in iter1:
+            rows.append(row)
+        self.assertEqual(2, len(rows))
+        self.assertIsInstance(rows[0], q.ns_level1.ns_level2.ns_level3)
+        self.assertIsInstance(rows[1], q.ns_level1.ns_level2.ns_level3)
+
+        self.assertEqual(rows[0].kwargs, {"three": 3, "four": 4})
+        self.assertEqual(rows[1].kwargs, {"one": "one", "two": 3.3})
+
+        iter2 = q.iter2(self.db)
+        self.assertNotIsInstance(iter2, apsw.Cursor)
+        rows = []
+        async for row in iter2:
+            rows.append(row)
+        self.assertEqual(2, len(rows))
+        self.assertIsInstance(rows[0], tuple)
+        self.assertIsInstance(rows[1], tuple)
+
+        self.assertEqual(rows, [(3, 4), ('one', 3.3)])
 
     def testGeneralAsync(self):
         try:

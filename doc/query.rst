@@ -286,7 +286,9 @@ The type is then invoked with the dict.  This works really well with
         - Returns the number of rows added, deleted, or changed.
           Cursors are not isolated from each other so this will counts
           all database wide changes from when it starts execution
-          until completion.  It is an :class:`int`
+          until completion.  The return value is an :class:`int`.
+          :exc:`apsw.query.RowExpected` is raised if any rows are
+          returned.
 
     *   - :code:`a_type | None`
         - If exactly one row was returned then conversion to
