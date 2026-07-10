@@ -431,7 +431,7 @@ apsw_connections(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
   PyObject *res = PyList_New(0), *item = NULL;
   if (!res)
     goto fail;
-  for (i = 0; i < PyList_GET_SIZE(the_connections); i++)
+  for (i = 0; the_connections && i < PyList_GET_SIZE(the_connections); i++)
   {
     if (PyWeakref_GetRef(PyList_GET_ITEM(the_connections, i), &item) < 0)
       goto fail;
@@ -453,7 +453,7 @@ static void
 apsw_connection_remove(Connection *con)
 {
   Py_ssize_t i;
-  for (i = 0; i < PyList_GET_SIZE(the_connections);)
+  for (i = 0; the_connections && i < PyList_GET_SIZE(the_connections);)
   {
     PyObject *wr = PyList_GET_ITEM(the_connections, i);
     PyObject *wo = NULL;
@@ -479,6 +479,8 @@ apsw_connection_remove(Connection *con)
 static int
 apsw_connection_add(Connection *con)
 {
+  if (!the_connections)
+    return 0;
   PyObject *weakref = PyWeakref_NewRef((PyObject *)con, NULL);
   if (!weakref)
     return -1;
