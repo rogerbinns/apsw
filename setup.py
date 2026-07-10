@@ -894,12 +894,14 @@ def download(url: str, checksum: bool = True, missing_checksum_ok: bool = False)
     cache_name = cache_dir / file_name
     if cache_name.exists():
         try:
-            if abs(time.time() - cache_name.stat().st_mtime) < 7 *24 * 60 * 60:
+            if abs(time.time() - cache_name.stat().st_mtime) < 7 * 24 * 60 * 60:
                 page = (cache_dir / file_name).read_bytes()
                 write("    Cached", url)
                 if checksum:
                     verifyurl(url, page, missing_checksum_ok)
                 return io.BytesIO(page)
+            # remove stale file
+            cache_name.unlink()
         except Exception:
             # many things could go wrong in the above including being
             # unable to stat, unable to read etc, so we fallback to a
