@@ -10,6 +10,12 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.53.3.1
+========
+
+Fix an issue that could occur with connections and module unload
+ordering during finalization (:issue:`622`)
+
 query
 =====
 
