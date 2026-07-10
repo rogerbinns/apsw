@@ -342,7 +342,7 @@ This section shows all of these in action at once!
     ('test',
      {'binary': 'AXOUZQ==',
       'complex': (3+4j),
-      'date stamp': '2026-07-01T10:09:00.342690',
+      'date stamp': '2026-07-10T08:54:10.571628',
       'decimal': Decimal('0.7843262344923523492342352344523423423423')})
 
 
