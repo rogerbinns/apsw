@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+from typing import Callable
 import unittest
 
 import apsw
@@ -90,28 +91,8 @@ class Query(unittest.TestCase):
             self.assertEqual(b"", proc.stdout)
             self.assertIn(b"was not imported", proc.stderr)
 
-    def testGeneral(self):
-        # see comment in atestGeneral
-
-        source = inspect.getsource(self.atestGeneral).splitlines()
-
-        while "TEST CODE STARTS HERE" not in source[0]:
-            source.pop(0)
-
-        adjusted = textwrap.dedent("\n".join(source))
-
-        for sub, repl in (
-            ("apytest", "pytest"),
-            ("await ", ""),
-            ("async ", ""),
-        ):
-            adjusted = adjusted.replace(sub, repl)
-
-        exec(adjusted, globals=globals(), locals=locals())
-
-    async def atestGeneral(self):
-        # this code is evaluated in the sync text version with all the
-        # async / await omitted to avoid having duplicate code
+    async def atestResultTypes(self):
+        "result type annotation effects"
 
         self.db = await apsw.Connection.as_async("")
 
@@ -191,14 +172,74 @@ class Query(unittest.TestCase):
         self.assertIsInstance(rows[0], tuple)
         self.assertIsInstance(rows[1], tuple)
 
-        self.assertEqual(rows, [(3, 4), ('one', 3.3)])
+        self.assertEqual(rows, [(3, 4), ("one", 3.3)])
 
-    def testGeneralAsync(self):
+    async def atestParams(self):
+        "parameter handling"
+
+        self.db = await apsw.Connection.as_async("")
+
+        # TEST CODE STARTS HERE
+
+        with apsw.query.import_hook():
+            import apsw.tests._querytest as q
+
+        self.assertEqual(3, await q.p_binding(self.db, 3))
+        self.assertEqual("a'\\\"\03", await q.p_binding(self.db))
+        self.assertEqual("Orange[Red]", param_type(q.p_binding, "one"))
+
+        # check params are done normally - too many names and values
+        with self.assertRaisesRegex(TypeError, ".*multiple values.*"):
+            await q.p_binding(self.db, 3, one=4)
+
+        with self.assertRaises(TypeError):
+            await q.p_binding(self.db, 3, 4, 5)
+
+        # id
+        self.assertEqual([{"a'b": 3, "B": 4}, {"b": 3, "a'b": 4}], await q.p_id(self.db, "a'b"))
+        self.assertEqual([{'a""b': 3, "B": 4}, {"b": 3, 'a""b': 4}], await q.p_id(self.db, 'a""b'))
+
+        with self.assertRaisesRegex(ValueError, ".*zero byte.*"):
+            await q.p_id(self.db, "a\0b")
+
+    def testAsync(self):
+        "async testing of all the things"
         try:
             import asyncio
         except ImportError:
             return
-        asyncio.run(self.atestGeneral(), debug=True)
+
+        for name in dir(self):
+            if name.startswith("atest"):
+                with self.subTest(name=f"{name} (async)", desc=getattr(self, name).__doc__):
+                    self.setUp()
+                    asyncio.run(getattr(self, name)(), debug=True)
+                    self.tearDown()
+
+    def testSync(self):
+        "sync testing of all the things"
+        for name in dir(self):
+            if name.startswith("atest"):
+                with self.subTest(name=f"{name} (sync)", desc=getattr(self, name).__doc__):
+                    self.setUp()
+
+                    source = inspect.getsource(getattr(self, name)).splitlines()
+
+                    while "TEST CODE STARTS HERE" not in source[0]:
+                        source.pop(0)
+
+                    adjusted = textwrap.dedent("\n".join(source))
+
+                    for sub, repl in (
+                        ("apytest", "pytest"),
+                        ("await ", ""),
+                        ("async ", ""),
+                    ):
+                        adjusted = adjusted.replace(sub, repl)
+
+                    exec(adjusted, globals=globals(), locals={"self": self})
+
+                    self.tearDown()
 
     def testStuff(self):
         # import hook
@@ -207,6 +248,11 @@ class Query(unittest.TestCase):
         # args
         # return types
         return
+
+
+def param_type(func: Callable, param_name: str) -> str:
+    # returns the text annotation of a function parameter
+    return inspect.signature(func).parameters[param_name].annotation
 
 
 __all__ = ("Query",)

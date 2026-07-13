@@ -1,10 +1,13 @@
 
 this should be ignored
+-- so should this
 
 -- python:
 
+             /*
 r"""a"b\n
 d"""
+              */
 
 /*
 
@@ -108,3 +111,14 @@ SELECT 'one' as 'one', 3.3 as 'two';
 
 SELECT 3 as 'three', 4 as 'four';
 SELECT 'one' as 'one', 3.3 as 'two';
+
+--name: p_binding(one: Orange[Red] = "a'\\\"\03") -> Any
+-- binding with al the things (type, hairy value)
+
+SELECT {one}
+
+--   name   :p_id(a) ->list[    dict]
+
+SELECT 3 AS {a:id}, 4 as B;
+SELECT 3 AS b, 4 as {a:id};
+
