@@ -26,8 +26,12 @@ See :doc:`query` for details
 # Add a type - eg ExecuteSequence - and if one of the params is that type
 # then do executemany instead of execute
 #
-# Figure out a way of indicating atomic - ie the SQL should be run wrapped
-# in with/savepoint.  It shouldn't be automatic for every SQL
+# For all returns where we process the complete query (ie ones NOT returning an
+# iterator or cursor), always wrap in with db so they are always atomic
+#
+# For the import hook see if importlib.resources can be used to locate the
+# files instead of doing it the hard way.  that should make zip etc automatically
+# work
 
 
 class TooManyRows(Exception):
@@ -163,13 +167,18 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
             match spec:
                 case ["id"]:
                     value = conv(value)
+                    if "\0" in value:
+                        raise ValueError("ids can't have zero byte in them")
                     res.append('"' + value.replace('"', '""') + '"')
 
                 case ["seq", "id"]:
-                    for i, v in enumerate(values):
+                    for i, v in enumerate(value):
                         if i:
                             res.append(", ")
-                        res.append('"' + conv(value).replace('"', '""') + '"')
+                        x = conv(v)
+                        if "\0" in x:
+                            raise ValueError("ids can't have zero byte in them")
+                        res.append('"' + x.replace('"', '""') + '"')
 
                 case ["seq"]:
                     for i, v in enumerate(value):
@@ -178,7 +187,7 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
                         add_binding(conv(v))
 
                 case ["literal"]:
-                    res.append(conv(v))
+                    res.append(conv(value))
 
                 case []:
                     add_binding(conv(value))

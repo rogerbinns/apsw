@@ -188,6 +188,25 @@ class Query(unittest.TestCase):
         self.assertEqual("a'\\\"\03", await q.p_binding(self.db))
         self.assertEqual("Orange[Red]", param_type(q.p_binding, "one"))
 
+        # check the !conversions
+        class Conv:
+            def __init__(self, v):
+                self.v = v
+
+            def __repr__(self):
+                # unicode in here to check ascii conversion
+                return f"repr \u1234\u5678 {self.v}"
+
+            def __str__(self):
+                return f"str {self.v}"
+
+        with self.assertRaisesRegex(TypeError, ".*binding.*"):
+            await q.p_binding(self.db, Conv(7))
+
+        xyz = Conv("'\0=\"")
+
+        self.assertEqual(["repr ሴ噸 '\x00=\"", "str '\x00=\"", "repr \\u1234\\u5678 '\x00=\""], await q.p_conv(self.db))
+
         # check params are done normally - too many names and values
         with self.assertRaisesRegex(TypeError, ".*multiple values.*"):
             await q.p_binding(self.db, 3, one=4)
@@ -201,6 +220,33 @@ class Query(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, ".*zero byte.*"):
             await q.p_id(self.db, "a\0b")
+
+        # seqid
+        name = "'\"\\  ["
+        self.assertEqual(
+            {"tbl_name": name, "type": "table"}, (await q.p_seqid(self.db, name, ("type", "tbl_name"))).kwargs
+        )
+
+        with self.assertRaisesRegex(ValueError, ".*zero byte.*"):
+            await q.p_seqid(self.db, name, ("type", "tbl\0_name"))
+
+        # eval
+        a = 1
+        b = 2
+        self.assertEqual(6, await getattr(await q.p_eval(self.db), "get"))
+
+        self.assertEqual(5, await q.p_evalfn(self.db, "seven"))
+
+        self.assertIn("iter", await q.p_eval_seq(self.db))
+
+        self.assertEqual(
+            {"tbl_name": name, "type": "table"}, (await q.p_eval_seqid(self.db, name)).kwargs
+        )
+
+        # literal
+        self.assertEqual("abcdef", await q.p_literal(self.db, "'ab'||'cd'||'ef'"))
+        self.assertEqual("abcdef?", await q.p_eval_literal(self.db, "'ab'||'cd'||'ef'"))
+
 
     def testAsync(self):
         "async testing of all the things"

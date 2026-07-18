@@ -1,6 +1,11 @@
 
 this should be ignored
 -- so should this
+/*
+  and this
+
+  note that the spacing and inconsistencies
+/*
 
 -- python:
 
@@ -122,3 +127,42 @@ SELECT {one}
 SELECT 3 AS {a:id}, 4 as B;
 SELECT 3 AS b, 4 as {a:id};
 
+-- name: p_conv->list[str]
+
+SELECT {xyz!r};
+SELECT {xyz!s};
+SELECT {xyz!a};
+
+--name     :p_eval
+
+SELECT {a+b
++
+3:eval}
+
+-- name: p_evalfn(a_value) -> int
+
+SELECT {len(a_value):eval}
+
+-- name: p_eval_seq() -> Any
+
+SELECT {iter(__builtins__):eval|seq}
+
+--name:  p_seqid(name, x) -> ns_level1
+
+CREATE TABLE {name:id}(a,b,c);
+SELECT {x:seq    |
+id} FROM sqlite_schema where name={name};
+
+--name   :p_eval_seqid(name) -> ns_level1.ns_level2
+
+SELECT {"tbl_name type".
+split():eval|seq|id} FROM sqlite_schema
+WHERE name={name};
+
+-- name: p_literal(x) -> str
+
+SELECT {x:literal}
+
+--name: p_eval_literal(x) -> str
+
+SELECT {x + "||" + "'?'":eval|literal}
