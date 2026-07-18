@@ -151,10 +151,8 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
 
             if spec and spec[0] == "eval":
                 spec.pop(0)
-                # ::TODO:: does this need __builtins__ for middle param so
-                # eg len() works
                 try:
-                    value = eval(field, None, vars)
+                    value = eval("(" + field + ")", None, vars)
                 except Exception as exc:
                     # Python 3.10 doesn't have add_note
                     getattr(exc, "add_note", lambda x: None)(f"Evaluating: {field}")

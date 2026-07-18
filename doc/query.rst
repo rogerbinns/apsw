@@ -187,8 +187,9 @@ may contain multiple components separated by :code:`|`.
       quotes inside are doubled up.
 
   * - :code:`{product["sku"]:eval}`
-    - :code:`eval` Evaluates the expression.  This example would
-      use the resulting value as a binding.
+    - :code:`eval` Evaluates the expression using Python's
+      :func:`eval`.  This example would use the resulting value as a
+      binding.
 
   * - :code:`{columns[3]:eval|id}`
     - You can have additional specs after :code:`eval` - this uses
