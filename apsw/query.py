@@ -12,7 +12,7 @@ import sys
 import textwrap
 from string import Formatter
 from types import ModuleType
-from typing import Any
+from typing import Any, Iterator
 
 """
 Provides Pythonic interface to SQL in a file
@@ -42,11 +42,8 @@ class RowExpected(Exception):
     pass
 
 
-class ChainMapRO:
-    """Read-only chainmap for execute bindings
-
-    This only implements enough to be useful for bindings.
-    """
+class ChainMapRO(collections.abc.Mapping[str, Any]):
+    """Read-only chainmap for eval template"""
 
     def __init__(self):
         self.maps: list[collections.abc.Mapping[str, Any]] = []
@@ -59,24 +56,31 @@ class ChainMapRO:
                 pass
         exc = KeyError(key)
         getattr(exc, "add_note", lambda x: None)(
-            f"{key!r} in SQL template  but not in bindings. Does it need to be eval, a parameter. or local variable?"
+            f"{key!r} in SQL template but not in bindings. Does it need to be eval, a parameter. or local variable?"
         )
         raise exc
 
     def items(self):
-        # Called when displaying locals
-        seen = set()
+        res: dict[str, Any] = {}
         for map in self.maps:
             for k, v in map.items():
+                if k not in res:
+                    res[k] = v
+        return res.items()
+
+    def __iter__(self) -> Iterator[str]:
+        seen: set[str] = set()
+        for map in self.maps:
+            for k in map:
                 if k not in seen:
                     seen.add(k)
-                    yield (k, v)
+        return iter(seen)
 
-
-# ChainMapRO doesn't implement the full abc such as iter and len but
-# they aren't used so we don't care!  That is why we register rather
-# than inherit
-collections.abc.Mapping.register(ChainMapRO)
+    def __len__(self):
+        count: int = 0
+        for _ in self:
+            count += 1
+        return count
 
 
 def bind_sql(sql: str):
