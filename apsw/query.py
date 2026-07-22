@@ -10,6 +10,7 @@ import pathlib
 import re
 import sys
 import textwrap
+import zipfile
 from string import Formatter
 from types import ModuleType
 from typing import Any, Iterator
@@ -29,9 +30,11 @@ See :doc:`query` for details
 # For all returns where we process the complete query (ie ones NOT returning an
 # iterator or cursor), always wrap in with db so they are always atomic
 #
-# For the import hook see if importlib.resources can be used to locate the
-# files instead of doing it the hard way.  that should make zip etc automatically
-# work
+# at code gen time, check templating for correctness:
+# * !conversions
+# * : spec | spec
+# * field syntax valid for eval
+# * field is passed in name matches parameter unless **locals
 
 
 class TooManyRows(Exception):
@@ -480,39 +483,56 @@ class _Import_Hook(importlib.abc.MetaPathFinder):
         # if owned by import_hook as a context manger
         self.context_owned = False
 
-    def find_spec(self, fullname: str, path: collections.abc.Sequence[str] | None, target: ModuleType | None = None):
-        # ::TODO:: this currently only works with filesystem and needs
-        # to be adjusted if there are zip files etc.  That involves
-        # invoking the corresponding finders to check for the .sql
-        # entry as well as saving the source to pass to
-        # _SQLSourceLoader
-        name = fullname.split(".")[-1]
-        search_dirs = path if path else sys.path
+    def find_spec(self, fullname: str, path: Any | None, target: ModuleType | None = None):
+        # we ignore target because there is no value in trying to optimize reload
 
-        for entry in search_dirs:
-            base_path = pathlib.Path(entry) / name
-            sql_path = base_path.with_suffix(".sql")
+        # path is ignored (present when doing from a.b import c
+        # representing a.b) because fullname is present (a.b.c) and
+        # there is no practical way of figuring out the relative
+        # import mechanics
 
-            if sql_path.exists():
-                spec = importlib.util.spec_from_loader(fullname, _SQLSourceLoader(sql_path), origin=str(sql_path))
-                spec.loader = importlib.util.LazyLoader(spec.loader)
-                return spec
+        name = fullname.split(".")
+        name[-1] += ".sql"
+
+        for entry in sys.path:
+            # regular file check
+            sql_path = pathlib.Path(entry).joinpath(*name)
+
+            if sql_path.is_file():
+                return self.spec_from_sql_path(fullname, sql_path)
+
+            # zipfile / frozen?  note that it may not be a zipfile hence swallowing exceptions
+            zip_name = pathlib.Path(entry)
+            if zip_name.is_file():
+                try:
+                    sql_path = zipfile.Path(zip_name, "/".join(name))
+                    if sql_path.is_file():
+                        return self.spec_from_sql_path(fullname, sql_path)
+                except (OSError, zipfile.BadZipFile):
+                    pass
+
+    def spec_from_sql_path(self, fullname: str, sql_path: pathlib.Path):
+        sql_loader = _SQLSourceLoader(fullname, sql_path)
+        spec = importlib.util.spec_from_loader(fullname, sql_loader, origin=str(sql_path))
+        spec.loader = importlib.util.LazyLoader(spec.loader)
+        return spec
 
 
 class _SQLSourceLoader(importlib.abc.SourceLoader):
     # This only handles one file at a time which is why all the
     # parameters are ignored
-    def __init__(self, path: pathlib.Path):
+    def __init__(self, fullname: str, path: pathlib.Path):
+        self.fullname = fullname
         self.path = path
 
     def get_filename(self, fullname: str):
-        return f"<apsw.query source {str(self.path)!r}>.py"
+        return f"<module {self.fullname}: apsw.query generated from source {str(self.path)!r}>.py"
 
     def get_source(self, fullname: str):
         return python_from_text(self.path.read_text(encoding="utf8"))
 
     def get_data(self, path: str):
-        return self.get_source(path).encode("utf8")
+        return self.get_source(None).encode("utf8")
 
 
 def python_from_text(text: str) -> str:
