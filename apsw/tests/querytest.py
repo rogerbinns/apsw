@@ -5,6 +5,7 @@ import os
 import pathlib
 import subprocess
 import sys
+import zipfile
 import tempfile
 import textwrap
 from typing import Callable
@@ -239,14 +240,11 @@ class Query(unittest.TestCase):
 
         self.assertIn("iter", await q.p_eval_seq(self.db))
 
-        self.assertEqual(
-            {"tbl_name": name, "type": "table"}, (await q.p_eval_seqid(self.db, name)).kwargs
-        )
+        self.assertEqual({"tbl_name": name, "type": "table"}, (await q.p_eval_seqid(self.db, name)).kwargs)
 
         # literal
         self.assertEqual("abcdef", await q.p_literal(self.db, "'ab'||'cd'||'ef'"))
         self.assertEqual("abcdef?", await q.p_eval_literal(self.db, "'ab'||'cd'||'ef'"))
-
 
     def testAsync(self):
         "async testing of all the things"
@@ -288,12 +286,92 @@ class Query(unittest.TestCase):
                     self.tearDown()
 
     def testStuff(self):
-        # import hook
-        # import when source is a zip file
         # template errors
         # args
         # return types
         return
+
+    def testImporting(self):
+        # other tests do full path importing
+        # this covers relative imports and zip files
+
+        def cleanup():
+            for name in "apsw.tests._querytest apsw._fts5q impzip_top insidezip.impzip_inside insidezip.impzip_inside2 insidezip.subpkg.level3".split():
+                if name in sys.modules:
+                    del sys.modules[name]
+
+        with apsw.query.import_hook():
+            import apsw.tests._querytest as q
+
+            self.assertEqual(3, q.pytest(2))
+            cleanup()
+            del q
+
+        with apsw.query.import_hook():
+            from apsw.tests import _querytest as q
+
+            self.assertEqual(3, q.pytest(2))
+            cleanup()
+            del q
+
+        with apsw.query.import_hook():
+            from .. import _fts5q as q
+
+            self.assertIn("column_names", dir(q))
+
+            del q
+
+        orig_sys_path = sys.path
+        sys.path = sys.path[:]
+        try:
+            with tempfile.TemporaryDirectory(prefix="apsw query test", ignore_cleanup_errors=True) as td:
+                td = pathlib.Path(td)
+
+                # deliberately wrong extension
+                zipf = td / "test.jpg"
+
+                with zipfile.ZipFile(zipf, "w") as z:
+                    for name, content in {
+                        "impzip_top.sql": """
+-- name: test() -> str
+SELECT 'impzip_top.sql'""",
+                        "insidezip/impzip_inside.sql": """
+-- name: test() -> str
+SELECT 'impzip_inside.sql'""",
+                        "insidezip/impzip_inside2.sql": """
+-- name: test() -> str
+SELECT 'impzip_inside2.sql'""",
+                        "insidezip/subpkg/level3.py": """
+from .. import impzip_inside2
+""",
+                        "insidezip/__init__.py": "",
+                    }.items():
+                        z.writestr(name, content)
+
+                sys.path.append(str(zipf))
+
+                with apsw.query.import_hook():
+                    import impzip_top as q
+
+                    self.assertEqual("impzip_top.sql", q.test(self.db))
+                    cleanup()
+                    del q
+
+                with apsw.query.import_hook():
+                    import insidezip.impzip_inside as q
+
+                    self.assertEqual("impzip_inside.sql", q.test(self.db))
+                    cleanup()
+                    del q
+
+                with apsw.query.import_hook():
+                    import insidezip.subpkg.level3
+
+                    self.assertEqual("impzip_inside2.sql", insidezip.subpkg.level3.impzip_inside2.test(self.db))
+                    cleanup()
+
+        finally:
+            sys.path = orig_sys_path
 
 
 def param_type(func: Callable, param_name: str) -> str:
