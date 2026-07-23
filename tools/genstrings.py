@@ -38,6 +38,8 @@ executemany extendedresult get result add_note
 can_cache
 
 collections.abc Mapping
+io UnsupportedOperation IOBase
+register
 
 step final value inverse
 
@@ -70,6 +72,7 @@ def mangle(name):
         "true": "strue",
         "false": "sfalse",
         "__module__": "s_module",
+        "register": "sregister",
     }.get(name, name).replace(".", "_")
 
 

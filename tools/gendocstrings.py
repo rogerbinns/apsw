@@ -1041,6 +1041,10 @@ if __name__ == "__main__":
                     "Connection.executemany",
                     "Connection.as_async",
                     "Blob.__exit__",
+                    "Blob.readline",
+                    "Blob.readlines",
+                    "Blob.writelines",
+                    "Blob.truncate",
                     "apsw.pyobject",
                 }:
                     missing.append(item["name"])

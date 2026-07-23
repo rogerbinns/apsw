@@ -835,8 +835,8 @@
 
 
 #define  Blob_class_DOC "This object is created by :meth:`Connection.blob_open` and provides\n" \
-"access to a blob in the database.  It behaves like a Python file.\n" \
-"It wraps a `sqlite3_blob\n" \
+"access to a blob in the database.  It behaves like a Python\n" \
+":class:`file <io.RawIOBase>` in binary mode.  It wraps a `sqlite3_blob\n" \
 "<https://sqlite.org/c3ref/blob.html>`_.\n" \
 "\n" \
 ".. note::\n" \
@@ -877,6 +877,10 @@
 } while(0)
 
 
+#define  Blob_closed_DOC ":type: bool\n" \
+"\n" \
+"Indicates if the blob has been closed.\n" 
+
 #define  Blob_enter_DOC "Blob.__enter__() -> Blob\n\n" \
 "You can use a blob as a `context manager\n" \
 "<https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers>`_\n" \
@@ -904,6 +908,17 @@
   assert(__builtin_types_compatible_p(typeof(etraceback), PyObject *)); \
 } while(0)
 
+
+#define  Blob_fileno_DOC "Blob.fileno() -> int\n\n" \
+"Always raises :exc:`OSError` because there is no\n" \
+"underlying file descriptor.\n" 
+
+#define  Blob_flush_DOC "Blob.flush() -> None\n\n" \
+"Does nothing.  There is no intermediate buffer, and SQLite's overall\n" \
+"transaction/savepoint handling deals with database commits.\n" 
+
+#define  Blob_isatty_DOC "Blob.isatty() -> False\n\n" \
+"Blobs are never interactive.\n" 
 
 #define  Blob_length_DOC "Blob.length() -> int\n\n" \
 "Returns the size of the blob in bytes.\n" \
@@ -962,6 +977,17 @@
 #define Blob_read_into_OLDNAME "readinto"
 #define Blob_read_into_OLDDOC Blob_read_into_USAGE "\n(Old less clear name readinto)"
 
+#define  Blob_readable_DOC "Blob.readable() -> True\n\n" \
+"You can always read from a blob\n" 
+
+#define  Blob_readline_DOC "Blob.readline(size: int = -1) -> bytes\n\n" \
+"Always raises :exc:`io.UnsupportedOperation`.\n" \
+"You can wrap with :class:`io.BufferedReader`.\n" 
+
+#define  Blob_readlines_DOC "Blob.readlines(hint: int = -1) -> list[bytes]\n\n" \
+"Always raises :exc:`io.UnsupportedOperation`.\n" \
+"You can wrap with :class:`io.BufferedReader`.\n" 
+
 #define  Blob_reopen_DOC "Blob.reopen(rowid: int) -> None\n\n" \
 "Change this blob object to point to a different row.  It can be\n" \
 "faster than closing an existing blob an opening a new one.\n" \
@@ -995,8 +1021,18 @@
 } while(0)
 
 
+#define  Blob_seekable_DOC "Blob.seekable() -> True\n\n" \
+"You can always seek in a blob\n" 
+
 #define  Blob_tell_DOC "Blob.tell() -> int\n\n" \
 "Returns the current offset.\n" 
+
+#define  Blob_truncate_DOC "Blob.truncate(size = None) -> None\n\n" \
+"Always raises :exc:`io.UnsupportedOperation`.\n" \
+"You cannot change the size of a blob.\n" 
+
+#define  Blob_writable_DOC "Blob.writable() -> bool\n\n" \
+"Returns True if the blob was open for writing, else False.\n" 
 
 #define  Blob_write_DOC "Blob.write(data: Buffer) -> None\n\n" \
 "Writes the data to the blob.\n" \
@@ -1019,6 +1055,10 @@
   assert(__builtin_types_compatible_p(typeof(data), PyObject *)); \
 } while(0)
 
+
+#define  Blob_writelines_DOC "Blob.writelines(lines) -> None\n\n" \
+"Always raises :exc:`io.UnsupportedOperation`.\n" \
+"You can wrap with :class:`io.BufferedWriter`.\n" 
 
 #define  ChangesetBuilder_add_DOC "ChangesetBuilder.add(changeset: ChangesetInput) -> None\n\n" \
 ":param changeset: The changeset as the bytes, or a stream\n" \
