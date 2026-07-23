@@ -110,6 +110,7 @@ struct APSWBlob
   Connection *connection;
   sqlite3_blob *pBlob;
   int curoffset;         /* SQLite only supports 32 bit signed int offsets */
+  int writeable;
   PyObject *weakreflist; /* weak reference tracking */
 };
 
@@ -122,8 +123,8 @@ static PyTypeObject APSWBlobType;
 /** .. class:: Blob
 
   This object is created by :meth:`Connection.blob_open` and provides
-  access to a blob in the database.  It behaves like a Python file.
-  It wraps a `sqlite3_blob
+  access to a blob in the database.  It behaves like a Python
+  :class:`file <io.RawIOBase>` in binary mode.  It wraps a `sqlite3_blob
   <https://sqlite.org/c3ref/blob.html>`_.
 
   .. note::
@@ -137,12 +138,13 @@ static PyTypeObject APSWBlobType;
 */
 
 static void
-APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob)
+APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob, int writeable)
 {
   self->connection = (Connection *)Py_NewRef((PyObject *)connection);
   self->pBlob = blob;
   self->curoffset = 0;
   self->weakreflist = NULL;
+  self->writeable = writeable;
 }
 
 static int
@@ -777,6 +779,163 @@ APSWBlob_reopen(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   Py_RETURN_NONE;
 }
 
+/** .. method:: fileno() -> int
+
+  Always raises :exc:`OSError` because there is no
+  underlying file descriptor.
+*/
+static PyObject *
+APSWBlob_fileno(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  PyErr_SetString(PyExc_OSError, "there is no underlying file descriptor");
+  return NULL;
+}
+
+/** .. method:: flush() -> None
+
+  Does nothing.  There is no intermediate buffer, and SQLite's overall
+  transaction/savepoint handling deals with database commits.
+*/
+static PyObject *
+APSWBlob_flush(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  Py_RETURN_NONE;
+}
+
+/** .. method:: isatty() -> False
+
+  Blobs are never interactive.
+*/
+static PyObject *
+APSWBlob_isatty(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  Py_RETURN_FALSE;
+}
+
+/** .. method:: readable() -> True
+
+  You can always read from a blob
+*/
+static PyObject *
+APSWBlob_readable(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  Py_RETURN_TRUE;
+}
+
+/** .. method:: writable() -> bool
+
+  Returns True if the blob was open for writing, else False.
+*/
+static PyObject *
+APSWBlob_writable(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  if (self->writeable)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+/** .. method:: seekable() -> True
+
+  You can always seek in a blob
+*/
+static PyObject *
+APSWBlob_seekable(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  Py_RETURN_TRUE;
+}
+
+/** .. method:: readline(size: int = -1) -> bytes
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You can wrap with :class:`io.BufferedReader`.
+*/
+static PyObject *
+APSWBlob_readline(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  PyErr_SetString(Exc_io_UnsupportedOperation, "readline not supported.  Use io.BufferedReader");
+  return NULL;
+}
+
+/** .. method:: readlines(hint: int = -1) -> list[bytes]
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You can wrap with :class:`io.BufferedReader`.
+*/
+static PyObject *
+APSWBlob_readlines(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  PyErr_SetString(Exc_io_UnsupportedOperation, "readlines not supported.  Use io.BufferedReader");
+  return NULL;
+}
+
+/** .. method:: writelines(lines) -> None
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You can wrap with :class:`io.BufferedWriter`.
+*/
+static PyObject *
+APSWBlob_writelines(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  PyErr_SetString(Exc_io_UnsupportedOperation, "writelines not supported.  Use io.BufferedWriter");
+  return NULL;
+}
+
+/** .. method:: truncate(size = None) -> None
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You cannot change the size of a blob.
+*/
+static PyObject *
+APSWBlob_truncate(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  PyErr_SetString(Exc_io_UnsupportedOperation, "You cannot change the size of a blob");
+  return NULL;
+}
+
+/** .. attribute:: closed
+    :type: bool
+
+    Indicates if the blob has been closed.
+*/
+static PyObject *
+APSWBlob_closed(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  if (self->pBlob)
+    Py_RETURN_FALSE;
+  Py_RETURN_TRUE;
+}
+
 static PyObject *
 APSWBlob_tp_repr(PyObject *self_)
 {
@@ -794,6 +953,11 @@ APSWBlob_bool(PyObject *self_)
   return self->pBlob ? 1 : 0;
 }
 
+static PyGetSetDef APSWBlob_getset[] = {
+  { "closed", APSWBlob_closed, NULL, Blob_closed_DOC },
+  { 0 },
+};
+
 static PyMethodDef APSWBlob_methods[] = {
   { "length", (PyCFunction)APSWBlob_length, METH_NOARGS, Blob_length_DOC },
   { "read", (PyCFunction)APSWBlob_read, METH_FASTCALL | METH_KEYWORDS, Blob_read_DOC },
@@ -808,6 +972,16 @@ static PyMethodDef APSWBlob_methods[] = {
   { "__exit__", (PyCFunction)APSWBlob_exit, METH_FASTCALL | METH_KEYWORDS, Blob_exit_DOC },
   { "__aenter__", (PyCFunction)APSWBlob_aenter, METH_NOARGS, Blob_aenter_DOC },
   { "__aexit__", (PyCFunction)APSWBlob_aexit, METH_FASTCALL | METH_KEYWORDS, Blob_aexit_DOC },
+  { "fileno", (PyCFunction)APSWBlob_fileno, METH_NOARGS, Blob_fileno_DOC },
+  { "flush", (PyCFunction)APSWBlob_flush, METH_NOARGS, Blob_flush_DOC },
+  { "isatty", (PyCFunction)APSWBlob_isatty, METH_NOARGS, Blob_isatty_DOC },
+  { "readable", (PyCFunction)APSWBlob_readable, METH_NOARGS, Blob_readable_DOC },
+  { "writable", (PyCFunction)APSWBlob_writable, METH_NOARGS, Blob_writable_DOC },
+  { "seekable", (PyCFunction)APSWBlob_seekable, METH_NOARGS, Blob_seekable_DOC },
+  { "readline", (PyCFunction)APSWBlob_readline, METH_FASTCALL | METH_KEYWORDS, Blob_readline_DOC },
+  { "readlines", (PyCFunction)APSWBlob_readlines, METH_FASTCALL | METH_KEYWORDS, Blob_readlines_DOC },
+  { "writelines", (PyCFunction)APSWBlob_writelines, METH_FASTCALL | METH_KEYWORDS, Blob_writelines_DOC },
+  { "truncate", (PyCFunction)APSWBlob_truncate, METH_FASTCALL | METH_KEYWORDS, Blob_truncate_DOC },
 
 #ifndef APSW_OMIT_OLD_NAMES
   { Blob_read_into_OLDNAME, (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS, Blob_read_into_OLDDOC },
@@ -830,4 +1004,5 @@ static PyTypeObject APSWBlobType = {
   .tp_as_number = &APSWBlob_as_number,
   .tp_str = NULL,
   .tp_repr = APSWBlob_tp_repr,
+  .tp_getset = APSWBlob_getset,
 };

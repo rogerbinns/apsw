@@ -10,6 +10,13 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+next
+====
+
+:class:`Blob` implements :class:`io.IOBase` allowing use by other
+modules expecting file like objects, such as compression.
+(:issue:`623`)
+
 3.53.3.1
 ========
 

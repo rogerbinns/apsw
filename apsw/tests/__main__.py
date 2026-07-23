@@ -4882,7 +4882,7 @@ class APSW(unittest.TestCase):
         blob = self.db.blob_open("main", "foo", "x", rowid, True)
         blob.close()
         nargs = self.blob_nargs
-        for func in [x for x in dir(blob) if not x.startswith("__") and x not in ("close", "aclose")]:
+        for func in [x for x in dir(blob) if not x.startswith("__") and x not in ("close", "aclose", "closed")]:
             args = ("one", "two", "three")[: nargs.get(func, 0)]
             try:
                 getattr(blob, func)(*args)
@@ -6150,7 +6150,7 @@ class APSW(unittest.TestCase):
                 "order": ("closed",),
             },
             "APSWBlob": {
-                "skip": ("dealloc", "dealloc_mutex", "init", "close", "close_internal", "tp_repr", "bool", "aclose"),
+                "skip": ("dealloc", "dealloc_mutex", "init", "close", "close_internal", "tp_repr", "bool", "aclose", "closed"),
                 "req": {"closed": "CHECK_BLOB_CLOSED"},
                 "order": ("use", "closed"),
             },
@@ -7105,6 +7105,66 @@ class APSW(unittest.TestCase):
         except:
             klass, value = sys.exc_info()[:2]
             self.assertTrue(klass is apsw.AbortError)
+
+    def testBlobIOBase(self):
+        "blob conformance with io.IOBase"
+
+        rowids=self.db.execute("""
+            CREATE TABLE victim(x);
+            INSERT INTO victim VALUES (randomblob(16383)) RETURNING rowid;
+            INSERT INTO victim VALUES (randomblob(16383)) RETURNING rowid;
+        """).get
+
+        blobro = self.db.blob_open("main", "victim", "x", rowids[0], False)
+        blobrw = self.db.blob_open("main", "victim", "x", rowids[1], True)
+
+        for name in dir(io.IOBase):
+            match name:
+                case "close" | "read" | "write" | "seek" | "tell":
+                    # covered in tests above
+                    pass
+                case _ if name.startswith("_"):
+                    pass
+                case "closed":
+                    self.assertFalse(blobro.closed)
+                    self.assertFalse(blobrw.closed)
+                case "fileno":
+                    self.assertRaises(OSError, blobro.fileno)
+                    self.assertRaises(OSError, blobrw.fileno)
+                case "flush":
+                    self.assertIsNone(blobro.flush())
+                    self.assertIsNone(blobrw.flush())
+                case "isatty":
+                    self.assertFalse(blobro.isatty())
+                    self.assertFalse(blobrw.isatty())
+                case "readable" | "seekable":
+                    self.assertTrue(blobro.readable())
+                    self.assertTrue(blobrw.readable())
+                    self.assertTrue(blobro.seekable())
+                    self.assertTrue(blobrw.seekable())
+                case "readline" | "readlines" | "writelines" | "truncate":
+                    self.assertRaises(io.UnsupportedOperation, blobro.readline)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.readline)
+                    self.assertRaises(io.UnsupportedOperation, blobro.readlines)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.readlines)
+                    self.assertRaises(io.UnsupportedOperation, blobro.writelines)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.writelines)
+                    self.assertRaises(io.UnsupportedOperation, blobro.truncate)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.truncate)
+                case "writable":
+                    self.assertFalse(blobro.writable())
+                    self.assertTrue(blobrw.writable())
+                case _:
+                    raise NotImplementedError
+
+        blobro.close()
+        blobrw.close()
+        self.assertTrue(blobro.closed)
+        self.assertTrue(blobrw.closed)
+
+        self.assertIsInstance(blobro, io.IOBase)
+        self.assertIsInstance(blobrw, io.IOBase)
+
 
     def testAutovacuumPages(self):
         self.assertRaises(TypeError, self.db.autovacuum_pages)

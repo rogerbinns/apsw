@@ -11,7 +11,12 @@
         "value": [
             "length",
             "seek",
-            "tell"
+            "tell",
+            "writable",
+            "seekable",
+            "readable",
+            "isatty",
+            "fileno",
         ]
     },
     "Changeset": {
