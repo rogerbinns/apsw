@@ -280,7 +280,16 @@ APSWBlob_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
 
   ASYNC_FASTCALL(self->connection, APSWBlob_read);
 
-  if ((self->curoffset == sqlite3_blob_bytes(self->pBlob)) /* eof */
+  int blob_length = sqlite3_blob_bytes(self->pBlob);
+
+  if (self->curoffset > blob_length)
+  {
+    /* this happens when the blob is invalidated by a SQL level write */
+    SET_EXC(SQLITE_ABORT, NULL);
+    return NULL;
+  }
+
+  if ((self->curoffset == blob_length) /* eof */
       || (length == 0))
     return PyBytes_FromStringAndSize(NULL, 0);
 
@@ -288,8 +297,8 @@ APSWBlob_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
     length = sqlite3_blob_bytes(self->pBlob) - self->curoffset;
 
   /* trying to read more than is in the blob? */
-  if ((sqlite3_int64)self->curoffset + (sqlite3_int64)length > sqlite3_blob_bytes(self->pBlob))
-    length = sqlite3_blob_bytes(self->pBlob) - self->curoffset;
+  if ((sqlite3_int64)self->curoffset + (sqlite3_int64)length > blob_length)
+    length = blob_length - self->curoffset;
 
   buffy = PyBytes_FromStringAndSize(NULL, length);
 
@@ -375,12 +384,18 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
 
   ASYNC_FASTCALL(self->connection, APSWBlob_read_into);
 
+  bloblen = sqlite3_blob_bytes(self->pBlob);
+
+  if (self->curoffset > bloblen)
+  {
+    SET_EXC(SQLITE_ABORT, NULL);
+    return NULL;
+  }
+
   memset(&py3buffer, 0, sizeof(py3buffer));
   aswb = PyObject_GetBufferContiguous(buffer, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE);
   if (aswb)
     return NULL;
-
-  bloblen = sqlite3_blob_bytes(self->pBlob);
 
   if (length < 0)
     length = py3buffer.len - offset;
@@ -525,6 +540,12 @@ APSWBlob_write(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
   }
 
   ASYNC_FASTCALL(self->connection, APSWBlob_write);
+
+  if (self->curoffset > sqlite3_blob_bytes(self->pBlob))
+  {
+    SET_EXC(SQLITE_ABORT, NULL);
+    return NULL;
+  }
 
   if (0 != PyObject_GetBufferContiguous(data, &data_buffer, PyBUF_SIMPLE))
   {

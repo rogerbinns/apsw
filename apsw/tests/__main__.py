@@ -7097,19 +7097,28 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.SQLError, blobro.reopen, 0x1FFFFFFFF)
         blobro.close()
 
-    def testBlobReadError(self):
-        "Ensure blob read errors are handled well"
-        cur = self.db.cursor()
-        cur.execute("create table ioerror (x, blob)")
-        cur.execute("insert into ioerror (rowid,x,blob) values (2,3,x'deadbeef')")
-        blob = self.db.blob_open("main", "ioerror", "blob", 2, False)
-        blob.read(1)
-        # Do a write which cause blob to become invalid
-        cur.execute("update ioerror set blob='fsdfdsfasd' where x=3")
-        with self.assertRaises(apsw.AbortError):
-            blob.read()
-        with self.assertRaises(apsw.AbortError):
-            blob.readall()
+    def testBlobExpiredError(self):
+        "Ensure blob errors are handled well"
+        self.db.execute("""
+            create table ioerror (x, blob);
+            insert into ioerror (rowid,x,blob)
+                    values (2,3,x'deadbeefbaadf00d'), (3,3,x'deadbeefbaadf00d');""")
+        blobro = self.db.blob_open("main", "ioerror", "blob", 2, False)
+        blobrw = self.db.blob_open("main", "ioerror", "blob", 3, True)
+        self.assertEqual(blobro.length(), 8)
+        self.assertEqual(blobrw.length(), 8)
+        blobro.read(4)
+        blobrw.read(4)
+        blobrw.write(b"X")
+        self.assertEqual(blobro.tell(), 4)
+        self.assertEqual(blobrw.tell(), 5)
+        # Do a SQL write which cause blobs to become invalid
+        self.db.execute("update ioerror set blob='fsdfdsfasd' where x=3")
+        self.assertRaises(apsw.AbortError, blobro.read)
+        self.assertRaises(apsw.AbortError, blobro.readinto, bytearray(10))
+        self.assertRaises(apsw.AbortError, blobrw.write, b"Y")
+        self.assertRaises(apsw.AbortError, blobro.readall)
+        self.assertRaises(apsw.AbortError, blobro.read, 1)
 
     def testBlobIOBase(self):
         "blob conformance with io.RawIOBase"
