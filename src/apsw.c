@@ -2383,7 +2383,7 @@ modules etc. For example::
     goto fail;
 
   {
-    PyObject *iobase = PyImport_ImportModuleAttr(apst.io, apst.IOBase);
+    PyObject *iobase = PyImport_ImportModuleAttr(apst.io, apst.RawIOBase);
     if (!iobase)
       goto fail;
     PyObject *vargs[] = { NULL, iobase, (PyObject *)&APSWBlobType };

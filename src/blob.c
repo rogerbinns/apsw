@@ -315,6 +315,19 @@ APSWBlob_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
   return buffy;
 }
 
+/** .. method:: readall() -> bytes
+
+  Read all data until the end of the blob
+*/
+static PyObject *
+APSWBlob_readall(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  return APSWBlob_read(self_, NULL, 0, NULL);
+}
+
 /** .. method:: read_into(buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None
 
   Reads from the blob into a buffer you have supplied.  This method is
@@ -477,9 +490,11 @@ APSWBlob_tell(PyObject *self_, PyObject *Py_UNUSED(unused))
   return PyLong_FromLong(self->curoffset);
 }
 
-/** .. method:: write(data: Buffer) -> None
+/** .. method:: write(data: Buffer) -> int
 
   Writes the data to the blob.
+
+  Returns the number of bytes written, which will be all of them.
 
   :param data: Buffer to write
 
@@ -543,7 +558,7 @@ APSWBlob_write(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
 finally:
   PyBuffer_Release(&data_buffer);
   if (ok)
-    Py_RETURN_NONE;
+    return PyLong_FromSsize_t(data_buffer.len);
   else
     return NULL;
 }
@@ -800,10 +815,12 @@ APSWBlob_fileno(PyObject *self_, PyObject *Py_UNUSED(unused))
   transaction/savepoint handling deals with database commits.
 */
 static PyObject *
-APSWBlob_flush(PyObject *self_, PyObject *Py_UNUSED(unused))
+APSWBlob_flush(PyObject *self_, PyObject *unused)
 {
   APSWBlob *self = (APSWBlob *)self_;
   CHECK_BLOB_CLOSED;
+
+  ASYNC_BINARY(self->connection, APSWBlob_flush, self_, unused);
 
   Py_RETURN_NONE;
 }
@@ -961,6 +978,7 @@ static PyGetSetDef APSWBlob_getset[] = {
 static PyMethodDef APSWBlob_methods[] = {
   { "length", (PyCFunction)APSWBlob_length, METH_NOARGS, Blob_length_DOC },
   { "read", (PyCFunction)APSWBlob_read, METH_FASTCALL | METH_KEYWORDS, Blob_read_DOC },
+  { "readall", (PyCFunction)APSWBlob_readall, METH_NOARGS, Blob_readall_DOC },
   { "read_into", (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS, Blob_read_into_DOC },
   { "seek", (PyCFunction)APSWBlob_seek, METH_FASTCALL | METH_KEYWORDS, Blob_seek_DOC },
   { "tell", (PyCFunction)APSWBlob_tell, METH_NOARGS, Blob_tell_DOC },

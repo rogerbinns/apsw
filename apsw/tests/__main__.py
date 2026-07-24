@@ -6967,6 +6967,12 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobro.read(), b"\x00" * 98765)
         blobro.seek(-3, 2)
         self.assertEqual(blobro.read(), b"\x00" * 3)
+        blobro.seek(0)
+        x=blobro.read()
+        blobro.seek(0)
+        self.assertEqual(blobro.readall(), x)
+        self.assertEqual(b"", blobro.read())
+        self.assertEqual(b"", blobro.readall())
         # check types
         self.assertRaises(TypeError, blobro.read, "foo")
         self.assertRaises(TypeError, blobro.tell, "foo")
@@ -6989,6 +6995,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ReadOnlyError, blobro.close)
         # check can't work on closed blob
         self.assertRaises(ValueError, blobro.read)
+        self.assertRaises(ValueError, blobro.readall)
         self.assertRaises(ValueError, blobro.read_into, b"ab")
         self.assertRaises(ValueError, blobro.seek, 0, 0)
         self.assertRaises(ValueError, blobro.tell)
@@ -7063,7 +7070,7 @@ class APSW(unittest.TestCase):
         blobrw.seek(0, 0)
         self.assertEqual(blobrw.read(7), b"abcdefg")
         blobrw.seek(50, 0)
-        blobrw.write(b"hijkl")
+        self.assertEqual(5, blobrw.write(b"hijkl"))
         blobrw.seek(-98765, 2)
         self.assertEqual(blobrw.read(55), b"abcdefg" + b"\x00" * 43 + b"hijkl")
         self.assertRaises(TypeError, blobrw.write, 12)
@@ -7099,15 +7106,13 @@ class APSW(unittest.TestCase):
         blob.read(1)
         # Do a write which cause blob to become invalid
         cur.execute("update ioerror set blob='fsdfdsfasd' where x=3")
-        try:
-            blob.read(1)
-            1 / 0
-        except:
-            klass, value = sys.exc_info()[:2]
-            self.assertTrue(klass is apsw.AbortError)
+        with self.assertRaises(apsw.AbortError):
+            blob.read()
+        with self.assertRaises(apsw.AbortError):
+            blob.readall()
 
     def testBlobIOBase(self):
-        "blob conformance with io.IOBase"
+        "blob conformance with io.RawIOBase"
 
         rowids=self.db.execute("""
             CREATE TABLE victim(x);
@@ -7118,9 +7123,9 @@ class APSW(unittest.TestCase):
         blobro = self.db.blob_open("main", "victim", "x", rowids[0], False)
         blobrw = self.db.blob_open("main", "victim", "x", rowids[1], True)
 
-        for name in dir(io.IOBase):
+        for name in dir(io.RawIOBase):
             match name:
-                case "close" | "read" | "write" | "seek" | "tell":
+                case "close" | "read" | "write" | "seek" | "tell" | "readall" | "readinto":
                     # covered in tests above
                     pass
                 case _ if name.startswith("_"):
@@ -7162,8 +7167,8 @@ class APSW(unittest.TestCase):
         self.assertTrue(blobro.closed)
         self.assertTrue(blobrw.closed)
 
-        self.assertIsInstance(blobro, io.IOBase)
-        self.assertIsInstance(blobrw, io.IOBase)
+        self.assertIsInstance(blobro, io.RawIOBase)
+        self.assertIsInstance(blobrw, io.RawIOBase)
 
 
     def testAutovacuumPages(self):
