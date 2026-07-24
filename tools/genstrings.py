@@ -38,7 +38,7 @@ executemany extendedresult get result add_note
 can_cache
 
 collections.abc Mapping
-io UnsupportedOperation IOBase
+io UnsupportedOperation RawIOBase
 register
 
 step final value inverse

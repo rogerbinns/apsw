@@ -980,6 +980,9 @@
 #define  Blob_readable_DOC "Blob.readable() -> True\n\n" \
 "You can always read from a blob\n" 
 
+#define  Blob_readall_DOC "Blob.readall() -> bytes\n\n" \
+"Read all data until the end of the blob\n" 
+
 #define  Blob_readline_DOC "Blob.readline(size: int = -1) -> bytes\n\n" \
 "Always raises :exc:`io.UnsupportedOperation`.\n" \
 "You can wrap with :class:`io.BufferedReader`.\n" 
@@ -1034,8 +1037,10 @@
 #define  Blob_writable_DOC "Blob.writable() -> bool\n\n" \
 "Returns True if the blob was open for writing, else False.\n" 
 
-#define  Blob_write_DOC "Blob.write(data: Buffer) -> None\n\n" \
+#define  Blob_write_DOC "Blob.write(data: Buffer) -> int\n\n" \
 "Writes the data to the blob.\n" \
+"\n" \
+"Returns the number of bytes written, which will be all of them.\n" \
 "\n" \
 ":param data: Buffer to write\n" \
 "\n" \
@@ -1049,7 +1054,7 @@
 "Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__\n" 
 
 #define Blob_write_KWNAMES "data"
-#define Blob_write_USAGE "Blob.write(data: Buffer) -> None"
+#define Blob_write_USAGE "Blob.write(data: Buffer) -> int"
 
 #define Blob_write_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(data), PyObject *)); \

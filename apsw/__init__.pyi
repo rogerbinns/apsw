@@ -972,6 +972,10 @@ class Blob:
         """You can always read from a blob"""
         ...
 
+    def readall(self) -> bytes:
+        """Read all data until the end of the blob"""
+        ...
+
     def readline(self, size: int = -1) -> bytes:
         """Always raises :exc:`io.UnsupportedOperation`.
         You can wrap with :class:`io.BufferedReader`."""
@@ -1016,8 +1020,10 @@ class Blob:
         """Returns True if the blob was open for writing, else False."""
         ...
 
-    def write(self, data: Buffer) -> None:
+    def write(self, data: Buffer) -> int:
         """Writes the data to the blob.
+
+        Returns the number of bytes written, which will be all of them.
 
         :param data: Buffer to write
 
@@ -6211,6 +6217,10 @@ class AsyncBlob:
         """You can always read from a blob"""
         ...
 
+    async def readall(self) -> bytes:
+        """Read all data until the end of the blob"""
+        ...
+
     async def readline(self, size: int = -1) -> bytes:
         """Always raises :exc:`io.UnsupportedOperation`.
         You can wrap with :class:`io.BufferedReader`."""
@@ -6255,8 +6265,10 @@ class AsyncBlob:
         """Returns True if the blob was open for writing, else False."""
         ...
 
-    async def write(self, data: Buffer) -> None:
+    async def write(self, data: Buffer) -> int:
         """Writes the data to the blob.
+
+        Returns the number of bytes written, which will be all of them.
 
         :param data: Buffer to write
 

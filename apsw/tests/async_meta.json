@@ -16,7 +16,7 @@
             "seekable",
             "readable",
             "isatty",
-            "fileno",
+            "fileno"
         ]
     },
     "Changeset": {

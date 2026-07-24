@@ -26,12 +26,12 @@
 #undef Filter
 #undef FindFunction
 #undef INSERT
-#undef IOBase
 #undef Integrity
 #undef Mapping
 #undef sNULL
 #undef Next
 #undef Open
+#undef RawIOBase
 #undef Release
 #undef Rename
 #undef Rollback
@@ -134,12 +134,12 @@ static struct _apsw_string_table
     PyObject *Filter;
     PyObject *FindFunction;
     PyObject *INSERT;
-    PyObject *IOBase;
     PyObject *Integrity;
     PyObject *Mapping;
     PyObject *sNULL;
     PyObject *Next;
     PyObject *Open;
+    PyObject *RawIOBase;
     PyObject *Release;
     PyObject *Rename;
     PyObject *Rollback;
@@ -243,12 +243,12 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.Filter);
     Py_CLEAR(apst.FindFunction);
     Py_CLEAR(apst.INSERT);
-    Py_CLEAR(apst.IOBase);
     Py_CLEAR(apst.Integrity);
     Py_CLEAR(apst.Mapping);
     Py_CLEAR(apst.sNULL);
     Py_CLEAR(apst.Next);
     Py_CLEAR(apst.Open);
+    Py_CLEAR(apst.RawIOBase);
     Py_CLEAR(apst.Release);
     Py_CLEAR(apst.Rename);
     Py_CLEAR(apst.Rollback);
@@ -353,12 +353,12 @@ init_apsw_strings()
         || (!apst.Filter && 0 == (apst.Filter = PyUnicode_FromString("Filter")))
         || (!apst.FindFunction && 0 == (apst.FindFunction = PyUnicode_FromString("FindFunction")))
         || (!apst.INSERT && 0 == (apst.INSERT = PyUnicode_FromString("INSERT")))
-        || (!apst.IOBase && 0 == (apst.IOBase = PyUnicode_FromString("IOBase")))
         || (!apst.Integrity && 0 == (apst.Integrity = PyUnicode_FromString("Integrity")))
         || (!apst.Mapping && 0 == (apst.Mapping = PyUnicode_FromString("Mapping")))
         || (!apst.sNULL && 0 == (apst.sNULL = PyUnicode_FromString("NULL")))
         || (!apst.Next && 0 == (apst.Next = PyUnicode_FromString("Next")))
         || (!apst.Open && 0 == (apst.Open = PyUnicode_FromString("Open")))
+        || (!apst.RawIOBase && 0 == (apst.RawIOBase = PyUnicode_FromString("RawIOBase")))
         || (!apst.Release && 0 == (apst.Release = PyUnicode_FromString("Release")))
         || (!apst.Rename && 0 == (apst.Rename = PyUnicode_FromString("Rename")))
         || (!apst.Rollback && 0 == (apst.Rollback = PyUnicode_FromString("Rollback")))
