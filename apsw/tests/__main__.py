@@ -379,24 +379,20 @@ class APSW(unittest.TestCase):
             if name in apsw.vfs_names():
                 apsw.unregister_vfs(name)
 
-    def check_db_mutex(self):
+    def check_db_mutex(self, db):
         # verify a db mutex is not being held by doing work in another
         # thread
-        try:
-            self.db.readonly("main")
-        except apsw.ConnectionClosedError:
-            return
 
-        self.db.set_progress_handler(None)
-        self.db.exec_trace = None
-        self.db.row_trace = None
+        db.set_progress_handler(None)
+        db.exec_trace = None
+        db.row_trace = None
 
         val = Exception("The database mutex is still held and should not be")
 
         def thread():
             nonlocal val
             try:
-                val = self.db.execute("select 3").get
+                val = db.execute("select 3").get
             except BaseException as exc:
                 val = exc
 
@@ -412,14 +408,10 @@ class APSW(unittest.TestCase):
 
     def tearDown(self):
         apsw.config(apsw.SQLITE_CONFIG_LOG, None)
-        if self.db is not None:
-            try:
-                self.check_db_mutex()
-            finally:
-                self.db.close(True)
-        del self.db
         for c in apsw.connections():
-            c.close()
+            self.check_db_mutex(c)
+            c.close(True)
+        del self.db
         gc.collect()
         deltempfiles()
         if hasattr(apsw, "leak_check"):
