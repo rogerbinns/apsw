@@ -7109,7 +7109,9 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.AbortError, blobro.read)
         self.assertRaises(apsw.AbortError, blobro.readinto, bytearray(10))
         self.assertRaises(apsw.AbortError, blobrw.write, b"Y")
+        self.assertRaises(apsw.AbortError, blobrw.write, b"Z")
         self.assertRaises(apsw.AbortError, blobro.readall)
+        self.assertRaises(apsw.AbortError, blobrw.readall)
         self.assertRaises(apsw.AbortError, blobro.read, 1)
 
     def testBlobIOBase(self):
