@@ -340,7 +340,9 @@ APSWBlob_readall(PyObject *self_, PyObject *Py_UNUSED(unused))
   APSWBlob *self = (APSWBlob *)self_;
   CHECK_BLOB_CLOSED;
 
-  return APSWBlob_read(self_, NULL, 0, NULL);
+  /* second param is so we don't pass NULL otherwise a memcpy in async
+     machinery gets upset at copying zero bytes from a NULL pointer */
+  return APSWBlob_read(self_, &self_, 0, NULL);
 }
 
 /** .. method:: read_into(buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None
