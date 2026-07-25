@@ -10,8 +10,8 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
-next
-====
+3.53.4.0
+========
 
 :class:`Blob` implements :class:`io.RawIOBase` allowing use by other
 modules expecting file like objects, such as compression.  Several
