@@ -4867,6 +4867,8 @@ class APSW(unittest.TestCase):
 
     def testClosingChecks(self):
         "Check closed connection/blob/cursor is correctly detected"
+        if sys.platform == "emscripten":
+            self.skipTest("pyodide crashes")
         cur = self.db.cursor()
         rowid = curnext(
             cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo")
@@ -7152,15 +7154,16 @@ class APSW(unittest.TestCase):
                     self.assertTrue(blobrw.seekable())
                 case "readline" | "readlines" | "writelines" | "truncate":
                     # pyodide gets a fatal internal error on these
-                    if sys.platform != "emscripten":
-                        self.assertRaises(io.UnsupportedOperation, blobro.readline)
-                        self.assertRaises(io.UnsupportedOperation, blobrw.readline)
-                        self.assertRaises(io.UnsupportedOperation, blobro.readlines)
-                        self.assertRaises(io.UnsupportedOperation, blobrw.readlines)
-                        self.assertRaises(io.UnsupportedOperation, blobro.writelines)
-                        self.assertRaises(io.UnsupportedOperation, blobrw.writelines)
-                        self.assertRaises(io.UnsupportedOperation, blobro.truncate)
-                        self.assertRaises(io.UnsupportedOperation, blobrw.truncate)
+                    if sys.platform == "emscripten":
+                        self.skipTest("pyodide crashes")
+                    self.assertRaises(io.UnsupportedOperation, blobro.readline)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.readline)
+                    self.assertRaises(io.UnsupportedOperation, blobro.readlines)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.readlines)
+                    self.assertRaises(io.UnsupportedOperation, blobro.writelines)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.writelines)
+                    self.assertRaises(io.UnsupportedOperation, blobro.truncate)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.truncate)
                 case "writable":
                     self.assertFalse(blobro.writable())
                     self.assertTrue(blobrw.writable())
