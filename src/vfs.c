@@ -1159,7 +1159,8 @@ apswvfspy_xRandomness(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fa
   {
     int amt = self->basevfs->xRandomness(self->basevfs, PyBytes_GET_SIZE(res), PyBytes_AS_STRING(res));
     if (amt < numbytes)
-      _PyBytes_Resize(&res, amt);
+      if(_PyBytes_Resize(&res, amt))
+        Py_CLEAR(res);
     MakeExistingException();
   }
 
@@ -2256,7 +2257,10 @@ apswvfsfilepy_xRead(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
     while (amount && PyBytes_AS_STRING(buffy)[amount - 1] == 0)
       amount--;
     if (_PyBytes_Resize(&buffy, amount))
+    {
+      Py_CLEAR(buffy);
       return NULL;
+    }
 
     return buffy;
   }

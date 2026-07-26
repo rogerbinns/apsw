@@ -129,7 +129,10 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
     assert(PyTuple_Check(our_context->last_item));
 
     if (0 != _PyTuple_Resize(&our_context->last_item, 1 + PyTuple_GET_SIZE(our_context->last_item)))
+    {
+      Py_CLEAR(our_context->last_item);
       goto error;
+    }
     PyTuple_SET_ITEM(our_context->last_item, PyTuple_GET_SIZE(our_context->last_item) - 1, token);
     token = NULL; /* set item took the reference */
   }
@@ -925,7 +928,10 @@ APSWFTS5ExtensionApi_xInstToken(PyObject *self, PyObject *const *fast_args, Py_s
         goto error;
     }
     if (0 != _PyTuple_Resize(&retval, 1 + PyTuple_GET_SIZE(retval)))
+    {
+      Py_CLEAR(retval);
       goto error;
+    }
     PyObject *str = PyUnicode_FromStringAndSize(bytes, size);
     if (!str)
       goto error;
@@ -976,7 +982,10 @@ APSWFTS5ExtensionApi_phrase_columns(PyObject *self, PyObject *const *fast_args, 
   while (iCol >= 0)
   {
     if (0 != _PyTuple_Resize(&retval, 1 + PyTuple_GET_SIZE(retval)))
+    {
+      Py_CLEAR(retval);
       goto error;
+    }
     PyObject *tmp = PyLong_FromLong(iCol);
     if (!tmp)
       goto error;
@@ -986,7 +995,7 @@ APSWFTS5ExtensionApi_phrase_columns(PyObject *self, PyObject *const *fast_args, 
 
   return retval;
 error:
-  Py_DECREF(retval);
+  Py_XDECREF(retval);
   return NULL;
 }
 
