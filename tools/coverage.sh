@@ -3,9 +3,13 @@
 
 set -e
 
+# find python
+PYTHON=${PYTHON:-python3} # use whatever is in the path
+
 if [ $# = 0 ]
 then
   args="-m apsw.tests -vf"
+  [ -z "NO_FI" ] && $PYTHON -m pip install coverage trio anyio
 else
   args="$@"
 fi
@@ -14,8 +18,6 @@ fi
 GCOVOPTS="-b -H"
 GCOVOPTS=""
 rm -f *.gcda *.gcov *.gcno sqlite3/*.gcov apsw/*.so src/*.gcov
-# find python
-PYTHON=${PYTHON:-python3} # use whatever is in the path
 INCLUDEDIR=`$PYTHON -c "import sysconfig; print(sysconfig.get_path('include'))"`
 CC=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('CC'))"`
 CFLAGS=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('CFLAGS'))"`
