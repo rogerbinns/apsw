@@ -7151,14 +7151,16 @@ class APSW(unittest.TestCase):
                     self.assertTrue(blobro.seekable())
                     self.assertTrue(blobrw.seekable())
                 case "readline" | "readlines" | "writelines" | "truncate":
-                    self.assertRaises(io.UnsupportedOperation, blobro.readline)
-                    self.assertRaises(io.UnsupportedOperation, blobrw.readline)
-                    self.assertRaises(io.UnsupportedOperation, blobro.readlines)
-                    self.assertRaises(io.UnsupportedOperation, blobrw.readlines)
-                    self.assertRaises(io.UnsupportedOperation, blobro.writelines)
-                    self.assertRaises(io.UnsupportedOperation, blobrw.writelines)
-                    self.assertRaises(io.UnsupportedOperation, blobro.truncate)
-                    self.assertRaises(io.UnsupportedOperation, blobrw.truncate)
+                    # pyodide gets a fatal internal error on these
+                    if sys.platform != "emscripten":
+                        self.assertRaises(io.UnsupportedOperation, blobro.readline)
+                        self.assertRaises(io.UnsupportedOperation, blobrw.readline)
+                        self.assertRaises(io.UnsupportedOperation, blobro.readlines)
+                        self.assertRaises(io.UnsupportedOperation, blobrw.readlines)
+                        self.assertRaises(io.UnsupportedOperation, blobro.writelines)
+                        self.assertRaises(io.UnsupportedOperation, blobrw.writelines)
+                        self.assertRaises(io.UnsupportedOperation, blobro.truncate)
+                        self.assertRaises(io.UnsupportedOperation, blobrw.truncate)
                 case "writable":
                     self.assertFalse(blobro.writable())
                     self.assertTrue(blobrw.writable())
