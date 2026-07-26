@@ -10,6 +10,14 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.53.4.0
+========
+
+:class:`Blob` implements :class:`io.RawIOBase` allowing use by other
+modules expecting file like objects, such as compression.  Several
+methods and attributes are added, and :meth:`Blob.write` now returns
+the size written (used to be None).  (:issue:`623`)
+
 3.53.3.1
 ========
 

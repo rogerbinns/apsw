@@ -77,9 +77,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-314-x86_64-linux-gnu.so
-             APSW version 3.53.3.1
-    SQLite header version 3053003
-       SQLite lib version 3.53.3
+             APSW version 3.53.4.0
+    SQLite header version 3053004
+       SQLite lib version 3.53.4
        Using amalgamation True
 
 
@@ -890,11 +890,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2026, 7, 10, 8, 54, 5, 400437))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2026, 7, 26, 8, 15, 43, 45987))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2026, 7, 10, 15, 54, 5, 400437, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2026, 7, 26, 15, 15, 43, 45987, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Runtime Python objects (example code)
@@ -964,7 +964,7 @@ runtime.
 .. code-block:: output
 
     Bad binding argument type supplied - argument #1: type set
-    select ? {1, 2, <__main__.TeeStringIO object at 0x7b39d120b640>, 'three', (4+5j)}
+    select ? {1, 2, <__main__.TeeStringIO object at 0x734a509e7640>, (4+5j), 'three'}
     select typeof(?) null
     make_set got ((3+4j), <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello')
     select make_set(?, ?, ?) {<_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello', (3+4j)}
@@ -1042,7 +1042,7 @@ across all the queries within the block
 .. code-block:: output
 
     len(rows)=20
-    After 0.200 seconds, we hit number=271529
+    After 0.200 seconds, we hit number=284162
     exc=IndexError('query row limit hit')
 
 
@@ -1461,7 +1461,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9936226853,)
+    (9967780544,)
 
 
 .. index:: File Control (example code)
@@ -1864,13 +1864,13 @@ useful instead.
     │ 2026-07- │ /space/apsw/.venv/lib/python3.14/site-         │ parser.py        │
     │ -01      │ packages/sqlglot                               │                  │
     ├──────────┼────────────────────────────────────────────────┼──────────────────┤
-    │ 2026-06- │ /space/apsw/.venv/lib/python3.14/site-         │ fastjsonschema_- │
-    │ -29      │ packages/setuptools/config/_validate_pyproject │ validations.py   │
+    │ 2026-07- │ /space/apsw/.venv/lib/python3.14/site-         │ fastjsonschema_- │
+    │ -26      │ packages/setuptools/config/_validate_pyproject │ validations.py   │
     ╰──────────┴────────────────────────────────────────────────┴──────────────────╯
     
     ╭────────────┬────────────╮
     │ extension  │ total_size │
-    │            │    1601183 │
+    │            │    1602444 │
     │ .APACHE    │      40696 │
     │ .APACHE2   │      34074 │
     │ .BSD       │       5376 │
@@ -1907,21 +1907,21 @@ useful instead.
     │ .mo        │    2310423 │
     │ .o         │      16112 │
     │ .odt       │      16500 │
-    │ .pem       │     506795 │
+    │ .pem       │     512657 │
     │ .png       │     115919 │
     │ .po        │    7955502 │
     │ .pot       │     105216 │
     │ .ps1       │       9031 │
     │ .pth       │        930 │
-    │ .py        │   37921848 │
-    │ .pyc       │   17379200 │
+    │ .py        │   37933572 │
+    │ .pyc       │   35260699 │
     │ .pyi       │      66391 │
     │ .qhcp      │        567 │
     │ .qhp       │        863 │
     │ .rst       │      41424 │
     │ .scss      │      21440 │
-    │ .sh        │       3202 │
-    │ .so        │   39237936 │
+    │ .sh        │       3266 │
+    │ .so        │   39723560 │
     │ .sql       │      10476 │
     │ .stdlib    │      14488 │
     │ .stp       │        330 │
@@ -1933,7 +1933,7 @@ useful instead.
     │ .toml      │       3390 │
     │ .ttf       │    2975764 │
     │ .txt       │     356199 │
-    │ .typed     │        681 │
+    │ .typed     │        779 │
     │ .unicode   │       2033 │
     │ .woff      │    2987200 │
     │ .woff2     │    1857936 │
@@ -2210,9 +2210,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.53.3.1)
-    -- SQLite version 3.53.3
-    -- Date: Fri Jul 10 08:54:06 2026
+    -- SQLite dump (by APSW 3.53.4.0)
+    -- SQLite version 3.53.4
+    -- Date: Sun Jul 26 08:15:43 2026
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2330,16 +2330,16 @@ This shows using :meth:`Connection.trace_v2`
     code is  SQLITE_TRACE_STMT
     {'code': 1,
      'explain': 0,
-     'id': 181340312,
+     'id': 214232952,
      'readonly': True,
      'total_changes': 146,
      'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 181340312}
+    {'code': 4, 'id': 214232952}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 181340312,
-     'nanoseconds': 15000000,
+     'id': 214232952,
+     'nanoseconds': 17000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
@@ -2382,15 +2382,14 @@ Only statistics that have changed are shown in the summary. There are
 
 .. code-block:: output
 
-                         Process CPU consumption 0.022
-                                      Wall clock 1.324
-                          Block input operations 280
-                       Maximum resident set size 400
-                            Page faults - no I/O 30
-                    Involuntary context switches 44
-                      Voluntary context switches 7
-                         CPU time in system mode 0.002
-                           CPU time in user mode 0.020
+                         Process CPU consumption 0.023
+                                      Wall clock 1.323
+                       Maximum resident set size 204
+                            Page faults - no I/O 25
+                    Involuntary context switches 108
+                      Voluntary context switches 1
+                         CPU time in system mode 0.001
+                           CPU time in user mode 0.022
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,353
@@ -2460,7 +2459,7 @@ code.  This also shows behind the scenes SQL.
          Time: 0.000
      > insert into multi values(?)
        INS 1 (0)
-         Time: 0.000  Rows: 1  Changes: 1
+         Time: 0.000  Changes: 1
      > insert into multi values(?)
        INS 2 (1)
          Time: 0.000  Changes: 1
@@ -2483,7 +2482,7 @@ code.  This also shows behind the scenes SQL.
          Time: 0.000  Changes: 4
      > COMMIT
       !COMMIT
-         Time: 0.008
+         Time: 0.008  Rows: 1
      > SELECT narg FROM pragma_function_list WHERE name='pow'
      V PRAGMA function_list
          Time: 0.000  Rows: 217  VmStep: 1,523  Mem: 71.0KB

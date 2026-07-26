@@ -48,8 +48,8 @@ Blob class
 .. class:: Blob
 
   This object is created by :meth:`Connection.blob_open` and provides
-  access to a blob in the database.  It behaves like a Python file.
-  It wraps a `sqlite3_blob
+  access to a blob in the database.  It behaves like a Python
+  :class:`file <io.RawIOBase>` in binary mode.  It wraps a `sqlite3_blob
   <https://sqlite.org/c3ref/blob.html>`_.
 
   .. note::
@@ -128,6 +128,33 @@ Blob class
 
   Calls: `sqlite3_blob_close <https://sqlite.org/c3ref/blob_close.html>`__
 
+.. attribute:: Blob.closed
+    :type: bool
+
+    |badge-async-value|
+
+    Indicates if the blob has been closed.
+
+.. method:: Blob.fileno() -> int
+
+  |badge-async-value|
+
+  Always raises :exc:`OSError` because there is no
+  underlying file descriptor.
+
+.. method:: Blob.flush() -> None
+
+  |badge-async-dual|
+
+  Does nothing.  There is no intermediate buffer, and SQLite's overall
+  transaction/savepoint handling deals with database commits.
+
+.. method:: Blob.isatty() -> False
+
+  |badge-async-value|
+
+  Blobs are never interactive.
+
 .. index:: sqlite3_blob_bytes
 
 .. method:: Blob.length() -> int
@@ -176,6 +203,32 @@ Blob class
 
   Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__
 
+.. method:: Blob.readable() -> True
+
+  |badge-async-value|
+
+  You can always read from a blob
+
+.. method:: Blob.readall() -> bytes
+
+  |badge-async-dual|
+
+  Read all data until the end of the blob
+
+.. method:: Blob.readline(size: int = -1) -> bytes
+
+  |badge-async-dual|
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You can wrap with :class:`io.BufferedReader`.
+
+.. method:: Blob.readlines(hint: int = -1) -> list[bytes]
+
+  |badge-async-dual|
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You can wrap with :class:`io.BufferedReader`.
+
 .. index:: sqlite3_blob_reopen
 
 .. method:: Blob.reopen(rowid: int) -> None
@@ -199,19 +252,40 @@ Blob class
                  and 2 if *offset* is relative to the end of the blob.
   :raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.
 
+.. method:: Blob.seekable() -> True
+
+  |badge-async-value|
+
+  You can always seek in a blob
+
 .. method:: Blob.tell() -> int
 
   |badge-async-value|
 
   Returns the current offset.
 
+.. method:: Blob.truncate(size = None) -> None
+
+  |badge-async-dual|
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You cannot change the size of a blob.
+
+.. method:: Blob.writable() -> bool
+
+  |badge-async-value|
+
+  Returns True if the blob was open for writing, else False.
+
 .. index:: sqlite3_blob_write
 
-.. method:: Blob.write(data: collections.abc.Buffer) -> None
+.. method:: Blob.write(data: collections.abc.Buffer) -> int
 
   |badge-async-dual|
 
   Writes the data to the blob.
+
+  Returns the number of bytes written, which will be all of them.
 
   :param data: Buffer to write
 
@@ -223,4 +297,11 @@ Blob class
       inserting the blob.
 
   Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__
+
+.. method:: Blob.writelines(lines) -> None
+
+  |badge-async-dual|
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You can wrap with :class:`io.BufferedWriter`.
 
