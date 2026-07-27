@@ -110,6 +110,7 @@ struct APSWBlob
   Connection *connection;
   sqlite3_blob *pBlob;
   int curoffset;         /* SQLite only supports 32 bit signed int offsets */
+  int writeable;
   PyObject *weakreflist; /* weak reference tracking */
 };
 
@@ -122,8 +123,8 @@ static PyTypeObject APSWBlobType;
 /** .. class:: Blob
 
   This object is created by :meth:`Connection.blob_open` and provides
-  access to a blob in the database.  It behaves like a Python file.
-  It wraps a `sqlite3_blob
+  access to a blob in the database.  It behaves like a Python
+  :class:`file <io.RawIOBase>` in binary mode.  It wraps a `sqlite3_blob
   <https://sqlite.org/c3ref/blob.html>`_.
 
   .. note::
@@ -137,12 +138,13 @@ static PyTypeObject APSWBlobType;
 */
 
 static void
-APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob)
+APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob, int writeable)
 {
   self->connection = (Connection *)Py_NewRef((PyObject *)connection);
   self->pBlob = blob;
   self->curoffset = 0;
   self->weakreflist = NULL;
+  self->writeable = writeable;
 }
 
 static int
@@ -278,39 +280,69 @@ APSWBlob_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
 
   ASYNC_FASTCALL(self->connection, APSWBlob_read);
 
-  if ((self->curoffset == sqlite3_blob_bytes(self->pBlob)) /* eof */
+  DBMUTEX_ENSURE(self->connection);
+
+  int blob_length = sqlite3_blob_bytes(self->pBlob);
+
+  if (self->curoffset > blob_length)
+  {
+    /* this happens when the blob is invalidated by a SQL level write */
+    SET_EXC(SQLITE_ABORT, NULL);
+    goto finally;
+  }
+
+  if ((self->curoffset == blob_length) /* eof */
       || (length == 0))
-    return PyBytes_FromStringAndSize(NULL, 0);
+  {
+    buffy = PyBytes_FromStringAndSize(NULL, 0);
+    goto finally;
+  }
 
   if (length < 0)
     length = sqlite3_blob_bytes(self->pBlob) - self->curoffset;
 
   /* trying to read more than is in the blob? */
-  if ((sqlite3_int64)self->curoffset + (sqlite3_int64)length > sqlite3_blob_bytes(self->pBlob))
-    length = sqlite3_blob_bytes(self->pBlob) - self->curoffset;
+  if ((sqlite3_int64)self->curoffset + (sqlite3_int64)length > blob_length)
+    length = blob_length - self->curoffset;
 
   buffy = PyBytes_FromStringAndSize(NULL, length);
 
   if (!buffy)
-    return NULL;
+    goto finally;
 
-  DBMUTEX_ENSURE(self->connection);
   thebuffer = PyBytes_AS_STRING(buffy);
   res = sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset);
   SET_EXC(res, self->connection->db);
-  sqlite3_mutex_leave(self->connection->dbmutex);
 
   MakeExistingException(); /* this could happen if there were issues in the vfs */
 
   if (PyErr_Occurred())
   {
-    Py_DECREF(buffy);
-    return NULL;
+    Py_CLEAR(buffy);
+    goto finally;
   }
 
   self->curoffset += length;
   assert(self->curoffset <= sqlite3_blob_bytes(self->pBlob));
+
+finally:
+  sqlite3_mutex_leave(self->connection->dbmutex);
   return buffy;
+}
+
+/** .. method:: readall() -> bytes
+
+  Read all data until the end of the blob
+*/
+static PyObject *
+APSWBlob_readall(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  /* second param is so we don't pass NULL otherwise a memcpy in async
+     machinery gets upset at copying zero bytes from a NULL pointer */
+  return APSWBlob_read(self_, &self_, 0, NULL);
 }
 
 /** .. method:: read_into(buffer: bytearray |  array.array[Any] | memoryview, offset: int = 0, length: int = -1) -> None
@@ -343,10 +375,8 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   long long offset = 0, length = -1;
   PyObject *buffer = NULL;
 
-  int aswb;
-
   int bloblen;
-  Py_buffer py3buffer;
+  Py_buffer py3buffer = { 0 };
 
   CHECK_BLOB_CLOSED;
   {
@@ -360,12 +390,18 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
 
   ASYNC_FASTCALL(self->connection, APSWBlob_read_into);
 
-  memset(&py3buffer, 0, sizeof(py3buffer));
-  aswb = PyObject_GetBufferContiguous(buffer, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE);
-  if (aswb)
+  if (PyObject_GetBufferContiguous(buffer, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE))
     return NULL;
 
+  DBMUTEX_ENSURE(self->connection);
+
   bloblen = sqlite3_blob_bytes(self->pBlob);
+
+  if (self->curoffset > bloblen)
+  {
+    SET_EXC(SQLITE_ABORT, NULL);
+    goto finally;
+  }
 
   if (length < 0)
     length = py3buffer.len - offset;
@@ -373,41 +409,37 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   if (offset < 0 || offset > py3buffer.len)
   {
     PyErr_Format(PyExc_ValueError, "offset is less than zero or beyond end of buffer");
-    goto errorexit;
+    goto finally;
   }
 
   if (offset + length > py3buffer.len)
   {
     PyErr_Format(PyExc_ValueError, "Data would go beyond end of buffer");
-    goto errorexit;
+    goto finally;
   }
 
   if (length > bloblen - self->curoffset)
   {
     PyErr_Format(PyExc_ValueError, "More data requested than blob length");
-    goto errorexit;
+    goto finally;
   }
 
-  DBMUTEX_ENSURE(self->connection);
   res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset);
 
   MakeExistingException(); /* vfs errors could cause this */
 
   SET_EXC(res, self->connection->db);
-  sqlite3_mutex_leave(self->connection->dbmutex);
 
   if (!PyErr_Occurred())
-  {
     self->curoffset += length;
 
-    PyBuffer_Release(&py3buffer);
-    Py_RETURN_NONE;
-  }
-
-errorexit:
+finally:
   PyBuffer_Release(&py3buffer);
-  return NULL;
-#undef ERREXIT
+  sqlite3_mutex_leave(self->connection->dbmutex);
+
+  if (PyErr_Occurred())
+    return NULL;
+  Py_RETURN_NONE;
 }
 
 /** .. method:: seek(offset: int, whence: int = 0) -> None
@@ -475,9 +507,11 @@ APSWBlob_tell(PyObject *self_, PyObject *Py_UNUSED(unused))
   return PyLong_FromLong(self->curoffset);
 }
 
-/** .. method:: write(data: Buffer) -> None
+/** .. method:: write(data: Buffer) -> int
 
   Writes the data to the blob.
+
+  Returns the number of bytes written, which will be all of them.
 
   :param data: Buffer to write
 
@@ -509,10 +543,18 @@ APSWBlob_write(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
 
   ASYNC_FASTCALL(self->connection, APSWBlob_write);
 
+  DBMUTEX_ENSURE(self->connection);
+
+  if (self->curoffset > sqlite3_blob_bytes(self->pBlob))
+  {
+    SET_EXC(SQLITE_ABORT, NULL);
+    goto finally;
+  }
+
   if (0 != PyObject_GetBufferContiguous(data, &data_buffer, PyBUF_SIMPLE))
   {
     assert(PyErr_Occurred());
-    return NULL;
+    goto finally;
   }
 
   Py_ssize_t calc_end = data_buffer.len + self->curoffset;
@@ -523,13 +565,13 @@ APSWBlob_write(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
   {
     PyErr_Format(PyExc_ValueError, "Data length %zd would go beyond end of blob %d", calc_end,
                  sqlite3_blob_bytes(self->pBlob));
+    PyBuffer_Release(&data_buffer);
     goto finally;
   }
 
-  DBMUTEX_ENSURE(self->connection);
   res = sqlite3_blob_write(self->pBlob, data_buffer.buf, data_buffer.len, self->curoffset);
   SET_EXC(res, self->connection->db);
-  sqlite3_mutex_leave(self->connection->dbmutex);
+  PyBuffer_Release(&data_buffer);
 
   if (PyErr_Occurred())
     goto finally;
@@ -539,9 +581,9 @@ APSWBlob_write(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
   ok = 1;
 
 finally:
-  PyBuffer_Release(&data_buffer);
+  sqlite3_mutex_leave(self->connection->dbmutex);
   if (ok)
-    Py_RETURN_NONE;
+    return PyLong_FromSsize_t(data_buffer.len);
   else
     return NULL;
 }
@@ -791,6 +833,165 @@ APSWBlob_reopen(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   Py_RETURN_NONE;
 }
 
+/** .. method:: fileno() -> int
+
+  Always raises :exc:`OSError` because there is no
+  underlying file descriptor.
+*/
+static PyObject *
+APSWBlob_fileno(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  PyErr_SetString(PyExc_OSError, "there is no underlying file descriptor");
+  return NULL;
+}
+
+/** .. method:: flush() -> None
+
+  Does nothing.  There is no intermediate buffer, and SQLite's overall
+  transaction/savepoint handling deals with database commits.
+*/
+static PyObject *
+APSWBlob_flush(PyObject *self_, PyObject *unused)
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  ASYNC_BINARY(self->connection, APSWBlob_flush, self_, unused);
+
+  Py_RETURN_NONE;
+}
+
+/** .. method:: isatty() -> False
+
+  Blobs are never interactive.
+*/
+static PyObject *
+APSWBlob_isatty(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  Py_RETURN_FALSE;
+}
+
+/** .. method:: readable() -> True
+
+  You can always read from a blob
+*/
+static PyObject *
+APSWBlob_readable(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  Py_RETURN_TRUE;
+}
+
+/** .. method:: writable() -> bool
+
+  Returns True if the blob was open for writing, else False.
+*/
+static PyObject *
+APSWBlob_writable(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  if (self->writeable)
+    Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
+/** .. method:: seekable() -> True
+
+  You can always seek in a blob
+*/
+static PyObject *
+APSWBlob_seekable(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  Py_RETURN_TRUE;
+}
+
+/** .. method:: readline(size: int = -1) -> bytes
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You can wrap with :class:`io.BufferedReader`.
+*/
+static PyObject *
+APSWBlob_readline(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  PyErr_SetString(Exc_io_UnsupportedOperation, "readline not supported.  Use io.BufferedReader");
+  return NULL;
+}
+
+/** .. method:: readlines(hint: int = -1) -> list[bytes]
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You can wrap with :class:`io.BufferedReader`.
+*/
+static PyObject *
+APSWBlob_readlines(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  PyErr_SetString(Exc_io_UnsupportedOperation, "readlines not supported.  Use io.BufferedReader");
+  return NULL;
+}
+
+/** .. method:: writelines(lines) -> None
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You can wrap with :class:`io.BufferedWriter`.
+*/
+static PyObject *
+APSWBlob_writelines(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  PyErr_SetString(Exc_io_UnsupportedOperation, "writelines not supported.  Use io.BufferedWriter");
+  return NULL;
+}
+
+/** .. method:: truncate(size = None) -> None
+
+  Always raises :exc:`io.UnsupportedOperation`.
+  You cannot change the size of a blob.
+*/
+static PyObject *
+APSWBlob_truncate(PyObject *self_, PyObject *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  CHECK_BLOB_CLOSED;
+
+  PyErr_SetString(Exc_io_UnsupportedOperation, "You cannot change the size of a blob");
+  return NULL;
+}
+
+/** .. attribute:: closed
+    :type: bool
+
+    Indicates if the blob has been closed.
+*/
+static PyObject *
+APSWBlob_closed(PyObject *self_, void *Py_UNUSED(unused))
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  if (self->pBlob)
+    Py_RETURN_FALSE;
+  Py_RETURN_TRUE;
+}
+
 static PyObject *
 APSWBlob_tp_repr(PyObject *self_)
 {
@@ -808,9 +1009,15 @@ APSWBlob_bool(PyObject *self_)
   return self->pBlob ? 1 : 0;
 }
 
+static PyGetSetDef APSWBlob_getset[] = {
+  { "closed", APSWBlob_closed, NULL, Blob_closed_DOC },
+  { 0 },
+};
+
 static PyMethodDef APSWBlob_methods[] = {
   { "length", (PyCFunction)APSWBlob_length, METH_NOARGS, Blob_length_DOC },
   { "read", (PyCFunction)APSWBlob_read, METH_FASTCALL | METH_KEYWORDS, Blob_read_DOC },
+  { "readall", (PyCFunction)APSWBlob_readall, METH_NOARGS, Blob_readall_DOC },
   { "read_into", (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS, Blob_read_into_DOC },
   { "seek", (PyCFunction)APSWBlob_seek, METH_FASTCALL | METH_KEYWORDS, Blob_seek_DOC },
   { "tell", (PyCFunction)APSWBlob_tell, METH_NOARGS, Blob_tell_DOC },
@@ -822,6 +1029,16 @@ static PyMethodDef APSWBlob_methods[] = {
   { "__exit__", (PyCFunction)APSWBlob_exit, METH_FASTCALL | METH_KEYWORDS, Blob_exit_DOC },
   { "__aenter__", (PyCFunction)APSWBlob_aenter, METH_NOARGS, Blob_aenter_DOC },
   { "__aexit__", (PyCFunction)APSWBlob_aexit, METH_FASTCALL | METH_KEYWORDS, Blob_aexit_DOC },
+  { "fileno", (PyCFunction)APSWBlob_fileno, METH_NOARGS, Blob_fileno_DOC },
+  { "flush", (PyCFunction)APSWBlob_flush, METH_NOARGS, Blob_flush_DOC },
+  { "isatty", (PyCFunction)APSWBlob_isatty, METH_NOARGS, Blob_isatty_DOC },
+  { "readable", (PyCFunction)APSWBlob_readable, METH_NOARGS, Blob_readable_DOC },
+  { "writable", (PyCFunction)APSWBlob_writable, METH_NOARGS, Blob_writable_DOC },
+  { "seekable", (PyCFunction)APSWBlob_seekable, METH_NOARGS, Blob_seekable_DOC },
+  { "readline", (PyCFunction)APSWBlob_readline, METH_FASTCALL | METH_KEYWORDS, Blob_readline_DOC },
+  { "readlines", (PyCFunction)APSWBlob_readlines, METH_FASTCALL | METH_KEYWORDS, Blob_readlines_DOC },
+  { "writelines", (PyCFunction)APSWBlob_writelines, METH_FASTCALL | METH_KEYWORDS, Blob_writelines_DOC },
+  { "truncate", (PyCFunction)APSWBlob_truncate, METH_FASTCALL | METH_KEYWORDS, Blob_truncate_DOC },
 
 #ifndef APSW_OMIT_OLD_NAMES
   { Blob_read_into_OLDNAME, (PyCFunction)APSWBlob_read_into, METH_FASTCALL | METH_KEYWORDS, Blob_read_into_OLDDOC },
@@ -844,4 +1061,5 @@ static PyTypeObject APSWBlobType = {
   .tp_as_number = &APSWBlob_as_number,
   .tp_str = NULL,
   .tp_repr = APSWBlob_tp_repr,
+  .tp_getset = APSWBlob_getset,
 };

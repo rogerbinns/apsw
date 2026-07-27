@@ -10,14 +10,14 @@
 # stubs and documentation.
 
 import functools
+import importlib.resources
 import inspect
+import io
+import json
+import queue
 import threading
 import unittest
-import importlib.resources
-import json
-
-import queue
-from typing import Literal, Callable, Any
+from typing import Any, Callable, Literal
 
 import apsw
 import apsw.aio
@@ -245,6 +245,14 @@ class AsyncMeta(unittest.TestCase):
             if klass == "Connection" and member in {"vtab_config", "vtab_on_conflict"}:
                 return "value"
             raise
+        except io.UnsupportedOperation:
+            if klass == "Blob" and member in {"readline", "readlines", "truncate", "writelines"}:
+                return "value" if send else "async"
+            raise
+        except OSError:
+            if (klass, member) == ("Blob", "fileno"):
+                return "value"
+            raise
 
     def testMetaJson(self):
         apsw.async_controller.set(SimpleController)
@@ -335,7 +343,6 @@ class AsyncMeta(unittest.TestCase):
             "aclose",
             "__exit__",
             "__aexit__",
-            "finish",
         }
 
         pre = {"__aexit__": "__aenter__", "__exit__": "__enter__", "__next__": "__iter__", "__anext__": "__aiter__"}

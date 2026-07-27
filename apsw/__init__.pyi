@@ -857,8 +857,8 @@ class Backup:
 @finalclass
 class Blob:
     """This object is created by :meth:`Connection.blob_open` and provides
-    access to a blob in the database.  It behaves like a Python file.
-    It wraps a `sqlite3_blob
+    access to a blob in the database.  It behaves like a Python
+    :class:`file <io.RawIOBase>` in binary mode.  It wraps a `sqlite3_blob
     <https://sqlite.org/c3ref/blob.html>`_.
 
     .. note::
@@ -894,6 +894,9 @@ class Blob:
         Calls: `sqlite3_blob_close <https://sqlite.org/c3ref/blob_close.html>`__"""
         ...
 
+    closed: bool
+    """Indicates if the blob has been closed."""
+
     def __enter__(self) -> Blob:
         """You can use a blob as a `context manager
         <https://docs.python.org/3/reference/datamodel.html#with-statement-context-managers>`_
@@ -912,6 +915,20 @@ class Blob:
         """Implements context manager in conjunction with
         :meth:`~Blob.__enter__`.  Any exception that happened in the
         *with* block is raised after closing the blob."""
+        ...
+
+    def fileno(self) -> int:
+        """Always raises :exc:`OSError` because there is no
+        underlying file descriptor."""
+        ...
+
+    def flush(self) -> None:
+        """Does nothing.  There is no intermediate buffer, and SQLite's overall
+        transaction/savepoint handling deals with database commits."""
+        ...
+
+    def isatty(self) -> False:
+        """Blobs are never interactive."""
         ...
 
     def length(self) -> int:
@@ -952,6 +969,24 @@ class Blob:
 
     readinto = read_into ## OLD-NAME
 
+    def readable(self) -> True:
+        """You can always read from a blob"""
+        ...
+
+    def readall(self) -> bytes:
+        """Read all data until the end of the blob"""
+        ...
+
+    def readline(self, size: int = -1) -> bytes:
+        """Always raises :exc:`io.UnsupportedOperation`.
+        You can wrap with :class:`io.BufferedReader`."""
+        ...
+
+    def readlines(self, hint: int = -1) -> list[bytes]:
+        """Always raises :exc:`io.UnsupportedOperation`.
+        You can wrap with :class:`io.BufferedReader`."""
+        ...
+
     def reopen(self, rowid: int) -> None:
         """Change this blob object to point to a different row.  It can be
         faster than closing an existing blob an opening a new one.
@@ -969,12 +1004,27 @@ class Blob:
         :raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob."""
         ...
 
+    def seekable(self) -> True:
+        """You can always seek in a blob"""
+        ...
+
     def tell(self) -> int:
         """Returns the current offset."""
         ...
 
-    def write(self, data: Buffer) -> None:
+    def truncate(self, size = None) -> None:
+        """Always raises :exc:`io.UnsupportedOperation`.
+        You cannot change the size of a blob."""
+        ...
+
+    def writable(self) -> bool:
+        """Returns True if the blob was open for writing, else False."""
+        ...
+
+    def write(self, data: Buffer) -> int:
         """Writes the data to the blob.
+
+        Returns the number of bytes written, which will be all of them.
 
         :param data: Buffer to write
 
@@ -988,7 +1038,12 @@ class Blob:
         Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__"""
         ...
 
-@finalclass
+    def writelines(self, lines) -> None:
+        """Always raises :exc:`io.UnsupportedOperation`.
+        You can wrap with :class:`io.BufferedWriter`."""
+        ...
+
+@final
 class ChangesetBuilder:
     """This object wraps a `sqlite3_changegroup <https://sqlite.org/session/changegroup.html>`__
     to build a changeset or patchset.   The contents can come from:
@@ -6065,8 +6120,8 @@ class AsyncBlob:
     """This represents a :class:`Blob` when in async mode.
 
     This object is created by :meth:`Connection.blob_open` and provides
-    access to a blob in the database.  It behaves like a Python file.
-    It wraps a `sqlite3_blob
+    access to a blob in the database.  It behaves like a Python
+    :class:`file <io.RawIOBase>` in binary mode.  It wraps a `sqlite3_blob
     <https://sqlite.org/c3ref/blob.html>`_.
 
     .. note::
@@ -6111,7 +6166,24 @@ class AsyncBlob:
         Calls: `sqlite3_blob_close <https://sqlite.org/c3ref/blob_close.html>`__"""
         ...
 
+    closed: bool
+    """Indicates if the blob has been closed."""
 
+
+
+    def fileno(self) -> int:
+        """Always raises :exc:`OSError` because there is no
+        underlying file descriptor."""
+        ...
+
+    async def flush(self) -> None:
+        """Does nothing.  There is no intermediate buffer, and SQLite's overall
+        transaction/savepoint handling deals with database commits."""
+        ...
+
+    def isatty(self) -> False:
+        """Blobs are never interactive."""
+        ...
 
     def length(self) -> int:
         """Returns the size of the blob in bytes.
@@ -6149,6 +6221,24 @@ class AsyncBlob:
         Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__"""
         ...
 
+    def readable(self) -> True:
+        """You can always read from a blob"""
+        ...
+
+    async def readall(self) -> bytes:
+        """Read all data until the end of the blob"""
+        ...
+
+    async def readline(self, size: int = -1) -> bytes:
+        """Always raises :exc:`io.UnsupportedOperation`.
+        You can wrap with :class:`io.BufferedReader`."""
+        ...
+
+    async def readlines(self, hint: int = -1) -> list[bytes]:
+        """Always raises :exc:`io.UnsupportedOperation`.
+        You can wrap with :class:`io.BufferedReader`."""
+        ...
+
     async def reopen(self, rowid: int) -> None:
         """Change this blob object to point to a different row.  It can be
         faster than closing an existing blob an opening a new one.
@@ -6166,12 +6256,27 @@ class AsyncBlob:
         :raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob."""
         ...
 
+    def seekable(self) -> True:
+        """You can always seek in a blob"""
+        ...
+
     def tell(self) -> int:
         """Returns the current offset."""
         ...
 
-    async def write(self, data: Buffer) -> None:
+    async def truncate(self, size = None) -> None:
+        """Always raises :exc:`io.UnsupportedOperation`.
+        You cannot change the size of a blob."""
+        ...
+
+    def writable(self) -> bool:
+        """Returns True if the blob was open for writing, else False."""
+        ...
+
+    async def write(self, data: Buffer) -> int:
         """Writes the data to the blob.
+
+        Returns the number of bytes written, which will be all of them.
 
         :param data: Buffer to write
 
@@ -6183,6 +6288,11 @@ class AsyncBlob:
             inserting the blob.
 
         Calls: `sqlite3_blob_write <https://sqlite.org/c3ref/blob_write.html>`__"""
+        ...
+
+    async def writelines(self, lines) -> None:
+        """Always raises :exc:`io.UnsupportedOperation`.
+        You can wrap with :class:`io.BufferedWriter`."""
         ...
 
 class AsyncConnection:

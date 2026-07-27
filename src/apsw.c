@@ -173,6 +173,7 @@ static int APSW_Should_Fault(const char *);
 #endif
 
 static PyObject *collections_abc_Mapping = NULL;
+static PyObject *Exc_io_UnsupportedOperation = NULL;
 
 /* string constants struct */
 #include "stringconstants.c"
@@ -1994,6 +1995,7 @@ apsw_module_traverse(PyObject *self, visitproc visit, void *arg)
   Py_VISIT(coro_for_stopasynciteration);
 
   Py_VISIT(collections_abc_Mapping);
+  Py_VISIT(Exc_io_UnsupportedOperation);
 
   Py_VISIT(the_connections);
 
@@ -2012,6 +2014,7 @@ apsw_module_clear(PyObject *self)
   Py_CLEAR(coro_for_stopasynciteration);
 
   Py_CLEAR(collections_abc_Mapping);
+  Py_CLEAR(Exc_io_UnsupportedOperation);
 
   if(logger_cb)
   {
@@ -2375,6 +2378,22 @@ modules etc. For example::
   if (!collections_abc_Mapping)
     goto fail;
 
+  Exc_io_UnsupportedOperation = PyImport_ImportModuleAttr(apst.io, apst.UnsupportedOperation);
+  if (!Exc_io_UnsupportedOperation)
+    goto fail;
+
+  {
+    PyObject *iobase = PyImport_ImportModuleAttr(apst.io, apst.RawIOBase);
+    if (!iobase)
+      goto fail;
+    PyObject *vargs[] = { NULL, iobase, (PyObject *)&APSWBlobType };
+    PyObject *res
+        = PyObject_VectorcallMethod_NoAsync(apst.sregister, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_XDECREF(res);
+    Py_DECREF(iobase);
+    if (!res)
+      goto fail;
+  }
   assert(!PyErr_Occurred());
   module_is_initialized = 1;
   return m;

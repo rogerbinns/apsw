@@ -1244,6 +1244,7 @@ add_string_to_tuple(PyObject **tuple, const char *string)
 
   if (0 != _PyTuple_Resize(tuple, 1 + PyTuple_GET_SIZE(*tuple)))
   {
+    Py_CLEAR(*tuple);
     Py_CLEAR(tmpstring);
     goto error;
   }

@@ -166,7 +166,7 @@ typedef struct _vtableinfo
 
 /* forward declarations */
 struct APSWBlob;
-static void APSWBlob_init(struct APSWBlob *self, Connection *connection, sqlite3_blob *blob);
+static void APSWBlob_init(struct APSWBlob *self, Connection *connection, sqlite3_blob *blob, int writeable);
 static PyTypeObject APSWBlobType;
 
 struct APSWBackup;
@@ -938,7 +938,7 @@ Connection_blob_open(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
   if (!apswblob)
     goto error;
 
-  APSWBlob_init(apswblob, self, blob);
+  APSWBlob_init(apswblob, self, blob, writeable);
   blob = NULL;
   weakref = PyWeakref_NewRef((PyObject *)apswblob, NULL);
   if (!weakref)

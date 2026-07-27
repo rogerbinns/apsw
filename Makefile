@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.53.3
-APSWSUFFIX=.1
+SQLITEVERSION=3.53.4
+APSWSUFFIX=.0
 
-RELEASEDATE="10 July 2026"
+RELEASEDATE="26 July 2026"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -283,7 +283,7 @@ src/_unicodedb.c: tools/ucdprops2code.py ## Update generated Unicode database lo
 	$(PYTHON) tools/ucdprops2code.py $@
 
 # building a python debug interpreter
-PYDEBUG_VER=3.15.0b3
+PYDEBUG_VER=3.15.0b4
 PYDEBUG_DIR=/space/pydebug
 PYTHREAD_VER=$(PYDEBUG_VER)
 PYTHREAD_DIR=/space/pythread

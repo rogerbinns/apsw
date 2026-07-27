@@ -379,24 +379,20 @@ class APSW(unittest.TestCase):
             if name in apsw.vfs_names():
                 apsw.unregister_vfs(name)
 
-    def check_db_mutex(self):
+    def check_db_mutex(self, db):
         # verify a db mutex is not being held by doing work in another
         # thread
-        try:
-            self.db.readonly("main")
-        except apsw.ConnectionClosedError:
-            return
 
-        self.db.set_progress_handler(None)
-        self.db.exec_trace = None
-        self.db.row_trace = None
+        db.set_progress_handler(None)
+        db.exec_trace = None
+        db.row_trace = None
 
         val = Exception("The database mutex is still held and should not be")
 
         def thread():
             nonlocal val
             try:
-                val = self.db.execute("select 3").get
+                val = db.execute("select 3").get
             except BaseException as exc:
                 val = exc
 
@@ -412,14 +408,10 @@ class APSW(unittest.TestCase):
 
     def tearDown(self):
         apsw.config(apsw.SQLITE_CONFIG_LOG, None)
-        if self.db is not None:
-            try:
-                self.check_db_mutex()
-            finally:
-                self.db.close(True)
-        del self.db
         for c in apsw.connections():
-            c.close()
+            self.check_db_mutex(c)
+            c.close(True)
+        del self.db
         gc.collect()
         deltempfiles()
         if hasattr(apsw, "leak_check"):
@@ -4875,6 +4867,8 @@ class APSW(unittest.TestCase):
 
     def testClosingChecks(self):
         "Check closed connection/blob/cursor is correctly detected"
+        if sys.platform == "emscripten":
+            self.skipTest("pyodide crashes")
         cur = self.db.cursor()
         rowid = curnext(
             cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo")
@@ -4882,7 +4876,7 @@ class APSW(unittest.TestCase):
         blob = self.db.blob_open("main", "foo", "x", rowid, True)
         blob.close()
         nargs = self.blob_nargs
-        for func in [x for x in dir(blob) if not x.startswith("__") and x not in ("close", "aclose")]:
+        for func in [x for x in dir(blob) if not x.startswith("__") and x not in ("close", "aclose", "closed")]:
             args = ("one", "two", "three")[: nargs.get(func, 0)]
             try:
                 getattr(blob, func)(*args)
@@ -6150,7 +6144,7 @@ class APSW(unittest.TestCase):
                 "order": ("closed",),
             },
             "APSWBlob": {
-                "skip": ("dealloc", "dealloc_mutex", "init", "close", "close_internal", "tp_repr", "bool", "aclose"),
+                "skip": ("dealloc", "dealloc_mutex", "init", "close", "close_internal", "tp_repr", "bool", "aclose", "closed"),
                 "req": {"closed": "CHECK_BLOB_CLOSED"},
                 "order": ("use", "closed"),
             },
@@ -6967,6 +6961,12 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobro.read(), b"\x00" * 98765)
         blobro.seek(-3, 2)
         self.assertEqual(blobro.read(), b"\x00" * 3)
+        blobro.seek(0)
+        x=blobro.read()
+        blobro.seek(0)
+        self.assertEqual(blobro.readall(), x)
+        self.assertEqual(b"", blobro.read())
+        self.assertEqual(b"", blobro.readall())
         # check types
         self.assertRaises(TypeError, blobro.read, "foo")
         self.assertRaises(TypeError, blobro.tell, "foo")
@@ -6989,6 +6989,7 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.ReadOnlyError, blobro.close)
         # check can't work on closed blob
         self.assertRaises(ValueError, blobro.read)
+        self.assertRaises(ValueError, blobro.readall)
         self.assertRaises(ValueError, blobro.read_into, b"ab")
         self.assertRaises(ValueError, blobro.seek, 0, 0)
         self.assertRaises(ValueError, blobro.tell)
@@ -7063,7 +7064,7 @@ class APSW(unittest.TestCase):
         blobrw.seek(0, 0)
         self.assertEqual(blobrw.read(7), b"abcdefg")
         blobrw.seek(50, 0)
-        blobrw.write(b"hijkl")
+        self.assertEqual(5, blobrw.write(b"hijkl"))
         blobrw.seek(-98765, 2)
         self.assertEqual(blobrw.read(55), b"abcdefg" + b"\x00" * 43 + b"hijkl")
         self.assertRaises(TypeError, blobrw.write, 12)
@@ -7090,21 +7091,93 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.SQLError, blobro.reopen, 0x1FFFFFFFF)
         blobro.close()
 
-    def testBlobReadError(self):
-        "Ensure blob read errors are handled well"
-        cur = self.db.cursor()
-        cur.execute("create table ioerror (x, blob)")
-        cur.execute("insert into ioerror (rowid,x,blob) values (2,3,x'deadbeef')")
-        blob = self.db.blob_open("main", "ioerror", "blob", 2, False)
-        blob.read(1)
-        # Do a write which cause blob to become invalid
-        cur.execute("update ioerror set blob='fsdfdsfasd' where x=3")
-        try:
-            blob.read(1)
-            1 / 0
-        except:
-            klass, value = sys.exc_info()[:2]
-            self.assertTrue(klass is apsw.AbortError)
+    def testBlobExpiredError(self):
+        "Ensure blob errors are handled well"
+        self.db.execute("""
+            create table ioerror (x, blob);
+            insert into ioerror (rowid,x,blob)
+                    values (2,3,x'deadbeefbaadf00d'), (3,3,x'deadbeefbaadf00d');""")
+        blobro = self.db.blob_open("main", "ioerror", "blob", 2, False)
+        blobrw = self.db.blob_open("main", "ioerror", "blob", 3, True)
+        self.assertEqual(blobro.length(), 8)
+        self.assertEqual(blobrw.length(), 8)
+        blobro.read(4)
+        blobrw.read(4)
+        blobrw.write(b"X")
+        self.assertEqual(blobro.tell(), 4)
+        self.assertEqual(blobrw.tell(), 5)
+        # Do a SQL write which cause blobs to become invalid
+        self.db.execute("update ioerror set blob='fsdfdsfasd' where x=3")
+        self.assertRaises(apsw.AbortError, blobro.read)
+        self.assertRaises(apsw.AbortError, blobro.readinto, bytearray(10))
+        self.assertRaises(apsw.AbortError, blobrw.write, b"Y")
+        self.assertRaises(apsw.AbortError, blobrw.write, b"Z")
+        self.assertRaises(apsw.AbortError, blobro.readall)
+        self.assertRaises(apsw.AbortError, blobrw.readall)
+        self.assertRaises(apsw.AbortError, blobro.read, 1)
+
+    def testBlobIOBase(self):
+        "blob conformance with io.RawIOBase"
+
+        rowids=self.db.execute("""
+            CREATE TABLE victim(x);
+            INSERT INTO victim VALUES (randomblob(16383)) RETURNING rowid;
+            INSERT INTO victim VALUES (randomblob(16383)) RETURNING rowid;
+        """).get
+
+        blobro = self.db.blob_open("main", "victim", "x", rowids[0], False)
+        blobrw = self.db.blob_open("main", "victim", "x", rowids[1], True)
+
+        for name in dir(io.RawIOBase):
+            match name:
+                case "close" | "read" | "write" | "seek" | "tell" | "readall" | "readinto":
+                    # covered in tests above
+                    pass
+                case _ if name.startswith("_"):
+                    pass
+                case "closed":
+                    self.assertFalse(blobro.closed)
+                    self.assertFalse(blobrw.closed)
+                case "fileno":
+                    self.assertRaises(OSError, blobro.fileno)
+                    self.assertRaises(OSError, blobrw.fileno)
+                case "flush":
+                    self.assertIsNone(blobro.flush())
+                    self.assertIsNone(blobrw.flush())
+                case "isatty":
+                    self.assertFalse(blobro.isatty())
+                    self.assertFalse(blobrw.isatty())
+                case "readable" | "seekable":
+                    self.assertTrue(blobro.readable())
+                    self.assertTrue(blobrw.readable())
+                    self.assertTrue(blobro.seekable())
+                    self.assertTrue(blobrw.seekable())
+                case "readline" | "readlines" | "writelines" | "truncate":
+                    # pyodide gets a fatal internal error on these
+                    if sys.platform == "emscripten":
+                        self.skipTest("pyodide crashes")
+                    self.assertRaises(io.UnsupportedOperation, blobro.readline)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.readline)
+                    self.assertRaises(io.UnsupportedOperation, blobro.readlines)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.readlines)
+                    self.assertRaises(io.UnsupportedOperation, blobro.writelines)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.writelines)
+                    self.assertRaises(io.UnsupportedOperation, blobro.truncate)
+                    self.assertRaises(io.UnsupportedOperation, blobrw.truncate)
+                case "writable":
+                    self.assertFalse(blobro.writable())
+                    self.assertTrue(blobrw.writable())
+                case _:
+                    raise NotImplementedError
+
+        blobro.close()
+        blobrw.close()
+        self.assertTrue(blobro.closed)
+        self.assertTrue(blobrw.closed)
+
+        self.assertIsInstance(blobro, io.RawIOBase)
+        self.assertIsInstance(blobrw, io.RawIOBase)
+
 
     def testAutovacuumPages(self):
         self.assertRaises(TypeError, self.db.autovacuum_pages)
