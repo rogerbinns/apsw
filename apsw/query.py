@@ -27,9 +27,6 @@ See :doc:`query` for details
 # Add a type - eg ExecuteSequence - and if one of the params is that type
 # then do executemany instead of execute
 #
-# For all returns where we process the complete query (ie ones NOT returning an
-# iterator or cursor), always wrap in with db so they are always atomic
-#
 # at code gen time, check templating for correctness:
 # * !conversions
 # * : spec | spec
@@ -125,7 +122,7 @@ def _is_template_string(string: str) -> bool:
 def template_expand(template: str, vars: ChainMapRO) -> str:
     "Expands template to SQL, using and updating vars"
     res: list[str] = []
-    bindings = {}
+    bindings: dict[str, Any] = {}
 
     def add_binding(v: Any):
         # Use incrementing numbers for the bindings as this is
@@ -271,13 +268,15 @@ def _gen_function(meta: dict[str, Any]) -> str:
 
         inner = """
     async def async_inner() -> None:
-        async for _ in await cursor.execute(sql, vals):
-            raise TooManyRows
+        async with cursor.connection:
+            async for _ in await cursor.execute(sql, vals):
+                raise TooManyRows
 
 
     def sync_inner() -> None:
-        for _ in cursor.execute(sql, vals):
-            raise TooManyRows
+        with cursor.connection:
+            for _ in cursor.execute(sql, vals):
+                raise TooManyRows
 """
 
     elif isinstance(node, ast.Name) and node.id == "changes":
@@ -287,16 +286,18 @@ def _gen_function(meta: dict[str, Any]) -> str:
 
         inner = """
     async def async_inner() -> int:
-        count = await cursor.connection.total_changes()
-        async for _ in await cursor.execute(sql, vals):
-            raise TooManyRows
-        return await cursor.connection.total_changes() - count
+        async with cursor.connection:
+            count = await cursor.connection.total_changes()
+            async for _ in await cursor.execute(sql, vals):
+                raise TooManyRows
+            return await cursor.connection.total_changes() - count
 
     def sync_inner() -> int:
-        count = cursor.connection.total_changes()
-        for _ in cursor.execute(sql, vals):
-            raise TooManyRows
-        return cursor.connection.total_changes() - count
+        with cursor.connection:
+            count = cursor.connection.total_changes()
+            for _ in cursor.execute(sql, vals):
+                raise TooManyRows
+            return cursor.connection.total_changes() - count
 """
 
     elif (
@@ -317,22 +318,24 @@ def _gen_function(meta: dict[str, Any]) -> str:
 
         inner = f"""
     async def async_inner() -> {l} | {r}:
-        retval = _NotSet
-        async for row in await cursor.execute(sql, vals):
-            if retval is not _NotSet:
-                raise TooManyRows
-            desc = cursor.get_description()
-            retval = {_retval_for(node.left)}
-        return ({_unwrap(node.right, "Literal") or r}) if retval is _NotSet else retval
+        async with cursor.connection:
+            retval = _NotSet
+            async for row in await cursor.execute(sql, vals):
+                if retval is not _NotSet:
+                    raise TooManyRows
+                desc = cursor.get_description()
+                retval = {_retval_for(node.left)}
+            return ({_unwrap(node.right, "Literal") or r}) if retval is _NotSet else retval
 
     def sync_inner() -> {l} | Literal[{r}]:
-        retval = _NotSet
-        for row in cursor.execute(sql, vals):
-            if retval is not _NotSet:
-                raise TooManyRows
-            desc = cursor.get_description()
-            retval = {_retval_for(node.left)}
-        return ({_unwrap(node.right, "Literal") or r}) if retval is _NotSet else retval
+        with cursor.connection:
+            retval = _NotSet
+            for row in cursor.execute(sql, vals):
+                if retval is not _NotSet:
+                    raise TooManyRows
+                desc = cursor.get_description()
+                retval = {_retval_for(node.left)}
+            return ({_unwrap(node.right, "Literal") or r}) if retval is _NotSet else retval
 """
 
     elif isinstance(node, (ast.Name, ast.Attribute)):
@@ -343,26 +346,28 @@ def _gen_function(meta: dict[str, Any]) -> str:
 
         inner = f"""
     async def async_inner() -> {r}:
-        retval = _NotSet
-        async for row in await cursor.execute(sql, vals):
-            if retval is not _NotSet:
-                raise TooManyRows
-            desc = cursor.get_description()
-            retval = {_retval_for(node)}
-        if retval is _NotSet:
-            raise RowExpected
-        return retval
+        async with cursor.connection:
+            retval = _NotSet
+            async for row in await cursor.execute(sql, vals):
+                if retval is not _NotSet:
+                    raise TooManyRows
+                desc = cursor.get_description()
+                retval = {_retval_for(node)}
+            if retval is _NotSet:
+                raise RowExpected
+            return retval
 
     def sync_inner() -> {r}:
-        retval = _NotSet
-        for row in cursor.execute(sql, vals):
-            if retval is not _NotSet:
-                raise TooManyRows
-            desc = cursor.get_description()
-            retval = {_retval_for(node)}
-        if retval is _NotSet:
-            raise RowExpected
-        return retval
+        with cursor.connection:
+            retval = _NotSet
+            for row in cursor.execute(sql, vals):
+                if retval is not _NotSet:
+                    raise TooManyRows
+                desc = cursor.get_description()
+                retval = {_retval_for(node)}
+            if retval is _NotSet:
+                raise RowExpected
+            return retval
 """
 
     elif (i := _unwrap(node, "Iterator")) is not None:
@@ -389,18 +394,20 @@ def _gen_function(meta: dict[str, Any]) -> str:
 
         inner = f"""
     async def async_inner() -> list[{l}]:
-        res = []
-        async for row in await cursor.execute(sql, vals):
-            desc = cursor.get_description()
-            res.append({_retval_for(l)})
-        return res
+        async with cursor.connection:
+            res = []
+            async for row in await cursor.execute(sql, vals):
+                desc = cursor.get_description()
+                res.append({_retval_for(l)})
+            return res
 
     def sync_inner() -> list[{l}]:
-        res = []
-        for row in cursor.execute(sql, vals):
-            desc = cursor.get_description()
-            res.append({_retval_for(l)})
-        return res
+        with cursor.connection:
+            res = []
+            for row in cursor.execute(sql, vals):
+                desc = cursor.get_description()
+                res.append({_retval_for(l)})
+            return res
 """
 
     else:
