@@ -342,10 +342,9 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     varname = PyLong_AsSsize_t(useargs[argp_optindex]);                                                                \
     if (varname == -1 && PyErr_Occurred())                                                                             \
       goto param_error;                                                                                                \
-    if (varname < 0 || varname > 1 + PyUnicode_GET_LENGTH(text))                                                       \
+    if (varname < 0 || varname > PyUnicode_GET_LENGTH(text))                                                           \
     {                                                                                                                  \
-      PyErr_Format(PyExc_ValueError, "offset %zd out of range 0 through %zd", varname,                                 \
-                   1 + PyUnicode_GET_LENGTH(text));                                                                    \
+      PyErr_Format(PyExc_ValueError, "offset %zd out of range 0 through %zd", varname, PyUnicode_GET_LENGTH(text));    \
       goto param_error;                                                                                                \
     }                                                                                                                  \
     argp_optindex++;                                                                                                   \

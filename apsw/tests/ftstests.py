@@ -510,6 +510,16 @@ class FTS(unittest.TestCase):
         for start, end, token in tokens:
             self.assertEqual(text.encode()[start:end].decode(), token)
 
+    def testBounds(self):
+        "offsets"
+        # see #624 C004
+        self.assertRaises(ValueError, apsw._unicode.has_category, "", 1, 0, 0xffff)
+        self.assertRaises(ValueError, apsw._unicode.has_category, "", 0, 1, 0xffff)
+        self.assertRaises(ValueError, apsw._unicode.has_category, "a", 1, 2, 0xffff)
+        self.assertRaises(ValueError, apsw._unicode.has_category, "a", -1, 1, 0xffff)
+        self.assertRaises(ValueError, apsw._unicode.grapheme_next_break, "", 1)
+        self.assertRaises(ValueError, apsw._unicode.grapheme_next_break, "a", 2)
+
     def testCLI(self):
         "Test command line interface"
 
