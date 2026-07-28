@@ -97,7 +97,7 @@ apswfcntl_pragma_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   {
     VFSFcntlPragma_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
-    ARG_CONVERT_VARARGS_TO_FASTCALL;
+    ARG_CONVERT_VARARGS_TO_FASTCALL(1, VFSFcntlPragma_init_USAGE);
     ARG_PROLOG(1, VFSFcntlPragma_init_KWNAMES);
     ARG_MANDATORY ARG_pointer(pointer);
     ARG_EPILOG(-1, VFSFcntlPragma_init_USAGE, Py_XDECREF(fast_kwnames));
@@ -1800,7 +1800,7 @@ APSWVFS_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   {
     VFS_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
-    ARG_CONVERT_VARARGS_TO_FASTCALL;
+    ARG_CONVERT_VARARGS_TO_FASTCALL(4, VFS_init_USAGE);
     ARG_PROLOG(4, VFS_init_KWNAMES);
     ARG_MANDATORY ARG_str(name);
     ARG_OPTIONAL ARG_optional_str(base);
@@ -2049,7 +2049,7 @@ APSWVFSFile_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   {
     VFSFile_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
-    ARG_CONVERT_VARARGS_TO_FASTCALL;
+    ARG_CONVERT_VARARGS_TO_FASTCALL(3, VFSFile_init_USAGE);
     ARG_PROLOG(3, VFSFile_init_KWNAMES);
     ARG_MANDATORY ARG_str(vfs);
     ARG_MANDATORY ARG_pyobject(filename);

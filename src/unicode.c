@@ -2103,12 +2103,13 @@ static int
 ToUtf8PositionMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
   ToUtf8PositionMapper *self = (ToUtf8PositionMapper *)self_;
-  ARG_CONVERT_VARARGS_TO_FASTCALL
+#define toutf8posmapper_USAGE "to_utf8_position_mapper.__init__(utf8: bytes)"
+  ARG_CONVERT_VARARGS_TO_FASTCALL(1, toutf8posmapper_USAGE);
 
   PyObject *utf8 = NULL;
   ARG_PROLOG(1, "utf8");
   ARG_MANDATORY ARG_Buffer(utf8);
-  ARG_EPILOG(-1, "to_utf8_position_mapper.__init__(utf8: bytes)", Py_XDECREF(fast_kwnames));
+  ARG_EPILOG(-1, toutf8posmapper_USAGE, Py_XDECREF(fast_kwnames));
 
   int res = PyObject_GetBuffer(utf8, &self->buffer, PyBUF_SIMPLE);
   if (res != 0)
@@ -2254,12 +2255,14 @@ static int
 FromUtf8PositionMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
   FromUtf8PositionMapper *self = (FromUtf8PositionMapper *)self_;
-  ARG_CONVERT_VARARGS_TO_FASTCALL
+#define fromutf8posmapper_USAGE "from_utf8_position_mapper.__init__(string: str)"
+
+  ARG_CONVERT_VARARGS_TO_FASTCALL(1, fromutf8posmapper_USAGE);
 
   PyObject *string = NULL;
   ARG_PROLOG(1, "string");
   ARG_MANDATORY ARG_PyUnicode(string);
-  ARG_EPILOG(-1, "from_utf8_position_mapper.__init__(string: str)", Py_XDECREF(fast_kwnames));
+  ARG_EPILOG(-1, fromutf8posmapper_USAGE, Py_XDECREF(fast_kwnames));
 
   self->bytes_object = PyUnicode_AsUTF8String(string);
   if (!self->bytes_object)

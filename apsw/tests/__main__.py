@@ -538,6 +538,21 @@ class APSW(unittest.TestCase):
         finally:
             sys.excepthook, sys.unraisablehook = orig
 
+    def testArgparse(self):
+        "function argument parsing"
+        # mainly from #624
+        apsw.soft_heap_limit(3)
+        apsw.soft_heap_limit(limit=3)
+        # the \0 is swallowed but we dont care
+        with self.assertRaisesRegex(TypeError, "'limit' is an invalid keyword argument.*"):
+            apsw.soft_heap_limit(**{"limit\0foo": 3})
+        self.assertRaisesRegex(TypeError, "argument 'limit' given by name and position.*", apsw.soft_heap_limit, 3, limit=3)
+        self.assertRaisesRegex(TypeError, r"Too many positional arguments 2 \(max 1\) provided.*", apsw.soft_heap_limit, 3, 4)
+        with self.assertRaisesRegex(TypeError, r"Too many arguments 100 \(max 4\) provided to.*"):
+            apsw.Connection(*range(100))
+        with self.assertRaisesRegex(TypeError, r"Too many arguments 99 \(max 4\) provided to.*"):
+            apsw.Connection(**{str(x): x for x in range(99)})
+
     def testSanity(self):
         "Check all parts compiled and are present"
         # check some error codes etc are present - picked first middle and last from lists in code

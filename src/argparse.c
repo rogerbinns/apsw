@@ -492,9 +492,16 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
 
 /* 1 is added to the size of fast_args to ensure the vla is always at
    least 1 item long.  If it ends up as zero then sanitizers complain. */
-#define ARG_CONVERT_VARARGS_TO_FASTCALL                                                                                \
+#define ARG_CONVERT_VARARGS_TO_FASTCALL(max_arg_count, conv_usage)                                                     \
   Py_ssize_t fast_nargs = PyTuple_GET_SIZE(args);                                                                      \
-  VLA_PYO(fast_args, 1 + fast_nargs + (kwargs ? PyDict_GET_SIZE(kwargs) : 0));                                         \
+  const int conv_alloc_args = 1 + fast_nargs + (kwargs ? PyDict_GET_SIZE(kwargs) : 0);                                 \
+  if (conv_alloc_args - 1 > max_arg_count)                                                                             \
+  {                                                                                                                    \
+    PyErr_Format(PyExc_TypeError, "Too many arguments %d (max %d) provided to %s", conv_alloc_args - 1, max_arg_count, \
+                 conv_usage);                                                                                          \
+    return -1;                                                                                                         \
+  }                                                                                                                    \
+  VLA_PYO(fast_args, conv_alloc_args);                                                                                 \
   PyObject *fast_kwnames = NULL;                                                                                       \
   Py_ssize_t acvtf_i;                                                                                                  \
   for (acvtf_i = 0; acvtf_i < fast_nargs; acvtf_i++)                                                                   \

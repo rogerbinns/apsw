@@ -46,7 +46,7 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 #define CARRAY_usage "carray(object: Buffer, *, start: int = 0, stop: int = -1, flags: int = -1)"
 
     PREVENT_INIT_MULTIPLE_CALLS;
-    ARG_CONVERT_VARARGS_TO_FASTCALL;
+    ARG_CONVERT_VARARGS_TO_FASTCALL(4, CARRAY_usage);
     ARG_PROLOG(1, CARRAY_kwnames);
     ARG_MANDATORY ARG_carray(object);
     ARG_OPTIONAL ARG_int64(start);

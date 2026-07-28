@@ -312,7 +312,7 @@ APSWSession_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   {
     Session_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
-    ARG_CONVERT_VARARGS_TO_FASTCALL;
+    ARG_CONVERT_VARARGS_TO_FASTCALL(2, Session_init_USAGE);
     ARG_PROLOG(2, Session_init_KWNAMES);
     ARG_MANDATORY ARG_Connection(db);
     ARG_MANDATORY ARG_str(schema);
@@ -2079,7 +2079,7 @@ APSWChangesetBuilder_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   {
     ChangesetBuilder_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
-    ARG_CONVERT_VARARGS_TO_FASTCALL;
+    ARG_CONVERT_VARARGS_TO_FASTCALL(0, ChangesetBuilder_init_USAGE);
     ARG_PROLOG(0, ChangesetBuilder_init_KWNAMES);
     ARG_EPILOG(-1, ChangesetBuilder_init_USAGE, Py_XDECREF(fast_kwnames));
   }
@@ -2702,7 +2702,7 @@ APSWRebaser_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   {
     Rebaser_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
-    ARG_CONVERT_VARARGS_TO_FASTCALL;
+    ARG_CONVERT_VARARGS_TO_FASTCALL(0, Rebaser_init_USAGE);
     ARG_PROLOG(0, Rebaser_init_KWNAMES);
     ARG_EPILOG(-1, Rebaser_init_USAGE, Py_XDECREF(fast_kwnames));
   }

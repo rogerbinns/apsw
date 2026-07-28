@@ -655,17 +655,18 @@ def do_argparse(item):
     if max_pos is None:
         max_pos = len(kwlist)
     is_init = item["symbol"].endswith("_init")
+    usage_name = f"{ item['symbol'] }_USAGE"
     code = (
         f"""\
   {{
     { item['symbol'] }_CHECK;
     { "PREVENT_INIT_MULTIPLE_CALLS;" if is_init else "" }
-    { "ARG_CONVERT_VARARGS_TO_FASTCALL;" if is_init else "" }
+    { f"ARG_CONVERT_VARARGS_TO_FASTCALL({max_pos}, {usage_name});" if is_init else "" }
     ARG_PROLOG({ max_pos}, { item['symbol'] }_KWNAMES);
 """
         + code
         + f"""
-    ARG_EPILOG({ "NULL" if not is_init else -1 }, { item['symbol'] }_USAGE,{ " Py_XDECREF(fast_kwnames)" if is_init else " " });
+    ARG_EPILOG({ "NULL" if not is_init else -1 }, { usage_name },{ " Py_XDECREF(fast_kwnames)" if is_init else " " });
   }}"""
     )
 
