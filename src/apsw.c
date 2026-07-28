@@ -849,6 +849,8 @@ randomness(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fas
   bytes = PyBytes_FromStringAndSize(NULL, amount);
   if (!bytes)
     return bytes;
+  /* GIL is not released because this method is only here for completeness
+     and testing, and a small number of bytes is expected. */
   sqlite3_randomness(amount, PyBytes_AS_STRING(bytes));
   return bytes;
 }
@@ -1115,6 +1117,7 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Apsw_complete_USAGE, );
   }
 
+  /* GIL is not released because the method runs quickly */
   res = sqlite3_complete(statement);
 
   if (res)
