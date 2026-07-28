@@ -19,19 +19,18 @@
 static int
 ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const char **kwname)
 {
-  const char *n = PyUnicode_AsUTF8(item);
-  size_t cmp;
   int res = -1;
-  if (n)
-    for (cmp = 0; cmp < n_kwlist && kwlist[cmp]; cmp++)
+  for (size_t cmp = 0; cmp < n_kwlist && kwlist[cmp]; cmp++)
+  {
+    /* our kwargs are ASCII only */
+    if (0 == PyUnicode_CompareWithASCIIString(item, kwlist[cmp]))
     {
-      if (0 == strcmp(n, kwlist[cmp]))
-      {
-        res = (int)cmp;
-        break;
-      }
+      res = (int)cmp;
+      break;
     }
-  *kwname = n;
+  }
+  /* this will hide embedded nulls in the string */
+  *kwname = PyUnicode_AsUTF8(item);
   return res;
 }
 
