@@ -6344,6 +6344,10 @@ class APSW(unittest.TestCase):
             self.assertTrue(apsw.config(apsw.SQLITE_CONFIG_PCACHE_HDRSZ) >= 0)
             self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_PCACHE_HDRSZ, "extra")
             apsw.config(apsw.SQLITE_CONFIG_PMASZ, -1)
+            self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_PMASZ, "hello")
+            self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_LOOKASIDE, 1234)
+            # SQLite doesn't reject these values
+            apsw.config(apsw.SQLITE_CONFIG_LOOKASIDE, -1200, -100)
             self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_MMAP_SIZE, "3")
             self.assertRaises(TypeError, apsw.config, apsw.SQLITE_CONFIG_MMAP_SIZE, 3, "3")
             self.assertRaises(OverflowError, apsw.config, apsw.SQLITE_CONFIG_MMAP_SIZE, 2**65, 2**65)

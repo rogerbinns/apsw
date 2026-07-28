@@ -642,13 +642,32 @@ apsw_config(PyObject *Py_UNUSED(self), PyObject *args)
   case SQLITE_CONFIG_URI:
   case SQLITE_CONFIG_MEMSTATUS:
   case SQLITE_CONFIG_COVERING_INDEX_SCAN:
-  case SQLITE_CONFIG_PMASZ:
   case SQLITE_CONFIG_STMTJRNL_SPILL:
   case SQLITE_CONFIG_SORTERREF_SIZE:
-  case SQLITE_CONFIG_LOOKASIDE:
   case SQLITE_CONFIG_SMALL_MALLOC: {
     int intval;
     if (!PyArg_ParseTuple(args, "ii", &optdup, &intval))
+      return NULL;
+    assert(opt == optdup);
+    res = sqlite3_config(opt, intval);
+    break;
+  }
+
+  case SQLITE_CONFIG_LOOKASIDE: {
+    int size, slots;
+    if (!PyArg_ParseTuple(args, "iii", &optdup, &size, &slots))
+      return NULL;
+    assert(opt == optdup);
+    res = sqlite3_config(opt, size, slots);
+    break;
+  }
+
+  case SQLITE_CONFIG_PMASZ: {
+    unsigned intval;
+    /* I (unsigned) does no overflow checking. It isn't worth the
+       effort to address, and won't break anything, just using a
+       truncated value */
+    if (!PyArg_ParseTuple(args, "iI", &optdup, &intval))
       return NULL;
     assert(opt == optdup);
     res = sqlite3_config(opt, intval);
@@ -661,7 +680,7 @@ apsw_config(PyObject *Py_UNUSED(self), PyObject *args)
       return NULL;
     if (Py_IsNone(logger))
     {
-      res = sqlite3_config(opt, NULL);
+      res = sqlite3_config(opt, NULL, NULL);
       if (res == SQLITE_OK)
         Py_CLEAR(logger_cb);
     }
