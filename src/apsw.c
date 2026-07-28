@@ -2082,7 +2082,17 @@ static PyTypeObject ApswModuleType = {
   .tp_dealloc = apsw_module_dealloc,
 };
 
-static struct PyModuleDef apswmoduledef = { PyModuleDef_HEAD_INIT, "apsw", NULL, -1, module_methods, 0, 0, 0, 0 };
+#define apsw_module_DOC "Another Python SQLite Wrapper"
+
+/* Sub-interpreters will never be supported.  SQLite has process wide
+   state such as the logger callback and VFS.  */
+static struct PyModuleDef apswmoduledef = {
+  .m_base = PyModuleDef_HEAD_INIT,
+  .m_name = "apsw",
+  .m_doc = apsw_module_DOC,
+  .m_size = -1,
+  .m_methods = module_methods,
+};
 
 PyMODINIT_FUNC
 PyInit_apsw(void)
