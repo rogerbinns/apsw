@@ -5,11 +5,11 @@ import os
 import pathlib
 import subprocess
 import sys
-import zipfile
 import tempfile
 import textwrap
-from typing import Callable
 import unittest
+import zipfile
+from collections.abc import Callable
 
 import apsw
 import apsw.query
@@ -296,7 +296,14 @@ class Query(unittest.TestCase):
         # this covers relative imports and zip files
 
         def cleanup():
-            for name in "apsw.tests._querytest apsw._fts5q impzip_top insidezip.impzip_inside insidezip.impzip_inside2 insidezip.subpkg.level3".split():
+            for name in [
+                "apsw.tests._querytest",
+                "apsw._fts5q",
+                "impzip_top",
+                "insidezip.impzip_inside",
+                "insidezip.impzip_inside2",
+                "insidezip.subpkg.level3",
+            ]:
                 if name in sys.modules:
                     del sys.modules[name]
 

@@ -7,12 +7,15 @@ with Python code to make it clear what is happening. :mod:`apsw.query`
 separates your SQL into their own files.
 
 * The SQL files can be can be syntax checked and highlighted as SQL
-* You import the SQL files as though they were native Python code
+* You import the SQL files as native Python code
 * Each SQL section becomes a Python function
-* Always executes to completion (explain why)
+* Executes to completion atomically
+* You define the return type per section, with very easy conversion
+  to :mod:`dataclasses`
+* You define the parameters, their types and defaults
 * Automatically sync and async based on :class:`Connection` used
-* Get doc and completions
-* Can use mocks for testing
+* Documentation, typing and completions
+* Can use mocks for testing, by overriding the functions
 
 Overview
 --------
@@ -44,9 +47,9 @@ Example
 -------
 
 This example covers a database of cities.  It shows segments from the
-SQL file and then the Python using that segment.  The section is
-copied into the Python, with any SQL comment of lines :code:`/*` and
-:code:`*/` omitted.
+SQL file and then the Python using that segment.  Any lines of only
+:code:`/*` and :code:`*/` are omitted, so you can make Python be
+inside comments  to SQL highlighters.
 
 .. code-block:: sql
 
@@ -88,11 +91,12 @@ query to name a parameter, with SQLite also supporting :code:`$` and
 
   SELECT * FROM cities;
 
-  -- name: city_info(founded_after:datetime.date) -> list[CityInfo]
+  -- name: city_info(founded_after: datetime.date) -> list[CityInfo]
   -- Gets all cities founded after a date including their
   -- population rank within the same country
 
-  -- You should name the result columns using AS
+  -- You should name the result columns using AS the same as
+  -- in the dataclass
 
   SELECT
     name          AS name,
@@ -351,10 +355,10 @@ TODO mention invoking at runtime vs AOT, ``python3 -m apsw.query`` etc
     :undoc-members:
     :member-order: bysource
 
-Example
--------
+Example documentation
+---------------------
 
-* corresponds to :source:`apsw/_fts5q.sql`
+* This documentation corresponds to :source:`apsw/_fts5q.sql`
 * explain :code:`**locals` usage
 * explain :code:`eval` for self stuff
 * explain clicking source to see SQL
@@ -362,3 +366,4 @@ Example
 .. automodule:: apsw._fts5q
     :members:
     :undoc-members:
+    :no-index:
