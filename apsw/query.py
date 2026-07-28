@@ -11,9 +11,10 @@ import re
 import sys
 import textwrap
 import zipfile
+from collections.abc import Iterator
 from string import Formatter
 from types import ModuleType
-from typing import Any, Iterator
+from typing import Any
 
 """
 Provides Pythonic interface to SQL in a file
