@@ -209,7 +209,7 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
       if (!PyUnicode_Check(PyList_GET_ITEM(useargs[argp_optindex], list_item_iter)))                                   \
       {                                                                                                                \
         PyErr_Format(PyExc_TypeError, "Expected list item %zd to be str, not %s", list_item_iter,                      \
-                     Py_TypeName(useargs[argp_optindex]));                                                             \
+                     Py_TypeName(PyList_GET_ITEM(useargs[argp_optindex], list_item_iter)));                            \
         goto param_error;                                                                                              \
       }                                                                                                                \
     }                                                                                                                  \

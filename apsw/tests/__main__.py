@@ -552,6 +552,14 @@ class APSW(unittest.TestCase):
             apsw.Connection(*range(100))
         with self.assertRaisesRegex(TypeError, r"Too many arguments 99 \(max 4\) provided to.*"):
             apsw.Connection(**{str(x): x for x in range(99)})
+        if hasattr(self.db, "fts5_tokenizer"):
+            self.assertRaisesRegex(
+                TypeError,
+                "Expected list item 1 to be str, not complex",
+                self.db.fts5_tokenizer,
+                "hello",
+                ["a", 3 + 4j, "b"],
+            )
 
     def testSanity(self):
         "Check all parts compiled and are present"
