@@ -12,7 +12,7 @@ typedef struct BoxedCall
   PyObject_VAR_HEAD
 
       /* discriminated union */
-      enum {
+      enum BoxedCall_call_type {
         Dormant = 0,
         ConnectionInit,
         FastCallWithKeywords,
@@ -68,11 +68,11 @@ typedef struct BoxedCall
 } BoxedCall;
 
 static void
-BoxedCall_clear(PyObject *self_)
+BoxedCall_clear(PyObject *self_, int call_type)
 {
   BoxedCall *self = (BoxedCall *)self_;
 
-  switch (self->call_type)
+  switch ((call_type < 0) ? self->call_type : (enum BoxedCall_call_type)call_type)
   {
   case Dormant:
     return;
@@ -115,7 +115,7 @@ BoxedCall_clear(PyObject *self_)
 static void
 BoxedCall_dealloc(PyObject *self)
 {
-  BoxedCall_clear(self);
+  BoxedCall_clear(self, -1);
   Py_TpFree(self);
 }
 
@@ -126,10 +126,14 @@ BoxedCall_internal_call(BoxedCall *self)
 
   PyObject *result = NULL;
 
+  /* we mark as Dormant before making the call so that any attempts to
+     call this again inside the callbacks will fail */
+  enum BoxedCall_call_type call_type = self->call_type;
+  self->call_type = Dormant;
+
   if (0 == PyContext_Enter(self->context))
   {
-
-    switch (self->call_type)
+    switch (call_type)
     {
     case ConnectionInit:
       if (0
@@ -168,7 +172,7 @@ BoxedCall_internal_call(BoxedCall *self)
     AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.BoxedCall.__call__", "{s:i}", "call_type", (int)self->call_type);
   }
 
-  BoxedCall_clear((PyObject *)self);
+  BoxedCall_clear((PyObject *)self, call_type);
 
   return result;
 }
