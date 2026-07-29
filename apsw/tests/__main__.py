@@ -544,7 +544,7 @@ class APSW(unittest.TestCase):
         apsw.soft_heap_limit(3)
         apsw.soft_heap_limit(limit=3)
         # the \0 is swallowed but we dont care
-        with self.assertRaisesRegex(TypeError, "'limit' is an invalid keyword argument.*"):
+        with self.assertRaisesRegex(TypeError, "'limit\\\\x00foo' is an invalid keyword argument.*"):
             apsw.soft_heap_limit(**{"limit\0foo": 3})
         self.assertRaisesRegex(TypeError, "argument 'limit' given by name and position.*", apsw.soft_heap_limit, 3, limit=3)
         self.assertRaisesRegex(TypeError, r"Too many positional arguments 2 \(max 1\) provided.*", apsw.soft_heap_limit, 3, 4)
@@ -552,6 +552,10 @@ class APSW(unittest.TestCase):
             apsw.Connection(*range(100))
         with self.assertRaisesRegex(TypeError, r"Too many arguments 99 \(max 4\) provided to.*"):
             apsw.Connection(**{str(x): x for x in range(99)})
+        with self.assertRaisesRegex(TypeError, "'x\\\\x00y' is an invalid keyword argument for.*"):
+            apsw.Connection("", 1, "", **{"x\0y": 3})
+        with self.assertRaisesRegex(TypeError, r"\(3\+4j\) is an invalid keyword argument for.*"):
+            apsw.Connection("", 1, **{3 + 4j: 6})
         if hasattr(self.db, "fts5_tokenizer"):
             self.assertRaisesRegex(
                 TypeError,

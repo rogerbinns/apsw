@@ -1,42 +1,24 @@
+/* Mostly macro based processing of function arguments.  This performs
+   similar functionality to argument clinic, but gives far more
+   informative error messages */
 
-/* to speed this up gendocstrings can generate something like this
-   that uses the string length as a hash
-
-    switch(strlen(kwname))
-    {
-        case 7:
-          if(0==strcmp(kwname, "hkjdshfkjd")) return 4;
-          if(0==strcmp(kwname, "sdsdshfkjd")) return 2;
-          return -1;
-
-        case 2:
-          if(0==strcmp(kwname, "ab")) return 1;
-          return -1;
-
-        default: return -1;
-    }
-*/
 static int
-ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const char **kwname)
+ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist)
 {
-  int res = -1;
-  for (size_t cmp = 0; cmp < n_kwlist && kwlist[cmp]; cmp++)
-  {
-    /* our kwargs are ASCII only */
-    if (0 == PyUnicode_CompareWithASCIIString(item, kwlist[cmp]))
+  if (PyUnicode_Check(item))
+    for (size_t cmp = 0; cmp < n_kwlist && kwlist[cmp]; cmp++)
     {
-      res = (int)cmp;
-      break;
+      /* our kwargs are ASCII only */
+      if (0 == PyUnicode_CompareWithASCIIString(item, kwlist[cmp]))
+        return (int)cmp;
     }
-  }
-  /* this will hide embedded nulls in the string */
-  *kwname = PyUnicode_AsUTF8(item);
-  return res;
+
+  return -1;
 }
 
 #define ARG_PROLOG(maxpos_args, kwname_list)                                                                           \
   static const char *kwlist[] = { kwname_list };                                                                       \
-  const char *unknown_keyword = NULL;                                                                                  \
+  PyObject *unknown_keyword = NULL;                                                                                    \
   const Py_ssize_t maxpos_args_ = maxpos_args;                                                                         \
   const int maxargs = Py_ARRAY_LENGTH(kwlist);                                                                         \
   PyObject *myargs[Py_ARRAY_LENGTH(kwlist)];                                                                           \
@@ -55,11 +37,17 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     for (int i_arg_prolog = 0; i_arg_prolog < PyTuple_GET_SIZE(fast_kwnames); i_arg_prolog++)                          \
     {                                                                                                                  \
       PyObject *item = PyTuple_GET_ITEM(fast_kwnames, i_arg_prolog);                                                   \
-      Py_ssize_t which_kw = ARG_WHICH_KEYWORD(item, kwlist, maxargs, &unknown_keyword);                                \
+      Py_ssize_t which_kw = ARG_WHICH_KEYWORD(item, kwlist, maxargs);                                                  \
       if (which_kw == -1)                                                                                              \
+      {                                                                                                                \
+        unknown_keyword = item;                                                                                        \
         goto unknown_keyword_arg;                                                                                      \
+      }                                                                                                                \
       if (useargs[which_kw])                                                                                           \
+      {                                                                                                                \
+        unknown_keyword = item;                                                                                        \
         goto pos_and_keyword;                                                                                          \
+      }                                                                                                                \
       useargs[which_kw] = fast_args[n_fast_args + i_arg_prolog];                                                       \
       actual_nargs = Py_MAX(actual_nargs, which_kw + 1);                                                               \
     }                                                                                                                  \
@@ -94,11 +82,11 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
   goto error_return;                                                                                                   \
   unknown_keyword_arg:                                                                                                 \
   if (!PyErr_Occurred())                                                                                               \
-    PyErr_Format(PyExc_TypeError, "'%s' is an invalid keyword argument for %s", unknown_keyword, usage);               \
+    PyErr_Format(PyExc_TypeError, "%R is an invalid keyword argument for %s", unknown_keyword, usage);                 \
   goto error_return;                                                                                                   \
   pos_and_keyword:                                                                                                     \
   if (!PyErr_Occurred())                                                                                               \
-    PyErr_Format(PyExc_TypeError, "argument '%s' given by name and position for %s", unknown_keyword, usage);          \
+    PyErr_Format(PyExc_TypeError, "argument %R given by name and position for %s", unknown_keyword, usage);            \
   goto error_return;                                                                                                   \
   param_error:                                                                                                         \
   assert(PyErr_Occurred());                                                                                            \
