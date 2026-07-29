@@ -197,6 +197,10 @@ BoxedCall_call(PyObject *self_, PyObject *args, PyObject *kwargs)
   return BoxedCall_internal_call(self);
 }
 
+/* BoxedCall deliberately does not provide GC or tp_clear.  The
+   contract with the Async Controller is that they must call it, or
+   destroy it.  Just leaving it lying around will keep the call object
+   and parameters alive. */
 static PyTypeObject BoxedCallType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.aio.BoxedCall",
   .tp_basicsize = sizeof(BoxedCall),
