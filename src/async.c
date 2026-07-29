@@ -163,6 +163,9 @@ BoxedCall_internal_call(BoxedCall *self)
       Py_UNREACHABLE();
     }
 
+    /* Error deliberately not checked.  There is nothing that could be
+       done.  Examining the code shows that the only way to get an error is
+       by not having the PyContext_Enter above. */
     PyContext_Exit(self->context);
   }
 
