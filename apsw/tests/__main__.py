@@ -9069,6 +9069,38 @@ class APSW(unittest.TestCase):
         self.assertRaises(apsw.BusyError, b.__exit__, None, None, None)
         b.__exit__(None, None, None)
 
+        # prevent re-entrant
+        dest_blocker = apsw.Connection(self.db.filename)
+        source = apsw.Connection("")
+        source.execute("create table foo(x); insert into foo values(randomblob(78901))")
+
+        results = set()
+        def bh(_):
+            nonlocal results, backup
+            try:
+                backup.finish()
+            except apsw.ThreadingViolationError:
+                results.add("finish")
+            try:
+                backup.step(1)
+            except apsw.ThreadingViolationError:
+                results.add("step")
+            try:
+                backup.close()
+            except apsw.ThreadingViolationError:
+                results.add("close")
+
+            return False
+
+        self.db.set_busy_handler(bh)
+        backup = self.db.backup("main", source, "main")
+        dest_blocker.execute("BEGIN EXCLUSIVE")
+
+        self.assertRaises(apsw.BusyError, backup.step, 1)
+        self.assertEqual(results, {"finish", "step", "close"})
+
+        dest_blocker.close()
+
     def testLog(self):
         "Verifies logging functions"
         self.assertRaises(TypeError, apsw.log)
