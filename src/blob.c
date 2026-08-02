@@ -375,7 +375,6 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   long long offset = 0, length = -1;
   PyObject *buffer = NULL;
 
-  int bloblen;
   Py_buffer py3buffer = { 0 };
 
   CHECK_BLOB_CLOSED;
@@ -395,7 +394,7 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
 
   DBMUTEX_ENSURE(self->connection);
 
-  bloblen = sqlite3_blob_bytes(self->pBlob);
+  int bloblen = sqlite3_blob_bytes(self->pBlob);
 
   if (self->curoffset > bloblen)
   {
@@ -404,7 +403,14 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   }
 
   if (length < 0)
+  {
     length = py3buffer.len - offset;
+    if (length < 0)
+    {
+      PyErr_Format(PyExc_ValueError, "negative effective length");
+      goto finally;
+    }
+  }
 
   if (offset < 0 || offset > py3buffer.len)
   {
@@ -412,7 +418,7 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     goto finally;
   }
 
-  if (offset + length > py3buffer.len)
+  if (length > py3buffer.len - offset)
   {
     PyErr_Format(PyExc_ValueError, "Data would go beyond end of buffer");
     goto finally;
@@ -468,25 +474,28 @@ APSWBlob_seek(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
     ARG_OPTIONAL ARG_int(whence);
     ARG_EPILOG(NULL, Blob_seek_USAGE, );
   }
+
+  int64_t blob_length = sqlite3_blob_bytes(self->pBlob);
+
   switch (whence)
   {
   default:
     return PyErr_Format(PyExc_ValueError, "whence parameter should be 0, 1 or 2");
   case 0: /* relative to beginning of file */
-    if (offset < 0 || offset > sqlite3_blob_bytes(self->pBlob))
+    if (offset < 0 || offset > blob_length)
       goto out_of_range;
     self->curoffset = offset;
     break;
   case 1: /* relative to current position */
-    if (self->curoffset + offset < 0 || self->curoffset + offset > sqlite3_blob_bytes(self->pBlob))
+    if (self->curoffset + (int64_t)offset < 0 || self->curoffset + (int64_t)offset > blob_length)
       goto out_of_range;
     self->curoffset += offset;
     break;
   case 2: /* relative to end of file */
-    if (sqlite3_blob_bytes(self->pBlob) + offset < 0
-        || sqlite3_blob_bytes(self->pBlob) + offset > sqlite3_blob_bytes(self->pBlob))
+    if (blob_length + offset < 0
+        || blob_length + offset > blob_length)
       goto out_of_range;
-    self->curoffset = sqlite3_blob_bytes(self->pBlob) + offset;
+    self->curoffset = blob_length + offset;
     break;
   }
   Py_RETURN_NONE;
