@@ -389,10 +389,13 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
 
   ASYNC_FASTCALL(self->connection, APSWBlob_read_into);
 
-  if (PyObject_GetBufferContiguous(buffer, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE))
-    return NULL;
-
   DBMUTEX_ENSURE(self->connection);
+
+  if (PyObject_GetBufferContiguous(buffer, &py3buffer, PyBUF_WRITABLE | PyBUF_SIMPLE))
+  {
+    sqlite3_mutex_leave(self->connection->dbmutex);
+    return NULL;
+  }
 
   int bloblen = sqlite3_blob_bytes(self->pBlob);
 
