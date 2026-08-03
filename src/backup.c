@@ -356,7 +356,10 @@ APSWBackup_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   }
 
   if (self->dest)
+  {
     ASYNC_FASTCALL(self->dest, APSWBackup_close);
+    return error_async_in_sync_context();
+  }
   return async_return_value(Py_None);
 }
 

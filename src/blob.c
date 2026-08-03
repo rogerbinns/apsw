@@ -667,9 +667,14 @@ APSWBlob_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
     ARG_EPILOG(NULL, Blob_aclose_USAGE, );
   }
 
+  PyObject *retval = Py_None;
+
   if (self->connection)
+  {
     ASYNC_FASTCALL(self->connection, APSWBlob_close);
-  return async_return_value(Py_None);
+    return error_async_in_sync_context();
+  }
+  return async_return_value(retval);
 }
 
 /** .. method:: __enter__() -> Blob
