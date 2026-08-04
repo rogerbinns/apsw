@@ -162,7 +162,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef sqlite3_bind_text
 #undef sqlite3_bind_text64
 #undef sqlite3_bind_value
-#undef sqlite3_bind_zeroblob
 #undef sqlite3_bind_zeroblob64
 #undef sqlite3_blob_open
 #undef sqlite3_blob_read
@@ -2521,21 +2520,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_sqlite3_bind_value = (typeof (_res_sqlite3_bind_value))18;                                                                                    \
     }                                                                                                                                                      \
     _res_sqlite3_bind_value;                                                                                                                               \
-})
-#define sqlite3_bind_zeroblob(...) \
-({                                                                                                                                                                  \
-    __auto_type _res_sqlite3_bind_zeroblob = 0 ? sqlite3_bind_zeroblob(__VA_ARGS__) : 0;                                                                            \
-                                                                                                                                                                    \
-    _res_sqlite3_bind_zeroblob = (typeof (_res_sqlite3_bind_zeroblob))APSW_FaultInjectControl("sqlite3_bind_zeroblob", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                                                                    \
-    if ((typeof (_res_sqlite3_bind_zeroblob))0x1FACADE == _res_sqlite3_bind_zeroblob)                                                                               \
-       _res_sqlite3_bind_zeroblob = sqlite3_bind_zeroblob(__VA_ARGS__);                                                                                             \
-    else if ((typeof(_res_sqlite3_bind_zeroblob))0x2FACADE == _res_sqlite3_bind_zeroblob)                                                                           \
-    {                                                                                                                                                               \
-        sqlite3_bind_zeroblob(__VA_ARGS__);                                                                                                                         \
-        _res_sqlite3_bind_zeroblob = (typeof (_res_sqlite3_bind_zeroblob))18;                                                                                       \
-    }                                                                                                                                                               \
-    _res_sqlite3_bind_zeroblob;                                                                                                                                     \
 })
 #define sqlite3_bind_zeroblob64(...) \
 ({                                                                                                                                                                        \

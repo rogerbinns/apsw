@@ -136,7 +136,7 @@ returns = {
             sqlite3_carray_bind_v2
             sqlite3_bind_null sqlite3_bind_pointer sqlite3_bind_text
             sqlite3_bind_text64 sqlite3_bind_value
-            sqlite3_bind_zeroblob sqlite3_bind_zeroblob64
+            sqlite3_bind_zeroblob64
             sqlite3_blob_open sqlite3_blob_read sqlite3_blob_reopen
             sqlite3_blob_write sqlite3_busy_handler
             sqlite3_busy_timeout
