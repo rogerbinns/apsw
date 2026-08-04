@@ -256,16 +256,20 @@ Async object
 Close
 !!!!!
 
-You can call close on sync **and** async objects. When you call close on a
+You can call close on sync **and** async objects. When you close a
 :class:`Connection`, then it will close all the corresponding
 objects like :class:`Cursor`, :class:`Blob`, :class:`Session` etc.
 
 It is safe to call :code:`close` and :code:`aclose` multiple times,
-even on already closed objects.`
+even on already closed objects.
+
+:code:`close` does the close immediately blocking execution until
+complete.
 
 Sync object
     :code:`close` closes this object in the foreground, releasing its
-    held resources.
+    held resources.  :code:`aclose` will raise an exception because
+    there is no corresponding worker thread or event loop.
 
 Async object
     :code:`aclose` closes this object in the background.  You should
