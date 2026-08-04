@@ -107,6 +107,7 @@ struct APSWBlob
   sqlite3_blob *pBlob;
   int curoffset;         /* SQLite only supports 32 bit signed int offsets */
   int writeable;
+  int busy;  /* prevent close while in read/write */
   PyObject *weakreflist; /* weak reference tracking */
 };
 
@@ -141,12 +142,19 @@ APSWBlob_init(APSWBlob *self, Connection *connection, sqlite3_blob *blob, int wr
   self->curoffset = 0;
   self->weakreflist = NULL;
   self->writeable = writeable;
+  self->busy = 0;
 }
 
 static int
 APSWBlob_close_internal(APSWBlob *self, int force)
 {
   int setexc = 0;
+
+  if(self->busy)
+  {
+    PyErr_Format(ExcThreadingViolation, "The blob is busy in a read/write operation");
+    return 1;
+  }
 
   PY_ERR_FETCH_IF(force == 2, exc_save);
 
@@ -173,6 +181,7 @@ APSWBlob_close_internal(APSWBlob *self, int force)
       }
     }
     self->pBlob = 0;
+    self->busy = 0;
   }
 
   if (self->connection)
@@ -295,7 +304,7 @@ APSWBlob_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
   }
 
   if (length < 0)
-    length = sqlite3_blob_bytes(self->pBlob) - self->curoffset;
+    length = blob_length - self->curoffset;
 
   /* trying to read more than is in the blob? */
   if ((sqlite3_int64)self->curoffset + (sqlite3_int64)length > blob_length)
@@ -307,7 +316,11 @@ APSWBlob_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
     goto finally;
 
   thebuffer = PyBytes_AS_STRING(buffy);
-  res = sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset);
+  self->busy++;
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_blob_read(self->pBlob, thebuffer, length, self->curoffset);
+  Py_END_ALLOW_THREADS;
+  self->busy--;
   SET_EXC(res, self->connection->db);
 
   MakeExistingException(); /* this could happen if there were issues in the vfs */
@@ -429,7 +442,11 @@ APSWBlob_read_into(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     goto finally;
   }
 
-  res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset);
+  self->busy++;
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_blob_read(self->pBlob, (char *)(py3buffer.buf) + offset, length, self->curoffset);
+  Py_END_ALLOW_THREADS;
+  self->busy--;
 
   MakeExistingException(); /* vfs errors could cause this */
 
@@ -577,7 +594,12 @@ APSWBlob_write(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
     goto finally;
   }
 
-  res = sqlite3_blob_write(self->pBlob, data_buffer.buf, data_buffer.len, self->curoffset);
+  self->busy++;
+  Py_BEGIN_ALLOW_THREADS
+   res = sqlite3_blob_write(self->pBlob, data_buffer.buf, data_buffer.len, self->curoffset);
+  Py_END_ALLOW_THREADS;
+  self->busy--;
+
   SET_EXC(res, self->connection->db);
   PyBuffer_Release(&data_buffer);
 
