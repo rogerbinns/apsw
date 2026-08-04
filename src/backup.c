@@ -51,7 +51,7 @@ come back and copy those changes too until the backup is complete.
     }                                                                                                                  \
   } while (0)
 
-/* prevent recursive use of the backupr - eg a callback function or
+/* prevent recursive use of the backup - eg a callback function or
    tracer executing new SQL while the call stack above is in a
    sqlite3_step*/
 #define IN_BACKUP_CHECK                                                                                                \
