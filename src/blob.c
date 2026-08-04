@@ -739,10 +739,15 @@ APSWBlob_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs
     return error_sync_in_async_context();
 
   DBMUTEX_ENSURE(self->connection);
-  /* note: this releases the mutex */
-  setexc = APSWBlob_close_internal(self, 0);
-  if (setexc)
-    return NULL;
+  CHAIN_EXC_BEGIN
+    /* note: this releases the mutex */
+    setexc = APSWBlob_close_internal(self, 0);
+  CHAIN_EXC_END;
+    if (setexc)
+    {
+      assert(PyErr_Occurred());
+      return NULL;
+    }
 
   Py_RETURN_FALSE;
 }

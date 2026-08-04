@@ -453,8 +453,9 @@ APSWBackup_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
                    "Backup destination Connection is busy in another thread");
   IN_BACKUP_CHECK;
   self->in_backup = 1;
-  setexc = APSWBackup_close_internal(self, !Py_IsNone(etype) || !Py_IsNone(evalue) || !Py_IsNone(etraceback));
-
+  CHAIN_EXC_BEGIN
+    setexc = APSWBackup_close_internal(self, !Py_IsNone(etype) || !Py_IsNone(evalue) || !Py_IsNone(etraceback));
+  CHAIN_EXC_END;
   if (setexc)
   {
     assert(PyErr_Occurred());
