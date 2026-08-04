@@ -6928,7 +6928,7 @@ class APSW(unittest.TestCase):
         "Verify handling of zero blobs"
         self.assertRaises(TypeError, apsw.zeroblob)
         self.assertRaises(TypeError, apsw.zeroblob, "foo")
-        self.assertRaises(TypeError, apsw.zeroblob, -7)
+        self.assertRaises(OverflowError, apsw.zeroblob, -7)
         self.assertRaises(apsw.TooBigError, self.db.execute, "select ?", (apsw.zeroblob(4000000000),))
         cur = self.db.cursor()
         cur.execute("create table foo(x)")

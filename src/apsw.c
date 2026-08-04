@@ -205,7 +205,7 @@ static PyTypeObject apsw_no_change_type = {
 typedef struct
 {
   PyObject_HEAD
-  long long blobsize;
+  sqlite3_uint64 blobsize;
   int init_was_called;
 } ZeroBlobBind;
 

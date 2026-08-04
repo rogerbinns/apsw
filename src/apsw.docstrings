@@ -968,9 +968,9 @@
 #define Blob_read_into_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(buffer), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(offset), long long)); \
-  assert(offset == 0L); \
+  assert(offset == 0LL); \
   assert(__builtin_types_compatible_p(typeof(length), long long)); \
-  assert(length == -1L); \
+  assert(length == -1LL); \
 } while(0)
 
 
@@ -5271,7 +5271,7 @@
 #define Zeroblob_init_USAGE "zeroblob.__init__(size: int)"
 
 #define Zeroblob_init_CHECK do { \
-  assert(__builtin_types_compatible_p(typeof(size), long long)); \
+  assert(__builtin_types_compatible_p(typeof(size), unsigned long long)); \
 } while(0)
 
 

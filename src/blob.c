@@ -50,21 +50,17 @@ static int
 ZeroBlobBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
   ZeroBlobBind *self = (ZeroBlobBind *)self_;
-  long long size;
+  sqlite3_uint64 size;
 
   {
     Zeroblob_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
     ARG_CONVERT_VARARGS_TO_FASTCALL(1, Zeroblob_init_USAGE);
     ARG_PROLOG(1, Zeroblob_init_KWNAMES);
-    ARG_MANDATORY ARG_int64(size);
+    ARG_MANDATORY ARG_unsigned_long_long(size);
     ARG_EPILOG(-1, Zeroblob_init_USAGE, Py_XDECREF(fast_kwnames));
   }
-  if (size < 0)
-  {
-    PyErr_Format(PyExc_TypeError, "zeroblob size must be >= 0");
-    return -1;
-  }
+
   self->blobsize = size;
 
   return 0;
@@ -78,14 +74,14 @@ static PyObject *
 ZeroBlobBind_len(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   ZeroBlobBind *self = (ZeroBlobBind *)self_;
-  return PyLong_FromLong(self->blobsize);
+  return PyLong_FromUnsignedLongLong(self->blobsize);
 }
 
 static PyObject *
 ZeroBlobBind_tp_repr(PyObject *self_)
 {
   ZeroBlobBind *self = (ZeroBlobBind *)self_;
-  return PyUnicode_FromFormat("<%s size %lld at %p>", Py_TypeName(self_), self->blobsize, self);
+  return PyUnicode_FromFormat("<%s size %llu at %p>", Py_TypeName(self_), self->blobsize, self);
 }
 
 static PyMethodDef ZeroBlobBind_methods[]

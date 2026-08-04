@@ -392,7 +392,7 @@ type_overrides = {
     "VFS.xDlSym": {"handle": "pointer"},
     "VFS.xSetSystemCall": {"pointer": "pointer"},
     "VFS.xOpen": {"flags": "list[int,int]"},
-    "zeroblob.__init__": {"size": "int64"},
+    "zeroblob.__init__": {"size": "uint64"},
 }
 
 
@@ -507,7 +507,12 @@ def do_argparse(item):
             type = "long long"
             kind = "int64"
             if param["default"]:
-                default_check = f"{ pname } == { int(param['default']) }L"
+                default_check = f"{ pname } == { int(param['default']) }LL"
+        elif param["type"] == "uint64":
+            type = "unsigned long long"
+            kind = "unsigned_long_long"
+            if param["default"]:
+                default_check = f"{ pname } == { int(param['default']) }ULL"
         elif param["type"] == "pointer":
             type = "void *"
             kind = "pointer"
