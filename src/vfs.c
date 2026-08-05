@@ -2122,7 +2122,10 @@ APSWVFSFile_init(PyObject *self_, PyObject *args, PyObject *kwargs)
     goto finally;
 
   if (0 != PyList_SetItem(flags, 1, pyflagsout))
+  {
+    pyflagsout = NULL;
     goto finally;
+  }
 
   pyflagsout = NULL;
 
