@@ -2873,10 +2873,12 @@ Connection_deserialize(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
 
   ASYNC_FASTCALL(self, Connection_deserialize);
 
+  DBMUTEX_ENSURE(self);
+
   if (0 != PyObject_GetBufferContiguous(contents, &contents_buffer, PyBUF_SIMPLE))
   {
     assert(PyErr_Occurred());
-    return NULL;
+    goto finally;
   }
 
   size_t len = contents_buffer.len;
@@ -2887,16 +2889,14 @@ Connection_deserialize(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
   PyBuffer_Release(&contents_buffer);
 
   if (!newcontents)
-  {
     res = SQLITE_NOMEM;
-    PyErr_NoMemory();
-  }
 
-  DBMUTEX_ENSURE(self);
   if (res == SQLITE_OK)
     res = sqlite3_deserialize(self->db, name, (unsigned char *)newcontents, len, len,
                               SQLITE_DESERIALIZE_RESIZEABLE | SQLITE_DESERIALIZE_FREEONCLOSE);
   SET_EXC(res, self->db);
+
+finally:
   sqlite3_mutex_leave(self->dbmutex);
 
   /* sqlite frees the buffer on error due to freeonclose flag */
