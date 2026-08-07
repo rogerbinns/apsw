@@ -1097,7 +1097,7 @@ class Tester:
                 # exceptions are swallowed if doing a validity check
                 ok = True
             elif tested[-1][0] == "sqlite3_mutex_try":
-                if tested[-1][2] in { "APSWCursor_dealloc_mutex", "APSWSession_dealloc_mutex", "Connection_dealloc_mutex"}:
+                if tested[-1][2].endswith("_dealloc_mutex"):
                     # does a background retry so we won't see
                     # exceptions immediately but bugs will result in
                     # leaks etc
