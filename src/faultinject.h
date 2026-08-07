@@ -134,6 +134,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef convert_column_to_pyobject
 #undef convert_value_to_pyobject
 #undef convertutf8string
+#undef cursor_mutex_get
 #undef fts5extensionapi_acquire
 #undef get_token_value
 #undef get_window_function_context
@@ -201,6 +202,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef sqlite3_malloc
 #undef sqlite3_malloc64
 #undef sqlite3_mprintf
+#undef sqlite3_mutex_try
 #undef sqlite3_normalized_sql
 #undef sqlite3_open
 #undef sqlite3_open_v2
@@ -2101,6 +2103,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     }                                                                                                                                                   \
     _res_convertutf8string;                                                                                                                             \
 })
+#define cursor_mutex_get(...) \
+({                                                                                                                                                   \
+    __auto_type _res_cursor_mutex_get = 0 ? cursor_mutex_get(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res_cursor_mutex_get = (typeof (_res_cursor_mutex_get))APSW_FaultInjectControl("cursor_mutex_get", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res_cursor_mutex_get))0x1FACADE == _res_cursor_mutex_get)                                                                          \
+       _res_cursor_mutex_get = cursor_mutex_get(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res_cursor_mutex_get))0x2FACADE == _res_cursor_mutex_get)                                                                      \
+    {                                                                                                                                                \
+        cursor_mutex_get(__VA_ARGS__);                                                                                                               \
+        _res_cursor_mutex_get = (typeof (_res_cursor_mutex_get))18;                                                                                  \
+    }                                                                                                                                                \
+    _res_cursor_mutex_get;                                                                                                                           \
+})
 #define fts5extensionapi_acquire(...) \
 ({                                                                                                                                                                           \
     __auto_type _res_fts5extensionapi_acquire = 0 ? fts5extensionapi_acquire(__VA_ARGS__) : 0;                                                                               \
@@ -3105,6 +3122,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_sqlite3_mprintf = (typeof (_res_sqlite3_mprintf))18;                                                                                 \
     }                                                                                                                                             \
     _res_sqlite3_mprintf;                                                                                                                         \
+})
+#define sqlite3_mutex_try(...) \
+({                                                                                                                                                      \
+    __auto_type _res_sqlite3_mutex_try = 0 ? sqlite3_mutex_try(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_sqlite3_mutex_try = (typeof (_res_sqlite3_mutex_try))APSW_FaultInjectControl("sqlite3_mutex_try", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_sqlite3_mutex_try))0x1FACADE == _res_sqlite3_mutex_try)                                                                           \
+       _res_sqlite3_mutex_try = sqlite3_mutex_try(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_sqlite3_mutex_try))0x2FACADE == _res_sqlite3_mutex_try)                                                                       \
+    {                                                                                                                                                   \
+        sqlite3_mutex_try(__VA_ARGS__);                                                                                                                 \
+        _res_sqlite3_mutex_try = (typeof (_res_sqlite3_mutex_try))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_sqlite3_mutex_try;                                                                                                                             \
 })
 #define sqlite3_normalized_sql(...) \
 ({                                                                                                                                                                     \

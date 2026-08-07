@@ -5248,6 +5248,7 @@ Connection_execute(PyObject *self_, PyObject *const *args, Py_ssize_t nargs, PyO
     goto fail;
   }
   res = PyObject_Vectorcall_NoAsync(method, args, nargs, kwnames);
+  assert((res && !PyErr_Occurred()) || (!res && PyErr_Occurred()));
 
 fail:
   Py_XDECREF(cursor);

@@ -590,9 +590,11 @@ APSWCursor_get_description_full(PyObject *self_, void *unused)
 #endif
 
 /* returns 0 on success, -1 on failure with exception set */
+#undef cursor_mutex_get
 static int
 cursor_mutex_get(APSWCursor *self)
 {
+#include "faultinject.h"
   /* this should be used by execute, executemany, and next which
      release the GIL internally (prepare and step).  We want any thread to
      be able to execute on the same database without having to add their
@@ -1283,7 +1285,10 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   ASYNC_FASTCALL(self->connection, APSWCursor_execute);
 
   if (0 != cursor_mutex_get(self))
+  {
+    assert(PyErr_Occurred());
     return NULL;
+  }
 
   res = resetcursor(self, /* force= */ 0);
   if (res != SQLITE_OK)

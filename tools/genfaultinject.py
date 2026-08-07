@@ -129,6 +129,8 @@ returns = {
             """.split(),
     # numeric return
     "sqlite": """
+            sqlite3_mutex_try
+
             sqlite3_aggregate_context sqlite3_autovacuum_pages
             sqlite3_backup_finish sqlite3_backup_init
             sqlite3_backup_step sqlite3_bind_blob sqlite3_bind_blob64
@@ -203,7 +205,7 @@ returns = {
         PyObject_GetBufferContiguous PyObject_GetBuffer PyObject_GetBufferContiguousBounded
         _PyTuple_Resize
 
-        getfunctionargs
+        getfunctionargs cursor_mutex_get
 
         jsonb_grow_buffer jsonb_add_tag jsonb_update_tag jsonb_append_data
         jsonb_add_tag_and_data jsonb_encode_internal jsonb_encode_object_key

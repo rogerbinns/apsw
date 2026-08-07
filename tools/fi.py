@@ -829,6 +829,7 @@ class Tester:
         return getattr(sys.modules["apsw"], name)
 
     def FaultCall(self, key):
+        # key is a tuple: ("api", "__FILE__", "__function__", __LINE__, #args)
         apsw_attr = self.apsw_attr
         fname = self.call_remap.get(key[0], key[0])
         try:
@@ -873,6 +874,10 @@ class Tester:
             if fname == "sqlite3_load_extension":
                 self.expect_exception.append(apsw_attr("ExtensionLoadingError"))
                 return self.apsw_attr("SQLITE_TOOBIG")
+
+            if fname == "sqlite3_mutex_try":
+                self.expect_exception.append(apsw_attr("ThreadingViolationError"))
+                return self.apsw_attr("SQLITE_BUSY")
 
             if fname == "sqlite3_vtab_in_next":
                 self.expect_exception.append(ValueError)
@@ -929,6 +934,10 @@ class Tester:
                 self.expect_exception.append(self.FAULTT)
                 return (-1, *self.FAULT)
 
+            if fname == "cursor_mutex_get":
+                self.expect_exception.append(apsw_attr("ThreadingViolationError"))
+                return (-1, self.apsw_attr("ThreadingViolationError"), "fault injected")
+
         finally:
             self.to_fault.pop(key, None)
             self.has_faulted_ever.add(key)
@@ -937,8 +946,8 @@ class Tester:
                 self.expect_exception.extend([TypeError, ValueError])
             self.last_key = key
 
-        print("Unhandled", key)
-        breakpoint()
+        print("Aborting: FaultCall doesn't know how to fail", key)
+        sys.exit(1)
 
     def should_fault(self, name, pending_exception):
         if pending_exception != (None, None, None):
@@ -967,6 +976,11 @@ class Tester:
             # we don't want these in get/set attr while module is
             # being constructed otherwise the module machinery
             # disables the module
+            return self.Proceed
+        if key[0] == "sqlite3_mutex_try" and key[2] == "cursor_mutex_get":
+            # there is a retry loop, so for this to work we'd
+            # need to keep returning Busy over and over.
+            # cursor_mutex_get is seprately fault injected
             return self.Proceed
         if "misuse_check" in key[4]:
             # sqlite session stuff where we only care about misuse being returned
@@ -1085,6 +1099,12 @@ class Tester:
             elif tested[-1][0] == "Py_EnterRecursiveCall" and tested[-1][2] == "jsonb_decode_one":
                 # exceptions are swallowed if doing a validity check
                 ok = True
+            elif tested[-1][0] == "sqlite3_mutex_try":
+                if tested[-1][2] in { "APSWCursor_dealloc_mutex", "APSWSession_dealloc_mutex"}:
+                    # does a background retry
+                    ok = True
+                else:
+                    print(f"{tested=} {self.expect_exception=}")
             else:
                 ok = False
         if not ok:
