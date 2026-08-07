@@ -610,10 +610,7 @@ def exercise(example_code, expect_exception):
     apsw.connection_hooks = [lambda x: None] * 3
     x = apsw.Connection("")
     c = x.cursor()
-    try:
-        x.backup("main", con, "main")
-    except apsw.ThreadingViolationError:
-        pass
+    x.backup("main", con, "main")
     del c
 
     con2 = apsw.Connection("")
