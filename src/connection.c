@@ -4413,7 +4413,6 @@ Connection_create_module(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
   Connection *self = (Connection *)self_;
   const char *name = NULL;
   PyObject *datasource = NULL;
-  vtableinfo *vti = NULL;
   int res;
   int use_bestindex_object = 0, use_no_change = 0;
 
@@ -4437,36 +4436,37 @@ Connection_create_module(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
 
   ASYNC_FASTCALL(self, Connection_create_module);
 
+  DBMUTEX_ENSURE(self);
+
+  vtableinfo *vti = NULL;
+
   if (!Py_IsNone(datasource))
   {
     Py_INCREF(datasource);
     vti = PyMem_Calloc(1, sizeof(vtableinfo));
     if (!vti)
-      goto error;
+      goto finally;
     vti->sqlite3_module_def = apswvtabSetupModuleDef(datasource, iVersion, eponymous, eponymous_only, read_only);
     if (!vti->sqlite3_module_def)
-      goto error;
+    {
+      apswvtabFree(vti);
+      goto finally;
+    }
     vti->connection = self;
     vti->datasource = datasource;
     vti->bestindex_object = use_bestindex_object;
     vti->use_no_change = use_no_change;
   }
 
-  /* SQLite is really finnicky.  Note that it calls the destructor on
-     failure  */
-
-  DBMUTEX_ENSURE(self);
+  /* Note that it calls the destructor on failure  */
   res = sqlite3_create_module_v2(self->db, name, vti ? vti->sqlite3_module_def : NULL, vti, apswvtabFree);
   SET_EXC(res, self->db);
+
+finally:
   sqlite3_mutex_leave(self->dbmutex);
 
   if (PyErr_Occurred())
-  {
-  error:
-    if (vti)
-      apswvtabFree(vti);
     return NULL;
-  }
 
   Py_RETURN_NONE;
 }
