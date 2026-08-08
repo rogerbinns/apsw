@@ -671,9 +671,6 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
        code etc.  Fault injection leaves it NULL hence the checks for
        self->db */
     res = sqlite3_open_v2(filename, &self->db, flags, vfs);
-    /* get detailed error codes */
-    if (self->db)
-      sqlite3_extended_result_codes(self->db, 1);
   }
   Py_END_ALLOW_THREADS;
 
