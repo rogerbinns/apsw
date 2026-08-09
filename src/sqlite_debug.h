@@ -407,6 +407,9 @@
     sqlite3_extended_errcode((one));                     \
 })
 
+#undef sqlite3_extended_result_codes
+#define sqlite3_extended_result_codes *not used*
+
 #define sqlite3_file_control(one, two, three, four) ({    \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));   \
     sqlite3_file_control((one), (two), (three), (four));  \
@@ -464,9 +467,6 @@
 
 #undef sqlite3_mutex_alloc
 #define sqlite3_mutex_alloc *not used*
-
-#undef sqlite3_mutex_enter
-#define sqlite3_mutex_enter *not used*
 
 #undef sqlite3_mutex_free
 #define sqlite3_mutex_free *not used*

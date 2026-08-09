@@ -49,6 +49,7 @@ functions_not_used = (
     "sqlite3_create_module",
     "sqlite3_database_file_object",
     "sqlite3_errcode",
+    "sqlite3_extended_result_codes",
     "sqlite3_filename_database",
     "sqlite3_free_(filename|table)",
     "sqlite3_(get|set)_(auxdata|clientdata|table)",
@@ -66,7 +67,7 @@ functions_not_used = (
     # v2/3 should be used
     "sqlite3changeset_apply(|_strm)",
     # try should be used not enter
-    "sqlite3_mutex_(alloc|enter|free|notheld)",
+    "sqlite3_mutex_(alloc|free|notheld)",
     "sqlite3_next_stmt",
     "sqlite3_normalized_sql",
     "sqlite3_open",
@@ -150,7 +151,7 @@ functions_global = (
     "sqlite3_db_handle",
     "sqlite3_db_mutex",
     "sqlite3_mutex_held",
-    "sqlite3_mutex_(try|leave)",
+    "sqlite3_mutex_(enter|try|leave)",
     # session extension
     "sqlite3change(group|set)_.*",
     "sqlite3rebaser_.*",
