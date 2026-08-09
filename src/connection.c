@@ -435,6 +435,7 @@ Connection_close_internal(Connection *self, int force)
   apsw_connection_remove(self);
 
   /* caller should have acquired */
+  assert(sqlite3_mutex_held(self->dbmutex));
   sqlite3_mutex_leave(self->dbmutex);
 
   for (;;)
@@ -669,32 +670,30 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   {
     /* Real SQLite always creates a self->db so you can get the error
        code etc.  Fault injection leaves it NULL hence the checks for
-       self->db */
+       self->db in later code */
     res = sqlite3_open_v2(filename, &self->db, flags, vfs);
   }
   Py_END_ALLOW_THREADS;
 
-  if (res != SQLITE_OK && !PyErr_Occurred())
+  /* normally sqlite will have an error code but some internal vfs
+     error codes aren't propagated so PyErr_Occurred can be set*/
+  if (PyErr_Occurred())
+    res = SQLITE_ERROR;
+
+  /* mutex needs to be held for errmsg, close on error, while doing async,
+     connection hooks etc */
+  if (self->db)
   {
-    if (self->db)
-    {
-      /* we have to hold the dbmutex around this */
-      int acquired = sqlite3_mutex_try(sqlite3_db_mutex(self->db));
-      /* there is no reason it could fail */
-      assert(acquired == SQLITE_OK);
-      (void)acquired;
-    }
-    make_exception(res, self->db);
-    if (self->db)
-      sqlite3_mutex_leave(sqlite3_db_mutex(self->db));
+    self->dbmutex = sqlite3_db_mutex(self->db);
+    sqlite3_mutex_enter(self->dbmutex);
   }
 
-  /* normally sqlite will have an error code but some internal vfs
-     error codes aren't propagated so PyErr_Occurred will be set*/
-  if (res != SQLITE_OK || PyErr_Occurred())
-    goto pyexception;
+  SET_EXC(res, self->db);
 
-  self->dbmutex = sqlite3_db_mutex(self->db);
+  assert((res == SQLITE_OK && !PyErr_Occurred()) || (res != SQLITE_OK && PyErr_Occurred()));
+
+  if (res != SQLITE_OK)
+    goto pyexception;
 
   if (vfsused && is_apsw_vfs(vfsused))
     self->vfs = Py_NewRef((PyObject *)(vfsused->pAppData));
@@ -703,6 +702,7 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   self->open_flags = PyLong_FromLong(flags);
   if (!self->open_flags)
     goto pyexception;
+
   if (vfsused)
   {
     self->open_vfs = convertutf8string(vfsused->zName);
@@ -750,6 +750,7 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
       Py_DECREF(hookresult);
     }
   }
+
   if (!PyErr_Occurred())
   {
     res = 0;
@@ -768,8 +769,10 @@ finally:
     res = apsw_connection_add(self);
 
   /* proactively cleanup if possible */
-  if (res != 0 && sqlite3_mutex_try(self->dbmutex) == SQLITE_OK)
+  if (res != 0)
     Connection_close_internal(self, 2);
+  else
+    sqlite3_mutex_leave(self->dbmutex);
 
   assert((PyErr_Occurred() && res != 0) || (res == 0 && !PyErr_Occurred()));
   return res;
