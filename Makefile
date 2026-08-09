@@ -164,7 +164,7 @@ fulltest: test test_debug
 linkcheck:  ## Checks links from doc
 	env PYTHONPATH="`pwd`" $(MAKE) RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
 
-unwrapped:  ## Find SQLite APIs that are not wrapped by APSW
+unwrapped src/sqlite_debug.h:  ## Find SQLite APIs that are not wrapped by APSW, and updates sqlite api debug header
 	env PYTHONPATH=. $(PYTHON) tools/gensqlitedebug.py
 
 publish:  checkversion docs
