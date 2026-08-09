@@ -1122,6 +1122,14 @@ class Tester:
                     print(line)
             sys.exit(1)
 
+    def prune_multifault(self):
+        # we need to filter out the mutex_try -> addPendingCall ->
+        # realloc sequence because it results in the object being
+        # leaked.  code has to manually verified
+        self.to_fault = {
+            k: v for k, v in self.to_fault.items() if (k[0], k[2]) != ("PyMem_Realloc", "apsw_AddPendingCall")
+        }
+
     def run(self):
         self.abort = 0
         # keys that we will fault in the future.  we saw these keys while a
@@ -1169,7 +1177,8 @@ class Tester:
                         self.abort = 0
                         if not use_runplan and not self.faulted_this_round:
                             use_runplan = True
-                            print("\nExercising locations that require multiple failures\n")
+                            self.prune_multifault()
+                            print(f"\nExercising {len(self.to_fault)} locations that require multiple failures\n")
                             global examples_completed
                             examples_completed = None
                             continue
