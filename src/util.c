@@ -438,8 +438,8 @@ apsw_strdup(const char *source)
   char *res = PyMem_Calloc(1, len + 3);
   if (res)
   {
+    memcpy(res, source, len);
     res[len] = res[len + 1] = res[len + 2] = 0;
-    PyOS_snprintf(res, len + 1, "%s", source);
   }
   return res;
 }
