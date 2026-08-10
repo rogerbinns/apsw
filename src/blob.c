@@ -950,7 +950,8 @@ APSWBlob_seekable(PyObject *self_, PyObject *Py_UNUSED(unused))
   You can wrap with :class:`io.BufferedReader`.
 */
 static PyObject *
-APSWBlob_readline(PyObject *self_, PyObject *Py_UNUSED(unused))
+APSWBlob_readline(PyObject *self_, PyObject *const *Py_UNUSED(args), Py_ssize_t Py_UNUSED(nargs),
+                  PyObject *Py_UNUSED(kwnames))
 {
   APSWBlob *self = (APSWBlob *)self_;
   CHECK_BLOB_CLOSED;
@@ -965,7 +966,8 @@ APSWBlob_readline(PyObject *self_, PyObject *Py_UNUSED(unused))
   You can wrap with :class:`io.BufferedReader`.
 */
 static PyObject *
-APSWBlob_readlines(PyObject *self_, PyObject *Py_UNUSED(unused))
+APSWBlob_readlines(PyObject *self_, PyObject *const *Py_UNUSED(args), Py_ssize_t Py_UNUSED(nargs),
+                   PyObject *Py_UNUSED(kwnames))
 {
   APSWBlob *self = (APSWBlob *)self_;
   CHECK_BLOB_CLOSED;
@@ -980,7 +982,8 @@ APSWBlob_readlines(PyObject *self_, PyObject *Py_UNUSED(unused))
   You can wrap with :class:`io.BufferedWriter`.
 */
 static PyObject *
-APSWBlob_writelines(PyObject *self_, PyObject *Py_UNUSED(unused))
+APSWBlob_writelines(PyObject *self_, PyObject *const *Py_UNUSED(args), Py_ssize_t Py_UNUSED(nargs),
+                    PyObject *Py_UNUSED(kwnames))
 {
   APSWBlob *self = (APSWBlob *)self_;
   CHECK_BLOB_CLOSED;
@@ -995,7 +998,8 @@ APSWBlob_writelines(PyObject *self_, PyObject *Py_UNUSED(unused))
   You cannot change the size of a blob.
 */
 static PyObject *
-APSWBlob_truncate(PyObject *self_, PyObject *Py_UNUSED(unused))
+APSWBlob_truncate(PyObject *self_, PyObject *const *Py_UNUSED(args), Py_ssize_t Py_UNUSED(nargs),
+                  PyObject *Py_UNUSED(kwnames))
 {
   APSWBlob *self = (APSWBlob *)self_;
   CHECK_BLOB_CLOSED;

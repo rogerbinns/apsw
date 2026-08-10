@@ -1129,7 +1129,7 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
 #include <sanitizer/lsan_interface.h>
 
 static PyObject *
-apsw_leak_check(PyObject *Py_UNUSED(self))
+apsw_leak_check(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unsued))
 {
   int res = __lsan_do_recoverable_leak_check();
   return PyLong_FromLong(res);
