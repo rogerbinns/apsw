@@ -1544,6 +1544,19 @@ class APSW(unittest.TestCase):
         # no error is given for unknown flags so we don't test them
         self.db.setlk_timeout(1000, apsw.SQLITE_SETLK_BLOCK_ON_CONNECT)
 
+    def testRegistrationFail(self):
+        "Registering functions etc failures"
+        # when registration fails, sqlite often runs the destructor, and our buggy C code
+        # may do the same resulting in double free
+        too_long = "a" * 65536
+        dummy=lambda *args: None
+        self.assertRaises(apsw.MisuseError, self.db.create_aggregate_function, too_long, dummy)
+        self.assertRaises(apsw.MisuseError, self.db.create_scalar_function, too_long, dummy)
+        self.assertRaises(apsw.MisuseError, self.db.create_window_function, too_long, dummy)
+        # these don't have a limit
+        self.db.create_collation(too_long, dummy)
+        self.db.create_module(too_long, dummy)
+
 
     def testVTableStuff(self):
         "Test new stuff added for Virtual tables"

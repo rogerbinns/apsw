@@ -3794,11 +3794,15 @@ Connection_create_window_function(PyObject *self_, PyObject *const *fast_args, P
   {
     cbinfo = allocfunccbinfo(name);
     if (!cbinfo)
+    {
+      assert(PyErr_Occurred());
       goto finally;
+    }
     cbinfo->windowfactory = Py_NewRef(factory);
   }
 
   DBMUTEX_ENSURE(self);
+  /* note: frees on error too */
   res = sqlite3_create_window_function(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo, cbinfo ? cbw_step : NULL,
                                        cbinfo ? cbw_final : NULL, cbinfo ? cbw_value : NULL,
                                        cbinfo ? cbw_inverse : NULL, apsw_free_func);
@@ -3806,10 +3810,7 @@ Connection_create_window_function(PyObject *self_, PyObject *const *fast_args, P
   sqlite3_mutex_leave(self->dbmutex);
 finally:
   if (PyErr_Occurred())
-  {
-    apsw_free_func(cbinfo);
     return NULL;
-  }
   Py_RETURN_NONE;
 }
 

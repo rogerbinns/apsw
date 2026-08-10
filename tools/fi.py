@@ -850,7 +850,7 @@ class Tester:
                 "sqlite3_backup_finish",
                 # runs the destructor on failure
                 "sqlite3_create_function_v2",
-                "sqlite3_window_function",
+                "sqlite3_create_window_function",
                 "sqlite3_carray_bind_apsw",
                 "sqlite3_carray_bind_v2",
                 "sqlite3_create_module_v2",
