@@ -481,7 +481,11 @@ static int
 apsw_connection_add(Connection *con)
 {
   if (!the_connections)
-    return 0;
+  {
+    the_connections = PyList_New(0);
+    if (!the_connections)
+      return -1;
+  }
   PyObject *weakref = PyWeakref_NewRef((PyObject *)con, NULL);
   if (!weakref)
     return -1;
@@ -2176,10 +2180,6 @@ PyInit_apsw(void)
   Py_SET_TYPE(apswmodule, &ApswModuleType);
 
   if (PyModule_AddFunctions(m, apswmoduledef.m_methods) < 0)
-    goto fail;
-
-  the_connections = PyList_New(0);
-  if (!the_connections)
     goto fail;
 
   if (init_exceptions(m))
