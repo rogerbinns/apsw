@@ -7135,7 +7135,15 @@ class APSW(unittest.TestCase):
         self.assertEqual(blobro.tell(), 0)
         self.assertEqual(first, blobro.read(2))
         # invalid reopen
+        self.assertFalse(blobro.closed)
         self.assertRaises(apsw.SQLError, blobro.reopen, 0x1FFFFFFFF)
+        # should behave closed
+        self.assertTrue(blobro.closed)
+        self.assertRaisesRegex(ValueError, ".*on closed blob", blobro.read)
+        self.assertRaisesRegex(ValueError, ".*on closed blob", blobro.write, b"")
+        self.assertRaisesRegex(ValueError, ".*on closed blob", blobro.tell)
+        self.assertRaisesRegex(ValueError, ".*on closed blob", blobro.length)
+        self.assertRaisesRegex(ValueError, ".*on closed blob", blobro.isatty)
         blobro.close()
 
     def testBlobExpiredError(self):

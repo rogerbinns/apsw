@@ -299,12 +299,13 @@ class Async(unittest.TestCase):
         with self.assertRaises(apsw.SQLError):
             await blob.reopen(423)
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             with blob:
                 pass
 
-        async with blob:
-            pass
+        with self.assertRaises(ValueError):
+            async with blob:
+                pass
 
         self.assertRaises(ValueError, blob.length)
 

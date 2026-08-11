@@ -190,7 +190,7 @@ APSWBlob_close_internal(APSWBlob *self, int force)
 
     /* Remove from connection dependents list.  Has to be done before we
        decref self->connection otherwise connection could dealloc and
-      we'd still be in list */
+       we'd still be in list */
     Connection_remove_dependent(self->connection, (PyObject *)self);
 
     Py_CLEAR(self->connection);
@@ -851,6 +851,13 @@ APSWBlob_reopen(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   MakeExistingException(); /* a vfs error could cause this */
 
   SET_EXC(res, self->connection->db);
+  if(res != SQLITE_OK)
+  {
+    /* make error result in a closed state.  close method
+       return deliberately ignored since there is  */
+    sqlite3_blob_close(self->pBlob);
+    self->pBlob = NULL;
+  }
   sqlite3_mutex_leave(self->connection->dbmutex);
 
   if (PyErr_Occurred())
