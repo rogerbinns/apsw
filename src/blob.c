@@ -853,8 +853,11 @@ APSWBlob_reopen(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   SET_EXC(res, self->connection->db);
   if(res != SQLITE_OK)
   {
-    /* make error result in a closed state.  close method
-       return deliberately ignored since there is  */
+    /* make error result in a closed state since sqlite won't allow
+       it to be used again just returning the same error.
+
+       sqlite3_blob_close return deliberately ignored since there
+       is nothing we could do, nor any reason why it would fail */
     sqlite3_blob_close(self->pBlob);
     self->pBlob = NULL;
   }
