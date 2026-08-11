@@ -451,7 +451,7 @@ fail:
 }
 
 static void
-apsw_connection_remove(Connection *con)
+apsw_connection_remove(PyObject *con)
 {
   Py_ssize_t i;
   for (i = 0; the_connections && i < PyList_GET_SIZE(the_connections);)
@@ -463,7 +463,7 @@ apsw_connection_remove(Connection *con)
       apsw_write_unraisable(NULL);
       continue;
     }
-    if (!wo || wo == (PyObject *)con)
+    if (!wo || wo == con)
     {
       if (PyList_SetSlice(the_connections, i, i + 1, NULL))
         apsw_write_unraisable(NULL);
@@ -478,7 +478,7 @@ apsw_connection_remove(Connection *con)
 }
 
 static int
-apsw_connection_add(Connection *con)
+apsw_connection_add(PyObject *con)
 {
   if (!the_connections)
   {
@@ -486,7 +486,7 @@ apsw_connection_add(Connection *con)
     if (!the_connections)
       return -1;
   }
-  PyObject *weakref = PyWeakref_NewRef((PyObject *)con, NULL);
+  PyObject *weakref = PyWeakref_NewRef(con, NULL);
   if (!weakref)
     return -1;
   int res = PyList_Append(the_connections, weakref);
@@ -2033,19 +2033,60 @@ apsw_module_traverse(PyObject *self, visitproc visit, void *arg)
 }
 
 static int
-apsw_module_clear(PyObject *self)
+apsw_module_clear_internal(PyObject *self, int deep)
 {
-  Py_CLEAR(coro_for_value);
-  Py_CLEAR(coro_for_exception);
-  Py_CLEAR(coro_for_stopasynciteration);
 
-  Py_CLEAR(collections_abc_Mapping);
-  Py_CLEAR(Exc_io_UnsupportedOperation);
-
-  if(logger_cb)
+  if (logger_cb)
   {
     sqlite3_config(SQLITE_CONFIG_LOG, NULL);
     Py_CLEAR(logger_cb);
+  }
+
+  if (the_connections)
+  {
+    /* try to close any open connections - we take ownership of the
+       connection list so it can't mutate while iterating the contents */
+    PyObject *conns = the_connections;
+    the_connections = NULL;
+
+    for (Py_ssize_t i = 0; i < PyList_GET_SIZE(conns); i++)
+    {
+      PyObject *item;
+      if (PyWeakref_GetRef(PyList_GET_ITEM(the_connections, i), &item) < 0)
+        apsw_write_unraisable(NULL);
+      else if (item)
+      {
+        PyObject *result = PyObject_CallMethodNoArgs(item, apst.close);
+        if (!result)
+        {
+          if (deep)
+            apsw_write_unraisable(NULL);
+          else
+          {
+            /* add them back to the list so another later attempt can be made */
+            if (apsw_connection_add(item))
+              apsw_write_unraisable(NULL);
+          }
+        }
+        Py_DECREF(item);
+      }
+    }
+  }
+
+  if (deep)
+  {
+    Py_CLEAR(the_connections);
+    Py_CLEAR(coro_for_value);
+    Py_CLEAR(coro_for_exception);
+    Py_CLEAR(coro_for_stopasynciteration);
+
+    Py_CLEAR(collections_abc_Mapping);
+    Py_CLEAR(Exc_io_UnsupportedOperation);
+    PyMem_Free(pending_call_slots);
+    pending_call_slots = 0;
+    pending_call_slots_count = 0;
+
+    fini_apsw_strings();
   }
 
   if (Py_TYPE(self)->tp_base->tp_clear)
@@ -2053,10 +2094,16 @@ apsw_module_clear(PyObject *self)
   return 0;
 }
 
+static int
+apsw_module_clear(PyObject *self)
+{
+  return apsw_module_clear_internal(self, 0);
+}
+
 static void
 apsw_module_finalize(PyObject *self)
 {
-  apsw_module_clear(self);
+  apsw_module_clear_internal(self, 0);
   if (Py_TYPE(self)->tp_base->tp_finalize)
     Py_TYPE(self)->tp_base->tp_finalize(self);
 }
@@ -2064,16 +2111,9 @@ apsw_module_finalize(PyObject *self)
 static void
 apsw_module_dealloc(PyObject *self)
 {
+  fprintf(stderr, "module dealloc\n");
   PyObject_GC_UnTrack(self);
-  apsw_module_clear(self);
-
-  PyMem_Free(pending_call_slots);
-  pending_call_slots = 0;
-  pending_call_slots_count = 0;
-
-  Py_CLEAR(the_connections);
-
-  fini_apsw_strings();
+  apsw_module_clear_internal(self, 1);
 
   Py_TYPE(self)->tp_base->tp_dealloc(self);
 }
