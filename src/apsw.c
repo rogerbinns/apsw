@@ -2111,7 +2111,6 @@ apsw_module_finalize(PyObject *self)
 static void
 apsw_module_dealloc(PyObject *self)
 {
-  fprintf(stderr, "module dealloc\n");
   PyObject_GC_UnTrack(self);
   apsw_module_clear_internal(self, 1);
 
