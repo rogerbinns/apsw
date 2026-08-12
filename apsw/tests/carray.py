@@ -225,17 +225,22 @@ class CArray(unittest.TestCase):
 
     def testAlignment(self):
         "verified passed in data is aligned"
-        data=memoryview(b"0"*17)
-        for flag, align in ((apsw.SQLITE_CARRAY_INT32, 4), (apsw.SQLITE_CARRAY_INT64, 8), (apsw.SQLITE_CARRAY_DOUBLE, 8)):
+        # this will end up aligned in practise, but is not guaranteed
+        # in theory.
+        data = memoryview(b"0" * 17)
+        for flag in (
+            apsw.SQLITE_CARRAY_INT32,
+            apsw.SQLITE_CARRAY_INT64,
+            apsw.SQLITE_CARRAY_DOUBLE,
+        ):
+            # truncating by one byte is fine when only accessing one
+            # member at the beginning
             apsw.carray(data[:-1], stop=2, flags=flag)
-            # I verified by printf in the C code that this is one byte
-            # into the original data, and not a duplicate of the
-            # subset.  The exception includes the actual address seen
-            # but it is formatted differently on different platforms C
-            # library
-            regex = f".*is at.*which is not {align} aligned as required for {apsw.mapping_carray[flag]}, misaligned at 1"
+            regex = f".*is at.*which is not \\d+ aligned as required for {apsw.mapping_carray[flag]}, misaligned at \\d+"
             with self.assertRaisesRegex(ValueError, regex):
+                # this will be off alignment by one byte
                 apsw.carray(data[1:], stop=2, flags=flag)
+
 
 has_carray = hasattr(apsw, "carray")
 
