@@ -2180,27 +2180,6 @@ PyInit_apsw(void)
     }
   }
 
-  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0
-      || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0
-      || PyType_Ready(&apswfcntl_pragma_Type) < 0 || PyType_Ready(&APSWURIFilenameType) < 0
-      || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0
-      || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_type) < 0
-      || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0
-      || PyType_Ready(&PyObjectBindType) < 0 || PyType_Ready(&BoxedCallType) < 0
-#ifdef SQLITE_ENABLE_CARRAY
-      || PyType_Ready(&CArrayBindType) < 0
-#endif
-#ifdef SQLITE_ENABLE_SESSION
-      || PyType_Ready(&APSWSessionType) < 0 || PyType_Ready(&APSWTableChangeType) < 0
-      || PyType_Ready(&APSWChangesetType) < 0 || PyType_Ready(&APSWChangesetBuilderType) < 0
-      || PyType_Ready(&APSWChangesetIteratorType) < 0 || PyType_Ready(&APSWRebaserType) < 0
-#endif
-#ifdef SQLITE_ENABLE_PREUPDATE_HOOK
-      || PyType_Ready(&PreUpdateType) < 0
-#endif
-  )
-    goto fail;
-
   /* PyStructSequence_NewType is broken in some Pythons
       https://github.com/python/cpython/issues/72895
     You also can't call InitType2 more than once otherwise
@@ -2227,8 +2206,16 @@ PyInit_apsw(void)
   if (init_apsw_strings())
     goto fail;
 
-  if (PyModule_AddType(m, &ConnectionType) || PyModule_AddType(m, &ConnectionType)
-      || PyModule_AddType(m, &APSWCursorType) || PyModule_AddType(m, &APSWBlobType)
+  /* these types aren't exposed to the module */
+  if (PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&apsw_no_change_type) < 0 || PyType_Ready(&BoxedCallType)
+#ifdef SQLITE_ENABLE_SESSION
+      || PyType_Ready(&APSWChangesetIteratorType) < 0
+#endif
+  )
+    goto fail;
+
+  /* these are and automatically readied */
+  if (PyModule_AddType(m, &ConnectionType) || PyModule_AddType(m, &APSWCursorType) || PyModule_AddType(m, &APSWBlobType)
       || PyModule_AddType(m, &APSWBackupType) || PyModule_AddType(m, &ZeroBlobBindType)
       || PyModule_AddType(m, &APSWVFSType) || PyModule_AddType(m, &APSWVFSFileType)
       || PyModule_AddType(m, &apswfcntl_pragma_Type) || PyModule_AddType(m, &APSWURIFilenameType)
