@@ -836,7 +836,7 @@ class Tester:
 
             if fname in self.returns["pointer"]:
                 self.expect_exception.append(MemoryError)
-                if fname.startswith("PyMem"):
+                if fname.startswith("PyMem_"):
                     # these do not set the no memory exception
                     return 0
                 return 0, MemoryError, self.FAULTS
