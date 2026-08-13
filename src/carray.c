@@ -347,7 +347,9 @@ CArrayBind_dealloc(PyObject *self_)
 static void
 CArrayBind_bind_destructor(void *pCtx)
 {
+  PyGILState_STATE gilstate = PyGILState_Ensure();
   Py_DECREF((PyObject *)pCtx);
+  PyGILState_Release(gilstate);
 }
 
 static PyTypeObject CArrayBindType = {
