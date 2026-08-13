@@ -140,7 +140,10 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
           self->aData = PyMem_Malloc(sizeof(const char *) * nitems);
           self->free_aData = 1;
           if (!self->aData)
+          {
+            PyErr_NoMemory();
             goto error;
+          }
         }
 
         const char **array = self->aData;
@@ -163,14 +166,20 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
         self->aData = PyMem_Malloc(sizeof(struct iovec) * nitems);
         self->free_aData = 1;
         if (!self->aData)
+        {
+          PyErr_NoMemory();
           goto error;
+        }
       }
 
       if (!self->views)
       {
         self->views = PyMem_Calloc(sizeof(Py_buffer), nitems);
         if (!self->views)
+        {
+          PyErr_NoMemory();
           goto error;
+        }
       }
 
       if (PyObject_GetBuffer(item, &self->views[i], PyBUF_SIMPLE))

@@ -903,7 +903,10 @@ apswvtabCreateOrConnect(sqlite3 *db, void *pAux, int argc, const char *const *ar
   assert(res == SQLITE_OK);
   avi = PyMem_Calloc(1, sizeof(apsw_vtable));
   if (!avi)
+  {
+    PyErr_NoMemory();
     goto pyexception;
+  }
   assert((void *)avi == (void *)&(avi->used_by_sqlite)); /* detect if weird padding happens */
   avi->bestindex_object = vti->bestindex_object;
   avi->use_no_change = vti->use_no_change;
@@ -1774,7 +1777,10 @@ apswvtabOpen(sqlite3_vtab *pVtab, sqlite3_vtab_cursor **ppCursor)
     goto pyexception;
   avc = PyMem_Calloc(1, sizeof(apsw_vtable_cursor));
   if (!avc)
+  {
+    PyErr_NoMemory();
     goto pyexception;
+  }
   assert((void *)avc == (void *)&(avc->used_by_sqlite)); /* detect if weird padding happens */
   avc->cursor = res;
   avc->use_no_change = ((apsw_vtable *)pVtab)->use_no_change;
@@ -2787,7 +2793,10 @@ apswvtabSetupModuleDef(PyObject *datasource, int iVersion, int eponymous, int ep
 
   mod = PyMem_Calloc(1, sizeof(*mod));
   if (!mod)
+  {
+    PyErr_NoMemory();
     return NULL;
+  }
 
   mod->iVersion = iVersion;
   if (eponymous_only)

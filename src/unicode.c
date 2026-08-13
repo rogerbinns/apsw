@@ -2357,6 +2357,7 @@ OffsetMapper_add(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   PyMem_Resize(self->offset_map, struct MapperEntry, self->num_offsets + 2);
   if (!self->offset_map)
   {
+    PyErr_NoMemory();
     self->offset_map = oldmap;
     return NULL;
   }
@@ -2485,6 +2486,7 @@ OffsetMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   self->last_is_separator = 0;
   if (!self->accumulate || !self->offset_map)
   {
+    PyErr_NoMemory();
     OffsetMapper_finalize(self_);
     return -1;
   }

@@ -155,6 +155,7 @@ apsw_AddPendingCall(int (*func)(void *), void *arg)
         = PyMem_Resize(pending_call_slots, pending_call_entry, pending_call_slots_count + 1);
     if (!pending_call_slots_new)
     {
+      PyErr_NoMemory();
       res = -1;
       goto exit;
     }
@@ -441,6 +442,8 @@ apsw_strdup(const char *source)
     memcpy(res, source, len);
     res[len] = res[len + 1] = res[len + 2] = 0;
   }
+  else
+    PyErr_NoMemory();
   return res;
 }
 

@@ -248,7 +248,7 @@ generic_hooks_update(struct generichook_entry **hooks, unsigned *hooks_count, Py
   struct generichook_entry *new_hooks = PyMem_Realloc(*hooks, sizeof(struct generichook_entry) * (*hooks_count + 1));
   if (!new_hooks)
   {
-    assert(PyErr_Occurred());
+    PyErr_NoMemory();
     return;
   }
 
@@ -643,7 +643,10 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   self->cursor_factory = Py_NewRef((PyObject *)&APSWCursorType);
   self->tracehooks = PyMem_Malloc(sizeof(struct tracehook_entry) * 1);
   if (!self->tracehooks)
+  {
+    PyErr_NoMemory();
     return -1;
+  }
   self->tracehooks[0].callback = 0;
   self->tracehooks[0].id = 0;
   self->tracehooks[0].mask = 0;
@@ -4446,7 +4449,10 @@ Connection_create_module(PyObject *self_, PyObject *const *fast_args, Py_ssize_t
     Py_INCREF(datasource);
     vti = PyMem_Calloc(1, sizeof(vtableinfo));
     if (!vti)
+    {
+      PyErr_NoMemory();
       goto finally;
+    }
     vti->sqlite3_module_def = apswvtabSetupModuleDef(datasource, iVersion, eponymous, eponymous_only, read_only);
     if (!vti->sqlite3_module_def)
     {
@@ -5669,7 +5675,10 @@ Connection_drop_modules(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
       goto finally;
     array = PyMem_Calloc(nitems + 1, sizeof(char *));
     if (!array)
+    {
+      PyErr_NoMemory();
       goto finally;
+    }
     for (i = 0; i < nitems; i++)
     {
       const char *sc;
@@ -5687,7 +5696,10 @@ Connection_drop_modules(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
       slen = strlen(sc);
       stringstmp = PyMem_Realloc(strings, strings_size + slen + 1);
       if (!stringstmp)
+      {
+        PyErr_NoMemory();
         goto finally;
+      }
       strings = stringstmp;
       strncpy(strings + strings_size, sc, slen + 1);
       strings_size += slen + 1;
@@ -6593,7 +6605,10 @@ Connection_register_fts5_tokenizer(PyObject *self_, PyObject *const *fast_args, 
 
   TokenizerFactoryData *tfd = PyMem_Calloc(1, sizeof(TokenizerFactoryData));
   if (!tfd)
+  {
+    PyErr_NoMemory();
     goto finally;
+  }
   tfd->factory_func = Py_NewRef(tokenizer_factory);
   tfd->connection = Py_NewRef((PyObject *)self);
 
@@ -6695,7 +6710,10 @@ Connection_register_fts5_function(PyObject *self_, PyObject *const *fast_args, P
   {
     struct fts5aux_cbinfo *cbinfo = PyMem_Calloc(1, sizeof(struct fts5aux_cbinfo));
     if (!cbinfo)
+    {
+      PyErr_NoMemory();
       goto finally;
+    }
     cbinfo->callback = Py_NewRef(function);
     cbinfo->name = apsw_strdup(name);
 

@@ -563,7 +563,7 @@ apswvfspy_xFullPathname(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
   char *resbuf = NULL;
   const char *name;
   PyObject *result = NULL;
-  int res = SQLITE_NOMEM;
+  int res;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xFullPathname, 1);
@@ -577,17 +577,19 @@ apswvfspy_xFullPathname(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
 
   resbuf = PyMem_Calloc(1, self->basevfs->mxPathname + 1);
   if (resbuf)
-  {
     res = self->basevfs->xFullPathname(self->basevfs, name, self->basevfs->mxPathname + 1, resbuf);
-    if (PyErr_Occurred())
-      res = MakeSqliteMsgFromPyException(NULL);
-  }
+  else
+    PyErr_NoMemory();
+
+  if (PyErr_Occurred())
+    res = MakeSqliteMsgFromPyException(NULL);
 
   if (res == SQLITE_OK)
+  {
     result = convertutf8string(resbuf);
-
-  if (!result)
-    res = SQLITE_CANTOPEN;
+    if (!result)
+      res = SQLITE_NOMEM;
+  }
 
   if (res != SQLITE_OK)
   {
@@ -762,7 +764,10 @@ apswvfspy_xOpen(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
 
   file = PyMem_Calloc(1, self->basevfs->szOsFile);
   if (!file)
+  {
+    PyErr_NoMemory();
     goto finally;
+  }
 
   res = self->basevfs->xOpen(self->basevfs, filename, file, flagsin, &flagsout);
 
@@ -1843,7 +1848,10 @@ APSWVFS_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
   self->containingvfs = (sqlite3_vfs *)PyMem_Calloc(1, sizeof(sqlite3_vfs));
   if (!self->containingvfs)
+  {
+    PyErr_NoMemory();
     return -1;
+  }
   self->containingvfs->iVersion = iVersion;
   self->containingvfs->szOsFile = sizeof(APSWSQLite3File);
   if (self->basevfs && !maxpathname)
@@ -2104,7 +2112,10 @@ APSWVFSFile_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   }
   file = PyMem_Calloc(1, vfstouse->szOsFile);
   if (!file)
+  {
+    PyErr_NoMemory();
     goto finally;
+  }
 
   if (0 != Py_EnterRecursiveCall(" instantiating APSWVFSFile"))
     goto finally;

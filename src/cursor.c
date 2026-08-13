@@ -1867,7 +1867,10 @@ APSWCursor_aiter(PyObject *self_)
   {
     PyObject **new_slots = PyMem_Resize(self->aiter_slots, PyObject *, slots_desired);
     if (!new_slots)
+    {
+      PyErr_NoMemory();
       return NULL;
+    }
     self->aiter_slots = new_slots;
     self->aiter_slots_allocated = slots_desired;
   }

@@ -299,7 +299,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     {
       sqlite3_finalize(vdbestatement);
       res = SQLITE_NOMEM;
-      SET_EXC(res, sc->db);
+      PyErr_NoMemory();
       return res;
     }
   }
