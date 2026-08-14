@@ -651,7 +651,8 @@ apsw_config(PyObject *Py_UNUSED(self), PyObject *args)
   case SQLITE_CONFIG_COVERING_INDEX_SCAN:
   case SQLITE_CONFIG_STMTJRNL_SPILL:
   case SQLITE_CONFIG_SORTERREF_SIZE:
-  case SQLITE_CONFIG_SMALL_MALLOC: {
+  case SQLITE_CONFIG_SMALL_MALLOC:
+  case SQLITE_CONFIG_ROWID_IN_VIEW: {
     int intval;
     if (!PyArg_ParseTuple(args, "ii", &optdup, &intval))
       return NULL;
