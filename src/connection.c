@@ -945,7 +945,10 @@ Connection_blob_open(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
   if (!weakref)
     goto error;
   if (0 == PyList_Append(self->dependents, weakref))
+  {
+    Py_DECREF(weakref);
     return (PyObject *)apswblob;
+  }
 error:
   if (blob)
     sqlite3_blob_close(blob);
@@ -1087,13 +1090,11 @@ Connection_cursor(PyObject *self_, PyObject *Py_UNUSED(unused))
   weakref = PyWeakref_NewRef(cursor, NULL);
   if (!weakref)
   {
-    assert(PyErr_Occurred());
-    AddTraceBackHere(__FILE__, __LINE__, "Connection.cursor", "{s: O}", "cursor", OBJ(cursor));
     Py_DECREF(cursor);
     return NULL;
   }
   if (PyList_Append(self->dependents, weakref))
-    cursor = NULL;
+    Py_CLEAR(cursor);
   Py_DECREF(weakref);
 
   return cursor;
