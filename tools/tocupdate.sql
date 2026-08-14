@@ -101,3 +101,7 @@ insert into toc values
 update toc set status = 0 where name like 'sqlite3rebaser_%';
 
 delete from toc where name='SQLITE_TRACE' and title='SQL Trace Event Codes';
+
+-- Not useful value and overlaps with the largest value.  There is no
+-- need for it and no references to it even in SQLite test code
+delete from toc where name='SQLITE_DBCONFIG_MAX';

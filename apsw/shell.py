@@ -1214,7 +1214,6 @@ Enter ".help" for instructions
     _dbconfig_ignore = {
         "SQLITE_DBCONFIG_MAINDBNAME",
         "SQLITE_DBCONFIG_LOOKASIDE",
-        "SQLITE_DBCONFIG_MAX",
         "SQLITE_DBCONFIG_STMT_SCANSTATUS",
     }
 
