@@ -7569,13 +7569,13 @@ PreUpdate_update(PyObject *self_, void *Py_UNUSED(unused))
             SET_EXC(SQLITE_NOMEM, self->db->db);
             goto error;
           }
-          if (eq)
+          if (eq && sqlite3_value_bytes(value_new))
             eq = !memcmp(text_old, text_new, sqlite3_value_bytes(value_new));
           break;
         case SQLITE_BLOB:
           /* compare length first */
           eq = (sqlite3_value_bytes(value_old) == sqlite3_value_bytes(value_new));
-          if (eq)
+          if (eq && sqlite3_value_bytes(value_new))
             /* no failure mode getting blob value */
             eq = !memcmp(sqlite3_value_blob(value_old), sqlite3_value_blob(value_new), sqlite3_value_bytes(value_new));
           break;
