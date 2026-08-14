@@ -140,6 +140,9 @@ MakeExistingException(void)
 
 #ifdef APSW_FAULT_INJECT
 
+#define APSW_FAULT_CLEAR
+#include "faultinject.h"
+#undef APSW_FAULT_CLEAR
 #include "faultinject.h"
 
 /* Fault injection */
