@@ -2825,7 +2825,10 @@ Connection_serialize(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
   history for prior attempt */
 
   DBMUTEX_ENSURE(self);
-  serialization = sqlite3_serialize(self->db, name, &size, 0);
+  Py_BEGIN_ALLOW_THREADS
+    serialization = sqlite3_serialize(self->db, name, &size, 0);
+  Py_END_ALLOW_THREADS;
+  MakeExistingException();
   sqlite3_mutex_leave(self->dbmutex);
 
   /* pyerror could have been raised in a vfs */
