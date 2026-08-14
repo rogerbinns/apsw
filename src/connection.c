@@ -7356,7 +7356,7 @@ PreUpdate_rowid(PyObject *self_, void *Py_UNUSED(unused))
   APSWPreUpdate *self = (APSWPreUpdate *)self_;
   CHECK_PREUPDATE_SCOPE;
 
-  return PyLong_FromLong(self->iKey1);
+  return PyLong_FromLongLong(self->iKey1);
 }
 
 /** .. attribute:: rowid_new
@@ -7370,7 +7370,7 @@ PreUpdate_rowid_new(PyObject *self_, void *Py_UNUSED(unused))
   APSWPreUpdate *self = (APSWPreUpdate *)self_;
   CHECK_PREUPDATE_SCOPE;
 
-  return PyLong_FromLong(self->iKey2);
+  return PyLong_FromLongLong(self->iKey2);
 }
 
 /** .. attribute:: depth
