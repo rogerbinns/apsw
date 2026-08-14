@@ -2233,7 +2233,7 @@ finally:
 
 /** .. method:: set_progress_handler(callable: Callable[[], bool] | None, nsteps: int = 100, *, id: Any = None) -> None
 
-  Sets a callable which is invoked every *nsteps* SQLite inststructions.
+  Sets a callable which is invoked every *nsteps* SQLite instructions.
   The callable should return True to abort or False to continue. (If
   there is an error in your Python *callable* then True/abort will be
   returned).  SQLite raises :exc:`InterruptError` for aborts.
@@ -2241,6 +2241,8 @@ finally:
   Use :class:`None` to cancel the progress handler.  Multiple handlers
   can be present at once (implemented by APSW). Registered callbacks are
   distinguished by their ``id`` - an equality test is done to match ids.
+  When multiple handlers are registered, the callbacks can be more
+  frequent than the steps used for each one.
 
   You can use :class:`apsw.ext.Trace` to see how many steps are used for
   a representative statement, or :class:`apsw.ext.ShowResourceUsage` to
