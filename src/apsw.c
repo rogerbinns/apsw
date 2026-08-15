@@ -2056,7 +2056,7 @@ apsw_module_clear_internal(PyObject *self, int deep)
     for (Py_ssize_t i = 0; i < PyList_GET_SIZE(conns); i++)
     {
       PyObject *item;
-      if (PyWeakref_GetRef(PyList_GET_ITEM(the_connections, i), &item) < 0)
+      if (PyWeakref_GetRef(PyList_GET_ITEM(conns, i), &item) < 0)
         apsw_write_unraisable(NULL);
       else if (item)
       {
