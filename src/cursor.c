@@ -630,7 +630,7 @@ cursor_mutex_get(APSWCursor *self)
     Py_BEGIN_ALLOW_THREADS
     {
       waited += sqlite3_sleep(delays[attempt]);
-      res = sqlite3_mutex_try(self->connection->dbmutex);
+      res = (self->connection) ? sqlite3_mutex_try(self->connection->dbmutex) : SQLITE_ERROR;
     }
     Py_END_ALLOW_THREADS;
 
