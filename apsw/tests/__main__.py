@@ -409,6 +409,8 @@ class APSW(unittest.TestCase):
     def tearDown(self):
         apsw.config(apsw.SQLITE_CONFIG_LOG, None)
         for c in apsw.connections():
+            # tracers firing cause false mutex checks
+            c.trace_v2(0)
             self.check_db_mutex(c)
             c.close(True)
         del self.db
