@@ -902,6 +902,172 @@ class APSW(unittest.TestCase):
             del c2
             db.close()
 
+    def get_cursor_entrants(self, cursor, res):
+        for n in dir(cursor):
+            if n.startswith("_") and n.strip("_") not in {"next"}:
+                continue
+            # old names skipped
+            if n in {
+                "getconnection",
+                "getdescription",
+                "getexectrace",
+                "getrowtrace",
+                "rowtrace",
+                "exectrace",
+                "setexectrace",
+                "setrowtrace",
+            }:
+                continue
+            try:
+                match n:
+                    # no arg methods
+                    case (
+                        "aclose"
+                        | "close"
+                        | "__next__"
+                        | "fetchone"
+                        | "get_connection"
+                        | "get_description"
+                        | "get_row_trace"
+                        | "get_exec_trace"
+                        | "fetchall"
+                    ):
+                        getattr(cursor, n)()
+                    # read attributes
+                    case (
+                        "bindings_count"
+                        | "bindings_names"
+                        | "connection"
+                        | "convert_binding"
+                        | "convert_jsonb"
+                        | "description"
+                        | "description_full"
+                        | "exec_trace"
+                        | "expanded_sql"
+                        | "get"
+                        | "has_vdbe"
+                        | "is_explain"
+                        | "is_readonly"
+                        | "row_trace"
+                        | "sql"
+                    ):
+                        getattr(cursor, n)
+                    case "execute":
+                        cursor.execute("select 1,2,3")
+                    case "executemany":
+                        cursor.executemany("select ?", ((1,), (2,)))
+                    case "setexectrace" | "set_exec_trace" | "setrowtrace" | "set_row_trace":
+                        # set it to get results which should have no effect
+                        getattr(cursor, n)(getattr(cursor, "g" + n[1:])())
+                    case _:
+                        self.fail(f"{n} not handled")
+                res[n] = True
+            except Exception as exc:
+                res[n] = exc
+
+    def testCursorReentrant(self):
+        "Calling back into cursor while cursor is executing"
+
+        cursor = self.db.cursor()
+
+        # the first time through we get correct values for
+        # description, but after that we get the cached ones which differ
+        desc_first = {}
+
+        def check():
+            this = {}
+            thread = {}
+            t = threading.Thread(target=self.get_cursor_entrants, args=(cursor, thread))
+            t.start()
+            t.join()
+            # other thread must be done first otherwise this thread caches values
+            self.get_cursor_entrants(cursor, this)
+            self.assertEqual(set(this.keys()), set(thread.keys()))
+            for k in this:
+                if "description" in k:
+                    if k not in desc_first:
+                        desc_first[k] = (this[k], thread[k])
+                    else:
+                        this[k], thread[k] = desc_first[k]
+                match k:
+                    case (
+                        "bindings_count"
+                        | "connection"
+                        | "convert_binding"
+                        | "convert_jsonb"
+                        | "exec_trace"
+                        | "get_connection"
+                        | "get_exec_trace"
+                        | "get_row_trace"
+                        | "has_vdbe"
+                        | "is_explain"
+                        | "is_readonly"
+                        | "row_trace"
+                        | "set_exec_trace"
+                        | "set_row_trace"
+                    ):
+                        # full access ok
+                        self.assertIs(this[k], True)
+                        self.assertIs(thread[k], True)
+                    case (
+                        "bindings_names"
+                        | "description"
+                        | "description_full"
+                        | "expanded_sql"
+                        | "get_description"
+                        | "sql"
+                    ):
+                        # ok in this thread, other thread requires a mutex which must be held
+                        self.assertIs(this[k], True)
+                        self.assertIsInstance(thread[k], apsw.ThreadingViolationError)
+                    case "aclose":
+                        # async in sync context
+                        self.assertIsInstance(this[k], TypeError)
+                        self.assertIsInstance(thread[k], TypeError)
+                    case "__next__" | "close" | "execute" | "executemany" | "fetchall" | "fetchone" | "get":
+                        # re-entrant use not allowed
+                        self.assertIsInstance(this[k], apsw.ThreadingViolationError)
+                        self.assertIsInstance(thread[k], apsw.ThreadingViolationError)
+                    case _:
+                        self.fail(f"\nunhandled {k=} {this[k]=} {thread[k]=}")
+
+        def conv_binding(c, n, val):
+            self.assertIs(c, cursor)
+            check()
+            return f"converted {val!r}"
+
+        def conv_jsonb(c, n, b):
+            self.assertIs(c, cursor)
+            check()
+            return f"jsonb converted {b!r}"
+
+        def exec_trace(c, *args):
+            self.assertIs(c, cursor)
+            check()
+            return True
+
+        def row_trace(c, row):
+            self.assertIs(c, cursor)
+            check()
+            return row
+
+        def foo(*args):
+            check()
+            return 3
+
+        def tracer(*args):
+            check()
+
+        cursor.convert_binding = conv_binding
+        cursor.convert_jsonb = conv_jsonb
+        cursor.exec_trace = exec_trace
+        cursor.row_trace = row_trace
+        self.db.create_scalar_function("foo", foo)
+        self.db.trace_v2(apsw.SQLITE_TRACE_PROFILE | apsw.SQLITE_TRACE_ROW | apsw.SQLITE_TRACE_STMT, tracer)
+
+        for row in cursor.execute("SELECT foo(?), ?", (3 + 4j, b"\xec\x00\x00\x00\x0cZhelloZworld")):
+            pass
+
     def testBindings(self):
         "Check bindings work correctly"
         c = self.db.cursor()
