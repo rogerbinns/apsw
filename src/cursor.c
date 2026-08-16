@@ -1756,6 +1756,7 @@ again:
         return NULL;
       PyObject *exc_one = NULL, *exc_two = NULL, *exc_three = NULL;
       PyErr_Fetch(&exc_one, &exc_two, &exc_three);
+      PyErr_NormalizeException(&exc_one, &exc_two, &exc_three);
       PyTuple_SET_ITEM(next_value, 0, exc_one);
       PyTuple_SET_ITEM(next_value, 1, exc_two);
       PyTuple_SET_ITEM(next_value, 2, exc_three);
