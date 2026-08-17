@@ -888,6 +888,10 @@ class Tester:
                 self.expect_exception.append(MemoryError)
                 return (-1, MemoryError, self.FAULTS)
 
+            if fname == "APSWCursor_is_dict_binding":
+                self.expect_exception.append(MemoryError)
+                return (0, MemoryError, self.FAULTS)
+
             # pointers with 0 being failure
             if fname in {
                 "sqlite3_backup_init",

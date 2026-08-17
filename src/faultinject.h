@@ -16,6 +16,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #ifdef APSW_FAULT_CLEAR
 
 #undef APSWCursor_internal_get_description
+#undef APSWCursor_is_dict_binding
 #undef Connection_fts5_api
 #undef MakeExistingException
 #undef MakeTableChange
@@ -292,6 +293,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_APSWCursor_internal_get_description = (typeof (_res_APSWCursor_internal_get_description))18;                                                                                                     \
     }                                                                                                                                                                                                         \
     _res_APSWCursor_internal_get_description;                                                                                                                                                                 \
+})
+#define APSWCursor_is_dict_binding(...) \
+({                                                                                                                                                                                 \
+    __auto_type _res_APSWCursor_is_dict_binding = 0 ? APSWCursor_is_dict_binding(__VA_ARGS__) : 0;                                                                                 \
+                                                                                                                                                                                   \
+    _res_APSWCursor_is_dict_binding = (typeof (_res_APSWCursor_is_dict_binding))APSW_FaultInjectControl("APSWCursor_is_dict_binding", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                                   \
+    if ((typeof (_res_APSWCursor_is_dict_binding))0x1FACADE == _res_APSWCursor_is_dict_binding)                                                                                    \
+       _res_APSWCursor_is_dict_binding = APSWCursor_is_dict_binding(__VA_ARGS__);                                                                                                  \
+    else if ((typeof(_res_APSWCursor_is_dict_binding))0x2FACADE == _res_APSWCursor_is_dict_binding)                                                                                \
+    {                                                                                                                                                                              \
+        APSWCursor_is_dict_binding(__VA_ARGS__);                                                                                                                                   \
+        _res_APSWCursor_is_dict_binding = (typeof (_res_APSWCursor_is_dict_binding))18;                                                                                            \
+    }                                                                                                                                                                              \
+    _res_APSWCursor_is_dict_binding;                                                                                                                                               \
 })
 #define Connection_fts5_api(...) \
 ({                                                                                                                                                            \

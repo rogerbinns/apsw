@@ -690,9 +690,11 @@ cursor_mutex_get(APSWCursor *self)
   return -1;
 }
 
+#undef APSWCursor_is_dict_binding
 static int
 APSWCursor_is_dict_binding(PyObject *obj)
 {
+#include "faultinject.h"
   /* See https://github.com/rogerbinns/apsw/issues/373 for why this function exists */
   assert(obj);
 
@@ -984,6 +986,10 @@ APSWCursor_do_exec_trace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
     {
       bindings = Py_NewRef(self->bindings);
     }
+    else if(PyErr_Occurred())
+    {
+      goto error_out;
+    }
     else if (Py_Is(self->bindings, apsw_cursor_null_bindings))
     {
       bindings = Py_NewRef(Py_None);
@@ -993,10 +999,7 @@ APSWCursor_do_exec_trace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
       bindings = PySequence_GetSlice(self->bindings, savedbindingsoffset, self->bindingsoffset);
 
       if (!bindings)
-      {
-        Py_DECREF(sqlcmd);
         goto error_out;
-      }
     }
   }
   else
@@ -1006,7 +1009,7 @@ APSWCursor_do_exec_trace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
 
   PyObject *vargs[] = { NULL, (PyObject *)self, sqlcmd, bindings };
   retval = PyObject_Vectorcall(exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-  Py_DECREF(sqlcmd);
+  Py_CLEAR(sqlcmd);
   Py_DECREF(bindings);
 
   if (!retval)
@@ -1035,6 +1038,7 @@ error_out:
   AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_do_exec_trace", "{s: O, s: O}", "exec_trace", OBJ(exectrace),
                    "returned", OBJ(retval));
   Py_XDECREF(retval);
+  Py_XDECREF(sqlcmd);
   return -1;
 }
 
@@ -1175,6 +1179,11 @@ APSWCursor_step(APSWCursor *self)
       /* verify type of next before putting in bindings */
       if (APSWCursor_is_dict_binding(next))
         self->bindings = next;
+      else if(PyErr_Occurred())
+      {
+        Py_DECREF(next);
+        return -1;
+      }
       else
       {
         self->bindings = PySequence_Fast(next, "You must supply a dict or a sequence for bindings");
@@ -1322,7 +1331,10 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   {
     int is_dict = APSWCursor_is_dict_binding(self->bindings);
     if (PyErr_Occurred())
+    {
+      Py_INCREF(self->bindings);
       goto error_out;
+    }
     if (is_dict || Py_Is(self->bindings, apsw_cursor_null_bindings))
       Py_INCREF(self->bindings);
     else
@@ -1454,6 +1466,11 @@ APSWCursor_executemany(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
 
   if (APSWCursor_is_dict_binding(next))
     self->bindings = next;
+  else if(PyErr_Occurred())
+  {
+    Py_DECREF(next);
+    goto error_out;
+  }
   else
   {
     self->bindings = PySequence_Fast(next, "You must supply a dict or a sequence for executemany");

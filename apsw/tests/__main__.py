@@ -5878,6 +5878,49 @@ class APSW(unittest.TestCase):
                 cur.execute("select 3")
             except apsw.IncompleteExecutionError as exc:
                 self.assertIsInstance(exc.__context__, ZeroDivisionError)
+        with self.subTest(which="C042"):
+            class errcheck:
+                def __init__(self, faultnum):
+                    self.count = 0
+                    self.faultnum = faultnum
+
+                @property
+                def __class__(self):
+                    self.count += 1
+                    if self.count < self.faultnum:
+                        return dict
+                    1/0
+
+                def __getitem__(self, key):
+                    return "three"
+
+
+            def et(*args):
+                return True
+
+            c=self.db.cursor()
+            c.exec_trace=et
+            for i in range(1, 5):
+                try:
+                    c.execute("select :foo", errcheck(i)).get
+                    break
+                except ZeroDivisionError:
+                    pass
+
+            for i in range(1, 5):
+                try:
+                    c.executemany("select :foo", [errcheck(i)]).get
+                    break
+                except ZeroDivisionError:
+                    pass
+
+            for i in range(1, 5):
+                try:
+                    c.executemany("select :foo", [{"foo": 3}, errcheck(i)]).get
+                    break
+                except ZeroDivisionError:
+                    pass
+
 
     def testCursorGet(self):
         "Cursor.get"
