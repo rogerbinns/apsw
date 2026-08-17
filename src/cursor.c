@@ -209,6 +209,13 @@ resetcursor(APSWCursor *self, int force)
       res = SQLITE_ERROR;
       assert(PyErr_Occurred());
     }
+    else if(PyErr_Occurred())
+    {
+      CHAIN_EXC_BEGIN
+        PyErr_Format(ExcIncomplete, "Error: The values for executemany were not fully consumed and the next item raised this exception");
+      CHAIN_EXC_END;
+      res = SQLITE_ERROR;
+    }
   }
 
   Py_CLEAR(self->emiter);

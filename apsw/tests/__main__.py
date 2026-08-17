@@ -5862,6 +5862,20 @@ class APSW(unittest.TestCase):
             self.db.execute("select * from t order by one").get, [(1, 3, 1, 5), (2, 4, 2, 6), (3, 5, 4, 8)]
         )
 
+    def testIssue624(self):
+        with self.subTest(which="C040"):
+
+            def bad_gen():
+                yield (1,)
+                1 / 0
+
+            cur = self.db.cursor()
+            cur.executemany("select ?", bad_gen())
+            try:
+                cur.execute("select 3")
+            except apsw.IncompleteExecutionError as exc:
+                self.assertIsInstance(exc.__context__, ZeroDivisionError)
+
     def testCursorGet(self):
         "Cursor.get"
         for query, expected in (
