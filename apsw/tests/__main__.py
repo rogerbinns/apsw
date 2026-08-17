@@ -5863,6 +5863,9 @@ class APSW(unittest.TestCase):
         )
 
     def testIssue624(self):
+        with self.subTest(which="C037"):
+            self.assertEqual(apsw.SQLITE_DBCONFIG_FP_DIGITS, apsw.mapping_db_config["SQLITE_DBCONFIG_FP_DIGITS"])
+            self.assertEqual("SQLITE_DBCONFIG_FP_DIGITS", apsw.mapping_db_config[apsw.SQLITE_DBCONFIG_FP_DIGITS])
         with self.subTest(which="C040"):
 
             def bad_gen():
