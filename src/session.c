@@ -2904,7 +2904,7 @@ static PyTypeObject APSWSessionType = {
   .tp_dealloc = APSWSession_dealloc,
   .tp_methods = APSWSession_methods,
   .tp_getset = APSWSession_getset,
-  .tp_flags = Py_TPFLAGS_BASETYPE | Py_TPFLAGS_DEFAULT,
+  .tp_flags = Py_TPFLAGS_BASETYPE | Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
   .tp_as_number = &APSWSession_as_number,
   .tp_weaklistoffset = offsetof(APSWSession, weakreflist),
   .tp_traverse = APSWSession_tp_traverse,
@@ -2971,6 +2971,7 @@ static PyTypeObject APSWChangesetBuilderType = {
   .tp_weaklistoffset = offsetof(APSWChangesetBuilder, weakreflist),
   .tp_as_number = &APSWChangesetBuilder_as_number,
   .tp_traverse = APSWChangesetBuilder_tp_traverse,
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
 };
 
 static PyGetSetDef APSWTableChange_getset[] = {
