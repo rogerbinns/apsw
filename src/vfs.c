@@ -563,7 +563,7 @@ apswvfspy_xFullPathname(PyObject *self_, PyObject *const *fast_args, Py_ssize_t 
   char *resbuf = NULL;
   const char *name;
   PyObject *result = NULL;
-  int res;
+  int res = SQLITE_ERROR;
 
   CHECKVFSPY;
   VFSNOTIMPLEMENTED(xFullPathname, 1);
