@@ -9,13 +9,12 @@ PYTHON=${PYTHON:-python3} # use whatever is in the path
 if [ $# = 0 ]
 then
   args="-m apsw.tests -vf"
-  [ -z "NO_FI" ] && $PYTHON -m pip install coverage trio anyio
+  [ ! -z "NO_FI" ] && $PYTHON -m pip install coverage trio anyio
 else
   args="$@"
 fi
 
 # Measure code coverage
-GCOVOPTS="-b -H"
 GCOVOPTS=""
 rm -f *.gcda *.gcov *.gcno sqlite3/*.gcov apsw/*.so src/*.gcov
 INCLUDEDIR=`$PYTHON -c "import sysconfig; print(sysconfig.get_path('include'))"`
@@ -38,7 +37,11 @@ fi
 
 case "$CC" in
   *clang*)
-    GCOVWRAPPER="llvm-cov"
+    GCOV="llvm-cov gcov"
+    ;;
+  *gcc*)
+    # this makes gcov-16 be invoked for gcc-16
+    GCOV="`echo \"$CC\" | sed s/gcc/gcov/`"
     ;;
 esac
 
@@ -65,7 +68,7 @@ echo "Running $PYTHON $args"
 env PYTHONPATH=. $PYTHON $args && $PYTHON -m apsw.tests.async_meta
 res=$?
 [ $res -eq 0 -a -z "$NO_FI" ] && echo "Running $PYTHON tools/fi.py $FI_ARGS" && env PYTHONPATH=. $PYTHON tools/fi.py $FI_ARGS
-$GCOVWRAPPER gcov $GCOVOPTS *.gcno > /dev/null
+$GCOV $GCOVOPTS *.gcno > /dev/null
 
 echo ; echo
 mv sqlite3.c.gcov sqlite3/
