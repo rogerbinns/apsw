@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # This is to prevent a repeat of issue #559 where minimum version
 # numbers weren't updated for a release.
