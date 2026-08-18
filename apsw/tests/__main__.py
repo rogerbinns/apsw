@@ -5921,6 +5921,21 @@ class APSW(unittest.TestCase):
                 except ZeroDivisionError:
                     pass
 
+        with self.subTest(which="GC"):
+            # verifies all the objects are tracked by gc
+            # (PyObject_GC_Track), and debug python will generate
+            # warnings if they do no untrack
+
+            objects = [apsw, self.db]
+            objects.append(self.db.execute("select 3"))
+            if hasattr(apsw, "Session"):
+                objects.append(apsw.Session(self.db, "main"))
+            if hasattr(apsw, "ChangesetBuilder"):
+                objects.append(apsw.ChangesetBuilder())
+            for obj in objects:
+                self.assertTrue(gc.is_tracked(obj))
+                gc.get_referents(obj)
+                gc.get_referrers(obj)
 
     def testCursorGet(self):
         "Cursor.get"

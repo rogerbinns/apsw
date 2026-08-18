@@ -401,6 +401,7 @@ static void
 APSWSession_dealloc(PyObject *self_)
 {
   APSWSession *self = (APSWSession *)self_;
+  PyObject_GC_UnTrack(self_);
 
   APSW_CLEAR_WEAKREFS;
 
@@ -2124,6 +2125,8 @@ static void
 APSWChangesetBuilder_dealloc(PyObject *self_)
 {
   APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
+  PyObject_GC_UnTrack(self_);
+
   APSW_CLEAR_WEAKREFS;
 
   PY_ERR_FETCH(exc);
