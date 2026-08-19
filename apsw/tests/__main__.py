@@ -5927,15 +5927,26 @@ class APSW(unittest.TestCase):
             # warnings if they do no untrack
 
             objects = [apsw, self.db]
+
+            self.db.execute("create table blob(x); insert into blob(rowid,x) values(23, x'aabbccdd')")
+
+            db2 = apsw.Connection("")
+            objects.append(db2)
+
             objects.append(self.db.execute("select 3"))
             if hasattr(apsw, "Session"):
                 objects.append(apsw.Session(self.db, "main"))
             if hasattr(apsw, "ChangesetBuilder"):
                 objects.append(apsw.ChangesetBuilder())
+                objects[-1].schema(self.db, "main")
+            objects.append(db2.backup("main", self.db, "main"))
+            objects.append(self.db.blob_open("main", "blob", "x", 23, False))
             for obj in objects:
                 self.assertTrue(gc.is_tracked(obj))
-                gc.get_referents(obj)
-                gc.get_referrers(obj)
+                # these are somewhat messy and get circular stuff
+                # added by Python itself so just check not empty
+                self.assertGreater(len(gc.get_referents(obj)), 0)
+                self.assertGreater(len(gc.get_referrers(obj)), 0)
 
     def testCursorGet(self):
         "Cursor.get"
@@ -6427,12 +6438,12 @@ class APSW(unittest.TestCase):
                 "order": ("closed",),
             },
             "APSWBlob": {
-                "skip": ("dealloc", "dealloc_mutex", "init", "close", "close_internal", "tp_repr", "bool", "aclose", "closed"),
+                "skip": ("dealloc", "dealloc_mutex", "init", "close", "close_internal", "tp_repr", "bool", "aclose", "closed", "tp_traverse"),
                 "req": {"closed": "CHECK_BLOB_CLOSED"},
                 "order": ("use", "closed"),
             },
             "APSWBackup": {
-                "skip": ("dealloc", "dealloc_mutex", "init", "close_internal", "get_remaining", "get_page_count", "tp_repr", "bool", "aclose"),
+                "skip": ("dealloc", "dealloc_mutex", "init", "close_internal", "get_remaining", "get_page_count", "tp_repr", "bool", "aclose", "tp_traverse"),
                 "req": {"closed": "CHECK_BACKUP_CLOSED"},
                 "order": ("use", "closed"),
             },
@@ -6564,8 +6575,8 @@ class APSW(unittest.TestCase):
                         self.fail("Should be using compat function for %s in file %s" % (n, filename))
 
             # not allowed PyObject_New because we can't faultinject it
-            if re.search(r"\bPyObject_New\b", code):
-                self.fail(f"In {filename} you must use _PyObject_New (leading underscore)")
+            if re.search(r"\bPyObject(|_GC)_New\b", code):
+                self.fail(f"In {filename} you must use _PyObject_(GC_)New (leading underscore)")
 
             # check check funcs
             funcpat1 = re.compile(r"^(\w+_\w+)\s*\(\s*\w+\s*\*\s*self")

@@ -10,6 +10,28 @@
   See the accompanying LICENSE file.
 */
 
+/*
+  A note about garbage collection
+
+  The various types implement the garbage collection flag and the tp_traverse
+  slot so that references can be traced.  It allows tools to figure out cycles
+  and ownership.  However only the module implements tp_clear.
+
+  To break a cycle, one member of the cycle must implement tp_clear.  Implementing
+  tp_clear is treacherous because our objects need to acquire SQLite mutexes
+  and drop the GIL.
+
+  For the moment we rely on whatever the non-apsw members of the cycle are to
+  have the tp_clear.  This is reasonable because they would be the ones creating
+  a cycle: apsw object strong references all flow towards the connection and weakrefs
+  fo the other way.
+
+  A future consideration is adding tp_clear to Connection, but will wait for
+  a real world example first to understand the nuances.
+
+*/
+
+
 /**
 
 .. module:: apsw

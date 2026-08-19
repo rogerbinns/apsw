@@ -169,6 +169,8 @@ static void
 APSWBackup_dealloc(PyObject *self_)
 {
   APSWBackup *self = (APSWBackup *)self_;
+  PyObject_GC_UnTrack(self_);
+
   APSW_CLEAR_WEAKREFS;
 
   PY_ERR_FETCH(exc);
@@ -527,6 +529,16 @@ APSWBackup_bool(PyObject *self_)
   return self->backup ? 1 : 0;
 }
 
+static int
+APSWBackup_tp_traverse(PyObject *self_, visitproc visit, void *arg)
+{
+  APSWBackup *self = (APSWBackup *)self_;
+
+  Py_VISIT(self->dest);
+  Py_VISIT(self->source);
+  return 0;
+}
+
 /** .. attribute:: done
   :type: bool
 
@@ -568,7 +580,7 @@ static PyTypeObject APSWBackupType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Backup",
   .tp_basicsize = sizeof(APSWBackup),
   .tp_dealloc = APSWBackup_dealloc,
-  .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
   .tp_doc = Backup_class_DOC,
   .tp_weaklistoffset = offsetof(APSWBackup, weakreflist),
   .tp_methods = backup_methods,
@@ -577,4 +589,5 @@ static PyTypeObject APSWBackupType = {
   .tp_as_number = &backup_as_number,
   .tp_repr = APSWBackup_tp_repr,
   .tp_str = NULL,
+  .tp_traverse = APSWBackup_tp_traverse,
 };

@@ -110,7 +110,7 @@ returns = {
             PyUnicode_AsUTF8AndSize PyUnicode_AsUTF8String PyUnicode_DecodeUTF8
             PyUnicode_FromFormat PyUnicode_FromKindAndData PyUnicode_FromString
             PyUnicode_FromStringAndSize  PyUnicode_New PyWeakref_GetObject PyWeakref_NewRef Py_BuildValue
-            Py_VaBuildValue _PyObject_New PyContextVar_New PyImport_ImportModuleAttr
+            Py_VaBuildValue _PyObject_New _PyObject_GC_New PyContextVar_New PyImport_ImportModuleAttr
             PyImport_Import PyContext_CopyCurrent PyDict_GetItemWithError
             PyLong_FromUnicodeObject PyLong_FromUnsignedLong PyMapping_Items
             PyObject_CallNoArgs  PyObject_GenericGetAttr

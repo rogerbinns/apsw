@@ -218,6 +218,8 @@ static void
 APSWBlob_dealloc(PyObject *self_)
 {
   APSWBlob *self = (APSWBlob *)self_;
+  PyObject_GC_UnTrack(self_);
+
   APSW_CLEAR_WEAKREFS;
 
   PY_ERR_FETCH(exc);
@@ -1043,6 +1045,15 @@ APSWBlob_tp_repr(PyObject *self_)
 }
 
 static int
+APSWBlob_tp_traverse(PyObject *self_, visitproc visit, void *arg)
+{
+  APSWBlob *self = (APSWBlob *)self_;
+  Py_VISIT(self->connection);
+
+  return 0;
+}
+
+static int
 APSWBlob_bool(PyObject *self_)
 {
   APSWBlob *self = (APSWBlob *)self_;
@@ -1094,7 +1105,7 @@ static PyTypeObject APSWBlobType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Blob",
   .tp_basicsize = sizeof(APSWBlob),
   .tp_dealloc = APSWBlob_dealloc,
-  .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
   .tp_doc = Blob_class_DOC,
   .tp_weaklistoffset = offsetof(APSWBlob, weakreflist),
   .tp_methods = APSWBlob_methods,
@@ -1102,4 +1113,5 @@ static PyTypeObject APSWBlobType = {
   .tp_str = NULL,
   .tp_repr = APSWBlob_tp_repr,
   .tp_getset = APSWBlob_getset,
+  .tp_traverse = APSWBlob_tp_traverse,
 };

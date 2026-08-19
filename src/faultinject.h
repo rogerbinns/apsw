@@ -128,6 +128,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef Py_EnterRecursiveCall
 #undef Py_VaBuildValue
 #undef _PyBytes_Resize
+#undef _PyObject_GC_New
 #undef _PyObject_New
 #undef _PyTuple_Resize
 #undef allocfunccbinfo
@@ -2013,6 +2014,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res__PyBytes_Resize = (typeof (_res__PyBytes_Resize))18;                                                                                 \
     }                                                                                                                                             \
     _res__PyBytes_Resize;                                                                                                                         \
+})
+#define _PyObject_GC_New(...) \
+({                                                                                                                                                   \
+    __auto_type _res__PyObject_GC_New = 0 ? _PyObject_GC_New(__VA_ARGS__) : 0;                                                                       \
+                                                                                                                                                     \
+    _res__PyObject_GC_New = (typeof (_res__PyObject_GC_New))APSW_FaultInjectControl("_PyObject_GC_New", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                     \
+    if ((typeof (_res__PyObject_GC_New))0x1FACADE == _res__PyObject_GC_New)                                                                          \
+       _res__PyObject_GC_New = _PyObject_GC_New(__VA_ARGS__);                                                                                        \
+    else if ((typeof(_res__PyObject_GC_New))0x2FACADE == _res__PyObject_GC_New)                                                                      \
+    {                                                                                                                                                \
+        _PyObject_GC_New(__VA_ARGS__);                                                                                                               \
+        _res__PyObject_GC_New = (typeof (_res__PyObject_GC_New))18;                                                                                  \
+    }                                                                                                                                                \
+    _res__PyObject_GC_New;                                                                                                                           \
 })
 #define _PyObject_New(...) \
 ({                                                                                                                                          \

@@ -935,11 +935,12 @@ Connection_blob_open(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
   if (PyErr_Occurred())
     return NULL;
 
-  apswblob = (struct APSWBlob *)_PyObject_New(&APSWBlobType);
+  apswblob = (struct APSWBlob *)_PyObject_GC_New(&APSWBlobType);
   if (!apswblob)
     goto error;
 
   APSWBlob_init(apswblob, self, blob, writeable);
+  PyObject_GC_Track((PyObject *)apswblob);
   blob = NULL;
   weakref = PyWeakref_NewRef((PyObject *)apswblob, NULL);
   if (!weakref)
@@ -1022,12 +1023,13 @@ Connection_backup(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   if (res != SQLITE_OK)
     goto finally;
 
-  apswbackup = (struct APSWBackup *)_PyObject_New(&APSWBackupType);
+  apswbackup = (struct APSWBackup *)_PyObject_GC_New(&APSWBackupType);
   if (!apswbackup)
     goto finally;
 
   APSWBackup_init(apswbackup, (Connection *)Py_NewRef((PyObject *)self),
                   (Connection *)Py_NewRef((PyObject *)sourceconnection), backup);
+  PyObject_GC_Track((PyObject *)apswbackup);
   backup = NULL;
 
   /* add to dependent lists */
