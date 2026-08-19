@@ -1085,7 +1085,7 @@ class Tester:
         if len(self.expect_exception) == 1 and self.expect_exception[0] is Exception:
             return
         if len(self.exc_happened) < len(tested):
-            if len(tested) >= 2 and (tested[0][0], tested[1][0]) == ("_PyObject_New", "sqlite3_backup_finish"):
+            if len(tested) >= 2 and (tested[0][0], tested[1][0]) == ("_PyObject_GC_New", "sqlite3_backup_finish"):
                 # backup finish error is ignored because we are handling the
                 # object_new error
                 pass
@@ -1203,7 +1203,8 @@ class Tester:
                     if "apsw" in sys.modules and hasattr(sys.modules["apsw"], "leak_check"):
                         res = getattr(sys.modules["apsw"], "leak_check")()
                         if res:
-                            input("Leaks found, return to continue> ")
+                            print("Leaks found.  Waiting.")
+                            input("return to continue> ")
 
             self.verify_exception(self.faulted_this_round)
             if any(thread is not main_thread and not thread.daemon for thread in threading.enumerate()):
