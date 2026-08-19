@@ -1,3 +1,15 @@
+/*
+
+This is only used for fault injection builds.  It is to help fault
+Python, SQLite, and internal APSW APIs.  It should be used with a full
+debug address sanitized build.  It is also not supposed to be robust
+with the preference being to abort the process, or give a clear
+message.
+
+The Python code that receives callbacks from here is in tools/fi.py
+
+*/
+
 #define APSW_FAULT_CLEAR
 #include "faultinject.h"
 
