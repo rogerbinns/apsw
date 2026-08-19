@@ -250,20 +250,21 @@ MakeSqliteMsgFromPyException(char **errmsg)
 
   if (errmsg)
   {
-    /* I just want a string of the error! */
-    if (!str && exc)
-      str = PyObject_Str(exc);
-    if (!str)
-    {
-      PyErr_Clear();
-      str = PyUnicode_FromString("python exception with no information");
-    }
-    if (*errmsg && str)
-    {
-      sqlite3_free(*errmsg);
-      *errmsg = sqlite3_mprintf("%s", PyUnicode_AsUTF8(str));
-    }
+    /* normalize should ensure there is always a value */
+    assert(exc);
 
+    str = PyObject_Str(exc);
+    const char *utf8 = str ? PyUnicode_AsUTF8(str) : "No message available";
+
+    if (!utf8)
+      PyErr_Clear();
+
+    if (*errmsg)
+      sqlite3_free(*errmsg);
+
+    *errmsg = sqlite3_mprintf("%s", utf8);
+    if (!*errmsg)
+      res = SQLITE_NOMEM;
     Py_XDECREF(str);
   }
 
