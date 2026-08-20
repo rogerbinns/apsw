@@ -1498,8 +1498,13 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
       /* or an integer */
       if (PyLong_Check(constraint))
       {
-        indexinfo->aConstraintUsage[i].argvIndex = PyLong_AsInt(constraint) + 1;
+        int val = PyLong_AsInt(constraint);
         Py_DECREF(constraint);
+        if (!PyErr_Occurred() && (val < 0 || val >= INT32_MAX))
+          PyErr_Format(PyExc_ValueError, "constraint value is out of integer range");
+        if (PyErr_Occurred())
+          goto pyexception;
+        indexinfo->aConstraintUsage[i].argvIndex = val + 1;
         continue;
       }
       /* or a sequence two items long */
