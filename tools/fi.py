@@ -954,7 +954,7 @@ class Tester:
         sys.exit(1)
 
     def should_fault(self, name, pending_exception):
-        if pending_exception != (None, None, None):
+        if any(pending_exception):
             return False
         key = ("APSW_FAULT", "", name, 0, "")
         res = self.fault_inject_control(key)
