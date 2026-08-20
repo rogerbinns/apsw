@@ -17,29 +17,36 @@ static long long
 APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum,
                         const char *args)
 {
-  PyObject *callable, *res = NULL;
+  static PyObject *callable = NULL, *check_set = NULL;
+  PyObject *res = NULL;
   const char *err_details = NULL;
   long long ficres = 0;
-  int suppress = 0;
+  static int initialized = 0;
   int recursion_limit;
+
+  if (initialized && !callable)
+    return 0x1FACADE;
 
   PyGILState_STATE gilstate = PyGILState_Ensure();
   recursion_limit = Py_GetRecursionLimit();
   Py_SetRecursionLimit(recursion_limit + 50);
   PY_ERR_FETCH(exc);
 
-  callable = PySys_GetObject("apsw_fault_inject_control");
-  if (!callable || Py_IsNone(callable))
+  if (!initialized)
   {
-    /* during interpreter shutdown the attribute becomes None */
-    static int whined;
-    if (!whined && !Py_IsNone(callable))
+    initialized = 1;
+    callable = PySys_GetObject("apsw_fault_inject_control");
+    if (!callable)
     {
-      whined++;
       err_details = "APSW debug build: missing sys.apsw_fault_inject_control";
+      goto errorexit;
     }
-    suppress = 1;
-    goto errorexit;
+    if (!check_set)
+    {
+      check_set = PySys_GetObject("apsw_fault_inject_control_proceed");
+      if (check_set)
+        printf("APSW debug build: apsw_fault_inject_control_proceed set in use\n");
+    }
   }
 
   PyObject *key = PyTuple_New(5);
@@ -50,6 +57,13 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
   PyTuple_SET_ITEM(key, 2, PyUnicode_FromString(funcname));
   PyTuple_SET_ITEM(key, 3, PyLong_FromLong(linenum));
   PyTuple_SET_ITEM(key, 4, PyUnicode_FromString(args));
+
+  if (check_set && PySet_Contains(check_set, key))
+  {
+    ficres = 0x1FACADE;
+    Py_DECREF(key);
+    goto success;
+  }
 
   PyObject *vargs[] = { NULL, key };
   res = PyObject_Vectorcall(callable, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -107,7 +121,7 @@ success:
 errorexit:
   Py_CLEAR(res);
   PY_ERR_FETCH(exc_errexit);
-  if (!suppress)
+  if (!initialized)
     fprintf(stderr, "FaultInjectControl ERROR: {\"%s\", \"%s\", \"%s\", %d, \"%s\"}\n", faultfunction, filename,
             funcname, linenum, args);
   if (err_details)

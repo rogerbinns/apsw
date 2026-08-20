@@ -762,7 +762,12 @@ class Tester:
         self.returns = genfaultinject.returns
         self.call_remap = {v: k for k, v in genfaultinject.call_map.items()}
 
+
+        # keys that have ever faulted across all loops
+        self.has_faulted_ever = set()
+
         sys.apsw_fault_inject_control = self.fault_inject_control
+        sys.apsw_fault_inject_control_proceed = self.has_faulted_ever
         sys.apsw_should_fault = self.should_fault
 
         lines, start = inspect.getsourcelines(exercise)
@@ -964,6 +969,9 @@ class Tester:
     def fault_inject_control(self, key):
         # key is (api, file, calling func, lineno, str(args)) eg
         # ('PyUnicode_AsUTF8AndSize', 'src/apsw.c', 'apsw_unregister_vfs', 1796, 'useargs[argp_optindex], &sz')
+        if key in self.has_faulted_ever:
+                return self.Proceed
+
         if testing_recursion and key[2] in {"apsw_write_unraisable", "apswvfs_excepthook"}:
             return self.Proceed
         # failing module get/setattr leads to claims the module isn't
@@ -1004,8 +1012,6 @@ class Tester:
                 # already have faulted this round
                 if key not in self.has_faulted_ever and key not in self.to_fault:
                     self.to_fault[key] = self.faulted_this_round[:]
-                return self.Proceed
-            if key in self.has_faulted_ever:
                 return self.Proceed
 
         tid, fname, line = self.get_progress()
@@ -1144,7 +1150,7 @@ class Tester:
         # to see this one.  value is list of those previous faults
         self.to_fault = {}
         # keys that have ever faulted across all loops
-        self.has_faulted_ever = set()
+        self.has_faulted_ever.clear()
 
         self.last_key = None
         use_runplan = False
