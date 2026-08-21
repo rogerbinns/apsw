@@ -28,7 +28,7 @@ Connection_fts5_api(Connection *self)
   if (stmt)
     sqlite3_finalize(stmt);
 
-  if (res == SQLITE_OK)
+  if (res == SQLITE_OK && api)
   {
     if (api->iVersion < 3)
     {
