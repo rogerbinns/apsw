@@ -1005,6 +1005,8 @@ class Tester:
                     return self.Proceed
             elif key == self.runplan[0]:
                 self.runplan.pop(0)
+                if self.runplan:
+                    self.has_faulted_ever.discard(self.runplan[0])
             else:
                 return self.Proceed
         else:
@@ -1172,6 +1174,7 @@ class Tester:
                 else:
                     for k, v in self.to_fault.items():
                         self.runplan = v + [k]
+                        self.has_faulted_ever.remove(self.runplan[0])
                         break
             else:
                 self.runplan = None
