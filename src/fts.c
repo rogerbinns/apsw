@@ -792,13 +792,17 @@ APSWFTS5ExtensionApi_xSetAuxdata(PyObject *self, PyObject *value, void *Py_UNUSE
   FTSEXT_CHECK(-1);
 
   int rc;
-  APSW_FAULT(xSetAuxDataErr, rc = EXTAPI->xSetAuxdata(EXTFTS, value, auxdata_xdelete), rc = SQLITE_NOMEM);
+  Py_IncRef(value);
+  /* calls destructor on failure */
+  APSW_FAULT(xSetAuxDataErr, rc = EXTAPI->xSetAuxdata(EXTFTS, value, auxdata_xdelete), {
+    auxdata_xdelete(value);
+    rc = SQLITE_NOMEM;
+  });
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
     return -1;
   }
-  Py_IncRef(value);
   return 0;
 }
 
