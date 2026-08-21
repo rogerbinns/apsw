@@ -24,7 +24,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
   static int initialized = 0;
   int recursion_limit;
 
-  if (initialized && !callable)
+  if ((initialized && !callable) || Py_IsFinalizing())
     return 0x1FACADE;
 
   PyGILState_STATE gilstate = PyGILState_Ensure();
@@ -41,17 +41,19 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
       err_details = "APSW debug build: missing sys.apsw_fault_inject_control";
       goto errorexit;
     }
+    Py_INCREF(callable);
     if (!check_set)
     {
       check_set = PySys_GetObject("apsw_fault_inject_control_proceed");
       if (check_set)
+      {
         printf("APSW debug build: apsw_fault_inject_control_proceed set in use\n");
+        Py_INCREF(check_set);
+      }
     }
   }
 
   PyObject *key = PyTuple_New(5);
-  if (!key)
-    goto errorexit;
   PyTuple_SET_ITEM(key, 0, PyUnicode_FromString(faultfunction));
   PyTuple_SET_ITEM(key, 1, PyUnicode_FromString(filename));
   PyTuple_SET_ITEM(key, 2, PyUnicode_FromString(funcname));
