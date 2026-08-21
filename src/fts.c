@@ -268,6 +268,9 @@ APSWFTS5Tokenizer_call(PyObject *self_, PyObject *const *fast_args, size_t nargs
       && flags != (FTS5_TOKENIZE_QUERY | FTS5_TOKENIZE_PREFIX) && flags != FTS5_TOKENIZE_AUX)
     return PyErr_Format(PyExc_ValueError, "flags is not an allowed value (%d)", flags);
 
+  if (locale_size >= INT32_MAX)
+    return PyErr_Format(PyExc_ValueError, "locale exeeds 2GB length");
+
   if (0 != PyObject_GetBufferContiguousBounded(utf8, &utf8_buffer, PyBUF_SIMPLE, INT32_MAX))
   {
     assert(PyErr_Occurred());
