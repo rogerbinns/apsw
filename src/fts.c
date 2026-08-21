@@ -111,7 +111,7 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
 
   /* fast exit for colocated */
   if (iflags == FTS5_TOKEN_COLOCATED && !our_context->include_colocated)
-    return SQLITE_OK;
+    goto done;
 
   token = PyUnicode_DecodeUTF8(pToken, nToken, "replace");
   if (!token)
@@ -172,6 +172,7 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
       Py_CLEAR(token);
     }
   }
+done:
   assert(!token); /* it should have been stashed somewhere */
   PyGILState_Release(gilstate);
   return SQLITE_OK;
