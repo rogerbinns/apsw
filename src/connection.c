@@ -5765,7 +5765,7 @@ Connection_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   const char *schema = NULL;
   int amount, which, opcode;
   sqlite3_int64 offset;
-  int res;
+  int res = SQLITE_OK;
   sqlite3_file *fp = NULL;
   PyObject *bytes = NULL;
 
