@@ -1242,7 +1242,7 @@ jsonb_decode_one_actual(struct JSONBDecodeBuffer *buf)
   }
 
   /* value_offset is now start of value, after tag + length bytes */
-  if (value_offset + tag_len > buf->end_offset)
+  if (tag_len > buf->end_offset - value_offset)
     return malformed(buf, "insufficent space for value");
 
   /* set offset to start of next value */
