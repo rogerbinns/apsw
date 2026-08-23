@@ -3799,6 +3799,8 @@ Connection_create_window_function(PyObject *self_, PyObject *const *fast_args, P
 
   ASYNC_FASTCALL(self, Connection_create_window_function);
 
+  DBMUTEX_ENSURE(self);
+
   if (!factory)
     cbinfo = NULL;
   else
@@ -3812,14 +3814,13 @@ Connection_create_window_function(PyObject *self_, PyObject *const *fast_args, P
     cbinfo->windowfactory = Py_NewRef(factory);
   }
 
-  DBMUTEX_ENSURE(self);
   /* note: frees on error too */
   res = sqlite3_create_window_function(self->db, name, numargs, SQLITE_UTF8 | flags, cbinfo, cbinfo ? cbw_step : NULL,
                                        cbinfo ? cbw_final : NULL, cbinfo ? cbw_value : NULL,
                                        cbinfo ? cbw_inverse : NULL, apsw_free_func);
   SET_EXC(res, self->db);
-  sqlite3_mutex_leave(self->dbmutex);
 finally:
+  sqlite3_mutex_leave(self->dbmutex);
   if (PyErr_Occurred())
     return NULL;
   Py_RETURN_NONE;
@@ -5800,11 +5801,15 @@ Connection_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
 
   ASYNC_FASTCALL(self, Connection_read);
 
+  DBMUTEX_ENSURE(self);
+
   bytes = PyBytes_FromStringAndSize(NULL, amount);
   if (!bytes)
-    return NULL;
+  {
+    assert(PyErr_Occurred());
+    goto exit;
+  }
 
-  DBMUTEX_ENSURE(self);
   res = sqlite3_file_control(self->db, schema, opcode, &fp);
   if (res != SQLITE_OK || !fp || !fp->pMethods || !fp->pMethods->xRead)
   {
@@ -5819,6 +5824,7 @@ Connection_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   if (res != SQLITE_OK && res != SQLITE_IOERR_SHORT_READ)
     SET_EXC(res, NULL);
 
+exit:
   sqlite3_mutex_leave(self->dbmutex);
 
   PyObject *retval = NULL;
@@ -5829,7 +5835,7 @@ Connection_read(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   if (retval)
     return retval;
 
-  Py_DECREF(bytes);
+  Py_XDECREF(bytes);
 
   return NULL;
 }
