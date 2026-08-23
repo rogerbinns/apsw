@@ -1070,6 +1070,11 @@ error:
         is ``True`` then only the exact types are directly converted
         and subclasses will be passed to ``default`` or ``default_key``.
 
+        If ``False`` and subclassed numeric types are provided, then their :meth:`~object.__str__`
+        method **must** produce JSON compatible corresponding text representations,
+        otherwise non-decodable JSONB will be produced.  Typically subclasses
+        produce more digits, and a greater range of values.
+
     You will get a :exc:`~apsw.TooBigError` if the resulting JSONB
     will exceed 2GB because SQLite can't handle it.
 */
