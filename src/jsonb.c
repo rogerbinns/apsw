@@ -519,10 +519,10 @@ jsonb_grow_buffer(struct JSONBuffer *buf, size_t count)
 #endif
   assert(alloc_size >= new_size);
 
-  void *new_data = realloc(buf->data, alloc_size);
+  void *new_data = PyMem_Realloc(buf->data, alloc_size);
   if (!new_data)
   {
-    assert(PyErr_Occurred());
+    PyErr_NoMemory();
     return -1;
   }
   buf->data = new_data;
@@ -1129,7 +1129,7 @@ JSONB_encode(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs,
   Py_CLEAR(buf.default_);
   Py_CLEAR(buf.default_key);
   PyObject *retval = (0 == res) ? PyBytes_FromStringAndSize((const char *)buf.data, buf.size) : NULL;
-  free(buf.data);
+  PyMem_Free(buf.data);
   return retval;
 }
 
