@@ -1478,7 +1478,10 @@ jsonb_decode_one_actual(struct JSONBDecodeBuffer *buf)
         Py_DECREF(key);
         Py_DECREF(value);
         if (added < 0)
+        {
+          Py_DECREF(builder);
           return NULL;
+        }
       }
       else
         assert(key == DecodeSuccess && value == DecodeSuccess);
