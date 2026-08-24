@@ -529,7 +529,7 @@ SqliteIndexInfo_set_idxStr(PyObject *self_, PyObject *value, void *Py_UNUSED(unu
     const char *isvalue = sqlite3_mprintf("%s", svalue);
     if (!isvalue)
     {
-      PyErr_NoMemory();
+      SET_EXC(SQLITE_NOMEM, NULL);
       return -1;
     }
     self->index_info->idxStr = (char *)isvalue;
@@ -1599,7 +1599,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
       const char *isvalue = sqlite3_mprintf("%s", svalue);
       if (!isvalue)
       {
-        PyErr_NoMemory();
+        SET_EXC(SQLITE_NOMEM, NULL);
         Py_DECREF(idxstr);
         goto pyexception;
       }

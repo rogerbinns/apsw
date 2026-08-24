@@ -1401,7 +1401,7 @@ class APSW(unittest.TestCase):
             ran = True
             self.assertEqual(f"select '{biggy}','{biggy}'", c.expanded_sql)
             existing = self.db.limit(apsw.SQLITE_LIMIT_LENGTH, 25 * 1024)
-            self.assertRaises(MemoryError, getattr, c, "expanded_sql")
+            self.assertRaises(apsw.NoMemError, getattr, c, "expanded_sql")
             self.db.limit(apsw.SQLITE_LIMIT_LENGTH, existing)
         self.assertTrue(ran)
         # keyword args

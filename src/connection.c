@@ -3201,7 +3201,7 @@ finally:
   {
     char *errmsg = NULL;
     char *funname = NULL;
-    CHAIN_EXC(funname = sqlite3_mprintf("user-defined-scalar-%s", cbinfo->name); if (!funname) PyErr_NoMemory(););
+    CHAIN_EXC(funname = sqlite3_mprintf("user-defined-scalar-%s", cbinfo->name); if (!funname) SET_EXC(SQLITE_NOMEM, NULL););
     sqlite3_result_error_code(context, MakeSqliteMsgFromPyException(&errmsg));
     sqlite3_result_error(context, errmsg, -1);
     AddTraceBackHere(__FILE__, __LINE__, funname ? funname : "sqlite3_mprintf ran out of memory", "{s: i, s: s}",
@@ -4811,7 +4811,7 @@ Connection_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
       sql = sqlite3_mprintf("BEGIN %s", self->transaction_mode);
       if (!sql)
       {
-        PyErr_NoMemory();
+        SET_EXC(SQLITE_NOMEM, NULL);
         goto error;
       }
       res = connection_context_manager_exec(self, sql, 0, 1);
@@ -4832,7 +4832,7 @@ Connection_enter(PyObject *self_, PyObject *Py_UNUSED(unused))
   sql = sqlite3_mprintf("SAVEPOINT \"_apsw-%ld\"", self->savepointlevel);
   if (!sql)
   {
-    PyErr_NoMemory();
+    SET_EXC(SQLITE_NOMEM, NULL);
     goto error;
   };
 
@@ -4900,7 +4900,7 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
       if (!sql)
       {
         CHAIN_EXC_BEGIN
-        PyErr_NoMemory();
+          SET_EXC(SQLITE_NOMEM, NULL);
         CHAIN_EXC_END;
         goto exit;
       }
@@ -4911,7 +4911,7 @@ Connection_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
     if (!sql)
     {
       CHAIN_EXC_BEGIN
-      PyErr_NoMemory();
+        SET_EXC(SQLITE_NOMEM, NULL);
       CHAIN_EXC_END;
       goto exit;
     }
@@ -5380,7 +5380,7 @@ Connection_pragma(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
 
   if (!query)
   {
-    PyErr_NoMemory();
+    SET_EXC(SQLITE_NOMEM, NULL);
     goto error;
   }
 

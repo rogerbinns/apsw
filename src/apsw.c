@@ -266,14 +266,14 @@ static void apsw_write_unraisable(PyObject *hookobject);
 /* aio/async stuff */
 #include "async.c"
 
+/* Exceptions we can raise */
+#include "exceptions.c"
+
 /* various utility functions and macros */
 #include "util.c"
 
 /* Argument parsing helpers */
 #include "argparse.c"
-
-/* Exceptions we can raise */
-#include "exceptions.c"
 
 /* The statement cache */
 #include "statementcache.c"

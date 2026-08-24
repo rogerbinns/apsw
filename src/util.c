@@ -344,7 +344,10 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
   case SQLITE_TEXT: {
     const char *data = (const char *)sqlite3_value_text(value);
     if (!data)
-      return PyErr_NoMemory();
+    {
+      SET_EXC(SQLITE_NOMEM, NULL);
+      return NULL;
+    }
     return PyUnicode_FromStringAndSize(data, sqlite3_value_bytes(value));
   }
 
@@ -386,7 +389,10 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
     const void *data = sqlite3_value_blob(value);
     int len = sqlite3_value_bytes(value);
     if (!data && len)
-      return PyErr_NoMemory();
+    {
+      SET_EXC(SQLITE_NOMEM, NULL);
+      return NULL;
+    }
     return PyBytes_FromStringAndSize(data, len);
   }
   }

@@ -398,7 +398,10 @@ convert_column_to_pyobject(APSWCursor *self, int col)
     size_t len;
     data = (const char *)sqlite3_column_text(stmt, col);
     if (!data)
-      return PyErr_NoMemory();
+    {
+      SET_EXC(SQLITE_NOMEM, NULL);
+      return NULL;
+    }
 
     len = sqlite3_column_bytes(stmt, col);
     return PyUnicode_FromStringAndSize(data, len);
@@ -421,7 +424,10 @@ convert_column_to_pyobject(APSWCursor *self, int col)
 
     /* if length is zero then a null pointer is returned */
     if (!data && len)
-      return PyErr_NoMemory();
+    {
+      SET_EXC(SQLITE_NOMEM, NULL);
+      return NULL;
+    }
 
     PyObject *value = PyBytes_FromStringAndSize(data, len);
 
@@ -2403,7 +2409,7 @@ static PyObject *
 APSWCursor_expanded_sql(PyObject *self_, void *unused)
 {
   APSWCursor *self = (APSWCursor *)self_;
-  PyObject *res;
+  PyObject *res = NULL;
   const char *es;
 
   CHECK_CURSOR_CLOSED(NULL);
@@ -2421,7 +2427,7 @@ APSWCursor_expanded_sql(PyObject *self_, void *unused)
     sqlite3_free((void *)es);
   }
   else
-    res = PyErr_NoMemory();
+    SET_EXC(SQLITE_NOMEM, NULL);
   sqlite3_mutex_leave(self->connection->dbmutex);
 
   return res;

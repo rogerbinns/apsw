@@ -140,7 +140,7 @@ apswfcntl_pragma_set_result(PyObject *self_, PyObject *value, void *Py_UNUSED(un
     self->strings[0] = sqlite3_mprintf("%s", cstr);
     if (!self->strings[0])
     {
-      PyErr_NoMemory();
+      SET_EXC(SQLITE_NOMEM, NULL);
       return -1;
     }
   }
@@ -1445,7 +1445,7 @@ apswvfspy_xGetLastError(PyObject *self_, PyObject *Py_UNUSED(unused))
   buffer = (char *)sqlite3_malloc64(size + 1);
   if (!buffer)
   {
-    PyErr_NoMemory();
+    SET_EXC(SQLITE_NOMEM, NULL);
     goto error;
   }
   memset(buffer, 0, size + 1);
