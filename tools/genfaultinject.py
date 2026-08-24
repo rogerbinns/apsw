@@ -113,7 +113,7 @@ returns = {
             Py_VaBuildValue _PyObject_New _PyObject_GC_New PyContextVar_New PyImport_ImportModuleAttr
             PyImport_Import PyContext_CopyCurrent PyDict_GetItemWithError
             PyLong_FromUnicodeObject PyLong_FromUnsignedLong PyMapping_Items
-            PyObject_CallNoArgs  PyObject_GenericGetAttr
+            PyObject_CallNoArgs  PyObject_GenericGetAttr PyThreadState_GetDict
 
             Connection_fts5_api get_token_value fts5extensionapi_acquire
             make_boxed_call APSWCursor_internal_get_description
@@ -253,7 +253,7 @@ no_error.update(
     PyErr_SetString PyStructSequence_SetItem PyObject_Print
     Py_GetRecursionLimit Py_LeaveRecursiveCall Py_SetRecursionLimit _PyErr_ChainExceptions
     PyBuffer_IsContiguous PyContext_Exit PyList_SetSlice
-    PyObject_GetAttrString PyThreadState_GetDict PyType_GetQualName PyUnicode_FromFormatV
+    PyObject_GetAttrString PyType_GetQualName PyUnicode_FromFormatV
 """.split()
 )
 

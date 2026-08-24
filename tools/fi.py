@@ -847,7 +847,11 @@ class Tester:
                 if fname.startswith("sqlite3_"):
                     self.expect_exception.append(apsw_attr("NoMemError"))
                     return 0
-
+                if fname == "PyThreadState_GetDict":
+                    # returns null, doesn't raise an exception.  we use it
+                    # in one place and return RuntimeError
+                    self.expect_exception.append(RuntimeError)
+                    return 0
                 # all other APIs are Python and do set exception
                 self.expect_exception.append(MemoryError)
                 return 0, MemoryError, self.FAULTS

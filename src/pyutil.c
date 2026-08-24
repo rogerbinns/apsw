@@ -317,7 +317,11 @@ apsw_run_in_event_loop(PyObject *coro)
 {
   assert(coro);
 
-  PyObject *runner = PyDict_GetItemWithError(PyThreadState_GetDict(), async_run_coro_sentinel);
+  PyObject *tstate_dict = PyThreadState_GetDict();
+  if (!tstate_dict)
+    return PyErr_Format(PyExc_RuntimeError, "threadstate dict is not available");
+
+  PyObject *runner = PyDict_GetItemWithError(tstate_dict, async_run_coro_sentinel);
 
   if (!runner || Py_IsNone(runner))
   {

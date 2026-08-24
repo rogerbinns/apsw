@@ -108,6 +108,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyStructSequence_InitType2
 #undef PyStructSequence_New
 #undef PyStructSequence_NewType
+#undef PyThreadState_GetDict
 #undef PyTuple_New
 #undef PyTuple_Pack
 #undef PyType_FromModuleAndSpec
@@ -1675,6 +1676,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyStructSequence_NewType = (typeof (_res_PyStructSequence_NewType))18;                                                                                          \
     }                                                                                                                                                                        \
     _res_PyStructSequence_NewType;                                                                                                                                           \
+})
+#define PyThreadState_GetDict(...) \
+({                                                                                                                                                                  \
+    __auto_type _res_PyThreadState_GetDict = 0 ? PyThreadState_GetDict(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_PyThreadState_GetDict = (typeof (_res_PyThreadState_GetDict))APSW_FaultInjectControl("PyThreadState_GetDict", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_PyThreadState_GetDict))0x1FACADE == _res_PyThreadState_GetDict)                                                                               \
+       _res_PyThreadState_GetDict = PyThreadState_GetDict(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_PyThreadState_GetDict))0x2FACADE == _res_PyThreadState_GetDict)                                                                           \
+    {                                                                                                                                                               \
+        PyThreadState_GetDict(__VA_ARGS__);                                                                                                                         \
+        _res_PyThreadState_GetDict = (typeof (_res_PyThreadState_GetDict))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_PyThreadState_GetDict;                                                                                                                                     \
 })
 #define PyTuple_New(...) \
 ({                                                                                                                                    \
