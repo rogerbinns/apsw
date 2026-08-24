@@ -1309,8 +1309,8 @@ jsonb_decode_one_actual(struct JSONBDecodeBuffer *buf)
       PyObject *result = NULL;
       if (buf->parse_int)
       {
-        /* we need to pass zero as the base so leading sign and 0x are processed as expected */
-        PyObject *vargs[] = { NULL, text, PyLong_FromLong(0) };
+        /* At this point we know the number is hex with leading optional sign and 0x. */
+        PyObject *vargs[] = { NULL, text, PyLong_FromLong(16) };
         if (vargs[2])
           result = PyObject_Vectorcall(buf->parse_int, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
         Py_XDECREF(vargs[2]);
@@ -2272,7 +2272,8 @@ jsonb_detect_internal(const void *data, size_t length)
     :param parse_int: Called with a :class:`str` of the integer, and
         should return a value to use.  The default is :class:`int`.
         If the integer is hexadecimal then it will be called with a
-        second parameter of 16.
+        second parameter (base) of 16, with the string including
+        leading optional sign, and ``0x``.
     :param parse_float: Called with a :class:`str` of the float, and
         should return a value to use.  The default is :class:`float`.
 
