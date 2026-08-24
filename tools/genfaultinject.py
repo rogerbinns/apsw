@@ -115,9 +115,6 @@ returns = {
             PyLong_FromUnicodeObject PyLong_FromUnsignedLong PyMapping_Items
             PyObject_CallNoArgs  PyObject_GenericGetAttr
 
-
-            realloc
-
             Connection_fts5_api get_token_value fts5extensionapi_acquire
             make_boxed_call APSWCursor_internal_get_description
 

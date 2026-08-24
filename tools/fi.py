@@ -840,10 +840,16 @@ class Tester:
                 return True
 
             if fname in self.returns["pointer"]:
-                self.expect_exception.append(MemoryError)
+                # these do not set the no memory exception
                 if fname.startswith("PyMem_"):
-                    # these do not set the no memory exception
+                    self.expect_exception.append(MemoryError)
                     return 0
+                if fname.startswith("sqlite3_"):
+                    self.expect_exception.append(apsw_attr("NoMemError"))
+                    return 0
+
+                # all other APIs are Python and do set exception
+                self.expect_exception.append(MemoryError)
                 return 0, MemoryError, self.FAULTS
 
             if fname == "sqlite3_threadsafe":

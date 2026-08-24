@@ -149,7 +149,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef jsonb_grow_buffer
 #undef jsonb_update_tag
 #undef make_boxed_call
-#undef realloc
 #undef sqlite3_aggregate_context
 #undef sqlite3_autovacuum_pages
 #undef sqlite3_backup_finish
@@ -2329,21 +2328,6 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_make_boxed_call = (typeof (_res_make_boxed_call))18;                                                                                 \
     }                                                                                                                                             \
     _res_make_boxed_call;                                                                                                                         \
-})
-#define realloc(...) \
-({                                                                                                                        \
-    __auto_type _res_realloc = 0 ? realloc(__VA_ARGS__) : 0;                                                              \
-                                                                                                                          \
-    _res_realloc = (typeof (_res_realloc))APSW_FaultInjectControl("realloc", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
-                                                                                                                          \
-    if ((typeof (_res_realloc))0x1FACADE == _res_realloc)                                                                 \
-       _res_realloc = realloc(__VA_ARGS__);                                                                               \
-    else if ((typeof(_res_realloc))0x2FACADE == _res_realloc)                                                             \
-    {                                                                                                                     \
-        realloc(__VA_ARGS__);                                                                                             \
-        _res_realloc = (typeof (_res_realloc))18;                                                                         \
-    }                                                                                                                     \
-    _res_realloc;                                                                                                         \
 })
 #define sqlite3_aggregate_context(...) \
 ({                                                                                                                                                                              \
