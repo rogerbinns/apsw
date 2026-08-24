@@ -281,7 +281,7 @@ PyErr_AddExceptionNoteV(const char *format, ...)
   va_start(fmt_args, format);
 
   PyObject *message;
-  message = PyUnicode_FromFormatV(format, fmt_args);
+  CHAIN_EXC(message = PyUnicode_FromFormatV(format, fmt_args));
 
   if (message)
   {
