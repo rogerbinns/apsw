@@ -1999,7 +1999,7 @@ APSWChangesetIterator_next(PyObject *self_)
   if (self->last_table_change)
   {
     self->last_table_change->iter = NULL;
-    self->last_table_change = NULL;
+    Py_CLEAR(self->last_table_change);
   }
 
   int rc = sqlite3changeset_next(self->iter);
@@ -2016,7 +2016,7 @@ APSWChangesetIterator_next(PyObject *self_)
 
   assert((self->last_table_change == NULL && PyErr_Occurred())
          || (self->last_table_change != NULL && !PyErr_Occurred()));
-  return self->last_table_change ? (PyObject *)self->last_table_change : NULL;
+  return self->last_table_change ? Py_NewRef((PyObject *)self->last_table_change) : NULL;
 }
 
 static PyObject *
@@ -2033,6 +2033,11 @@ APSWChangesetIterator_dealloc(PyObject *self_)
   {
     sqlite3changeset_finalize(self->iter);
     self->iter = NULL;
+  }
+  if (self->last_table_change)
+  {
+    self->last_table_change->iter = NULL;
+    Py_CLEAR(self->last_table_change);
   }
   Py_CLEAR(self->xInput);
   if (self->buffer_source)
