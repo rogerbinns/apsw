@@ -2582,21 +2582,7 @@ APSWChangesetBuilder_schema(PyObject *self_, PyObject *const *fast_args, Py_ssiz
 
   CHECK_CLOSED(db, NULL);
 
-  int rc = sqlite3changegroup_schema(self->group, db->db, schema);
-  SET_EXC(rc, NULL);
-  if (PyErr_Occurred())
-    return NULL;
-
-  /* from this point on, the schema has been set, but we could
-     fail at the Python level.  There is nothing we can do about
-     that, and it is unlikely in practise. */
-
-  self->connection = db;
-  Py_INCREF(self->connection);
-
-  PyObject *weakref = NULL;
-
-  weakref = PyWeakref_NewRef((PyObject *)self, NULL);
+  PyObject *weakref = PyWeakref_NewRef((PyObject *)self, NULL);
   if (!weakref)
     return NULL;
   int append = PyList_Append(db->dependents, weakref);
@@ -2604,7 +2590,17 @@ APSWChangesetBuilder_schema(PyObject *self_, PyObject *const *fast_args, Py_ssiz
   if (append)
     return NULL;
 
-  assert(!PyErr_Occurred());
+  /* the only way this fails is memory allocation */
+  int rc = sqlite3changegroup_schema(self->group, db->db, schema);
+  SET_EXC(rc, NULL);
+  if (PyErr_Occurred())
+  {
+    Connection_remove_dependent(self->connection, self_);
+    return NULL;
+  }
+
+  self->connection = db;
+  Py_INCREF(self->connection);
 
   Py_RETURN_NONE;
 }
