@@ -2340,6 +2340,7 @@ APSWChangesetBuilder_row(APSWChangesetBuilder *self, int new, PyObject *row)
       if (py3buffer.len >= INT32_MAX)
       {
         res = SQLITE_TOOBIG;
+        PyBuffer_Release(&py3buffer);
         goto change_failed;
       }
       assert(((int)py3buffer.len) >= (int)0);
