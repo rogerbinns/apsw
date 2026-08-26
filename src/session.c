@@ -1491,7 +1491,11 @@ APSWChangeset_invert(PyObject *Py_UNUSED(static_method), PyObject *const *fast_a
   int nOut;
   void *pOut = NULL;
 
-  int rc = sqlite3changeset_invert(changeset_buffer.len, changeset_buffer.buf, &nOut, &pOut);
+  int rc;
+  Py_BEGIN_ALLOW_THREADS
+    rc = sqlite3changeset_invert(changeset_buffer.len, changeset_buffer.buf, &nOut, &pOut);
+  Py_END_ALLOW_THREADS;
+
   if (rc == SQLITE_OK)
     result = PyBytes_FromStringAndSize((char *)pOut, nOut);
   else
@@ -1574,7 +1578,10 @@ APSWChangeset_concat(PyObject *Py_UNUSED(static_method), PyObject *const *fast_a
   int nOut;
   void *pOut = NULL;
 
-  int rc = sqlite3changeset_concat(A_buffer.len, A_buffer.buf, B_buffer.len, B_buffer.buf, &nOut, &pOut);
+  int rc;
+  Py_BEGIN_ALLOW_THREADS
+    rc = sqlite3changeset_concat(A_buffer.len, A_buffer.buf, B_buffer.len, B_buffer.buf, &nOut, &pOut);
+  Py_END_ALLOW_THREADS;
 
   if (rc == SQLITE_OK)
     result = PyBytes_FromStringAndSize((char *)pOut, nOut);
