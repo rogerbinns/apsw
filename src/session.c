@@ -342,23 +342,10 @@ APSWSession_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   self->connection = db;
   Py_INCREF(self->connection);
 
-  PyObject *weakref = NULL;
+  if (0 == Connection_add_dependent(db, self_))
+    return 0;
 
-  weakref = PyWeakref_NewRef((PyObject *)self, NULL);
-  if (!weakref)
-    goto error;
-  if (PyList_Append(db->dependents, weakref))
-    goto error;
-
-  Py_DECREF(weakref);
-
-  assert(!PyErr_Occurred());
-
-  return 0;
-
-error:
   assert(PyErr_Occurred());
-  Py_XDECREF(weakref);
   return -1;
 }
 
@@ -2582,27 +2569,22 @@ APSWChangesetBuilder_schema(PyObject *self_, PyObject *const *fast_args, Py_ssiz
 
   CHECK_CLOSED(db, NULL);
 
-  PyObject *weakref = PyWeakref_NewRef((PyObject *)self, NULL);
-  if (!weakref)
-    return NULL;
-  int append = PyList_Append(db->dependents, weakref);
-  Py_DECREF(weakref);
-  if (append)
-    return NULL;
-
-  /* the only way this fails is memory allocation */
-  int rc = sqlite3changegroup_schema(self->group, db->db, schema);
-  SET_EXC(rc, NULL);
-  if (PyErr_Occurred())
+  if (0 == Connection_add_dependent(db, self_))
   {
-    Connection_remove_dependent(self->connection, self_);
-    return NULL;
+    int rc = sqlite3changegroup_schema(self->group, db->db, schema);
+    if (rc != SQLITE_OK)
+    {
+      SET_EXC(rc, NULL);
+      Connection_remove_dependent(db, self_);
+      return NULL;
+    }
+
+    self->connection = db;
+    Py_INCREF(self->connection);
+
+    Py_RETURN_NONE;
   }
-
-  self->connection = db;
-  Py_INCREF(self->connection);
-
-  Py_RETURN_NONE;
+  return NULL;
 }
 
 /** .. method:: output() -> bytes

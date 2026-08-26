@@ -907,6 +907,10 @@ class Tester:
                 self.expect_exception.append(MemoryError)
                 return (0, MemoryError, self.FAULTS)
 
+            if fname == "Connection_add_dependent":
+                self.expect_exception.append(MemoryError)
+                return (-1, MemoryError, self.FAULTS)
+
             # pointers with 0 being failure
             if fname in {
                 "sqlite3_backup_init",

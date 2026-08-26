@@ -346,14 +346,40 @@ Connection_internal_cleanup(Connection *self)
 
 }
 
+#undef Connection_add_dependent
+/* adds a weakref to object, 0 on success */
+static int
+Connection_add_dependent(Connection *self, PyObject *object)
+{
+#include "faultinject.h"
+  assert(self);
+
+  if (!self->dependents)
+  {
+    self->dependents = PyList_New(0);
+    if (!self->dependents)
+      return -1;
+  }
+  PyObject *weakref = PyWeakref_NewRef(object, NULL);
+  if (!weakref)
+  {
+    assert(PyErr_Occurred());
+    return -1;
+  }
+  int res = PyList_Append(self->dependents, weakref);
+  Py_DECREF(weakref);
+  return res;
+}
+
 static void
 Connection_remove_dependent(Connection *self, PyObject *o)
 {
+  assert(self);
   /* in addition to removing the dependent, we also remove any dead
      weakrefs */
   Py_ssize_t i;
 
-  for (i = 0; i < PyList_GET_SIZE(self->dependents);)
+  for (i = 0; self->dependents && i < PyList_GET_SIZE(self->dependents);)
   {
     PyObject *wr = PyList_GET_ITEM(self->dependents, i);
     PyObject *wo = NULL;
@@ -942,14 +968,8 @@ Connection_blob_open(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fas
   APSWBlob_init(apswblob, self, blob, writeable);
   PyObject_GC_Track((PyObject *)apswblob);
   blob = NULL;
-  weakref = PyWeakref_NewRef((PyObject *)apswblob, NULL);
-  if (!weakref)
-    goto error;
-  if (0 == PyList_Append(self->dependents, weakref))
-  {
-    Py_DECREF(weakref);
+  if (0 == Connection_add_dependent(self, (PyObject *)apswblob))
     return (PyObject *)apswblob;
-  }
 error:
   if (blob)
     sqlite3_blob_close(blob);
@@ -1033,22 +1053,12 @@ Connection_backup(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   backup = NULL;
 
   /* add to dependent lists */
-  weakref = PyWeakref_NewRef((PyObject *)apswbackup, NULL);
-  if (!weakref)
-    goto finally;
-  res = PyList_Append(self->dependents, weakref);
-  if (res)
-    goto finally;
-  Py_SETREF(weakref, PyWeakref_NewRef((PyObject *)apswbackup, NULL));
-  if (!weakref)
-    goto finally;
-  res = PyList_Append(sourceconnection->dependents, weakref);
-  if (res)
-    goto finally;
-  Py_CLEAR(weakref);
-
-  result = (PyObject *)apswbackup;
-  apswbackup = NULL;
+  if (0 == Connection_add_dependent(self, (PyObject *)apswbackup)
+      && 0 == Connection_add_dependent(sourceconnection, (PyObject *)apswbackup))
+  {
+    result = (PyObject *)apswbackup;
+    apswbackup = NULL;
+  }
 
 finally:
   /* check errors occurred vs result */
@@ -1077,7 +1087,6 @@ Connection_cursor(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   Connection *self = (Connection *)self_;
   PyObject *cursor = NULL;
-  PyObject *weakref;
 
   CHECK_CLOSED(self, NULL);
 
@@ -1089,17 +1098,12 @@ Connection_cursor(PyObject *self_, PyObject *Py_UNUSED(unused))
     return NULL;
   }
 
-  weakref = PyWeakref_NewRef(cursor, NULL);
-  if (!weakref)
-  {
-    Py_DECREF(cursor);
-    return NULL;
-  }
-  if (PyList_Append(self->dependents, weakref))
-    Py_CLEAR(cursor);
-  Py_DECREF(weakref);
+  if (0 == Connection_add_dependent(self, cursor))
+    return cursor;
 
-  return cursor;
+  Py_DECREF(cursor);
+
+  return NULL;
 }
 
 /** .. method:: set_busy_timeout(milliseconds: int) -> None

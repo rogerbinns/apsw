@@ -17,6 +17,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 
 #undef APSWCursor_internal_get_description
 #undef APSWCursor_is_dict_binding
+#undef Connection_add_dependent
 #undef Connection_fts5_api
 #undef MakeExistingException
 #undef MakeTableChange
@@ -309,6 +310,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_APSWCursor_is_dict_binding = (typeof (_res_APSWCursor_is_dict_binding))18;                                                                                            \
     }                                                                                                                                                                              \
     _res_APSWCursor_is_dict_binding;                                                                                                                                               \
+})
+#define Connection_add_dependent(...) \
+({                                                                                                                                                                           \
+    __auto_type _res_Connection_add_dependent = 0 ? Connection_add_dependent(__VA_ARGS__) : 0;                                                                               \
+                                                                                                                                                                             \
+    _res_Connection_add_dependent = (typeof (_res_Connection_add_dependent))APSW_FaultInjectControl("Connection_add_dependent", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                             \
+    if ((typeof (_res_Connection_add_dependent))0x1FACADE == _res_Connection_add_dependent)                                                                                  \
+       _res_Connection_add_dependent = Connection_add_dependent(__VA_ARGS__);                                                                                                \
+    else if ((typeof(_res_Connection_add_dependent))0x2FACADE == _res_Connection_add_dependent)                                                                              \
+    {                                                                                                                                                                        \
+        Connection_add_dependent(__VA_ARGS__);                                                                                                                               \
+        _res_Connection_add_dependent = (typeof (_res_Connection_add_dependent))18;                                                                                          \
+    }                                                                                                                                                                        \
+    _res_Connection_add_dependent;                                                                                                                                           \
 })
 #define Connection_fts5_api(...) \
 ({                                                                                                                                                            \

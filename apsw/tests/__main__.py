@@ -6385,6 +6385,7 @@ class APSW(unittest.TestCase):
                     "aclose",
                     "interrupt",
                     "close_internal",
+                    "add_dependent",
                     "remove_dependent",
                     "readonly",
                     "getmainfilename",
