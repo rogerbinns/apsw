@@ -38,7 +38,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
     callable = PySys_GetObject("apsw_fault_inject_control");
     if (!callable)
     {
-      err_details = "APSW debug build: missing sys.apsw_fault_inject_control";
+      fprintf(stderr, "APSW debug build: missing sys.apsw_fault_inject_control\n");
       goto errorexit;
     }
     Py_INCREF(callable);
@@ -47,7 +47,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
       check_set = PySys_GetObject("apsw_fault_inject_control_proceed");
       if (check_set)
       {
-        printf("APSW debug build: apsw_fault_inject_control_proceed set in use\n");
+        fprintf(stderr, "APSW debug build: apsw_fault_inject_control_proceed set in use\n");
         Py_INCREF(check_set);
       }
     }
@@ -123,11 +123,12 @@ success:
 errorexit:
   Py_CLEAR(res);
   PY_ERR_FETCH(exc_errexit);
-  if (!initialized)
+  if (err_details)
+  {
+    fprintf(stderr, "%s\n", err_details);
     fprintf(stderr, "FaultInjectControl ERROR: {\"%s\", \"%s\", \"%s\", %d, \"%s\"}\n", faultfunction, filename,
             funcname, linenum, args);
-  if (err_details)
-    fprintf(stderr, "%s\n", err_details);
+  }
   if (PY_ERR_NOT_NULL(exc_errexit))
   {
     PY_ERR_NORMALIZE(exc_errexit);
