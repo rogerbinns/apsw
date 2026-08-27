@@ -25,8 +25,7 @@ int
 sqlite3_extension_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi)
 {
   SQLITE_EXTENSION_INIT2(pApi)
-  sqlite3_create_function_v2(db, "half", 1, SQLITE_ANY, 0, halfFunc, 0, 0, 0);
-  return 0;
+  return sqlite3_create_function_v2(db, "half", 1, SQLITE_ANY, 0, halfFunc, 0, 0, 0);
 }
 
 /* this is code added by me and checks that alternate entry points work by
@@ -45,6 +44,5 @@ int
 alternate_sqlite3_extension_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi)
 {
   SQLITE_EXTENSION_INIT2(pApi)
-  sqlite3_create_function_v2(db, "doubleup", 1, SQLITE_ANY, 0, doubleFunc, 0, 0, 0);
-  return 0;
+  return sqlite3_create_function_v2(db, "doubleup", 1, SQLITE_ANY, 0, doubleFunc, 0, 0, 0);
 }
