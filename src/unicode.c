@@ -2026,6 +2026,7 @@ typedef struct
   Py_ssize_t last_str_offset;
   Py_ssize_t last_bytes_offset;
   PyObject *str;
+  int init_was_called;
 } ToUtf8PositionMapper;
 
 static void
@@ -2103,6 +2104,8 @@ static int
 ToUtf8PositionMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
   ToUtf8PositionMapper *self = (ToUtf8PositionMapper *)self_;
+  PREVENT_INIT_MULTIPLE_CALLS;
+
 #define toutf8posmapper_USAGE "to_utf8_position_mapper.__init__(utf8: bytes)"
   ARG_CONVERT_VARARGS_TO_FASTCALL(1, toutf8posmapper_USAGE);
 
@@ -2170,6 +2173,7 @@ typedef struct
   Py_ssize_t last_bytes_offset;
   const char *bytes;
   PyObject *bytes_object;
+  int init_was_called;
 } FromUtf8PositionMapper;
 
 static void
@@ -2255,6 +2259,8 @@ static int
 FromUtf8PositionMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
   FromUtf8PositionMapper *self = (FromUtf8PositionMapper *)self_;
+  PREVENT_INIT_MULTIPLE_CALLS;
+
 #define fromutf8posmapper_USAGE "from_utf8_position_mapper.__init__(string: str)"
 
   ARG_CONVERT_VARARGS_TO_FASTCALL(1, fromutf8posmapper_USAGE);
@@ -2327,6 +2333,7 @@ typedef struct
   /* track if last addition was a separator because we don't add
      multiple separators in a row */
   int last_is_separator;
+  int init_was_called;
 } OffsetMapper;
 
 static PyObject *
@@ -2469,6 +2476,8 @@ static int
 OffsetMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
   OffsetMapper *self = (OffsetMapper *)self_;
+  PREVENT_INIT_MULTIPLE_CALLS;
+
   if (PyTuple_GET_SIZE(args) || kwargs)
   {
     PyErr_Format(PyExc_TypeError, "OffsetMapper.__init__ takes no arguments");
