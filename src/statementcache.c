@@ -286,7 +286,9 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
 
   if (options->explain >= 0 && vdbestatement)
   {
-    res = sqlite3_stmt_explain(vdbestatement, options->explain);
+    Py_BEGIN_ALLOW_THREADS
+      res = sqlite3_stmt_explain(vdbestatement, options->explain);
+    Py_END_ALLOW_THREADS;
     if (res != SQLITE_OK)
     {
       SET_EXC(res, sc->db);
