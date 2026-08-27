@@ -188,7 +188,13 @@ apsw_hash_bytes(void *data, Py_ssize_t nbytes)
     cdata++;
     nbytes--;
   }
-  return (Py_hash_t)hash;
+
+  Py_hash_t actual_hash = (Py_hash_t)hash;
+  /* we use -1 as a special not hashed value (as does CPython) so
+     handle the unlikely case of that occurring */
+  if (actual_hash == (Py_hash_t)SC_SENTINEL_HASH)
+    return 73;  /* CPython uses -2 as the replacement, we are rebels */
+  return actual_hash;
 }
 
 static int
