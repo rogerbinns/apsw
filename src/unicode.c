@@ -2351,7 +2351,7 @@ OffsetMapper_add(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   ARG_MANDATORY ARG_PyUnicode(text);
   ARG_MANDATORY ARG_Py_ssize_t(source_start);
   ARG_MANDATORY ARG_Py_ssize_t(source_end);
-  ARG_EPILOG(NULL, "OffsetMapper.add()text: str, source_start: int, source_end: int", );
+  ARG_EPILOG(NULL, "OffsetMapper.add(text: str, source_start: int, source_end: int)", );
 
   /* reject going backwards */
   if (source_end < source_start)
@@ -2453,6 +2453,11 @@ OffsetMapper_call(PyObject *self_, PyObject *const *fast_args, size_t nargsf, Py
     {
       self->last_location = self->offset_map[i].location;
       self->last_offset = i;
+      if (location - self->last_location >= PY_SSIZE_T_MAX - self->offset_map[i].offset)
+      {
+        PyErr_SetString(PyExc_OverflowError, "offset overflow");
+        return NULL;
+      }
       return PyLong_FromSsize_t(self->offset_map[i].offset + (location - self->last_location));
     }
   }
