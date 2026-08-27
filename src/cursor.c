@@ -1307,6 +1307,9 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
+  if (explain < -1 || explain > 2)
+    return PyErr_Format(PyExc_ValueError, "explain should be 0, 1, or 2 if provided");
+
   while (self->aiter_head < self->aiter_tail)
   {
     Py_DECREF(self->aiter_slots[self->aiter_head]);
@@ -1432,6 +1435,9 @@ APSWCursor_executemany(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     ARG_OPTIONAL ARG_int(explain);
     ARG_EPILOG(NULL, Cursor_executemany_USAGE, );
   }
+
+  if (explain < -1 || explain > 2)
+    return PyErr_Format(PyExc_ValueError, "explain should be 0, 1, or 2 if provided");
 
   while (self->aiter_head < self->aiter_tail)
   {
@@ -2426,8 +2432,10 @@ APSWCursor_expanded_sql(PyObject *self_, void *unused)
     res = convertutf8string(es);
     sqlite3_free((void *)es);
   }
-  else
+  else if (self->statement->vdbestatement)
     SET_EXC(SQLITE_NOMEM, NULL);
+  else
+    res = PyUnicode_FromString("");
   sqlite3_mutex_leave(self->connection->dbmutex);
 
   return res;

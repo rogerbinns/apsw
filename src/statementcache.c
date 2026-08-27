@@ -252,6 +252,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   Py_BEGIN_ALLOW_THREADS
     res = sqlite3_prepare_v3(sc->db, utf8, utf8size + 1, options->prepare_flags, &vdbestatement, &tail);
   Py_END_ALLOW_THREADS;
+  MakeExistingException();
   if (res != SQLITE_OK || PyErr_Occurred())
   {
     SET_EXC(res, sc->db);
@@ -277,7 +278,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   if (!vdbestatement)
     hash = SC_SENTINEL_HASH;
 
-  if (options->explain >= 0)
+  if (options->explain >= 0 && vdbestatement)
   {
     res = sqlite3_stmt_explain(vdbestatement, options->explain);
     if (res != SQLITE_OK)
