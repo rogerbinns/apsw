@@ -303,6 +303,18 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist)
     argp_optindex++;                                                                                                   \
   } while (0)
 
+#define ARG_Bytes(varname)                                                                                             \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!PyBytes_CheckExact(useargs[argp_optindex]))                                                                   \
+    {                                                                                                                  \
+      PyErr_Format(PyExc_TypeError, "Expected bytes, not %s", Py_TypeName(useargs[argp_optindex]));                    \
+      goto param_error;                                                                                                \
+    }                                                                                                                  \
+    varname = useargs[argp_optindex];                                                                                  \
+    argp_optindex++;                                                                                                   \
+  } while (0)
+
 #define ARG_unsigned_long(varname)                                                                                     \
   do                                                                                                                   \
   {                                                                                                                    \

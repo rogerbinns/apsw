@@ -2021,7 +2021,7 @@ typedef struct
   Py_ssize_t bytes_len;
   Py_ssize_t str_offset;
   Py_ssize_t bytes_offset;
-  Py_buffer buffer;
+  PyObject *utf8;
   /* we often go backwards as spans are iterated so remember previous */
   Py_ssize_t last_str_offset;
   Py_ssize_t last_bytes_offset;
@@ -2033,13 +2033,8 @@ static void
 ToUtf8PositionMapper_finalize(PyObject *self_)
 {
   ToUtf8PositionMapper *self = (ToUtf8PositionMapper *)self_;
-  /* this is intentionally implemented to be safe to call multiple times */
-  if (self->buffer.obj)
-  {
 
-    PyBuffer_Release(&self->buffer);
-    self->buffer.obj = NULL;
-  }
+  Py_CLEAR(self->utf8);
   Py_CLEAR(self->str);
 }
 
@@ -2079,10 +2074,10 @@ ToUtf8PositionMapper_call(PyObject *self_, PyObject *const *fast_args, size_t na
 
   while (self->str_offset < pos)
   {
-    if (self->bytes_offset >= self->buffer.len)
+    if (self->bytes_offset >= PyBytes_GET_SIZE(self->utf8))
       return PyErr_Format(PyExc_IndexError, "position is beyond end of string");
 
-    unsigned b = ((unsigned char *)self->buffer.buf)[self->bytes_offset];
+    unsigned b = ((unsigned char *)PyBytes_AS_STRING(self->utf8))[self->bytes_offset];
 
     if ((b & 0x80 /* 0b1000_0000 */) == 0)
       self->bytes_offset += 1;
@@ -2111,14 +2106,12 @@ ToUtf8PositionMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
   PyObject *utf8 = NULL;
   ARG_PROLOG(1, "utf8");
-  ARG_MANDATORY ARG_Buffer(utf8);
+  ARG_MANDATORY ARG_Bytes(utf8);
   ARG_EPILOG(-1, toutf8posmapper_USAGE, Py_XDECREF(fast_kwnames));
 
-  int res = PyObject_GetBuffer(utf8, &self->buffer, PyBUF_SIMPLE);
-  if (res != 0)
-    return -1;
+  self->utf8 = Py_NewRef(utf8);
 
-  self->str = PyUnicode_DecodeUTF8(self->buffer.buf, self->buffer.len, "strict");
+  self->str = PyUnicode_DecodeUTF8(PyBytes_AS_STRING(utf8), PyBytes_GET_SIZE(utf8), "strict");
   if (!self->str)
   {
     ToUtf8PositionMapper_finalize(self_);
