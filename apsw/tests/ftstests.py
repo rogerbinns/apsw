@@ -2530,6 +2530,19 @@ class Unicode(unittest.TestCase):
         self.assertTrue(ew(f"a{ctilde}bc", "bc"))
         self.assertEqual(3, fi(f"{bird}{zwj}{fire}{fire}", f"{fire}"))
 
+        # ensure no over/underflow in ubsan
+        for bias in (0, 1, 2, 4, 45):
+            apsw._unicode.grapheme_find("hello", "l" * bias, bias, -sys.maxsize)
+            apsw._unicode.grapheme_find("hello", "l" * 45, bias, -sys.maxsize)
+            apsw._unicode.grapheme_find("hello", "l" * bias, -bias, sys.maxsize)
+            apsw._unicode.grapheme_find("hello", "l" * bias, sys.maxsize - bias, -sys.maxsize)
+            apsw._unicode.grapheme_find("hello", "l" * bias, -sys.maxsize + bias, -sys.maxsize)
+            apsw._unicode.grapheme_find("hello", "l" * bias, sys.maxsize - bias, -sys.maxsize + bias)
+            apsw._unicode.grapheme_find("hello", "l" * bias, -sys.maxsize + bias, -sys.maxsize + bias)
+            apsw._unicode.grapheme_find("hello", "l" * bias * 2, sys.maxsize - bias, -sys.maxsize + bias)
+            apsw._unicode.grapheme_find("hello", "l" * bias * 2, -sys.maxsize + bias, -sys.maxsize + bias)
+
+
     def testSubstr(self):
         "grapheme aware substr"
         su = apsw.unicode.grapheme_substr

@@ -1705,12 +1705,25 @@ grapheme_find(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
   int substring_kind = PyUnicode_KIND(substring);
   Py_ssize_t substring_end = PyUnicode_GET_LENGTH(substring);
 
-  /* fixup offsets */
+  /* fixup offsets - this code is convoluted to avoid ubsan overflow.
+     start and end can have the full negative to positive range.  it is
+     solved by casting to Unsigned for over/underflows and back to Signed
+     for results */
+#define U(x) ((size_t)x)
+#define S(x) ((Py_ssize_t)x)
+
   if (start < 0)
-    start = Py_MAX(0, text_end + start);
+  {
+    start = S(U(text_end) + U(start));
+    if(start<0)
+      start = 0;
+  }
   if (end < 0)
-    end = text_end + end;
-  end = Py_MIN(end, text_end) - substring_end + 1;
+    end = S(U(text_end) + U(end));
+  end = S(U(Py_MIN(end, text_end)) - U(substring_end) + U(1));
+
+#undef U
+#undef S
 
   /* zero length is always found if start is 0 even if end is before start! */
   if (substring_end == 0 && start == 0)
