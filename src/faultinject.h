@@ -228,6 +228,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef sqlite3_vfs_register
 #undef sqlite3_vfs_unregister
 #undef sqlite3_vtab_config
+#undef sqlite3_vtab_in_first
 #undef sqlite3_vtab_in_next
 #undef sqlite3_vtab_rhs_value
 #undef sqlite3_wal_autocheckpoint
@@ -3515,6 +3516,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_sqlite3_vtab_config = (typeof (_res_sqlite3_vtab_config))18;                                                                                     \
     }                                                                                                                                                         \
     _res_sqlite3_vtab_config;                                                                                                                                 \
+})
+#define sqlite3_vtab_in_first(...) \
+({                                                                                                                                                                  \
+    __auto_type _res_sqlite3_vtab_in_first = 0 ? sqlite3_vtab_in_first(__VA_ARGS__) : 0;                                                                            \
+                                                                                                                                                                    \
+    _res_sqlite3_vtab_in_first = (typeof (_res_sqlite3_vtab_in_first))APSW_FaultInjectControl("sqlite3_vtab_in_first", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                                    \
+    if ((typeof (_res_sqlite3_vtab_in_first))0x1FACADE == _res_sqlite3_vtab_in_first)                                                                               \
+       _res_sqlite3_vtab_in_first = sqlite3_vtab_in_first(__VA_ARGS__);                                                                                             \
+    else if ((typeof(_res_sqlite3_vtab_in_first))0x2FACADE == _res_sqlite3_vtab_in_first)                                                                           \
+    {                                                                                                                                                               \
+        sqlite3_vtab_in_first(__VA_ARGS__);                                                                                                                         \
+        _res_sqlite3_vtab_in_first = (typeof (_res_sqlite3_vtab_in_first))18;                                                                                       \
+    }                                                                                                                                                               \
+    _res_sqlite3_vtab_in_first;                                                                                                                                     \
 })
 #define sqlite3_vtab_in_next(...) \
 ({                                                                                                                                                               \

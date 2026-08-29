@@ -354,32 +354,42 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
 
   default:
   case SQLITE_NULL:
-    if (in_constraint_possible && sqlite3_vtab_in_first(value, &in_value) == SQLITE_OK)
+    if (in_constraint_possible)
     {
-      int res;
-      PyObject *v = NULL, *set = PySet_New(NULL);
-      if (!set)
-        return NULL;
-      while (in_value)
+      int res = sqlite3_vtab_in_first(value, &in_value);
+      if (res == SQLITE_OK)
       {
-        v = convert_value_to_pyobject(in_value, 0, 0);
-        if (!v || 0 != PySet_Add(set, v))
-          goto error;
-        Py_CLEAR(v);
-        res = sqlite3_vtab_in_next(value, &in_value);
-        if (res != SQLITE_DONE && res != SQLITE_OK)
+        PyObject *v = NULL, *set = PySet_New(NULL);
+        if (!set)
+          return NULL;
+        while (in_value)
         {
-          /* this should use SET_EXC but there is a circular dependency between that
+          v = convert_value_to_pyobject(in_value, 0, 0);
+          if (!v || 0 != PySet_Add(set, v))
+            goto error;
+          Py_CLEAR(v);
+          res = sqlite3_vtab_in_next(value, &in_value);
+          if (res != SQLITE_DONE && res != SQLITE_OK)
+          {
+            /* this should use SET_EXC but there is a circular dependency between that
              file and this one, so we punt on this unlikely scenario */
-          PyErr_Format(PyExc_ValueError, "Failed in sqlite3_vtab_in_next result %d", res);
-          goto error;
+            PyErr_Format(PyExc_ValueError, "Failed in sqlite3_vtab_in_next result %d", res);
+            goto error;
+          }
         }
+        return set;
+      error:
+        Py_XDECREF(v);
+        Py_XDECREF(set);
+        return NULL;
       }
-      return set;
-    error:
-      Py_XDECREF(v);
-      Py_XDECREF(set);
-      return NULL;
+      /* SQLITE_ERROR means it is not an in, anything else is an error
+         like no mem */
+      if (res != SQLITE_ERROR)
+      {
+        SET_EXC(res, NULL);
+        return NULL;
+      }
     }
     void *pointer = sqlite3_value_pointer(value, PYOBJECT_BIND_TAG);
     if (pointer)

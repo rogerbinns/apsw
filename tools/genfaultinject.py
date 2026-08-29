@@ -159,7 +159,7 @@ returns = {
             sqlite3_table_column_metadata sqlite3_threadsafe
             sqlite3_trace_v2 sqlite3_vfs_register
             sqlite3_vfs_unregister sqlite3_vtab_config
-            sqlite3_vtab_in_next sqlite3_vtab_rhs_value
+            sqlite3_vtab_in_first sqlite3_vtab_in_next sqlite3_vtab_rhs_value
             sqlite3_wal_autocheckpoint sqlite3_wal_checkpoint_v2
 
             sqlite3_preupdate_old sqlite3_preupdate_new
