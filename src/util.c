@@ -151,10 +151,11 @@ apsw_AddPendingCall(int (*func)(void *), void *arg)
       break;
   if (i == pending_call_slots_count)
   {
-    pending_call_entry *pending_call_slots_new
-        = PyMem_Resize(pending_call_slots, pending_call_entry, pending_call_slots_count + 1);
-    if (!pending_call_slots_new)
+    pending_call_entry *pending_call_slots_orig = pending_call_slots;
+    PyMem_Resize(pending_call_slots, pending_call_entry, pending_call_slots_count + 1);
+    if (!pending_call_slots)
     {
+      pending_call_slots = pending_call_slots_orig;
       PyErr_NoMemory();
       res = -1;
       goto exit;
