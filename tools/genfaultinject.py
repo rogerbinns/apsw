@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import sys
+import pathlib
 import subprocess
+import sys
 
 proto = """
 static long long
@@ -298,6 +299,6 @@ if __name__ == "__main__":
         all.update(v)
     if sys.argv[1].endswith(".h"):
         r = genfile(all)
-        open(sys.argv[1], "wt").write(r)
+        pathlib.Path(sys.argv[1]).write_text(r)
     else:
         check_dll(sys.argv[1], all)
