@@ -285,7 +285,7 @@ src/_unicodedb.c: tools/ucdprops2code.py ## Update generated Unicode database lo
 	$(PYTHON) tools/ucdprops2code.py $@
 
 # building a python debug interpreter
-PYDEBUG_VER=3.15.0rc1
+PYDEBUG_VER=3.15.0rc2
 PYDEBUG_DIR=/space/pydebug
 PYTHREAD_VER=$(PYDEBUG_VER)
 PYTHREAD_DIR=/space/pythread
@@ -307,8 +307,8 @@ pythread: ## Build a debug python including thread sanitizer.  Extensions it bui
 	set -x && cd "$(PYTHREAD_DIR)" && find . -delete && \
 	curl https://www.python.org/ftp/python/`echo $(PYTHREAD_VER) | sed 's/[abr].*//'`/Python-$(PYTHREAD_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYTHREAD_VER) && \
-	./configure   --with-address-sanitizer --with-undefined-behavior-sanitizer --with-strict-overflow --with-thread-sanitizer \
-	--without-pymalloc --with-pydebug --prefix="$(PYTHREAD_DIR)" --without-freelists  --with-assertions --disable-ipv6 && \
+	./configure  --with-undefined-behavior-sanitizer --with-strict-overflow --with-thread-sanitizer \
+	--without-pymalloc --with-pydebug --prefix="$(PYTHREAD_DIR)"  --with-assertions  && \
 	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYTHREAD_DIR)/bin/python3
 
@@ -317,7 +317,7 @@ pyfreethread: ## Build a debug FREE THREADED python
 	curl https://www.python.org/ftp/python/`echo $(PYFREETHREAD_VER) | sed 's/[abr].*//'`/Python-$(PYFREETHREAD_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYFREETHREAD_VER) && \
 	./configure --disable-gil  --with-address-sanitizer --with-undefined-behavior-sanitizer --with-strict-overflow \
-	--with-pydebug --prefix="$(PYFREETHREAD_DIR)" --without-freelists  --with-assertions && \
+	--with-pydebug --prefix="$(PYFREETHREAD_DIR)" --with-assertions && \
 	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYFREETHREAD_DIR)/bin/python3
 
