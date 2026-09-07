@@ -3,6 +3,10 @@
 
 set -e
 
+# make ub issues fatal instead of warning
+UBSAN_OPTIONS="halt_on_error=1"
+export UBSAN_OPTIONS
+
 # find python
 PYTHON=${PYTHON:-python3} # use whatever is in the path
 
@@ -24,7 +28,7 @@ MOREFLAGS=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('CCSHARE
 LINKER=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('LDSHARED'))"`
 SOSUFFIX=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
 
-PROFILE="-O0 --coverage"
+PROFILE=${PROFILE:-"-O0 --coverage"}
 
 set -ex
 
