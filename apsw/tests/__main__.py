@@ -5358,12 +5358,7 @@ class APSW(unittest.TestCase):
         base_name = self.db.db_filename("main")
 
         def make_db(num):
-            while True:
-                try:
-                    adb = apsw.Connection(base_name + (str(num) if num > 1 else ""))
-                    break
-                except apsw.CantOpenError:
-                    pass
+            adb = apsw.Connection(base_name + (str(num) if num > 1 else ""))
             adb.create_scalar_function("timesten", lambda x: x * 10)
             adb.create_scalar_function("sleep", lambda x: apsw.sleep(x))
             adb.set_busy_timeout(7)
@@ -5508,6 +5503,7 @@ class APSW(unittest.TestCase):
 
                 except (
                     apsw.BusyError,
+                    apsw.CantOpenError,
                     apsw.CursorClosedError,
                     apsw.ConnectionClosedError,
                     apsw.ThreadingViolationError,
