@@ -102,8 +102,11 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   int res, setexc = 0;
 
   /* should have been called with active backup */
-  assert(self->backup);
   assert(self->in_backup);
+  assert(self->backup);
+
+  assert(self->dest);
+  assert(self->source);
 
   Py_BEGIN_ALLOW_THREADS
     res = sqlite3_backup_finish(self->backup);
@@ -134,11 +137,14 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   self->backup = 0;
   /* in_backup is not reset as a safety because mutex_acquire succeeds
      on a NULL pointer */
-  sqlite3_mutex_leave(self->source->dbmutex);
-  sqlite3_mutex_leave(self->dest->dbmutex);
 
   Connection_remove_dependent(self->dest, (PyObject *)self);
   Connection_remove_dependent(self->source, (PyObject *)self);
+
+  sqlite3_mutex *one = self->source->dbmutex, *two = self->dest->dbmutex;
+
+  sqlite3_mutex_leave(one);
+  sqlite3_mutex_leave(two);
 
   Py_CLEAR(self->dest);
   Py_CLEAR(self->source);
@@ -146,38 +152,31 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   return setexc;
 }
 
-static int
-APSWBackup_dealloc_mutex(void *self_)
-{
-  APSWBackup *self = (APSWBackup *)self_;
-  if (self->backup)
-  {
-    DBMUTEX_RETRY_2(self->source, self->dest, APSWBackup_dealloc_mutex);
-    /* we can't be in dealloc if something is using us */
-    assert(self->in_backup == 0);
-    self->in_backup = 1;
-    APSWBackup_close_internal(self, 2);
-  }
-  Py_CLEAR(self->done);
-
-  Py_TpFree(self_);
-
-  return 0;
-}
-
 static void
 APSWBackup_dealloc(PyObject *self_)
 {
   APSWBackup *self = (APSWBackup *)self_;
   PyObject_GC_UnTrack(self_);
-
   APSW_CLEAR_WEAKREFS;
 
-  PY_ERR_FETCH(exc);
-  APSWBackup_dealloc_mutex(self);
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
-  PY_ERR_RESTORE(exc);
+  if (self->backup)
+  {
+    if (SQLITE_OK != sqlite3_mutex_try(self->dest->dbmutex))
+      goto later;
+    if (SQLITE_OK != sqlite3_mutex_try(self->source->dbmutex))
+    {
+      sqlite3_mutex_leave(self->dest->dbmutex);
+      goto later;
+    }
+    APSWBackup_close_internal(self, 2);
+  }
+
+  Py_TpFree(self_);
+  return;
+
+later:
+  Connection_add_dependent_hard(self->dest, self_);
+  Connection_add_dependent_hard(self->source, self_);
 }
 
 /** .. method:: step(npages: int = -1) -> bool

@@ -2108,9 +2108,6 @@ apsw_module_clear_internal(PyObject *self, int deep)
 
     Py_CLEAR(collections_abc_Mapping);
     Py_CLEAR(Exc_io_UnsupportedOperation);
-    PyMem_Free(pending_call_slots);
-    pending_call_slots = 0;
-    pending_call_slots_count = 0;
 
     fini_apsw_strings();
   }

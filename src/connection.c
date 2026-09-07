@@ -371,33 +371,62 @@ Connection_add_dependent(Connection *self, PyObject *object)
   return res;
 }
 
+/* doesn't error and exceptions become unraisable.  this should only
+   be called from tp_dealloc and if adding fails will result in the
+   object being leaked.  it takes a hard reference to the object
+   not the usual weakref */
+static void
+Connection_add_dependent_hard(Connection *self, PyObject *o)
+{
+  PY_ERR_FETCH(exc);
+
+  if (!self->dependents)
+    self->dependents = PyList_New(0);
+
+  if (self->dependents)
+    /* o may already be in the list as a weak reference so
+       we could replace that entry with this one as an optimisation */
+    PyList_Append(self->dependents, o);
+
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
+
+  PY_ERR_RESTORE(exc);
+}
+
 static void
 Connection_remove_dependent(Connection *self, PyObject *o)
 {
-  assert(self);
   /* in addition to removing the dependent, we also remove any dead
-     weakrefs */
+     weakrefs we encounter.  if o==NULL then all dead weakrefs
+     are refmoved */
   Py_ssize_t i;
 
-  for (i = 0; self->dependents && i < PyList_GET_SIZE(self->dependents);)
+  for (i = 0; self->dependents && i < PyList_GET_SIZE(self->dependents); i++)
   {
-    PyObject *wr = PyList_GET_ITEM(self->dependents, i);
-    PyObject *wo = NULL;
-    if (PyWeakref_GetRef(wr, &wo) < 0)
+    PyObject *item = PyList_GET_ITEM(self->dependents, i);
+    if (PyWeakref_Check(item))
     {
-      apsw_write_unraisable(NULL);
-      continue;
-    }
-    if (!wo || Py_Is(wo, o))
-    {
-      PyList_SetSlice(self->dependents, i, i + 1, NULL);
-      if (!wo)
+      PyObject *wo = NULL;
+      if (PyWeakref_GetRef(item, &wo) < 0)
+      {
+        apsw_write_unraisable(NULL);
         continue;
-      Py_DECREF(wo);
-      return;
+      }
+      if (wo && !Py_Is(wo, o))
+        continue;
     }
-    Py_XDECREF(wo);
-    i++;
+    else if (!Py_Is(item, o))
+      continue;
+
+    PyList_SetSlice(self->dependents, i, i + 1, NULL);
+
+    if (PyErr_Occurred())
+      apsw_write_unraisable(NULL);
+    if (o)
+      break;
+    /* reprocess the same index in next iteration when clearing weakrefs */
+    i -= 1;
   }
 }
 
@@ -406,53 +435,72 @@ static PyTypeObject APSWSessionType;
 static PyTypeObject APSWChangesetBuilderType;
 #endif
 
-/* returns zero on success, non-zero on error */
+/* returns zero on success, -1 on error */
 static int
 Connection_close_internal(Connection *self, int force)
 {
   int res;
 
-  PY_ERR_FETCH_IF(force == 2, exc_save);
-
   /* close our dependents by repeatedly processing first item until
-     list is empty.  note that closing an item will cause the list to
-     be perturbed as a side effect */
+     list is empty */
   while (self->dependents && PyList_GET_SIZE(self->dependents))
   {
-    PyObject *closeres = NULL, *item = NULL, *wr = PyList_GET_ITEM(self->dependents, 0);
-    if (PyWeakref_GetRef(wr, &item) < 0)
-      return 1;
-    if (!item)
+    PyObject *closeres = NULL, *dependent = NULL;
+
+    /* pop the dependent */
+    dependent = Py_NewRef(PyList_GET_ITEM(self->dependents, 0));
+    PyList_SetSlice(self->dependents, 0, 1, NULL);
+
+    if (PyWeakref_Check(dependent))
     {
-      Connection_remove_dependent(self, item);
-      continue;
+      PyObject *ref = NULL;
+      if (PyWeakref_GetRef(dependent, &ref) < 0)
+      {
+        Py_DECREF(dependent);
+        sqlite3_mutex_leave(self->dbmutex);
+        return -1;
+      }
+      Py_DECREF(dependent);
+      if (!ref)
+        continue;
+      dependent = ref;
     }
 
-    PyObject *vargs[] = { NULL, item, PyBool_FromLong(force) };
-    if (vargs[2])
-    {
-      int nargs = 2;
+    int nargs = 2;
 #ifdef SQLITE_ENABLE_SESSION
-      if(PyObject_TypeCheck(item, &APSWSessionType) || PyObject_TypeCheck(item, &APSWChangesetBuilderType))
-        nargs = 1;
+    if (PyObject_TypeCheck(dependent, &APSWSessionType) || PyObject_TypeCheck(dependent, &APSWChangesetBuilderType))
+      nargs = 1;
 #endif
+
+    PyObject *vargs[] = { NULL, dependent, PyBool_FromLong(force) };
+    if (vargs[2])
       closeres = PyObject_VectorcallMethod_NoAsync(apst.close, vargs + 1, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-    }
+
+#ifndef NDEBUG
+    /* on success the dependent must end up closed */
+    assert((closeres && !PyErr_Occurred()) || (!closeres && PyErr_Occurred()));
+    int still_open = closeres ? PyObject_IsTrue(dependent) : 1;
+    assert(!(still_open && !PyErr_Occurred()));
+#endif
+
     Py_XDECREF(vargs[2]);
-    Py_XDECREF(vargs[1]);
+    Py_XDECREF(dependent);
     Py_XDECREF(closeres);
-    if (!closeres)
+
+    if (PyErr_Occurred())
     {
-      assert(PyErr_Occurred());
-      if (force == 2)
-        apsw_write_unraisable(NULL);
-      else
-      {
-        sqlite3_mutex_leave(self->dbmutex);
-        return 1;
-      }
+      sqlite3_mutex_leave(self->dbmutex);
+      return -1;
     }
   }
+
+  /* from this point on we will close no matter what so make it look that way
+     to all objects before releasing the dbmutex */
+  sqlite3_mutex *dbmutex = self->dbmutex;
+  sqlite3 *db = self->db;
+
+  self->db = 0;
+  self->dbmutex = 0;
 
   if (self->stmtcache)
     statementcache_free(self->stmtcache);
@@ -461,13 +509,13 @@ Connection_close_internal(Connection *self, int force)
   apsw_connection_remove((PyObject *)self);
 
   /* caller should have acquired */
-  assert(sqlite3_mutex_held(self->dbmutex));
-  sqlite3_mutex_leave(self->dbmutex);
+  assert(sqlite3_mutex_held(dbmutex));
+  sqlite3_mutex_leave(dbmutex);
 
   for (;;)
   {
-    res = sqlite3_close(self->db);
-    if(res == SQLITE_BUSY)
+    res = sqlite3_close(db);
+    if (res == SQLITE_BUSY)
     {
       /* we can be racing with a destructor such as cursor which is
          why busy was returned, so let them finish their work */
@@ -476,8 +524,6 @@ Connection_close_internal(Connection *self, int force)
     }
     break;
   }
-  self->db = 0;
-  self->dbmutex = 0;
 
   if (res != SQLITE_OK)
   {
@@ -497,11 +543,9 @@ Connection_close_internal(Connection *self, int force)
   if (PyErr_Occurred() && force != 2)
   {
     AddTraceBackHere(__FILE__, __LINE__, "Connection.close", NULL);
-    return 1;
+    return -1;
   }
 
-  if (force == 2)
-    PY_ERR_RESTORE(exc_save);
   return 0;
 }
 
@@ -526,7 +570,8 @@ Connection_close_internal(Connection *self, int force)
   transaction will be rolled back by the next program to open the
   database, reverting the database to a know good state.
 
-  If *force* is *True* then any exceptions are ignored.
+  If *force* is *True* then exceptions are ignored, such as
+  remaining unexecuted SQL in a cursor.
 
   -* sqlite3_close
 */
@@ -538,7 +583,6 @@ Connection_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   Connection *self = (Connection *)self_;
   int force = 0;
 
-  assert(!PyErr_Occurred());
   {
     Connection_close_CHECK;
     ARG_PROLOG(1, Connection_close_KWNAMES);
@@ -547,11 +591,13 @@ Connection_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   }
 
   DBMUTEX_ENSURE_ANY_THREAD(self);
-  if (Connection_close_internal(self, force))
+  if (0 != Connection_close_internal(self, force))
   {
     assert(PyErr_Occurred());
     return NULL;
   }
+
+  assert(!PyErr_Occurred());
 
   Py_RETURN_NONE;
 }
@@ -579,36 +625,24 @@ Connection_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   return async_return_value(Py_None);
 }
 
-static int
-Connection_dealloc_mutex(void *self_)
-{
-  Connection *self = (Connection *)self_;
-  DBMUTEX_RETRY(self, Connection_dealloc_mutex);
-
-  Connection_close_internal(self, 2);
-
-  /* Our dependents all hold a refcount on us, so they must have all
-      released before this destructor could be called */
-  assert(!self->dependents || PyList_GET_SIZE(self->dependents) == 0);
-  Py_CLEAR(self->dependents);
-
-  Py_TpFree(self_);
-
-  return 0;
-}
-
 static void
 Connection_dealloc(PyObject *self_)
 {
   Connection *self = (Connection *)self_;
-  PyObject_GC_UnTrack(self_);
   APSW_CLEAR_WEAKREFS;
+  PyObject_GC_UnTrack(self_);
 
-  PY_ERR_FETCH(exc);
-  Connection_dealloc_mutex(self);
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
-  PY_ERR_RESTORE(exc);
+  /* the mutex can't be held because no-one has a reference to the
+     connection */
+  if (self->dbmutex)
+    sqlite3_mutex_enter(self->dbmutex);
+
+  Connection_close_internal(self, 2);
+
+  assert(!self->dependents || PyList_GET_SIZE(self->dependents) == 0);
+  Py_CLEAR(self->dependents);
+
+  Py_TpFree(self_);
 }
 
 /** .. method:: __init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100)

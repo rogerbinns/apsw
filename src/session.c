@@ -352,51 +352,35 @@ APSWSession_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 static void
 APSWSession_close_internal(APSWSession *self)
 {
-  sqlite3_mutex *mutex = NULL;
-
   if (self->session)
   {
-    mutex = self->connection->dbmutex;
+    sqlite3_mutex *mutex = self->connection->dbmutex;
     assert(sqlite3_mutex_held(mutex));
-    sqlite3session_delete(self->session);
+    sqlite3_session *session = self->session;
+    sqlite3session_delete(session);
     self->session = NULL;
-  }
-
-  Py_CLEAR(self->table_filter);
-
-  if (self->connection)
-  {
-    sqlite3_mutex_leave(mutex);
     Connection_remove_dependent(self->connection, (PyObject *)self);
+    sqlite3_mutex_leave(mutex);
+    Py_CLEAR(self->connection);
+    Py_CLEAR(self->table_filter);
   }
-  Py_CLEAR(self->connection);
-}
-
-static int
-APSWSession_dealloc_mutex(void *self_)
-{
-  APSWSession *self = (APSWSession *)self_;
-
-  DBMUTEX_RETRY(self->connection, APSWSession_dealloc_mutex);
-  APSWSession_close_internal(self);
-  Py_TpFree(self_);
-
-  return 0;
 }
 
 static void
 APSWSession_dealloc(PyObject *self_)
 {
   APSWSession *self = (APSWSession *)self_;
+  APSW_CLEAR_WEAKREFS;
   PyObject_GC_UnTrack(self_);
 
-  APSW_CLEAR_WEAKREFS;
+  if (self->session && SQLITE_OK != sqlite3_mutex_try(self->connection->dbmutex))
+  {
+    Connection_add_dependent_hard(self->connection, self_);
+    return;
+  }
+  APSWSession_close_internal(self);
 
-  PY_ERR_FETCH(exc);
-  APSWSession_dealloc_mutex(self);
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
-  PY_ERR_RESTORE(exc);
+  Py_TpFree(self_);
 }
 
 /** .. method:: close() -> None
@@ -412,7 +396,7 @@ APSWSession_close(PyObject *self_, PyObject *Py_UNUSED(unused))
 {
   APSWSession *self = (APSWSession *)self_;
 
-  if (self->connection)
+  if (self->session)
   {
     DBMUTEX_ENSURE_ANY_THREAD(self->connection);
     APSWSession_close_internal(self);
@@ -1005,12 +989,9 @@ static PyObject *
 APSWSession_tp_repr(PyObject *self_)
 {
   APSWSession *self = (APSWSession *)self_;
-  if (self->connection)
-  {
-    assert(self->session);
+  if (self->session)
     return PyUnicode_FromFormat("<%s of %S at %p>", Py_TypeName(self_), self->connection, self_);
-  }
-  assert(!self->session);
+
   return PyUnicode_FromFormat("<%s (closed) at %p>", Py_TypeName(self_), self_);
 }
 
@@ -2100,39 +2081,27 @@ APSWChangesetBuilder_close_internal(APSWChangesetBuilder *self)
   if (self->connection)
   {
     Connection_remove_dependent(self->connection, (PyObject *)self);
-    /* we could hold the last reference to the connection so it will
-       close on the clear, but we can't have a hanging mutex hold
-       hence this release */
     sqlite3_mutex_leave(self->connection->dbmutex);
     Py_CLEAR(self->connection);
   }
-}
-
-static int
-APSWChangesetBuilder_dealloc_mutex(void *self_)
-{
-  APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
-  DBMUTEX_RETRY(self->connection, APSWChangesetBuilder_dealloc_mutex);
-
-  APSWChangesetBuilder_close_internal(self);
-
-  Py_TpFree(self_);
-  return 0;
 }
 
 static void
 APSWChangesetBuilder_dealloc(PyObject *self_)
 {
   APSWChangesetBuilder *self = (APSWChangesetBuilder *)self_;
+  APSW_CLEAR_WEAKREFS;
   PyObject_GC_UnTrack(self_);
 
-  APSW_CLEAR_WEAKREFS;
+  if(self->connection && SQLITE_OK!=sqlite3_mutex_try(self->connection->dbmutex))
+  {
+    Connection_add_dependent_hard(self->connection, self_);
+    return;
+  }
 
-  PY_ERR_FETCH(exc);
-  APSWChangesetBuilder_dealloc_mutex(self);
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
-  PY_ERR_RESTORE(exc);
+  APSWChangesetBuilder_close_internal(self);
+
+  Py_TpFree(self_);
 }
 
 /** .. method:: close() -> None

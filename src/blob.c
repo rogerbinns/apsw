@@ -186,13 +186,9 @@ APSWBlob_close_internal(APSWBlob *self, int force)
 
   if (self->connection)
   {
-    sqlite3_mutex_leave(self->connection->dbmutex);
-
-    /* Remove from connection dependents list.  Has to be done before we
-       decref self->connection otherwise connection could dealloc and
-       we'd still be in list */
+    assert(sqlite3_mutex_held(self->connection->dbmutex));
     Connection_remove_dependent(self->connection, (PyObject *)self);
-
+    sqlite3_mutex_leave(self->connection->dbmutex);
     Py_CLEAR(self->connection);
   }
 
@@ -202,31 +198,22 @@ APSWBlob_close_internal(APSWBlob *self, int force)
   return setexc;
 }
 
-static int
-APSWBlob_dealloc_mutex(void *self_)
-{
-  APSWBlob *self = (APSWBlob *)self_;
-  DBMUTEX_RETRY(self->connection, APSWBlob_dealloc_mutex);
-
-  APSWBlob_close_internal(self, 2);
-
-  Py_TpFree(self_);
-  return 0;
-}
-
 static void
 APSWBlob_dealloc(PyObject *self_)
 {
   APSWBlob *self = (APSWBlob *)self_;
+  APSW_CLEAR_WEAKREFS;
   PyObject_GC_UnTrack(self_);
 
-  APSW_CLEAR_WEAKREFS;
+  if (self->pBlob && SQLITE_OK != sqlite3_mutex_try(self->connection->dbmutex))
+  {
+    Connection_add_dependent_hard(self->connection, self_);
+    return;
+  }
 
-  PY_ERR_FETCH(exc);
-  APSWBlob_dealloc_mutex(self);
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
-  PY_ERR_RESTORE(exc);
+  APSWBlob_close_internal(self, 2);
+
+  Py_TpFree(self_);
 }
 
 /* If the blob is closed, we return the same error as normal python files */
@@ -646,7 +633,6 @@ static PyObject *
 APSWBlob_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   APSWBlob *self = (APSWBlob *)self_;
-  int setexc;
   int force = 0;
 
   {
@@ -661,9 +647,9 @@ APSWBlob_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_narg
     DBMUTEX_ENSURE_ANY_THREAD(self->connection);
   }
 
-  setexc = APSWBlob_close_internal(self, !!force);
+  APSWBlob_close_internal(self, force);
 
-  if (setexc)
+  if (PyErr_Occurred())
     return NULL;
 
   Py_RETURN_NONE;

@@ -242,10 +242,11 @@ APSWCursor_close_internal(APSWCursor *self, int force)
 
   PY_ERR_FETCH_IF(force == 2, exc_save);
 
-  res = resetcursor(self, force);
   /* caller must have acquired mutex */
   if (self->connection)
-    sqlite3_mutex_leave(self->connection->dbmutex);
+    assert(sqlite3_mutex_held(self->connection->dbmutex));
+
+  res = resetcursor(self, force);
 
   if (force == 2)
     PY_ERR_RESTORE(exc_save);
@@ -268,11 +269,6 @@ APSWCursor_close_internal(APSWCursor *self, int force)
   PyMem_Free(self->aiter_slots);
   self->aiter_slots = 0;
 
-  /* Remove from connection dependents list.  Has to be done before we decref self->connection
-     otherwise connection could dealloc and we'd still be in list */
-  if (self->connection)
-    Connection_remove_dependent(self->connection, (PyObject *)self);
-
   /* executemany iterator */
   Py_CLEAR(self->emiter);
 
@@ -282,25 +278,17 @@ APSWCursor_close_internal(APSWCursor *self, int force)
   Py_CLEAR(self->convert_binding);
   Py_CLEAR(self->convert_jsonb);
 
-  /* we no longer need connection */
-  Py_CLEAR(self->connection);
-
   Py_CLEAR(self->description_cache[0]);
   Py_CLEAR(self->description_cache[1]);
   Py_CLEAR(self->description_cache[2]);
 
-  return 0;
-}
-
-static int
-APSWCursor_dealloc_mutex(void * self_)
-{
-  APSWCursor *self = (APSWCursor *)self_;
-  DBMUTEX_RETRY(self->connection, APSWCursor_dealloc_mutex);
-
-  APSWCursor_close_internal(self, 2);
-
-  Py_TpFree(self_);
+  if (self->connection)
+  {
+    Connection_remove_dependent(self->connection, (PyObject *)self);
+    sqlite3_mutex_leave(self->connection->dbmutex);
+    /* we no longer need connection */
+    Py_CLEAR(self->connection);
+  }
 
   return 0;
 }
@@ -316,9 +304,15 @@ APSWCursor_dealloc(PyObject *self_)
   APSW_CLEAR_WEAKREFS;
 
   PY_ERR_FETCH(exc);
-  APSWCursor_dealloc_mutex(self);
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
+
+  if (self->connection && SQLITE_OK != sqlite3_mutex_try(self->connection->dbmutex))
+  {
+    Connection_add_dependent_hard(self->connection, self_);
+    PY_ERR_RESTORE(exc);
+    return;
+  }
+  APSWCursor_close_internal(self, 2);
+  Py_TpFree(self_);
   PY_ERR_RESTORE(exc);
 }
 
@@ -434,7 +428,7 @@ convert_column_to_pyobject(APSWCursor *self, int col)
     if (value && CONVERT_JSONB && jsonb_detect_internal(data, len))
     {
       PyObject *new_value = NULL;
-      PyObject *vargs[] = { NULL, (PyObject*)self, PyLong_FromLong(col), value };
+      PyObject *vargs[] = { NULL, (PyObject *)self, PyLong_FromLong(col), value };
       if (vargs[2])
         new_value = PyObject_Vectorcall(CONVERT_JSONB, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       Py_XDECREF(vargs[2]);
@@ -644,15 +638,12 @@ cursor_mutex_get(APSWCursor *self)
 
   for (;;)
   {
-    Py_BEGIN_ALLOW_THREADS
-    {
-      waited += sqlite3_sleep(delays[attempt]);
-      res = (self->connection) ? sqlite3_mutex_try(self->connection->dbmutex) : SQLITE_ERROR;
-    }
+    Py_BEGIN_ALLOW_THREADS { waited += sqlite3_sleep(delays[attempt]); }
     Py_END_ALLOW_THREADS;
+    res = (self->connection) ? sqlite3_mutex_try(self->connection->dbmutex) : SQLITE_ERROR;
 
-    checks:
-  /* shenanigans could have happened while GIL was released */
+  checks:
+    /* shenanigans could have happened while GIL was released */
     if (!self->connection)
     {
       if (!PyErr_Occurred())
@@ -1356,6 +1347,7 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
 
   assert(!self->statement);
   assert(!PyErr_Occurred());
+  assert(self->in_query);
   self->statement = statementcache_prepare(self->connection->stmtcache, statements, &options);
   if (!self->statement)
   {

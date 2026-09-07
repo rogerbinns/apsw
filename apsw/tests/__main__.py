@@ -11,12 +11,13 @@ import collections
 import collections.abc
 import contextlib
 import dataclasses
+import enum
+import functools
 import gc
 import glob
 import inspect
 import io
 import itertools
-import functools
 import math
 import mmap
 import os
@@ -5352,76 +5353,197 @@ class APSW(unittest.TestCase):
 
     def testIssue31(self):
         "Issue 31: GIL & SQLite mutexes with heavy threading, threadsafe errors from SQLite"
-        randomnumbers = [random.randint(0, 10000) for _ in range(1000)]
+        randomnumbers = [random.randint(0, 100000) for _ in range(1000)]
+
+        base_name = self.db.db_filename("main")
+
+        def make_db(num):
+            while True:
+                try:
+                    adb = apsw.Connection(base_name + (str(num) if num > 1 else ""))
+                    break
+                except apsw.CantOpenError:
+                    pass
+            adb.create_scalar_function("timesten", lambda x: x * 10)
+            adb.create_scalar_function("sleep", lambda x: apsw.sleep(x))
+            adb.set_busy_timeout(7)
+            return adb, adb.cursor()
 
         cursor = self.db.cursor()
         cursor.execute("create table foo(x)")
-        cursor.execute("begin")
-        for num in randomnumbers:
-            cursor.execute("insert into foo values(?)", (num,))
-        cursor.execute("end")
+        with self.db:
+            cursor.executemany("insert into foo values(?)", ((num,) for num in randomnumbers))
 
-        self.db.create_scalar_function("timesten", lambda x: x * 10)
+        db2 = apsw.Connection(self.db.filename + "2")
+        cursor2 = db2.cursor()
+        with db2.backup("main", self.db, "main") as b:
+            b.step()
 
-        did_work = {}
-        locked = {}
+        self.db, cursor = make_db(1)
+        db2, cursor2 = make_db(2)
+
+        a = enum.auto
+
+        class Item(enum.Enum):
+            # used to get warnings on missed cases below
+            DBExecuteMiss = a()
+            DBExecuteHit = a()
+            DBExecutemany = a()
+            DBComplex = a()
+            DBSleep = a()
+            SyntaxError = a()
+            DBSort = a()
+            DBInsert = a()
+            Backup = a()
+            Blob = a()
+            Close = a()
+            Session = a()
+            GC = a()
+
+        items = tuple(Item.__members__.values())
+
+        thread_did_work = {}
+        thread_locked = {}
+        item_did_work = {k: 0 for k in items}
+        item_locked = {k: 0 for k in items}
 
         def dostuff(end):
+            nonlocal db2, cursor, cursor2
             # spend n seconds doing stuff to the database
             myid = threading.get_ident()
-            did_work[myid] = 0
-            locked[myid] = 0
+            thread_did_work[myid] = 0
+            thread_locked[myid] = 0
             while time.time() < end:
-                i = random.choice(randomnumbers)
+                item = random.choice(items)
+                db = random.choice([self.db, db2])
+                cur = random.choice([cursor, cursor2])
                 try:
-                    if i % 5 == 0:
-                        sql = "select timesten(x) from foo where x=%d order by x" % (i,)
-                        self.db.execute(sql)
-                    elif i % 5 == 1:
-                        sql = "select timesten(x) from foo where x=? order by x"
-                        called = 0
-                        for row in self.db.cursor().execute(sql, (i,)):
-                            called += 1
-                            self.assertEqual(row[0], 10 * i)
-                        # same value could be present multiple times
-                        self.assertTrue(called >= 1)
-                    elif i % 5 == 2:
-                        try:
-                            self.db.cursor().execute("deliberate syntax error")
-                        except apsw.SQLError:
-                            assert "deliberate" in str(sys.exc_info()[1])
-                    elif i % 5 == 3:
-                        try:
-                            self.db.cursor().execute("bogus syntax error")
-                        except apsw.SQLError:
-                            assert "bogus" in str(sys.exc_info()[1])
-                    else:
-                        sql = "select timesten(x) from foo where x=? order by x"
-                        self.db.cursor().execute(sql, (i,))
-                except apsw.ThreadingViolationError as exc:
-                    locked[myid] += 1
+                    match item:
+                        case Item.DBExecuteMiss:
+                            # reuses cursor without bindings (no statementcache hits)
+                            sql = "select timesten(x) from foo where x=%d order by x" % (random.choice(randomnumbers),)
+                            cur.execute(sql).get
+                        case Item.DBExecuteHit:
+                            # reuses cursor without bindings (no statementcache hits)
+                            sql = "select timesten(x) from foo where x=? order by x"
+                            cur.execute(sql, (random.choice(randomnumbers),)).get
+                        case Item.DBExecutemany:
+                            vals = random.choices(randomnumbers, k=5)
+                            oldest = db.execute("select rowid from foo order by rowid limit 5").get
+                            with db:
+                                c = db.cursor()
+                                c.executemany("insert into foo values(?)", ((i,) for i in vals)).get
+                                c.executemany("delete from foo where rowid =?", ((i,) for i in oldest)).get
+                        case Item.DBComplex:
+                            # new cursor each time with bindings
+                            sql = "select timesten(x) from foo where x=? order by x"
+                            for row in db.execute(sql, (random.choice(randomnumbers),)):
+                                pass
+                        case Item.DBSleep:
+                            # sleep in milliseconds with mutex held
+                            c = db.cursor()
+                            c.execute(f"select sleep({random.randint(0, 10)})").get
+                        case Item.SyntaxError:
+                            # GIL is released during prepare
+                            try:
+                                db.execute("deliberate syntax error")
+                            except apsw.SQLError:
+                                assert "deliberate" in str(sys.exc_info()[1])
+                        case Item.DBSort:
+                            # function, sorting
+                            sql = "select timesten(x) from foo where x=? order by rowid desc limit 10"
+                            for row in db.execute(sql, (random.choice(randomnumbers),)):
+                                pass
+                        case Item.DBInsert:
+                            # adds one row, deletes the oldest
+                            with db:
+                                db.execute(
+                                    "insert into foo values(?); delete from foo where rowid=%d"
+                                    % (db.execute("select rowid from foo order by rowid limit 1").get),
+                                    (random.choice(randomnumbers),),
+                                )
+                        case Item.Backup:
+                            try:
+                                with db.backup("main", self.db if db is db2 else db2, "main") as backup:
+                                    while not backup.done:
+                                        backup.step(5)
+                            except ValueError as exc:
+                                if "source connection is closed" in str(exc):
+                                    raise apsw.BusyError
+                                raise
+                            except apsw.SQLError as exc:
+                                if "destination database is in use" in str(exc):
+                                    raise apsw.BusyError
+                                raise
+                        case Item.Blob:
+                            db.execute(
+                                "create table if not exists blobby(b); insert or replace into blobby(rowid, b) values(73, randomblob(8199))"
+                            )
+                            blob = db.blob_open("main", "blobby", "b", 73, True)
+                            blob.seek(1234)
+                            blob.write(b"aa" + blob.read(100))
+                        case Item.Close:
+                            # make other threads run for a bit first
+                            apsw.sleep(10)
+                            if random.random() > 0.7:
+                                # only explicitly close some of the time
+                                db.close()
+                            if db is self.db:
+                                self.db, cursor = make_db(0)
+                            else:
+                                db2, cursor2 = make_db(2)
+                        case Item.Session:
+                            if not hasattr(apsw, "Session"):
+                                continue
+                            s = apsw.Session(db, "main")
+                            s.config(apsw.SQLITE_SESSION_OBJCONFIG_ROWID, 1)
+                            s.attach()
+                            cb = apsw.ChangesetBuilder()
+                            cb.schema(db, "main")
+                            cb.add_insert("foo", True, (1234, 5678))
+                        case Item.GC:
+                            gc.collect(2)
+                        case _:
+                            self.fail(f"Unhandled Item {item}")
+
+                except (
+                    apsw.BusyError,
+                    apsw.CursorClosedError,
+                    apsw.ConnectionClosedError,
+                    apsw.ThreadingViolationError,
+                ):
+                    thread_locked[myid] += 1
+                    item_locked[item] += 1
                     continue
-                did_work[myid] += 1
+                thread_did_work[myid] += 1
+                item_did_work[item] += 1
 
                 # Release the GIL giving other threads a chace to do work
-                time.sleep(0.01)
+                time.sleep(0.001)
 
         runtime = float(os.getenv("APSW_HEAVY_DURATION")) if os.getenv("APSW_HEAVY_DURATION") else 15
         end = time.time() + runtime
-        threads = [threading.Thread(target=dostuff, args=(end,)) for _ in range(20)]
+        threads = [threading.Thread(target=dostuff, args=(end,)) for _ in range(len(items) * 2)]
         for t in threads:
             try:
                 t.start()
             except RuntimeError:
-                return
+                self.skipTest("threads not supported")
 
         for t in threads:
             t.join()
 
-        if runtime > 15:
-            # I can't confidently say that all threads would have got execution time
-            # on all the platforms out there, so check if env var was set
-            self.assertTrue(all(v > 0 for v in did_work.values()), f"{did_work=}")
+        if False:
+            # I've not come up with a good way of verifying things automatically.
+            # Currently a human has to make this block run and eyeball the numbers
+            # shown to see if they are reasonable.
+
+            import pprint
+
+            print()
+            for n in "thread_did_work", "thread_locked", "item_did_work", "item_locked":
+                print(n)
+                pprint.pprint(locals()[n])
 
     def testIssue50(self):
         "Issue 50: Check Blob.read return value on eof"
