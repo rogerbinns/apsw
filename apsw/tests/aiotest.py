@@ -33,7 +33,7 @@ class Async(unittest.TestCase):
         finally:
             for c in apsw.connections():
                 if c.is_async:
-                    await c.aclose()
+                    await c.aclose(2)
                 else:
                     c.close()
 

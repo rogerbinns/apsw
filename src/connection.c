@@ -353,6 +353,7 @@ Connection_add_dependent(Connection *self, PyObject *object)
 {
 #include "faultinject.h"
   assert(self);
+  assert(!PyErr_Occurred());
 
   if (!self->dependents)
   {
@@ -400,6 +401,10 @@ Connection_remove_dependent(Connection *self, PyObject *o)
   /* in addition to removing the dependent, we also remove any dead
      weakrefs we encounter.  if o==NULL then all dead weakrefs
      are refmoved */
+
+  /* should not be called with pending exception */
+  assert(!PyErr_Occurred());
+
   Py_ssize_t i;
 
   for (i = 0; self->dependents && i < PyList_GET_SIZE(self->dependents); i++)
@@ -439,6 +444,9 @@ static PyTypeObject APSWChangesetBuilderType;
 static int
 Connection_close_internal(Connection *self, int force)
 {
+  /* caller should have acquired */
+  assert(sqlite3_mutex_held(self->dbmutex));
+
   int res;
 
   /* close our dependents by repeatedly processing first item until
@@ -483,6 +491,14 @@ Connection_close_internal(Connection *self, int force)
     assert(!(still_open && !PyErr_Occurred()));
 #endif
 
+    if (PyErr_Occurred())
+    {
+      /* add back the dependent preventing close so it keeps doing so */
+      CHAIN_EXC_BEGIN
+      Connection_add_dependent(self, dependent);
+      CHAIN_EXC_END;
+    }
+
     Py_XDECREF(vargs[2]);
     Py_XDECREF(dependent);
     Py_XDECREF(closeres);
@@ -508,8 +524,6 @@ Connection_close_internal(Connection *self, int force)
 
   apsw_connection_remove((PyObject *)self);
 
-  /* caller should have acquired */
-  assert(sqlite3_mutex_held(dbmutex));
   sqlite3_mutex_leave(dbmutex);
 
   for (;;)
@@ -632,6 +646,7 @@ Connection_dealloc(PyObject *self_)
   APSW_CLEAR_WEAKREFS;
   PyObject_GC_UnTrack(self_);
 
+  PY_ERR_FETCH(save);
   /* the mutex can't be held because no-one has a reference to the
      connection */
   if (self->dbmutex)
@@ -643,6 +658,11 @@ Connection_dealloc(PyObject *self_)
   Py_CLEAR(self->dependents);
 
   Py_TpFree(self_);
+
+  if (PyErr_Occurred())
+    apsw_write_unraisable(NULL);
+
+  PY_ERR_RESTORE(save);
 }
 
 /** .. method:: __init__(filename: str, flags: int = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, vfs: str | None = None, statementcachesize: int = 100)

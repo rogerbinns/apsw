@@ -187,7 +187,9 @@ APSWBlob_close_internal(APSWBlob *self, int force)
   if (self->connection)
   {
     assert(sqlite3_mutex_held(self->connection->dbmutex));
+    PY_ERR_FETCH(save);
     Connection_remove_dependent(self->connection, (PyObject *)self);
+    PY_ERR_RESTORE(save);
     sqlite3_mutex_leave(self->connection->dbmutex);
     Py_CLEAR(self->connection);
   }
@@ -205,7 +207,7 @@ APSWBlob_dealloc(PyObject *self_)
   APSW_CLEAR_WEAKREFS;
   PyObject_GC_UnTrack(self_);
 
-  if (self->pBlob && SQLITE_OK != sqlite3_mutex_try(self->connection->dbmutex))
+  if ((self->pBlob || self->connection) && SQLITE_OK != sqlite3_mutex_try(self->connection->dbmutex))
   {
     Connection_add_dependent_hard(self->connection, self_);
     return;

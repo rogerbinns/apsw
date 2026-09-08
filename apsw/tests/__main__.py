@@ -6287,7 +6287,7 @@ class APSW(unittest.TestCase):
                 pass
         del l
         gc.collect()
-        db2 = apsw.Connection(TESTFILEPREFIX + "testdb", statementcachesize=scsize)
+        db2 = apsw.Connection(self.db.db_filename("main") + "2", statementcachesize=scsize)
         self.assertEqual(db2.cache_stats()["size"], actual)
         cur2 = db2.cursor()
         cur2.execute("create table bar(x,y)")
@@ -6483,7 +6483,6 @@ class APSW(unittest.TestCase):
             "APSWCursor": {
                 "skip": (
                     "dealloc",
-                    "dealloc_mutex",
                     "init",
                     "dobinding",
                     "dobindings",
@@ -6510,13 +6509,13 @@ class APSW(unittest.TestCase):
                 "skip": (
                     "internal_cleanup",
                     "dealloc",
-                    "dealloc_mutex",
                     "init",
                     "close",
                     "aclose",
                     "interrupt",
                     "close_internal",
                     "add_dependent",
+                    "add_dependent_hard",
                     "remove_dependent",
                     "readonly",
                     "getmainfilename",
@@ -6543,7 +6542,6 @@ class APSW(unittest.TestCase):
                     "get_change_patch_set",
                     "get_change_patch_set_stream",
                     "dealloc",
-                    "dealloc_mutex",
                     "tp_repr",
                     "tp_traverse",
                     "bool",
@@ -6560,7 +6558,7 @@ class APSW(unittest.TestCase):
                 "order": ("scope",),
             },
             "APSWChangesetBuilder": {
-                "skip": {"dealloc", "dealloc_mutex", "close_internal", "close", "init", "tp_traverse", "bool", "row"},
+                "skip": {"dealloc", "close_internal", "close", "init", "tp_traverse", "bool", "row"},
                 "req": {"closed": "CHECK_BUILDER_CLOSED"},
                 "order": ("closed",),
             },
@@ -6570,12 +6568,12 @@ class APSW(unittest.TestCase):
                 "order": ("closed",),
             },
             "APSWBlob": {
-                "skip": ("dealloc", "dealloc_mutex", "init", "close", "close_internal", "tp_repr", "bool", "aclose", "closed", "tp_traverse"),
+                "skip": ("dealloc", "init", "close", "close_internal", "tp_repr", "bool", "aclose", "closed", "tp_traverse"),
                 "req": {"closed": "CHECK_BLOB_CLOSED"},
                 "order": ("use", "closed"),
             },
             "APSWBackup": {
-                "skip": ("dealloc", "dealloc_mutex", "init", "close_internal", "get_remaining", "get_page_count", "tp_repr", "bool", "aclose", "tp_traverse"),
+                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count", "tp_repr", "bool", "aclose", "tp_traverse"),
                 "req": {"closed": "CHECK_BACKUP_CLOSED"},
                 "order": ("use", "closed"),
             },
@@ -7010,7 +7008,7 @@ class APSW(unittest.TestCase):
                 self.assertEqual(update.rowid, 1)
                 self.assertEqual(update.rowid_new, 1)
             else:
-                raise Exception("unexpected")
+                self.fail("unexpected")
 
         self.db.preupdate_hook(lambda: 1/0)
 

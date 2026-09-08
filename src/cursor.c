@@ -255,6 +255,8 @@ APSWCursor_close_internal(APSWCursor *self, int force)
     if (res)
     {
       assert(PyErr_Occurred());
+      if (self->connection)
+        sqlite3_mutex_leave(self->connection->dbmutex);
       return 1;
     }
     assert(!PyErr_Occurred());
@@ -284,7 +286,9 @@ APSWCursor_close_internal(APSWCursor *self, int force)
 
   if (self->connection)
   {
+    PY_ERR_FETCH(save);
     Connection_remove_dependent(self->connection, (PyObject *)self);
+    PY_ERR_RESTORE(save);
     sqlite3_mutex_leave(self->connection->dbmutex);
     /* we no longer need connection */
     Py_CLEAR(self->connection);
@@ -2418,7 +2422,7 @@ APSWCursor_expanded_sql(PyObject *self_, void *unused)
     CURSOR_EXC_COMPLETE;
 
   DBMUTEX_ENSURE(self->connection);
-  es = sqlite3_expanded_sql(self->statement->vdbestatement);
+  es = self->statement->vdbestatement ? sqlite3_expanded_sql(self->statement->vdbestatement) : NULL;
   if (es)
   {
     res = convertutf8string(es);

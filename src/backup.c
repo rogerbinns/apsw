@@ -138,8 +138,10 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   /* in_backup is not reset as a safety because mutex_acquire succeeds
      on a NULL pointer */
 
+  PY_ERR_FETCH(save);
   Connection_remove_dependent(self->dest, (PyObject *)self);
   Connection_remove_dependent(self->source, (PyObject *)self);
+  PY_ERR_RESTORE(save);
 
   sqlite3_mutex *one = self->source->dbmutex, *two = self->dest->dbmutex;
 
@@ -168,6 +170,7 @@ APSWBackup_dealloc(PyObject *self_)
       sqlite3_mutex_leave(self->dest->dbmutex);
       goto later;
     }
+    self->in_backup = 1;
     APSWBackup_close_internal(self, 2);
   }
 
@@ -219,7 +222,8 @@ APSWBackup_step(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   IN_BACKUP_CHECK;
   self->in_backup = 1;
 
-  Py_BEGIN_ALLOW_THREADS res = sqlite3_backup_step(self->backup, npages);
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_backup_step(self->backup, npages);
   Py_END_ALLOW_THREADS;
 
   /* this would happen if there were errors deep in the vfs */
