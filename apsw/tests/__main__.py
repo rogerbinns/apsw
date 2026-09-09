@@ -8992,9 +8992,9 @@ class APSW(unittest.TestCase):
             # windows is happy to truncate to -77 bytes
             self.assertRaises(apsw.IOError, t.xTruncate, -77)
         TestFile.xTruncate = TestFile.xTruncate1
-        self.assertRaises(TypeError, testdb)
+        self.assertMayRaiseUnraisable(TypeError, self.assertRaises, TypeError, testdb)
         TestFile.xTruncate = TestFile.xTruncate2
-        self.assertRaises(ZeroDivisionError, testdb)
+        self.assertMayRaiseUnraisable(ZeroDivisionError, self.assertRaises, ZeroDivisionError, testdb)
         TestFile.xTruncate = TestFile.xTruncate99
         testdb()
 

@@ -1009,7 +1009,7 @@ class Shell(unittest.TestCase):
         ### Commands - dump
         ###
         reset()
-        cmd("create     table foo(x); create table bar(x);\n.dump foox")
+        cmd("DrOP table if exists foo; create     table foo(x); create table bar(x);\n.dump foox")
         s.cmdloop()
         isempty(fh[1])
         isempty(fh[2])
@@ -1159,8 +1159,8 @@ class Shell(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         v2 = get(fh[1])
-        v = re.sub("-- Date:.*", "", v)
-        v2 = re.sub("-- Date:.*", "", v2)
+        v = re.sub("-- (Date|Database):.*", "", v)
+        v2 = re.sub("-- (Date|Database):.*", "", v2)
         self.assertEqual(v, v2)
         # clean database
         reset()
@@ -1174,7 +1174,7 @@ class Shell(unittest.TestCase):
         s.cmdloop()
         isempty(fh[2])
         v3 = get(fh[1])
-        v3 = re.sub("-- Date:.*", "", v3)
+        v3 = re.sub("-- (Date|Database):.*", "", v3)
         self.assertEqual(v, v3)
         # trailing comments
         reset()
