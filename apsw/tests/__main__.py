@@ -8966,9 +8966,10 @@ class APSW(unittest.TestCase):
         # t.xUnlock(-1)
         if not apsw.connection_hooks:
             TestFile.xUnlock = TestFile.xUnlock1
-            self.assertRaises(TypeError, testdb)
+            # connection tp_dealloc calls unlock hence unraisables
+            self.assertRaisesUnraisable(TypeError, self.assertRaises, TypeError, testdb)
             TestFile.xUnlock = TestFile.xUnlock2
-            self.assertRaises(ZeroDivisionError, testdb)
+            self.assertRaisesUnraisable(ZeroDivisionError, self.assertRaises, ZeroDivisionError, testdb)
         TestFile.xUnlock = TestFile.xUnlock99
         testdb()
 

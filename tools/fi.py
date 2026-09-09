@@ -1003,10 +1003,8 @@ class Tester:
             # being constructed otherwise the module machinery
             # disables the module
             return self.Proceed
-        if key[0] == "sqlite3_mutex_try" and key[2] == "cursor_mutex_get":
-            # there is a retry loop, so for this to work we'd
-            # need to keep returning Busy over and over.
-            # cursor_mutex_get is seprately fault injected
+        if key[0] == "sqlite3_mutex_try" and (key[2] == "cursor_mutex_get" or key[2].endswith("_dealloc")):
+            # on failure to acquire these try other things
             return self.Proceed
         if "misuse_check" in key[4]:
             # sqlite session stuff where we only care about misuse being returned

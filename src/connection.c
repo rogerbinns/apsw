@@ -660,7 +660,10 @@ Connection_dealloc(PyObject *self_)
   Py_TpFree(self_);
 
   if (PyErr_Occurred())
+  {
+    AddTraceBackHere(__FILE__, __LINE__, "Connection.tp_dealloc", NULL);
     apsw_write_unraisable(NULL);
+  }
 
   PY_ERR_RESTORE(save);
 }

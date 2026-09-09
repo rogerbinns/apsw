@@ -373,14 +373,18 @@ APSWSession_dealloc(PyObject *self_)
   APSW_CLEAR_WEAKREFS;
   PyObject_GC_UnTrack(self_);
 
+  PY_ERR_FETCH(save);
+
   if (self->session && SQLITE_OK != sqlite3_mutex_try(self->connection->dbmutex))
   {
     Connection_add_dependent_hard(self->connection, self_);
+    PY_ERR_RESTORE(save);
     return;
   }
   APSWSession_close_internal(self);
 
   Py_TpFree(self_);
+  PY_ERR_RESTORE(save);
 }
 
 /** .. method:: close() -> None
@@ -2551,8 +2555,8 @@ APSWChangesetBuilder_schema(PyObject *self_, PyObject *const *fast_args, Py_ssiz
     int rc = sqlite3changegroup_schema(self->group, db->db, schema);
     if (rc != SQLITE_OK)
     {
-      SET_EXC(rc, NULL);
       Connection_remove_dependent(db, self_);
+      SET_EXC(rc, NULL);
       return NULL;
     }
 
