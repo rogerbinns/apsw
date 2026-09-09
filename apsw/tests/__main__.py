@@ -10238,8 +10238,12 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
                     self.assertFalse(v)
                 case "is_readonly":
                     self.assertTrue(v)
-                case "bindings_names" | "description" | "description_full":
+                case "bindings_names" | "description":
                     self.assertEqual(v, tuple())
+                case "description_full":
+                    # it will be empty tuple in builds with enable
+                    # column metadata else None if not filled in
+                    self.assertTrue(v == () or v is None)
                 case "actions" | "explain":
                     self.assertEqual(v, list())
                 case _:
