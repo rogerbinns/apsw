@@ -5532,6 +5532,21 @@ class APSW(unittest.TestCase):
         for t in threads:
             t.join()
 
+        # tearDown tries to close open connections in order but that
+        # can fail with BusyError especially with backups spanning two
+        # connections.  So we keep closing until success or timeout
+        # where normal tearDown will raise exception
+
+        end = time.monotonic() + 5
+        while time.monotonic() < end:
+            c = apsw.connections()
+            if not c:
+                break
+            try:
+                random.choice(c).close(True)
+            except apsw.BusyError:
+                pass
+
         if False:
             # I've not come up with a good way of verifying things automatically.
             # Currently a human has to make this block run and eyeball the numbers
