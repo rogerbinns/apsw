@@ -10817,9 +10817,6 @@ from .carray import *
 from .aiotest import *
 from .extratest import *
 
-if "APSW_TEST_ITERATIONS" not in os.environ:
-    from .fork_checker import *
-
 if __name__ == "__main__":
     setup()
 

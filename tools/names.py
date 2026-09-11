@@ -88,7 +88,6 @@ def run_tests():
         ("from .aiotest import *", "from apsw.tests.aiotest import *"),
         ("from .shelltest import *", "from apsw.tests.shelltest import *"),
         ("from .extratest import *", "from apsw.tests.extratest import *"),
-        ("from .fork_checker import *", "from apsw.tests.fork_checker import *"),
     ):
         old_source = old_source.replace(sub, repl)
 

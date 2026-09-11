@@ -559,10 +559,6 @@ class apsw_build_ext(beparent):
         else:
             ext.define_macros.append(("NDEBUG", "1"))
 
-        # fork checker?
-        if hasattr(os, "fork"):
-            ext.define_macros.append(("APSW_FORK_CHECKER", "1"))
-
         # SQLite 3
         # Look for amalgamation in sqlite3 subdirectory
 

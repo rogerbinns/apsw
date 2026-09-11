@@ -10,6 +10,12 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+next
+====
+
+The `apsw.fork_checker` function has been removed, as supporting it has
+become impractical.  It was originally added in 2009.  (:issue:`632`)
+
 3.53.4.0
 ========
 
@@ -132,7 +138,7 @@ is used in :func:`apsw.ext.format_query_table` to centre column names,
 and right align integers.  That updates the :doc:`shell <shell>` output.
 (:issue:`601`)
 
-Update :func:`fork_checker` and :func:`shutdown` for more robustness
+Update `fork_checker` and :func:`shutdown` for more robustness
 (:issue:`602`)
 
 Amalgamation builds **only** (eg PyPI):  Following the `recommended
@@ -985,7 +991,7 @@ is no longer available with this Python version.
 Fixed custom VFS extension loading failure could leave the error
 message unterminated.
 
-Updated size of mutex array used by the :func:`fork checker <fork_checker>`
+Updated size of mutex array used by the fork checker.
 
 Connections are opened with SQLITE_OPEN_EXRESCODE so open errors will
 also include extended result codes.
@@ -1325,8 +1331,7 @@ Update tests due to a change in Python 3.5 (exception returned with
 invalid strings for system calls changed from TypeError to
 ValueError).
 
-Adjusted some internal detection related to the :func:`fork checker
-<fork_checker>`
+Adjusted some internal detection related to the fork checker.
 
 3.8.10.1-r1
 ===========
@@ -2013,7 +2018,7 @@ planning.
 extension for you.  If the source is present when APSW is built then
 it will be automatically included and *async_initialize* called.
 
-A :meth:`fork_checker` is available which turns on detection when you
+A fork_checker is available which turns on detection when you
 have used SQLite objects across a fork (a **very** bad thing).  This
 is possible on Unix like operating systems, especially if you use the
 :mod:`multiprocessing module <multiprocessing>`.

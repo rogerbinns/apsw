@@ -56,10 +56,6 @@
       mutex_one = (conn1)->dbmutex;                                                                                    \
       switch (sqlite3_mutex_try(mutex_one))                                                                            \
       {                                                                                                                \
-      case SQLITE_MISUSE:                                                                                              \
-        PyErr_SetString(ExcForkingViolation,                                                                           \
-                        "SQLite object allocated in one process is being used in another (across a fork)");            \
-        return -1;                                                                                                     \
       case SQLITE_BUSY:                                                                                                \
         return apsw_AddPendingCall(func, self);                                                                        \
       case SQLITE_OK:                                                                                                  \
@@ -72,11 +68,6 @@
     {                                                                                                                  \
       switch (sqlite3_mutex_try((conn2)->dbmutex))                                                                     \
       {                                                                                                                \
-      case SQLITE_MISUSE:                                                                                              \
-        PyErr_SetString(ExcForkingViolation,                                                                           \
-                        "SQLite object allocated in one process is being used in another (across a fork)");            \
-        sqlite3_mutex_leave(mutex_one);                                                                                \
-        return -1;                                                                                                     \
       case SQLITE_BUSY:                                                                                                \
         sqlite3_mutex_leave(mutex_one);                                                                                \
         return apsw_AddPendingCall(func, self);                                                                        \

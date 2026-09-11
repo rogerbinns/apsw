@@ -97,7 +97,7 @@ The following exceptions happen when APSW detects various problems.
 
 .. exception:: ForkingViolationError
 
-  See :meth:`apsw.fork_checker`.
+  Was used by the fork checker, which has been removed.
 
 .. exception:: IncompleteExecutionError
 
