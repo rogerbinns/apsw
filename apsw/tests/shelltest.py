@@ -1008,6 +1008,23 @@ class Shell(unittest.TestCase):
         ###
         ### Commands - dump
         ###
+
+        def regularize_dump(d):
+            # date and database comments differ in each dump so
+            # remove those lines.  the database line could span
+            # multiple lines if a long pathname
+            res = d.splitlines()
+            i = 0
+            while not res[i].startswith("-- Date:"):
+                i+=1
+            del res[i]
+            while not res[i].startswith("-- Database:"):
+                i+=1
+            del res[i]
+            while not res[i].startswith("-- User:"):
+                del res[i]
+            return "\n".join(res) + "\n"
+
         reset()
         cmd("DrOP table if exists foo; create     table foo(x); create table bar(x);\n.dump foox")
         s.cmdloop()
@@ -1036,7 +1053,7 @@ class Shell(unittest.TestCase):
             cmd(".dump")
             s.cmdloop()
             isempty(fh[2])
-            v = get(fh[1])
+            v: str = regularize_dump(get(fh[1]))
             for i in "pragma writable_schema", "create virtual table fts3", "cola fred", "colb john doe":
                 self.assertTrue(i in v.lower())
         # analyze
@@ -1046,7 +1063,7 @@ class Shell(unittest.TestCase):
         )
         s.cmdloop()
         isempty(fh[2])
-        v = get(fh[1])
+        v = regularize_dump(get(fh[1]))
         for i in "analyze bar", "create index barf":
             self.assertTrue(i in v.lower())
         self.assertTrue("autoindex" not in v.lower())  # created by sqlite to do unique constraint
@@ -1056,7 +1073,7 @@ class Shell(unittest.TestCase):
         cmd(".dump")
         s.cmdloop()
         isempty(fh[2])
-        v = get(fh[1])
+        v = regularize_dump(get(fh[1]))
         for i in "analyze bar", "create index barf":
             self.assertTrue(i in v.lower())
         self.assertTrue("autoindex" not in v.lower())  # created by sqlite to do unique constraint
@@ -1065,7 +1082,7 @@ class Shell(unittest.TestCase):
         cmd("create table xxx(z references bar(x));\n.dump")
         s.cmdloop()
         isempty(fh[2])
-        v = get(fh[1])
+        v = regularize_dump(get(fh[1]))
         for i in "foreign_keys", "references":
             self.assertTrue(i in v.lower())
         # views
@@ -1073,7 +1090,7 @@ class Shell(unittest.TestCase):
         cmd("create view noddy as select * from foo;\n.dump noddy")
         s.cmdloop()
         isempty(fh[2])
-        v = get(fh[1])
+        v = regularize_dump(get(fh[1]))
         for i in "drop view", "create view noddy":
             self.assertTrue(i in v.lower())
         # issue82 - view ordering
@@ -1083,7 +1100,7 @@ class Shell(unittest.TestCase):
         )
         s.cmdloop()
         isempty(fh[2])
-        v = get(fh[1])
+        v = regularize_dump(get(fh[1]))
         s.db.cursor().execute("drop table issue82 ; drop view issue82_1 ; drop view issue82_2")
         reset()
         cmd(v)
@@ -1097,7 +1114,7 @@ class Shell(unittest.TestCase):
         )
         s.cmdloop()
         isempty(fh[2])
-        v = get(fh[1])
+        v = regularize_dump(get(fh[1]))
         for i in "sqlite_sequence", "'abc', 2":
             self.assertTrue(i in v.lower())
         # user version
@@ -1106,7 +1123,7 @@ class Shell(unittest.TestCase):
         cmd("pragma user_version=27;\n.dump")
         s.cmdloop()
         isempty(fh[2])
-        v = get(fh[1])
+        v = regularize_dump(get(fh[1]))
         self.assertTrue("pragma user_version=27;" in v)
         s.db.cursor().execute("pragma user_version=0")
         # some nasty stuff
@@ -1122,7 +1139,7 @@ class Shell(unittest.TestCase):
         cmd(".dump")
         s.cmdloop()
         isempty(fh[2])
-        v = get(fh[1])
+        v = regularize_dump(get(fh[1]))
         self.assertTrue("nasty" in v)
         self.assertTrue("stuff" in v)
         # sanity check the dumps
@@ -1158,9 +1175,7 @@ class Shell(unittest.TestCase):
         cmd(".dump")
         s.cmdloop()
         isempty(fh[2])
-        v2 = get(fh[1])
-        v = re.sub("-- (Date|Database):.*", "", v)
-        v2 = re.sub("-- (Date|Database):.*", "", v2)
+        v2 = regularize_dump(get(fh[1]))
         self.assertEqual(v, v2)
         # clean database
         reset()
@@ -1173,8 +1188,7 @@ class Shell(unittest.TestCase):
         cmd(v2 + "\n.dump")
         s.cmdloop()
         isempty(fh[2])
-        v3 = get(fh[1])
-        v3 = re.sub("-- (Date|Database):.*", "", v3)
+        v3 = regularize_dump(get(fh[1]))
         self.assertEqual(v, v3)
         # trailing comments
         reset()
@@ -1189,7 +1203,7 @@ insert into xxblah values(3);
 """)
         s.cmdloop()
         isempty(fh[2])
-        dump = get(fh[1])
+        dump = regularize_dump(get(fh[1]))
         reset()
         cmd("drop table xxblah; drop view xxbar;")
         s.cmdloop()
