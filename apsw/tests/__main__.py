@@ -5405,6 +5405,7 @@ class APSW(unittest.TestCase):
         def dostuff(end):
             nonlocal db2, cursor, cursor2
             # spend n seconds doing stuff to the database
+            s = None
             myid = threading.get_ident()
             thread_did_work[myid] = 0
             thread_locked[myid] = 0
@@ -5490,6 +5491,8 @@ class APSW(unittest.TestCase):
                         case Item.Session:
                             if not hasattr(apsw, "Session"):
                                 continue
+                            if s:
+                                s.changeset()
                             s = apsw.Session(db, "main")
                             s.config(apsw.SQLITE_SESSION_OBJCONFIG_ROWID, 1)
                             s.attach()
