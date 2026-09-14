@@ -62,6 +62,25 @@ they will be :doc:`chained <exceptions>` together.
 which significantly increase detail about the exceptions and help with
 debugging.
 
+Lifetime, GC, process shutdown
+==============================
+
+A VFS you create is registered by the constructor,  It can be
+:meth:`explicitly unregistered <VFS.unregister>`, or will be
+implicitly unregistered by the destructor of the VFS.  SQLite doesn't
+have a mechanism for managing the lifecycles of VFS - they are usually
+implemented in static C for the lifetime of the process.
+
+Ensure your VFS classes live as long as all connections that could use
+them.  APSW does Python level reference counting where possible.
+
+When the Python interpreter is being shutdown, objects can become
+``None`` causing exceptions.  It is worth explicitly closing
+connections proactively on shutdown::
+
+    for con in apsw.connections():
+        con.close()
+
 */
 
 /* make working with file control pragma easier */
@@ -267,6 +286,7 @@ typedef struct
   PyObject_HEAD
   sqlite3_vfs *basevfs;       /* who we inherit from (might be null) */
   sqlite3_vfs *containingvfs; /* pointer given to sqlite for this instance */
+  int base_is_apsw;           /* basevfs is APSW implemented - we keep a reference */
   int registered;             /* are we currently registered? */
   int init_was_called;
 } APSWVFS;
@@ -1734,7 +1754,7 @@ static void
 APSWVFS_dealloc(PyObject *self_)
 {
   APSWVFS *self = (APSWVFS *)self_;
-  if (self->basevfs && self->basevfs->xAccess == apswvfs_xAccess)
+  if (self->base_is_apsw)
   {
     Py_DECREF((PyObject *)self->basevfs->pAppData);
   }
@@ -1900,8 +1920,17 @@ APSWVFS_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   if (res == SQLITE_OK)
   {
     self->registered = 1;
-    if (self->basevfs && self->basevfs->xAccess == apswvfs_xAccess)
+    /* try to detect if the base is implemented by APSW.  this
+       isn't easy so we use a simple heuristic */
+    if (self->basevfs
+        /* the file size must match */
+        && self->basevfs->szOsFile == sizeof(APSWSQLite3File)
+        /* at least one of various methods must be ours.  note
+         that a derived vfs could just copy the function
+         pointers so we pick the most meaningful methods */
+        && (self->basevfs->xAccess == apswvfs_xAccess || self->basevfs->xOpen == apswvfs_xOpen))
     {
+      self->base_is_apsw = 1;
       Py_INCREF((PyObject *)self->basevfs->pAppData);
     }
     return 0;
