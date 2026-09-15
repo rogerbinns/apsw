@@ -2307,7 +2307,7 @@ apswvfsfilepy_xRead(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
   {
     /* We don't know how short the read was, so look for first
          non-trailing null byte.  */
-    while (amount && PyBytes_AS_STRING(buffy)[amount - 1] == 0)
+    while (amount > 0 && PyBytes_AS_STRING(buffy)[amount - 1] == 0)
       amount--;
     if (_PyBytes_Resize(&buffy, amount))
     {
