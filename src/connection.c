@@ -526,7 +526,7 @@ Connection_close_internal(Connection *self, int force)
 
   sqlite3_mutex_leave(dbmutex);
 
-  for (;;)
+  for (int count = 0; count < 100; count++)
   {
     res = sqlite3_close(db);
     if (res == SQLITE_BUSY)
@@ -541,13 +541,20 @@ Connection_close_internal(Connection *self, int force)
 
   if (res != SQLITE_OK)
   {
+    /* we consider the connection closed but are unable to close it.  the likely
+       explanation is problems with a dependent, or an extension.  the former
+       won't happen unless we run out of memory */
+    sqlite3_close_v2(db);
+
     SET_EXC(res, NULL);
     if (force == 2)
     {
-      PyErr_Format(ExcConnectionNotClosed,
-                   "apsw.Connection at address %p. The destructor "
-                   "has encountered an error %d closing the connection, but cannot raise an exception.",
-                   self, res);
+      CHAIN_EXC_BEGIN
+        PyErr_Format(ExcConnectionNotClosed,
+                     "apsw.Connection at address %p. The destructor "
+                     "has encountered an error %d closing the connection, but cannot raise an exception.",
+                     self, res);
+      CHAIN_EXC_END;
       apsw_write_unraisable(NULL);
     }
   }
