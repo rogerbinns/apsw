@@ -8887,6 +8887,9 @@ class APSW(unittest.TestCase):
             ## xSetSystemCall
             fallback = apsw.VFS("fallback", base="")  # undo any damage we do
             try:
+                # reset
+                vfs.xSetSystemCall(None, 0)
+
                 self.assertRaises(TypeError, vfs.xSetSystemCall)
                 self.assertRaises(TypeError, vfs.xSetSystemCall, 3, 4)
                 self.assertRaises((TypeError, ValueError), vfs.xSetSystemCall, "a\0b", 4)
