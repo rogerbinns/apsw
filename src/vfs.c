@@ -1519,14 +1519,24 @@ apswvfs_xSetSystemCall(sqlite3_vfs *vfs, const char *zName, sqlite3_syscall_ptr 
     pyresult = PyObject_VectorcallMethod(apst.xSetSystemCall, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
   Py_XDECREF(vargs[2]);
   Py_XDECREF(vargs[3]);
-  if (!pyresult)
+  if (pyresult)
+  {
+    if (Py_IsTrue(pyresult))
+      res = SQLITE_OK;
+    else if (Py_IsFalse(pyresult))
+      res = SQLITE_NOTFOUND;
+    else
+      PyErr_Format(PyExc_TypeError, "Expected True/False return not %s", Py_TypeName(pyresult));
+  }
+  if (PyErr_Occurred())
     res = MakeSqliteMsgFromPyException(NULL);
 
   if (res == SQLITE_NOTFOUND)
     PyErr_Clear();
 
   if (PyErr_Occurred())
-    AddTraceBackHere(__FILE__, __LINE__, "vfs.xSetSystemCall", "{s: O}", "pyresult", OBJ(pyresult));
+    AddTraceBackHere(__FILE__, __LINE__, "vfs.xSetSystemCall", "{s: s, s: K, s: O}", "name", zName, "pointer",
+                     (unsigned long long)call, "pyresult", OBJ(pyresult));
 
   Py_XDECREF(pyresult);
   VFSPOSTAMBLE;
