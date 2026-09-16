@@ -631,6 +631,9 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   PyObject *flags = NULL;
   PyObject *pyresult = NULL;
   APSWSQLite3File *apswfile = (APSWSQLite3File *)(void *)file;
+
+  memset(apswfile, 0, sizeof(*apswfile));
+
   /* how we pass the name */
   PyObject *nameobject = NULL;
 
