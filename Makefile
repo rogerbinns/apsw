@@ -321,6 +321,15 @@ pyfreethread: ## Build a debug FREE THREADED python
 	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYFREETHREAD_DIR)/bin/python3
 
+pybuild: ## Builds a Python.  Set $PY_VER
+	[ ! -z "$(PY_VER)" ]  # must set $$PY_VER
+	set -ex && INSTDIR="/space/py`echo \"$(PY_VER)\" | cut -d. -f1,2`" \
+	&& cd "$$INSTDIR" && find . -delete \
+	&& curl "https://www.python.org/ftp/python/$(PY_VER)/Python-$(PY_VER).tar.xz" | tar xfJ - \
+	&& cd Python-$(PY_VER) && ./configure --prefix="$$INSTDIR" --with-assertions --with-pydebug \
+	&& $(MAKE) -j install
+	INSTDIR="/space/py`echo \"$(PY_VER)\" | cut -d. -f1,2`" && $(MAKE) dev-depends PYTHON="$$INSTDIR/bin/python3"
+
 langserver:  ## Language server integration json
 	$(PYTHON) tools/gencompilecommands.py > compile_commands.json
 
