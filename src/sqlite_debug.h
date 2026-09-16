@@ -149,9 +149,6 @@
     sqlite3_clear_bindings((one));                                            \
 })
 
-#undef sqlite3_close_v2
-#define sqlite3_close_v2 *not used*
-
 #define sqlite3_collation_needed(one, two, three) ({     \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
     sqlite3_collation_needed((one), (two), (three));     \

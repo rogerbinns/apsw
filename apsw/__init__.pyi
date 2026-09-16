@@ -390,49 +390,6 @@ def exception_for(code: int) -> Exception:
 
 exceptionfor = exception_for ## OLD-NAME
 
-def fork_checker() -> None:
-    """**Note** This method is not available on Windows as it does not
-    support the fork system call.
-
-    SQLite does not allow the use of database connections across `forked
-    <https://en.wikipedia.org/wiki/Fork_(operating_system)>`__ processes
-    (see the `SQLite FAQ Q6 <https://sqlite.org/faq.html#q6>`__).
-    (Forking creates a child process that is a duplicate of the parent
-    including the state of all data structures in the program.  If you
-    do this to SQLite then parent and child would both consider
-    themselves owners of open databases and silently corrupt each
-    other's work and interfere with each other's locks.)
-
-    One example of how you may end up using fork is if you use the
-    :mod:`multiprocessing module <multiprocessing>` which can use
-    fork to make child processes in less recent Python versions.
-
-    If you do use fork or multiprocessing on a platform that supports fork
-    then you **must** ensure database connections and their objects
-    (cursors, backup, blobs etc) are not used in the parent process, or
-    are all closed before calling fork or starting a `Process
-    <https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions>`__.
-    (Note you must call close to ensure the underlying SQLite objects are
-    closed.  It is also a good idea to call :func:`gc.collect(2)
-    <gc.collect>` to ensure anything you may have missed is also
-    deallocated.)
-
-    Once you run this method, extra checking code is inserted into
-    SQLite's mutex operations (at a very small performance penalty) that
-    verifies objects are not used across processes.  You will get a
-    :exc:`ForkingViolationError` if you do so.  Note that due to the way
-    Python's internals work, the exception will be delivered to
-    :func:`sys.excepthook` in addition to the normal exception mechanisms and
-    may be reported by Python after the line where the issue actually
-    arose.  (Destructors of objects you didn't close also run between
-    lines.)
-
-    Calling this method requires doing a :func:`shutdown` which means there
-    can be no active connections.
-
-    The recommended use is to use the fork checking as part of your test suite."""
-    ...
-
 def format_sql_value(value: SQLiteValue) -> str:
     """Returns a Python string representing the supplied value in SQLite
     syntax.
@@ -477,7 +434,8 @@ def jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, 
     :param parse_int: Called with a :class:`str` of the integer, and
         should return a value to use.  The default is :class:`int`.
         If the integer is hexadecimal then it will be called with a
-        second parameter of 16.
+        second parameter (base) of 16, with the string including
+        leading optional sign, and ``0x``.
     :param parse_float: Called with a :class:`str` of the float, and
         should return a value to use.  The default is :class:`float`.
 
@@ -562,6 +520,11 @@ def jsonb_encode(obj: Any, *, skipkeys: bool = False, sort_keys: bool = False, c
         with an example being :class:`enum.IntEnum`.  If this parameter
         is ``True`` then only the exact types are directly converted
         and subclasses will be passed to ``default`` or ``default_key``.
+
+        If ``False`` and subclassed numeric types are provided, then their :meth:`~object.__str__`
+        method **must** produce JSON compatible corresponding text representations,
+        otherwise non-decodable JSONB will be produced.  Typically subclasses
+        produce more digits, and a greater range of values.
 
     You will get a :exc:`~apsw.TooBigError` if the resulting JSONB
     will exceed 2GB because SQLite can't handle it."""
@@ -1498,7 +1461,8 @@ class Connection:
         transaction will be rolled back by the next program to open the
         database, reverting the database to a know good state.
 
-        If *force* is *True* then any exceptions are ignored.
+        If *force* is *True* then exceptions are ignored, such as
+        remaining unexecuted SQL in a cursor.
 
         Calls: `sqlite3_close <https://sqlite.org/c3ref/close.html>`__"""
         ...
@@ -2374,7 +2338,7 @@ class Connection:
     setprofile = set_profile ## OLD-NAME
 
     def set_progress_handler(self, callable: Callable[[], bool] | None, nsteps: int = 100, *, id: Any = None) -> None:
-        """Sets a callable which is invoked every *nsteps* SQLite inststructions.
+        """Sets a callable which is invoked every *nsteps* SQLite instructions.
         The callable should return True to abort or False to continue. (If
         there is an error in your Python *callable* then True/abort will be
         returned).  SQLite raises :exc:`InterruptError` for aborts.
@@ -2382,6 +2346,8 @@ class Connection:
         Use :class:`None` to cancel the progress handler.  Multiple handlers
         can be present at once (implemented by APSW). Registered callbacks are
         distinguished by their ``id`` - an equality test is done to match ids.
+        When multiple handlers are registered, the callbacks can be more
+        frequent than the steps used for each one.
 
         You can use :class:`apsw.ext.Trace` to see how many steps are used for
         a representative statement, or :class:`apsw.ext.ShowResourceUsage` to
@@ -3828,6 +3794,11 @@ class VFS:
             this value then SQLite will not`be able to open it.  If you are
             using a base, then a value of zero will use the value from base.
 
+            Memory allocations are made of this size plus extra for ``-journal``
+            suffix and a null temrinator.  SQLite uses 512 for Unix,
+            1024 for in memory names, 1040 for Windows, and 65534 for Windows
+            long paths.
+
         :param iVersion: Version number for the `sqlite3_vfs <https://sqlite.org/c3ref/vfs.html>`__
             structure.
 
@@ -4667,6 +4638,8 @@ SQLITE_CONFIG_PCACHE_HDRSZ: int = 24
 """For `Configuration Options <https://sqlite.org/c3ref/c_config_covering_index_scan.html>'__"""
 SQLITE_CONFIG_PMASZ: int = 25
 """For `Configuration Options <https://sqlite.org/c3ref/c_config_covering_index_scan.html>'__"""
+SQLITE_CONFIG_ROWID_IN_VIEW: int = 30
+"""For `Configuration Options <https://sqlite.org/c3ref/c_config_covering_index_scan.html>'__"""
 SQLITE_CONFIG_SCRATCH: int = 6
 """For `Configuration Options <https://sqlite.org/c3ref/c_config_covering_index_scan.html>'__"""
 SQLITE_CONFIG_SERIALIZED: int = 3
@@ -4772,8 +4745,6 @@ SQLITE_DBCONFIG_LEGACY_FILE_FORMAT: int = 1016
 SQLITE_DBCONFIG_LOOKASIDE: int = 1001
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_MAINDBNAME: int = 1000
-"""For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
-SQLITE_DBCONFIG_MAX: int = 1023
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
 SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE: int = 1006
 """For `Database Connection Configuration Options <https://sqlite.org/c3ref/c_dbconfig_defensive.html>'__"""
@@ -5436,7 +5407,8 @@ SQLITE_CONFIG_LOOKASIDE SQLITE_CONFIG_MALLOC
 SQLITE_CONFIG_MEMDB_MAXSIZE SQLITE_CONFIG_MEMSTATUS
 SQLITE_CONFIG_MMAP_SIZE SQLITE_CONFIG_MULTITHREAD SQLITE_CONFIG_MUTEX
 SQLITE_CONFIG_PAGECACHE SQLITE_CONFIG_PCACHE SQLITE_CONFIG_PCACHE2
-SQLITE_CONFIG_PCACHE_HDRSZ SQLITE_CONFIG_PMASZ SQLITE_CONFIG_SCRATCH
+SQLITE_CONFIG_PCACHE_HDRSZ SQLITE_CONFIG_PMASZ
+SQLITE_CONFIG_ROWID_IN_VIEW SQLITE_CONFIG_SCRATCH
 SQLITE_CONFIG_SERIALIZED SQLITE_CONFIG_SINGLETHREAD
 SQLITE_CONFIG_SMALL_MALLOC SQLITE_CONFIG_SORTERREF_SIZE
 SQLITE_CONFIG_SQLLOG SQLITE_CONFIG_STMTJRNL_SPILL SQLITE_CONFIG_URI
@@ -5460,11 +5432,10 @@ SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION SQLITE_DBCONFIG_ENABLE_QPSG
 SQLITE_DBCONFIG_ENABLE_TRIGGER SQLITE_DBCONFIG_ENABLE_VIEW
 SQLITE_DBCONFIG_FP_DIGITS SQLITE_DBCONFIG_LEGACY_ALTER_TABLE
 SQLITE_DBCONFIG_LEGACY_FILE_FORMAT SQLITE_DBCONFIG_LOOKASIDE
-SQLITE_DBCONFIG_MAINDBNAME SQLITE_DBCONFIG_MAX
-SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE SQLITE_DBCONFIG_RESET_DATABASE
-SQLITE_DBCONFIG_REVERSE_SCANORDER SQLITE_DBCONFIG_STMT_SCANSTATUS
-SQLITE_DBCONFIG_TRIGGER_EQP SQLITE_DBCONFIG_TRUSTED_SCHEMA
-SQLITE_DBCONFIG_WRITABLE_SCHEMA"""
+SQLITE_DBCONFIG_MAINDBNAME SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE
+SQLITE_DBCONFIG_RESET_DATABASE SQLITE_DBCONFIG_REVERSE_SCANORDER
+SQLITE_DBCONFIG_STMT_SCANSTATUS SQLITE_DBCONFIG_TRIGGER_EQP
+SQLITE_DBCONFIG_TRUSTED_SCHEMA SQLITE_DBCONFIG_WRITABLE_SCHEMA"""
 
 mapping_db_status: dict[str | int, int | str]
 """Status Parameters for database connections mapping names to int and int to names.
@@ -5837,7 +5808,7 @@ class ExtensionLoadingError(Error):
     <https://sqlite.org/loadext.html>`_."""
 
 class ForkingViolationError(Error):
-    """See :meth:`apsw.fork_checker`."""
+    """Was used by the fork checker, which has been removed."""
 
 class FormatError(Error):
     """`SQLITE_FORMAT <https://sqlite.org/rescode.html#format>`__. (No
@@ -6499,7 +6470,8 @@ class AsyncConnection:
         transaction will be rolled back by the next program to open the
         database, reverting the database to a know good state.
 
-        If *force* is *True* then any exceptions are ignored.
+        If *force* is *True* then exceptions are ignored, such as
+        remaining unexecuted SQL in a cursor.
 
         Calls: `sqlite3_close <https://sqlite.org/c3ref/close.html>`__"""
         ...
@@ -7286,7 +7258,7 @@ class AsyncConnection:
         ...
 
     async def set_progress_handler(self, callable: Callable[[], bool | Awaitable[bool]] | None, nsteps: int = 100, *, id: Any = None) -> None:
-        """Sets a callable which is invoked every *nsteps* SQLite inststructions.
+        """Sets a callable which is invoked every *nsteps* SQLite instructions.
         The callable should return True to abort or False to continue. (If
         there is an error in your Python *callable* then True/abort will be
         returned).  SQLite raises :exc:`InterruptError` for aborts.
@@ -7294,6 +7266,8 @@ class AsyncConnection:
         Use :class:`None` to cancel the progress handler.  Multiple handlers
         can be present at once (implemented by APSW). Registered callbacks are
         distinguished by their ``id`` - an equality test is done to match ids.
+        When multiple handlers are registered, the callbacks can be more
+        frequent than the steps used for each one.
 
         You can use :class:`apsw.ext.Trace` to see how many steps are used for
         a representative statement, or :class:`apsw.ext.ShowResourceUsage` to

@@ -153,48 +153,6 @@
 #define Apsw_exception_for_OLDNAME "exceptionfor"
 #define Apsw_exception_for_OLDDOC Apsw_exception_for_USAGE "\n(Old less clear name exceptionfor)"
 
-#define  Apsw_fork_checker_DOC "apsw.fork_checker() -> None\n\n" \
-"**Note** This method is not available on Windows as it does not\n" \
-"support the fork system call.\n" \
-"\n" \
-"SQLite does not allow the use of database connections across `forked\n" \
-"<https://en.wikipedia.org/wiki/Fork_(operating_system)>`__ processes\n" \
-"(see the `SQLite FAQ Q6 <https://sqlite.org/faq.html#q6>`__).\n" \
-"(Forking creates a child process that is a duplicate of the parent\n" \
-"including the state of all data structures in the program.  If you\n" \
-"do this to SQLite then parent and child would both consider\n" \
-"themselves owners of open databases and silently corrupt each\n" \
-"other's work and interfere with each other's locks.)\n" \
-"\n" \
-"One example of how you may end up using fork is if you use the\n" \
-":mod:`multiprocessing module <multiprocessing>` which can use\n" \
-"fork to make child processes in less recent Python versions.\n" \
-"\n" \
-"If you do use fork or multiprocessing on a platform that supports fork\n" \
-"then you **must** ensure database connections and their objects\n" \
-"(cursors, backup, blobs etc) are not used in the parent process, or\n" \
-"are all closed before calling fork or starting a `Process\n" \
-"<https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions>`__.\n" \
-"(Note you must call close to ensure the underlying SQLite objects are\n" \
-"closed.  It is also a good idea to call :func:`gc.collect(2)\n" \
-"<gc.collect>` to ensure anything you may have missed is also\n" \
-"deallocated.)\n" \
-"\n" \
-"Once you run this method, extra checking code is inserted into\n" \
-"SQLite's mutex operations (at a very small performance penalty) that\n" \
-"verifies objects are not used across processes.  You will get a\n" \
-":exc:`ForkingViolationError` if you do so.  Note that due to the way\n" \
-"Python's internals work, the exception will be delivered to\n" \
-":func:`sys.excepthook` in addition to the normal exception mechanisms and\n" \
-"may be reported by Python after the line where the issue actually\n" \
-"arose.  (Destructors of objects you didn't close also run between\n" \
-"lines.)\n" \
-"\n" \
-"Calling this method requires doing a :func:`shutdown` which means there\n" \
-"can be no active connections.\n" \
-"\n" \
-"The recommended use is to use the fork checking as part of your test suite.\n" 
-
 #define  Apsw_format_sql_value_DOC "apsw.format_sql_value(value: SQLiteValue) -> str\n\n" \
 "Returns a Python string representing the supplied value in SQLite\n" \
 "syntax.\n" \
@@ -244,7 +202,8 @@
 ":param parse_int: Called with a :class:`str` of the integer, and\n" \
 "    should return a value to use.  The default is :class:`int`.\n" \
 "    If the integer is hexadecimal then it will be called with a\n" \
-"    second parameter of 16.\n" \
+"    second parameter (base) of 16, with the string including\n" \
+"    leading optional sign, and ``0x``.\n" \
 ":param parse_float: Called with a :class:`str` of the float, and\n" \
 "    should return a value to use.  The default is :class:`float`.\n" \
 "\n" \
@@ -353,6 +312,11 @@
 "    with an example being :class:`enum.IntEnum`.  If this parameter\n" \
 "    is ``True`` then only the exact types are directly converted\n" \
 "    and subclasses will be passed to ``default`` or ``default_key``.\n" \
+"\n" \
+"    If ``False`` and subclassed numeric types are provided, then their :meth:`~object.__str__`\n" \
+"    method **must** produce JSON compatible corresponding text representations,\n" \
+"    otherwise non-decodable JSONB will be produced.  Typically subclasses\n" \
+"    produce more digits, and a greater range of values.\n" \
 "\n" \
 "You will get a :exc:`~apsw.TooBigError` if the resulting JSONB\n" \
 "will exceed 2GB because SQLite can't handle it.\n" 
@@ -1686,7 +1650,8 @@
 "transaction will be rolled back by the next program to open the\n" \
 "database, reverting the database to a know good state.\n" \
 "\n" \
-"If *force* is *True* then any exceptions are ignored.\n" \
+"If *force* is *True* then exceptions are ignored, such as\n" \
+"remaining unexecuted SQL in a cursor.\n" \
 "\n" \
 "Calls: `sqlite3_close <https://sqlite.org/c3ref/close.html>`__\n" 
 
@@ -2909,7 +2874,7 @@
 #define Connection_set_profile_OLDDOC Connection_set_profile_USAGE "\n(Old less clear name setprofile)"
 
 #define  Connection_set_progress_handler_DOC "Connection.set_progress_handler(callable: Callable[[], bool] | None, nsteps: int = 100, *, id: Any = None) -> None\n\n" \
-"Sets a callable which is invoked every *nsteps* SQLite inststructions.\n" \
+"Sets a callable which is invoked every *nsteps* SQLite instructions.\n" \
 "The callable should return True to abort or False to continue. (If\n" \
 "there is an error in your Python *callable* then True/abort will be\n" \
 "returned).  SQLite raises :exc:`InterruptError` for aborts.\n" \
@@ -2917,6 +2882,8 @@
 "Use :class:`None` to cancel the progress handler.  Multiple handlers\n" \
 "can be present at once (implemented by APSW). Registered callbacks are\n" \
 "distinguished by their ``id`` - an equality test is done to match ids.\n" \
+"When multiple handlers are registered, the callbacks can be more\n" \
+"frequent than the steps used for each one.\n" \
 "\n" \
 "You can use :class:`apsw.ext.Trace` to see how many steps are used for\n" \
 "a representative statement, or :class:`apsw.ext.ShowResourceUsage` to\n" \
@@ -4972,6 +4939,11 @@
 "    this value then SQLite will not`be able to open it.  If you are\n" \
 "    using a base, then a value of zero will use the value from base.\n" \
 "\n" \
+"    Memory allocations are made of this size plus extra for ``-journal``\n" \
+"    suffix and a null temrinator.  SQLite uses 512 for Unix,\n" \
+"    1024 for in memory names, 1040 for Windows, and 65534 for Windows\n" \
+"    long paths.\n" \
+"\n" \
 ":param iVersion: Version number for the `sqlite3_vfs <https://sqlite.org/c3ref/vfs.html>`__\n" \
 "    structure.\n" \
 "\n" \
@@ -5356,7 +5328,7 @@
 #define  ExtensionLoadingError_exc_DOC "An error happened loading an `extension\n" \
 "<https://sqlite.org/loadext.html>`_.\n" 
 
-#define  ForkingViolationError_exc_DOC "See :meth:`apsw.fork_checker`.\n" 
+#define  ForkingViolationError_exc_DOC "Was used by the fork checker, which has been removed.\n" 
 
 #define  FormatError_exc_DOC "`SQLITE_FORMAT <https://sqlite.org/rescode.html#format>`__. (No\n" \
 "longer used) `Auxiliary database\n" \

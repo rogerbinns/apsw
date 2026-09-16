@@ -40,7 +40,6 @@ functions_not_used = (
     "sqlite3_(cancel_|reset_|)auto_extension",
     "sqlite3_bind_(blob|int|text|value|parameter_index|zeroblob)",
     "sqlite3_changes",
-    "sqlite3_close_v2",
     "sqlite3_column_int",
     "sqlite3_compileoption_used",
     "sqlite3_create_collation",
@@ -131,6 +130,7 @@ functions_global = (
     "sqlite3_win32_.*",
     # there can't be a dangling refcount on the connection (assertion failure)
     "sqlite3_close",
+    "sqlite3_close_v2",
     # next group don't do any mutexes in sqlite3.c hence don't make
     # any sense for us to.  they generally read or write a single value.
     "sqlite3_bind_parameter_count",
@@ -341,7 +341,7 @@ db = apsw.Connection("")
 db.deserialize("main", urllib.request.urlopen(basesqurl + "toc.db").read())
 
 
-db.execute(open("tools/tocupdate.sql", "rt").read())
+db.execute(pathlib.Path("tools/tocupdate.sql").read_text())
 
 
 # ::TODO:: all callers of convert_value_to_pyobject need to assert mutex held
