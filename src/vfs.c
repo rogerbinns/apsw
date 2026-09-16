@@ -1424,12 +1424,12 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
     {
       /* Get size */
       size_t len = utf8len;
-      if (zErrMsg && len > 0 && nByte > 0)
+      if (zErrMsg && nByte > 0)
       {
-        if (len > (size_t)nByte)
-          len = (size_t)nByte;
+        if (len >= (size_t)nByte)
+          len = (size_t)nByte - 1;
         memcpy(zErrMsg, utf8, len);
-        zErrMsg[len - 1] = 0;
+        zErrMsg[len] = 0;
       }
     }
   }
@@ -1445,11 +1445,13 @@ end:
   return res;
 }
 
-/** .. method:: xGetLastError() -> tuple[int, str]
+/** .. method:: xGetLastError() -> tuple[int, str | None]
 
   Return an integer error code and (optional) text describing
   the last error code and message that happened in this thread.
 
+  The code can be later retreived by :meth:`Connection.system_errno`.
+  In practise SQLite ignores the error message.
 */
 static PyObject *
 apswvfspy_xGetLastError(PyObject *self_, PyObject *Py_UNUSED(unused))
