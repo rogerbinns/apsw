@@ -2599,7 +2599,10 @@ apswvfsfile_xSync(sqlite3_file *file, int flags)
 
   PyObject *vargs[] = { NULL, apswfile->file, PyLong_FromLong(flags) };
   if (vargs[2])
+  {
     pyresult = PyObject_VectorcallMethod(apst.xSync, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+    Py_DECREF(vargs[2]);
+  }
   if (!pyresult)
   {
     result = MakeSqliteMsgFromPyException(NULL);
