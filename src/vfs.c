@@ -1815,6 +1815,11 @@ APSWVFS_dealloc(PyObject *self_)
         this value then SQLite will not`be able to open it.  If you are
         using a base, then a value of zero will use the value from base.
 
+        Memory allocations are made of this size plus extra for ``-journal``
+        suffix and a null temrinator.  SQLite uses 512 for Unix,
+        1024 for in memory names, 1040 for Windows, and 65534 for Windows
+        long paths.
+
     :param iVersion: Version number for the `sqlite3_vfs <https://sqlite.org/c3ref/vfs.html>`__
         structure.
 
@@ -1850,6 +1855,17 @@ APSWVFS_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   {
     PyErr_Format(PyExc_ValueError, "apsw only supports VFS iVersion of 1, 2 and 3, not %d", iVersion);
     goto error;
+  }
+
+  if (maxpathname < 16 || maxpathname > 1024 * 1024)
+  {
+    if (maxpathname == 0 && base)
+      ; /* this case is ok */
+    else
+    {
+      PyErr_Format(PyExc_ValueError, "maxpathname of %d is too small or too large", maxpathname);
+      goto error;
+    }
   }
 
   if (base)
