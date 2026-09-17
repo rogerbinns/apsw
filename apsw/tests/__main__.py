@@ -423,6 +423,7 @@ class APSW(unittest.TestCase):
                 apsw.leak_check()
         warnings.filters = self.warnings_filters
         getattr(warnings, "_filters_mutated", lambda: True)()
+        sys.unraisablehook = sys.__unraisablehook__
 
     def assertRaisesRoot(self, exctype, *args, **kwargs):
         # With chained exceptions verifies the first exception raised matches type
@@ -5353,6 +5354,12 @@ class APSW(unittest.TestCase):
 
     def testIssue31(self):
         "Issue 31: GIL & SQLite mutexes with heavy threading, threadsafe errors from SQLite"
+
+        def uhook(exc):
+            self.assertIsInstance(exc.exc_type, apsw.BusyError)
+
+        sys.unraisablehook = uhook
+
         randomnumbers = [random.randint(0, 100000) for _ in range(1000)]
 
         base_name = self.db.db_filename("main")
