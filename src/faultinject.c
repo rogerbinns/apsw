@@ -13,6 +13,10 @@ The Python code that receives callbacks from here is in tools/fi.py
 #define APSW_FAULT_CLEAR
 #include "faultinject.h"
 
+#if PY_VERSION_HEX < 0x030d0000
+#define Py_IsFinalizing _Py_IsFinalizing
+#endif
+
 static long long
 APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum,
                         const char *args)
