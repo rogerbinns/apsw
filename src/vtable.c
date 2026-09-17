@@ -1069,7 +1069,7 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, PyObject *methodname, const cha
 
   CHAIN_EXC_BEGIN
   /* mandatory for Destroy, optional for Disconnect */
-  if (methodname == apst.Destroy || PyObject_HasAttr(vtable, methodname))
+  if (methodname == apst.Destroy || 1 == PyObject_HasAttrWithError(vtable, methodname))
   {
     PyObject *vargs[] = { NULL, vtable };
     res = PyObject_VectorcallMethod(methodname, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -1707,7 +1707,7 @@ apswvtabTransactionMethod(sqlite3_vtab *pVtab, PyObject *name, const char *excep
 
   vtable = ((apsw_vtable *)pVtab)->vtable;
   CHAIN_EXC_BEGIN
-  if (PyObject_HasAttr(vtable, name))
+  if (1 == PyObject_HasAttrWithError(vtable, name))
   {
     PyObject *vargs[] = { NULL, vtable };
     res = PyObject_VectorcallMethod(name, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -1986,7 +1986,7 @@ apswvtabFindFunction(sqlite3_vtab *pVtab, int nArg, const char *zName,
   vtable = av->vtable;
 
   MakeExistingException();
-  if (PyErr_Occurred() || !PyObject_HasAttr(vtable, apst.FindFunction))
+  if (PyErr_Occurred() || 1 != PyObject_HasAttrWithError(vtable, apst.FindFunction))
     goto finally;
 
   PyObject *vargs[] = { NULL, vtable, PyUnicode_FromString(zName), PyLong_FromLong(nArg) };
@@ -2091,7 +2091,7 @@ apswvtabRename(sqlite3_vtab *pVtab, const char *zNew)
   vtable = ((apsw_vtable *)pVtab)->vtable;
 
   MakeExistingException();
-  if (!PyErr_Occurred() && PyObject_HasAttr(vtable, apst.Rename))
+  if (!PyErr_Occurred() && 1 == PyObject_HasAttrWithError(vtable, apst.Rename))
   {
     PyObject *vargs[] = { NULL, vtable, convertutf8string(zNew) };
     if (vargs[2])
@@ -2129,7 +2129,7 @@ apswvtabSavepoint(sqlite3_vtab *pVtab, int level)
 
   MakeExistingException();
 
-  if (!PyErr_Occurred() && PyObject_HasAttr(vtable, apst.Savepoint))
+  if (!PyErr_Occurred() && 1 == PyObject_HasAttrWithError(vtable, apst.Savepoint))
   {
     PyObject *vargs[] = { NULL, vtable, PyLong_FromLong(level) };
     if (vargs[2])
@@ -2167,7 +2167,7 @@ apswvtabRelease(sqlite3_vtab *pVtab, int level)
 
   MakeExistingException();
 
-  if (!PyErr_Occurred() && PyObject_HasAttr(vtable, apst.Release))
+  if (!PyErr_Occurred() && 1 == PyObject_HasAttrWithError(vtable, apst.Release))
   {
     PyObject *vargs[] = { NULL, vtable, PyLong_FromLong(level) };
     if (vargs[2])
@@ -2206,7 +2206,7 @@ apswvtabRollbackTo(sqlite3_vtab *pVtab, int level)
 
   MakeExistingException();
 
-  if (!PyErr_Occurred() && PyObject_HasAttr(vtable, apst.RollbackTo))
+  if (!PyErr_Occurred() && 1 == PyObject_HasAttrWithError(vtable, apst.RollbackTo))
   {
     PyObject *vargs[] = { NULL, vtable, PyLong_FromLong(level) };
     if (vargs[2])
@@ -2251,7 +2251,7 @@ apswvtabIntegrity(sqlite3_vtab *pVtab, const char *zSchema, const char *zName, i
 
   MakeExistingException();
 
-  if (!PyErr_Occurred() && PyObject_HasAttr(vtable, apst.Integrity))
+  if (!PyErr_Occurred() && 1 == PyObject_HasAttrWithError(vtable, apst.Integrity))
   {
     PyObject *vargs[]
         = { NULL, vtable, PyUnicode_FromString(zSchema), PyUnicode_FromString(zName), PyLong_FromLong(isQuick) };
@@ -2747,7 +2747,7 @@ apswvtabShadowName(int which, const char *table_suffix)
 
   MakeExistingException();
 
-  if (PyObject_HasAttr(shadowname_allocation[which].source, apst.ShadowName))
+  if (!PyErr_Occurred() && 1 == PyObject_HasAttrWithError(shadowname_allocation[which].source, apst.ShadowName))
   {
     PyObject *vargs[] = { NULL, shadowname_allocation[which].source, PyUnicode_FromString(table_suffix) };
     if (vargs[2])

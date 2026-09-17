@@ -139,6 +139,39 @@ PyWeakref_GetRef(PyObject *ref, PyObject **pobj)
 }
 #endif
 
+#if PY_VERSION_HEX < 0x030d0000
+#undef PyObject_HasAttrWithError
+static int
+PyObject_HasAttrWithError(PyObject *o, PyObject *attr_name)
+{
+#include "faultinject.h"
+
+  /* Normal PyObject_HasAttr sends errors to unraiseable - this added
+     in py 3.13 preserves them.  */
+
+  assert(!PyErr_Occurred());
+
+  PyObject *res = PyObject_GetAttr(o, attr_name);
+  Py_XDECREF(res);
+
+  if (res)
+    return 1;
+
+  if (!PyErr_Occurred())
+    return 0;
+
+  if (PyErr_ExceptionMatches(PyExc_AttributeError))
+  {
+    PyErr_Clear();
+    return 0;
+  }
+  return -1;
+}
+#endif
+
+/* Ensure compile error if we used non-with error version */
+#define PyObject_HasAttr "You must use PyObject_HasAttrWithError"
+
 /* some we made up in the same spirit*/
 static void
 Py_TpFree(PyObject *o)

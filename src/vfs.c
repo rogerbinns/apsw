@@ -1024,7 +1024,7 @@ apswvfs_xDlError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
   VFSPREAMBLE;
 
   PyObject *vargs[] = { NULL, (PyObject *)(vfs->pAppData) };
-  if (PyObject_HasAttr(vargs[1], apst.xDlError))
+  if (1 == PyObject_HasAttrWithError(vargs[1], apst.xDlError))
     pyresult = PyObject_VectorcallMethod(apst.xDlError, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (pyresult && !Py_IsNone(pyresult))
@@ -1378,7 +1378,7 @@ apswvfs_xGetLastError(sqlite3_vfs *vfs, int nByte, char *zErrMsg)
     *zErrMsg = 0;
 
   PyObject *vargs[] = { NULL, (PyObject *)(vfs->pAppData) };
-  if (PyObject_HasAttr(vargs[1], apst.xGetLastError))
+  if (1 == PyObject_HasAttrWithError(vargs[1], apst.xGetLastError))
     pyresult = PyObject_VectorcallMethod(apst.xGetLastError, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
 
   if (!pyresult || !PySequence_Check(pyresult) || 2 != PySequence_Length(pyresult))
@@ -2709,7 +2709,7 @@ apswvfsfile_xDeviceCharacteristics(sqlite3_file *file)
   PyObject *pyresult = NULL;
   FILEPREAMBLE;
 
-  if (PyObject_HasAttr(apswfile->file, apst.xDeviceCharacteristics))
+  if (1 == PyObject_HasAttrWithError(apswfile->file, apst.xDeviceCharacteristics))
   {
     PyObject *vargs[] = { NULL, apswfile->file };
     pyresult
