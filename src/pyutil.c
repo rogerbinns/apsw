@@ -171,6 +171,7 @@ PyObject_HasAttrWithError(PyObject *o, PyObject *attr_name)
 
 /* Ensure compile error if we used non-with error version */
 #define PyObject_HasAttr "You must use PyObject_HasAttrWithError"
+#define PyDict_GetItem "You must use PyDict_getItemWithError"
 
 /* some we made up in the same spirit*/
 static void
