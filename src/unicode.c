@@ -1871,9 +1871,10 @@ grapheme_substr(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
   if (nchars)
   {
     start_offset = PyLong_AsSsize_t(PyList_GET_ITEM(offsets, start));
-    stop_offset = PyLong_AsSsize_t(PyList_GET_ITEM(offsets, stop));
+    if (!PyErr_Occurred())
+      stop_offset = PyLong_AsSsize_t(PyList_GET_ITEM(offsets, stop));
     Py_CLEAR(offsets);
-    return PyUnicode_Substring(text, start_offset, stop_offset);
+    return PyErr_Occurred() ? NULL : PyUnicode_Substring(text, start_offset, stop_offset);
   }
 
   Py_CLEAR(offsets);
