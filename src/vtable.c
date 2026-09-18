@@ -1570,7 +1570,10 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
       }
       indexinfo->idxNum = PyLong_AsInt(idxnum);
       if (PyErr_Occurred())
+      {
+        Py_DECREF(idxnum);
         goto pyexception;
+      }
     }
     Py_DECREF(idxnum);
   }
@@ -1608,6 +1611,7 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
       indexinfo->idxStr = (char *)isvalue;
       indexinfo->needToFreeIdxStr = 1;
     }
+    Py_DECREF(idxstr);
   }
 
   /* item 3 is orderByConsumed */
