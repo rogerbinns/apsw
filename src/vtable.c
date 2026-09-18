@@ -1595,9 +1595,16 @@ apswvtabBestIndex(sqlite3_vtab *pVtab, sqlite3_index_info *indexinfo)
         goto pyexception;
       }
       assert(indexinfo->idxStr == NULL);
-      const char *svalue = PyUnicode_AsUTF8(idxstr);
+      Py_ssize_t idxstr_len;
+      const char *svalue = PyUnicode_AsUTF8AndSize(idxstr, &idxstr_len);
       if (!svalue)
       {
+        Py_DECREF(idxstr);
+        goto pyexception;
+      }
+      if (strlen(svalue) != (size_t)idxstr_len)
+      {
+        PyErr_Format(PyExc_ValueError, "idxStr %R contains embedded null", idxstr);
         Py_DECREF(idxstr);
         goto pyexception;
       }
