@@ -2168,8 +2168,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
   gilstate = PyGILState_Ensure();
 
   MakeExistingException();
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
+  CHAIN_EXC_BEGIN
 
   PyObject *vargs[] = { NULL, (PyObject *)self, PyUnicode_FromString(dbname), PyLong_FromLong(npages) };
   if (vargs[2] && vargs[3])
@@ -2194,6 +2193,7 @@ walhookcb(void *context, sqlite3 *db, const char *dbname, int npages)
 
 finally:
   Py_XDECREF(retval);
+  CHAIN_EXC_END;
   PyGILState_Release(gilstate);
   return code;
 }
