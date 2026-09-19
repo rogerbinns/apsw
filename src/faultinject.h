@@ -44,6 +44,7 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
 #undef PyIter_Next
 #undef PyList_Append
 #undef PyList_GetItem
+#undef PyList_GetItemRef
 #undef PyList_New
 #undef PyList_SetItem
 #undef PyList_Size
@@ -725,6 +726,21 @@ APSW_FaultInjectControl(const char *faultfunction, const char *filename, const c
         _res_PyList_GetItem = (typeof (_res_PyList_GetItem))18;                                                                                \
     }                                                                                                                                          \
     _res_PyList_GetItem;                                                                                                                       \
+})
+#define PyList_GetItemRef(...) \
+({                                                                                                                                                      \
+    __auto_type _res_PyList_GetItemRef = 0 ? PyList_GetItemRef(__VA_ARGS__) : 0;                                                                        \
+                                                                                                                                                        \
+    _res_PyList_GetItemRef = (typeof (_res_PyList_GetItemRef))APSW_FaultInjectControl("PyList_GetItemRef", __FILE__, __func__, __LINE__, #__VA_ARGS__); \
+                                                                                                                                                        \
+    if ((typeof (_res_PyList_GetItemRef))0x1FACADE == _res_PyList_GetItemRef)                                                                           \
+       _res_PyList_GetItemRef = PyList_GetItemRef(__VA_ARGS__);                                                                                         \
+    else if ((typeof(_res_PyList_GetItemRef))0x2FACADE == _res_PyList_GetItemRef)                                                                       \
+    {                                                                                                                                                   \
+        PyList_GetItemRef(__VA_ARGS__);                                                                                                                 \
+        _res_PyList_GetItemRef = (typeof (_res_PyList_GetItemRef))18;                                                                                   \
+    }                                                                                                                                                   \
+    _res_PyList_GetItemRef;                                                                                                                             \
 })
 #define PyList_New(...) \
 ({                                                                                                                                 \

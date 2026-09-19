@@ -116,6 +116,7 @@ returns = {
             PyLong_FromUnicodeObject PyLong_FromUnsignedLong PyMapping_Items
             PyObject_CallNoArgs  PyObject_GenericGetAttr PyThreadState_GetDict
             PyDict_Copy _PyObject_NewVar PyUnicode_Substring PyModuleDef_Init
+            PyList_GetItemRef
 
             Connection_fts5_api get_token_value fts5extensionapi_acquire
             make_boxed_call APSWCursor_internal_get_description
