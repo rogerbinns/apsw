@@ -914,14 +914,15 @@ jsonb_encode_internal_actual(struct JSONBuffer *buf, PyObject *obj)
         goto error;
       for (Py_ssize_t i = 0; i < PyList_GET_SIZE(items); i++)
       {
-        PyObject *tuple = PyList_GET_ITEM(items, i);
-        if (!PyTuple_CheckExact(tuple) || PyTuple_GET_SIZE(tuple) != 2)
+        PyObject *tuple = PyList_GetItemRef(items, i);
+        if (!tuple || !PyTuple_CheckExact(tuple) || PyTuple_GET_SIZE(tuple) != 2)
         {
+          Py_XDECREF(tuple);
           PyErr_Format(PyExc_ValueError, "mapping items not 2-tuples");
           goto error;
         }
         PyObject *key = PyTuple_GET_ITEM(tuple, 0), *value = PyTuple_GET_ITEM(tuple, 1);
-
+        Py_DECREF(tuple);
         size_t offset = buf->size;
 
         if (jsonb_encode_object_key(buf, key))

@@ -140,6 +140,16 @@ PyWeakref_GetRef(PyObject *ref, PyObject **pobj)
 #endif
 
 #if PY_VERSION_HEX < 0x030d0000
+#undef PyList_GetItemRef
+static PyObject *
+PyList_GetItemRef(PyObject *list, Py_ssize_t index)
+{
+#include "faultinject.h"
+  return Py_XNewRef(PyList_GetItem(list, index));
+}
+#endif
+
+#if PY_VERSION_HEX < 0x030d0000
 #undef PyObject_HasAttrWithError
 static int
 PyObject_HasAttrWithError(PyObject *o, PyObject *attr_name)
