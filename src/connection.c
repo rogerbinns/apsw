@@ -6981,7 +6981,6 @@ Connection_tp_traverse(PyObject *self_, visitproc visit, void *arg)
   Py_VISIT(self->convert_binding);
   Py_VISIT(self->convert_jsonb);
   Py_VISIT(self->vfs);
-  Py_VISIT(self->dependents);
   Py_VISIT(self->cursor_factory);
   for (unsigned i = 0; i < self->tracehooks_count; i++)
   {
