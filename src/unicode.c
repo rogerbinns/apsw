@@ -2424,7 +2424,7 @@ OffsetMapper_text(PyObject *self_, void *Py_UNUSED(closure))
     return NULL;
 
   Py_ssize_t offset = 0;
-  for (Py_ssize_t i = 0; i < PyList_GET_SIZE(self->accumulate); i++)
+  for (Py_ssize_t i = 0; self->accumulate && i < PyList_GET_SIZE(self->accumulate); i++)
   {
     PyObject *segment = PyList_GET_ITEM(self->accumulate, i);
     PyUnicode_CopyCharacters(self->text, offset, segment, 0, PyUnicode_GET_LENGTH(segment));
