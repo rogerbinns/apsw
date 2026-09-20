@@ -2671,8 +2671,8 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
 
   MakeExistingException();
 
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
+  CHAIN_EXC_BEGIN
+
   PyObject *vargs[] = { NULL, (PyObject *)self, PyUnicode_FromString(name) };
   if (vargs[2])
     res = PyObject_Vectorcall(self->collationneeded, vargs + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -2681,6 +2681,8 @@ collationneeded_cb(void *pAux, sqlite3 *Py_UNUSED(db), int eTextRep, const char 
     AddTraceBackHere(__FILE__, __LINE__, "collationneeded callback", "{s: O, s: i, s: s}", "Connection", self,
                      "eTextRep", eTextRep, "name", name);
   Py_XDECREF(res);
+
+  CHAIN_EXC_END;
 
   PyGILState_Release(gilstate);
 }
