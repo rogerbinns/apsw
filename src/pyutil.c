@@ -156,7 +156,7 @@ PyObject_HasAttrWithError(PyObject *o, PyObject *attr_name)
 {
 #include "faultinject.h"
 
-  /* Normal PyObject_HasAttr sends errors to unraiseable - this added
+  /* Normal PyObject_HasAttr sends errors to unraisable - this added
      in py 3.13 preserves them.  */
 
   assert(!PyErr_Occurred());
