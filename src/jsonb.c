@@ -2198,6 +2198,12 @@ jsonb_decode_utf8_string(const uint8_t *buf, size_t end, PyObject *unistr, enum 
     and items seem reasonable.  It does not check all corner cases, or the UTF8
     encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.
 
+    SQLite has a `depth limit
+    <https://sqlite.org/compile.html#json_max_depth>`__  of about 1,000
+    for JSON and JSONB nesting (eg putting a list inside a dict inside a
+    list).  APSW's limit is greater and  based on the available stack, and
+    will return ``False`` for excessively nested JSONB.
+
     .. note::
 
       :func:`~apsw.jsonb_decode` always validates the data as it decodes, so there is no
