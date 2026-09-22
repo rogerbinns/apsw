@@ -2048,7 +2048,7 @@ PyInit_apsw(void)
 #endif
 
   /** .. attribute:: async_controller
-    :type: type[AsyncConnectionController]
+    :type: contextvars.ContextVar[AsyncConnectionController]
 
     This sets the controller for :meth:`Connection.as_async`.  It will use
     :func:`apsw.aio.Auto` if not explicitly set.
