@@ -2350,6 +2350,8 @@ Connection_set_progress_handler(PyObject *self_, PyObject *const *fast_args, Py_
 
   ASYNC_FASTCALL(self, Connection_set_progress_handler);
 
+  DBMUTEX_ENSURE(self);
+
   /* clear out any matching id */
   for (unsigned i = 0; i < self->progresshandler_count; i++)
   {
@@ -2363,7 +2365,7 @@ Connection_set_progress_handler(PyObject *self_, PyObject *const *fast_args, Py_
         eq = PyObject_RichCompareBool(id, self->progresshandler[i].id, Py_EQ);
 
       if (eq == -1)
-        return NULL;
+        goto errorout;
       if (eq)
       {
         Py_CLEAR(self->progresshandler[i].callback);
@@ -2397,7 +2399,10 @@ Connection_set_progress_handler(PyObject *self_, PyObject *const *fast_args, Py_
                                 sizeof(struct progresshandler_entry) * (self->progresshandler_count + 1))
                 : NULL;
       if (!new_progresshandler)
-        return PyErr_NoMemory();
+      {
+        PyErr_NoMemory();
+        goto errorout;
+      }
       self->progresshandler = new_progresshandler;
       self->progresshandler[self->progresshandler_count].nsteps = nsteps;
       self->progresshandler[self->progresshandler_count].id = id ? Py_NewRef(id) : NULL;
@@ -2417,7 +2422,6 @@ Connection_set_progress_handler(PyObject *self_, PyObject *const *fast_args, Py_
     }
   }
 
-  DBMUTEX_ENSURE(self);
   if (active)
     sqlite3_progress_handler(self->db, min_steps, progresshandlercb, self);
   else
@@ -2427,6 +2431,12 @@ Connection_set_progress_handler(PyObject *self_, PyObject *const *fast_args, Py_
   assert(!PyErr_Occurred());
 
   Py_RETURN_NONE;
+
+errorout:
+  assert(PyErr_Occurred());
+  sqlite3_mutex_leave(self->dbmutex);
+
+  return NULL;
 }
 
 static int
