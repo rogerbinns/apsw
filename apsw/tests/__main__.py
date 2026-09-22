@@ -10296,6 +10296,20 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
     def testVFSFcntlPragma(self):
         "Test wrapping fcntl pragmas"
 
+        no_init = apsw.VFSFcntlPragma.__new__(apsw.VFSFcntlPragma)
+        with self.assertRaisesRegex(
+            TypeError, "VFSFcntlPragma had __new__ called, but was not __init__ with a pointer"
+        ):
+            no_init.name
+        with self.assertRaisesRegex(
+            TypeError, "VFSFcntlPragma had __new__ called, but was not __init__ with a pointer"
+        ):
+            no_init.result = "hello"
+        with self.assertRaisesRegex(
+            TypeError, "VFSFcntlPragma had __new__ called, but was not __init__ with a pointer"
+        ):
+            no_init.value
+
         class testvfs(apsw.VFS):
             name = "testingpragma"
 

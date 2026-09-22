@@ -103,9 +103,19 @@ typedef struct apswfcntl_pragma
   int init_was_called;
 } apswfcntl_pragma;
 
+#define CHECK_PRAGMA(retval)                                                                                           \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!self->init_was_called || !self->strings)                                                                      \
+    {                                                                                                                  \
+      PyErr_SetString(PyExc_TypeError, "VFSFcntlPragma had __new__ called, but was not __init__ with a pointer");      \
+      return (retval);                                                                                                 \
+    }                                                                                                                  \
+  } while (0)
+
 /** .. method:: __init__(pointer: int)
 
-The pointer must be what your xFileControl method received.
+The pointer **must** be what your xFileControl method received.
 
 */
 static int
@@ -134,6 +144,8 @@ static PyObject *
 apswfcntl_pragma_get_result(PyObject *self_, void *Py_UNUSED(unused))
 {
   apswfcntl_pragma *self = (apswfcntl_pragma *)self_;
+  CHECK_PRAGMA(NULL);
+
   return convertutf8string(self->strings[0]);
 }
 
@@ -141,6 +153,8 @@ static int
 apswfcntl_pragma_set_result(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
   apswfcntl_pragma *self = (apswfcntl_pragma *)self_;
+  CHECK_PRAGMA(-1);
+
   if (!Py_IsNone(value) && !PyUnicode_Check(value))
   {
     PyErr_Format(PyExc_TypeError, "Expected None or str, not %s", Py_TypeName(value));
@@ -172,9 +186,12 @@ apswfcntl_pragma_set_result(PyObject *self_, PyObject *value, void *Py_UNUSED(un
     The name of the pragma
 */
 static PyObject *
-apswfcntl_pragma_get_name(PyObject *self, void *Py_UNUSED(unused))
+apswfcntl_pragma_get_name(PyObject *self_, void *Py_UNUSED(unused))
 {
-  return convertutf8string(((apswfcntl_pragma *)self)->strings[1]);
+  apswfcntl_pragma *self = (apswfcntl_pragma *)self_;
+  CHECK_PRAGMA(NULL);
+
+  return convertutf8string(self->strings[1]);
 }
 
 /** .. attribute:: value
@@ -183,9 +200,11 @@ apswfcntl_pragma_get_name(PyObject *self, void *Py_UNUSED(unused))
     The value for the pragma, if provided else None,
 */
 static PyObject *
-apswfcntl_pragma_get_value(PyObject *self, void *Py_UNUSED(unused))
+apswfcntl_pragma_get_value(PyObject *self_, void *Py_UNUSED(unused))
 {
-  return convertutf8string(((apswfcntl_pragma *)self)->strings[2]);
+  apswfcntl_pragma *self = (apswfcntl_pragma *)self_;
+  CHECK_PRAGMA(NULL);
+  return convertutf8string(self->strings[2]);
 }
 
 static PyGetSetDef apswfcntl_pragma_getsetters[]
