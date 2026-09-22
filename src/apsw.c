@@ -584,6 +584,9 @@ static PyObject *logger_cb = NULL;
 static void
 apsw_logger(void *arg, int errcode, const char *message)
 {
+  /* this shouldn't be possible in theory - defend anyway */
+  if (!Py_IsInitialized())
+    return;
   PyGILState_STATE gilstate;
   PyObject *res = NULL;
 
