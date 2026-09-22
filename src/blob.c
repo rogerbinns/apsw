@@ -55,7 +55,7 @@ ZeroBlobBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   {
     Zeroblob_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
-    ARG_CONVERT_VARARGS_TO_FASTCALL(1, Zeroblob_init_USAGE);
+    ARG_CONVERT_VARARGS_TO_FASTCALL(2, Zeroblob_init_USAGE);
     ARG_PROLOG(1, Zeroblob_init_KWNAMES);
     ARG_MANDATORY ARG_unsigned_long_long(size);
     ARG_EPILOG(-1, Zeroblob_init_USAGE, Py_XDECREF(fast_kwnames));

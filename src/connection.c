@@ -717,7 +717,7 @@ Connection_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   {
     Connection_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
-    ARG_CONVERT_VARARGS_TO_FASTCALL(4, Connection_init_USAGE);
+    ARG_CONVERT_VARARGS_TO_FASTCALL(5, Connection_init_USAGE);
     ARG_PROLOG(4, Connection_init_KWNAMES);
     ARG_MANDATORY ARG_str(filename);
     ARG_OPTIONAL ARG_int(flags);

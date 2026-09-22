@@ -547,14 +547,16 @@ class APSW(unittest.TestCase):
         # mainly from #624
         apsw.soft_heap_limit(3)
         apsw.soft_heap_limit(limit=3)
+        with self.assertRaisesRegex(TypeError, r".*argument 'limit' given by name and position.*"):
+            apsw.soft_heap_limit(3, limit=3)
         # the \0 is swallowed but we dont care
         with self.assertRaisesRegex(TypeError, "'limit\\\\x00foo' is an invalid keyword argument.*"):
             apsw.soft_heap_limit(**{"limit\0foo": 3})
         self.assertRaisesRegex(TypeError, "argument 'limit' given by name and position.*", apsw.soft_heap_limit, 3, limit=3)
         self.assertRaisesRegex(TypeError, r"Too many positional arguments 2 \(max 1\) provided.*", apsw.soft_heap_limit, 3, 4)
-        with self.assertRaisesRegex(TypeError, r"Too many arguments 100 \(max 4\) provided to.*"):
+        with self.assertRaisesRegex(TypeError, r"Too many arguments 100 \(max 5\) provided to.*"):
             apsw.Connection(*range(100))
-        with self.assertRaisesRegex(TypeError, r"Too many arguments 99 \(max 4\) provided to.*"):
+        with self.assertRaisesRegex(TypeError, r"Too many arguments 99 \(max 5\) provided to.*"):
             apsw.Connection(**{str(x): x for x in range(99)})
         with self.assertRaisesRegex(TypeError, "'x\\\\x00y' is an invalid keyword argument for.*"):
             apsw.Connection("", 1, "", **{"x\0y": 3})
@@ -568,6 +570,20 @@ class APSW(unittest.TestCase):
                 "hello",
                 ["a", 3 + 4j, "b"],
             )
+        with self.assertRaisesRegex(TypeError, ".*Missing required parameter #1 'name' of.*"):
+            apsw.VFS()
+        with self.assertRaisesRegex(TypeError, ".*argument 'base' given by name and position.*"):
+            apsw.VFS("a", "b", base="b")
+        with self.assertRaisesRegex(TypeError, r".*Too many positional arguments 5 \(max 4\) provided.*"):
+            apsw.VFS("a", "b", False, 1023, 3)
+        with self.assertRaisesRegex(TypeError, r".*argument 'maxpathname' given by name and position.*"):
+            apsw.VFS("a", "b", False, 1023, iVersion=3, maxpathname=1024)
+        b = "xyzzy"
+        r = 'Base vfs named "xyzzy" not found'
+        with self.assertRaisesRegex(ValueError, r):
+            apsw.VFS("a", b, False, iVersion=3, maxpathname=1024)
+        with self.assertRaisesRegex(ValueError, r):
+            apsw.VFS("a", b, False, 1024, iVersion=3)
 
     def testSanity(self):
         "Check all parts compiled and are present"

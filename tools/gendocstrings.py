@@ -666,7 +666,7 @@ def do_argparse(item):
   {{
     { item['symbol'] }_CHECK;
     { "PREVENT_INIT_MULTIPLE_CALLS;" if is_init else "" }
-    { f"ARG_CONVERT_VARARGS_TO_FASTCALL({max_pos}, {usage_name});" if is_init else "" }
+    { f"ARG_CONVERT_VARARGS_TO_FASTCALL({len(item["signature"])}, {usage_name});" if is_init else "" }
     ARG_PROLOG({ max_pos}, { item['symbol'] }_KWNAMES);
 """
         + code
