@@ -2162,11 +2162,11 @@ class APSW(unittest.TestCase):
         self.assertEqual(len(Source.sn_called), 2)
 
         Source.ShadowName = lambda *args: 1 / 0
-        self.assertRaisesUnraisable(ZeroDivisionError, self.db.execute, "create table sptest_bam(x)")
+        self.assertRaises(ZeroDivisionError, self.db.execute, "create table sptest_bam(x)")
         Source.ShadowName = lambda *args: "foo"
-        self.assertRaisesUnraisable(TypeError, self.db.execute, "create table sptest_bam2(x)")
+        self.assertRaises(TypeError, self.db.execute, "create table sptest_bam2(x)")
         Source.ShadowName = lambda *args: 3 + 4j
-        self.assertRaisesUnraisable(TypeError, self.db.execute, "create table sptest_bam3(x)")
+        self.assertRaises(TypeError, self.db.execute, "create table sptest_bam3(x)")
         Source.ShadowName = lambda *args: True
         self.db.execute("create table sptest_bam4(x)")
 

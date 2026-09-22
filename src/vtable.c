@@ -2761,7 +2761,9 @@ apswvtabShadowName(int which, const char *table_suffix)
 
   MakeExistingException();
 
-  if (!PyErr_Occurred() && 1 == PyObject_HasAttrWithError(shadowname_allocation[which].source, apst.ShadowName))
+  CHAIN_EXC_BEGIN
+
+  if (1 == PyObject_HasAttrWithError(shadowname_allocation[which].source, apst.ShadowName))
   {
     PyObject *vargs[] = { NULL, shadowname_allocation[which].source, PyUnicode_FromString(table_suffix) };
     if (vargs[2])
@@ -2779,12 +2781,12 @@ apswvtabShadowName(int which, const char *table_suffix)
       PyErr_Format(PyExc_TypeError, "Expected a bool from ShadowName not %s", Py_TypeName(res));
 
     if (PyErr_Occurred())
-    {
       AddTraceBackHere(__FILE__, __LINE__, "VTModule.ShadowName", "{s: s, s: O}", "table_suffix", table_suffix, "res",
                        OBJ(res));
-      apsw_write_unraisable(NULL);
-    }
   }
+
+  CHAIN_EXC_END;
+
   Py_XDECREF(res);
   PyGILState_Release(gilstate);
   return sqliteres;
