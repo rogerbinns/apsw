@@ -472,16 +472,18 @@ SqliteIndexInfo_get_idxNum(PyObject *self, void *Py_UNUSED(unused))
 static int
 SqliteIndexInfo_set_idxNum(PyObject *self, PyObject *value, void *Py_UNUSED(unused))
 {
-  int v;
-
   CHECK_INDEX(-1);
+
+  if (!value)
+    return reject_attribute_deletion("IndexInfo.idxNum");
 
   if (!PyLong_Check(value))
   {
     PyErr_Format(PyExc_TypeError, "Expected an int, not %s", Py_TypeName(value));
     return -1;
   }
-  v = PyLong_AsInt(value);
+
+  int v = PyLong_AsInt(value);
   if (PyErr_Occurred())
     return -1;
   ((SqliteIndexInfo *)self)->index_info->idxNum = v;
@@ -506,6 +508,9 @@ SqliteIndexInfo_set_idxStr(PyObject *self_, PyObject *value, void *Py_UNUSED(unu
 {
   SqliteIndexInfo *self = (SqliteIndexInfo *)self_;
   CHECK_INDEX(-1);
+
+  if (!value)
+    return reject_attribute_deletion("IndexInfo.idxStr");
 
   if (!Py_IsNone(value) && !PyUnicode_Check(value))
   {
@@ -556,6 +561,8 @@ static int
 SqliteIndexInfo_set_OrderByConsumed(PyObject *self, PyObject *value, void *Py_UNUSED(unused))
 {
   CHECK_INDEX(-1);
+  if (!value)
+    return reject_attribute_deletion("IndexInfo.orderByConsumed");
 
   ((SqliteIndexInfo *)self)->index_info->orderByConsumed = PyObject_IsTrueStrict(value);
   if (((SqliteIndexInfo *)self)->index_info->orderByConsumed == -1)
@@ -583,10 +590,11 @@ SqliteIndexInfo_get_estimatedCost(PyObject *self, void *Py_UNUSED(unused))
 static int
 SqliteIndexInfo_set_estimatedCost(PyObject *self, PyObject *value, void *Py_UNUSED(unused))
 {
-  double v;
   CHECK_INDEX(-1);
+  if (!value)
+    return reject_attribute_deletion("IndexInfo.estimatedCost");
 
-  v = PyFloat_AsDouble(value);
+  double v = PyFloat_AsDouble(value);
 
   if (PyErr_Occurred())
     return -1;
@@ -612,8 +620,9 @@ SqliteIndexInfo_get_estimatedRows(PyObject *self, void *Py_UNUSED(unused))
 static int
 SqliteIndexInfo_set_estimatedRows(PyObject *self, PyObject *value, void *Py_UNUSED(unused))
 {
-  sqlite3_int64 v;
   CHECK_INDEX(-1);
+  if (!value)
+    return reject_attribute_deletion("IndexInfo.estimatedRows");
 
   if (!PyLong_Check(value))
   {
@@ -621,7 +630,7 @@ SqliteIndexInfo_set_estimatedRows(PyObject *self, PyObject *value, void *Py_UNUS
     return -1;
   }
 
-  v = PyLong_AsLongLong(value);
+  sqlite3_int64 v = PyLong_AsLongLong(value);
 
   if (PyErr_Occurred())
     return -1;
@@ -647,8 +656,9 @@ SqliteIndexInfo_get_idxFlags(PyObject *self, void *Py_UNUSED(unused))
 static int
 SqliteIndexInfo_set_idxFlags(PyObject *self, PyObject *value, void *Py_UNUSED(unused))
 {
-  int v;
   CHECK_INDEX(-1);
+  if (!value)
+    return reject_attribute_deletion("IndexInfo.idxFlags");
 
   if (!PyLong_Check(value))
   {
@@ -656,7 +666,7 @@ SqliteIndexInfo_set_idxFlags(PyObject *self, PyObject *value, void *Py_UNUSED(un
     return -1;
   }
 
-  v = PyLong_AsInt(value);
+  int v = PyLong_AsInt(value);
   if (PyErr_Occurred())
     return -1;
   ((SqliteIndexInfo *)self)->index_info->idxFlags = v;

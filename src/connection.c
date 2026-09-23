@@ -6101,6 +6101,9 @@ Connection_get_transaction_mode(PyObject *self_, void *Py_UNUSED(unused))
 static int
 Connection_set_transaction_mode(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Connection.transaction_mode");
+
   Connection *self = (Connection *)self_;
 
   CHECK_CLOSED(self, -1);
@@ -6155,6 +6158,9 @@ Connection_get_convert_binding(PyObject *self_, void *Py_UNUSED(unused))
 static int
 Connection_set_convert_binding(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Connection.convert_binding");
+
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, -1);
 
@@ -6191,6 +6197,9 @@ Connection_get_convert_jsonb(PyObject *self_, void *Py_UNUSED(unused))
 static int
 Connection_set_convert_jsonb(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Connection.convert_jsonb");
+
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, -1);
 
@@ -6236,6 +6245,9 @@ Connection_get_exec_trace_attr(PyObject *self_, void *Py_UNUSED(unused))
 static int
 Connection_set_exec_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Connection.exec_trace");
+
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, -1);
 
@@ -6282,6 +6294,9 @@ Connection_get_row_trace_attr(PyObject *self_, void *Py_UNUSED(unused))
 static int
 Connection_set_row_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Connection.row_trace");
+
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, -1);
 
@@ -6344,6 +6359,9 @@ Connection_get_authorizer_attr(PyObject *self_, void *Py_UNUSED(unused))
 static int
 Connection_set_authorizer_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Connection.authorizer");
+
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, -1);
 

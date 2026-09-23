@@ -795,6 +795,9 @@ APSWFTS5ExtensionApi_xSetAuxdata(PyObject *self, PyObject *value, void *Py_UNUSE
 {
   FTSEXT_CHECK(-1);
 
+  if (!value)
+    return reject_attribute_deletion("FTS5ExtensionApi.aux_data");
+
   int rc;
   Py_IncRef(value);
   /* calls destructor on failure */

@@ -1259,6 +1259,90 @@ class APSW(unittest.TestCase):
         for i, v in enumerate(c.execute("select * from xxset order by x")):
             self.assertEqual(v, result[i])
 
+    def testDelAttr(self):
+        "Deleting attributes"
+
+        cur = self.db.cursor()
+
+        if hasattr(apsw, "Session"):
+            session = apsw.Session(self.db, "main")
+        else:
+            session = None
+
+        fcntl = apsw.VFSFcntlPragma(1)
+
+        for obj, name in (
+            (self.db, "cursor_factory"),
+            (self.db, "convert_binding"),
+            (self.db, "convert_jsonb"),
+            (self.db, "exec_trace"),
+            (self.db, "row_trace"),
+            (self.db, "authorizer"),
+            (self.db, "transaction_mode"),
+            (cur, "convert_binding"),
+            (cur, "convert_jsonb"),
+            (cur, "exec_trace"),
+            (cur, "row_trace"),
+            (session, "enabled"),
+            (session, "indirect"),
+            (fcntl, "result"),
+        ):
+            if obj is not None:
+                if obj is self.db:
+                    t = "Connection"
+                elif obj is cur:
+                    t = "Cursor"
+                elif obj is session:
+                    t = "Session"
+                elif obj is fcntl:
+                    t = "VFSFcntlPragma"
+                else:
+                    self.fail(f"Unhandled object name {obj=}")
+
+                with self.assertRaisesRegex(AttributeError, f"You can not delete the '{t}.{name}' attribute"):
+                    delattr(obj, name)
+
+        # we need indexinfo in xbestindex ...
+        checked = False
+
+        class vtmod:
+            def Create(self, *args):
+                return "create table ignored(a,b,c)", vttable()
+
+        class vttable:
+            def BestIndexObject(_, index_info):
+                nonlocal checked
+                for name in ("idxNum", "idxStr", "orderByConsumed", "estimatedCost", "estimatedRows", "idxFlags"):
+                    with self.assertRaisesRegex(AttributeError, f"You can not delete the 'IndexInfo.{name}' attribute"):
+                        delattr(index_info, name)
+                checked = True
+                # causes the no query solution exception
+                return False
+
+        self.db.create_module("foo", vtmod(), use_bestindex_object=True)
+        with self.assertRaisesRegex(apsw.SQLError, "no query solution"):
+            self.db.execute("create virtual table work using foo(a,b,c); select * from work where a>3 order by c")
+        self.assertTrue(checked)
+
+        if "ENABLE_FTS5" in apsw.compile_options and hasattr(self.db, "register_fts5_function"):
+            checked = False
+
+            def cb(api, *args):
+                nonlocal checked
+                with self.assertRaisesRegex(
+                    AttributeError, f"You can not delete the 'FTS5ExtensionApi.aux_data' attribute"
+                ):
+                    del api.aux_data
+                checked = True
+                return 3
+
+            self.db.register_fts5_function("foo", cb)
+
+            self.db.execute(
+                "CREATE VIRTUAL TABLE email USING fts5(a,b); insert into email values('one', 'two'); select foo(email,a) from email"
+            )
+            self.assertTrue(checked)
+
     def testCursor(self):
         "Check functionality of the cursor"
         c = self.db.cursor()

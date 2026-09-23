@@ -2101,6 +2101,9 @@ APSWCursor_get_convert_binding(PyObject *self_, void *Py_UNUSED(unused))
 static int
 APSWCursor_set_convert_binding(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Cursor.convert_binding");
+
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(-1);
 
@@ -2145,6 +2148,9 @@ APSWCursor_get_convert_jsonb(PyObject *self_, void *Py_UNUSED(unused))
 static int
 APSWCursor_set_convert_jsonb(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Cursor.convert_jsonb");
+
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(-1);
 
@@ -2188,6 +2194,9 @@ APSWCursor_get_exec_trace_attr(PyObject *self_, void *Py_UNUSED(unused))
 static int
 APSWCursor_set_exec_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Cursor.exec_trace");
+
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(-1);
 
@@ -2231,6 +2240,9 @@ APSWCursor_get_row_trace_attr(PyObject *self_, void *Py_UNUSED(unused))
 static int
 APSWCursor_set_row_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Cursor.row_trace");
+
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(-1);
 
@@ -2643,12 +2655,14 @@ static PyGetSetDef APSWCursor_getset[] = {
   { "convert_binding", APSWCursor_get_convert_binding, APSWCursor_set_convert_binding, Cursor_convert_binding_DOC },
   { "convert_jsonb", APSWCursor_get_convert_jsonb, APSWCursor_set_convert_jsonb, Cursor_convert_jsonb_DOC },
   { "exec_trace", APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr, Cursor_exec_trace_DOC },
+  { "row_trace", APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr, Cursor_row_trace_DOC },
+  { "get", APSWCursor_get, NULL, Cursor_get_DOC },
+  { "connection", APSWCursor_get_connection_attr, NULL, Cursor_connection_DOC },
+#ifndef APSW_OMIT_OLD_NAMES
   { Cursor_exec_trace_OLDNAME, APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr,
     Cursor_exec_trace_OLDDOC },
-  { "row_trace", APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr, Cursor_row_trace_DOC },
   { Cursor_row_trace_OLDNAME, APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr, Cursor_row_trace_OLDDOC },
-  { "connection", APSWCursor_get_connection_attr, NULL, Cursor_connection_DOC },
-  { "get", APSWCursor_get, NULL, Cursor_get_DOC },
+#endif
   { NULL, NULL, NULL, NULL, NULL }
 };
 

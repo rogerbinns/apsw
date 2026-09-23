@@ -152,6 +152,9 @@ apswfcntl_pragma_get_result(PyObject *self_, void *Py_UNUSED(unused))
 static int
 apswfcntl_pragma_set_result(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("VFSFcntlPragma.result");
+
   apswfcntl_pragma *self = (apswfcntl_pragma *)self_;
   CHECK_PRAGMA(-1);
 

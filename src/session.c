@@ -848,6 +848,9 @@ APSWSession_get_enabled(PyObject *self_, void *unused)
 static int
 APSWSession_set_enabled(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Session.enabled");
+
   APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(-1);
 
@@ -892,6 +895,9 @@ APSWSession_get_indirect(PyObject *self_, void *unused)
 static int
 APSWSession_set_indirect(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Session.indirect");
+
   APSWSession *self = (APSWSession *)self_;
   CHECK_SESSION_CLOSED(-1);
 
