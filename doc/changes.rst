@@ -13,6 +13,9 @@ APSW changes by version
 next
 ====
 
+:attr:`Connection.cursor_factory` returned objects must have a
+``close`` method.  This is now documented, and enforced.
+
 The `apsw.fork_checker` function has been removed, as supporting it has
 become impractical.  It was originally added in 2009.  (:issue:`632`)
 

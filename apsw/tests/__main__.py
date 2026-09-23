@@ -412,6 +412,7 @@ class APSW(unittest.TestCase):
         for c in apsw.connections():
             # tracers firing cause false mutex checks
             c.trace_v2(0)
+            c.cursor_factory = apsw.Cursor
             self.check_db_mutex(c)
             c.close(True)
         del self.db
@@ -803,7 +804,14 @@ class APSW(unittest.TestCase):
     def testCursorFactory(self):
         "Test Connection.cursor_factory"
         seqbindings = ((3,),) * 3
+
         self.assertEqual(self.db.cursor_factory, apsw.Cursor)
+        with self.assertRaises(AttributeError):
+            del self.db.cursor_factory
+        self.assertEqual(self.db.cursor_factory, apsw.Cursor)
+        self.db.cursor_factory = apsw.Cursor
+        self.assertEqual(self.db.cursor_factory, apsw.Cursor)
+
         for not_callable in (None, apsw, 3):
             try:
                 self.db.cursor_factory = not_callable
@@ -822,16 +830,18 @@ class APSW(unittest.TestCase):
             return 3
 
         self.db.cursor_factory = error
-        self.assertRaises(TypeError, self.db.execute, "select 3")
-        self.assertRaises(TypeError, self.db.executemany, "select 3")
+        self.assertRaises(AttributeError, self.db.execute, "select 3")
+        self.assertRaises(AttributeError, self.db.executemany, "select 3")
 
         class error:
             def __init__(self, _):
                 pass
 
+            close = 3+4j
+
         self.db.cursor_factory = error
-        self.assertRaises(AttributeError, self.db.execute, "select 3")
-        self.assertRaises(AttributeError, self.db.executemany, "select ?", seqbindings)
+        self.assertRaises(TypeError, self.db.execute, "select 3")
+        self.assertRaises(TypeError, self.db.executemany, "select ?", seqbindings)
 
         class inherits(apsw.Cursor):
             pass

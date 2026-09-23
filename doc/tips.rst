@@ -413,9 +413,10 @@ wanting a :ref:`rowcount <rowcount>` or batching returned rows.
 (These don't make any sense with SQLite but the desire may be to make
 the code source compatible with other database drivers).
 
-Set :attr:`Connection.cursor_factory` to any callable, which will be
+Set :attr:`Connection.cursor_factory` to a callable, which will be
 called with the connection as the only parameter, and return the
-object to use as a cursor.
+object to use as a cursor.  (Note the requirements on a ``close``
+method, making it easiest to subclass :class:`apsw.Cursor`.)
 
 .. index::
   single: URI

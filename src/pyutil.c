@@ -454,3 +454,10 @@ PyImport_ImportModuleAttr(PyObject *mod_name, PyObject *attr_name)
   return attr;
 }
 #endif
+
+static int
+reject_attribute_deletion(const char *name)
+{
+  PyErr_Format(PyExc_AttributeError, "You can not delete the '%s' attribute", name);
+  return -1;
+}

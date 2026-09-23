@@ -355,6 +355,27 @@ Connection_add_dependent(Connection *self, PyObject *object)
   assert(self);
   assert(!PyErr_Occurred());
 
+  /* verify it has a close method otherwise we can't close the
+     connection.  the code checks every dependent but the
+     error messages only reference cursor_factory as that is
+     the only user settable location */
+  PyObject *close = PyObject_GetAttr(object, apst.close);
+  if (!close)
+  {
+    PyErr_AddExceptionNoteV("cursor_factory returned objects must have a close method");
+    return -1;
+  }
+  int can_call = PyCallable_Check(close);
+  if (!can_call)
+  {
+    PyErr_Format(PyExc_TypeError, "cursor_factory objects must have a close method.  Received object type '%s' with close non-callable attribute type '%s'",
+                 Py_TypeName(object), Py_TypeName(close));
+    AddTraceBackHere(__FILE__, __LINE__, "Connection_add_dependent", "{s: O, s: O}", "object", object, "close", close);
+    Py_DECREF(close);
+    return -1;
+  }
+  Py_DECREF(close);
+
   if (!self->dependents)
   {
     self->dependents = PyList_New(0);
@@ -474,22 +495,25 @@ Connection_close_internal(Connection *self, int force)
       dependent = ref;
     }
 
+    /* we don't know if the dependent takes zero or one args.  we do
+       for our own types, but cursor_factory means this could be anything, so
+       we try first with the force param, and then without */
     int nargs = 2;
-#ifdef SQLITE_ENABLE_SESSION
-    if (PyObject_TypeCheck(dependent, &APSWSessionType) || PyObject_TypeCheck(dependent, &APSWChangesetBuilderType))
-      nargs = 1;
-#endif
 
+  again:
     PyObject *vargs[] = { NULL, dependent, PyBool_FromLong(force) };
     if (vargs[2])
       closeres = PyObject_VectorcallMethod_NoAsync(apst.close, vargs + 1, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-
-#ifndef NDEBUG
-    /* on success the dependent must end up closed */
-    assert((closeres && !PyErr_Occurred()) || (!closeres && PyErr_Occurred()));
-    int still_open = closeres ? PyObject_IsTrue(dependent) : 1;
-    assert(!(still_open && !PyErr_Occurred()));
-#endif
+    Py_XDECREF(vargs[2]);
+    /* TypeError is what you get for wrong number of args, but it
+       could also be code inside the method.  We are unable to tell the
+       difference here  */
+    if (!closeres && nargs == 2 && PyErr_ExceptionMatches(PyExc_TypeError))
+    {
+      PyErr_Clear();
+      nargs = 1;
+      goto again;
+    }
 
     if (PyErr_Occurred())
     {
@@ -499,7 +523,6 @@ Connection_close_internal(Connection *self, int force)
       CHAIN_EXC_END;
     }
 
-    Py_XDECREF(vargs[2]);
     Py_XDECREF(dependent);
     Py_XDECREF(closeres);
 
@@ -5988,9 +6011,20 @@ Connection_getwalfilename(PyObject *self_, void *unused)
   :meth:`Connection.execute`.
 
   Note that whatever is returned doesn't have to be an actual
-  :class:`Cursor` instance, and just needs to have the methods present
-  that are actually called.  These are likely to be `execute`,
-  `executemany`, `close` etc.
+  :class:`Cursor` instance, and needs to have the methods present
+  that are actually called.  These are likely to be `execute` and
+  `executemany`.
+
+  .. note::
+
+    It **must** have a ``close`` method.
+
+    * Called when :meth:`Connection.close` is called
+    * Must close any underlying SQLite objects in use,
+      in order to allow the :class:`Connection` to close
+    * Could be called if the :class:`Connection` is being
+      garbage collected, so there is no caller to return
+      exceptions to
 */
 
 static PyObject *
@@ -6008,6 +6042,9 @@ Connection_get_cursor_factory(PyObject *self_, void *Py_UNUSED(unused))
 static int
 Connection_set_cursor_factory(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Connection.cursor_factory");
+
   Connection *self = (Connection *)self_;
   if (!PyCallable_Check(value))
   {
