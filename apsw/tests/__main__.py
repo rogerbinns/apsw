@@ -5071,7 +5071,7 @@ class APSW(unittest.TestCase):
         for _ in cur2.execute("select * from foo"):
             pass
         VTable.Disconnect = VTable.Disconnect1
-        self.assertRaisesUnraisable(TypeError, db.close)  # nb close succeeds!
+        self.assertRaises(TypeError, db.close)  # nb close succeeds!
         self.assertRaises(apsw.CursorClosedError, cur2.execute, "select * from foo")
         del db
         db = apsw.Connection(TESTFILEPREFIX + "testdb")
@@ -5080,7 +5080,7 @@ class APSW(unittest.TestCase):
         for _ in cur2.execute("select * from foo"):
             pass
         VTable.Disconnect = VTable.Disconnect2
-        self.assertRaisesUnraisable(ZeroDivisionError, db.close)  # nb close succeeds!
+        self.assertRaises(ZeroDivisionError, db.close)  # nb close succeeds!
         self.assertRaises(apsw.CursorClosedError, cur2.execute, "select * from foo")
         del db
         db = apsw.Connection(TESTFILEPREFIX + "testdb")
@@ -5094,9 +5094,9 @@ class APSW(unittest.TestCase):
 
         # destroy
         VTable.Destroy = VTable.Destroy1
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, TypeError, cur.execute, "drop table foo")
+        self.assertRaises(TypeError, cur.execute, "drop table foo")
         VTable.Destroy = VTable.Destroy2
-        self.assertRaises(apsw.SQLError, self.assertRaisesUnraisable, ZeroDivisionError, cur.execute, "drop table foo")
+        self.assertRaises(ZeroDivisionError, cur.execute, "drop table foo")
         VTable.Destroy = VTable.Destroy3
         cur.execute("drop table foo")
         self.db.close()

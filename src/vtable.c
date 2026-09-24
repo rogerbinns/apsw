@@ -1101,9 +1101,6 @@ apswvtabDestroyOrDisconnect(sqlite3_vtab *pVtab, PyObject *methodname, const cha
     PyMem_Free(pVtab);
   }
 
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
-
   PyGILState_Release(gilstate);
   return sqliteres;
 }
