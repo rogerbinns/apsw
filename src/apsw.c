@@ -215,7 +215,7 @@ static PyObject *apsw_no_change_object;
 static PyObject *
 apsw_no_change_repr(PyObject *self)
 {
-  return Py_NewRef(apst.no_change);
+  return Py_NewRef(apst.repr_no_change);
 }
 
 static PyTypeObject apsw_no_change_type = {
@@ -1723,29 +1723,91 @@ static int module_is_initialized;
 static int
 apsw_module_setattr(PyObject *module, PyObject *name, PyObject *value)
 {
-  if (module_is_initialized
-      && (PyObject_RichCompareBool(apst.async_controller, name, Py_EQ) == 1
-          || (!PyErr_Occurred() && PyObject_RichCompareBool(apst.async_cursor_prefetch, name, Py_EQ) == 1)))
+  if (module_is_initialized)
   {
-    PyErr_Format(PyExc_AttributeError,
-                 "Do not overwrite apsw.%S.  It is a context var - use its set method in your context", name);
-    return -1;
-  }
+    /* which string matched? Because PyObject_RichCompareBool can exception this
+       looks ridiculous */
 
-  if (PyErr_Occurred())
-    return -1;
+    int s_async_controller = PyObject_RichCompareBool(apst.async_controller, name, Py_EQ) == 1,
+        s_async_cursor_prefetch = !PyErr_Occurred() && !s_async_controller
+                                  && PyObject_RichCompareBool(apst.async_cursor_prefetch, name, Py_EQ) == 1,
+        s_async_run_coro = !PyErr_Occurred() && !s_async_controller && !s_async_cursor_prefetch
+                           && PyObject_RichCompareBool(apst.async_run_coro, name, Py_EQ) == 1,
+        s_connection_hooks = !PyErr_Occurred() && !s_async_controller && !s_async_cursor_prefetch && !s_async_run_coro
+                             && PyObject_RichCompareBool(apst.connection_hooks, name, Py_EQ) == 1,
+        s_keywords = !PyErr_Occurred() && !s_async_controller && !s_async_cursor_prefetch && !s_async_run_coro
+                     && !s_connection_hooks && PyObject_RichCompareBool(apst.keywords, name, Py_EQ) == 1,
+        s_no_change = !PyErr_Occurred() && !s_async_controller && !s_async_cursor_prefetch && !s_async_run_coro
+                      && !s_connection_hooks && !s_keywords
+                      && PyObject_RichCompareBool(apst.no_change, name, Py_EQ) == 1,
+        s_using_amalgamation = !PyErr_Occurred() && !s_async_controller && !s_async_cursor_prefetch && !s_async_run_coro
+                               && !s_connection_hooks && !s_keywords && !s_no_change
+                               && PyObject_RichCompareBool(apst.using_amalgamation, name, Py_EQ) == 1;
 
-  if (module_is_initialized && (PyObject_RichCompareBool(apst.async_run_coro, name, Py_EQ) == 1))
-  {
-    if (!Py_IsNone(value) && !PyCallable_Check(value))
-    {
-      PyErr_Format(PyExc_TypeError, "Expected None or a callable for async_run_coro, not %s", Py_TypeName(value));
+    if (PyErr_Occurred())
       return -1;
+
+    if (s_async_controller || s_async_cursor_prefetch || s_async_run_coro || s_connection_hooks || s_keywords
+        || s_no_change || s_using_amalgamation)
+    {
+
+      if (!value)
+      {
+        /* deletion prevention */
+        if (s_async_controller)
+          reject_attribute_deletion("apsw.async_controller");
+        else if (s_async_cursor_prefetch)
+          reject_attribute_deletion("apsw.async_cursor_prefetch");
+        else if (s_async_run_coro)
+          reject_attribute_deletion("apsw.async_run_coro");
+        else if (s_connection_hooks)
+          reject_attribute_deletion("apsw.connection_hooks");
+        else if (s_keywords)
+          reject_attribute_deletion("apsw.keywords");
+        else if (s_no_change)
+          reject_attribute_deletion("apsw.no_change");
+        else if (s_using_amalgamation)
+          reject_attribute_deletion("apsw.using_amalgamation");
+
+        assert(PyErr_Occurred());
+        return -1;
+      }
+
+      if (s_async_controller || s_async_cursor_prefetch)
+      {
+        PyErr_Format(PyExc_AttributeError,
+                     "Do not overwrite apsw.%S.  It is a context var - use its set method in your context", name);
+        return -1;
+      }
+      else if (s_async_run_coro)
+      {
+        if (!Py_IsNone(value) && !PyCallable_Check(value))
+        {
+          PyErr_Format(PyExc_TypeError, "Expected None or a callable for apsw.async_run_coro, not %s",
+                       Py_TypeName(value));
+          return -1;
+        }
+        return PyDict_SetItem(PyThreadState_GetDict(), async_run_coro_sentinel, value);
+      }
+      else if (s_connection_hooks)
+      {
+        if (!PySequence_Check(value))
+        {
+          PyErr_Format(PyExc_TypeError, "Expected a sequence for apsw.connection_hooks, not %s", Py_TypeName(value));
+          return -1;
+        }
+      }
+      else
+      {
+        PyErr_Format(PyExc_AttributeError, "apsw.%S is readonly", name);
+        return -1;
+      }
     }
-    return PyDict_SetItem(PyThreadState_GetDict(), async_run_coro_sentinel, value);
   }
 
-  return PyErr_Occurred() ? -1 : PyObject_GenericSetAttr(module, name, value);
+  assert(!PyErr_Occurred());
+
+  return PyObject_GenericSetAttr(module, name, value);
 }
 
 static PyObject *

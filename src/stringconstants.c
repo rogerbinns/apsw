@@ -8,7 +8,7 @@
 #undef s_9e999
 #undef s0_0
 #undef s9e999
-#undef no_change
+#undef repr_no_change
 #undef Auto
 #undef Begin
 #undef BestIndex
@@ -72,7 +72,9 @@
 #undef get
 #undef inverse
 #undef io
+#undef keywords
 #undef main
+#undef no_change
 #undef snull
 #undef sregister
 #undef release
@@ -80,6 +82,7 @@
 #undef send
 #undef step
 #undef strue
+#undef using_amalgamation
 #undef value
 #undef xAccess
 #undef xCheckReservedLock
@@ -116,7 +119,7 @@ static struct _apsw_string_table
     PyObject *s_9e999;
     PyObject *s0_0;
     PyObject *s9e999;
-    PyObject *no_change;
+    PyObject *repr_no_change;
     PyObject *Auto;
     PyObject *Begin;
     PyObject *BestIndex;
@@ -180,7 +183,9 @@ static struct _apsw_string_table
     PyObject *get;
     PyObject *inverse;
     PyObject *io;
+    PyObject *keywords;
     PyObject *main;
+    PyObject *no_change;
     PyObject *snull;
     PyObject *sregister;
     PyObject *release;
@@ -188,6 +193,7 @@ static struct _apsw_string_table
     PyObject *send;
     PyObject *step;
     PyObject *strue;
+    PyObject *using_amalgamation;
     PyObject *value;
     PyObject *xAccess;
     PyObject *xCheckReservedLock;
@@ -225,7 +231,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.s_9e999);
     Py_CLEAR(apst.s0_0);
     Py_CLEAR(apst.s9e999);
-    Py_CLEAR(apst.no_change);
+    Py_CLEAR(apst.repr_no_change);
     Py_CLEAR(apst.Auto);
     Py_CLEAR(apst.Begin);
     Py_CLEAR(apst.BestIndex);
@@ -289,7 +295,9 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.get);
     Py_CLEAR(apst.inverse);
     Py_CLEAR(apst.io);
+    Py_CLEAR(apst.keywords);
     Py_CLEAR(apst.main);
+    Py_CLEAR(apst.no_change);
     Py_CLEAR(apst.snull);
     Py_CLEAR(apst.sregister);
     Py_CLEAR(apst.release);
@@ -297,6 +305,7 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.send);
     Py_CLEAR(apst.step);
     Py_CLEAR(apst.strue);
+    Py_CLEAR(apst.using_amalgamation);
     Py_CLEAR(apst.value);
     Py_CLEAR(apst.xAccess);
     Py_CLEAR(apst.xCheckReservedLock);
@@ -335,7 +344,7 @@ init_apsw_strings()
     if ((!apst.s_9e999 && 0 == (apst.s_9e999 = PyUnicode_FromString("-9e999")))
         || (!apst.s0_0 && 0 == (apst.s0_0 = PyUnicode_FromString("0.0")))
         || (!apst.s9e999 && 0 == (apst.s9e999 = PyUnicode_FromString("9e999")))
-        || (!apst.no_change && 0 == (apst.no_change = PyUnicode_FromString("<apsw.no_change>")))
+        || (!apst.repr_no_change && 0 == (apst.repr_no_change = PyUnicode_FromString("<apsw.no_change>")))
         || (!apst.Auto && 0 == (apst.Auto = PyUnicode_FromString("Auto")))
         || (!apst.Begin && 0 == (apst.Begin = PyUnicode_FromString("Begin")))
         || (!apst.BestIndex && 0 == (apst.BestIndex = PyUnicode_FromString("BestIndex")))
@@ -399,7 +408,9 @@ init_apsw_strings()
         || (!apst.get && 0 == (apst.get = PyUnicode_FromString("get")))
         || (!apst.inverse && 0 == (apst.inverse = PyUnicode_FromString("inverse")))
         || (!apst.io && 0 == (apst.io = PyUnicode_FromString("io")))
+        || (!apst.keywords && 0 == (apst.keywords = PyUnicode_FromString("keywords")))
         || (!apst.main && 0 == (apst.main = PyUnicode_FromString("main")))
+        || (!apst.no_change && 0 == (apst.no_change = PyUnicode_FromString("no_change")))
         || (!apst.snull && 0 == (apst.snull = PyUnicode_FromString("null")))
         || (!apst.sregister && 0 == (apst.sregister = PyUnicode_FromString("register")))
         || (!apst.release && 0 == (apst.release = PyUnicode_FromString("release")))
@@ -407,6 +418,7 @@ init_apsw_strings()
         || (!apst.send && 0 == (apst.send = PyUnicode_FromString("send")))
         || (!apst.step && 0 == (apst.step = PyUnicode_FromString("step")))
         || (!apst.strue && 0 == (apst.strue = PyUnicode_FromString("true")))
+        || (!apst.using_amalgamation && 0 == (apst.using_amalgamation = PyUnicode_FromString("using_amalgamation")))
         || (!apst.value && 0 == (apst.value = PyUnicode_FromString("value")))
         || (!apst.xAccess && 0 == (apst.xAccess = PyUnicode_FromString("xAccess")))
         || (!apst.xCheckReservedLock && 0 == (apst.xCheckReservedLock = PyUnicode_FromString("xCheckReservedLock")))

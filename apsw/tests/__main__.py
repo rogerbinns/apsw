@@ -1272,6 +1272,13 @@ class APSW(unittest.TestCase):
         fcntl = apsw.VFSFcntlPragma(1)
 
         for obj, name in (
+            (apsw, "async_controller"),
+            (apsw, "async_cursor_prefetch"),
+            (apsw, "async_run_coro"),
+            (apsw, "connection_hooks"),
+            (apsw, "keywords"),
+            (apsw, "no_change"),
+            (apsw, "using_amalgamation"),
             (self.db, "cursor_factory"),
             (self.db, "convert_binding"),
             (self.db, "convert_jsonb"),
@@ -1288,7 +1295,9 @@ class APSW(unittest.TestCase):
             (fcntl, "result"),
         ):
             if obj is not None:
-                if obj is self.db:
+                if obj is apsw:
+                    t = "apsw"
+                elif obj is self.db:
                     t = "Connection"
                 elif obj is cur:
                     t = "Cursor"
@@ -5334,16 +5343,9 @@ class APSW(unittest.TestCase):
 
     def testConnectionHooks(self):
         "Verify connection hooks"
-        del apsw.connection_hooks
-        try:
-            db = apsw.Connection(":memory:")
-        except AttributeError:
-            pass
-        apsw.connection_hooks = sys  # bad type
-        try:
-            db = apsw.Connection(":memory:")
-        except TypeError:
-            pass
+        with self.assertRaises(TypeError):
+            apsw.connection_hooks = sys
+
         apsw.connection_hooks = ("a", "tuple", "of", "non-callables")
         try:
             db = apsw.Connection(":memory:")
