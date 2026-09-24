@@ -1900,7 +1900,6 @@ PyMODINIT_FUNC
 PyInit_apsw(void)
 {
   PyObject *m = NULL;
-  PyObject *hooks;
 
   assert(sizeof(int) == 4);       /* we expect 32 bit ints */
   assert(sizeof(long long) == 8); /* we expect 64 bit long long */
@@ -2003,11 +2002,14 @@ PyInit_apsw(void)
        the new Connection object. If the hook raises an exception then
        the creation of the Connection fails.
   */
-  hooks = PyList_New(0);
+  PyObject *hooks = PyList_New(0);
   if (!hooks)
     goto fail;
   if (PyModule_AddObject(m, "connection_hooks", hooks))
+  {
+    Py_DECREF(hooks);
     goto fail;
+  }
 
   /** .. attribute:: SQLITE_VERSION_NUMBER
     :type: int
