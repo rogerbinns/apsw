@@ -2907,33 +2907,39 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
     /* see if there is a base to call first */
     if (PyObject_TypeCheck(apswfile->file, &APSWVFSFileType))
     {
-      sqlite3_file *base = ((APSWVFSFile *)apswfile->file)->base;
-      result = base->pMethods->xFileControl(base, op, pArg);
+      CHAIN_EXC_BEGIN
+        sqlite3_file *base = ((APSWVFSFile *)apswfile->file)->base;
+        result = base->pMethods->xFileControl(base, op, pArg);
+      CHAIN_EXC_END;
     }
     /* Use the classname */
     const char *name = Py_TYPE(apswfile->file)->tp_name;
     const char *modname = NULL;
-    PyObject *qualname = NULL;
+    PyObject *qualname = NULL, *module = NULL;
 
 #if PY_VERSION_HEX >= 0x030b0000
-    qualname = PyType_GetQualName(Py_TYPE(apswfile->file));
-    if (qualname && PyUnicode_Check(qualname))
-    {
-      const char *tmp_name = PyUnicode_AsUTF8(qualname);
-      if (tmp_name)
-        name = tmp_name;
-    }
+    CHAIN_EXC_BEGIN
+      qualname = PyType_GetQualName(Py_TYPE(apswfile->file));
+      if (qualname && PyUnicode_Check(qualname))
+      {
+        CHAIN_EXC_BEGIN
+          const char *tmp_name = PyUnicode_AsUTF8(qualname);
+          if (tmp_name)
+            name = tmp_name;
+        CHAIN_EXC_END;
+      }
+    CHAIN_EXC_END;
 #endif
 
-    PyErr_Clear();
-
-    PyObject *module = PyObject_GetAttr((PyObject *)Py_TYPE(apswfile->file), apst.s_module);
-    if (module && PyUnicode_Check(module))
-      modname = PyUnicode_AsUTF8(module);
-
-    /* the above calls could have exceptions but they aren't useful,
-       so ignore */
-    PyErr_Clear();
+    CHAIN_EXC_BEGIN
+      module = PyObject_GetAttr((PyObject *)Py_TYPE(apswfile->file), apst.s_module);
+      if (module && PyUnicode_Check(module))
+      {
+        CHAIN_EXC_BEGIN
+          modname = PyUnicode_AsUTF8(module);
+        CHAIN_EXC_END;
+      }
+    CHAIN_EXC_END;
 
     char *new_val = sqlite3_mprintf("%s%s%s%s%s", modname ? modname : "", modname ? "." : "", name,
                                     (*(char **)pArg) ? "/" : "", (*(char **)pArg) ? *(char **)pArg : "");
@@ -2948,8 +2954,9 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
         sqlite3_free(*(char **)pArg);
 
       *(char **)pArg = new_val;
-    }
-    result = SQLITE_OK;
+      result = SQLITE_OK;
+    } else
+      result = SQLITE_NOMEM;
     goto end;
   }
 
