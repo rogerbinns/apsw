@@ -4351,8 +4351,8 @@ This is useful to see which VFS is in use, and if inheritance is used
 then ``/`` will separate the names.  If you have a :class:`VFSFile` in
 use then its fully qualified class name will also be included.
 
-If ``SQLITE_FCNTL_VFSNAME`` is not implemented, ``dbname`` is not a
-database name, or an error occurred then ``None`` is returned.
+If ``SQLITE_FCNTL_VFSNAME`` is not implemented, or ``dbname`` is not a
+database name then ``None`` is returned.
 */
 static PyObject *
 Connection_vfsname(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -4373,13 +4373,15 @@ Connection_vfsname(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
 
   const char *vfsname = NULL;
 
-  /* because it is diagnostic and we can tell from vfsname changing and
-  because SQLite shell itself ignores the return code, we do the same */
   DBMUTEX_ENSURE(self);
+  /* Return value ignored, because that is what the SQLite shell does.
+     As an example the "temp" database returns SQLITE_ERROR.  If an
+     exception was raised then it will break backwards compatibility.
+  */
   sqlite3_file_control(self->db, dbname, SQLITE_FCNTL_VFSNAME, &vfsname);
   sqlite3_mutex_leave(self->dbmutex);
 
-  PyObject *res = convertutf8string(vfsname);
+  PyObject *res = PyErr_Occurred() ? NULL : convertutf8string(vfsname);
 
   if (vfsname)
     sqlite3_free((void *)vfsname);
