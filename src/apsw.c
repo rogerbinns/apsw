@@ -461,6 +461,8 @@ apsw_connections(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
     goto fail;
   for (i = 0; the_connections && i < PyList_GET_SIZE(the_connections); i++)
   {
+    assert(PyWeakref_Check(PyList_GET_ITEM(the_connections, i)));
+
     if (PyWeakref_GetRef(PyList_GET_ITEM(the_connections, i), &item) < 0)
       goto fail;
     if (item)
@@ -484,6 +486,8 @@ apsw_connection_remove(PyObject *con)
   for (i = 0; the_connections && i < PyList_GET_SIZE(the_connections);)
   {
     PyObject *wr = PyList_GET_ITEM(the_connections, i);
+    assert(PyWeakref_Check(wr));
+
     PyObject *wo = NULL;
     if (PyWeakref_GetRef(wr, &wo) < 0)
     {
@@ -1879,6 +1883,8 @@ apsw_module_clear_internal(PyObject *self, int deep)
     for (Py_ssize_t i = 0; i < PyList_GET_SIZE(conns); i++)
     {
       PyObject *item;
+      assert(PyWeakref_Check(PyList_GET_ITEM(conns, i)));
+
       if (PyWeakref_GetRef(PyList_GET_ITEM(conns, i), &item) < 0)
         apsw_write_unraisable(NULL);
       else if (item)
