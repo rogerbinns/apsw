@@ -242,10 +242,7 @@ APSWBackup_step(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   if (res == SQLITE_DONE)
   {
     if (!Py_IsTrue(self->done))
-    {
-      Py_CLEAR(self->done);
-      self->done = Py_NewRef(Py_True);
-    }
+      Py_XSETREF(self->done, Py_True);
     res = SQLITE_OK;
   }
 
@@ -549,7 +546,7 @@ APSWBackup_tp_traverse(PyObject *self_, visitproc visit, void *arg)
 */
 static PyMemberDef backup_members[] = {
   /* name type offset flags doc */
-  { "done", T_OBJECT, offsetof(APSWBackup, done), READONLY, Backup_done_DOC },
+  { "done", Py_T_OBJECT_EX, offsetof(APSWBackup, done), Py_READONLY, Backup_done_DOC },
   { 0, 0, 0, 0, 0 }
 };
 

@@ -286,8 +286,8 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->exectrace);
   Py_CLEAR(self->rowtrace);
   Py_CLEAR(self->vfs);
-  Py_CLEAR(self->open_flags);
-  Py_CLEAR(self->open_vfs);
+  Py_XSETREF(self->open_flags, Py_None);
+  Py_XSETREF(self->open_vfs, Py_None);
   for (unsigned i = 0; i < self->tracehooks_count; i++)
   {
     Py_CLEAR(self->tracehooks[i].callback);
@@ -675,6 +675,9 @@ Connection_dealloc(PyObject *self_)
   Connection *self = (Connection *)self_;
   APSW_CLEAR_WEAKREFS;
   PyObject_GC_UnTrack(self_);
+
+  Py_CLEAR(self->open_flags);
+  Py_CLEAR(self->open_vfs);
 
   PY_ERR_FETCH(save);
   /* the mutex can't be held because no-one has a reference to the
@@ -7119,8 +7122,8 @@ Connection_bool(PyObject *self_)
 
 static PyMemberDef Connection_members[] = {
   /* name type offset flags doc */
-  { "open_flags", T_OBJECT, offsetof(Connection, open_flags), READONLY, Connection_open_flags_DOC },
-  { "open_vfs", T_OBJECT, offsetof(Connection, open_vfs), READONLY, Connection_open_vfs_DOC },
+  { "open_flags", Py_T_OBJECT_EX, offsetof(Connection, open_flags), Py_READONLY, Connection_open_flags_DOC },
+  { "open_vfs", Py_T_OBJECT_EX, offsetof(Connection, open_vfs), Py_READONLY, Connection_open_vfs_DOC },
   { 0, 0, 0, 0, 0 }
 };
 

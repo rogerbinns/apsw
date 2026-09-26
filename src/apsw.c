@@ -150,7 +150,13 @@ API Reference
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <pythread.h>
+
+#if PY_VERSION_HEX < 0x030c0000
 #include "structmember.h"
+#define Py_T_OBJECT_EX T_OBJECT_EX
+#define Py_READONLY READONLY
+
+#endif
 
 /* This function does nothing in regular builds, but in faultinjection
 builds allows for an existing exception to be injected in callbacks */

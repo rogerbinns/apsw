@@ -1264,6 +1264,15 @@ class APSW(unittest.TestCase):
 
         cur = self.db.cursor()
 
+        # so there is somethig to backup
+        self.db.execute(
+            "create table foo(x); insert into foo values (randomblob(12345)),(randomblob(12345)),(randomblob(12345))"
+        )
+
+        db2 = apsw.Connection("")
+        backup = db2.backup("main", self.db, "main")
+        backup.step(1)
+
         if hasattr(apsw, "Session"):
             session = apsw.Session(self.db, "main")
         else:
@@ -1351,6 +1360,18 @@ class APSW(unittest.TestCase):
                 "CREATE VIRTUAL TABLE email USING fts5(a,b); insert into email values('one', 'two'); select foo(email,a) from email"
             )
             self.assertTrue(checked)
+
+        # these can NOT be deleted - a check to make sure code handles correctly
+        db2.close()
+        for obj, name in (
+            (self.db, "open_flags"),
+            (db2, "open_flags"),
+            (self.db, "open_vfs"),
+            (db2, "open_vfs"),
+            (backup, "done"),
+        ):
+            with self.assertRaisesRegex(AttributeError, ".*readonly.*"):
+                delattr(obj, name)
 
     def testCursor(self):
         "Check functionality of the cursor"
