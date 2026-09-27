@@ -665,10 +665,16 @@ apswvfs_xOpen(sqlite3_vfs *vfs, const char *zName, sqlite3_file *file, int infla
   if (!flags)
     goto finally;
 
-  PyList_SET_ITEM(flags, 0, PyLong_FromLong(inflags));
-  PyList_SET_ITEM(flags, 1, PyLong_FromLong(pOutFlags ? *pOutFlags : 0));
-  if (PyErr_Occurred())
+  PyObject *tmp_long;
+  tmp_long = PyLong_FromLong(inflags);
+  if (!tmp_long)
     goto finally;
+  PyList_SET_ITEM(flags, 0, tmp_long);
+  tmp_long = PyLong_FromLong(pOutFlags ? *pOutFlags : 0);
+  if (!tmp_long)
+    goto finally;
+  PyList_SET_ITEM(flags, 1, tmp_long);
+  assert(!PyErr_Occurred());
 
   if (inflags & (SQLITE_OPEN_URI | SQLITE_OPEN_MAIN_DB))
   {
@@ -823,7 +829,10 @@ apswvfspy_xOpen(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   if (PyErr_Occurred())
     goto finally;
 
-  PyList_SetItem(flags, 1, PyLong_FromLong(flagsout));
+  PyObject *tmp_long = PyLong_FromLong(flagsout);
+  if(!tmp_long)
+    goto finally;
+  PyList_SetItem(flags, 1, tmp_long);
   if (PyErr_Occurred())
     goto finally;
 
