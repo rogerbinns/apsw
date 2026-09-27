@@ -1825,12 +1825,15 @@ apsw_module_getattr(PyObject *module, PyObject *name)
 {
   if (module_is_initialized && (PyObject_RichCompareBool(apst.async_run_coro, name, Py_EQ) == 1))
   {
-    PyObject *runner = PyDict_GetItemWithError(PyThreadState_GetDict(), async_run_coro_sentinel);
+    PyObject *runner = Py_XNewRef(PyDict_GetItemWithError(PyThreadState_GetDict(), async_run_coro_sentinel));
     if (PyErr_Occurred())
+    {
+      Py_XDECREF(runner);
       return NULL;
+    }
     if (!runner)
       Py_RETURN_NONE;
-    return Py_NewRef(runner);
+    return runner;
   }
   if (PyErr_Occurred())
     return NULL;

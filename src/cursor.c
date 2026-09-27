@@ -891,12 +891,10 @@ APSWCursor_dobindings(APSWCursor *self)
         PyObject *keys = PyUnicode_FromString(key);
         if (!keys)
           return -1;
-        obj = PyDict_GetItemWithError(self->bindings, keys);
+        obj = Py_XNewRef(PyDict_GetItemWithError(self->bindings, keys));
         Py_DECREF(keys);
         if (PyErr_Occurred())
           return -1;
-        /* it returns a borrowed reference */
-        Py_XINCREF(obj);
       }
       else
         obj = PyMapping_GetItemString(self->bindings, key);

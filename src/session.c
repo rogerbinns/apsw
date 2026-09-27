@@ -2279,7 +2279,7 @@ APSWChangesetBuilder_row(APSWChangesetBuilder *self, int new, PyObject *row)
 
   for (Py_ssize_t i = 0; i < PySequence_Fast_GET_SIZE(row_fast); i++)
   {
-    PyObject *value = PySequence_Fast_GET_ITEM(row_fast, i);
+    PyObject *value = PySequence_ITEM(row_fast, i);
 
     /* this is similar to APSWCursor_dobinding but we don't allow all
        the automagic conversions */
@@ -2352,12 +2352,14 @@ APSWChangesetBuilder_row(APSWChangesetBuilder *self, int new, PyObject *row)
       PyErr_Format(PyExc_TypeError, "Expected a SQLite value, not %s", Py_TypeName(value));
       goto change_failed;
     }
+    Py_DECREF(value);
     continue;
 
   change_failed:
     SET_EXC(res, NULL);
     AddTraceBackHere(__FILE__, __LINE__, "builder_row", "{s: O, s: n, s: O}", "row", row, "column", i, "value",
                      value);
+    Py_DECREF(value);
     break;
   }
 
