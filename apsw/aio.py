@@ -592,6 +592,16 @@ class AnyIO:
 _anyio_usable = True
 _trio_usable = True
 
+def _clean_version(package: str) -> tuple[int, ...] | None:
+    "internal cleanup a package version string to int components only"
+
+    import importlib.metadata  # poor man lazy import
+
+    version = importlib.metadata.version(package)
+
+    return tuple(int(v) for v in version.split(".") if v.isdigit())
+
+
 def Auto() -> Trio | AsyncIO | AnyIO:
     """
     Automatically detects the current async framework running event
@@ -640,8 +650,7 @@ def Auto() -> Trio | AsyncIO | AnyIO:
             if found:
                 found = None
                 # check its version is ok
-                import importlib.metadata
-                ver = tuple(map(int, importlib.metadata.version("anyio").split(".")))
+                ver = _clean_version("anyio")
                 if  ver >= (4, 11, 0):
                     found = AnyIO
                 else:
@@ -658,8 +667,7 @@ def Auto() -> Trio | AsyncIO | AnyIO:
             trio.lowlevel.current_trio_token()
 
             # check its version is ok
-            import importlib.metadata
-            ver = tuple(map(int, importlib.metadata.version("trio").split(".")))
+            ver = _clean_version("trio")
             if  ver >= (0, 20, 0):
                 found = Trio
             else:
