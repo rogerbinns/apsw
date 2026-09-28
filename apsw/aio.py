@@ -333,6 +333,13 @@ class AsyncIO:
             task = context.run(asyncio.create_task, coro)
             tracker.cancel_async_cb = task.cancel
             if tracker.is_cancelled:
+                # manually cleaning up task which the event loop
+                # usually does for the task but we have to do here
+                task.cancel()
+                try:
+                    await task
+                except (asyncio.CancelledError, Exception):
+                    pass
                 return
 
             if tracker.deadline_loop is not None:
@@ -347,6 +354,13 @@ class AsyncIO:
             task = context.run(asyncio.create_task, coro)
             tracker.cancel_async_cb = task.cancel
             if tracker.is_cancelled:
+                # manually cleaning up task which the event loop
+                # usually does for the task but we have to do here
+                task.cancel()
+                try:
+                    await task
+                except (asyncio.CancelledError, Exception):
+                    pass
                 return
 
             async with asyncio.timeout_at(tracker.deadline_loop):
@@ -364,6 +378,13 @@ class AsyncIO:
             task = asyncio.create_task(coro, context=context)
             tracker.cancel_async_cb = task.cancel
             if tracker.is_cancelled:
+                # manually cleaning up task which the event loop
+                # usually does for the task but we have to do here
+                task.cancel()
+                try:
+                    await task
+                except (asyncio.CancelledError, Exception):
+                    pass
                 return
 
             async with asyncio.timeout_at(tracker.deadline_loop):
