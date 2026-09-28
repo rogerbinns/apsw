@@ -19,6 +19,10 @@ next
 The `apsw.fork_checker` function has been removed, as supporting it has
 become impractical.  It was originally added in 2009.  (:issue:`632`)
 
+:func:`apsw.ext.log_sqlite` fixed to always have the correct level per
+message, and better document  the ``level`` parameter (:issue:`624`
+PY009).
+
 3.53.4.0
 ========
 

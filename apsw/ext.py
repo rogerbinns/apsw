@@ -316,29 +316,32 @@ def make_jsonb(tag: int, value: None | str | bytes | Any = None):
 def log_sqlite(*, level: int = logging.ERROR, logger: logging.Logger | None = None) -> None:
     """Send SQLite `log messages <https://www.sqlite.org/errlog.html>`__ to :mod:`logging`
 
-    :param level: highest `level <https://docs.python.org/3/library/logging.html#levels>`__ to log at
+    :param level: Highest `level <https://docs.python.org/3/library/logging.html#levels>`__ to log at.
+        For example using logging.INFO will log SQLite messages with a level set to at most INFO,
+        because SQLite messages aren't usually as severe/significant as other components.
     :param logger: Use the specific logger
     """
 
     def handler(errcode: int, message: str) -> None:
-        nonlocal level
         err_str = result_string(errcode)
         extra = {"sqlite_code": errcode, "sqlite_code_name": err_str, "sqlite_message": message}
+        msg_level = logging.ERROR
         # Level defaults to ERROR but some messages aren't as important
         if errcode & 0xFF == apsw.SQLITE_WARNING:
-            level = min(level, logging.WARNING)
+            msg_level = logging.WARNING
         elif errcode & 0xFF == apsw.SQLITE_NOTICE:
             # these are really half way between INFO and WARNING and
             # current instances are recovering journals/WAL etc which
-            # happens if the previous process exited abruptly.
-            level = min(level, logging.WARNING)
+            # happens if the previous process exited abruptly. but
+            # it is best to use one of the predefined levels
+            msg_level = logging.WARNING
         elif errcode == apsw.SQLITE_SCHEMA:
             # these happen automatically without developer control,
             # especially when using FTS5.  DEBUG is almost more
             # appropriate!
-            level = min(level, logging.INFO)
+            msg_level = logging.INFO
 
-        (logger or logging).log(level, "SQLITE_LOG: %s (%d) %s", message, errcode, err_str, extra=extra)
+        (logger or logging).log(min(msg_level, level), "SQLITE_LOG: %s (%d) %s", message, errcode, err_str, extra=extra)
 
     apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
 

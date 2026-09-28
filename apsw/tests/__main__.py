@@ -18,6 +18,7 @@ import glob
 import inspect
 import io
 import itertools
+import logging
 import math
 import mmap
 import os
@@ -425,6 +426,7 @@ class APSW(unittest.TestCase):
         warnings.filters = self.warnings_filters
         getattr(warnings, "_filters_mutated", lambda: True)()
         sys.unraisablehook = sys.__unraisablehook__
+        apsw.config(apsw.SQLITE_CONFIG_LOG, None)
 
     def assertRaisesRoot(self, exctype, *args, **kwargs):
         # With chained exceptions verifies the first exception raised matches type
@@ -9711,6 +9713,38 @@ class APSW(unittest.TestCase):
         finally:
             gc.collect()
             apsw.config(apsw.SQLITE_CONFIG_LOG, None)
+
+    def testExtLog(self):
+        "apsw.ext.config_log"
+        last_args=None
+        last_kwargs =None
+        class namespace:
+            def log(*args, **kwargs):
+                nonlocal last_args, last_kwargs
+                last_args, last_kwargs = args, kwargs
+
+        apsw.ext.log_sqlite(logger=namespace)
+
+        apsw.log(apsw.SQLITE_WARNING, "xzyyz")
+
+        self.assertEqual(last_args[0], logging.WARNING)
+        self.assertEqual(last_args[1], "SQLITE_LOG: %s (%d) %s")
+        self.assertEqual(last_args[2], "xzyyz")
+        self.assertEqual(last_args[3], apsw.SQLITE_WARNING)
+        self.assertEqual(last_args[4], "SQLITE_WARNING")
+        self.assertEqual(last_kwargs, {'extra': {'sqlite_code': 28, 'sqlite_code_name': 'SQLITE_WARNING', 'sqlite_message': 'xzyyz'}})
+
+        apsw.log(apsw.SQLITE_IOERR_DIR_CLOSE, "hello")
+        self.assertEqual(last_args[0], logging.ERROR)
+        self.assertEqual(last_args[2], "hello")
+        self.assertEqual(last_args[3], apsw.SQLITE_IOERR_DIR_CLOSE)
+        self.assertEqual(last_args[4], "SQLITE_IOERR_DIR_CLOSE")
+
+        apsw.log(apsw.SQLITE_SCHEMA, "world")
+        self.assertEqual(last_args[0], logging.INFO)
+        self.assertEqual(last_args[2], "world")
+        self.assertEqual(last_args[3], apsw.SQLITE_SCHEMA)
+        self.assertEqual(last_args[4], "SQLITE_SCHEMA")
 
     def testReadonly(self):
         "Check Connection.readonly()"
