@@ -225,10 +225,11 @@ async def _coro_for_value(value):
 
 if sys.version_info < (3, 12):
     # Python 3.12 unified the exc type, value, and traceback into the single
-    # exception object.
+    # exception object.  The C code normalized the exception, so the value
+    # is good
 
     async def _coro_for_exception(exc):
-        raise exc[0](exc[1]).with_traceback(exc[2])
+        raise exc[1].with_traceback(exc[2])
 
 else:
 
