@@ -23,6 +23,15 @@ become impractical.  It was originally added in 2009.  (:issue:`632`)
 message, and better document  the ``level`` parameter (:issue:`624`
 PY009).
 
+:meth:`Connection.db_filename` adds a parameter to get the
+corresponding journal/wal filename.  You need to use this method to
+get those for non-main database, as :attr:`~Connection.filename_wal`
+and :attr:`~Connection.filename_journal` only work with ``main``.
+
+Fixed :func:`apsw.ext.dbinfo` to correctly report the journal/wal
+filename - before the names were for ``main``.  The header contents
+were correct.  (:issue:`624` PY010)
+
 3.53.4.0
 ========
 

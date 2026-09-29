@@ -5269,12 +5269,22 @@ Connection_readonly(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
   return PyErr_Format(exc_descriptors[0].cls, "Unknown database name \"%s\"", name);
 }
 
-/** .. method:: db_filename(name: str) -> str
+/** .. method:: db_filename(name: str, which: int = 0) -> str
 
-  Returns the full filename of the named (attached) database.  The
-  main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+  Returns the full filename of the named (attached) database.
 
-  -* sqlite3_db_filename
+  :param name:  main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+  :param which: ``0`` for the database, ``1`` for the journal *if* journal mode is used,
+      ``2`` for the WAL if WAL mode is used
+
+  SQLite works out at open time what the journal and WAL filenames would be if used.
+
+  The SQLite routines do not return errors, instead giving ``None`` for
+  when the schema name is not known, or and empty string if the db /
+  journal / wal filename would not be applicable (eg in memory
+  database).
+
+  -* sqlite3_db_filename sqlite3_filename_database sqlite3_filename_journal sqlite3_filename_wal
 */
 static PyObject *
 Connection_db_filename(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
@@ -5282,21 +5292,35 @@ Connection_db_filename(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
   Connection *self = (Connection *)self_;
   const char *res;
   const char *name;
+  int which = 0;
   PyObject *retval = NULL;
   CHECK_CLOSED(self, NULL);
 
   {
     Connection_db_filename_CHECK;
-    ARG_PROLOG(1, Connection_db_filename_KWNAMES);
+    ARG_PROLOG(2, Connection_db_filename_KWNAMES);
     ARG_MANDATORY ARG_str(name);
+    ARG_OPTIONAL ARG_int(which);
     ARG_EPILOG(NULL, Connection_db_filename_USAGE, );
   }
+
+  if (which < 0 || which > 2)
+    return PyErr_Format(PyExc_ValueError, "which needs to be 0, 1, or 2 not %d", which);
 
   ASYNC_FASTCALL(self, Connection_db_filename);
 
   DBMUTEX_ENSURE(self);
-  res = sqlite3_db_filename(self->db, name);
-  retval = convertutf8string(res);
+  switch (which)
+  {
+  case 0:
+    retval = convertutf8string(sqlite3_db_filename(self->db, name));
+    break;
+  case 1:
+    retval = convertutf8string(sqlite3_filename_journal(sqlite3_db_filename(self->db, name)));
+    break;
+  case 2:
+    retval = convertutf8string(sqlite3_filename_wal(sqlite3_db_filename(self->db, name)));
+  }
   sqlite3_mutex_leave(self->dbmutex);
 
   return retval;
@@ -5852,7 +5876,7 @@ finally:
 
   `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
-  `which` is 0 for the database file, 1 for the journal.
+  `which` is 0 for the database file, 1 for the journal/wal in use.
 
   The return value is a tuple of a boolean indicating a complete read if
   True, and the bytes read which will always be the amount requested
@@ -5951,7 +5975,7 @@ exit:
 /** .. attribute:: filename
   :type: str
 
-  The filename of the database.
+  The absolute filename of the database, for "main".
 
   -* sqlite3_db_filename
 */
@@ -5971,7 +5995,8 @@ Connection_getmainfilename(PyObject *self_, void *unused)
 /** .. attribute:: filename_journal
   :type: str
 
-  The journal filename of the database,
+  The absolute journal filename that would be used for database "main"
+  if journal mode is used.
 
   -* sqlite3_filename_journal
 */
@@ -5990,7 +6015,8 @@ Connection_getjournalfilename(PyObject *self_, void *unused)
 /** .. attribute:: filename_wal
   :type: str
 
-  The WAL filename of the database,
+  The absolute WAL filename that would be used for database "main" if
+  WAL mode is used.
 
   -* sqlite3_filename_wal
 */

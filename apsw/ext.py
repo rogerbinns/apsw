@@ -510,13 +510,16 @@ def index_info_to_dict(
 def dbinfo(
     db: apsw.Connection, schema: str = "main"
 ) -> tuple[DatabaseFileInfo | None, JournalFileInfo | WALFileInfo | None]:
-    """Extracts fields from the database, journal, and wal files
+    """Extracts fields from the database, and journal or wal file
 
     Based on the `file format description <https://www.sqlite.org/fileformat2.html>`__.  The
     headers are read using :meth:`apsw.Connection.read` so you see inside encrypted, compressed,
     zip etc formats, not necessarily the actual on disk file.
 
-    Memory databases return `None` for both.
+    The journal or wal information my be None, especially if no transaction is in progress
+    or entirely buffered in memory.
+
+    Memory databases return `None` for both, as does an unknown ``schema`` value.
     """
 
     dbinfo: DatabaseFileInfo | None = None
@@ -545,7 +548,7 @@ def dbinfo(
         return {0: "(pending)", 1: "UTF-8", 2: "UTF-16le", 3: "UTF-16be"}.get(v, f"<< INVALID VALUE {v} >>")
 
     if ok:
-        kw: dict[str, Any] = {"filename": db.filename}
+        kw: dict[str, Any] = {"filename": db.db_filename(schema, 0)}
         for name, offset, size, converter in (
             ("header", 0, 16, bytes),
             ("page_size", 16, 2, be_page_size),
@@ -577,8 +580,8 @@ def dbinfo(
 
     if ok:
         kw: dict[str, Any] = {}  # type: ignore [no-redef]
-        if db.pragma("journal_mode") == "wal":
-            kw["filename"] = db.filename_wal
+        if db.pragma("journal_mode", schema) == "wal":
+            kw["filename"] = db.db_filename(schema, 2)
             for name, offset, size, converter in (
                 ("magic_number", 0, 4, be_int),
                 ("format_version", 4, 4, be_int),
@@ -594,7 +597,7 @@ def dbinfo(
             journalinfo = WALFileInfo(**kw)
         else:
             header_valid = lambda b: b == b"\xd9\xd5\x05\xf9\x20\xa1\x63\xd7"
-            kw["filename"] = db.filename_journal
+            kw["filename"] = db.db_filename(schema, 1)
             for name, offset, size, converter in (
                 ("header", 0, 8, bytes),
                 ("header_valid", 0, 8, header_valid),
