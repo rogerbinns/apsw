@@ -56,11 +56,17 @@ class DataClassRowFactory:
     :class:`connections <apsw.Connection>` as you want.
 
     :param rename:     Column names could be duplicated, or not
-        valid in Python (eg a column named `continue`).
+        valid in Python (eg a column named `continue`).  It is very strongly
+        recommended to use SQL ``AS`` to set each column name to
+        something valid.
+
         If `rename` is True, then invalid/duplicate names are replaced
-        with `_` and their position starting at zero.  For example `title,
-        total, title, continue` would become `title, total, _2, _3`.  If
-        `rename` is False then problem column names will result in
+        with ``_`` and their position starting at zero.  For example `title,
+        total, title, continue` would become `title, total, _2, _3`.
+        (Pathological cases can result in more underscores appended if
+        the new names already exist.)
+
+        If `rename` is False then problem column names will result in
         :exc:`TypeError` raised by :func:`dataclasses.make_dataclass`
 
     :param dataclass_kwargs: Additional parameters when creating the dataclass
@@ -74,6 +80,26 @@ class DataClassRowFactory:
         self.dataclass_kwargs = dataclass_kwargs or {}
         self.rename = rename
 
+    @staticmethod
+    def _acceptable_name(name:str):
+        "can this name be used for a dataclass field name"
+        if not name.isidentifier():
+            # must meet requirements for an identifier
+            return False
+        if keyword.iskeyword(name):
+            # we do allow soft keywords because they keep being
+            # added and differ across python versions, and will
+            # work
+            return False
+        under_prefix = len(name) - len(name.lstrip("_"))
+        under_suffix = len(name) - len(name.rstrip("_"))
+        if under_prefix >= 2 and under_suffix <= 1:
+            # dunder prefix gets mangled if it ends with at most one
+            # underscore and we can't prevent that mangling
+            return False
+
+        return True
+
     @functools.lru_cache(maxsize=16)
     def get_dataclass(self, description: tuple[tuple[str, str], ...]) -> tuple[Any, tuple[str, ...]]:
         """Returns dataclass and tuple of (potentially renamed) column names
@@ -85,13 +111,20 @@ class DataClassRowFactory:
         """
         names = [d[0] for d in description]
         if self.rename:
-            new_names: list[str] = []
-            for i, n in enumerate(names):
-                if n.isidentifier() and not keyword.iskeyword(n) and n not in new_names:
-                    new_names.append(n)
-                else:
-                    new_names.append(f"_{i}")
-            names = new_names
+            for i in range(len(names)):
+                n = names[i]
+                if self._acceptable_name(n) and n not in names[:i]:
+                    continue
+                # we would use _{i} as the renamed column but it
+                # could already be coming up or exist, so keep
+                # trying until success
+                u = 0
+                while True:
+                    n = f"_{i}" + "_" * u
+                    if self._acceptable_name(n) and n not in names:
+                        names[i] = n
+                        break
+                    u += 1
         types = [self.get_type(d[1]) for d in description]
 
         kwargs = self.dataclass_kwargs.copy()
@@ -102,8 +135,7 @@ class DataClassRowFactory:
         kwargs["namespace"]["__description__"] = description
 
         # some magic to make the reported classnames different
-        suffix = (".%06X" % hash(repr(description)))[:7]
-
+        suffix = (f".{hash(repr(description)):06X}")[:7]
         return make_dataclass(f"{self.__class__.__name__}{suffix}", zip(names, types), **kwargs), tuple(names)
 
     def get_type(self, t: str | None) -> Any:

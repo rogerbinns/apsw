@@ -9987,6 +9987,11 @@ class APSW(unittest.TestCase):
         for row in self.db.execute("select 3 as three, 'four' as [4]"):
             self.assertEqual(row.three, 3)
             self.assertEqual(row._1, "four")
+        # pathological rename
+        for row in self.db.execute('select 3 as "3", 4 as "break", 5 as __0_, 6 as _1, 7 as __0, 8 as "", 9 as _1_'):
+            self.assertEqual(
+                dataclasses.asdict(row), {"_0": 3, "_1__": 4, "_2": 5, "_1": 6, "_4": 7, "_5": 8, "_1_": 9}
+            )
         # no rename, kwargs
         dcrf2 = apsw.ext.DataClassRowFactory(rename=False, dataclass_kwargs={"frozen": True})
         self.db.set_row_trace(dcrf2)
