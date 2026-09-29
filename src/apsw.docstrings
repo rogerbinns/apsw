@@ -255,6 +255,12 @@
 "and items seem reasonable.  It does not check all corner cases, or the UTF8\n" \
 "encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.\n" \
 "\n" \
+"SQLite has a `depth limit\n" \
+"<https://sqlite.org/compile.html#json_max_depth>`__  of about 1,000\n" \
+"for JSON and JSONB nesting (eg putting a list inside a dict inside a\n" \
+"list).  APSW's limit is greater and  based on the available stack, and\n" \
+"will return ``False`` for excessively nested JSONB.\n" \
+"\n" \
 ".. note::\n" \
 "\n" \
 "  :func:`~apsw.jsonb_decode` always validates the data as it decodes, so there is no\n" \
@@ -2001,9 +2007,20 @@
 ":meth:`Connection.execute`.\n" \
 "\n" \
 "Note that whatever is returned doesn't have to be an actual\n" \
-":class:`Cursor` instance, and just needs to have the methods present\n" \
-"that are actually called.  These are likely to be `execute`,\n" \
-"`executemany`, `close` etc.\n" 
+":class:`Cursor` instance, and needs to have the methods present\n" \
+"that are actually called.  These are likely to be `execute` and\n" \
+"`executemany`.\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"  It **must** have a ``close`` method.\n" \
+"\n" \
+"  * Called when :meth:`Connection.close` is called\n" \
+"  * Must close any underlying SQLite objects in use,\n" \
+"    in order to allow the :class:`Connection` to close\n" \
+"  * Could be called if the :class:`Connection` is being\n" \
+"    garbage collected, so there is no caller to return\n" \
+"    exceptions to\n" 
 
 #define  Connection_data_version_DOC "Connection.data_version(schema: str | None = None) -> int\n\n" \
 "Unlike `pragma data_version\n" \
@@ -2026,17 +2043,33 @@
 } while(0)
 
 
-#define  Connection_db_filename_DOC "Connection.db_filename(name: str) -> str\n\n" \
-"Returns the full filename of the named (attached) database.  The\n" \
-"main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
+#define  Connection_db_filename_DOC "Connection.db_filename(name: str, which: int = 0) -> str\n\n" \
+"Returns the full filename of the named (attached) database.\n" \
 "\n" \
-"Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__\n" 
+":param name:  main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
+":param which: ``0`` for the database, ``1`` for the journal *if* journal mode is used,\n" \
+"    ``2`` for the WAL if WAL mode is used\n" \
+"\n" \
+"SQLite works out at open time what the journal and WAL filenames would be if used.\n" \
+"\n" \
+"The SQLite routines do not return errors, instead giving ``None`` for\n" \
+"when the schema name is not known, or and empty string if the db /\n" \
+"journal / wal filename would not be applicable (eg in memory\n" \
+"database).\n" \
+"\n" \
+"Calls:\n" \
+"  * `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__\n" \
+"  * `sqlite3_filename_database <https://sqlite.org/c3ref/filename_database.html>`__\n" \
+"  * `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__\n" \
+"  * `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
 
-#define Connection_db_filename_KWNAMES "name"
-#define Connection_db_filename_USAGE "Connection.db_filename(name: str) -> str"
+#define Connection_db_filename_KWNAMES "name", "which"
+#define Connection_db_filename_USAGE "Connection.db_filename(name: str, which: int = 0) -> str"
 
 #define Connection_db_filename_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+  assert(which == (0)); \
 } while(0)
 
 
@@ -2255,19 +2288,21 @@
 
 #define  Connection_filename_DOC ":type: str\n" \
 "\n" \
-"The filename of the database.\n" \
+"The absolute filename of the database, for \"main\".\n" \
 "\n" \
 "Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__\n" 
 
 #define  Connection_filename_journal_DOC ":type: str\n" \
 "\n" \
-"The journal filename of the database,\n" \
+"The absolute journal filename that would be used for database \"main\"\n" \
+"if journal mode is used.\n" \
 "\n" \
 "Calls: `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
 
 #define  Connection_filename_wal_DOC ":type: str\n" \
 "\n" \
-"The WAL filename of the database,\n" \
+"The absolute WAL filename that would be used for database \"main\" if\n" \
+"WAL mode is used.\n" \
 "\n" \
 "Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
 
@@ -2562,7 +2597,7 @@
 "\n" \
 "`schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
 "\n" \
-"`which` is 0 for the database file, 1 for the journal.\n" \
+"`which` is 0 for the database file, 1 for the journal/wal in use.\n" \
 "\n" \
 "The return value is a tuple of a boolean indicating a complete read if\n" \
 "True, and the bytes read which will always be the amount requested\n" \
@@ -3219,8 +3254,8 @@
 "then ``/`` will separate the names.  If you have a :class:`VFSFile` in\n" \
 "use then its fully qualified class name will also be included.\n" \
 "\n" \
-"If ``SQLITE_FCNTL_VFSNAME`` is not implemented, ``dbname`` is not a\n" \
-"database name, or an error occurred then ``None`` is returned.\n" 
+"If ``SQLITE_FCNTL_VFSNAME`` is not implemented, or ``dbname`` is not a\n" \
+"database name then ``None`` is returned.\n" 
 
 #define Connection_vfsname_KWNAMES "dbname"
 #define Connection_vfsname_USAGE "Connection.vfsname(dbname: str) -> str | None"
@@ -4684,7 +4719,7 @@
 "outside of that will result in memory corruption and crashes.\n" 
 
 #define  VFSFcntlPragma_init_DOC "VFSFcntlPragma.__init__(pointer: int)\n\n" \
-"The pointer must be what your xFileControl method received.\n" 
+"The pointer **must** be what your xFileControl method received.\n" 
 
 #define VFSFcntlPragma_init_KWNAMES "pointer"
 #define VFSFcntlPragma_init_USAGE "VFSFcntlPragma.__init__(pointer: int)"
@@ -5109,9 +5144,12 @@
 } while(0)
 
 
-#define  VFS_xGetLastError_DOC "VFS.xGetLastError() -> tuple[int, str]\n\n" \
+#define  VFS_xGetLastError_DOC "VFS.xGetLastError() -> tuple[int, str | None]\n\n" \
 "Return an integer error code and (optional) text describing\n" \
-"the last error code and message that happened in this thread.\n" 
+"the last error code and message that happened in this thread.\n" \
+"\n" \
+"The code can be later retreived by :meth:`Connection.system_errno`.\n" \
+"In practise SQLite ignores the error message.\n" 
 
 #define  VFS_xGetSystemCall_DOC "VFS.xGetSystemCall(name: str) -> int | None\n\n" \
 "Returns a pointer for the current method implementing the named\n" \

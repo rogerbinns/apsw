@@ -249,7 +249,7 @@ def apsw_version() -> str:
 
 apswversion = apsw_version ## OLD-NAME
 
-async_controller: type[AsyncConnectionController]
+async_controller: contextvars.ContextVar[AsyncConnectionController]
 """This sets the controller for :meth:`Connection.as_async`.  It will use
 :func:`apsw.aio.Auto` if not explicitly set."""
 
@@ -469,6 +469,12 @@ def jsonb_detect(data: Buffer) -> bool:
     SQLite's json_valid only checks the various internal type and length fields are consistent
     and items seem reasonable.  It does not check all corner cases, or the UTF8
     encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.
+
+    SQLite has a `depth limit
+    <https://sqlite.org/compile.html#json_max_depth>`__  of about 1,000
+    for JSON and JSONB nesting (eg putting a list inside a dict inside a
+    list).  APSW's limit is greater and  based on the available stack, and
+    will return ``False`` for excessively nested JSONB.
 
     .. note::
 
@@ -1716,9 +1722,20 @@ class Connection:
     :meth:`Connection.execute`.
 
     Note that whatever is returned doesn't have to be an actual
-    :class:`Cursor` instance, and just needs to have the methods present
-    that are actually called.  These are likely to be `execute`,
-    `executemany`, `close` etc."""
+    :class:`Cursor` instance, and needs to have the methods present
+    that are actually called.  These are likely to be `execute` and
+    `executemany`.
+
+    .. note::
+
+      It **must** have a ``close`` method.
+
+      * Called when :meth:`Connection.close` is called
+      * Must close any underlying SQLite objects in use,
+        in order to allow the :class:`Connection` to close
+      * Could be called if the :class:`Connection` is being
+        garbage collected, so there is no caller to return
+        exceptions to"""
 
     def data_version(self, schema: str | None = None) -> int:
         """Unlike `pragma data_version
@@ -1733,11 +1750,25 @@ class Connection:
         Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__"""
         ...
 
-    def db_filename(self, name: str) -> str:
-        """Returns the full filename of the named (attached) database.  The
-        main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+    def db_filename(self, name: str, which: int = 0) -> str:
+        """Returns the full filename of the named (attached) database.
 
-        Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__"""
+        :param name:  main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+        :param which: ``0`` for the database, ``1`` for the journal *if* journal mode is used,
+            ``2`` for the WAL if WAL mode is used
+
+        SQLite works out at open time what the journal and WAL filenames would be if used.
+
+        The SQLite routines do not return errors, instead giving ``None`` for
+        when the schema name is not known, or and empty string if the db /
+        journal / wal filename would not be applicable (eg in memory
+        database).
+
+        Calls:
+          * `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
+          * `sqlite3_filename_database <https://sqlite.org/c3ref/filename_database.html>`__
+          * `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__
+          * `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
         ...
 
     def db_names(self) -> list[str]:
@@ -1913,17 +1944,19 @@ class Connection:
     filecontrol = file_control ## OLD-NAME
 
     filename: str
-    """The filename of the database.
+    """The absolute filename of the database, for "main".
 
     Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__"""
 
     filename_journal: str
-    """The journal filename of the database,
+    """The absolute journal filename that would be used for database "main"
+    if journal mode is used.
 
     Calls: `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__"""
 
     filename_wal: str
-    """The WAL filename of the database,
+    """The absolute WAL filename that would be used for database "main" if
+    WAL mode is used.
 
     Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
 
@@ -2135,7 +2168,7 @@ class Connection:
 
         `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
-        `which` is 0 for the database file, 1 for the journal.
+        `which` is 0 for the database file, 1 for the journal/wal in use.
 
         The return value is a tuple of a boolean indicating a complete read if
         True, and the bytes read which will always be the amount requested
@@ -2589,8 +2622,8 @@ class Connection:
         then ``/`` will separate the names.  If you have a :class:`VFSFile` in
         use then its fully qualified class name will also be included.
 
-        If ``SQLITE_FCNTL_VFSNAME`` is not implemented, ``dbname`` is not a
-        database name, or an error occurred then ``None`` is returned."""
+        If ``SQLITE_FCNTL_VFSNAME`` is not implemented, or ``dbname`` is not a
+        database name then ``None`` is returned."""
         ...
 
     def vtab_config(self, op: int, val: int = 0) -> None:
@@ -3601,7 +3634,7 @@ class VFSFcntlPragma:
     outside of that will result in memory corruption and crashes."""
 
     def __init__(self, pointer: int):
-        """The pointer must be what your xFileControl method received."""
+        """The pointer **must** be what your xFileControl method received."""
         ...
 
     name: str
@@ -3906,9 +3939,12 @@ class VFS:
         """Return the absolute pathname for name.  You can use ``os.path.abspath`` to do this."""
         ...
 
-    def xGetLastError(self) -> tuple[int, str]:
+    def xGetLastError(self) -> tuple[int, str | None]:
         """Return an integer error code and (optional) text describing
-        the last error code and message that happened in this thread."""
+        the last error code and message that happened in this thread.
+
+        The code can be later retreived by :meth:`Connection.system_errno`.
+        In practise SQLite ignores the error message."""
         ...
 
     def xGetSystemCall(self, name: str) -> int | None:
@@ -6715,9 +6751,20 @@ class AsyncConnection:
     :meth:`Connection.execute`.
 
     Note that whatever is returned doesn't have to be an actual
-    :class:`Cursor` instance, and just needs to have the methods present
-    that are actually called.  These are likely to be `execute`,
-    `executemany`, `close` etc."""
+    :class:`Cursor` instance, and needs to have the methods present
+    that are actually called.  These are likely to be `execute` and
+    `executemany`.
+
+    .. note::
+
+      It **must** have a ``close`` method.
+
+      * Called when :meth:`Connection.close` is called
+      * Must close any underlying SQLite objects in use,
+        in order to allow the :class:`Connection` to close
+      * Could be called if the :class:`Connection` is being
+        garbage collected, so there is no caller to return
+        exceptions to"""
 
     async def data_version(self, schema: str | None = None) -> int:
         """Unlike `pragma data_version
@@ -6732,11 +6779,25 @@ class AsyncConnection:
         Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__"""
         ...
 
-    async def db_filename(self, name: str) -> str:
-        """Returns the full filename of the named (attached) database.  The
-        main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+    async def db_filename(self, name: str, which: int = 0) -> str:
+        """Returns the full filename of the named (attached) database.
 
-        Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__"""
+        :param name:  main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+        :param which: ``0`` for the database, ``1`` for the journal *if* journal mode is used,
+            ``2`` for the WAL if WAL mode is used
+
+        SQLite works out at open time what the journal and WAL filenames would be if used.
+
+        The SQLite routines do not return errors, instead giving ``None`` for
+        when the schema name is not known, or and empty string if the db /
+        journal / wal filename would not be applicable (eg in memory
+        database).
+
+        Calls:
+          * `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
+          * `sqlite3_filename_database <https://sqlite.org/c3ref/filename_database.html>`__
+          * `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__
+          * `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
         ...
 
     async def db_names(self) -> list[str]:
@@ -6877,17 +6938,19 @@ class AsyncConnection:
         ...
 
     filename: Awaitable[str]
-    """The filename of the database.
+    """The absolute filename of the database, for "main".
 
     Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__"""
 
     filename_journal: Awaitable[str]
-    """The journal filename of the database,
+    """The absolute journal filename that would be used for database "main"
+    if journal mode is used.
 
     Calls: `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__"""
 
     filename_wal: Awaitable[str]
-    """The WAL filename of the database,
+    """The absolute WAL filename that would be used for database "main" if
+    WAL mode is used.
 
     Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
 
@@ -7069,7 +7132,7 @@ class AsyncConnection:
 
         `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
-        `which` is 0 for the database file, 1 for the journal.
+        `which` is 0 for the database file, 1 for the journal/wal in use.
 
         The return value is a tuple of a boolean indicating a complete read if
         True, and the bytes read which will always be the amount requested
@@ -7495,8 +7558,8 @@ class AsyncConnection:
         then ``/`` will separate the names.  If you have a :class:`VFSFile` in
         use then its fully qualified class name will also be included.
 
-        If ``SQLITE_FCNTL_VFSNAME`` is not implemented, ``dbname`` is not a
-        database name, or an error occurred then ``None`` is returned."""
+        If ``SQLITE_FCNTL_VFSNAME`` is not implemented, or ``dbname`` is not a
+        database name then ``None`` is returned."""
         ...
 
 
