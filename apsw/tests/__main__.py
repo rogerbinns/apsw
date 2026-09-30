@@ -10294,6 +10294,28 @@ class APSW(unittest.TestCase):
         ):
             self.assertRaises(apsw.SQLError, self.db.execute, query)
 
+        # ensure names are correctly quoted
+        col_name = "\"']"
+        tbl_name = '-= "['
+
+        def q(n: str):
+            return '"' + n.replace('"', '""') + '"'
+
+        def dummy(select="[", begin="'"):
+            yield 4, 5
+
+        dummy.columns = (" ", col_name)
+        dummy.column_access = apsw.ext.VTColumnAccess.By_Index
+        dummy.primary_key = 1
+
+        apsw.ext.make_virtual_module(self.db, tbl_name, dummy)
+        row = None
+        cur = self.db.execute("select * from " + q(tbl_name))
+        for row in cur:
+            self.assertEqual(" ", cur.get_description()[0][0])
+            self.assertEqual(col_name, cur.get_description()[1][0])
+        self.assertEqual(row, (4, 5))
+
     def testExtAnalyzePages(self) -> None:
         "analyze pages"
         if "dbstat" not in (self.db.pragma("module_list") or tuple()):

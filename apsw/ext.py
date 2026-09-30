@@ -2475,11 +2475,11 @@ def make_virtual_module(
             for i, c in enumerate(self.columns):
                 if column_defs:
                     column_defs += ", "
-                column_defs += f"[{c}]"
+                column_defs += '"' + c.replace('"', '""') + '"'
                 if self.primary_key == i:
                     column_defs += " PRIMARY KEY"
             for p in self.parameters:
-                column_defs += f",[{p}] HIDDEN"
+                column_defs += f",\"" + p.replace('"', '""') + "\" HIDDEN"
 
             self.schema = f"CREATE TABLE ignored({column_defs})"
             if self.primary_key is not None:
