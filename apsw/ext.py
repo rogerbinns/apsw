@@ -5,6 +5,7 @@ from __future__ import annotations
 import abc
 import collections
 import contextvars
+import copy
 import dataclasses
 import enum
 import functools
@@ -77,7 +78,11 @@ class DataClassRowFactory:
     """
 
     def __init__(self, *, rename: bool = True, dataclass_kwargs: dict[str, Any] | None = None):
-        self.dataclass_kwargs = dataclass_kwargs or {}
+        self.dataclass_kwargs = copy.deepcopy(dataclass_kwargs) if dataclass_kwargs is not None else {}
+        if "slots" not in self.dataclass_kwargs:
+            self.dataclass_kwargs["slots"] = True
+        if "namespace" not in self.dataclass_kwargs:
+            self.dataclass_kwargs["namespace"] = {}
         self.rename = rename
 
     @staticmethod
@@ -128,10 +133,6 @@ class DataClassRowFactory:
         types = [self.get_type(d[1]) for d in description]
 
         kwargs = self.dataclass_kwargs.copy()
-        if "slots" not in kwargs:
-            kwargs["slots"] = True
-        if "namespace" not in kwargs:
-            kwargs["namespace"] = {}
         kwargs["namespace"]["__description__"] = description
 
         # some magic to make the reported classnames different
