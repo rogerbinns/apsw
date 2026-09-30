@@ -1479,7 +1479,7 @@ def analyze_pages(con: apsw.Connection, scope: int, schema: str = "main") -> Dat
                 is_virtual_table.add(name)
                 continue
             # shadow table? we assume an underscore separator searching longest names first
-            for n in sorted(grouping, key=lambda x: (len(x), x)):
+            for n in sorted(grouping, key=lambda x: (len(x), x), reverse = True):
                 if n in is_virtual_table and name.startswith(n + "_"):
                     grouping[n].append(name)
                     break
