@@ -2802,6 +2802,11 @@ def query_info(
     actions, expanded_sql, explain, query_plan etc filled in.
 
     See the :ref:`example <example_query_details>`.
+
+    .. note::
+
+        An existing authorizer is ignored while this runs and
+        the ``actions`` parameter is ``True``.
     """
     res: dict[str, Any] = {"actions": None, "query_plan": None, "explain": None}
 
