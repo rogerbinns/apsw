@@ -13,6 +13,8 @@ APSW changes by version
 next
 ====
 
+Added the ``diskused`` extension to :doc:`extra`.
+
 :attr:`Connection.cursor_factory` returned objects must have a
 ``close`` method.  This is now documented, and enforced.
 

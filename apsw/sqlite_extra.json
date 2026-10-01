@@ -43,6 +43,10 @@
         "description": "Routines to implement arbitrary-precision decimal math",
         "type": "extension"
     },
+    "diskused": {
+        "description": "File space the various tables and indexes of the database consume",
+        "type": "extension"
+    },
     "eval": {
         "description": "Implements SQL function eval() which runs SQL statements recursively",
         "type": "extension"

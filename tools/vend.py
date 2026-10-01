@@ -105,6 +105,10 @@ extras = [
         description="Routines to implement arbitrary-precision decimal math",
     ),
     Extra(
+        name="diskused",
+        description="File space the various tables and indexes of the database consume",
+    ),
+    Extra(
         name="eval",
         description="Implements SQL function eval() which runs SQL statements recursively",
     ),

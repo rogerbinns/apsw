@@ -149,6 +149,11 @@ Extensions
         * Collation: :code:`decimal`
         * Function: :code:`decimal` :code:`decimal_add` :code:`decimal_cmp` :code:`decimal_exp` :code:`decimal_mul` :code:`decimal_pow2` :code:`decimal_sub` :code:`decimal_sum`
 
+    * - diskused (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fdiskused.c>`__)
+      - File space the various tables and indexes of the database consume
+      -
+        * Function: :code:`diskused`
+
     * - eval (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2feval.c>`__)
       - Implements SQL function eval() which runs SQL statements recursively
       -
