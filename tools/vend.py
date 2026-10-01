@@ -217,8 +217,8 @@ extras = [
     Extra(
         name="vec1",
         description="Vector search.  !Experimental! !Under development!",
-        doc="vec1",
-        sources=["vec1/vec1.c"],
+        doc="vec1.html",
+        sources=["ext/vec1/vec1.c"],
     ),
     Extra(
         name="sqlite3_dbdump",

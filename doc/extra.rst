@@ -14,16 +14,6 @@ over 1MB to the download and 3MB of disk space.
 Access is provided via an :ref:`API <extra_api>`, :ref:`command line
 <extra_cli>`, and :ref:`shell <extra_shell>`
 
-vec1
-----
-
-There is an experimental under development vector search library by
-the SQLite team.  It is also included with the extras if possible.
-
-* `Forum post <https://sqlite.org/forum/forumpost/9fea7e0fbb6ddd2f>`__ to provide feedback
-* `Site <https://sqlite.org/vec1>`__ with tutorial and
-  reference documentation
-
 Dependencies
 ------------
 

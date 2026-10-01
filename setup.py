@@ -304,11 +304,6 @@ class fetch(Command):
 
             for desc, url, replace in (
                 (
-                    "experimental vec1 extension source",
-                    "https://sqlite.org/vec1/zip/vec1-20260526165101-762865e44d.zip",
-                    "sqlite3/vec1",
-                ),
-                (
                     "sqlar tool source",
                     "https://sqlite.org/sqlar/zip/sqlar-src-20180107193712-4824e73896.zip",
                     "sqlite3/sqlar",
