@@ -244,12 +244,14 @@ extras = [
     Extra(
         name="sqlite3_diff",
         type="executable",
-        sources=["tool/sqldiff.c"]
-        + (["tool/winmain.c"] if (sys.platform == "win32" and pathlib.Path("sqlite3/tool/winmain.c").exists()) else []),
+        sources=["tool/sqldiff.c"],
         description="Displays content differences between SQLite databases",
         doc="sqldiff.html",
         lib_sqlite_stdio=True,
         lib_sqlite=True,
+        # work around sqlite's mistaken handling of utf8 on windows.  it should be
+        # using manifest but instead only has a hacky main thing going on
+        defines=[("main", "main")],
     ),
     Extra(
         name="sqlite3_expert",
