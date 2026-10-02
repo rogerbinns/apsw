@@ -180,6 +180,19 @@
 } while(0)
 
 
+#define  Apsw_incomplete_DOC "apsw.incomplete(statement: str) -> int\n\n" \
+"Provides more details about why a statement is considered incomplete.\n" \
+"\n" \
+"Calls: `sqlite3_incomplete <https://sqlite.org/draft/c3ref/complete.html>`__\n" 
+
+#define Apsw_incomplete_KWNAMES "statement"
+#define Apsw_incomplete_USAGE "apsw.incomplete(statement: str) -> int"
+
+#define Apsw_incomplete_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(statement), const char *)); \
+} while(0)
+
+
 #define  Apsw_initialize_DOC "apsw.initialize() -> None\n\n" \
 "It is unlikely you will want to call this method as SQLite automatically initializes.\n" \
 "\n" \

@@ -1158,6 +1158,78 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
   Py_RETURN_FALSE;
 }
 
+/* used for calling sqlite3_incomplete */
+static PyStructSequence_Field apsw_incomplete_result_fields[]
+    = { { "status", "Is it complete" },
+        { "requires", "What is needed to complete" },
+        { "incomplete", "What token or element is unfinished" },
+        { "balance", "Level of unmatched parentheses" },
+        { 0 } };
+
+static PyStructSequence_Desc apsw_incomplete_result = { .name = "apsw.IncompleteResult",
+                                                        .doc = "Return for apsw.incomplete - see its documentation",
+                                                        .n_in_sequence = 4,
+                                                        .fields = apsw_incomplete_result_fields };
+
+static PyTypeObject apsw_incomplete_result_type;
+
+/** .. method:: incomplete(statement: str) -> IncompleteResult
+
+  Provides more details about why a statement is considered incomplete.
+
+  -* sqlite3_incomplete
+
+  .. seealso::
+
+    * :func:`complete`
+*/
+static PyObject *
+apswincomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  const char *statement = NULL;
+  sqlite3_int64 res;
+
+  {
+    Apsw_incomplete_CHECK;
+    ARG_PROLOG(1, Apsw_incomplete_KWNAMES);
+    ARG_MANDATORY ARG_str(statement);
+    ARG_EPILOG(NULL, Apsw_incomplete_USAGE, );
+  }
+
+  Py_BEGIN_ALLOW_THREADS res = sqlite3_incomplete(statement);
+  Py_END_ALLOW_THREADS;
+
+  PyObject *incomplete = PyStructSequence_New(&apsw_incomplete_result_type);
+  if (!incomplete)
+    goto error;
+
+  PyObject *v = PyLong_FromLong(res & 0xff);
+  if (!v)
+    goto error;
+  PyStructSequence_SetItem(incomplete, 0, v);
+
+  v = PyLong_FromLong((res >> 8) & 0xff);
+  if (!v)
+    goto error;
+  PyStructSequence_SetItem(incomplete, 1, v);
+
+  v = PyUnicode_FromOrdinal((res >> 16) & 0xff);
+  if (!v)
+    goto error;
+  PyStructSequence_SetItem(incomplete, 2, v);
+
+  v = PyLong_FromLong(res >> 32);
+  if (!v)
+    goto error;
+  PyStructSequence_SetItem(incomplete, 3, v);
+
+  return incomplete;
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(incomplete);
+  return NULL;
+}
+
 #ifdef __SANITIZE_ADDRESS__
 #include <sanitizer/lsan_interface.h>
 
@@ -1663,8 +1735,6 @@ apsw_allow_missing_dict_bindings(PyObject *Py_UNUSED(module), PyObject *const *f
   Py_RETURN_FALSE;
 }
 
-
-
 static PyMethodDef module_methods[] = {
   { "sqlite3_sourceid", (PyCFunction)get_sqlite3_sourceid, METH_NOARGS, Apsw_sqlite3_sourceid_DOC },
   { "sqlite_lib_version", get_sqlite_version, METH_NOARGS, Apsw_sqlite_lib_version_DOC },
@@ -1687,6 +1757,7 @@ static PyMethodDef module_methods[] = {
   { "randomness", (PyCFunction)randomness, METH_FASTCALL | METH_KEYWORDS, Apsw_randomness_DOC },
   { "exception_for", (PyCFunction)get_apsw_exception_for, METH_FASTCALL | METH_KEYWORDS, Apsw_exception_for_DOC },
   { "complete", (PyCFunction)apswcomplete, METH_FASTCALL | METH_KEYWORDS, Apsw_complete_DOC },
+  { "incomplete", (PyCFunction)apswincomplete, METH_FASTCALL | METH_KEYWORDS, Apsw_incomplete_DOC },
   { "strlike", (PyCFunction)apsw_strlike, METH_FASTCALL | METH_KEYWORDS, Apsw_strlike_DOC },
   { "strglob", (PyCFunction)apsw_strglob, METH_FASTCALL | METH_KEYWORDS, Apsw_strglob_DOC },
   { "stricmp", (PyCFunction)apsw_stricmp, METH_FASTCALL | METH_KEYWORDS, Apsw_stricmp_DOC },
@@ -2020,6 +2091,10 @@ PyInit_apsw(void)
   */
   if (Py_REFCNT(&apsw_unraisable_info_type) == 0)
     if (PyStructSequence_InitType2(&apsw_unraisable_info_type, &apsw_unraisable_info))
+      goto fail;
+
+  if (Py_REFCNT(&apsw_incomplete_result_type) == 0)
+    if (PyStructSequence_InitType2(&apsw_incomplete_result_type, &apsw_incomplete_result))
       goto fail;
 
   m = apswmodule = PyModule_Create2(&apswmoduledef, PYTHON_API_VERSION);
