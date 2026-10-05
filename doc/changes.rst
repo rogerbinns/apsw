@@ -10,8 +10,13 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
-next
-====
+3.54.0.0
+========
+
+Binaries for Python 3.15 including pyodide are in pypi.
+
+This is the last release supporting Python 3.10 which is now end of
+life.
 
 Added the ``diskused`` extension to :doc:`extra`.
 
@@ -33,6 +38,12 @@ and :attr:`~Connection.filename_journal` only work with ``main``.
 Fixed :func:`apsw.ext.dbinfo` to correctly report the journal/wal
 filename - before the names were for ``main``.  The header contents
 were correct.  (:issue:`624` PY010)
+
+Many code fixes responding to AI reports in :issue:`624` and
+:issue:`627`.  All fixes done by human.  The vast majority is C code
+in error handling paths.  Regular code was unlikely to encounter the
+errors.  If it did the majority would be the wrong exception types,
+with a few resulting in leaks, or crashes.
 
 3.53.4.0
 ========
