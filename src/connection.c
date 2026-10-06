@@ -501,35 +501,38 @@ Connection_close_internal(Connection *self, int force)
     int nargs = 2;
 
   again:
-    PyObject *vargs[] = { NULL, dependent, PyBool_FromLong(force) };
-    if (vargs[2])
-      closeres = PyObject_VectorcallMethod_NoAsync(apst.close, vargs + 1, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-    Py_XDECREF(vargs[2]);
-    /* TypeError is what you get for wrong number of args, but it
+    {
+      PyObject *vargs[] = { NULL, dependent, PyBool_FromLong(force) };
+      if (vargs[2])
+        closeres
+            = PyObject_VectorcallMethod_NoAsync(apst.close, vargs + 1, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
+      Py_XDECREF(vargs[2]);
+      /* TypeError is what you get for wrong number of args, but it
        could also be code inside the method.  We are unable to tell the
        difference here  */
-    if (!closeres && nargs == 2 && PyErr_ExceptionMatches(PyExc_TypeError))
-    {
-      PyErr_Clear();
-      nargs = 1;
-      goto again;
-    }
+      if (!closeres && nargs == 2 && PyErr_ExceptionMatches(PyExc_TypeError))
+      {
+        PyErr_Clear();
+        nargs = 1;
+        goto again;
+      }
 
-    if (PyErr_Occurred())
-    {
-      /* add back the dependent preventing close so it keeps doing so */
-      CHAIN_EXC_BEGIN
-      Connection_add_dependent(self, dependent);
-      CHAIN_EXC_END;
-    }
+      if (PyErr_Occurred())
+      {
+        /* add back the dependent preventing close so it keeps doing so */
+        CHAIN_EXC_BEGIN
+          Connection_add_dependent(self, dependent);
+        CHAIN_EXC_END;
+      }
 
-    Py_XDECREF(dependent);
-    Py_XDECREF(closeres);
+      Py_XDECREF(dependent);
+      Py_XDECREF(closeres);
 
-    if (PyErr_Occurred())
-    {
-      sqlite3_mutex_leave(self->dbmutex);
-      return -1;
+      if (PyErr_Occurred())
+      {
+        sqlite3_mutex_leave(self->dbmutex);
+        return -1;
+      }
     }
   }
 
