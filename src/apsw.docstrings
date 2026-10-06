@@ -180,13 +180,92 @@
 } while(0)
 
 
-#define  Apsw_incomplete_DOC "apsw.incomplete(statement: str) -> int\n\n" \
-"Provides more details about why a statement is considered incomplete.\n" \
+#define  Apsw_incomplete_DOC "apsw.incomplete(statement: str) -> IncompleteResult\n\n" \
+"Provides more details about why a statement is considered incomplete,\n" \
+"or if it is whitespace and comments only,\n" \
 "\n" \
-"Calls: `sqlite3_incomplete <https://sqlite.org/draft/c3ref/complete.html>`__\n" 
+"The result object has the following attributes.  Note that new values\n" \
+"for each may be added in future SQLite releases.\n" \
+"\n" \
+"status: int\n" \
+"\n" \
+"  Check this attribute first.\n" \
+"\n" \
+"  .. list-table::\n" \
+"    :header-rows: 1\n" \
+"    :widths: auto\n" \
+"\n" \
+"    * - Value\n" \
+"      - Meaning\n" \
+"    * - ``SQLITE_OK``\n" \
+"      - at least one statement is present, and all statements are\n" \
+"        complete\n" \
+"    * - ``SQLITE_EMPTY``\n" \
+"      -  consists only of whitespace and comments\n" \
+"    * - ``SQLITE_ERROR``\n" \
+"      - incomplete.\n" \
+"\n" \
+"requires: int\n" \
+"\n" \
+"  What is required semantically to complete the statement.  Triggers\n" \
+"  have nested statements inside.\n" \
+"\n" \
+"  .. list-table::\n" \
+"    :header-rows: 1\n" \
+"    :widths: auto\n" \
+"\n" \
+"    * - Value\n" \
+"      - Meaning\n" \
+"    * - 0\n" \
+"      - Statement is complete or empty\n" \
+"    * - 1\n" \
+"      - Needs a semicolon\n" \
+"    * - 2\n" \
+"      - Needs ``END`` and a semicolon\n" \
+"    * - 3\n" \
+"      - Needs semicolon, ``END``, and a semicolon\n" \
+"\n" \
+"incomplete: str | None\n" \
+"\n" \
+"  Identifies what element of the SQL is incomplete such\n" \
+"  as needing a closing quote to match an open quote.\n" \
+"\n" \
+"  .. list-table::\n" \
+"    :header-rows: 1\n" \
+"    :widths: auto\n" \
+"\n" \
+"    * - Value\n" \
+"      - Meaning\n" \
+"    * - ``None``\n" \
+"      - Statement is complete or empty\n" \
+"    * - ````` (apostrophe)\n" \
+"      - Incomplete string or blob literal\n" \
+"    * - ``\"`` (double quote)\n" \
+"      - Incomplete quoted identifier\n" \
+"    * - ` (backtick)\n" \
+"      - Incomplete quoted identifier (MySQL style)\n" \
+"    * - ``]`` (close square bracket)\n" \
+"      - Incomplete quoted identifier (SQLServer style)\n" \
+"    * - ``-`` (dash)\n" \
+"      - Incomplete line comment - there needs to be a newline\n" \
+"        to complete the comment.\n" \
+"    * - ``/`` (slash)\n" \
+"      - Incomplete C style comment`\n" \
+"\n" \
+"balance: int\n" \
+"\n" \
+"  Level of unbalanced parentheses (round brackets).  A positive number\n" \
+"  indicating how many closes are needed to balance the open ones.  It\n" \
+"  can also be negative if there are more closes than opens.\n" \
+"\n" \
+"Calls: `sqlite3_incomplete <https://sqlite.org/c3ref/complete.html>`__\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+"  * :func:`complete`\n" 
 
 #define Apsw_incomplete_KWNAMES "statement"
-#define Apsw_incomplete_USAGE "apsw.incomplete(statement: str) -> int"
+#define Apsw_incomplete_USAGE "apsw.incomplete(statement: str) -> IncompleteResult"
 
 #define Apsw_incomplete_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(statement), const char *)); \

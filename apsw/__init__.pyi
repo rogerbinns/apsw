@@ -181,6 +181,23 @@ JSONBTypes = (
 in JSONB.  Like the builtin JSON module, None/int/float/bool keys will be
 stringized."""
 
+
+class IncompleteResult:
+    """Return from :func:`incomplete`,  See its documentation for what values
+    in each field mean"""
+
+    status: int
+    "Overall complete / incomplete / missing"
+
+    requires: int
+    "What construct is required for incomplete such as END and semi-colon"
+
+    incomplete: str | None
+    "What is needed to close an open element such as ending quote for a string, or end of comment"
+
+    balance: int
+    "How many close parentheses are needed to match level of open parentheses"
+
 class AsyncConnectionController(Protocol):
     """Manages a worker thread and marshalling async requests to it
 
@@ -409,6 +426,91 @@ def hard_heap_limit(limit: int) -> int:
         :meth:`soft_heap_limit`
 
     Calls: `sqlite3_hard_heap_limit64 <https://sqlite.org/c3ref/hard_heap_limit64.html>`__"""
+    ...
+
+def incomplete(statement: str) -> IncompleteResult:
+    """Provides more details about why a statement is considered incomplete,
+    or if it is whitespace and comments only,
+
+    The result object has the following attributes.  Note that new values
+    for each may be added in future SQLite releases.
+
+    status: int
+
+      Check this attribute first.
+
+      .. list-table::
+        :header-rows: 1
+        :widths: auto
+
+        * - Value
+          - Meaning
+        * - ``SQLITE_OK``
+          - at least one statement is present, and all statements are
+            complete
+        * - ``SQLITE_EMPTY``
+          -  consists only of whitespace and comments
+        * - ``SQLITE_ERROR``
+          - incomplete.
+
+    requires: int
+
+      What is required semantically to complete the statement.  Triggers
+      have nested statements inside.
+
+      .. list-table::
+        :header-rows: 1
+        :widths: auto
+
+        * - Value
+          - Meaning
+        * - 0
+          - Statement is complete or empty
+        * - 1
+          - Needs a semicolon
+        * - 2
+          - Needs ``END`` and a semicolon
+        * - 3
+          - Needs semicolon, ``END``, and a semicolon
+
+    incomplete: str | None
+
+      Identifies what element of the SQL is incomplete such
+      as needing a closing quote to match an open quote.
+
+      .. list-table::
+        :header-rows: 1
+        :widths: auto
+
+        * - Value
+          - Meaning
+        * - ``None``
+          - Statement is complete or empty
+        * - ````` (apostrophe)
+          - Incomplete string or blob literal
+        * - ``"`` (double quote)
+          - Incomplete quoted identifier
+        * - ` (backtick)
+          - Incomplete quoted identifier (MySQL style)
+        * - ``]`` (close square bracket)
+          - Incomplete quoted identifier (SQLServer style)
+        * - ``-`` (dash)
+          - Incomplete line comment - there needs to be a newline
+            to complete the comment.
+        * - ``/`` (slash)
+          - Incomplete C style comment`
+
+    balance: int
+
+      Level of unbalanced parentheses (round brackets).  A positive number
+      indicating how many closes are needed to balance the open ones.  It
+      can also be negative if there are more closes than opens.
+
+    Calls: `sqlite3_incomplete <https://sqlite.org/c3ref/complete.html>`__
+
+    .. seealso::
+
+      * :func:`complete`"""
     ...
 
 def initialize() -> None:
@@ -4720,8 +4822,6 @@ SQLITE_CONSTRAINT_UNIQUE: int = 2067
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_CONSTRAINT_VTAB: int = 2323
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
-SQLITE_COPY: int = 0
-"""For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_CORRUPT: int = 11
 """For `Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_CORRUPT_INDEX: int = 779
@@ -5138,9 +5238,13 @@ SQLITE_LIMIT_LIKE_PATTERN_LENGTH: int = 8
 """For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
 SQLITE_LIMIT_PARSER_DEPTH: int = 12
 """For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
+SQLITE_LIMIT_SCHEMA: int = 13
+"""For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
 SQLITE_LIMIT_SQL_LENGTH: int = 1
 """For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
 SQLITE_LIMIT_TRIGGER_DEPTH: int = 10
+"""For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
+SQLITE_LIMIT_TRIGGER_STEPS: int = 14
 """For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
 SQLITE_LIMIT_VARIABLE_NUMBER: int = 9
 """For `Run-Time Limit Categories <https://sqlite.org/c3ref/c_limit_attached.html>'__"""
@@ -5394,16 +5498,16 @@ mapping_authorizer_function: dict[str | int, int | str]
 """Authorizer Action Codes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_alter_table.html
 
-SQLITE_ALTER_TABLE SQLITE_ANALYZE SQLITE_ATTACH SQLITE_COPY
-SQLITE_CREATE_INDEX SQLITE_CREATE_TABLE SQLITE_CREATE_TEMP_INDEX
-SQLITE_CREATE_TEMP_TABLE SQLITE_CREATE_TEMP_TRIGGER
-SQLITE_CREATE_TEMP_VIEW SQLITE_CREATE_TRIGGER SQLITE_CREATE_VIEW
-SQLITE_CREATE_VTABLE SQLITE_DELETE SQLITE_DETACH SQLITE_DROP_INDEX
-SQLITE_DROP_TABLE SQLITE_DROP_TEMP_INDEX SQLITE_DROP_TEMP_TABLE
-SQLITE_DROP_TEMP_TRIGGER SQLITE_DROP_TEMP_VIEW SQLITE_DROP_TRIGGER
-SQLITE_DROP_VIEW SQLITE_DROP_VTABLE SQLITE_FUNCTION SQLITE_INSERT
-SQLITE_PRAGMA SQLITE_READ SQLITE_RECURSIVE SQLITE_REINDEX
-SQLITE_SAVEPOINT SQLITE_SELECT SQLITE_TRANSACTION SQLITE_UPDATE"""
+SQLITE_ALTER_TABLE SQLITE_ANALYZE SQLITE_ATTACH SQLITE_CREATE_INDEX
+SQLITE_CREATE_TABLE SQLITE_CREATE_TEMP_INDEX SQLITE_CREATE_TEMP_TABLE
+SQLITE_CREATE_TEMP_TRIGGER SQLITE_CREATE_TEMP_VIEW
+SQLITE_CREATE_TRIGGER SQLITE_CREATE_VIEW SQLITE_CREATE_VTABLE
+SQLITE_DELETE SQLITE_DETACH SQLITE_DROP_INDEX SQLITE_DROP_TABLE
+SQLITE_DROP_TEMP_INDEX SQLITE_DROP_TEMP_TABLE SQLITE_DROP_TEMP_TRIGGER
+SQLITE_DROP_TEMP_VIEW SQLITE_DROP_TRIGGER SQLITE_DROP_VIEW
+SQLITE_DROP_VTABLE SQLITE_FUNCTION SQLITE_INSERT SQLITE_PRAGMA
+SQLITE_READ SQLITE_RECURSIVE SQLITE_REINDEX SQLITE_SAVEPOINT
+SQLITE_SELECT SQLITE_TRANSACTION SQLITE_UPDATE"""
 
 mapping_authorizer_return_codes: dict[str | int, int | str]
 """Authorizer Return Codes mapping names to int and int to names.
@@ -5586,9 +5690,9 @@ Doc at https://sqlite.org/c3ref/c_limit_attached.html
 SQLITE_LIMIT_ATTACHED SQLITE_LIMIT_COLUMN SQLITE_LIMIT_COMPOUND_SELECT
 SQLITE_LIMIT_EXPR_DEPTH SQLITE_LIMIT_FUNCTION_ARG SQLITE_LIMIT_LENGTH
 SQLITE_LIMIT_LIKE_PATTERN_LENGTH SQLITE_LIMIT_PARSER_DEPTH
-SQLITE_LIMIT_SQL_LENGTH SQLITE_LIMIT_TRIGGER_DEPTH
-SQLITE_LIMIT_VARIABLE_NUMBER SQLITE_LIMIT_VDBE_OP
-SQLITE_LIMIT_WORKER_THREADS"""
+SQLITE_LIMIT_SCHEMA SQLITE_LIMIT_SQL_LENGTH SQLITE_LIMIT_TRIGGER_DEPTH
+SQLITE_LIMIT_TRIGGER_STEPS SQLITE_LIMIT_VARIABLE_NUMBER
+SQLITE_LIMIT_VDBE_OP SQLITE_LIMIT_WORKER_THREADS"""
 
 mapping_locking_level: dict[str | int, int | str]
 """File Locking Levels mapping names to int and int to names.
