@@ -2299,7 +2299,8 @@ jsonb_detect_internal(const void *data, size_t length)
 
     If you use :class:`types.MappingProxyType` as ``object_hook`` and
     :class:`tuple` as ``array_hook`` then the overall returned value
-    will be immutable (read only).
+    will be immutable (read only).  Python 3.15 adds :class:`frozendict`
+    which is clearer.
 
     .. note::
 

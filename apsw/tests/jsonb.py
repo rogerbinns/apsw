@@ -569,7 +569,7 @@ class JSONB(unittest.TestCase):
         self.assertEqual(object_hook_got, [[("1", 2)], [("hello", 3), ("world", 73)]])
 
         # read only dict
-        frozendict = types.MappingProxyType
+        frozendict = getattr(__builtins__, "frozendict", types.MappingProxyType)
         d = {"a": {"1": "hello"}, "b": True}
 
         assert not isinstance(d, frozendict)
