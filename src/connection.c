@@ -5290,7 +5290,6 @@ static PyObject *
 Connection_db_filename(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
 {
   Connection *self = (Connection *)self_;
-  const char *res;
   const char *name;
   int which = 0;
   PyObject *retval = NULL;
