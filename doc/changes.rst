@@ -19,7 +19,9 @@ This is the last release supporting Python 3.10 which is now end of
 life.
 
 Provide :func:`incomplete` to get more details on why some SQL
-may not be complete, or is empty whitespace and comments.
+may not be complete, or is empty whitespace and comments.  This
+finally allowed fixing the 10½ year old shell issue of a line
+comment prompting for continuation.  (:issue:`212`)
 
 Added the ``diskused`` extension to :doc:`extra`.
 

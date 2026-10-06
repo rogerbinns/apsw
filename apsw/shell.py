@@ -3148,7 +3148,9 @@ Enter ".help" for instructions
 
         For dot commands it will be one line.  For SQL statements it
         will be as many as is necessary to have a
-        :meth:`~apsw.complete` statement (ie semicolon terminated).
+        :meth:`complete <apsw.incomplete>` statement (ie semicolon terminated),
+        or empty/comments only.
+
         Returns None on end of file."""
         try:
             self._completion_first = True
@@ -3159,8 +3161,10 @@ Enter ".help" for instructions
                 return ""
             if command[0] == "?":
                 command = ".help " + command[1:]
-            # incomplete SQL?
-            while command[0] != "." and not apsw.complete(command):
+            # incomplete SQL? We don't have a newline on the end but it must be
+            # present for incomplete to report empty for line comments.  See
+            # #212
+            while command[0] != "." and apsw.incomplete(command + "\n").status not in {apsw.SQLITE_OK, apsw.SQLITE_EMPTY}:
                 self._completion_first = False
                 line = self.get_line(self.moreprompt)
                 if line is None:  # unexpected eof
