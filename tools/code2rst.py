@@ -41,7 +41,7 @@ if infilename != "src/apsw.c":
 import apsw
 
 with tempfile.NamedTemporaryFile() as f:
-    f.write(urllib.request.urlopen(basesqurl + "toc.db").read())
+    f.write(urllib.request.urlopen(os.environ.get("SQLITE_TOC", basesqurl + "toc.db")).read())
     f.flush()
 
     db = apsw.Connection(f.name)
