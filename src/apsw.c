@@ -1175,7 +1175,82 @@ static PyTypeObject apsw_incomplete_result_type;
 
 /** .. method:: incomplete(statement: str) -> IncompleteResult
 
-  Provides more details about why a statement is considered incomplete.
+  Provides more details about why a statement is considered incomplete,
+  or if it is whitespace and comments only,
+
+  The result object has the following attributes.  Note that new values
+  for each may be added in future SQLite releases.
+
+  status: int
+
+    Check this attribute first.
+
+    .. list-table::
+      :header-rows: 1
+      :widths: auto
+
+      * - Value
+        - Meaning
+      * - ``SQLITE_OK``
+        - at least one statement is present, and all statements are
+          complete
+      * - ``SQLITE_EMPTY``
+        -  consists only of whitespace and comments
+      * - ``SQLITE_ERROR``
+        - incomplete.
+
+  requires: int
+
+    What is required semantically to complete the statement.  Triggers
+    have nested statements inside.
+
+    .. list-table::
+      :header-rows: 1
+      :widths: auto
+
+      * - Value
+        - Meaning
+      * - 0
+        - Statement is complete or empty
+      * - 1
+        - Needs a semicolon
+      * - 2
+        - Needs ``END`` and a semicolon
+      * - 3
+        - Needs semicolon, ``END``, and a semicolon
+
+  incomplete: str | None
+
+    Identifies what element of the SQL is incomplete such
+    as needing a closing quote to match an open quote.
+
+    .. list-table::
+      :header-rows: 1
+      :widths: auto
+
+      * - Value
+        - Meaning
+      * - ``None``
+        - Statement is complete or empty
+      * - ````` (apostrophe)
+        - Incomplete string or blob literal
+      * - ``"`` (double quote)
+        - Incomplete quoted identifier
+      * - ` (backtick)
+        - Incomplete quoted identifier (MySQL style)
+      * - ``]`` (close square bracket)
+        - Incomplete quoted identifier (SQLServer style)
+      * - ``-`` (dash)
+        - Incomplete line comment - there needs to be a newline
+          to complete the comment.
+      * - ``/`` (slash)
+        - Incomplete C style comment`
+
+  balance: int
+
+    Level of unbalanced parentheses (round brackets).  A positive number
+    indicating how many closes are needed to balance the open ones.  It
+    can also be negative if there are more closes than opens.
 
   -* sqlite3_incomplete
 
@@ -1196,7 +1271,8 @@ apswincomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t
     ARG_EPILOG(NULL, Apsw_incomplete_USAGE, );
   }
 
-  Py_BEGIN_ALLOW_THREADS res = sqlite3_incomplete(statement);
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_incomplete(statement);
   Py_END_ALLOW_THREADS;
 
   PyObject *incomplete = PyStructSequence_New(&apsw_incomplete_result_type);
@@ -1213,7 +1289,8 @@ apswincomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t
     goto error;
   PyStructSequence_SetItem(incomplete, 1, v);
 
-  v = PyUnicode_FromOrdinal((res >> 16) & 0xff);
+  unsigned int c = (res >> 16) & 0xff;
+  v = c ? PyUnicode_FromOrdinal(c) : Py_NewRef(Py_None);
   if (!v)
     goto error;
   PyStructSequence_SetItem(incomplete, 2, v);

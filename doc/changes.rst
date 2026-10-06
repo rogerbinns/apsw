@@ -18,6 +18,9 @@ Binaries for Python 3.15 including pyodide are in pypi.
 This is the last release supporting Python 3.10 which is now end of
 life.
 
+Provide :func:`incomplete` to get more details on why some SQL
+may not be complete, or is empty whitespace and comments.
+
 Added the ``diskused`` extension to :doc:`extra`.
 
 :attr:`Connection.cursor_factory` returned objects must have a

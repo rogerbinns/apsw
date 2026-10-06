@@ -3601,6 +3601,29 @@ class APSW(unittest.TestCase):
         self.assertRaises(TypeError, apsw.complete)  # not enough args
         self.assertRaises(TypeError, apsw.complete, "foo", "bar")  # too many args
 
+    def testIncomplete(self):
+        "sqlite3_incomplete"
+        self.assertRaises(TypeError, apsw.incomplete)
+        self.assertRaises(TypeError, apsw.incomplete, None)
+        self.assertRaises(TypeError, apsw.incomplete, "hello", None)
+        self.assertRaises(ValueError, apsw.incomplete, "/**/\0;")
+
+        for text, expected in (
+            (";", {"status": apsw.SQLITE_OK}),
+            ("select", {"status": apsw.SQLITE_ERROR, "requires": 1}),
+            ("-- line comment", {"status": apsw.SQLITE_ERROR, "incomplete": "-"}),
+            ("create trigger begin select 3", {"status": apsw.SQLITE_ERROR, "requires": 3}),
+            ("create trigger begin select 3;", {"status": apsw.SQLITE_ERROR, "requires": 2}),
+            ("create trigger begin select 3 /*", {"status": apsw.SQLITE_ERROR, "requires": 3, "incomplete": "/"}),
+        ):
+            res = apsw.incomplete(text)
+            if "--" in text:  # the only one where newline matters
+                self.assertNotEqual(res, apsw.incomplete(text + "\n"))
+            else:
+                self.assertEqual(res, apsw.incomplete(text + "\n"))
+            for k, v in expected.items():
+                self.assertEqual(getattr(res, k), v, f"{res=}")
+
     def testBusyHandling(self):
         "Verify busy handling"
         c = self.db.cursor()

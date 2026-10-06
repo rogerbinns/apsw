@@ -180,6 +180,23 @@ JSONBTypes = (
 in JSONB.  Like the builtin JSON module, None/int/float/bool keys will be
 stringized."""
 
+
+class IncompleteResult:
+    """Return from :func:`incomplete`,  See its documentation for what values
+    in each field mean"""
+
+    status: int
+    "Overall complete / incomplete / missing"
+
+    requires: int
+    "What construct is required for incomplete such as END and semi-colon"
+
+    incomplete: str | None
+    "What is needed to close an open element such as ending quote for a string, or end of comment"
+
+    balance: int
+    "How many close parentheses are needed to match level of open parentheses"
+
 class AsyncConnectionController(Protocol):
     """Manages a worker thread and marshalling async requests to it
 
