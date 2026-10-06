@@ -20,6 +20,7 @@ title_to_mapping = {
     "Configuration Options": "config",
     "Conflict resolution modes": "conflict_resolution_modes",
     "Constants Defining Special Destructor Behavior": None,
+    "Control Flags For sqlite3_result_str()": None,
     "Database Connection Configuration Options": "db_config",
     "Datatypes for the CARRAY table-valued function": "carray",
     "Device Characteristics": "device_characteristics",
@@ -63,9 +64,9 @@ title_to_mapping = {
     "Options for sqlite3changegroup_config()": "session_changegroup_config_options",
 }
 
-base_sqlite_url = os.environ.get("SQLITE_URL", "https://sqlite.org/")
+base_sqlite_url = "https://sqlite.org/"
 with tempfile.NamedTemporaryFile() as f:
-    f.write(urllib.request.urlopen(base_sqlite_url + "toc.db").read())
+    f.write(urllib.request.urlopen(os.environ.get("SQLITE_TOC", base_sqlite_url + "toc.db")).read())
     f.flush()
 
     db = apsw.Connection(f.name)

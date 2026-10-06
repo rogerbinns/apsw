@@ -73,7 +73,7 @@ def do_mappings():
         foundin = set()
         for val in m:
             # present in multiple mappings etc
-            if val in {"SQLITE_OK", "SQLITE_IGNORE", "SQLITE_ABORT"}:
+            if val in {"SQLITE_OK", "SQLITE_IGNORE", "SQLITE_ABORT", "SQLITE_COPY"}:
                 continue
             for desc, const in consts.items():
                 if val in const["vars"]:
@@ -122,6 +122,7 @@ def do_mappings():
         "Flags for sqlite3_serialize",
         "Win32 Directory Types",
         "Prepared Statement Scan Status",
+        "Control Flags For sqlite3_result_str()",
     }
 
     for d in sorted(consts.keys()):
