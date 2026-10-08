@@ -314,7 +314,8 @@
 "\n" \
 "If you use :class:`types.MappingProxyType` as ``object_hook`` and\n" \
 ":class:`tuple` as ``array_hook`` then the overall returned value\n" \
-"will be immutable (read only).\n" \
+"will be immutable (read only).  Python 3.15 adds :class:`frozendict`\n" \
+"which is clearer.\n" \
 "\n" \
 ".. note::\n" \
 "\n" \
@@ -979,7 +980,7 @@
 "Does nothing.  There is no intermediate buffer, and SQLite's overall\n" \
 "transaction/savepoint handling deals with database commits.\n" 
 
-#define  Blob_isatty_DOC "Blob.isatty() -> False\n\n" \
+#define  Blob_isatty_DOC "Blob.isatty() -> Literal[False]\n\n" \
 "Blobs are never interactive.\n" 
 
 #define  Blob_length_DOC "Blob.length() -> int\n\n" \
@@ -1039,7 +1040,7 @@
 #define Blob_read_into_OLDNAME "readinto"
 #define Blob_read_into_OLDDOC Blob_read_into_USAGE "\n(Old less clear name readinto)"
 
-#define  Blob_readable_DOC "Blob.readable() -> True\n\n" \
+#define  Blob_readable_DOC "Blob.readable() -> Literal[True]\n\n" \
 "You can always read from a blob\n" 
 
 #define  Blob_readall_DOC "Blob.readall() -> bytes\n\n" \
@@ -1086,7 +1087,7 @@
 } while(0)
 
 
-#define  Blob_seekable_DOC "Blob.seekable() -> True\n\n" \
+#define  Blob_seekable_DOC "Blob.seekable() -> Literal[True]\n\n" \
 "You can always seek in a blob\n" 
 
 #define  Blob_tell_DOC "Blob.tell() -> int\n\n" \
@@ -2219,6 +2220,22 @@
 ":param enable: If True then extension loading is enabled, else it is disabled.\n" \
 "\n" \
 "Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__\n" \
+"\n" \
+"Unless you want the SQL `load_extension <https://sqlite.org/lang_corefunc.html#load_extension>`__\n" \
+"function enabled, it is safer to use :meth:`config`.  This enables the :meth:`~Connection.load_extension`\n" \
+"API briefly::\n" \
+"\n" \
+"  # get existing value\n" \
+"  existing = con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1)\n" \
+"  # enable loading api but not SQL function\n" \
+"  con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 1)\n" \
+"\n" \
+"  try:\n" \
+"    # do loading desired\n" \
+"    con.load_extension(\"an_extension\")\n" \
+"  finally:\n" \
+"    # restore original setting\n" \
+"    con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, existing)\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \

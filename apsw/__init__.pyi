@@ -556,7 +556,8 @@ def jsonb_decode(data: Buffer, *,  object_pairs_hook: Callable[[list[tuple[str, 
 
     If you use :class:`types.MappingProxyType` as ``object_hook`` and
     :class:`tuple` as ``array_hook`` then the overall returned value
-    will be immutable (read only).
+    will be immutable (read only).  Python 3.15 adds :class:`frozendict`
+    which is clearer.
 
     .. note::
 
@@ -997,7 +998,7 @@ class Blob:
         transaction/savepoint handling deals with database commits."""
         ...
 
-    def isatty(self) -> False:
+    def isatty(self) -> Literal[False]:
         """Blobs are never interactive."""
         ...
 
@@ -1039,7 +1040,7 @@ class Blob:
 
     readinto = read_into ## OLD-NAME
 
-    def readable(self) -> True:
+    def readable(self) -> Literal[True]:
         """You can always read from a blob"""
         ...
 
@@ -1074,7 +1075,7 @@ class Blob:
         :raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob."""
         ...
 
-    def seekable(self) -> True:
+    def seekable(self) -> Literal[True]:
         """You can always seek in a blob"""
         ...
 
@@ -1913,6 +1914,22 @@ class Connection:
         :param enable: If True then extension loading is enabled, else it is disabled.
 
         Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__
+
+        Unless you want the SQL `load_extension <https://sqlite.org/lang_corefunc.html#load_extension>`__
+        function enabled, it is safer to use :meth:`config`.  This enables the :meth:`~Connection.load_extension`
+        API briefly::
+
+          # get existing value
+          existing = con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1)
+          # enable loading api but not SQL function
+          con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 1)
+
+          try:
+            # do loading desired
+            con.load_extension("an_extension")
+          finally:
+            # restore original setting
+            con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, existing)
 
         .. seealso::
 
@@ -4822,6 +4839,8 @@ SQLITE_CONSTRAINT_UNIQUE: int = 2067
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_CONSTRAINT_VTAB: int = 2323
 """For `Extended Result Codes <https://sqlite.org/rescode.html>'__"""
+SQLITE_COPY: int = 0
+"""For `Authorizer Action Codes <https://sqlite.org/c3ref/c_alter_table.html>'__"""
 SQLITE_CORRUPT: int = 11
 """For `Result Codes <https://sqlite.org/rescode.html>'__"""
 SQLITE_CORRUPT_INDEX: int = 779
@@ -5498,16 +5517,16 @@ mapping_authorizer_function: dict[str | int, int | str]
 """Authorizer Action Codes mapping names to int and int to names.
 Doc at https://sqlite.org/c3ref/c_alter_table.html
 
-SQLITE_ALTER_TABLE SQLITE_ANALYZE SQLITE_ATTACH SQLITE_CREATE_INDEX
-SQLITE_CREATE_TABLE SQLITE_CREATE_TEMP_INDEX SQLITE_CREATE_TEMP_TABLE
-SQLITE_CREATE_TEMP_TRIGGER SQLITE_CREATE_TEMP_VIEW
-SQLITE_CREATE_TRIGGER SQLITE_CREATE_VIEW SQLITE_CREATE_VTABLE
-SQLITE_DELETE SQLITE_DETACH SQLITE_DROP_INDEX SQLITE_DROP_TABLE
-SQLITE_DROP_TEMP_INDEX SQLITE_DROP_TEMP_TABLE SQLITE_DROP_TEMP_TRIGGER
-SQLITE_DROP_TEMP_VIEW SQLITE_DROP_TRIGGER SQLITE_DROP_VIEW
-SQLITE_DROP_VTABLE SQLITE_FUNCTION SQLITE_INSERT SQLITE_PRAGMA
-SQLITE_READ SQLITE_RECURSIVE SQLITE_REINDEX SQLITE_SAVEPOINT
-SQLITE_SELECT SQLITE_TRANSACTION SQLITE_UPDATE"""
+SQLITE_ALTER_TABLE SQLITE_ANALYZE SQLITE_ATTACH SQLITE_COPY
+SQLITE_CREATE_INDEX SQLITE_CREATE_TABLE SQLITE_CREATE_TEMP_INDEX
+SQLITE_CREATE_TEMP_TABLE SQLITE_CREATE_TEMP_TRIGGER
+SQLITE_CREATE_TEMP_VIEW SQLITE_CREATE_TRIGGER SQLITE_CREATE_VIEW
+SQLITE_CREATE_VTABLE SQLITE_DELETE SQLITE_DETACH SQLITE_DROP_INDEX
+SQLITE_DROP_TABLE SQLITE_DROP_TEMP_INDEX SQLITE_DROP_TEMP_TABLE
+SQLITE_DROP_TEMP_TRIGGER SQLITE_DROP_TEMP_VIEW SQLITE_DROP_TRIGGER
+SQLITE_DROP_VIEW SQLITE_DROP_VTABLE SQLITE_FUNCTION SQLITE_INSERT
+SQLITE_PRAGMA SQLITE_READ SQLITE_RECURSIVE SQLITE_REINDEX
+SQLITE_SAVEPOINT SQLITE_SELECT SQLITE_TRANSACTION SQLITE_UPDATE"""
 
 mapping_authorizer_return_codes: dict[str | int, int | str]
 """Authorizer Return Codes mapping names to int and int to names.
@@ -6284,7 +6303,7 @@ class AsyncBlob:
         transaction/savepoint handling deals with database commits."""
         ...
 
-    def isatty(self) -> False:
+    def isatty(self) -> Literal[False]:
         """Blobs are never interactive."""
         ...
 
@@ -6324,7 +6343,7 @@ class AsyncBlob:
         Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__"""
         ...
 
-    def readable(self) -> True:
+    def readable(self) -> Literal[True]:
         """You can always read from a blob"""
         ...
 
@@ -6359,7 +6378,7 @@ class AsyncBlob:
         :raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob."""
         ...
 
-    def seekable(self) -> True:
+    def seekable(self) -> Literal[True]:
         """You can always seek in a blob"""
         ...
 
@@ -6944,6 +6963,22 @@ class AsyncConnection:
         :param enable: If True then extension loading is enabled, else it is disabled.
 
         Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__
+
+        Unless you want the SQL `load_extension <https://sqlite.org/lang_corefunc.html#load_extension>`__
+        function enabled, it is safer to use :meth:`config`.  This enables the :meth:`~Connection.load_extension`
+        API briefly::
+
+          # get existing value
+          existing = con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1)
+          # enable loading api but not SQL function
+          con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 1)
+
+          try:
+            # do loading desired
+            con.load_extension("an_extension")
+          finally:
+            # restore original setting
+            con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, existing)
 
         .. seealso::
 
