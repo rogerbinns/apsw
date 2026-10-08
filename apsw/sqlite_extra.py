@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.resources
 import json
 import pathlib
+from typing import Literal
 
 import apsw
 
@@ -34,7 +35,7 @@ def load(db: apsw.Connection, extension: str):
     finally:
         db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, existing)
 
-def has(name: str) -> str | None:
+def has(name: str) -> Literal["executable"] | Literal["extension"] | None:
     "Returns 'executable' or 'extension' if extra name is available else None"
     try:
         entry, _ = _get_entry(name)
