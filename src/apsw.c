@@ -221,7 +221,7 @@ static PyObject *apsw_no_change_object;
 static PyObject *
 apsw_no_change_repr(PyObject *self)
 {
-  return Py_NewRef(apst.repr_no_change);
+  return PyUnicode_FromString("<apsw.no_change>");
 }
 
 static PyTypeObject apsw_no_change_type = {

@@ -8,7 +8,6 @@
 #undef s_9e999
 #undef s0_0
 #undef s9e999
-#undef repr_no_change
 #undef Auto
 #undef Begin
 #undef BestIndex
@@ -119,7 +118,6 @@ static struct _apsw_string_table
     PyObject *s_9e999;
     PyObject *s0_0;
     PyObject *s9e999;
-    PyObject *repr_no_change;
     PyObject *Auto;
     PyObject *Begin;
     PyObject *BestIndex;
@@ -231,7 +229,6 @@ fini_apsw_strings(void)
     Py_CLEAR(apst.s_9e999);
     Py_CLEAR(apst.s0_0);
     Py_CLEAR(apst.s9e999);
-    Py_CLEAR(apst.repr_no_change);
     Py_CLEAR(apst.Auto);
     Py_CLEAR(apst.Begin);
     Py_CLEAR(apst.BestIndex);
@@ -344,7 +341,6 @@ init_apsw_strings()
     if ((!apst.s_9e999 && 0 == (apst.s_9e999 = PyUnicode_FromString("-9e999")))
         || (!apst.s0_0 && 0 == (apst.s0_0 = PyUnicode_FromString("0.0")))
         || (!apst.s9e999 && 0 == (apst.s9e999 = PyUnicode_FromString("9e999")))
-        || (!apst.repr_no_change && 0 == (apst.repr_no_change = PyUnicode_FromString("<apsw.no_change>")))
         || (!apst.Auto && 0 == (apst.Auto = PyUnicode_FromString("Auto")))
         || (!apst.Begin && 0 == (apst.Begin = PyUnicode_FromString("Begin")))
         || (!apst.BestIndex && 0 == (apst.BestIndex = PyUnicode_FromString("BestIndex")))

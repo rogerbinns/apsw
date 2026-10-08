@@ -46,7 +46,6 @@ step final value inverse
 NULL 0.0 -9e999 9e999
 
 release UPDATE INSERT DELETE
-<apsw.no_change>
 
 null true false
 
@@ -68,7 +67,6 @@ def mangle(name):
         "0.0": "s0_0",
         "-9e999": "s_9e999",
         "9e999": "s9e999",
-        "<apsw.no_change>": "repr_no_change",
         "null": "snull",
         "true": "strue",
         "false": "sfalse",
