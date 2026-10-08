@@ -299,6 +299,9 @@ extras = [
         description="Database Remote-Copy Tool",
         doc="rsync.html",
         lib_sqlite=True,
+        # work around sqlite's mistaken handling of utf8 on windows.  it should be
+        # using manifest but instead only has a hacky main thing going on
+        defines=[("main", "main")],
     ),
     Extra(
         name="sqlite3_shell",
