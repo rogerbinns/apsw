@@ -3172,8 +3172,6 @@ Enter ".help" for instructions
                         "Incomplete SQL (line %d of %s): %s\n"
                         % (self.input_line_number, getattr(self.stdin, "name", "<stdin>"), command)
                     )
-                if line in ("go", "/"):
-                    break
                 command = command + "\n" + line
             return command
         except KeyboardInterrupt:
