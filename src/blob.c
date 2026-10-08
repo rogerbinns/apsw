@@ -890,7 +890,7 @@ APSWBlob_flush(PyObject *self_, PyObject *unused)
   Py_RETURN_NONE;
 }
 
-/** .. method:: isatty() -> False
+/** .. method:: isatty() -> Literal[False]
 
   Blobs are never interactive.
 */
@@ -903,7 +903,7 @@ APSWBlob_isatty(PyObject *self_, PyObject *Py_UNUSED(unused))
   Py_RETURN_FALSE;
 }
 
-/** .. method:: readable() -> True
+/** .. method:: readable() -> Literal[True]
 
   You can always read from a blob
 */
@@ -931,7 +931,7 @@ APSWBlob_writable(PyObject *self_, PyObject *Py_UNUSED(unused))
   Py_RETURN_FALSE;
 }
 
-/** .. method:: seekable() -> True
+/** .. method:: seekable() -> Literal[True]
 
   You can always seek in a blob
 */
