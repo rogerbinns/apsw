@@ -2,6 +2,25 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = [
+    "collections",
+    "contextvars",
+    "copy",
+    "functools",
+    "html",
+    "inspect",
+    "keyword",
+    "logging",
+    "math",
+    "re",
+    "string",
+    "time",
+    "traceback",
+    "apsw",
+    "apsw.sqlite_extra",
+    "apsw.unicode",
+]
+
 import abc
 import collections
 import contextvars
@@ -21,11 +40,11 @@ import sys
 import time
 import traceback
 import types
+from collections.abc import AsyncIterable, AsyncIterator, Awaitable, Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass, is_dataclass, make_dataclass
 from fractions import Fraction
-from typing import Any, Literal, Protocol, TextIO, overload, TYPE_CHECKING
-from collections.abc import Callable, Iterator, AsyncIterator, AsyncIterable, Iterable, Sequence, Awaitable
 from types import NoneType
+from typing import Any, Literal, Protocol, TextIO
 
 import apsw
 import apsw.sqlite_extra

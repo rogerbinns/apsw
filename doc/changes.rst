@@ -52,6 +52,10 @@ Fixed :func:`apsw.ext.dbinfo` to correctly report the journal/wal
 filename - before the names were for ``main``.  The header contents
 were correct.  (:issue:`624` PY010)
 
+Added __lazy_modules__ to Python files so Python 3.15+ will do their
+imports on demand, instead of all at import time.  This improves
+startup times.
+
 Many code fixes responding to AI reports in :issue:`624` and
 :issue:`627`.  All fixes done by human.  The vast majority is C code
 in error handling paths.  Regular code was unlikely to encounter the

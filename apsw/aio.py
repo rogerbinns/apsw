@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = ["asyncio", "contextlib", "contextvars", "math", "queue", "threading", "time", "apsw"]
+
 import asyncio
 import contextlib
 import contextvars

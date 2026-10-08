@@ -10,6 +10,27 @@ related functionality.
 
 from __future__ import annotations
 
+__lazy_modules__ = [
+    "collections",
+    "difflib",
+    "fnmatch",
+    "functools",
+    "html",
+    "html.parser",
+    "importlib",
+    "importlib.resources",
+    "json",
+    "math",
+    "pathlib",
+    "re",
+    "threading",
+    "apsw",
+    "apsw._unicode",
+    "apsw.ext",
+    "apsw.fts5query",
+    "apsw.unicode",
+]
+
 import collections
 import difflib
 import fnmatch
@@ -31,14 +52,15 @@ from dataclasses import dataclass
 from types import ModuleType
 
 try:
-    from typing import Any, Callable, Iterable, Iterator, Literal, Sequence, Self
+    from typing import Any, Literal, Self
+    from collections.abc import Callable, Iterable, Iterator, Sequence
 except ImportError:
     # Self is only available in py3.11+ but the other items import anyway
     pass
 
-import apsw
 import apsw._unicode
-import apsw.ext
+
+import apsw
 import apsw.fts5query
 import apsw.unicode
 

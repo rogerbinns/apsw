@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
-
 from __future__ import annotations
+
+__lazy_modules__ = ["importlib.resources", "json", "pathlib", "apsw"]
 
 import importlib.resources
 import json
@@ -8,6 +8,7 @@ import pathlib
 from typing import Literal
 
 import apsw
+
 
 class NotAvailable(Exception):
     """Raised if a specified item is not available in this installation
