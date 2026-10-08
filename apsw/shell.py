@@ -2212,7 +2212,7 @@ Enter ".help" for instructions
     def command_load(self, cmd):
         """load FILE ?ENTRY?: Loads a SQLite extension library
 
-        Note: Extension loading may not be enabled in the SQLite
+        Note: Extension loading may not be present in the SQLite
         library version you are using.
 
         By default sqlite3_extension_init and a name derived from the filename
@@ -2230,11 +2230,9 @@ Enter ".help" for instructions
         """
         if len(cmd) < 1 or len(cmd) > 2:
             raise self.Error("load takes one or two parameters")
-        try:
-            self.db.enable_load_extension(True)
-        except Exception:
-            raise self.Error("Extension loading is not supported")
 
+        existing: int = self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1)
+        self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 1)
         try:
             self.db.load_extension(*cmd)
         except Exception:
@@ -2252,6 +2250,8 @@ Enter ".help" for instructions
                 except (apsw.ExtensionLoadingError, LookupError, apsw.sqlite_extra.NotAvailable):
                     pass
             raise
+        finally:
+            self.db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, existing)
 
     def log_handler(self, code, message):
         "Called with SQLite log messages when logging is ON"

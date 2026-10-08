@@ -3037,6 +3037,22 @@ finally:
 
   -* sqlite3_enable_load_extension
 
+  Unless you want the SQL `load_extension <https://sqlite.org/lang_corefunc.html#load_extension>`__
+  function enabled, it is safer to use :meth:`config`.  This enables the :meth:`~Connection.load_extension`
+  API briefly::
+
+    # get existing value
+    existing = con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1)
+    # enable loading api but not SQL function
+    con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 1)
+
+    try:
+      # do loading desired
+      con.load_extension("an_extension")
+    finally:
+      # restore original setting
+      con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, existing)
+
   .. seealso::
 
     * :meth:`~Connection.load_extension`

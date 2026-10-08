@@ -20,14 +20,19 @@ class NotAvailable(Exception):
 def load(db: apsw.Connection, extension: str):
     """Loads the extension into the provided database
 
-    :meth:`Extension loading <apsw.Connection.enable_load_extension>` will
-    also be turned on.
+    Extension loading will be enabled only for the duration
+    of the loading, and then returned to prior setting.
     """
-    db.enable_load_extension(True)
+
     entry, path = _get_entry(extension)
     if entry["type"] != "extension":
         raise ValueError(f"{extension} is a {entry['type']} not a loadable extension")
-    db.load_extension(path)
+    existing = db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1)
+    db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 1)
+    try:
+        db.load_extension(path)
+    finally:
+        db.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, existing)
 
 def has(name: str) -> str | None:
     "Returns 'executable' or 'extension' if extra name is available else None"

@@ -25,6 +25,13 @@ comment prompting for continuation.  (:issue:`212`)
 
 Added the ``diskused`` extension to :doc:`extra`.
 
+:func:`apsw.sqlite_extra.load` and shell :ref:`load <shell-cmd-load>`
+use :meth:`Connection.config` to enable extension loading with
+``SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION`` only for the duration
+of the call to load an extension, and return extension loading
+state to previous setting.  See :meth:`Connection.enable_load_extension`
+documentation for how to do this safer approach.
+
 :attr:`Connection.cursor_factory` returned objects must have a
 ``close`` method.  This is now documented, and enforced.
 
