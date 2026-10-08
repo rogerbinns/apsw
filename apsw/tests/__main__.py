@@ -38,6 +38,8 @@ import traceback
 import typing
 import warnings
 
+import apsw.sqlite_extra
+
 
 def ShouldFault(name, pending_exception):
     # You can't use print because calls involving print can be nested
@@ -10386,6 +10388,40 @@ class APSW(unittest.TestCase):
         self.assertIn("xxx", s)
         self.assertIn("one", s)
         self.assertIn("</svg>", s)
+
+    def testExtDiskused(self):
+        "diskused extension output"
+        if not apsw.sqlite_extra.has("diskused"):
+            self.skipTest("diskused extension not available")
+
+        name = "*/\\\nBEGIN"
+
+        self.assertRaisesRegex(ValueError, ".*empty database.*", apsw.ext.diskused, self.db, "main")
+        self.db.execute("create temp table x(y)")
+        self.assertRaisesRegex(ValueError, ".*cannot analyze.*", apsw.ext.diskused, self.db, "temp")
+        self.assertRaisesRegex(ValueError, ".*no such database.*", apsw.ext.diskused, self.db, "zebra3")
+
+        self.db.execute(
+            f'create table "{name}"(x); insert into "{name}" values(randomblob(123456)); create index "{name + name}" on "{name}"(x)'
+        )
+        one, two = apsw.ext.diskused(self.db)
+
+        # quick check on entries and some fields
+        self.assertIn(name, one)
+        self.assertIn(name + name, one)
+        self.assertEqual(one[name]["is_index"], False)
+        self.assertEqual(one[name + name]["is_index"], True)
+        self.assertEqual(one[name + name]["tblname"], name)
+
+        for row in one.values():
+            self.assertEqual(len(row), len(two))
+            self.assertEqual(set(row.keys()), set(two.keys()))
+
+        for v in two.values():
+            # at least a few chars of desciption
+            self.assertGreater(len(v), 4)
+            # and no surplus whitepsace
+            self.assertEqual(v.strip(), v)
 
     def testExtQueryInfo(self) -> None:
         "apsw.ext.query_info"

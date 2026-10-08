@@ -28,6 +28,7 @@ from collections.abc import Callable, Iterator, AsyncIterator, AsyncIterable, It
 from types import NoneType
 
 import apsw
+import apsw.sqlite_extra
 import apsw.unicode
 
 
@@ -1423,6 +1424,9 @@ def analyze_pages(con: apsw.Connection, scope: int, schema: str = "main") -> Dat
         check.  If the table is not present then calling this function
         will give :class:`apsw.SQLError` with message ``no such table:
         dbstat``.
+
+    See :func:`diskused` which uses a different extension, and provides
+    even more granular information.
     """
 
     qschema = '"' + schema.replace('"', '""') + '"'
@@ -1724,6 +1728,118 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
 
     print("</style></svg>", file=out)
 
+def diskused(
+    con: apsw.Connection, schema: str = "main"
+) -> tuple[dict[str, dict[str, int | bool | str]], dict[str, str]]:
+    """Very detailed usage information for tables and indices
+
+    This is based on interpreting the output of the SQLite
+    ``diskused`` extension.  The extension outputs a large human
+    readable formatted comment, follwed by SQL that creates a in the
+    database.  This function extracts that SQL and returns the
+    data as a Python dict.
+
+    .. warning::
+
+        Extension loading is used on the supplied connection and
+        diskused is loaded via :doc:`extra` which turns on extension
+        loading for the connection.  Do not use if table or index
+        names can come from outside values because specially crafted
+        ones will caused incorrect parsing.
+
+    The return consists of a tuple of 2 dicts.  The first key is a
+    table or index name, and each corresponding value is a dict of
+    about 15 fields.  They include owning table (for indexes), btree
+    depth, overflow and leaf pages etc.
+
+    The second dict is each field name and short English description
+    as provided by the extension.
+
+    See :func:`analyze_pages` for less granular information from a
+    different extension.
+    """
+    apsw.sqlite_extra.load(con, "diskused")
+
+    cursor = con.cursor()
+    cursor.row_trace = None
+
+    text: list[str] = cursor.execute("select diskused(?)", (schema,)).get.splitlines()
+    if not text[0].startswith("/**"):
+        raise ValueError("\n".join(text))
+
+    # There is a huge comment at the top followed by
+    # BEGIN;
+    # CREATE TABLE
+    # .. columns
+    # );
+    # INSERT INTO VALUES
+    # .. rows
+    # COMMIT;
+
+    # start working backwards through the text.  this logic could be
+    # defeated by creatively named tables
+
+    values_end = len(text) - 1
+
+    while text[values_end] != "COMMIT;":
+        values_end -= 1
+
+    values_start = values_end - 1
+    while not text[values_start].startswith("INSERT INTO "):
+        values_start -= 1
+
+    columns_end = values_start
+    # back into values not INSERT
+    values_start += 1
+
+    while text[columns_end] != ");":
+        columns_end -= 1
+
+    columns_start = columns_end - 1
+    while not text[columns_start].startswith("CREATE TABLE"):
+        columns_start -= 1
+
+    # back into columns
+    columns_start += 1
+
+    sql = ["WITH diskused_data ("]
+
+    column_info: dict[str, dict[str, int | bool | str]] = {}
+
+    for column_def in text[columns_start:columns_end]:
+        col, comment = column_def.split("--", 1)
+        name, col_type = [c.strip() for c in col.strip().rstrip(",").split()]
+        match col_type:
+            case "boolean":
+                col_conv = bool
+            case "int" | "text":
+                col_conv = lambda x: x
+            case _:
+                raise ValueError(f"Unknown column type {name=} {col_type=}")
+        column_info[name] = {"type": col_type, "comment": comment.strip(), "conv": col_conv}
+        sql.append(name + ",")
+    # remove last comma
+    sql[-1] = sql[-1].rstrip(",")
+
+    sql.append(") AS ( VALUES")
+    sql.extend(text[values_start:values_end])
+    sql[-1] = sql[-1].rstrip(";")
+    sql.append(") SELECT * FROM diskused_data")
+
+    results = {}
+    for row in cursor.execute("\n".join(sql)):
+        for name, value in zip((d[0] for d in cursor.get_description()), row):
+            if name == "name":
+                assert value not in results
+                results[value] = {}
+                this_row_name: str = value
+            else:
+                # name is first column so this is always set
+                results[this_row_name][name] = column_info[name]["conv"](value)
+
+    column_desc = {k: v["comment"] for k, v in column_info.items() if k != "name"}
+
+    return results, column_desc
 
 query_limit_context: contextvars.ContextVar[query_limit.limit] = contextvars.ContextVar("apsw.ext.query_limit_context")
 """Stores the current query limits

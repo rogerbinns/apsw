@@ -23,7 +23,8 @@ may not be complete, or is empty whitespace and comments.  This
 finally allowed fixing the 10½ year old shell issue of a line
 comment prompting for continuation.  (:issue:`212`)
 
-Added the ``diskused`` extension to :doc:`extra`.
+Added the ``diskused`` extension to :doc:`extra`, and
+:func:`apsw.ext.diskused` to extract data from it.
 
 :func:`apsw.sqlite_extra.load` and shell :ref:`load <shell-cmd-load>`
 use :meth:`Connection.config` to enable extension loading with
