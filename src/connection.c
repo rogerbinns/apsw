@@ -6441,12 +6441,16 @@ Connection_set_authorizer_attr(PyObject *self_, PyObject *value, void *Py_UNUSED
  -* sqlite3_system_errno
 */
 static PyObject *
-Connection_get_system_errno(PyObject *self_, void *Py_UNUSED(unused))
+Connection_get_system_errno(PyObject *self_, void *unused)
 {
   Connection *self = (Connection *)self_;
   CHECK_CLOSED(self, NULL);
+  ASYNC_ATTR_GET(self, Connection_get_system_errno, self_, unused);
 
-  return PyLong_FromLong(sqlite3_system_errno(self->db));
+  DBMUTEX_ENSURE(self);
+  PyObject *res = PyLong_FromLong(sqlite3_system_errno(self->db));
+  sqlite3_mutex_leave(self->dbmutex);
+  return res;
 }
 
 /** .. attribute:: is_interrupted
