@@ -7733,7 +7733,7 @@ class APSW(unittest.TestCase):
         # Do a SQL write which cause blobs to become invalid
         self.db.execute("update ioerror set blob='fsdfdsfasd' where x=3")
         self.assertRaises(apsw.AbortError, blobro.read)
-        self.assertRaises(apsw.AbortError, blobro.readinto, bytearray(10))
+        self.assertRaises(apsw.AbortError, blobro.read_into, bytearray(10))
         self.assertRaises(apsw.AbortError, blobrw.write, b"Y")
         self.assertRaises(apsw.AbortError, blobrw.write, b"Z")
         self.assertRaises(apsw.AbortError, blobro.readall)
