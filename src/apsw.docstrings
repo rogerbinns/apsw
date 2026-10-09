@@ -109,6 +109,10 @@
 "Some operations don't make sense from a Python program.  All the\n" \
 "remaining are supported.\n" \
 "\n" \
+"SQLite doesn't allow most options to be changed once it is\n" \
+"initialized.  See :ref:`urinames` for an example of shutting down\n" \
+"SQLite, changing an option, and initializing again.\n" \
+"\n" \
 "Calls: `sqlite3_config <https://sqlite.org/c3ref/config.html>`__\n" 
 
 #define  Apsw_connections_DOC "apsw.connections() -> list[Connection]\n\n" \
@@ -273,7 +277,10 @@
 
 
 #define  Apsw_initialize_DOC "apsw.initialize() -> None\n\n" \
-"It is unlikely you will want to call this method as SQLite automatically initializes.\n" \
+"It is unlikely you will want to call this method as SQLite is\n" \
+"initialized when APSW is loaded.\n" \
+"\n" \
+"See :func:`config` and :ref:`urinames` for an example usage.\n" \
 "\n" \
 "Calls: `sqlite3_initialize <https://sqlite.org/c3ref/initialize.html>`__\n" 
 
@@ -565,6 +572,8 @@
 ":func:`connections active <connections>` and need to close them first.\n" \
 "\n" \
 "VFS remain registered across a shutdown and initialise.\n" \
+"\n" \
+"See :func:`config` and :ref:`urinames` for an example usage.\n" \
 "\n" \
 "Calls: `sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`__\n" 
 
@@ -2152,7 +2161,6 @@
 "\n" \
 "Calls:\n" \
 "  * `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__\n" \
-"  * `sqlite3_filename_database <https://sqlite.org/c3ref/filename_database.html>`__\n" \
 "  * `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__\n" \
 "  * `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
 

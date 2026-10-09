@@ -521,7 +521,7 @@ load FILE ?ENTRY?
 
 *Loads a SQLite extension library*
 
-Note: Extension loading may not be enabled in the SQLite library version you are
+Note: Extension loading may not be present in the SQLite library version you are
 using.
 
 By default sqlite3_extension_init and a name derived from the filename is tried,

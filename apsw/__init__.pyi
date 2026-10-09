@@ -367,6 +367,10 @@ def config(op: int, *args: Any) -> None:
     Some operations don't make sense from a Python program.  All the
     remaining are supported.
 
+    SQLite doesn't allow most options to be changed once it is
+    initialized.  See :ref:`urinames` for an example of shutting down
+    SQLite, changing an option, and initializing again.
+
     Calls: `sqlite3_config <https://sqlite.org/c3ref/config.html>`__"""
     ...
 
@@ -514,7 +518,10 @@ def incomplete(statement: str) -> IncompleteResult:
     ...
 
 def initialize() -> None:
-    """It is unlikely you will want to call this method as SQLite automatically initializes.
+    """It is unlikely you will want to call this method as SQLite is
+    initialized when APSW is loaded.
+
+    See :func:`config` and :ref:`urinames` for an example usage.
 
     Calls: `sqlite3_initialize <https://sqlite.org/c3ref/initialize.html>`__"""
     ...
@@ -732,6 +739,8 @@ def shutdown() -> None:
     :func:`connections active <connections>` and need to close them first.
 
     VFS remain registered across a shutdown and initialise.
+
+    See :func:`config` and :ref:`urinames` for an example usage.
 
     Calls: `sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`__"""
     ...
@@ -1869,7 +1878,6 @@ class Connection:
 
         Calls:
           * `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
-          * `sqlite3_filename_database <https://sqlite.org/c3ref/filename_database.html>`__
           * `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__
           * `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
         ...
@@ -6918,7 +6926,6 @@ class AsyncConnection:
 
         Calls:
           * `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
-          * `sqlite3_filename_database <https://sqlite.org/c3ref/filename_database.html>`__
           * `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__
           * `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__"""
         ...
