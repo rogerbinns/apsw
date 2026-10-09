@@ -615,6 +615,9 @@
     sqlite3_result_pointer((one), (two), (three), (four));                            \
 })
 
+#undef sqlite3_result_str
+#define sqlite3_result_str *not used*
+
 #undef sqlite3_result_subtype
 #define sqlite3_result_subtype *not used*
 
@@ -771,6 +774,11 @@
 
 #undef sqlite3_str_vappendf
 #define sqlite3_str_vappendf *not used*
+
+#define sqlite3_system_errno(one) ({                     \
+    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
+    sqlite3_system_errno((one));                         \
+})
 
 #define sqlite3_table_column_metadata(one, two, three, four, five, six, seven, eight, nine) ({              \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));                                                     \

@@ -5303,7 +5303,7 @@ Connection_readonly(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast
   journal / wal filename would not be applicable (eg in memory
   database).
 
-  -* sqlite3_db_filename sqlite3_filename_database sqlite3_filename_journal sqlite3_filename_wal
+  -* sqlite3_db_filename sqlite3_filename_journal sqlite3_filename_wal
 */
 static PyObject *
 Connection_db_filename(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
