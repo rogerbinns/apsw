@@ -1770,9 +1770,11 @@ def diskused(
     """Very detailed usage information for tables and indices
 
     This is based on interpreting the output of the SQLite
-    ``diskused`` extension.  The extension outputs a large human
-    readable formatted comment, follwed by SQL that creates a in the
-    database.  This function extracts that SQL and returns the
+    ``diskused`` extension, which also uses the `dbstat
+    <https://sqlite.org/dbstat.html>`__ extension under the hood,
+    which is often included in SQLite.  The extension outputs a large
+    human readable formatted comment, follwed by SQL that creates a in
+    the database.  This function extracts that SQL and returns the
     data as a Python dict.
 
     .. warning::

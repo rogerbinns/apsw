@@ -10393,7 +10393,7 @@ class APSW(unittest.TestCase):
 
     def testExtDiskused(self):
         "diskused extension output"
-        if not apsw.sqlite_extra.has("diskused"):
+        if not apsw.sqlite_extra.has("diskused") or not "ENABLE_DBSTAT_VTAB" in apsw.compile_options:
             self.skipTest("diskused extension not available")
 
         name = "*/\\\nBEGIN"
