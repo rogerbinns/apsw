@@ -16,6 +16,7 @@ __lazy_modules__ = [
     "string",
     "time",
     "traceback",
+    "urllib.parse",
     "apsw",
     "apsw.sqlite_extra",
     "apsw.unicode",
@@ -40,6 +41,7 @@ import sys
 import time
 import traceback
 import types
+import urllib.parse
 from collections.abc import AsyncIterable, AsyncIterator, Awaitable, Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass, is_dataclass, make_dataclass
 from fractions import Fraction
@@ -825,6 +827,21 @@ def changeset_to_sql(
         yield "".join(sql)
         continue
 
+def compose_uri(filename: str, options: dict[str, Any]) -> str:
+    """Composes URI from filename and options
+
+    This ensures the filename is correctly encoded (eg spaces become
+    ``%20``) as well as the values.  The result will have the
+    necessary ``file:`` prefix::
+
+        >>> apsw.ext.compose_uri("a b", {"vfs": "memdb", "level": 42})
+        'file:a%20b?vfs=memdb&level=42'
+
+    See :ref:`urinames`
+    """
+    uri_filename = urllib.parse.quote(filename)
+    uri_options = urllib.parse.urlencode(options)
+    return f"file:{uri_filename}?{uri_options}"
 
 class Trace:
     """Use as a context manager to show each SQL statement run inside the block

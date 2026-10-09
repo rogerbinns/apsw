@@ -527,7 +527,10 @@ apsw_connection_add(PyObject *con)
 
 /** .. method:: initialize() -> None
 
-  It is unlikely you will want to call this method as SQLite automatically initializes.
+  It is unlikely you will want to call this method as SQLite is
+  initialized when APSW is loaded.
+
+  See :func:`config` and :ref:`urinames` for an example usage.
 
   -* sqlite3_initialize
 */
@@ -552,6 +555,8 @@ initialize(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
   :func:`connections active <connections>` and need to close them first.
 
   VFS remain registered across a shutdown and initialise.
+
+  See :func:`config` and :ref:`urinames` for an example usage.
 
   -* sqlite3_shutdown
 */
@@ -585,6 +590,10 @@ sqliteshutdown(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused2))
 
   Some operations don't make sense from a Python program.  All the
   remaining are supported.
+
+  SQLite doesn't allow most options to be changed once it is
+  initialized.  See :ref:`urinames` for an example of shutting down
+  SQLite, changing an option, and initializing again.
 
   -* sqlite3_config
 */

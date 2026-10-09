@@ -418,6 +418,8 @@ called with the connection as the only parameter, and return the
 object to use as a cursor.  (Note the requirements on a ``close``
 method, making it easiest to subclass :class:`apsw.Cursor`.)
 
+.. _urinames:
+
 .. index::
   single: URI
   single: SQLITE_CONFIG_URI
@@ -431,28 +433,20 @@ database.  Opens can include the `SQLITE_OPEN_URI
 <https://www.sqlite.org/c3ref/open.html>`__ flag, which will
 also apply to ``ATTACH`` on that connection.
 
-You should use :mod:`urllib.parse` to correctly create strings handling
-the necessary special characters and quoting.
+You should use :func:`apsw.ext.compose_uri` to correctly create
+strings handling the necessary special characters and quoting.
+The next section shows how to provide `SQLITE_OPEN_URI` when
+opening a connection.
 
-.. code-block::
+On Linux, BSD, and similar platforms SQLite is often compiled with URI
+filenames on by default.  You can do the same with the following
+sequence, but **SQLite must not be in use at the time**.  The setting
+can only be changed while SQLite is shutdown otherwise you get
+:exc:`MisuseError`.::
 
-  import urllib.parse
-
-  uri_filename = urllib.parse.quote("my db filename.sqlite3")
-
-  uri_parameters = urllib.parse.urlencode(
-    {
-        "vfs": "memdb",
-        "go": "fast",
-        "level": 42,
-    }
-  )
-
-  uri = f"file:{uri_filename}?{uri_parameters}"
-
-.. index::
-  single: Memory database
-  single:  memdb
+  apsw.shutdown()
+  apsw.config(apsw.SQLITE_CONFIG_URI, 1)
+  apsw.initialize()
 
 .. _memdb:
 
@@ -467,7 +461,7 @@ empty string.  (Note :meth:`shared cache
 
 SQLite has a (currently undocumented) VFS that allows the same
 connection to have multiple distinct memory databases, and for
-separate connections to share a memory database.
+separate connections in the same process to share a memory database.
 
 Use the name ``memdb`` as the VFS.  If the filename provided starts
 with a ``/`` then it is shared amongst connections, otherwise it is
@@ -480,7 +474,7 @@ private to the connection.
     connection = apsw.Connection("not-shared", vfs="memdb")
 
     # using URI
-    connection = apsw.Connection("file:/shared?vfs=memdb",
+    connection = apsw.Connection(apsw.ext.compose_uri("/shared", {"vfs": "memdb"}),
                     flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE)
-    connection = apsw.Connection("file:not-shared?vfs=memdb",
+    connection = apsw.Connection(apsw.ext.compose_uri("not-shared", {"vfs": "memdb"}),
                     flags=apsw.SQLITE_OPEN_URI | apsw.SQLITE_OPEN_READWRITE)

@@ -10341,6 +10341,8 @@ class APSW(unittest.TestCase):
             self.assertEqual(col_name, cur.get_description()[1][0])
         self.assertEqual(row, (4, 5))
 
+        self.assertEqual(apsw.ext.compose_uri("a b", {"vfs": "memdb", "level": 42}), "file:a%20b?vfs=memdb&level=42")
+
     def testExtAnalyzePages(self) -> None:
         "analyze pages"
         if "dbstat" not in (self.db.pragma("module_list") or tuple()):

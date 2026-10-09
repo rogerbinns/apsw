@@ -33,6 +33,9 @@ of the call to load an extension, and return extension loading
 state to previous setting.  See :meth:`Connection.enable_load_extension`
 documentation for how to do this safer approach.
 
+Added :func:`apsw.ext.compose_uri` to correctly compose a URI filename
+and parameters, and updated documentation to point to it.
+
 :attr:`Connection.cursor_factory` returned objects must have a
 ``close`` method.  This is now documented, and enforced.
 
