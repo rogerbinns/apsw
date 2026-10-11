@@ -9271,8 +9271,8 @@ class APSW(unittest.TestCase):
         TestFile.xFileControl = TestFile.xFileControl3
         self.assertRaises(TypeError, fc2, "main", 1027, 1027)
         TestFile.xFileControl = TestFile.xFileControl99
-        fc1.close()
-        fc2.close()
+        del fc1
+        del fc2
         # these should work
         testdb(closedb=False).file_control("main", 1027, 1027)
         if ctypes:
