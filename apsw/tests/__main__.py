@@ -10945,7 +10945,12 @@ testtimeout = False  # timeout testing adds several seconds to each run
 
 def vfstestdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=True, mode=None, attachdb=None):
     "This method causes all parts of a vfs to be executed"
-    gc.collect()  # free any existing db handles
+    gc.collect()  # free any pending existing db handles
+    # this is needed for windows because the deletefiles will fail
+    # causing clashes with expected empty files
+    for con in apsw.connections():
+        if pathlib.Path(filename).samefile(con.filename):
+            con.close()
     for suf in "", "-journal", "x", "x-journal":
         deletefile(filename + suf)
 
