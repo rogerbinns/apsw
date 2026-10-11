@@ -286,8 +286,8 @@ Connection_internal_cleanup(Connection *self)
   Py_CLEAR(self->exectrace);
   Py_CLEAR(self->rowtrace);
   Py_CLEAR(self->vfs);
-  Py_XSETREF(self->open_flags, Py_None);
-  Py_XSETREF(self->open_vfs, Py_None);
+  Py_XSETREF(self->open_flags, Py_NewRef(Py_None));
+  Py_XSETREF(self->open_vfs, Py_NewRef(Py_None));
   for (unsigned i = 0; i < self->tracehooks_count; i++)
   {
     Py_CLEAR(self->tracehooks[i].callback);
@@ -679,9 +679,6 @@ Connection_dealloc(PyObject *self_)
   APSW_CLEAR_WEAKREFS;
   PyObject_GC_UnTrack(self_);
 
-  Py_CLEAR(self->open_flags);
-  Py_CLEAR(self->open_vfs);
-
   PY_ERR_FETCH(save);
   /* the mutex can't be held because no-one has a reference to the
      connection */
@@ -692,6 +689,9 @@ Connection_dealloc(PyObject *self_)
 
   assert(!self->dependents || PyList_GET_SIZE(self->dependents) == 0);
   Py_CLEAR(self->dependents);
+
+  Py_CLEAR(self->open_flags);
+  Py_CLEAR(self->open_vfs);
 
   Py_TpFree(self_);
 
