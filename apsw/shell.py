@@ -1649,15 +1649,19 @@ Enter ".help" for instructions
         """
         self.exceptions = self._boolean_command("exceptions", cmd)
 
-    def command_exit(self, cmd):
+    def command_exit(self, cmd, name="exit"):
         """exit ?CODE?: Exit this program with optional exit code"""
         if len(cmd) > 1:
-            raise self.Error("Too many parameters for exit")
+            raise self.Error(f"Too many parameters for {name}")
         try:
             c = 0 if not cmd else int(cmd[0])
         except ValueError:
             raise self.Error(f"{cmd[0]} isn't an exit code")
         sys.exit(c)
+
+    def command_quit(self, cmd, name="quit"):
+        """quit ?CODE?: (Alias for exit) Quit this program with optional exit code """
+        return self.command_exit(cmd, name="quit")
 
     def command_find(self, cmd):
         """find value ?TABLE?: Searches all columns of all tables for a value
@@ -1751,7 +1755,7 @@ Enter ".help" for instructions
                 d = getattr(self, c).__doc__
                 assert d, c + " command must have documentation"
                 c = c[len("command_") :]
-                if c in ("headers", "color"):
+                if c in ("headers", "color", "quit"):
                     continue
                 while d[0] == "\n":
                     d = d[1:]
