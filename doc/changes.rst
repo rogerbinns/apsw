@@ -60,10 +60,12 @@ imports on demand, instead of all at import time.  This improves
 startup times.
 
 Many code fixes responding to AI reports in :issue:`624` and
-:issue:`627`.  All fixes done by human.  The vast majority is C code
-in error handling paths.  Regular code was unlikely to encounter the
-errors.  If it did the majority would be the wrong exception types,
-with a few resulting in leaks, or crashes.
+:issue:`627`.  All fixes done by human, because why and how they
+happened are important.  The vast majority is C code in error handling
+paths.  Regular code was unlikely to encounter the errors.  If it did
+the majority would give the wrong exception types, with a few
+resulting in leaks, or crashes.  (More details `in a blog post
+<https://www.rogerbinns.com/blog/apsw-has-bugs.html>`__)
 
 3.53.4.0
 ========
