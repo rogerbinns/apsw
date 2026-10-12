@@ -7580,7 +7580,7 @@ class AsyncConnection:
         Calls: `sqlite3_db_status64 <https://sqlite.org/c3ref/db_status.html>`__"""
         ...
 
-    system_errno: int
+    system_errno: Awaitable[int]
     """The underlying system error code for the most recent I/O error.
 
     Calls: `sqlite3_system_errno <https://sqlite.org/c3ref/system_errno.html>`__"""
