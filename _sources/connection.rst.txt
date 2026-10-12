@@ -348,7 +348,8 @@ If `entries` is present, then each list entry is a dict with the following infor
   transaction will be rolled back by the next program to open the
   database, reverting the database to a know good state.
 
-  If *force* is *True* then any exceptions are ignored.
+  If *force* is *True* then exceptions are ignored, such as
+  remaining unexecuted SQL in a cursor.
 
   Calls: `sqlite3_close <https://sqlite.org/c3ref/close.html>`__
 
@@ -637,9 +638,20 @@ If `entries` is present, then each list entry is a dict with the following infor
   :meth:`Connection.execute`.
 
   Note that whatever is returned doesn't have to be an actual
-  :class:`Cursor` instance, and just needs to have the methods present
-  that are actually called.  These are likely to be `execute`,
-  `executemany`, `close` etc.
+  :class:`Cursor` instance, and needs to have the methods present
+  that are actually called.  These are likely to be `execute` and
+  `executemany`.
+
+  .. note::
+
+    It **must** have a ``close`` method.
+
+    * Called when :meth:`Connection.close` is called
+    * Must close any underlying SQLite objects in use,
+      in order to allow the :class:`Connection` to close
+    * Could be called if the :class:`Connection` is being
+      garbage collected, so there is no caller to return
+      exceptions to
 
 .. index:: sqlite3_file_control
 
@@ -658,16 +670,29 @@ If `entries` is present, then each list entry is a dict with the following infor
 
   Calls: `sqlite3_file_control <https://sqlite.org/c3ref/file_control.html>`__
 
-.. index:: sqlite3_db_filename
+.. index:: sqlite3_db_filename, sqlite3_filename_journal, sqlite3_filename_wal
 
-.. method:: Connection.db_filename(name: str) -> str
+.. method:: Connection.db_filename(name: str, which: int = 0) -> str
 
   |badge-async-dual|
 
-  Returns the full filename of the named (attached) database.  The
-  main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+  Returns the full filename of the named (attached) database.
 
-  Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
+  :param name:  main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
+  :param which: ``0`` for the database, ``1`` for the journal *if* journal mode is used,
+      ``2`` for the WAL if WAL mode is used
+
+  SQLite works out at open time what the journal and WAL filenames would be if used.
+
+  The SQLite routines do not return errors, instead giving ``None`` for
+  when the schema name is not known, or and empty string if the db /
+  journal / wal filename would not be applicable (eg in memory
+  database).
+
+  Calls:
+    * `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
+    * `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__
+    * `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__
 
 .. index:: sqlite3_db_name
 
@@ -724,6 +749,22 @@ If `entries` is present, then each list entry is a dict with the following infor
   which is disabled by default.
 
   :param enable: If True then extension loading is enabled, else it is disabled.
+
+  Unless you want the SQL `load_extension <https://sqlite.org/lang_corefunc.html#load_extension>`__
+  function enabled, it is safer to use :meth:`config`.  This enables the :meth:`~Connection.load_extension`
+  API briefly::
+
+    # get existing value
+    existing = con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1)
+    # enable loading api but not SQL function
+    con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 1)
+
+    try:
+      # do loading desired
+      con.load_extension("an_extension")
+    finally:
+      # restore original setting
+      con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, existing)
 
   .. seealso::
 
@@ -839,7 +880,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   |badge-async-dual|
 
-  The filename of the database.
+  The absolute filename of the database, for "main".
 
   Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__
 
@@ -850,7 +891,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   |badge-async-dual|
 
-  The journal filename of the database,
+  The absolute journal filename that would be used for database "main"
+  if journal mode is used.
 
   Calls: `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__
 
@@ -861,7 +903,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   |badge-async-dual|
 
-  The WAL filename of the database,
+  The absolute WAL filename that would be used for database "main" if
+  WAL mode is used.
 
   Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__
 
@@ -1108,7 +1151,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   `schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__
 
-  `which` is 0 for the database file, 1 for the journal.
+  `which` is 0 for the database file, 1 for the journal/wal in use.
 
   The return value is a tuple of a boolean indicating a complete read if
   True, and the bytes read which will always be the amount requested
@@ -1349,7 +1392,7 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
 
   |badge-async-dual|
 
-  Sets a callable which is invoked every *nsteps* SQLite inststructions.
+  Sets a callable which is invoked every *nsteps* SQLite instructions.
   The callable should return True to abort or False to continue. (If
   there is an error in your Python *callable* then True/abort will be
   returned).  SQLite raises :exc:`InterruptError` for aborts.
@@ -1357,6 +1400,8 @@ See :meth:`Cursor.executemany` for more details, and the :ref:`example <example_
   Use :class:`None` to cancel the progress handler.  Multiple handlers
   can be present at once (implemented by APSW). Registered callbacks are
   distinguished by their ``id`` - an equality test is done to match ids.
+  When multiple handlers are registered, the callbacks can be more
+  frequent than the steps used for each one.
 
   You can use :class:`apsw.ext.Trace` to see how many steps are used for
   a representative statement, or :class:`apsw.ext.ShowResourceUsage` to
@@ -1488,7 +1533,7 @@ libraries.
 .. attribute:: Connection.system_errno
  :type: int
 
- |badge-async-value|
+ |badge-async-dual|
 
  The underlying system error code for the most recent I/O error.
 
@@ -1636,8 +1681,8 @@ This is useful to see which VFS is in use, and if inheritance is used
 then ``/`` will separate the names.  If you have a :class:`VFSFile` in
 use then its fully qualified class name will also be included.
 
-If ``SQLITE_FCNTL_VFSNAME`` is not implemented, ``dbname`` is not a
-database name, or an error occurred then ``None`` is returned.
+If ``SQLITE_FCNTL_VFSNAME`` is not implemented, or ``dbname`` is not a
+database name then ``None`` is returned.
 
 .. index:: sqlite3_vtab_config
 

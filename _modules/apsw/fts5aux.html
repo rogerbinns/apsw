@@ -14,7 +14,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.fts5aux &mdash; APSW 3.53.4.0 documentation</title>
+  <title>apsw.fts5aux &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=ad5bd102" />
@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/_modules/apsw/fts5aux.html" />
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="../../_static/documentation_options.js?v=c3243565"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -117,21 +117,22 @@
            <div itemprop="articleBody">
              
   <h1>Source code for apsw.fts5aux</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">:mod:`apsw.fts5aux` Implementation of FTS5 auxiliary functions in Python.</span>
 
 <span class="sd">Auxiliary functions are used for ranking results, and for processing search</span>
 <span class="sd">results.</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="n">__lazy_modules__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"math"</span><span class="p">,</span> <span class="s2">"apsw"</span><span class="p">]</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
-
 
 <span class="c1"># This section is a translation of the bm25 C code from the `SQLite</span>
 <span class="c1"># source https://sqlite.org/src/file?name=ext/fts5/fts5_aux.c serving</span>
@@ -141,20 +142,20 @@
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">_Bm25Data</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Statistical information about each query overall&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Statistical information about each query overall"""</span>
 
     <span class="n">nPhrase</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Number of phrases in query&quot;</span>
+    <span class="s2">"Number of phrases in query"</span>
     <span class="n">avgdl</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="s2">&quot;Average number of tokens in each row&quot;</span>
+    <span class="s2">"Average number of tokens in each row"</span>
     <span class="n">aIDF</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="s2">&quot;Inverse Document Frequency for each phrase&quot;</span>
+    <span class="s2">"Inverse Document Frequency for each phrase"</span>
     <span class="n">weights</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="s2">&quot;Per column weight - how much each occurrence counts for, defaulting to 1&quot;</span>
+    <span class="s2">"Per column weight - how much each occurrence counts for, defaulting to 1"</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_Bm25GetData</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValues</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_Bm25Data</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates :class:`_Bm25Data`&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Calculates :class:`_Bm25Data`"""</span>
 
     <span class="c1"># weights must be at least column_count long defaulting to 1.0.</span>
     <span class="c1"># Extra values are ignored.  This is done once here and remembered</span>
@@ -202,7 +203,7 @@
 <div class="viewcode-block" id="bm25">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.bm25">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">bm25</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform the BM25 calculation for a matching row</span>
+<span class="w">    </span><span class="sd">"""Perform the BM25 calculation for a matching row</span>
 
 <span class="sd">    It accepts weights for each column (default 1) which means how much</span>
 <span class="sd">    a hit in that column counts for.</span>
@@ -211,7 +212,7 @@
 <span class="sd">    &lt;https://www.sqlite.org/fts5.html#the_bm25_function&gt;`__.</span>
 <span class="sd">    This is a translation of the SQLite C version into Python</span>
 <span class="sd">    for illustrative purposes.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># aux_data is used to store the overall statistical data,</span>
     <span class="c1"># calculated once by _Bm25getData</span>
@@ -245,7 +246,7 @@
         <span class="n">score</span> <span class="o">+=</span> <span class="n">data</span><span class="o">.</span><span class="n">aIDF</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">((</span><span class="n">aFreq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">k1</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">aFreq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">k1</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">b</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">D</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">avgdl</span><span class="p">)))</span>
 
     <span class="c1"># The score has a bigger (positive) number meaning a better match.</span>
-    <span class="c1"># FTS5 wants you to do &#39;ORDER BY rank&#39; giving the better matches</span>
+    <span class="c1"># FTS5 wants you to do 'ORDER BY rank' giving the better matches</span>
     <span class="c1"># first.  Negating the score achieves that.</span>
 
     <span class="k">return</span> <span class="o">-</span><span class="n">score</span></div>
@@ -255,7 +256,7 @@
 <div class="viewcode-block" id="inverse_document_frequency">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.inverse_document_frequency">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">inverse_document_frequency</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Measures how rare each search phrase is in the content</span>
+<span class="w">    </span><span class="sd">"""Measures how rare each search phrase is in the content</span>
 
 <span class="sd">    This helper method is intended for use in your own ranking</span>
 <span class="sd">    functions.  The result is the idf for each phrase in the query.</span>
@@ -264,10 +265,10 @@
 <span class="sd">    zero, while less frequent phrases have increasingly large positive</span>
 <span class="sd">    numbers.</span>
 
-<span class="sd">    The values will always be at least 0.000001 so you don&#39;t have to</span>
+<span class="sd">    The values will always be at least 0.000001 so you don't have to</span>
 <span class="sd">    worry about negative numbers or division by zero, even for phrases</span>
 <span class="sd">    that are not found.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># This is ported from the bm25 code above, but using Pythonic</span>
     <span class="c1"># naming</span>
@@ -300,10 +301,10 @@
 <div class="viewcode-block" id="subsequence">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.subsequence">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">subsequence</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ranking function boosting rows where tokens are in order</span>
+<span class="w">    </span><span class="sd">"""Ranking function boosting rows where tokens are in order</span>
 
-<span class="sd">    :func:`bm25` doesn&#39;t take into account ordering.  Phrase matches</span>
-<span class="sd">    like ``&quot;big truck&quot;`` must occur exactly together in that order.</span>
+<span class="sd">    :func:`bm25` doesn't take into account ordering.  Phrase matches</span>
+<span class="sd">    like ``"big truck"`` must occur exactly together in that order.</span>
 <span class="sd">    Matches for ``big truck`` scores the same providing both words</span>
 <span class="sd">    exist anywhere.  This function boosts matches where the order does</span>
 <span class="sd">    match so ``big red truck`` gets a boost while ``truck, big`` does</span>
@@ -316,7 +317,7 @@
 <span class="sd">    that order.  See :attr:`apsw.fts5.QueryInfo.phrases`.</span>
 
 <span class="sd">    It accepts parameters giving the weights for each column (default 1).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># start with the bm25 base score</span>
     <span class="n">score</span> <span class="o">=</span> <span class="n">bm25</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
 
@@ -382,7 +383,7 @@
             <span class="k">yield</span> <span class="n">offsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">pos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">-</span> <span class="n">offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
 
     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-        <span class="c1"># we don&#39;t bother constantly checking for overrun above as any</span>
+        <span class="c1"># we don't bother constantly checking for overrun above as any</span>
         <span class="c1"># overrun means there are no more matches</span>
         <span class="k">pass</span>
 
@@ -390,9 +391,9 @@
 <div class="viewcode-block" id="position_rank">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5aux.position_rank">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">position_rank</span><span class="p">(</span><span class="n">api</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">FTS5ExtensionApi</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">SQLiteValue</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ranking function boosting the earlier in a column phrases are located</span>
+<span class="w">    </span><span class="sd">"""Ranking function boosting the earlier in a column phrases are located</span>
 
-<span class="sd">    :func:`bm25` doesn&#39;t take into where phrases occur.  It makes no</span>
+<span class="sd">    :func:`bm25` doesn't take into where phrases occur.  It makes no</span>
 <span class="sd">    difference if a phrase occurs at the beginning, middle, or end.</span>
 <span class="sd">    This boost takes into account how early the phrase match is,</span>
 <span class="sd">    suitable for content with more significant text towards the</span>
@@ -404,7 +405,7 @@
 <span class="sd">    :attr:`apsw.fts5.QueryInfo.phrases`.</span>
 
 <span class="sd">    It accepts parameters giving the weights for each column (default 1).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># start with the bm25 base score</span>
     <span class="n">score</span> <span class="o">=</span> <span class="n">bm25</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
     <span class="n">weights</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">aux_data</span><span class="o">.</span><span class="n">weights</span>
@@ -429,7 +430,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

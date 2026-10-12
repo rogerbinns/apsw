@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exceptions and Errors &mdash; APSW 3.53.4.0 documentation</title>
+  <title>Exceptions and Errors &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/exceptions.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="_static/documentation_options.js?v=c3243565"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -160,7 +160,7 @@
              
   <section id="exceptions-and-errors">
 <span id="exceptions"></span><h1>Exceptions and Errors<a class="headerlink" href="#exceptions-and-errors" title="Link to this heading"></a></h1>
-<p>Python uses <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">exceptions</span></code></a> to indicate an error has
+<p>Python uses <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#Exception" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">exceptions</span></code></a> to indicate an error has
 happened.  The SQLite library uses <a class="reference external" href="https://www.sqlite.org/rescode.html">integer error codes</a>.  APSW maps between the two
 systems as needed.  Exceptions raised in Python code called by SQLite
 will have that exception present when control returns to Python, and
@@ -181,8 +181,8 @@ will show <a class="reference external" href="https://docs.python.org/3/library/
 <p>There are a few places where it is not possible for a Python exception
 to be reported to SQLite as an error, and Python C code does not allow
 destructors to report exceptions.  These exceptions are reported via
-<a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.unraisablehook" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sys.unraisablehook()</span></code></a>, and if that is not present then
-<a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sys.excepthook()</span></code></a>.</p>
+<a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.unraisablehook" title="(in Python v3.15)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sys.unraisablehook()</span></code></a>, and if that is not present then
+<a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.excepthook" title="(in Python v3.15)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sys.excepthook()</span></code></a>.</p>
 <p><a class="reference external" href="https://www.sqlite.org/c3ref/log.html">sqlite3_log</a> is also called
 so that you will have the context of when the exception happened
 relative to the errors SQLite is logging.</p>
@@ -242,7 +242,7 @@ instead of using cursors directly.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="apsw.ForkingViolationError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">ForkingViolationError</span></span><a class="headerlink" href="#apsw.ForkingViolationError" title="Link to this definition"></a></dt>
-<dd><p>See <a class="reference internal" href="apsw.html#apsw.fork_checker" title="apsw.fork_checker"><code class="xref py py-meth docutils literal notranslate"><span class="pre">apsw.fork_checker()</span></code></a>.</p>
+<dd><p>Was used by the fork checker, which has been removed.</p>
 </dd></dl>
 
 <dl class="py exception">
@@ -277,13 +277,13 @@ the <a class="reference internal" href="connection.html#apsw.Connection" title="
 <dt class="sig sig-object py" id="apsw.BindingsError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">apsw.</span></span><span class="sig-name descname"><span class="pre">BindingsError</span></span><a class="headerlink" href="#apsw.BindingsError" title="Link to this definition"></a></dt>
 <dd><p>There are several causes for this exception.  When using tuples, an incorrect number of bindings where supplied:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ?,?,?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>     <span class="c1"># too few bindings</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ?,?,?&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span> <span class="c1"># too many bindings</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"select ?,?,?"</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>     <span class="c1"># too few bindings</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"select ?,?,?"</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span> <span class="c1"># too many bindings</span>
 </pre></div>
 </div>
 <p>You are using named bindings, but not all bindings are named.  You should either use entirely the
 named style or entirely numeric (unnamed) style:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from foo where x=:name and y=?&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"select * from foo where x=:name and y=?"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -578,12 +578,12 @@ traceback:</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">myfunc</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
   <span class="mi">1</span><span class="o">/</span><span class="mi">0</span>
 
-<span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;foo&quot;</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;fam&quot;</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
+<span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">"foo"</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">"fam"</span><span class="p">,</span> <span class="n">myfunc</span><span class="p">)</span>
 <span class="n">cursor</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table bar(x,y,z);insert into bar values(1,2,3)&quot;</span><span class="p">)</span>
-<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select foo(1) from bar&quot;</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"create table bar(x,y,z);insert into bar values(1,2,3)"</span><span class="p">)</span>
+<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"select foo(1) from bar"</span><span class="p">)</span>
 </pre></div>
 </div>
 <table class="docutils align-default">
@@ -593,9 +593,9 @@ traceback:</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s2">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
-    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select foo(1) from bar&quot;</span><span class="p">)</span>
-  <span class="n">File</span> <span class="s2">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4</span><span class="p">,</span> <span class="ow">in</span> <span class="n">myfunc</span>
+  <span class="n">File</span> <span class="s2">"t.py"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"select foo(1) from bar"</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s2">"t.py"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4</span><span class="p">,</span> <span class="ow">in</span> <span class="n">myfunc</span>
     <span class="mi">1</span><span class="o">/</span><span class="mi">0</span>
 <span class="ne">ZeroDivisionError</span><span class="p">:</span> <span class="n">integer</span> <span class="n">division</span> <span class="ow">or</span> <span class="n">modulo</span> <span class="n">by</span> <span class="n">zero</span>
 </pre></div>
@@ -611,11 +611,11 @@ traceback:</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s2">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
-    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select foo(1) from bar&quot;</span><span class="p">)</span>
-  <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">3412</span><span class="p">,</span> <span class="ow">in</span> <span class="n">resetcursor</span>
-  <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1597</span><span class="p">,</span> <span class="ow">in</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span><span class="o">-</span><span class="n">scalar</span><span class="o">-</span><span class="n">foo</span>
-  <span class="n">File</span> <span class="s2">&quot;t.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4</span><span class="p">,</span> <span class="ow">in</span> <span class="n">myfunc</span>
+  <span class="n">File</span> <span class="s2">"t.py"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">11</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"select foo(1) from bar"</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s2">"apsw.c"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">3412</span><span class="p">,</span> <span class="ow">in</span> <span class="n">resetcursor</span>
+  <span class="n">File</span> <span class="s2">"apsw.c"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1597</span><span class="p">,</span> <span class="ow">in</span> <span class="n">user</span><span class="o">-</span><span class="n">defined</span><span class="o">-</span><span class="n">scalar</span><span class="o">-</span><span class="n">foo</span>
+  <span class="n">File</span> <span class="s2">"t.py"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4</span><span class="p">,</span> <span class="ow">in</span> <span class="n">myfunc</span>
     <span class="mi">1</span><span class="o">/</span><span class="mi">0</span>
 <span class="ne">ZeroDivisionError</span><span class="p">:</span> <span class="n">integer</span> <span class="n">division</span> <span class="ow">or</span> <span class="n">modulo</span> <span class="n">by</span> <span class="n">zero</span>
 </pre></div>
@@ -641,14 +641,14 @@ returned and which item was erroneous. The original traceback is
 almost completely useless!</p>
 <p>Original traceback:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s2">&quot;tests.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1387</span><span class="p">,</span> <span class="ow">in</span> <span class="n">testVtables</span>
+  <span class="n">File</span> <span class="s2">"tests.py"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1387</span><span class="p">,</span> <span class="ow">in</span> <span class="n">testVtables</span>
     <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">allconstraints</span><span class="p">)</span>
 <span class="ne">TypeError</span><span class="p">:</span> <span class="n">Bad</span> <span class="n">constraint</span> <span class="p">(</span><span class="c1">#2) - it should be one of None, an integer or a tuple of an integer and a boolean</span>
 </pre></div>
 </div>
 <p>Augmented traceback with local variables:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="s2">&quot;tests.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1387</span><span class="p">,</span> <span class="ow">in</span> <span class="n">testVtables</span>
+  <span class="n">File</span> <span class="s2">"tests.py"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1387</span><span class="p">,</span> <span class="ow">in</span> <span class="n">testVtables</span>
     <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">allconstraints</span><span class="p">)</span>
                 <span class="n">VTable</span> <span class="o">=</span>  <span class="n">__main__</span><span class="o">.</span><span class="n">VTable</span>
                    <span class="n">cur</span> <span class="o">=</span>  <span class="o">&lt;</span><span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x988f30</span><span class="o">&gt;</span>
@@ -656,19 +656,19 @@ almost completely useless!</p>
                   <span class="bp">self</span> <span class="o">=</span>  <span class="n">testVtables</span> <span class="p">(</span><span class="n">__main__</span><span class="o">.</span><span class="n">APSW</span><span class="p">)</span>
         <span class="n">allconstraints</span> <span class="o">=</span>  <span class="n">select</span> <span class="n">rowid</span><span class="p">,</span><span class="o">*</span> <span class="kn">from</span><span class="w"> </span><span class="nn">foo</span> <span class="n">where</span> <span class="n">rowid</span><span class="o">&gt;-</span><span class="mi">1000</span> <span class="o">....</span>
 
-  <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4050</span><span class="p">,</span> <span class="ow">in</span> <span class="n">Cursor_execute</span><span class="o">.</span><span class="n">sqlite3_prepare</span>
+  <span class="n">File</span> <span class="s2">"apsw.c"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4050</span><span class="p">,</span> <span class="ow">in</span> <span class="n">Cursor_execute</span><span class="o">.</span><span class="n">sqlite3_prepare</span>
             <span class="n">Connection</span> <span class="o">=</span>  <span class="o">&lt;</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x978800</span><span class="o">&gt;</span>
              <span class="n">statement</span> <span class="o">=</span>  <span class="n">select</span> <span class="n">rowid</span><span class="p">,</span><span class="o">*</span> <span class="kn">from</span><span class="w"> </span><span class="nn">foo</span> <span class="n">where</span> <span class="n">rowid</span><span class="o">&gt;-</span><span class="mi">1000</span> <span class="o">....</span>
 
-  <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">2681</span><span class="p">,</span> <span class="ow">in</span> <span class="n">VirtualTable</span><span class="o">.</span><span class="n">xBestIndex</span>
+  <span class="n">File</span> <span class="s2">"apsw.c"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">2681</span><span class="p">,</span> <span class="ow">in</span> <span class="n">VirtualTable</span><span class="o">.</span><span class="n">xBestIndex</span>
                   <span class="bp">self</span> <span class="o">=</span>  <span class="o">&lt;</span><span class="n">__main__</span><span class="o">.</span><span class="n">VTable</span> <span class="n">instance</span> <span class="n">at</span> <span class="mh">0x98d8c0</span><span class="o">&gt;</span>
                   <span class="n">args</span> <span class="o">=</span>  <span class="p">(((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">)),</span> <span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="kc">False</span><span class="p">),))</span>
-                <span class="n">result</span> <span class="o">=</span>  <span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="mi">997</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;</span><span class="se">\xea</span><span class="s1">&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span>  <span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="mi">997</span><span class="p">,</span> <span class="sa">u</span><span class="s1">'</span><span class="se">\xea</span><span class="s1">'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
-  <span class="n">File</span> <span class="s2">&quot;apsw.c&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">2559</span><span class="p">,</span> <span class="ow">in</span> <span class="n">VirtualTable</span><span class="o">.</span><span class="n">xBestIndex</span><span class="o">.</span><span class="n">result_constraint</span>
+  <span class="n">File</span> <span class="s2">"apsw.c"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">2559</span><span class="p">,</span> <span class="ow">in</span> <span class="n">VirtualTable</span><span class="o">.</span><span class="n">xBestIndex</span><span class="o">.</span><span class="n">result_constraint</span>
                <span class="n">indices</span> <span class="o">=</span>  <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
                   <span class="bp">self</span> <span class="o">=</span>  <span class="o">&lt;</span><span class="n">__main__</span><span class="o">.</span><span class="n">VTable</span> <span class="n">instance</span> <span class="n">at</span> <span class="mh">0x98d8c0</span><span class="o">&gt;</span>
-                <span class="n">result</span> <span class="o">=</span>  <span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="mi">997</span><span class="p">,</span> <span class="sa">u</span><span class="s1">&#39;</span><span class="se">\xea</span><span class="s1">&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span>  <span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,),</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="mi">997</span><span class="p">,</span> <span class="sa">u</span><span class="s1">'</span><span class="se">\xea</span><span class="s1">'</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="n">constraint</span> <span class="o">=</span>  <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
 
 <span class="ne">TypeError</span><span class="p">:</span> <span class="n">Bad</span> <span class="n">constraint</span> <span class="p">(</span><span class="c1">#2) - it should be one of None, an integer or a tuple of an integer and a boolean</span>
@@ -690,7 +690,7 @@ almost completely useless!</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

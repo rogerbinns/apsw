@@ -108,7 +108,8 @@ JSON as a native data type, then do the following.
    
    # If you want the data returned to be read only then use this.
    # Note how the list becomes a tuple and dict becomes MappingProxyType
-   # which doesn't allow writes.
+   # which doesn't allow writes.  Python 3.15 adds :class:`frozendict`
+   # which is clearer.
    
    
    def convert_jsonb_readonly(
@@ -342,7 +343,7 @@ This section shows all of these in action at once!
     ('test',
      {'binary': 'AXOUZQ==',
       'complex': (3+4j),
-      'date stamp': '2026-07-26T08:15:48.227232',
+      'date stamp': '2026-10-12T08:53:40.193506',
       'decimal': Decimal('0.7843262344923523492342352344523423423423')})
 
 

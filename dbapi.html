@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DBAPI notes &mdash; APSW 3.53.4.0 documentation</title>
+  <title>DBAPI notes &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/dbapi.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="_static/documentation_options.js?v=c3243565"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -192,7 +192,7 @@ as an iterator to get the results (if any).</p>
 <p><a class="reference internal" href="cursor.html#apsw.Cursor.executemany" title="apsw.Cursor.executemany"><code class="xref py py-meth docutils literal notranslate"><span class="pre">executemany()</span></code></a> returns the Cursor object and you can use
 it as an iterator to get the results (if any).</p>
 <p>fetchone is not available. Use the cursor as an iterator, or call
-Python’s <a class="reference external" href="https://docs.python.org/3/library/functions.html#next" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">next</span> <span class="pre">function</span></code></a> to get the next row.</p>
+Python’s <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#next" title="(in Python v3.15)"><code class="xref py py-func docutils literal notranslate"><span class="pre">next</span> <span class="pre">function</span></code></a> to get the next row.</p>
 <p>fetchmany is not available. Use <a class="reference internal" href="cursor.html#apsw.Cursor.fetchall" title="apsw.Cursor.fetchall"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fetchall()</span></code></a> to get all
 remaining results.</p>
 <p>nextset is not applicable or implemented.</p>
@@ -206,7 +206,7 @@ have a native date or time type.  There are <a class="reference external" href="
 manipulating dates and time which are stored as strings or
 <a class="reference external" href="https://en.wikipedia.org/wiki/Julian_day">Julian days</a> (floating
 point number).</p>
-<p>Use any <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Buffer</span></code></a> type (eg bytes) for blobs.</p>
+<p>Use any <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Buffer</span></code></a> type (eg bytes) for blobs.</p>
 <p><a class="reference internal" href="ext.html"><span class="doc">Various interesting and useful bits of functionality</span></a> provides functionality to convert and adapt types to those
 supported by SQLite.</p>
 </section>
@@ -226,11 +226,11 @@ way of getting information back.</p>
 insert on any Cursor associated with the the Connection. You can also
 add <a class="reference external" href="https://sqlite.org/lang_corefunc.html">select last_insert_rowid()</a> to the end of your execute
 statements:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;BEGIN;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""BEGIN;</span>
 <span class="s2">                             INSERT ... ;</span>
 <span class="s2">                             INSERT ... ;</span>
 <span class="s2">                             SELECT last_insert_rowid();</span>
-<span class="s2">                         COMMIT&quot;&quot;&quot;</span><span class="p">):</span>
+<span class="s2">                         COMMIT"""</span><span class="p">):</span>
    <span class="n">lastrowid</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -250,7 +250,7 @@ statements:</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

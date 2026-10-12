@@ -14,7 +14,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.bestpractice &mdash; APSW 3.53.4.0 documentation</title>
+  <title>apsw.bestpractice &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=ad5bd102" />
@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/_modules/apsw/bestpractice.html" />
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="../../_static/documentation_options.js?v=c3243565"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -119,11 +119,13 @@
   <h1>Source code for apsw.bestpractice</h1><div class="highlight"><pre>
 <span></span><span class="c1">#</span>
 
-<span class="sd">&quot;&quot;&quot;Ensure SQLite usage prevents common mistakes, and get best performance.&quot;&quot;&quot;</span>
+<span class="sd">"""Ensure SQLite usage prevents common mistakes, and get best performance."""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="n">__lazy_modules__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"apsw"</span><span class="p">,</span> <span class="s2">"apsw.ext"</span><span class="p">]</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">apsw.ext</span>
@@ -132,14 +134,14 @@
 <div class="viewcode-block" id="connection_wal">
 <a class="viewcode-back" href="../../bestpractice.html#apsw.bestpractice.connection_wal">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connection_wal</span><span class="p">(</span><span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Turns on write ahead logging</span>
+<span class="w">    </span><span class="sd">"""Turns on write ahead logging</span>
 
 <span class="sd">    Reduces contention and improves write performance.  WAL is</span>
 <span class="sd">    `described here &lt;https://www.sqlite.org/wal.html&gt;`__.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">connection</span><span class="o">.</span><span class="n">readonly</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">):</span>
-            <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;journal_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;wal&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">connection</span><span class="o">.</span><span class="n">readonly</span><span class="p">(</span><span class="s2">"main"</span><span class="p">):</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">"journal_mode"</span><span class="p">,</span> <span class="s2">"wal"</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ReadOnlyError</span><span class="p">:</span>
         <span class="c1"># journal/wal etc could still be readonly</span>
         <span class="k">pass</span></div>
@@ -149,7 +151,7 @@
 <div class="viewcode-block" id="connection_busy_timeout">
 <a class="viewcode-back" href="../../bestpractice.html#apsw.bestpractice.connection_busy_timeout">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connection_busy_timeout</span><span class="p">(</span><span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">duration_ms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets a short busy timeout</span>
+<span class="w">    </span><span class="sd">"""Sets a short busy timeout</span>
 
 <span class="sd">    :param duration_ms: How many thousandths of a second to wait</span>
 
@@ -157,7 +159,7 @@
 <span class="sd">    immediately raises :exc:`apsw.BusyError`.  Changing the `busy</span>
 <span class="sd">    timeout &lt;https://www.sqlite.org/c3ref/busy_timeout.html&gt;`__ gives</span>
 <span class="sd">    a grace period during which SQLite retries.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">connection</span><span class="o">.</span><span class="n">set_busy_timeout</span><span class="p">(</span><span class="n">duration_ms</span><span class="p">)</span></div>
 
 
@@ -165,27 +167,27 @@
 <div class="viewcode-block" id="connection_enable_foreign_keys">
 <a class="viewcode-back" href="../../bestpractice.html#apsw.bestpractice.connection_enable_foreign_keys">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connection_enable_foreign_keys</span><span class="p">(</span><span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enables foreign key constraints</span>
+<span class="w">    </span><span class="sd">"""Enables foreign key constraints</span>
 
 <span class="sd">    `Foreign keys &lt;https://www.sqlite.org/foreignkeys.html&gt;`__ need to</span>
 <span class="sd">    `be enabled &lt;https://www.sqlite.org/foreignkeys.html#fk_enable&gt;`__</span>
 <span class="sd">    to have an effect.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;foreign_keys&quot;</span><span class="p">,</span> <span class="s2">&quot;ON&quot;</span><span class="p">)</span></div>
+<span class="sd">    """</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">"foreign_keys"</span><span class="p">,</span> <span class="s2">"ON"</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="connection_dqs">
 <a class="viewcode-back" href="../../bestpractice.html#apsw.bestpractice.connection_dqs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connection_dqs</span><span class="p">(</span><span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Double quotes are for identifiers only, not strings</span>
+<span class="w">    </span><span class="sd">"""Double quotes are for identifiers only, not strings</span>
 
 <span class="sd">    Turns off `allowing double quoted strings</span>
-<span class="sd">    &lt;https://www.sqlite.org/quirks.html#dblquote&gt;`__ if they don&#39;t</span>
+<span class="sd">    &lt;https://www.sqlite.org/quirks.html#dblquote&gt;`__ if they don't</span>
 <span class="sd">    match any identifier (column/table names etc), making it an error</span>
 <span class="sd">    to use double quotes around strings.  SQL strings use single</span>
 <span class="sd">    quotes.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">connection</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBCONFIG_DQS_DML</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">connection</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBCONFIG_DQS_DDL</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
 
@@ -194,13 +196,13 @@
 <div class="viewcode-block" id="connection_optimize">
 <a class="viewcode-back" href="../../bestpractice.html#apsw.bestpractice.connection_optimize">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connection_optimize</span><span class="p">(</span><span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enables query planner optimization</span>
+<span class="w">    </span><span class="sd">"""Enables query planner optimization</span>
 
 <span class="sd">    It enables the query planner to record cases when it would benefit</span>
 <span class="sd">    from having accurate statistics about tables and indexes for the</span>
 <span class="sd">    queries you make.</span>
 
-<span class="sd">    You can later run :code:`connection.pragma(&quot;optimize&quot;)` to have</span>
+<span class="sd">    You can later run :code:`connection.pragma("optimize")` to have</span>
 <span class="sd">    those statistics updated, such as when closing a database or</span>
 <span class="sd">    periodically when the database is open for long periods of time.</span>
 <span class="sd">    The statistics are recorded in the database and help with future</span>
@@ -208,10 +210,10 @@
 
 <span class="sd">    There is more detail in the `documentation</span>
 <span class="sd">    &lt;https://sqlite.org/lang_analyze.html&gt;`__.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">connection</span><span class="o">.</span><span class="n">readonly</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">):</span>
-            <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;optimize&quot;</span><span class="p">,</span> <span class="mh">0x10002</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">connection</span><span class="o">.</span><span class="n">readonly</span><span class="p">(</span><span class="s2">"main"</span><span class="p">):</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">"optimize"</span><span class="p">,</span> <span class="mh">0x10002</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ReadOnlyError</span><span class="p">:</span>
         <span class="c1"># journal/wal etc could still be readonly</span>
         <span class="k">pass</span></div>
@@ -221,22 +223,22 @@
 <div class="viewcode-block" id="connection_recursive_triggers">
 <a class="viewcode-back" href="../../bestpractice.html#apsw.bestpractice.connection_recursive_triggers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">connection_recursive_triggers</span><span class="p">(</span><span class="n">connection</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursive triggers are off for historical backwards compatibility</span>
+<span class="w">    </span><span class="sd">"""Recursive triggers are off for historical backwards compatibility</span>
 
 <span class="sd">    This `enables them</span>
 <span class="sd">    &lt;https://www.sqlite.org/pragma.html#pragma_recursive_triggers&gt;`__.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;recursive_triggers&quot;</span><span class="p">,</span> <span class="s2">&quot;ON&quot;</span><span class="p">)</span></div>
+<span class="sd">    """</span>
+    <span class="n">connection</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">"recursive_triggers"</span><span class="p">,</span> <span class="s2">"ON"</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="library_logging">
 <a class="viewcode-back" href="../../bestpractice.html#apsw.bestpractice.library_logging">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">library_logging</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Forwards SQLite logging to Python logging module</span>
+<span class="w">    </span><span class="sd">"""Forwards SQLite logging to Python logging module</span>
 
 <span class="sd">    See :meth:`apsw.ext.log_sqlite`</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">log_sqlite</span><span class="p">()</span></div>
 
 
@@ -250,16 +252,16 @@
     <span class="n">connection_recursive_triggers</span><span class="p">,</span>
     <span class="n">library_logging</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="s2">&quot;All of them&quot;</span>
+<span class="s2">"All of them"</span>
 
 
 <div class="viewcode-block" id="apply">
 <a class="viewcode-back" href="../../bestpractice.html#apsw.bestpractice.apply">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="n">which</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="s2">&quot;Applies library immediately and connection to new connections&quot;</span>
+    <span class="s2">"Applies library immediately and connection to new connections"</span>
     <span class="n">hooks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">which</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;connection_&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"connection_"</span><span class="p">):</span>
             <span class="n">hooks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">func</span><span class="p">()</span>
@@ -280,7 +282,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

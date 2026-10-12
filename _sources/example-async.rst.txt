@@ -285,12 +285,12 @@ all the frameworks.
 
 .. code-block:: output
 
-    got zero division error after 0.000297 seconds
+    got zero division error after 0.000123 seconds
     task1.done()=True task1.cancelled()=True
     task2.done()=True task2.cancelled()=True
     task3.done()=True task3.cancelled()=True
     task4.done()=True task4.cancelled()=False
-    After 0.000175 seconds, there are 212 registered SQLite functions
+    After 0.000185 seconds, there are 212 registered SQLite functions
 
 
 .. index:: Timeouts (Async example code)
@@ -381,8 +381,8 @@ exceptions raised on timeout.
 
 .. code-block:: output
 
-    Got async function TooSlowError after 0.501582 seconds
-    Got sync function TooSlowError after 1.002405 seconds
+    Got async function TooSlowError after 0.501211 seconds
+    Got sync function TooSlowError after 1.001711 seconds
 
 
 .. index:: Worker thread (Async example code)
@@ -476,7 +476,7 @@ In the worker thread, the connection is a regular sync connection.
 .. code-block:: output
 
     rows=1
-    Dump is 747 chars starting "-- SQLite dump (by APSW 3.53.4.0)\n-- S
+    Dump is 747 chars starting "-- SQLite dump (by APSW 3.54.0.0)\n-- S
 
 
 .. index:: Virtual tables (Async example code)
@@ -661,9 +661,9 @@ transaction control.
          Time: 0.000
      > SELECT narg FROM pragma_function_list WHERE name='pow'
      V PRAGMA function_list
-         Time: 0.000  Rows: 211  VmStep: 1,481  Mem: 76.8KB
+         Time: 0.001  Rows: 211  VmStep: 1,481  Mem: 76.8KB
      < SELECT narg FROM pragma_function_list WHERE name='pow'
-         Time: 0.000  Rows: 1  VmStep: 644
+         Time: 0.001  Rows: 1  VmStep: 644
       !BEGIN
      > create trigger error after insert on multi
                     begin
@@ -735,21 +735,22 @@ The async equivalent of :ref:`the sync example
                          Process CPU consumption 0.016
                                       Wall clock 0.517
                             Page faults - no I/O 1
+                    Involuntary context switches 27
                       Voluntary context switches 4
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,353
                      SQLite statements completed 1
-                     SQLite lookaside slots used 11
-              SQLite allocations using lookaside 17,414
+                     SQLite lookaside slots used 5
+              SQLite allocations using lookaside 17,408
         SQLite allocations too big for lookaside 1
-               SQLite allocations lookaside full 282
-                         SQLite statement memory 17,080
+               SQLite allocations lookaside full 278
+                         SQLite statement memory 16,288
     
     process (including background SQLite worker)
                          Process CPU consumption 0.015
                                       Wall clock 0.516
-                    Involuntary context switches 57
+                    Involuntary context switches 104
                       Voluntary context switches 8
                            CPU time in user mode 0.015
                           SQLite full table scan 1,365

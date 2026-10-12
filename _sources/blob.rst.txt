@@ -149,7 +149,7 @@ Blob class
   Does nothing.  There is no intermediate buffer, and SQLite's overall
   transaction/savepoint handling deals with database commits.
 
-.. method:: Blob.isatty() -> False
+.. method:: Blob.isatty() -> Literal[False]
 
   |badge-async-value|
 
@@ -203,7 +203,7 @@ Blob class
 
   Calls: `sqlite3_blob_read <https://sqlite.org/c3ref/blob_read.html>`__
 
-.. method:: Blob.readable() -> True
+.. method:: Blob.readable() -> Literal[True]
 
   |badge-async-value|
 
@@ -252,7 +252,7 @@ Blob class
                  and 2 if *offset* is relative to the end of the blob.
   :raises ValueError: If the resulting offset is before the beginning (less than zero) or beyond the end of the blob.
 
-.. method:: Blob.seekable() -> True
+.. method:: Blob.seekable() -> Literal[True]
 
   |badge-async-value|
 

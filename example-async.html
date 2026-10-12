@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Async Example/Tour &mdash; APSW 3.53.4.0 documentation</title>
+  <title>Async Example/Tour &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/example-async.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="_static/documentation_options.js?v=c3243565"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -138,7 +138,7 @@
   <section id="async-example-tour">
 <h1>Async Example/Tour<a class="headerlink" href="#async-example-tour" title="Link to this heading"></a></h1>
 <p>This shows how to use APSW in <a class="reference internal" href="async.html"><span class="doc">async</span></a> node.
-<a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>, <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="async.html#trio-note"><span class="std std-ref">note</span></a>), and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v4.14.2)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="async.html#anyio-note"><span class="std std-ref">note</span></a>) are supported.  A different one is
+<a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a>, <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.34.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="async.html#trio-note"><span class="std std-ref">note</span></a>), and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v4.15.1)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="async.html#anyio-note"><span class="std std-ref">note</span></a>) are supported.  A different one is
 used for each block, although they all work.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -148,7 +148,7 @@ cases there may not be a benefit to concurrency with async.</p>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
 
-<span class="c1"># This code uses Python&#39;s optional typing annotations.  You can</span>
+<span class="c1"># This code uses Python's optional typing annotations.  You can</span>
 <span class="c1"># ignore them and do not need to use them.  If you do use them</span>
 <span class="c1"># then you must include this future annotations line first.</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -177,48 +177,48 @@ cases there may not be a benefit to concurrency with async.</p>
 <span id="example-async-basics"></span><span id="index-0"></span><h2>Basics<a class="headerlink" href="#basics" title="Link to this heading"></a></h2>
 <p>Use <a class="reference internal" href="connection.html#apsw.Connection.as_async" title="apsw.Connection.as_async"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Connection.as_async()</span></code></a> to get an async connection, and
 <code class="code docutils literal notranslate"><span class="pre">async</span> <span class="pre">for</span></code> to iterate results.  We also apply <a class="reference internal" href="bestpractice.html"><span class="doc">best
-practice</span></a> and use <a class="reference external" href="https://docs.python.org/3/library/contextlib.html#contextlib.aclosing" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">contextlib.aclosing()</span></code></a> to
+practice</span></a> and use <a class="reference external" href="https://docs.python.org/3/library/contextlib.html#contextlib.aclosing" title="(in Python v3.15)"><code class="xref py py-func docutils literal notranslate"><span class="pre">contextlib.aclosing()</span></code></a> to
 ensure the database is closed.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">apsw</span><span class="o">.</span><span class="n">bestpractice</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">bestpractice</span><span class="o">.</span><span class="n">recommended</span><span class="p">)</span>
 
 
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">basics</span><span class="p">():</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
 
     <span class="c1"># always close database</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">aclosing</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
         <span class="c1"># create some rows</span>
-        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
 <span class="s2">            CREATE TABLE numbers(value, name);</span>
-<span class="s2">            INSERT INTO numbers VALUES (1, &#39;one&#39;), (20, &#39;twenty&#39;),</span>
-<span class="s2">                         (3, &#39;three&#39;), (10, &#39;ten&#39;);</span>
-<span class="s2">        &quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">            INSERT INTO numbers VALUES (1, 'one'), (20, 'twenty'),</span>
+<span class="s2">                         (3, 'three'), (10, 'ten');</span>
+<span class="s2">        """</span><span class="p">)</span>
 
         <span class="c1"># query - note we have to await to get the cursor before</span>
         <span class="c1"># iterating in the for loop</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">value</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="s2">&quot;SELECT value, name FROM numbers ORDER BY value DESC&quot;</span>
+            <span class="s2">"SELECT value, name FROM numbers ORDER BY value DESC"</span>
         <span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">name</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">value</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">name</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># .get is great if you expect only a single value or</span>
         <span class="c1"># row.  Lets get the number of registered functions</span>
         <span class="n">count</span> <span class="o">=</span> <span class="k">await</span> <span class="p">(</span>
             <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                <span class="s2">&quot;SELECT COUNT(DISTINCT(name)) FROM pragma_function_list&quot;</span>
+                <span class="s2">"SELECT COUNT(DISTINCT(name)) FROM pragma_function_list"</span>
             <span class="p">)</span>
         <span class="p">)</span><span class="o">.</span><span class="n">get</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There are </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> functions&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"There are </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2"> functions"</span><span class="p">)</span>
 
         <span class="c1"># a pragma</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;journal_mode=</span><span class="si">{</span><span class="k">await</span><span class="w"> </span><span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s1">&#39;journal_mode&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"journal_mode=</span><span class="si">{</span><span class="k">await</span><span class="w"> </span><span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s1">'journal_mode'</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># You should always use a transaction - use async with</span>
         <span class="k">async</span> <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
-            <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;INSERT INTO numbers VALUES(7, &#39;seven&#39;)&quot;</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"INSERT INTO numbers VALUES(7, 'seven')"</span><span class="p">)</span>
             <span class="c1"># nested transactions are supported via savepoints</span>
             <span class="k">async</span> <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
-                <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;DROP TABLE numbers&quot;</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"DROP TABLE numbers"</span><span class="p">)</span>
                 <span class="c1"># any exception in the async with block</span>
                 <span class="c1"># will rollback that block, while successful</span>
                 <span class="c1"># completion commits the changes</span>
@@ -227,10 +227,10 @@ ensure the database is closed.</p>
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">basics</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">value=20 name=&#39;twenty&#39;</span>
-<span class="go">value=10 name=&#39;ten&#39;</span>
-<span class="go">value=3 name=&#39;three&#39;</span>
-<span class="go">value=1 name=&#39;one&#39;</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">value=20 name='twenty'</span>
+<span class="go">value=10 name='ten'</span>
+<span class="go">value=3 name='three'</span>
+<span class="go">value=1 name='one'</span>
 <span class="go">There are 174 functions</span>
 <span class="go">journal_mode=memory</span>
 </pre></div>
@@ -241,35 +241,35 @@ ensure the database is closed.</p>
 <p>Any function/callback can be sync or async.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># an async scalar function</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">a_add</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">two</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;async scalar called&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"async scalar called"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">one</span> <span class="o">+</span> <span class="n">two</span>
 
 
 <span class="c1"># and a sync scalar function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">s_add</span><span class="p">(</span><span class="n">one</span><span class="p">,</span> <span class="n">two</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sync scalar called&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"sync scalar called"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">one</span> <span class="o">+</span> <span class="n">two</span>
 
 
 <span class="c1"># how about an async update hook?</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">my_hook</span><span class="p">(</span><span class="n">op</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dbname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">rowid</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;update </span><span class="si">{</span><span class="n">op</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">dbname</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">table</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">rowid</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"update </span><span class="si">{</span><span class="n">op</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">dbname</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">table</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">rowid</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
 
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">callbacks</span><span class="p">():</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
 
     <span class="c1"># always close database</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">aclosing</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;a_add&quot;</span><span class="p">,</span> <span class="n">a_add</span><span class="p">)</span>
-        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;s_add&quot;</span><span class="p">,</span> <span class="n">s_add</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">"a_add"</span><span class="p">,</span> <span class="n">a_add</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">"s_add"</span><span class="p">,</span> <span class="n">s_add</span><span class="p">)</span>
 
         <span class="c1"># use them both in the same query.  we need to await execute</span>
         <span class="c1"># to get the cursor, and then await the fetchall on the</span>
         <span class="c1"># cursor.</span>
         <span class="nb">print</span><span class="p">(</span>
             <span class="k">await</span> <span class="p">(</span>
-                <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT a_add(1, 2), s_add(3, 4)&quot;</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"SELECT a_add(1, 2), s_add(3, 4)"</span><span class="p">)</span>
             <span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
         <span class="p">)</span>
 
@@ -277,7 +277,7 @@ ensure the database is closed.</p>
         <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">set_update_hook</span><span class="p">(</span><span class="n">my_hook</span><span class="p">)</span>
 
         <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="s2">&quot;CREATE TABLE x(y); INSERT INTO x VALUES(42)&quot;</span>
+            <span class="s2">"CREATE TABLE x(y); INSERT INTO x VALUES(42)"</span>
         <span class="p">)</span>
 
 
@@ -288,7 +288,7 @@ ensure the database is closed.</p>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">async scalar called</span>
 <span class="go">sync scalar called</span>
 <span class="go">[(3, 7)]</span>
-<span class="go">update op=18 dbname=&#39;main&#39; table=&#39;x&#39; rowid=1</span>
+<span class="go">update op=18 dbname='main' table='x' rowid=1</span>
 </pre></div>
 </div>
 </section>
@@ -301,12 +301,12 @@ exceptions.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/reference/compound_stmts.html#except-star" title="(in Python v3.14)"><span class="xref std std-ref">except *</span></a> and
-<a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ExceptionGroup" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExceptionGroup</span></code></a> - Python syntax for catching multiple
+<li><p><a class="reference external" href="https://docs.python.org/3/reference/compound_stmts.html#except-star" title="(in Python v3.15)"><span class="xref std std-ref">except *</span></a> and
+<a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ExceptionGroup" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExceptionGroup</span></code></a> - Python syntax for catching multiple
 exceptions such as from a group of tasks</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.TaskGroup" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">asyncio.TaskGroup</span></code></a></p></li>
-<li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#tasks" title="(in Trio v0.32.0)"><span class="xref std std-ref">Trio tasks</span></a></p></li>
-<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/tasks.html" title="(in AnyIO v4.14.2)"><span class="xref std std-doc">AnyIO tasks</span></a></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.TaskGroup" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">asyncio.TaskGroup</span></code></a></p></li>
+<li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#tasks" title="(in Trio v0.34.0)"><span class="xref std std-ref">Trio tasks</span></a></p></li>
+<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/tasks.html" title="(in AnyIO v4.15.1)"><span class="xref std std-doc">AnyIO tasks</span></a></p></li>
 </ul>
 </div>
 <p>This example shows asyncio, but the principles are the same across
@@ -321,11 +321,11 @@ all the frameworks.</p>
         <span class="mi">1</span> <span class="o">/</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="mi">3</span>
 
-    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
 
     <span class="c1"># always close database</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">aclosing</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;sleep&quot;</span><span class="p">,</span> <span class="n">sleep</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">"sleep"</span><span class="p">,</span> <span class="n">sleep</span><span class="p">)</span>
 
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
 
@@ -335,13 +335,13 @@ all the frameworks.</p>
             <span class="k">async</span> <span class="k">with</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TaskGroup</span><span class="p">()</span> <span class="k">as</span> <span class="n">tg</span><span class="p">:</span>
                 <span class="c1"># this query will sleep for an hour</span>
                 <span class="n">task1</span> <span class="o">=</span> <span class="n">tg</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span>
-                    <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT sleep(3600)&quot;</span><span class="p">)</span>
+                    <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"SELECT sleep(3600)"</span><span class="p">)</span>
                 <span class="p">)</span>
                 <span class="c1"># this query will only run after the hour sleep query</span>
                 <span class="c1"># finishes because we can only do one SQLite query at</span>
                 <span class="c1"># a time</span>
                 <span class="n">task2</span> <span class="o">=</span> <span class="n">tg</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span>
-                    <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM sqlite_schema&quot;</span><span class="p">)</span>
+                    <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"SELECT * FROM sqlite_schema"</span><span class="p">)</span>
                 <span class="p">)</span>
                 <span class="c1"># this will also sleep for an hour</span>
                 <span class="n">task3</span> <span class="o">=</span> <span class="n">tg</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3600</span><span class="p">))</span>
@@ -354,39 +354,39 @@ all the frameworks.</p>
         <span class="c1"># note the * after except which is how you do exception groups</span>
         <span class="k">except</span><span class="o">*</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;got zero division error after </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+                <span class="sa">f</span><span class="s2">"got zero division error after </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> seconds"</span>
             <span class="p">)</span>
 
         <span class="c1"># Lets see what happened to all the tasks.  Note how they are</span>
         <span class="c1"># all done (complete) and how all except the deliberate error</span>
         <span class="c1"># got cancelled.</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">task1</span><span class="o">.</span><span class="n">done</span><span class="p">()</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">task1</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">task2</span><span class="o">.</span><span class="n">done</span><span class="p">()</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">task2</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">task3</span><span class="o">.</span><span class="n">done</span><span class="p">()</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">task3</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">task4</span><span class="o">.</span><span class="n">done</span><span class="p">()</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">task4</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">task1</span><span class="o">.</span><span class="n">done</span><span class="p">()</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">task1</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">task2</span><span class="o">.</span><span class="n">done</span><span class="p">()</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">task2</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">task3</span><span class="o">.</span><span class="n">done</span><span class="p">()</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">task3</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">task4</span><span class="o">.</span><span class="n">done</span><span class="p">()</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">task4</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Lets verify SQLite is not still waiting for an hour</span>
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
         <span class="n">functions</span> <span class="o">=</span> <span class="k">await</span> <span class="p">(</span>
             <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                <span class="s2">&quot;SELECT COUNT(*) FROM pragma_function_list&quot;</span>
+                <span class="s2">"SELECT COUNT(*) FROM pragma_function_list"</span>
             <span class="p">)</span>
         <span class="p">)</span><span class="o">.</span><span class="n">get</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;After </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> seconds, &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;there are </span><span class="si">{</span><span class="n">functions</span><span class="si">}</span><span class="s2"> registered SQLite functions&quot;</span>
+            <span class="sa">f</span><span class="s2">"After </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> seconds, "</span>
+            <span class="sa">f</span><span class="s2">"there are </span><span class="si">{</span><span class="n">functions</span><span class="si">}</span><span class="s2"> registered SQLite functions"</span>
         <span class="p">)</span>
 
 
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cancellation</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">got zero division error after 0.000297 seconds</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">got zero division error after 0.000123 seconds</span>
 <span class="go">task1.done()=True task1.cancelled()=True</span>
 <span class="go">task2.done()=True task2.cancelled()=True</span>
 <span class="go">task3.done()=True task3.cancelled()=True</span>
 <span class="go">task4.done()=True task4.cancelled()=False</span>
-<span class="go">After 0.000175 seconds, there are 212 registered SQLite functions</span>
+<span class="go">After 0.000185 seconds, there are 212 registered SQLite functions</span>
 </pre></div>
 </div>
 </section>
@@ -400,7 +400,7 @@ run to completion.</p>
 and tends to be accurate. The deadline for sync functions is based
 on SQLite periodically calling the <a class="reference internal" href="connection.html#apsw.Connection.set_progress_handler" title="apsw.Connection.set_progress_handler"><code class="xref py py-meth docutils literal notranslate"><span class="pre">progress</span> <span class="pre">handler</span></code></a>.</p>
 <p>There is a dedicated <a class="reference internal" href="async.html#apsw.aio.deadline" title="apsw.aio.deadline"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code></a> which takes priority
-for all frameworks, For <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.32.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="async.html#trio-note"><span class="std std-ref">note</span></a>) and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v4.14.2)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="async.html#anyio-note"><span class="std std-ref">note</span></a>) their native timeouts are
+for all frameworks, For <a class="reference external" href="https://trio.readthedocs.io/en/stable/index.html" title="(in Trio v0.34.0)"><span class="xref std std-doc">trio</span></a> (<a class="reference internal" href="async.html#trio-note"><span class="std std-ref">note</span></a>) and <a class="reference external" href="https://anyio.readthedocs.io/en/stable/index.html" title="(in AnyIO v4.15.1)"><span class="xref std std-doc">anyio</span></a> (<a class="reference internal" href="async.html#anyio-note"><span class="std std-ref">note</span></a>) their native timeouts are
 also supported if <a class="reference internal" href="async.html#apsw.aio.deadline" title="apsw.aio.deadline"><code class="xref py py-attr docutils literal notranslate"><span class="pre">apsw.aio.deadline</span></code></a> has not been set.  The
 <a class="reference internal" href="async.html#apsw.aio.deadline" title="apsw.aio.deadline"><code class="xref py py-attr docutils literal notranslate"><span class="pre">deadline</span></code></a> documentation has more details on setting
 deadlines for each framework, getting their current time, and
@@ -408,20 +408,20 @@ exceptions raised on timeout.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.time" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">asyncio.get_running_loop().time()</span></code></a></p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TimeoutError" title="(in Python v3.14)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TimeoutError</span></code></a></p></li>
-<li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.TooSlowError" title="(in Trio v0.32.0)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">trio.TooSlowError</span></code></a></p></li>
-<li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_time" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.current_time()</span></code></a></p></li>
-<li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_effective_deadline" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.current_effective_deadline()</span></code></a></p></li>
-<li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.fail_after" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.fail_after()</span></code></a> <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.fail_at" title="(in Trio v0.32.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.fail_at()</span></code></a></p></li>
-<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_time" title="(in AnyIO v4.14.2)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_time()</span></code></a></p></li>
-<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline" title="(in AnyIO v4.14.2)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_effective_deadline()</span></code></a></p></li>
-<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.fail_after" title="(in AnyIO v4.14.2)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.fail_after()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.time" title="(in Python v3.15)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">asyncio.get_running_loop().time()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#TimeoutError" title="(in Python v3.15)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">TimeoutError</span></code></a></p></li>
+<li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.TooSlowError" title="(in Trio v0.34.0)"><code class="xref py py-exc docutils literal notranslate"><span class="pre">trio.TooSlowError</span></code></a></p></li>
+<li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_time" title="(in Trio v0.34.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.current_time()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.current_effective_deadline" title="(in Trio v0.34.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.current_effective_deadline()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.fail_after" title="(in Trio v0.34.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.fail_after()</span></code></a> <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.fail_at" title="(in Trio v0.34.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">trio.fail_at()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_time" title="(in AnyIO v4.15.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_time()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.current_effective_deadline" title="(in AnyIO v4.15.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.current_effective_deadline()</span></code></a></p></li>
+<li><p><a class="reference external" href="https://anyio.readthedocs.io/en/stable/api.html#anyio.fail_after" title="(in AnyIO v4.15.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">anyio.fail_after()</span></code></a></p></li>
 </ul>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># The query is not reproduced here but is used when running this</span>
 <span class="c1"># example.</span>
-<span class="n">fractal_sql</span> <span class="o">=</span> <span class="s2">&quot;outlandish fractal&quot;</span>
+<span class="n">fractal_sql</span> <span class="o">=</span> <span class="s2">"outlandish fractal"</span>
 
 
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">timeouts</span><span class="p">():</span>
@@ -429,11 +429,11 @@ exceptions raised on timeout.</p>
         <span class="k">await</span> <span class="n">trio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">amount</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">42</span>
 
-    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
 
     <span class="c1"># always close database</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">aclosing</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;sleep&quot;</span><span class="p">,</span> <span class="n">sleep</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">"sleep"</span><span class="p">,</span> <span class="n">sleep</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># This will work with every framework.  Half a second from now.</span>
@@ -442,12 +442,12 @@ exceptions raised on timeout.</p>
             <span class="p">):</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="n">trio</span><span class="o">.</span><span class="n">current_time</span><span class="p">()</span>
                 <span class="k">await</span> <span class="p">(</span>
-                    <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT sleep(3600)&quot;</span><span class="p">)</span>
+                    <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"SELECT sleep(3600)"</span><span class="p">)</span>
                 <span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
         <span class="k">except</span> <span class="n">trio</span><span class="o">.</span><span class="n">TooSlowError</span><span class="p">:</span>
             <span class="n">end</span> <span class="o">=</span> <span class="n">trio</span><span class="o">.</span><span class="n">current_time</span><span class="p">()</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Got async function TooSlowError after </span><span class="si">{</span><span class="n">end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+                <span class="sa">f</span><span class="s2">"Got async function TooSlowError after </span><span class="si">{</span><span class="n">end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> seconds"</span>
             <span class="p">)</span>
 
         <span class="c1"># With trio and anyio we can use the native framework timeouts</span>
@@ -457,15 +457,15 @@ exceptions raised on timeout.</p>
         <span class="k">except</span> <span class="n">trio</span><span class="o">.</span><span class="n">TooSlowError</span><span class="p">:</span>
             <span class="n">end</span> <span class="o">=</span> <span class="n">trio</span><span class="o">.</span><span class="n">current_time</span><span class="p">()</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Got sync function TooSlowError after </span><span class="si">{</span><span class="n">end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> seconds&quot;</span>
+                <span class="sa">f</span><span class="s2">"Got sync function TooSlowError after </span><span class="si">{</span><span class="n">end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2"> seconds"</span>
             <span class="p">)</span>
 
 
 <span class="n">trio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">timeouts</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Got async function TooSlowError after 0.501582 seconds</span>
-<span class="go">Got sync function TooSlowError after 1.002405 seconds</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Got async function TooSlowError after 0.501211 seconds</span>
+<span class="go">Got sync function TooSlowError after 1.001711 seconds</span>
 </pre></div>
 </div>
 </section>
@@ -486,25 +486,25 @@ final result.  Use <a class="reference internal" href="connection.html#apsw.Conn
     <span class="c1"># Do everything in a single transactions</span>
     <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
         <span class="c1"># database fresh state</span>
-        <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">"user_version"</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
 <span class="s2">                CREATE TABLE products(id, name, sku, price);</span>
 <span class="s2">                CREATE TABLE orders(id, product_id, quantity);</span>
 <span class="s2">                pragma user_version = 1;</span>
-<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">&quot;user_version&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            """</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">db</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="s2">"user_version"</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
 <span class="s2">                ALTER TABLE products ADD COLUMN description;</span>
 <span class="s2">                CREATE INDEX orders_idx ON orders(id, product_id);</span>
 <span class="s2">                pragma user_version = 2;</span>
-<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">            """</span><span class="p">)</span>
         <span class="c1"># we could exception here if user_version &gt; 2 because it means</span>
         <span class="c1"># a more recent schema is present than this code understands.</span>
         <span class="c1"># Perhaps a version downgrade happened?</span>
 
 
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">worker_thread</span><span class="p">():</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
 
     <span class="c1"># always close database</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">aclosing</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
@@ -514,31 +514,31 @@ final result.  Use <a class="reference internal" href="connection.html#apsw.Conn
         <span class="c1"># This is doing one operation</span>
         <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
             <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">,</span>
-            <span class="s2">&quot;INSERT INTO products(id, name) VALUES(?,?)&quot;</span><span class="p">,</span>
-            <span class="p">(</span><span class="mi">37</span><span class="p">,</span> <span class="s2">&quot;Banana&quot;</span><span class="p">),</span>
+            <span class="s2">"INSERT INTO products(id, name) VALUES(?,?)"</span><span class="p">,</span>
+            <span class="p">(</span><span class="mi">37</span><span class="p">,</span> <span class="s2">"Banana"</span><span class="p">),</span>
         <span class="p">)</span>
 
         <span class="c1"># Getting a result</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
-            <span class="k">lambda</span><span class="p">:</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT COUNT(*) FROM products&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"SELECT COUNT(*) FROM products"</span><span class="p">)</span><span class="o">.</span><span class="n">get</span>
         <span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">rows</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">rows</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
-        <span class="c1"># get a dump - to a memory file here, but you&#39;d want to use</span>
+        <span class="c1"># get a dump - to a memory file here, but you'd want to use</span>
         <span class="c1"># a real file</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
         <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
             <span class="k">lambda</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">Shell</span><span class="p">(</span>
                 <span class="n">db</span><span class="o">=</span><span class="n">db</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">out</span>
-            <span class="p">)</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s2">&quot;.dump&quot;</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">process_command</span><span class="p">(</span><span class="s2">".dump"</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="n">dump</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dump is </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dump</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars starting </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">dump</span><span class="p">)</span><span class="si">:</span><span class="s2">.40</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dump is </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dump</span><span class="p">)</span><span class="si">}</span><span class="s2"> chars starting </span><span class="si">{</span><span class="nb">repr</span><span class="p">(</span><span class="n">dump</span><span class="p">)</span><span class="si">:</span><span class="s2">.40</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Some stuff from apsw.ext</span>
         <span class="n">usage</span> <span class="o">=</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">analyze_pages</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">details</span> <span class="o">=</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
-            <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">query_info</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="s2">&quot;SELECT * FROM sqlite_schema&quot;</span>
+            <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">query_info</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="s2">"SELECT * FROM sqlite_schema"</span>
         <span class="p">)</span>
 
 
@@ -546,7 +546,7 @@ final result.  Use <a class="reference internal" href="connection.html#apsw.Conn
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">rows=1</span>
-<span class="go">Dump is 747 chars starting &quot;-- SQLite dump (by APSW 3.53.4.0)\n-- S</span>
+<span class="go">Dump is 747 chars starting "-- SQLite dump (by APSW 3.54.0.0)\n-- S</span>
 </pre></div>
 </div>
 </section>
@@ -560,45 +560,45 @@ as needed, but will find it easier to start with
 (sync or async) in a virtual table accepting positional and keyword
 arguments.  The sync <a class="reference internal" href="example.html#example-virtual-tables"><span class="std std-ref">example is here</span></a>
 with the async below being pretty much the same thing.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">data_table</span><span class="p">(</span><span class="n">flags</span><span class="p">,</span> <span class="n">server</span><span class="o">=</span><span class="s2">&quot;example.com&quot;</span><span class="p">):</span>
-    <span class="c1"># one positional and one keyword argument.  note you can&#39;t change</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">data_table</span><span class="p">(</span><span class="n">flags</span><span class="p">,</span> <span class="n">server</span><span class="o">=</span><span class="s2">"example.com"</span><span class="p">):</span>
+    <span class="c1"># one positional and one keyword argument.  note you can't change</span>
     <span class="c1"># the number of columns or their order based on the arguments but</span>
     <span class="c1"># you can change what rows are returned and their contents</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data_table called with </span><span class="si">{</span><span class="n">flags</span><span class="si">=}</span><span class="s2"> and </span><span class="si">{</span><span class="n">server</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"data_table called with </span><span class="si">{</span><span class="n">flags</span><span class="si">=}</span><span class="s2"> and </span><span class="si">{</span><span class="n">server</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># you would do real work here - we just provide some books</span>
-    <span class="k">yield</span> <span class="p">(</span><span class="s2">&quot;The Great Gatsby&quot;</span><span class="p">,</span> <span class="mi">1925</span><span class="p">,</span> <span class="mf">9.2</span><span class="p">)</span>
-    <span class="k">yield</span> <span class="p">(</span><span class="s2">&quot;To Kill a Mockingbird&quot;</span><span class="p">,</span> <span class="mi">1960</span><span class="p">,</span> <span class="mf">9.5</span><span class="p">)</span>
-    <span class="k">yield</span> <span class="p">(</span><span class="s2">&quot;1984&quot;</span><span class="p">,</span> <span class="mi">1949</span><span class="p">,</span> <span class="mf">9.8</span><span class="p">)</span>
-    <span class="k">yield</span> <span class="p">(</span><span class="s2">&quot;The Catcher in the Rye&quot;</span><span class="p">,</span> <span class="mi">1951</span><span class="p">,</span> <span class="mf">8.4</span><span class="p">)</span>
-    <span class="k">yield</span> <span class="p">(</span><span class="s2">&quot;The Hobbit&quot;</span><span class="p">,</span> <span class="mi">1937</span><span class="p">,</span> <span class="mf">9.6</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="p">(</span><span class="s2">"The Great Gatsby"</span><span class="p">,</span> <span class="mi">1925</span><span class="p">,</span> <span class="mf">9.2</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="p">(</span><span class="s2">"To Kill a Mockingbird"</span><span class="p">,</span> <span class="mi">1960</span><span class="p">,</span> <span class="mf">9.5</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="p">(</span><span class="s2">"1984"</span><span class="p">,</span> <span class="mi">1949</span><span class="p">,</span> <span class="mf">9.8</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="p">(</span><span class="s2">"The Catcher in the Rye"</span><span class="p">,</span> <span class="mi">1951</span><span class="p">,</span> <span class="mf">8.4</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="p">(</span><span class="s2">"The Hobbit"</span><span class="p">,</span> <span class="mi">1937</span><span class="p">,</span> <span class="mf">9.6</span><span class="p">)</span>
 
 
 <span class="c1"># Tell make_virtual_module about the columns</span>
-<span class="n">data_table</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;review&quot;</span><span class="p">)</span>
+<span class="n">data_table</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"title"</span><span class="p">,</span> <span class="s2">"year"</span><span class="p">,</span> <span class="s2">"review"</span><span class="p">)</span>
 <span class="c1"># ... and how to extract them from each row</span>
 <span class="n">data_table</span><span class="o">.</span><span class="n">column_access</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">VTColumnAccess</span><span class="o">.</span><span class="n">By_Index</span>
 
 
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">virtual_tables</span><span class="p">():</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
 
     <span class="c1"># always close database</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">aclosing</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-        <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">make_virtual_module</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="s2">&quot;books&quot;</span><span class="p">,</span> <span class="n">data_table</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">make_virtual_module</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="s2">"books"</span><span class="p">,</span> <span class="n">data_table</span><span class="p">)</span>
 
         <span class="c1"># regular query</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="s2">&quot;SELECT * FROM books WHERE flags=94 AND server=?&quot;</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;example2.com&quot;</span><span class="p">,),</span>
+            <span class="s2">"SELECT * FROM books WHERE flags=94 AND server=?"</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">"example2.com"</span><span class="p">,),</span>
         <span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
         <span class="c1"># SQLite will figure out the review and order work</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="s2">&quot;SELECT * FROM books WHERE server=? AND flags=?AND review &gt; 9.55 &quot;</span>
-            <span class="s2">&quot;   ORDER BY year DESC&quot;</span><span class="p">,</span>
-            <span class="p">(</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">),</span>
+            <span class="s2">"SELECT * FROM books WHERE server=? AND flags=?AND review &gt; 9.55 "</span>
+            <span class="s2">"   ORDER BY year DESC"</span><span class="p">,</span>
+            <span class="p">(</span><span class="s2">"orange"</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">),</span>
         <span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
 
@@ -606,15 +606,15 @@ with the async below being pretty much the same thing.</p>
 <span class="n">trio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">virtual_tables</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">data_table called with flags=94 and server=&#39;example2.com&#39;</span>
-<span class="go">(&#39;The Great Gatsby&#39;, 1925, 9.2)</span>
-<span class="go">(&#39;To Kill a Mockingbird&#39;, 1960, 9.5)</span>
-<span class="go">(&#39;1984&#39;, 1949, 9.8)</span>
-<span class="go">(&#39;The Catcher in the Rye&#39;, 1951, 8.4)</span>
-<span class="go">(&#39;The Hobbit&#39;, 1937, 9.6)</span>
-<span class="go">data_table called with flags=-2 and server=&#39;orange&#39;</span>
-<span class="go">(&#39;1984&#39;, 1949, 9.8)</span>
-<span class="go">(&#39;The Hobbit&#39;, 1937, 9.6)</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">data_table called with flags=94 and server='example2.com'</span>
+<span class="go">('The Great Gatsby', 1925, 9.2)</span>
+<span class="go">('To Kill a Mockingbird', 1960, 9.5)</span>
+<span class="go">('1984', 1949, 9.8)</span>
+<span class="go">('The Catcher in the Rye', 1951, 8.4)</span>
+<span class="go">('The Hobbit', 1937, 9.6)</span>
+<span class="go">data_table called with flags=-2 and server='orange'</span>
+<span class="go">('1984', 1949, 9.8)</span>
+<span class="go">('The Hobbit', 1937, 9.6)</span>
 </pre></div>
 </div>
 </section>
@@ -624,7 +624,7 @@ with the async below being pretty much the same thing.</p>
 adapted to use <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">with</span></code> for <a class="reference internal" href="ext.html#apsw.ext.Trace" title="apsw.ext.Trace"><code class="xref py py-class docutils literal notranslate"><span class="pre">apsw.ext.Trace</span></code></a> and
 transaction control.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">tracing</span><span class="p">():</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
 
     <span class="c1"># always close database</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">aclosing</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
@@ -639,38 +639,38 @@ transaction control.</p>
             <span class="c1"># APSW does a savepoint behind the scenes to wrap the block</span>
             <span class="k">async</span> <span class="k">with</span> <span class="n">db</span><span class="p">:</span>
                 <span class="c1"># Some regular SQL</span>
-                <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table multi(x)&quot;</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"create table multi(x)"</span><span class="p">)</span>
                 <span class="c1"># executemany runs the same statement repeatedly</span>
                 <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
-                    <span class="s2">&quot;insert into multi values(?)&quot;</span><span class="p">,</span>
+                    <span class="s2">"insert into multi values(?)"</span><span class="p">,</span>
                     <span class="p">((</span><span class="n">x</span><span class="p">,)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)),</span>
                 <span class="p">)</span>
                 <span class="c1"># See how many rows were processed</span>
                 <span class="k">await</span> <span class="p">(</span>
-                    <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from multi limit 2&quot;</span><span class="p">)</span>
+                    <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"select * from multi limit 2"</span><span class="p">)</span>
                 <span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
                 <span class="c1"># You can also see how many rows were changed</span>
-                <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;delete from multi where x &lt; 4&quot;</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"delete from multi where x &lt; 4"</span><span class="p">)</span>
 
             <span class="c1"># pragma functions are virtual tables - see how many rows this processes even</span>
-            <span class="c1"># though only one has &#39;pow&#39;</span>
+            <span class="c1"># though only one has 'pow'</span>
             <span class="k">await</span> <span class="p">(</span>
                 <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                    <span class="s2">&quot;SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;&quot;</span>
+                    <span class="s2">"SELECT narg FROM pragma_function_list WHERE name='pow'"</span>
                 <span class="p">)</span>
             <span class="p">)</span><span class="o">.</span><span class="n">get</span>
 
             <span class="c1"># trigger that causes rollback</span>
-            <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
 <span class="s2">                create trigger error after insert on multi</span>
 <span class="s2">                begin</span>
 <span class="s2">                update multi set rowid=100+new.rowid where rowid=new.rowid;</span>
-<span class="s2">                select raise(rollback, &#39;nope&#39;);</span>
+<span class="s2">                select raise(rollback, 'nope');</span>
 <span class="s2">            end;</span>
-<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">            """</span><span class="p">)</span>
 
             <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ConstraintError</span><span class="p">):</span>
-                <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into multi values(54)&quot;</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"insert into multi values(54)"</span><span class="p">)</span>
 
 
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tracing</span><span class="p">())</span>
@@ -707,11 +707,11 @@ transaction control.</p>
 <span class="go">&gt; COMMIT</span>
 <span class="go"> !COMMIT</span>
 <span class="go">    Time: 0.000</span>
-<span class="go">&gt; SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;</span>
+<span class="go">&gt; SELECT narg FROM pragma_function_list WHERE name='pow'</span>
 <span class="go">V PRAGMA function_list</span>
-<span class="go">    Time: 0.000  Rows: 211  VmStep: 1,481  Mem: 76.8KB</span>
-<span class="go">&lt; SELECT narg FROM pragma_function_list WHERE name=&#39;pow&#39;</span>
-<span class="go">    Time: 0.000  Rows: 1  VmStep: 644</span>
+<span class="go">    Time: 0.001  Rows: 211  VmStep: 1,481  Mem: 76.8KB</span>
+<span class="go">&lt; SELECT narg FROM pragma_function_list WHERE name='pow'</span>
+<span class="go">    Time: 0.001  Rows: 1  VmStep: 644</span>
 <span class="go"> !BEGIN</span>
 <span class="go">&gt; create trigger error after insert on multi</span>
 <span class="go">               begin</span>
@@ -734,18 +734,18 @@ transaction control.</p>
 <p>The async equivalent of <a class="reference internal" href="example.html#example-showresourceusage"><span class="std std-ref">the sync example</span></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># The standard outlandish fractal example which is used when running</span>
 <span class="c1"># but not reproduced here.</span>
-<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;fractal&quot;</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">"fractal"</span>
 
 
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">resource_usage</span><span class="p">():</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
 
     <span class="c1"># always close database</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">aclosing</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;thread (async event loop)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"thread (async event loop)"</span><span class="p">)</span>
 
         <span class="k">async</span> <span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">ShowResourceUsage</span><span class="p">(</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">db</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;thread&quot;</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">db</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">"thread"</span>
         <span class="p">):</span>
             <span class="c1"># some SQLite work</span>
             <span class="k">await</span> <span class="p">(</span><span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">))</span><span class="o">.</span><span class="n">get</span>
@@ -753,10 +753,10 @@ transaction control.</p>
             <span class="c1"># and take some wall clock time</span>
             <span class="k">await</span> <span class="n">trio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">process (including background SQLite worker)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">process (including background SQLite worker)"</span><span class="p">)</span>
 
         <span class="k">async</span> <span class="k">with</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">ShowResourceUsage</span><span class="p">(</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">db</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;process&quot;</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">db</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">"process"</span>
         <span class="p">):</span>
             <span class="c1"># some SQLite work</span>
             <span class="k">await</span> <span class="p">(</span><span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">))</span><span class="o">.</span><span class="n">get</span>
@@ -772,21 +772,22 @@ transaction control.</p>
 <span class="go">                     Process CPU consumption 0.016</span>
 <span class="go">                                  Wall clock 0.517</span>
 <span class="go">                        Page faults - no I/O 1</span>
+<span class="go">                Involuntary context switches 27</span>
 <span class="go">                  Voluntary context switches 4</span>
 <span class="go">                      SQLite full table scan 1,365</span>
 <span class="go">                      SQLite sort operations 2</span>
 <span class="go">                        SQLite vm operations 1,015,353</span>
 <span class="go">                 SQLite statements completed 1</span>
-<span class="go">                 SQLite lookaside slots used 11</span>
-<span class="go">          SQLite allocations using lookaside 17,414</span>
+<span class="go">                 SQLite lookaside slots used 5</span>
+<span class="go">          SQLite allocations using lookaside 17,408</span>
 <span class="go">    SQLite allocations too big for lookaside 1</span>
-<span class="go">           SQLite allocations lookaside full 282</span>
-<span class="go">                     SQLite statement memory 17,080</span>
+<span class="go">           SQLite allocations lookaside full 278</span>
+<span class="go">                     SQLite statement memory 16,288</span>
 
 <span class="go">process (including background SQLite worker)</span>
 <span class="go">                     Process CPU consumption 0.015</span>
 <span class="go">                                  Wall clock 0.516</span>
-<span class="go">                Involuntary context switches 57</span>
+<span class="go">                Involuntary context switches 104</span>
 <span class="go">                  Voluntary context switches 8</span>
 <span class="go">                       CPU time in user mode 0.015</span>
 <span class="go">                      SQLite full table scan 1,365</span>
@@ -803,31 +804,31 @@ transaction control.</p>
 <a class="reference internal" href="example.html#example-blob-io"><span class="std std-ref">sync example</span></a> which this is a direct
 translation to async.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">blob</span><span class="p">():</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
 
     <span class="c1"># always close database</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">aclosing</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table blobby(x,y)&quot;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"create table blobby(x,y)"</span><span class="p">)</span>
         <span class="c1"># Add a blob we will fill in later</span>
         <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="s2">&quot;insert into blobby values(1, zeroblob(10000))&quot;</span>
+            <span class="s2">"insert into blobby values(1, zeroblob(10000))"</span>
         <span class="p">)</span>
         <span class="c1"># Or as a binding</span>
         <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-            <span class="s2">&quot;insert into blobby values(2, ?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),)</span>
+            <span class="s2">"insert into blobby values(2, ?)"</span><span class="p">,</span> <span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">zeroblob</span><span class="p">(</span><span class="mi">20000</span><span class="p">),)</span>
         <span class="p">)</span>
         <span class="c1"># Open a blob for writing.  We need to know the rowid</span>
         <span class="n">rowid</span> <span class="o">=</span> <span class="k">await</span> <span class="p">(</span>
-            <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select ROWID from blobby where x=1&quot;</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"select ROWID from blobby where x=1"</span><span class="p">)</span>
         <span class="p">)</span><span class="o">.</span><span class="n">get</span>
-        <span class="n">blob</span> <span class="o">=</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">blob_open</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;blobby&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-        <span class="k">await</span> <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;hello world&quot;</span><span class="p">)</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">blob_open</span><span class="p">(</span><span class="s2">"main"</span><span class="p">,</span> <span class="s2">"blobby"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="n">rowid</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">"hello world"</span><span class="p">)</span>
         <span class="c1"># seeking is immediate (no await)</span>
         <span class="n">blob</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">2000</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">blob</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span>
         <span class="c1"># seek relative to the end</span>
         <span class="n">blob</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="o">-</span><span class="mi">32</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="k">await</span> <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;hello world, again&quot;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">blob</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">"hello world, again"</span><span class="p">)</span>
         <span class="c1"># it will be automatically closed when the connection is</span>
         <span class="c1"># closed, but explicitly closing chooses transaction</span>
         <span class="c1"># boundaries</span>
@@ -851,48 +852,48 @@ below.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">backup</span><span class="p">():</span>
     <span class="c1"># Setup source and destinations</span>
 
-    <span class="n">async_source</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">async_source</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
     <span class="c1"># ... and fill it with a large amount of data</span>
     <span class="k">await</span> <span class="n">async_source</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-        <span class="s2">&quot;CREATE TABLE x(y); INSERT INTO x VALUES(randomblob(250000))&quot;</span>
+        <span class="s2">"CREATE TABLE x(y); INSERT INTO x VALUES(randomblob(250000))"</span>
     <span class="p">)</span>
-    <span class="n">sync_source</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">sync_source</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
     <span class="n">sync_source</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-        <span class="s2">&quot;CREATE TABLE x(y); INSERT INTO x VALUES(randomblob(250000))&quot;</span>
+        <span class="s2">"CREATE TABLE x(y); INSERT INTO x VALUES(randomblob(250000))"</span>
     <span class="p">)</span>
 
-    <span class="n">async_dest</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-    <span class="n">sync_dest</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">async_dest</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
+    <span class="n">sync_dest</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;async destination, async source&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"async destination, async source"</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">with</span> <span class="k">await</span> <span class="n">async_dest</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span>
-        <span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">async_source</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span>
+        <span class="s2">"main"</span><span class="p">,</span> <span class="n">async_source</span><span class="p">,</span> <span class="s2">"main"</span>
     <span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="n">backup</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
             <span class="k">await</span> <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;page_count = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">page_count</span><span class="si">}</span><span class="s2"> remaining = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"page_count = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">page_count</span><span class="si">}</span><span class="s2"> remaining = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;async destination, sync source&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"async destination, sync source"</span><span class="p">)</span>
     <span class="k">async</span> <span class="k">with</span> <span class="k">await</span> <span class="n">async_dest</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span>
-        <span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">sync_source</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span>
+        <span class="s2">"main"</span><span class="p">,</span> <span class="n">sync_source</span><span class="p">,</span> <span class="s2">"main"</span>
     <span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
         <span class="k">while</span> <span class="ow">not</span> <span class="n">backup</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
             <span class="k">await</span> <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;page_count = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">page_count</span><span class="si">}</span><span class="s2"> remaining = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"page_count = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">page_count</span><span class="si">}</span><span class="s2"> remaining = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">"</span>
             <span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sync destination, async source&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"sync destination, async source"</span><span class="p">)</span>
 
     <span class="c1"># we will run this in the async source thread</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">do_backup</span><span class="p">():</span>
-        <span class="k">with</span> <span class="n">sync_dest</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">async_source</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">sync_dest</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">"main"</span><span class="p">,</span> <span class="n">async_source</span><span class="p">,</span> <span class="s2">"main"</span><span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
             <span class="k">while</span> <span class="ow">not</span> <span class="n">backup</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
                 <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;page_count = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">page_count</span><span class="si">}</span><span class="s2"> remaining = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">"page_count = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">page_count</span><span class="si">}</span><span class="s2"> remaining = </span><span class="si">{</span><span class="n">backup</span><span class="o">.</span><span class="n">remaining</span><span class="si">}</span><span class="s2">"</span>
                 <span class="p">)</span>
 
     <span class="k">await</span> <span class="n">async_source</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span><span class="n">do_backup</span><span class="p">)</span>
@@ -923,38 +924,38 @@ below.</p>
 methods and attributes, so using the <a class="reference internal" href="#example-async-worker-thread"><span class="std std-ref">worker thread</span></a> is needed.  A subset of the
 <a class="reference internal" href="example-fts.html"><span class="doc">Full Text Search Example/Tour</span></a> is shown.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fts</span><span class="p">():</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;recipes.db&quot;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">"recipes.db"</span><span class="p">)</span>
 
     <span class="c1"># always close database</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">aclosing</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">table_exists</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="s2">&quot;search&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">table_exists</span><span class="p">(</span><span class="s2">"main"</span><span class="p">,</span> <span class="s2">"search"</span><span class="p">):</span>
             <span class="n">search_table</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">Table</span> <span class="o">=</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
                 <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">create</span><span class="p">,</span>
                 <span class="n">db</span><span class="p">,</span>
-                <span class="s2">&quot;search&quot;</span><span class="p">,</span>
-                <span class="n">content</span><span class="o">=</span><span class="s2">&quot;recipes&quot;</span><span class="p">,</span>
+                <span class="s2">"search"</span><span class="p">,</span>
+                <span class="n">content</span><span class="o">=</span><span class="s2">"recipes"</span><span class="p">,</span>
                 <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">generate_triggers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">tokenize</span><span class="o">=</span><span class="p">[</span>
-                    <span class="s2">&quot;simplify&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;casefold&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;true&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;true&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;strip&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;true&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;unicodewords&quot;</span><span class="p">,</span>
+                    <span class="s2">"simplify"</span><span class="p">,</span>
+                    <span class="s2">"casefold"</span><span class="p">,</span>
+                    <span class="s2">"true"</span><span class="p">,</span>
+                    <span class="s2">"strip"</span><span class="p">,</span>
+                    <span class="s2">"true"</span><span class="p">,</span>
+                    <span class="s2">"strip"</span><span class="p">,</span>
+                    <span class="s2">"true"</span><span class="p">,</span>
+                    <span class="s2">"unicodewords"</span><span class="p">,</span>
                 <span class="p">],</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">search_table</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">Table</span> <span class="o">=</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
-                <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">Table</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="s2">&quot;search&quot;</span>
+                <span class="n">apsw</span><span class="o">.</span><span class="n">fts5</span><span class="o">.</span><span class="n">Table</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="s2">"search"</span>
             <span class="p">)</span>
 
         <span class="c1"># property access</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="s2">&quot;row_count =&quot;</span><span class="p">,</span>
-            <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span><span class="nb">getattr</span><span class="p">,</span> <span class="n">search_table</span><span class="p">,</span> <span class="s2">&quot;row_count&quot;</span><span class="p">),</span>
+            <span class="s2">"row_count ="</span><span class="p">,</span>
+            <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span><span class="nb">getattr</span><span class="p">,</span> <span class="n">search_table</span><span class="p">,</span> <span class="s2">"row_count"</span><span class="p">),</span>
         <span class="p">)</span>
 
         <span class="c1"># we need to do search processing in the worker thread</span>
@@ -967,23 +968,23 @@ methods and attributes, so using the <a class="reference internal" href="#exampl
             <span class="k">return</span> <span class="n">matches</span>
 
         <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
-            <span class="n">search_processing</span><span class="p">,</span> <span class="s2">&quot;lemon OR guava&quot;</span><span class="p">,</span> <span class="mi">10</span>
+            <span class="n">search_processing</span><span class="p">,</span> <span class="s2">"lemon OR guava"</span><span class="p">,</span> <span class="mi">10</span>
         <span class="p">):</span>
             <span class="n">pprint</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
             <span class="k">break</span>
 
         <span class="nb">print</span><span class="p">(</span>
-            <span class="s2">&quot;First match name is&quot;</span><span class="p">,</span>
+            <span class="s2">"First match name is"</span><span class="p">,</span>
             <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span>
-                <span class="n">search_table</span><span class="o">.</span><span class="n">row_by_id</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">rowid</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span>
+                <span class="n">search_table</span><span class="o">.</span><span class="n">row_by_id</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">rowid</span><span class="p">,</span> <span class="s2">"name"</span>
             <span class="p">),</span>
         <span class="p">)</span>
 
         <span class="c1"># query suggestion</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;nyme:(minced OR oyl NOT peenut)&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">"nyme:(minced OR oyl NOT peenut)"</span>
         <span class="nb">print</span><span class="p">(</span>
             <span class="n">query</span><span class="p">,</span>
-            <span class="s2">&quot;=&gt;&quot;</span><span class="p">,</span>
+            <span class="s2">"=&gt;"</span><span class="p">,</span>
             <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">async_run</span><span class="p">(</span><span class="n">search_table</span><span class="o">.</span><span class="n">query_suggest</span><span class="p">,</span> <span class="n">query</span><span class="p">),</span>
         <span class="p">)</span>
 
@@ -992,11 +993,11 @@ methods and attributes, so using the <a class="reference internal" href="#exampl
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">row_count = 173278</span>
-<span class="go">MatchInfo(query_info=QueryInfo(phrases=((&#39;lemon&#39;,), (&#39;guava&#39;,))),</span>
+<span class="go">MatchInfo(query_info=QueryInfo(phrases=(('lemon',), ('guava',))),</span>
 <span class="go">          rowid=1642796043941632884,</span>
 <span class="go">          column_size=[3, 24, 5],</span>
 <span class="go">          phrase_columns=[[1], [0, 2]])</span>
-<span class="go">First match name is P.L&#39;s Guava Jelly</span>
+<span class="go">First match name is P.L's Guava Jelly</span>
 <span class="go">nyme:(minced OR oyl NOT peenut) =&gt; name: (minced OR oil NOT peanut)</span>
 </pre></div>
 </div>
@@ -1007,15 +1008,15 @@ methods and attributes, so using the <a class="reference internal" href="#exampl
 <a class="reference internal" href="session.html#apsw.Session" title="apsw.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a> object in async mode from an async
 connection.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">session_example</span><span class="p">():</span>
-    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+    <span class="n">db</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">as_async</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
 
     <span class="c1"># always close database</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">aclosing</span><span class="p">(</span><span class="n">db</span><span class="p">):</span>
-        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;CREATE TABLE x(y PRIMARY KEY, z)&quot;</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"CREATE TABLE x(y PRIMARY KEY, z)"</span><span class="p">)</span>
 
-        <span class="n">session</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">make_session</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="k">await</span> <span class="n">apsw</span><span class="o">.</span><span class="n">aio</span><span class="o">.</span><span class="n">make_session</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="s2">"main"</span><span class="p">)</span>
 
-        <span class="c1"># We&#39;d like size estimates</span>
+        <span class="c1"># We'd like size estimates</span>
         <span class="n">session</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_SESSION_OBJCONFIG_SIZE</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># all tables</span>
@@ -1023,16 +1024,16 @@ connection.</p>
 
         <span class="c1"># add some data</span>
         <span class="k">await</span> <span class="n">db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
-            <span class="s2">&quot;INSERT INTO x VALUES(?,?)&quot;</span><span class="p">,</span>
-            <span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">)),</span>
+            <span class="s2">"INSERT INTO x VALUES(?,?)"</span><span class="p">,</span>
+            <span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="s2">"a"</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">)),</span>
         <span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Size estimate </span><span class="si">{session.changeset_size}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Size estimate </span><span class="si">{session.changeset_size}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">changeset</span> <span class="o">=</span> <span class="k">await</span> <span class="n">session</span><span class="o">.</span><span class="n">changeset</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Actual size </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">changeset</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Actual size </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">changeset</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-        <span class="c1"># Other than apply, changeset operations don&#39;t use a</span>
-        <span class="c1"># Connection so we&#39;ll use trio&#39;s mechanism to do invert in a</span>
+        <span class="c1"># Other than apply, changeset operations don't use a</span>
+        <span class="c1"># Connection so we'll use trio's mechanism to do invert in a</span>
         <span class="c1"># background thread.</span>
         <span class="n">undo</span> <span class="o">=</span> <span class="k">await</span> <span class="n">trio</span><span class="o">.</span><span class="n">to_thread</span><span class="o">.</span><span class="n">run_sync</span><span class="p">(</span>
             <span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">invert</span><span class="p">,</span> <span class="n">changeset</span>
@@ -1060,7 +1061,7 @@ connection.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

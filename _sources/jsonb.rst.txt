@@ -421,7 +421,8 @@ JSONB API
     :param parse_int: Called with a :class:`str` of the integer, and
         should return a value to use.  The default is :class:`int`.
         If the integer is hexadecimal then it will be called with a
-        second parameter of 16.
+        second parameter (base) of 16, with the string including
+        leading optional sign, and ``0x``.
     :param parse_float: Called with a :class:`str` of the float, and
         should return a value to use.  The default is :class:`float`.
 
@@ -440,7 +441,8 @@ JSONB API
 
     If you use :class:`types.MappingProxyType` as ``object_hook`` and
     :class:`tuple` as ``array_hook`` then the overall returned value
-    will be immutable (read only).
+    will be immutable (read only).  Python 3.15 adds :class:`frozendict`
+    which is clearer.
 
     .. note::
 
@@ -455,6 +457,12 @@ JSONB API
     SQLite's json_valid only checks the various internal type and length fields are consistent
     and items seem reasonable.  It does not check all corner cases, or the UTF8
     encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.
+
+    SQLite has a `depth limit
+    <https://sqlite.org/compile.html#json_max_depth>`__  of about 1,000
+    for JSON and JSONB nesting (eg putting a list inside a dict inside a
+    list).  APSW's limit is greater and  based on the available stack, and
+    will return ``False`` for excessively nested JSONB.
 
     .. note::
 
@@ -506,6 +514,11 @@ JSONB API
         with an example being :class:`enum.IntEnum`.  If this parameter
         is ``True`` then only the exact types are directly converted
         and subclasses will be passed to ``default`` or ``default_key``.
+
+        If ``False`` and subclassed numeric types are provided, then their :meth:`~object.__str__`
+        method **must** produce JSON compatible corresponding text representations,
+        otherwise non-decodable JSONB will be produced.  Typically subclasses
+        produce more digits, and a greater range of values.
 
     You will get a :exc:`~apsw.TooBigError` if the resulting JSONB
     will exceed 2GB because SQLite can't handle it.

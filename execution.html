@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Execution and tracing &mdash; APSW 3.53.4.0 documentation</title>
+  <title>Execution and tracing &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/execution.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="_static/documentation_options.js?v=c3243565"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -152,10 +152,10 @@ row.</p>
 rest of your statements won’t be executed.  APSW will detect
 unexecuted previous statements and generate an exception. For
 example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select * from foo ; create table bar(x,y,z)&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table bam(x,y,z)&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"select * from foo ; create table bar(x,y,z)"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"create table bam(x,y,z)"</span><span class="p">)</span>
 <span class="gt">Traceback (most recent call last):</span>
-  File <span class="nb">&quot;&lt;stdin&gt;&quot;</span>, line <span class="m">1</span>, in <span class="n">?</span>
+  File <span class="nb">"&lt;stdin&gt;"</span>, line <span class="m">1</span>, in <span class="n">?</span>
 <span class="gr">apsw.IncompleteExecutionError</span>: <span class="n">Error: there are still remaining sql statements to execute</span>
 </pre></div>
 </div>
@@ -240,7 +240,7 @@ code.</p>
 your tracer was called from. If you would like to make more queries
 in the tracer then do them from a new cursor object.  For example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">exec_tracer</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">):</span>
-  <span class="n">cursor</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;insert into log values(?,?)&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
+  <span class="n">cursor</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"insert into log values(?,?)"</span><span class="p">,</span> <span class="p">(</span><span class="n">sql</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">bindings</span><span class="p">)))</span>
   <span class="k">return</span> <span class="kc">True</span>
 </pre></div>
 </div>
@@ -331,33 +331,33 @@ well as providing a summary report without modifying your code.</p>
 </div>
 <p>This is sample output with the following options: <strong>–sql</strong>,
 <strong>–rows</strong>, <strong>–timestamps</strong>, <strong>–thread</strong></p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>1e0e5a0 0.152 7fccea8456e0 OPEN: &quot;:memory:&quot; unix READWRITE|CREATE
-1f72ac0 0.161 7fccea8456e0 OPEN: &quot;testdb&quot; unix READWRITE|CREATE
-1f6b8d0 0.162 7fccea8456e0 CURSORFROM: 1f72ac0 DB: &quot;testdb&quot;
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>1e0e5a0 0.152 7fccea8456e0 OPEN: ":memory:" unix READWRITE|CREATE
+1f72ac0 0.161 7fccea8456e0 OPEN: "testdb" unix READWRITE|CREATE
+1f6b8d0 0.162 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
 1f6b8d0 0.162 7fccea8456e0 SQL: create table foo(x,y,z)
-1f6b8d0 0.239 7fccea8456e0 CURSORFROM: 1f72ac0 DB: &quot;testdb&quot;
-1f6b8d0 0.239 7fccea8456e0 SQL: insert into foo values(?,?,?) BINDINGS: (&quot;kjfhgk&quot;, &quot;gkjlfdhgjkhsdfkjg&quot;, &quot;gklsdfjgkldfjhnbnvc,mnxb,mnxcv..&quot;)
-1f6b8d0 0.242 7fccea8456e0 CURSORFROM: 1f72ac0 DB: &quot;testdb&quot;
-1f6b8d0 0.242 7fccea8456e0 SQL: insert into foo values(?,?,?) BINDINGS: (&quot;gdfklhj&quot;, &quot;:gjkhgfdsgfd&quot;, &quot;gjkfhgjkhdfkjh&quot;)
-1f6b8d0 0.244 7fccea8456e0 CURSORFROM: 1f72ac0 DB: &quot;testdb&quot;
-1f6b8d0 0.245 7fccea8456e0 SQL: insert into foo values(?,?,?) BINDINGS: (&quot;gdfjkhg&quot;, &quot;gkjlfd&quot;, &quot;&quot;)
-1f6b8d0 0.247 7fccea8456e0 CURSORFROM: 1f72ac0 DB: &quot;testdb&quot;
+1f6b8d0 0.239 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
+1f6b8d0 0.239 7fccea8456e0 SQL: insert into foo values(?,?,?) BINDINGS: ("kjfhgk", "gkjlfdhgjkhsdfkjg", "gklsdfjgkldfjhnbnvc,mnxb,mnxcv..")
+1f6b8d0 0.242 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
+1f6b8d0 0.242 7fccea8456e0 SQL: insert into foo values(?,?,?) BINDINGS: ("gdfklhj", ":gjkhgfdsgfd", "gjkfhgjkhdfkjh")
+1f6b8d0 0.244 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
+1f6b8d0 0.245 7fccea8456e0 SQL: insert into foo values(?,?,?) BINDINGS: ("gdfjkhg", "gkjlfd", "")
+1f6b8d0 0.247 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
 1f6b8d0 0.247 7fccea8456e0 SQL: insert into foo values(?,?,?) BINDINGS: (1, 2, 30)
-1f6b8d0 0.257 7fccea8456e0 CURSORFROM: 1f72ac0 DB: &quot;testdb&quot;
+1f6b8d0 0.257 7fccea8456e0 CURSORFROM: 1f72ac0 DB: "testdb"
 1f6b8d0 0.257 7fccea8456e0 SQL: select longest(x,y,z) from foo
-1f6b8d0 0.257 7fccea8456e0 ROW: (&quot;gklsdfjgkldfjhnbnvc,mnxb,mnxcv..&quot;)
+1f6b8d0 0.257 7fccea8456e0 ROW: ("gklsdfjgkldfjhnbnvc,mnxb,mnxcv..")
 </pre></div>
 </div>
 <p>Each row starts with the following fields:</p>
 <blockquote>
 <div><dl class="simple">
-<dt>id</dt><dd><p>This is the <a class="reference external" href="https://docs.python.org/3/library/functions.html#id" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">id()</span></code></a> of the
+<dt>id</dt><dd><p>This is the <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#id" title="(in Python v3.15)"><code class="xref py py-func docutils literal notranslate"><span class="pre">id()</span></code></a> of the
 <a class="reference internal" href="cursor.html#apsw.Cursor" title="apsw.Cursor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Cursor</span></code></a> or <a class="reference internal" href="connection.html#apsw.Connection" title="apsw.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a>.  You can easily <a class="reference external" href="https://en.wikipedia.org/wiki/Grep">filter</a> the log if you just want to
 find out what happened on a specific cursor or connection.</p>
 </dd>
 <dt>timestamp</dt><dd><p>This is time since the program started in seconds</p>
 </dd>
-<dt>threadid</dt><dd><p>The unique <a class="reference external" href="https://docs.python.org/3/library/threading.html#threading.get_ident" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">thread</span> <span class="pre">identifier</span></code></a></p>
+<dt>threadid</dt><dd><p>The unique <a class="reference external" href="https://docs.python.org/3/library/threading.html#threading.get_ident" title="(in Python v3.15)"><code class="xref py py-func docutils literal notranslate"><span class="pre">thread</span> <span class="pre">identifier</span></code></a></p>
 </dd>
 </dl>
 </div></blockquote>
@@ -420,10 +420,10 @@ Time spent processing queries       120.530 seconds
      79 insert into foo values(1,2)
      76 rollback
      71 pragma locking_mode=exclusive
-     71 insert into t1 values(2, &#39;abcdefghijklmnopqrstuvwxyz&#39;)
-     71 insert into t1 values(1, &#39;abcdefghijklmnopqrstuvwxyz&#39;)
+     71 insert into t1 values(2, 'abcdefghijklmnopqrstuvwxyz')
+     71 insert into t1 values(1, 'abcdefghijklmnopqrstuvwxyz')
      71 insert into t1 select 4-a, b from t2
-     71 insert into foo values(date(&#39;now&#39;), date(&#39;now&#39;))
+     71 insert into foo values(date('now'), date('now'))
 </pre></div>
 </div>
 </div></blockquote>
@@ -447,7 +447,7 @@ illustrates how time spent busy waiting is included.</p>
      27    0.165 insert into foo values(?,?,?)
       1    0.158 select row,x,snap(x) from foo
      80    0.150 insert into foo values(1,2)
-     71    0.127 insert into foo values(date(&#39;now&#39;), date(&#39;now&#39;))
+     71    0.127 insert into foo values(date('now'), date('now'))
 </pre></div>
 </div>
 </div></blockquote>
@@ -488,7 +488,7 @@ illustrates how time spent busy waiting is included.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

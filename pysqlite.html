@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>sqlite3 module differences &mdash; APSW 3.53.4.0 documentation</title>
+  <title>sqlite3 module differences &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/pysqlite.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="_static/documentation_options.js?v=c3243565"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -128,7 +128,7 @@
              
   <section id="sqlite3-module-differences">
 <span id="pysqlitediffs"></span><h1>sqlite3 module differences<a class="headerlink" href="#sqlite3-module-differences" title="Link to this heading"></a></h1>
-<p>The <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> standard module and APSW approached the problem of
+<p>The <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> standard module and APSW approached the problem of
 providing access to SQLite from Python from fundamentally different
 directions.</p>
 <p>APSW provides access in whatever way is normal for SQLite.  It makes
@@ -143,7 +143,7 @@ other databases.  Consequently it does hide some of SQLite’s nuances.</p>
 <p class="admonition-title">Note</p>
 <p>I suggest using APSW when you want to directly use SQLite and its
 functionality or are using your own code to deal with database
-independence rather than DBAPI.  Use <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> and DBAPI if
+independence rather than DBAPI.  Use <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#module-sqlite3" title="(in Python v3.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">sqlite3</span></code></a> and DBAPI if
 your needs are simple, and you don’t want to use SQLite specific
 features, and want to easily switch to other databases.</p>
 </div>
@@ -190,7 +190,7 @@ does not interfere with any system SQLite, so you have the latest
 SQLite without disruptions.  <strong>Note</strong> on non-Windows platforms it is
 <strong>not safe</strong> to open the same database in two different SQLite
 libraries in the same process (<a class="reference external" href="https://sqlite.org/howtocorrupt.html#multiple_copies_of_sqlite_linked_into_the_same_application">details</a>).</p></li>
-<li><p>If you don’t use PyPI, APSW <a class="reference external" href="https://docs.python.org/3/extending/building.html#building" title="(in Python v3.14)"><span class="xref std std-ref">build instructions</span></a>
+<li><p>If you don’t use PyPI, APSW <a class="reference external" href="https://docs.python.org/3/extending/building.html#building" title="(in Python v3.15)"><span class="xref std std-ref">build instructions</span></a>
 include extensive customisation options for SQLite.</p></li>
 <li><p><strong>Nothing</strong> happens behind your back. By default sqlite3 tries to
 manage transactions (for DBAPI compliance) by processing your SQL for
@@ -204,12 +204,12 @@ multiple commands in the execute string in APSW. There are no
 restrictions on the type of commands used. For example this will
 work fine in APSW but is not allowed in sqlite3:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
-<span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
+<span class="n">con</span><span class="o">=</span><span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
 <span class="n">cur</span><span class="o">=</span><span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create table foo(x,y,z);insert into foo values (?,?,?);&quot;</span>
-                       <span class="s2">&quot;insert into foo values(?,?,?);select * from foo;drop table foo;&quot;</span>
-                       <span class="s2">&quot;create table bar(x,y);insert into bar values(?,?);&quot;</span>
-                       <span class="s2">&quot;insert into bar values(?,?);select * from bar;&quot;</span><span class="p">,</span>
+<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"create table foo(x,y,z);insert into foo values (?,?,?);"</span>
+                       <span class="s2">"insert into foo values(?,?,?);select * from foo;drop table foo;"</span>
+                       <span class="s2">"create table bar(x,y);insert into bar values(?,?);"</span>
+                       <span class="s2">"insert into bar values(?,?);select * from bar;"</span><span class="p">,</span>
                        <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">)):</span>
                            <span class="nb">print</span> <span class="p">(</span><span class="n">row</span><span class="p">)</span>
 </pre></div>
@@ -230,7 +230,7 @@ data being returned (it silently ignores any returned data).</p></li>
 <li><p>Easy conversion of types using <a class="reference internal" href="connection.html#apsw.Connection.convert_binding" title="apsw.Connection.convert_binding"><code class="xref py py-attr docutils literal notranslate"><span class="pre">convert_binding</span></code></a></p></li>
 <li><p>APSW has better <a class="reference internal" href="execution.html#tracing"><span class="std std-ref">execution and row tracing</span></a>.  Both
 APSW and sqlite3  wrap <a class="reference external" href="https://www.sqlite.org/c3ref/trace_v2.html">sqlite3_trace_v2</a>.  sqlite3 only lets
-you see <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.set_trace_callback" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">the</span> <span class="pre">text</span> <span class="pre">of</span> <span class="pre">executed</span> <span class="pre">statements</span></code></a>.  APSW provides <a class="reference internal" href="connection.html#apsw.Connection.trace_v2" title="apsw.Connection.trace_v2"><code class="xref py py-meth docutils literal notranslate"><span class="pre">a</span>
+you see <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.set_trace_callback" title="(in Python v3.15)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">the</span> <span class="pre">text</span> <span class="pre">of</span> <span class="pre">executed</span> <span class="pre">statements</span></code></a>.  APSW provides <a class="reference internal" href="connection.html#apsw.Connection.trace_v2" title="apsw.Connection.trace_v2"><code class="xref py py-meth docutils literal notranslate"><span class="pre">a</span>
 <span class="pre">lot</span> <span class="pre">more</span> <span class="pre">information</span></code></a>, and allows for
 multiple callbacks.  And provides a <a class="reference internal" href="ext.html#apsw.ext.Trace" title="apsw.ext.Trace"><code class="xref py py-class docutils literal notranslate"><span class="pre">helpful</span> <span class="pre">context</span> <span class="pre">block</span>
 <span class="pre">tracer</span></code></a>.</p></li>
@@ -251,7 +251,7 @@ for the block</p></li>
 <li><p>sqlite3 swallows exceptions in your callbacks making it far harder
 to debug problems. That also prevents you from raising exceptions in
 your callbacks to be handled in your code that called SQLite.
-sqlite3 does let you turn on <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.enable_callback_tracebacks" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">printing</span> <span class="pre">of</span> <span class="pre">tracebacks</span></code></a> but that is a poor substitute.</p>
+sqlite3 does let you turn on <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.enable_callback_tracebacks" title="(in Python v3.15)"><code class="xref py py-func docutils literal notranslate"><span class="pre">printing</span> <span class="pre">of</span> <span class="pre">tracebacks</span></code></a> but that is a poor substitute.</p>
 <p>APSW does the right thing as demonstrated by this example.  APSW
 converts Python errors into SQLite errors, so SQLite is aware errors
 happened.</p>
@@ -262,35 +262,35 @@ happened.</p>
 <span class="c1"># sqlite3</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sqlite3</span>
 
-<span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">create_function</span><span class="p">(</span><span class="s2">&quot;badfunc&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">)</span>
+<span class="n">con</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">create_function</span><span class="p">(</span><span class="s2">"badfunc"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">)</span>
 <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select badfunc(3)&quot;</span><span class="p">)</span>
+<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"select badfunc(3)"</span><span class="p">)</span>
 
 <span class="c1"># apsw</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
-<span class="n">con</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;:memory:&quot;</span><span class="p">)</span>
-<span class="n">con</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">&quot;badfunc&quot;</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">con</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">":memory:"</span><span class="p">)</span>
+<span class="n">con</span><span class="o">.</span><span class="n">create_scalar_function</span><span class="p">(</span><span class="s2">"badfunc"</span><span class="p">,</span> <span class="n">badfunc</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">cur</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
-<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;select badfunc(3)&quot;</span><span class="p">)</span>
+<span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"select badfunc(3)"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Exceptions:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span># sqlite3
 
 Traceback (most recent call last):
-  File &quot;func.py&quot;, line 8, in ?
-    cur.execute(&quot;select badfunc(3)&quot;)
+  File "func.py", line 8, in ?
+    cur.execute("select badfunc(3)")
 sqlite3.OperationalError: user-defined function raised exception
 
 # apsw
 
 Traceback (most recent call last):
-  File &quot;t.py&quot;, line 8, in ?
-    cur.execute(&quot;select badfunc(3)&quot;)
-  File &quot;apsw.c&quot;, line 3660, in resetcursor
-  File &quot;apsw.c&quot;, line 1871, in user-defined-scalar-badfunc
-  File &quot;t.py&quot;, line 3, in badfunc
+  File "t.py", line 8, in ?
+    cur.execute("select badfunc(3)")
+  File "apsw.c", line 3660, in resetcursor
+  File "apsw.c", line 1871, in user-defined-scalar-badfunc
+  File "t.py", line 3, in badfunc
     return 1/0
 </pre></div>
 </div>
@@ -346,7 +346,7 @@ libraries that abstract away the database layer.</p></li>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

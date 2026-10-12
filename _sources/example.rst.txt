@@ -77,9 +77,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-314-x86_64-linux-gnu.so
-             APSW version 3.53.4.0
-    SQLite header version 3053004
-       SQLite lib version 3.53.4
+             APSW version 3.54.0.0
+    SQLite header version 3054000
+       SQLite lib version 3.54.0
        Using amalgamation True
 
 
@@ -890,11 +890,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2026, 7, 26, 8, 15, 43, 45987))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2026, 10, 12, 8, 53, 34, 942533))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2026, 7, 26, 15, 15, 43, 45987, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2026, 10, 12, 15, 53, 34, 942533, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Runtime Python objects (example code)
@@ -964,7 +964,7 @@ runtime.
 .. code-block:: output
 
     Bad binding argument type supplied - argument #1: type set
-    select ? {1, 2, <__main__.TeeStringIO object at 0x734a509e7640>, (4+5j), 'three'}
+    select ? {1, 2, 'three', <__main__.TeeStringIO object at 0x7820df9ffeb0>, (4+5j)}
     select typeof(?) null
     make_set got ((3+4j), <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello')
     select make_set(?, ?, ?) {<_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello', (3+4j)}
@@ -1042,7 +1042,7 @@ across all the queries within the block
 .. code-block:: output
 
     len(rows)=20
-    After 0.200 seconds, we hit number=284162
+    After 0.200 seconds, we hit number=262962
     exc=IndexError('query row limit hit')
 
 
@@ -1461,7 +1461,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9967780544,)
+    (9987293072,)
 
 
 .. index:: File Control (example code)
@@ -1858,24 +1858,24 @@ useful instead.
     ╭──────────┬────────────────────────────────────────────────┬──────────────────╮
     │   date   │                   directory                    │       name       │
     ╞══════════╪════════════════════════════════════════════════╪══════════════════╡
-    │ 2026-07- │ /usr/lib/python3.14/pydoc_data                 │ topics.py        │
-    │ -06      │                                                │                  │
+    │ 2026-09- │ /usr/lib/python3.14/pydoc_data                 │ topics.py        │
+    │ -08      │                                                │                  │
     ├──────────┼────────────────────────────────────────────────┼──────────────────┤
-    │ 2026-07- │ /space/apsw/.venv/lib/python3.14/site-         │ parser.py        │
-    │ -01      │ packages/sqlglot                               │                  │
+    │ 2026-10- │ /space/apsw/.venv/lib/python3.14/site-         │ fastjsonschema_- │
+    │ -01      │ packages/setuptools/config/_validate_pyproject │ validations.py   │
     ├──────────┼────────────────────────────────────────────────┼──────────────────┤
-    │ 2026-07- │ /space/apsw/.venv/lib/python3.14/site-         │ fastjsonschema_- │
-    │ -26      │ packages/setuptools/config/_validate_pyproject │ validations.py   │
+    │ 2026-10- │ /space/apsw/.venv/lib/python3.14/site-         │ uts46data.py     │
+    │ -01      │ packages/idna                                  │                  │
     ╰──────────┴────────────────────────────────────────────────┴──────────────────╯
     
     ╭────────────┬────────────╮
     │ extension  │ total_size │
-    │            │    1602444 │
+    │            │    1550697 │
     │ .APACHE    │      40696 │
     │ .APACHE2   │      34074 │
     │ .BSD       │       5376 │
     │ .MIT       │       3183 │
-    │ .a         │  104144096 │
+    │ .a         │  104146408 │
     │ .allowlist │         56 │
     │ .bootstrap │       2126 │
     │ .c         │      15139 │
@@ -1884,7 +1884,7 @@ useful instead.
     │ .cls       │       7497 │
     │ .conf      │       3076 │
     │ .csh       │        937 │
-    │ .css       │     254803 │
+    │ .css       │     238672 │
     │ .css_t     │      15236 │
     │ .dat       │   30339529 │
     │ .eot       │    1367872 │
@@ -1893,36 +1893,35 @@ useful instead.
     │ .gif       │         49 │
     │ .hhc       │       1593 │
     │ .hhp       │       2197 │
-    │ .html      │      72854 │
+    │ .html      │      57378 │
     │ .html_t    │        403 │
     │ .in        │       2888 │
     │ .ini       │       2037 │
     │ .ist       │        392 │
     │ .jinja     │     143446 │
-    │ .js        │    2031613 │
+    │ .js        │    2006163 │
     │ .js_t      │       7243 │
-    │ .json      │      92559 │
+    │ .json      │      80539 │
     │ .local     │       1352 │
     │ .md        │       4623 │
     │ .mo        │    2310423 │
-    │ .o         │      16112 │
+    │ .o         │      16144 │
     │ .odt       │      16500 │
-    │ .pem       │     512657 │
-    │ .png       │     115919 │
+    │ .pem       │     474570 │
+    │ .png       │     105183 │
     │ .po        │    7955502 │
     │ .pot       │     105216 │
     │ .ps1       │       9031 │
-    │ .pth       │        930 │
-    │ .py        │   37933572 │
-    │ .pyc       │   35260699 │
-    │ .pyi       │      66391 │
+    │ .pth       │        725 │
+    │ .py        │   34570526 │
+    │ .pyc       │   42080940 │
+    │ .pyi       │      65184 │
     │ .qhcp      │        567 │
     │ .qhp       │        863 │
     │ .rst       │      41424 │
-    │ .scss      │      21440 │
-    │ .sh        │       3266 │
-    │ .so        │   39723560 │
-    │ .sql       │      10476 │
+    │ .sh        │       3474 │
+    │ .so        │   39800432 │
+    │ .sql       │      10912 │
     │ .stdlib    │      14488 │
     │ .stp       │        330 │
     │ .sty       │     315716 │
@@ -1932,8 +1931,8 @@ useful instead.
     │ .tmpl      │        356 │
     │ .toml      │       3390 │
     │ .ttf       │    2975764 │
-    │ .txt       │     356199 │
-    │ .typed     │        779 │
+    │ .txt       │     344194 │
+    │ .typed     │        707 │
     │ .unicode   │       2033 │
     │ .woff      │    2987200 │
     │ .woff2     │    1857936 │
@@ -2210,9 +2209,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.53.4.0)
-    -- SQLite version 3.53.4
-    -- Date: Sun Jul 26 08:15:43 2026
+    -- SQLite dump (by APSW 3.54.0.0)
+    -- SQLite version 3.54.0
+    -- Date: Mon Oct 12 08:53:35 2026
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2261,7 +2260,7 @@ for per connection statistics.
 
 .. code-block:: output
 
-    SQLite memory usage 522192 max 2499320
+    SQLite memory usage 522424 max 2499360
     5360 bytes used to store schema for this connection
 
 
@@ -2330,21 +2329,21 @@ This shows using :meth:`Connection.trace_v2`
     code is  SQLITE_TRACE_STMT
     {'code': 1,
      'explain': 0,
-     'id': 214232952,
+     'id': 904198312,
      'readonly': True,
      'total_changes': 146,
      'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 214232952}
+    {'code': 4, 'id': 904198312}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 214232952,
-     'nanoseconds': 17000000,
+     'id': 904198312,
+     'nanoseconds': 15000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
                      'SQLITE_STMTSTATUS_FULLSCAN_STEP': 1365,
-                     'SQLITE_STMTSTATUS_MEMUSED': 15784,
+                     'SQLITE_STMTSTATUS_MEMUSED': 15712,
                      'SQLITE_STMTSTATUS_REPREPARE': 0,
                      'SQLITE_STMTSTATUS_RUN': 1,
                      'SQLITE_STMTSTATUS_SORT': 2,
@@ -2382,14 +2381,14 @@ Only statistics that have changed are shown in the summary. There are
 
 .. code-block:: output
 
-                         Process CPU consumption 0.023
-                                      Wall clock 1.323
-                       Maximum resident set size 204
-                            Page faults - no I/O 25
-                    Involuntary context switches 108
-                      Voluntary context switches 1
-                         CPU time in system mode 0.001
-                           CPU time in user mode 0.022
+                         Process CPU consumption 0.020
+                                      Wall clock 1.325
+                          Block input operations 240
+                       Maximum resident set size 412
+                            Page faults - no I/O 24
+                      Voluntary context switches 5
+                         CPU time in system mode 0.002
+                           CPU time in user mode 0.018
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,353
@@ -2459,7 +2458,7 @@ code.  This also shows behind the scenes SQL.
          Time: 0.000
      > insert into multi values(?)
        INS 1 (0)
-         Time: 0.000  Changes: 1
+         Time: 0.000  Rows: 1  Changes: 1
      > insert into multi values(?)
        INS 2 (1)
          Time: 0.000  Changes: 1
@@ -2479,15 +2478,15 @@ code.  This also shows behind the scenes SQL.
        DEL 2 (1)
        DEL 3 (2)
        DEL 4 (3)
-         Time: 0.000  Changes: 4
+         Time: 0.001  Changes: 4
      > COMMIT
       !COMMIT
-         Time: 0.008  Rows: 1
+         Time: 0.007
      > SELECT narg FROM pragma_function_list WHERE name='pow'
      V PRAGMA function_list
-         Time: 0.000  Rows: 217  VmStep: 1,523  Mem: 71.0KB
+         Time: 0.001  Rows: 217  VmStep: 1,523  Mem: 71.0KB
      < SELECT narg FROM pragma_function_list WHERE name='pow'
-         Time: 0.000  Rows: 1  VmStep: 662
+         Time: 0.001  Rows: 1  VmStep: 662
       !BEGIN
      > create trigger error after insert on multi
             begin
@@ -2501,7 +2500,7 @@ code.  This also shows behind the scenes SQL.
          UPD 6>106 (...)
       !ROLLBACK
      < insert into multi values(54)
-         Time: 0.000  Rows: 1  Changes: 1
+         Time: 0.000  Changes: 1
 
 
 .. index:: Formatting query results table (example code)

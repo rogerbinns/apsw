@@ -10,6 +10,63 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.54.0.0
+========
+
+Binaries for Python 3.15 including pyodide are in pypi.
+
+This is the last release supporting Python 3.10 which is now end of
+life.
+
+Provide :func:`incomplete` to get more details on why some SQL
+may not be complete, or is empty whitespace and comments.  This
+finally allowed fixing the 10½ year old shell issue of a line
+comment prompting for continuation.  (:issue:`212`)
+
+Added the ``diskused`` extension to :doc:`extra`, and
+:func:`apsw.ext.diskused` to extract data from it.
+
+:func:`apsw.sqlite_extra.load` and shell :ref:`load <shell-cmd-load>`
+use :meth:`Connection.config` to enable extension loading with
+``SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION`` only for the duration
+of the call to load an extension, and return extension loading
+state to previous setting.  See :meth:`Connection.enable_load_extension`
+documentation for how to do this safer approach.
+
+Added :func:`apsw.ext.compose_uri` to correctly compose a URI filename
+and parameters, and updated documentation to point to it.
+
+:attr:`Connection.cursor_factory` returned objects must have a
+``close`` method.  This is now documented, and enforced.
+
+The `apsw.fork_checker` function has been removed, as supporting it has
+become impractical.  It was originally added in 2009.  (:issue:`632`)
+
+:func:`apsw.ext.log_sqlite` fixed to always have the correct level per
+message, and better document  the ``level`` parameter (:issue:`624`
+PY009).
+
+:meth:`Connection.db_filename` adds a parameter to get the
+corresponding journal/wal filename.  You need to use this method to
+get those for non-main database, as :attr:`~Connection.filename_wal`
+and :attr:`~Connection.filename_journal` only work with ``main``.
+
+Fixed :func:`apsw.ext.dbinfo` to correctly report the journal/wal
+filename - before the names were for ``main``.  The header contents
+were correct.  (:issue:`624` PY010)
+
+Added __lazy_modules__ to Python files so Python 3.15+ will do their
+imports on demand, instead of all at import time.  This improves
+startup times.
+
+Many code fixes responding to AI reports in :issue:`624` and
+:issue:`627`.  All fixes done by human, because why and how they
+happened are important.  The vast majority is C code in error handling
+paths.  Regular code was unlikely to encounter the errors.  If it did
+the majority would give the wrong exception types, with a few
+resulting in leaks, or crashes.  (More details `in a blog post
+<https://www.rogerbinns.com/blog/apsw-has-bugs.html>`__)
+
 3.53.4.0
 ========
 
@@ -132,7 +189,7 @@ is used in :func:`apsw.ext.format_query_table` to centre column names,
 and right align integers.  That updates the :doc:`shell <shell>` output.
 (:issue:`601`)
 
-Update :func:`fork_checker` and :func:`shutdown` for more robustness
+Update `fork_checker` and :func:`shutdown` for more robustness
 (:issue:`602`)
 
 Amalgamation builds **only** (eg PyPI):  Following the `recommended
@@ -985,7 +1042,7 @@ is no longer available with this Python version.
 Fixed custom VFS extension loading failure could leave the error
 message unterminated.
 
-Updated size of mutex array used by the :func:`fork checker <fork_checker>`
+Updated size of mutex array used by the fork checker.
 
 Connections are opened with SQLITE_OPEN_EXRESCODE so open errors will
 also include extended result codes.
@@ -1325,8 +1382,7 @@ Update tests due to a change in Python 3.5 (exception returned with
 invalid strings for system calls changed from TypeError to
 ValueError).
 
-Adjusted some internal detection related to the :func:`fork checker
-<fork_checker>`
+Adjusted some internal detection related to the fork checker.
 
 3.8.10.1-r1
 ===========
@@ -2013,7 +2069,7 @@ planning.
 extension for you.  If the source is present when APSW is built then
 it will be automatically included and *async_initialize* called.
 
-A :meth:`fork_checker` is available which turns on detection when you
+A fork_checker is available which turns on detection when you
 have used SQLite objects across a fork (a **very** bad thing).  This
 is possible on Unix like operating systems, especially if you use the
 :mod:`multiprocessing module <multiprocessing>`.

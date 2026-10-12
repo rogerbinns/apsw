@@ -14,7 +14,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; APSW 3.53.4.0 documentation</title>
+  <title>Index &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/genindex.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="_static/documentation_options.js?v=c3243565"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -702,10 +702,10 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.Commit">Commit() (apsw.VTTable method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.CommitHook">CommitHook (class in apsw)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="apsw.html#apsw.compile_options">compile_options (in module apsw)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.complete">complete() (apsw.shell.Shell method)</a>
@@ -717,6 +717,8 @@
       <li><a href="shell.html#apsw.shell.Shell.complete_command">complete_command() (apsw.shell.Shell method)</a>
 </li>
       <li><a href="shell.html#apsw.shell.Shell.complete_sql">complete_sql() (apsw.shell.Shell method)</a>
+</li>
+      <li><a href="ext.html#apsw.ext.compose_uri">compose_uri() (in module apsw.ext)</a>
 </li>
       <li><a href="session.html#apsw.Changeset.concat">concat() (apsw.Changeset method)</a>
 </li>
@@ -988,6 +990,8 @@
 </li>
       <li><a href="vtable.html#apsw.VTTable.Disconnect">Disconnect() (apsw.VTTable method)</a>
 </li>
+      <li><a href="ext.html#apsw.ext.diskused">diskused() (in module apsw.ext)</a>
+</li>
       <li><a href="textsearch.html#apsw.fts5query.NEAR.distance">distance (apsw.fts5query.NEAR attribute)</a>
 </li>
       <li><a href="vtable.html#apsw.IndexInfo.distinct">distinct (apsw.IndexInfo attribute)</a>
@@ -1175,13 +1179,11 @@
 </li>
       <li><a href="shell.html#apsw.shell.Shell.fixup_backslashes">fixup_backslashes() (apsw.shell.Shell method)</a>
 </li>
-      <li><a href="session.html#apsw.TableChange.fk_conflicts">fk_conflicts (apsw.TableChange attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="blob.html#apsw.Blob.flush">flush() (apsw.Blob method)</a>
+      <li><a href="session.html#apsw.TableChange.fk_conflicts">fk_conflicts (apsw.TableChange attribute)</a>
 </li>
-      <li><a href="apsw.html#apsw.fork_checker">fork_checker() (in module apsw)</a>
+      <li><a href="blob.html#apsw.Blob.flush">flush() (apsw.Blob method)</a>
 </li>
       <li><a href="exceptions.html#apsw.ForkingViolationError">ForkingViolationError</a>
 </li>
@@ -1406,7 +1408,11 @@
 </li>
       <li><a href="connection.html#apsw.Connection.in_transaction">in_transaction (apsw.Connection attribute)</a>
 </li>
+      <li><a href="apsw.html#apsw.incomplete">incomplete() (in module apsw)</a>
+</li>
       <li><a href="exceptions.html#apsw.IncompleteExecutionError">IncompleteExecutionError</a>
+</li>
+      <li><a href="apsw.html#apsw.IncompleteResult">IncompleteResult (class in apsw)</a>
 </li>
       <li><a href="ext.html#apsw.ext.DatabaseFileInfo.incremental_vacuum">incremental_vacuum (apsw.ext.DatabaseFileInfo attribute)</a>
 </li>
@@ -1442,10 +1448,10 @@
 </li>
       <li><a href="exceptions.html#apsw.InternalError">InternalError</a>
 </li>
-      <li><a href="connection.html#apsw.Connection.interrupt">interrupt() (apsw.Connection method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="connection.html#apsw.Connection.interrupt">interrupt() (apsw.Connection method)</a>
+</li>
       <li><a href="exceptions.html#apsw.InterruptError">InterruptError</a>
 </li>
       <li><a href="exceptions.html#apsw.InvalidContextError">InvalidContextError</a>
@@ -1675,10 +1681,10 @@
 </li>
       <li><a href="apsw.html#apsw.mapping_statement_status">mapping_statement_status (in module apsw)</a>
 </li>
-      <li><a href="apsw.html#apsw.mapping_status">mapping_status (in module apsw)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apsw.html#apsw.mapping_status">mapping_status (in module apsw)</a>
+</li>
       <li><a href="apsw.html#apsw.mapping_sync">mapping_sync (in module apsw)</a>
 </li>
       <li><a href="apsw.html#apsw.mapping_trace_codes">mapping_trace_codes (in module apsw)</a>
@@ -1700,10 +1706,6 @@
       <li><a href="ext.html#apsw.ext.DatabasePageUsage.max_page_count">max_page_count (apsw.ext.DatabasePageUsage attribute)</a>
 </li>
       <li><a href="ext.html#apsw.ext.PageUsage.max_payload">max_payload (apsw.ext.PageUsage attribute)</a>
-</li>
-      <li><a href="tips.html#index-4">memdb</a>
-</li>
-      <li><a href="tips.html#index-4">Memory database</a>
 </li>
       <li><a href="apsw.html#apsw.memory_high_water">memory_high_water() (in module apsw)</a>
 </li>
@@ -2663,39 +2665,41 @@
 </li>
       <li><a href="connection.html#index-17">sqlite3_file_control</a>, <a href="connection.html#index-23">[1]</a>, <a href="connection.html#index-36">[2]</a>, <a href="connection.html#index-39">[3]</a>
 </li>
-      <li><a href="connection.html#index-25">sqlite3_filename_journal</a>
+      <li><a href="connection.html#index-18">sqlite3_filename_journal</a>, <a href="connection.html#index-25">[1]</a>
 </li>
-      <li><a href="connection.html#index-26">sqlite3_filename_wal</a>
+      <li><a href="connection.html#index-18">sqlite3_filename_wal</a>, <a href="connection.html#index-26">[1]</a>
 </li>
       <li><a href="connection.html#index-27">sqlite3_get_autocommit</a>, <a href="connection.html#index-28">[1]</a>
 </li>
       <li><a href="apsw.html#index-4">sqlite3_hard_heap_limit64</a>
 </li>
-      <li><a href="apsw.html#index-5">sqlite3_initialize</a>
+      <li><a href="apsw.html#index-5">sqlite3_incomplete</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="apsw.html#index-6">sqlite3_initialize</a>
+</li>
       <li><a href="connection.html#index-29">sqlite3_interrupt</a>
 </li>
       <li><a href="connection.html#index-30">sqlite3_is_interrupted</a>
 </li>
-      <li><a href="apsw.html#index-6">sqlite3_keyword_count</a>
+      <li><a href="apsw.html#index-7">sqlite3_keyword_count</a>
 </li>
-      <li><a href="apsw.html#index-6">sqlite3_keyword_name</a>
+      <li><a href="apsw.html#index-7">sqlite3_keyword_name</a>
 </li>
       <li><a href="connection.html#index-31">sqlite3_last_insert_rowid</a>
 </li>
-      <li><a href="apsw.html#index-17">sqlite3_libversion</a>
+      <li><a href="apsw.html#index-18">sqlite3_libversion</a>
 </li>
       <li><a href="connection.html#index-32">sqlite3_limit</a>
 </li>
       <li><a href="connection.html#index-33">sqlite3_load_extension</a>
 </li>
-      <li><a href="apsw.html#index-7">sqlite3_log</a>
+      <li><a href="apsw.html#index-8">sqlite3_log</a>
 </li>
-      <li><a href="apsw.html#index-8">sqlite3_memory_highwater</a>
+      <li><a href="apsw.html#index-9">sqlite3_memory_highwater</a>
 </li>
-      <li><a href="apsw.html#index-9">sqlite3_memory_used</a>
+      <li><a href="apsw.html#index-10">sqlite3_memory_used</a>
 </li>
       <li><a href="connection.html#index-0">sqlite3_open_v2</a>
 </li>
@@ -2717,9 +2721,9 @@
 </li>
       <li><a href="connection.html#index-46">sqlite3_progress_handler</a>
 </li>
-      <li><a href="apsw.html#index-10">sqlite3_randomness</a>
+      <li><a href="apsw.html#index-11">sqlite3_randomness</a>
 </li>
-      <li><a href="apsw.html#index-11">sqlite3_release_memory</a>
+      <li><a href="apsw.html#index-12">sqlite3_release_memory</a>
 </li>
       <li><a href="tips.html#index-2">sqlite3_result_pointer</a>
 </li>
@@ -2733,19 +2737,19 @@
 </li>
       <li><a href="connection.html#index-50">sqlite3_setlk_timeout</a>
 </li>
-      <li><a href="apsw.html#index-13">sqlite3_shutdown</a>
+      <li><a href="apsw.html#index-14">sqlite3_shutdown</a>
 </li>
-      <li><a href="apsw.html#index-14">sqlite3_sleep</a>
+      <li><a href="apsw.html#index-15">sqlite3_sleep</a>
 </li>
-      <li><a href="apsw.html#index-15">sqlite3_soft_heap_limit64</a>
+      <li><a href="apsw.html#index-16">sqlite3_soft_heap_limit64</a>
 </li>
-      <li><a href="apsw.html#index-16">sqlite3_sourceid</a>
+      <li><a href="apsw.html#index-17">sqlite3_sourceid</a>
 </li>
       <li><a href="apsw.html#apsw.sqlite3_sourceid">sqlite3_sourceid() (in module apsw)</a>
 </li>
       <li><a href="cursor.html#index-8">sqlite3_sql</a>
 </li>
-      <li><a href="apsw.html#index-18">sqlite3_status64</a>
+      <li><a href="apsw.html#index-19">sqlite3_status64</a>
 </li>
       <li><a href="cursor.html#index-3">sqlite3_step</a>
 </li>
@@ -2757,13 +2761,13 @@
 </li>
       <li><a href="connection.html#index-55">sqlite3_stmt_status</a>
 </li>
-      <li><a href="apsw.html#index-19">sqlite3_strglob</a>
+      <li><a href="apsw.html#index-20">sqlite3_strglob</a>
 </li>
-      <li><a href="apsw.html#index-20">sqlite3_stricmp</a>
+      <li><a href="apsw.html#index-21">sqlite3_stricmp</a>
 </li>
-      <li><a href="apsw.html#index-21">sqlite3_strlike</a>
+      <li><a href="apsw.html#index-22">sqlite3_strlike</a>
 </li>
-      <li><a href="apsw.html#index-22">sqlite3_strnicmp</a>
+      <li><a href="apsw.html#index-23">sqlite3_strnicmp</a>
 </li>
       <li><a href="connection.html#index-52">sqlite3_system_errno</a>
 </li>
@@ -2787,11 +2791,11 @@
 </li>
       <li><a href="tips.html#index-2">sqlite3_value_pointer</a>
 </li>
-      <li><a href="apsw.html#index-12">sqlite3_vfs_find</a>, <a href="apsw.html#index-23">[1]</a>, <a href="apsw.html#index-24">[2]</a>, <a href="apsw.html#index-25">[3]</a>, <a href="vfs.html#index-0">[4]</a>
+      <li><a href="apsw.html#index-13">sqlite3_vfs_find</a>, <a href="apsw.html#index-24">[1]</a>, <a href="apsw.html#index-25">[2]</a>, <a href="apsw.html#index-26">[3]</a>, <a href="vfs.html#index-0">[4]</a>
 </li>
-      <li><a href="apsw.html#index-12">sqlite3_vfs_register</a>, <a href="vfs.html#index-0">[1]</a>
+      <li><a href="apsw.html#index-13">sqlite3_vfs_register</a>, <a href="vfs.html#index-0">[1]</a>
 </li>
-      <li><a href="apsw.html#index-23">sqlite3_vfs_unregister</a>, <a href="vfs.html#index-1">[1]</a>
+      <li><a href="apsw.html#index-24">sqlite3_vfs_unregister</a>, <a href="vfs.html#index-1">[1]</a>
 </li>
       <li><a href="vtable.html#index-2">sqlite3_vtab_collation</a>
 </li>
@@ -3426,7 +3430,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

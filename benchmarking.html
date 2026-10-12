@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Benchmarking &mdash; APSW 3.53.4.0 documentation</title>
+  <title>Benchmarking &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/benchmarking.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="_static/documentation_options.js?v=c3243565"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -172,9 +172,9 @@ options:
                         characters [0]
   --data-size SIZE      Duplicate the ~50 byte text column value up to this
                         many times (amount randomly selected per row)
-  --hide-runs           Don&#39;t show the individual iteration timings, only
+  --hide-runs           Don't show the individual iteration timings, only
                         final summary
-  --vfs VFS             Use the named vfs. &#39;passthru&#39; creates a dummy APSW
+  --vfs VFS             Use the named vfs. 'passthru' creates a dummy APSW
                         vfs. You need to provide a real database filename
                         otherwise the memory vfs is used.
   --sqlite-cache SQLITE_CACHE_MB
@@ -198,17 +198,17 @@ statements:
   Runs the SQL queries but uses bindings (? parameters). eg::
 
     for i in range(3):
-       cursor.execute(&quot;insert into table foo values(?)&quot;, (i,))
+       cursor.execute("insert into table foo values(?)", (i,))
 
   This test has many hits of the statement cache.
 
 statements_nobindings:
 
-  Runs the SQL queries but doesn&#39;t use bindings. eg::
+  Runs the SQL queries but doesn't use bindings. eg::
 
-    cursor.execute(&quot;insert into table foo values(0)&quot;)
-    cursor.execute(&quot;insert into table foo values(1)&quot;)
-    cursor.execute(&quot;insert into table foo values(2)&quot;)
+    cursor.execute("insert into table foo values(0)")
+    cursor.execute("insert into table foo values(1)")
+    cursor.execute("insert into table foo values(2)")
 
   This test has no statement cache hits and shows the overhead of
        having a statement cache.
@@ -233,7 +233,7 @@ statements_nobindings:
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

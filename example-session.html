@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session Example/Tour &mdash; APSW 3.53.4.0 documentation</title>
+  <title>Session Example/Tour &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/example-session.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="_static/documentation_options.js?v=c3243565"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -141,7 +141,7 @@
 <p>This example shows using APSW to create and use the <a class="reference external" href="https://www.sqlite.org/sessionintro.html">Session extension</a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
 
-<span class="c1"># This code uses Python&#39;s optional typing annotations.  You can</span>
+<span class="c1"># This code uses Python's optional typing annotations.  You can</span>
 <span class="c1"># ignore them and do not need to use them.  If you do use them</span>
 <span class="c1"># then you must include this future annotations line first.</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -158,9 +158,9 @@
 <span id="example-session-check"></span><span id="index-0"></span><h2>Is Session available?<a class="headerlink" href="#is-session-available" title="Link to this heading"></a></h2>
 <p>Session must be enabled in SQLite at compile time, and in APSW
 at its compile time.  (PyPI builds always have both enabled)</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Session in SQLite:&quot;</span><span class="p">,</span> <span class="s2">&quot;ENABLE_SESSION&quot;</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">compile_options</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"Session in SQLite:"</span><span class="p">,</span> <span class="s2">"ENABLE_SESSION"</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">compile_options</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Session in APSW:&quot;</span><span class="p">,</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="s2">&quot;Session&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"  Session in APSW:"</span><span class="p">,</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">apsw</span><span class="p">,</span> <span class="s2">"Session"</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Session in SQLite: True</span>
@@ -174,9 +174,9 @@ at its compile time.  (PyPI builds always have both enabled)</p>
 link table allowing multiple tags per item.  It has foreign keys and
 a trigger which cause changes beyond the supplied SQL so we can see
 how session handles that.  See the <a class="reference external" href="_static/samples/session.sql">full SQL</a></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;session.sql&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s2">"session.sql"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
 </pre></div>
 </div>
 </section>
@@ -188,14 +188,14 @@ tables to monitor, or use <a class="reference internal" href="session.html#apsw.
 callback.  You can pause and resume monitoring with
 <a class="reference internal" href="session.html#apsw.Session.enabled" title="apsw.Session.enabled"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Session.enabled</span></code></a>.  For unmonitored changes you can use
 <a class="reference internal" href="session.html#apsw.Session.diff" title="apsw.Session.diff"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Session.diff()</span></code></a> to work out the changes between two tables.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">"main"</span><span class="p">)</span>
 
 <span class="c1"># enabled by default.  You can set it to False while making</span>
 <span class="c1"># changes you do not want recorded. It only stops recording</span>
 <span class="c1"># changes to rows not already part of the changeset.</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">enabled</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">enabled</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># We&#39;d like size estimates</span>
+<span class="c1"># We'd like size estimates</span>
 <span class="n">session</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_SESSION_OBJCONFIG_SIZE</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
 
@@ -203,7 +203,7 @@ callback.  You can pause and resume monitoring with
 <span class="c1"># The tables must have PRIMARY KEY in their declaration otherwise</span>
 <span class="c1"># nothing is recorded.</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">table_filter</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;table_filter </span><span class="si">{</span><span class="n">name</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"table_filter </span><span class="si">{</span><span class="n">name</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
     <span class="c1"># We want them all</span>
     <span class="k">return</span> <span class="kc">True</span>
 
@@ -214,33 +214,33 @@ callback.  You can pause and resume monitoring with
 
 <span class="c1"># And now make some changes.  We do every kind of change here -</span>
 <span class="c1"># INSERT, UPDATE, and DELETE.</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">INSERT INTO items(name) VALUES(&#39;kitchen walls&#39;);</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
+<span class="s2">INSERT INTO items(name) VALUES('kitchen walls');</span>
 <span class="s2">INSERT INTO item_tag_link(item_id, tag_id)  VALUES(</span>
-<span class="s2">    (SELECT id FROM items WHERE name=&#39;kitchen walls&#39;),</span>
-<span class="s2">    (SELECT id FROM tags WHERE label=&#39;paint&#39;)</span>
+<span class="s2">    (SELECT id FROM items WHERE name='kitchen walls'),</span>
+<span class="s2">    (SELECT id FROM tags WHERE label='paint')</span>
 <span class="s2">);</span>
 <span class="s2">INSERT INTO item_tag_link(item_id, tag_id)  VALUES(</span>
-<span class="s2">    (SELECT id FROM items WHERE name=&#39;kitchen walls&#39;),</span>
-<span class="s2">    (SELECT id FROM tags WHERE label=&#39;cleaning&#39;)</span>
+<span class="s2">    (SELECT id FROM items WHERE name='kitchen walls'),</span>
+<span class="s2">    (SELECT id FROM tags WHERE label='cleaning')</span>
 <span class="s2">);</span>
 
-<span class="s2">INSERT INTO items(name) VALUES(&#39;microwave&#39;);</span>
+<span class="s2">INSERT INTO items(name) VALUES('microwave');</span>
 
-<span class="s2">UPDATE items SET description=&#39;high gloss&#39; WHERE name=&#39;bathroom ceiling&#39;;</span>
-<span class="s2">UPDATE tags SET cost_centre=null WHERE label=&#39;new&#39;;</span>
+<span class="s2">UPDATE items SET description='high gloss' WHERE name='bathroom ceiling';</span>
+<span class="s2">UPDATE tags SET cost_centre=null WHERE label='new';</span>
 
-<span class="s2">DELETE FROM tags WHERE label=&#39;battery&#39;;</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">DELETE FROM tags WHERE label='battery';</span>
+<span class="s2">"""</span><span class="p">)</span>
 
 <span class="c1"># How much memory is the session using?</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">memory_used</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">memory_used</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">session.enabled=True</span>
-<span class="go">table_filter name=&#39;items&#39;</span>
-<span class="go">table_filter name=&#39;item_tag_link&#39;</span>
-<span class="go">table_filter name=&#39;tags&#39;</span>
+<span class="go">table_filter name='items'</span>
+<span class="go">table_filter name='item_tag_link'</span>
+<span class="go">table_filter name='tags'</span>
 <span class="go">session.memory_used=7352</span>
 </pre></div>
 </div>
@@ -275,42 +275,42 @@ while patchsets only contain the necessary values to make the
 change.  <a class="reference internal" href="ext.html#apsw.ext.changeset_to_sql" title="apsw.ext.changeset_to_sql"><code class="xref py py-func docutils literal notranslate"><span class="pre">apsw.ext.changeset_to_sql()</span></code></a> is useful to see what SQL
 a change or patch set is equivalent to.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">patchset</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">patchset</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">patchset</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">patchset</span><span class="p">)</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;patchset&quot;</span><span class="p">,</span> <span class="n">patchset</span><span class="p">)</span>
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">"patchset"</span><span class="p">,</span> <span class="n">patchset</span><span class="p">)</span>
 
 <span class="c1"># Note how the changeset is larger and contains more information</span>
 <span class="n">changeset</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">changeset</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">changeset</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">changeset</span><span class="p">)</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;changeset&quot;</span><span class="p">,</span> <span class="n">changeset</span><span class="p">)</span>
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">"changeset"</span><span class="p">,</span> <span class="n">changeset</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">len(patchset)=241</span>
 <span class="go">patchset</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;7379B5&#39;, &#39;kitchen walls&#39;, NULL);</span>
-<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;994D2D&#39;;</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;D6CF41&#39;, &#39;microwave&#39;, NULL);</span>
-<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;7379B5&#39;, &#39;6CC1FB&#39;, &#39;system&#39;);</span>
-<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;B29B5F&#39; AND tag_id = &#39;CAD8B3&#39;;</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;7379B5&#39;, &#39;B96BCB&#39;, NULL);</span>
-<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;D6CF41&#39;, &#39;6CC1FB&#39;, &#39;system&#39;);</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;7379B5&#39;, &#39;8E9E92&#39;, NULL);</span>
-<span class="go">UPDATE tags SET cost_centre=NULL WHERE id = &#39;6CC1FB&#39;;</span>
-<span class="go">DELETE FROM tags WHERE id = &#39;CAD8B3&#39;;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES ('2A2F45', 'kitchen walls', NULL);</span>
+<span class="go">UPDATE items SET description='high gloss' WHERE id = '77DAC1';</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES ('2495B9', 'microwave', NULL);</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('2A2F45', '7B1CA9', 'system');</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('2A2F45', 'A7246B', NULL);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('2A2F45', 'BF3F0F', NULL);</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = 'A6E170' AND tag_id = 'DA82F8';</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('2495B9', '7B1CA9', 'system');</span>
+<span class="go">UPDATE tags SET cost_centre=NULL WHERE id = '7B1CA9';</span>
+<span class="go">DELETE FROM tags WHERE id = 'DA82F8';</span>
 
 <span class="go">len(changeset)=274</span>
 <span class="go">changeset</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;7379B5&#39;, &#39;kitchen walls&#39;, NULL);</span>
-<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;994D2D&#39; AND description IS NULL;</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;D6CF41&#39;, &#39;microwave&#39;, NULL);</span>
-<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;7379B5&#39;, &#39;6CC1FB&#39;, &#39;system&#39;);</span>
-<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;B29B5F&#39; AND tag_id = &#39;CAD8B3&#39; AND reason IS NULL;</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;7379B5&#39;, &#39;B96BCB&#39;, NULL);</span>
-<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;D6CF41&#39;, &#39;6CC1FB&#39;, &#39;system&#39;);</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;7379B5&#39;, &#39;8E9E92&#39;, NULL);</span>
-<span class="go">UPDATE tags SET cost_centre=NULL WHERE id = &#39;6CC1FB&#39; AND cost_centre = 100;</span>
-<span class="go">DELETE FROM tags WHERE id = &#39;CAD8B3&#39; AND label = &#39;battery&#39; AND cost_centre = 300;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES ('2A2F45', 'kitchen walls', NULL);</span>
+<span class="go">UPDATE items SET description='high gloss' WHERE id = '77DAC1' AND description IS NULL;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES ('2495B9', 'microwave', NULL);</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('2A2F45', '7B1CA9', 'system');</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('2A2F45', 'A7246B', NULL);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('2A2F45', 'BF3F0F', NULL);</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = 'A6E170' AND tag_id = 'DA82F8' AND reason IS NULL;</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('2495B9', '7B1CA9', 'system');</span>
+<span class="go">UPDATE tags SET cost_centre=NULL WHERE id = '7B1CA9' AND cost_centre = 100;</span>
+<span class="go">DELETE FROM tags WHERE id = 'DA82F8' AND label = 'battery' AND cost_centre = 300;</span>
 </pre></div>
 </div>
 </section>
@@ -324,20 +324,20 @@ where you store changesets allowing for a later undo or redo.</p>
 
 <span class="c1"># Compare this to the changeset above, to see how it does the</span>
 <span class="c1"># opposite.</span>
-<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;undo&quot;</span><span class="p">,</span> <span class="n">undo</span><span class="p">)</span>
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">"undo"</span><span class="p">,</span> <span class="n">undo</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">undo</span>
-<span class="go">DELETE FROM items WHERE id = &#39;7379B5&#39; AND name = &#39;kitchen walls&#39; AND description IS NULL;</span>
-<span class="go">UPDATE items SET description=NULL WHERE id = &#39;994D2D&#39; AND description = &#39;high gloss&#39;;</span>
-<span class="go">DELETE FROM items WHERE id = &#39;D6CF41&#39; AND name = &#39;microwave&#39; AND description IS NULL;</span>
-<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;7379B5&#39; AND tag_id = &#39;6CC1FB&#39; AND reason = &#39;system&#39;;</span>
-<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;B29B5F&#39;, &#39;CAD8B3&#39;, NULL);</span>
-<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;7379B5&#39; AND tag_id = &#39;B96BCB&#39; AND reason IS NULL;</span>
-<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = &#39;D6CF41&#39; AND tag_id = &#39;6CC1FB&#39; AND reason = &#39;system&#39;;</span>
-<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;7379B5&#39; AND tag_id = &#39;8E9E92&#39; AND reason IS NULL;</span>
-<span class="go">UPDATE tags SET cost_centre=100 WHERE id = &#39;6CC1FB&#39; AND cost_centre IS NULL;</span>
-<span class="go">INSERT INTO tags(id, label, cost_centre) VALUES (&#39;CAD8B3&#39;, &#39;battery&#39;, 300);</span>
+<span class="go">DELETE FROM items WHERE id = '2A2F45' AND name = 'kitchen walls' AND description IS NULL;</span>
+<span class="go">UPDATE items SET description=NULL WHERE id = '77DAC1' AND description = 'high gloss';</span>
+<span class="go">DELETE FROM items WHERE id = '2495B9' AND name = 'microwave' AND description IS NULL;</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = '2A2F45' AND tag_id = '7B1CA9' AND reason = 'system';</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = '2A2F45' AND tag_id = 'A7246B' AND reason IS NULL;</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = '2A2F45' AND tag_id = 'BF3F0F' AND reason IS NULL;</span>
+<span class="go">/* indirect */ INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('A6E170', 'DA82F8', NULL);</span>
+<span class="go">/* indirect */ DELETE FROM item_tag_link WHERE item_id = '2495B9' AND tag_id = '7B1CA9' AND reason = 'system';</span>
+<span class="go">UPDATE tags SET cost_centre=100 WHERE id = '7B1CA9' AND cost_centre IS NULL;</span>
+<span class="go">INSERT INTO tags(id, label, cost_centre) VALUES ('DA82F8', 'battery', 300);</span>
 </pre></div>
 </div>
 </section>
@@ -354,7 +354,7 @@ going to undo our earlier changes.</p>
 <span class="k">except</span> <span class="n">apsw</span><span class="o">.</span><span class="n">AbortError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
     <span class="c1"># It will fail, and the database back in the state when we started</span>
     <span class="c1"># the apply.</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exception </span><span class="si">{</span><span class="n">exc</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Exception </span><span class="si">{</span><span class="n">exc</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="c1"># The reason it failed is because of the foreign keys automatically</span>
 <span class="c1"># removing rows in the link table when members of items and tags got</span>
@@ -364,36 +364,36 @@ going to undo our earlier changes.</p>
 <span class="n">failed</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ChangesetBuilder</span><span class="p">()</span>
 
 <span class="c1"># And make some deliberate conflicts</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    UPDATE items SET description = &#39;Orange flavour&#39; WHERE name = &#39;bathroom ceiling&#39;;</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
+<span class="s2">    UPDATE items SET description = 'Orange flavour' WHERE name = 'bathroom ceiling';</span>
 <span class="s2">    -- Refuse deletes to make constraint failure on delete</span>
 <span class="s2">    CREATE TRIGGER prevent_microwave_deletion</span>
 <span class="s2">    BEFORE DELETE ON items</span>
 <span class="s2">        FOR EACH ROW</span>
-<span class="s2">        WHEN OLD.name = &#39;microwave&#39;</span>
+<span class="s2">        WHEN OLD.name = 'microwave'</span>
 <span class="s2">        BEGIN</span>
-<span class="s2">            SELECT RAISE(ABORT, &#39;Cannot delete items with name &quot;microwave&quot;&#39;);</span>
+<span class="s2">            SELECT RAISE(ABORT, 'Cannot delete items with name "microwave"');</span>
 <span class="s2">        END;</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">"""</span><span class="p">)</span>
 
 
 <span class="c1"># A conflict handler says what to do</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">conflict_handler</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">change</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">TableChange</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="c1"># Print the failure information</span>
     <span class="nb">print</span><span class="p">(</span>
-        <span class="s2">&quot;conflict&quot;</span><span class="p">,</span>
+        <span class="s2">"conflict"</span><span class="p">,</span>
         <span class="n">apsw</span><span class="o">.</span><span class="n">mapping_session_conflict</span><span class="p">[</span><span class="n">reason</span><span class="p">],</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">op</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">opcode</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">conflict</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">name</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">column_count</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">fk_conflicts</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">indirect</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">old</span><span class="si">=}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">new</span><span class="si">=}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">op</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">opcode</span><span class="si">=}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">conflict</span><span class="si">=}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">name</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">column_count</span><span class="si">=}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">fk_conflicts</span><span class="si">=}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">indirect</span><span class="si">=}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">old</span><span class="si">=}</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">new</span><span class="si">=}</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># save the change for later</span>
@@ -408,18 +408,18 @@ going to undo our earlier changes.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">filter_change</span><span class="p">(</span><span class="n">change</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">TableChange</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">change</span><span class="o">.</span><span class="n">indirect</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="s2">&quot;filter_change excluding&quot;</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">op</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">opcode</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">conflict</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">name</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">column_count</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">fk_conflicts</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">indirect</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">old</span><span class="si">=}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">new</span><span class="si">=}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="s2">"filter_change excluding"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">op</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">opcode</span><span class="si">=}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">conflict</span><span class="si">=}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">name</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">column_count</span><span class="si">=}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">fk_conflicts</span><span class="si">=}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">indirect</span><span class="si">=}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">old</span><span class="si">=}</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">change</span><span class="o">.</span><span class="n">new</span><span class="si">=}</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># This excludes the change</span>
         <span class="k">return</span> <span class="kc">False</span>
@@ -429,65 +429,65 @@ going to undo our earlier changes.</p>
 <span class="c1"># Undo our earlier changes again</span>
 <span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">undo</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">filter_change</span><span class="o">=</span><span class="n">filter_change</span><span class="p">,</span> <span class="n">conflict</span><span class="o">=</span><span class="n">conflict_handler</span><span class="p">)</span>
 
-<span class="c1"># Now lets see what couldn&#39;t apply as SQL</span>
-<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;failed&quot;</span><span class="p">,</span> <span class="n">failed</span><span class="o">.</span><span class="n">output</span><span class="p">())</span>
+<span class="c1"># Now lets see what couldn't apply as SQL</span>
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">"failed"</span><span class="p">,</span> <span class="n">failed</span><span class="o">.</span><span class="n">output</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Exception exc=AbortError(&#39;query aborted&#39;)</span>
-<span class="go">conflict SQLITE_CHANGESET_DATA change.op=&#39;UPDATE&#39; change.opcode=23</span>
-<span class="go"> change.conflict=(&#39;994D2D&#39;, &#39;bathroom ceiling&#39;, &#39;Orange flavour&#39;)</span>
-<span class="go"> change.name=&#39;items&#39; change.column_count=3</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Exception exc=AbortError('query aborted')</span>
+<span class="go">conflict SQLITE_CHANGESET_DATA change.op='UPDATE' change.opcode=23</span>
+<span class="go"> change.conflict=('77DAC1', 'bathroom ceiling', 'Orange flavour')</span>
+<span class="go"> change.name='items' change.column_count=3</span>
 <span class="go"> change.fk_conflicts=None change.indirect=False</span>
-<span class="go"> change.old=(&#39;994D2D&#39;, &lt;apsw.no_change&gt;, &#39;high gloss&#39;)</span>
+<span class="go"> change.old=('77DAC1', &lt;apsw.no_change&gt;, 'high gloss')</span>
 <span class="go"> change.new=(&lt;apsw.no_change&gt;, &lt;apsw.no_change&gt;, None)</span>
 
-<span class="go">conflict SQLITE_CHANGESET_CONSTRAINT change.op=&#39;DELETE&#39; change.opcode=9</span>
+<span class="go">conflict SQLITE_CHANGESET_CONSTRAINT change.op='DELETE' change.opcode=9</span>
 <span class="go"> change.conflict=None</span>
-<span class="go"> change.name=&#39;items&#39; change.column_count=3</span>
+<span class="go"> change.name='items' change.column_count=3</span>
 <span class="go"> change.fk_conflicts=None change.indirect=False</span>
-<span class="go"> change.old=(&#39;D6CF41&#39;, &#39;microwave&#39;, None)</span>
+<span class="go"> change.old=('2495B9', 'microwave', None)</span>
 <span class="go"> change.new=None</span>
 
-<span class="go">filter_change excluding change.op=&#39;DELETE&#39; change.opcode=9</span>
+<span class="go">filter_change excluding change.op='DELETE' change.opcode=9</span>
 <span class="go"> change.conflict=None</span>
-<span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
+<span class="go"> change.name='item_tag_link' change.column_count=3</span>
 <span class="go"> change.fk_conflicts=None change.indirect=True</span>
-<span class="go"> change.old=(&#39;7379B5&#39;, &#39;6CC1FB&#39;, &#39;system&#39;)</span>
+<span class="go"> change.old=('2A2F45', '7B1CA9', 'system')</span>
 <span class="go"> change.new=None</span>
 
-<span class="go">filter_change excluding change.op=&#39;INSERT&#39; change.opcode=18</span>
+<span class="go">conflict SQLITE_CHANGESET_NOTFOUND change.op='DELETE' change.opcode=9</span>
 <span class="go"> change.conflict=None</span>
-<span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
+<span class="go"> change.name='item_tag_link' change.column_count=3</span>
+<span class="go"> change.fk_conflicts=None change.indirect=False</span>
+<span class="go"> change.old=('2A2F45', 'A7246B', None)</span>
+<span class="go"> change.new=None</span>
+
+<span class="go">conflict SQLITE_CHANGESET_NOTFOUND change.op='DELETE' change.opcode=9</span>
+<span class="go"> change.conflict=None</span>
+<span class="go"> change.name='item_tag_link' change.column_count=3</span>
+<span class="go"> change.fk_conflicts=None change.indirect=False</span>
+<span class="go"> change.old=('2A2F45', 'BF3F0F', None)</span>
+<span class="go"> change.new=None</span>
+
+<span class="go">filter_change excluding change.op='INSERT' change.opcode=18</span>
+<span class="go"> change.conflict=None</span>
+<span class="go"> change.name='item_tag_link' change.column_count=3</span>
 <span class="go"> change.fk_conflicts=None change.indirect=True</span>
 <span class="go"> change.old=None</span>
-<span class="go"> change.new=(&#39;B29B5F&#39;, &#39;CAD8B3&#39;, None)</span>
+<span class="go"> change.new=('A6E170', 'DA82F8', None)</span>
 
-<span class="go">conflict SQLITE_CHANGESET_NOTFOUND change.op=&#39;DELETE&#39; change.opcode=9</span>
+<span class="go">filter_change excluding change.op='DELETE' change.opcode=9</span>
 <span class="go"> change.conflict=None</span>
-<span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
-<span class="go"> change.fk_conflicts=None change.indirect=False</span>
-<span class="go"> change.old=(&#39;7379B5&#39;, &#39;B96BCB&#39;, None)</span>
-<span class="go"> change.new=None</span>
-
-<span class="go">filter_change excluding change.op=&#39;DELETE&#39; change.opcode=9</span>
-<span class="go"> change.conflict=None</span>
-<span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
+<span class="go"> change.name='item_tag_link' change.column_count=3</span>
 <span class="go"> change.fk_conflicts=None change.indirect=True</span>
-<span class="go"> change.old=(&#39;D6CF41&#39;, &#39;6CC1FB&#39;, &#39;system&#39;)</span>
-<span class="go"> change.new=None</span>
-
-<span class="go">conflict SQLITE_CHANGESET_NOTFOUND change.op=&#39;DELETE&#39; change.opcode=9</span>
-<span class="go"> change.conflict=None</span>
-<span class="go"> change.name=&#39;item_tag_link&#39; change.column_count=3</span>
-<span class="go"> change.fk_conflicts=None change.indirect=False</span>
-<span class="go"> change.old=(&#39;7379B5&#39;, &#39;8E9E92&#39;, None)</span>
+<span class="go"> change.old=('2495B9', '7B1CA9', 'system')</span>
 <span class="go"> change.new=None</span>
 
 <span class="go">failed</span>
-<span class="go">UPDATE items SET description=NULL WHERE id = &#39;994D2D&#39; AND description = &#39;high gloss&#39;;</span>
-<span class="go">DELETE FROM items WHERE id = &#39;D6CF41&#39; AND name = &#39;microwave&#39; AND description IS NULL;</span>
-<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;7379B5&#39; AND tag_id = &#39;B96BCB&#39; AND reason IS NULL;</span>
-<span class="go">DELETE FROM item_tag_link WHERE item_id = &#39;7379B5&#39; AND tag_id = &#39;8E9E92&#39; AND reason IS NULL;</span>
+<span class="go">UPDATE items SET description=NULL WHERE id = '77DAC1' AND description = 'high gloss';</span>
+<span class="go">DELETE FROM items WHERE id = '2495B9' AND name = 'microwave' AND description IS NULL;</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = '2A2F45' AND tag_id = 'A7246B' AND reason IS NULL;</span>
+<span class="go">DELETE FROM item_tag_link WHERE item_id = '2A2F45' AND tag_id = 'BF3F0F' AND reason IS NULL;</span>
 </pre></div>
 </div>
 </section>
@@ -501,76 +501,76 @@ fighting each other.  You need to be careful when using all of them
 at the same time.  See <a class="reference internal" href="#example-changesetbuilder"><span class="std std-ref">ChangesetBuilder next</span></a> where you can make your own changesets
 for these more complicated situations.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start from the same database</span>
-<span class="n">alice_connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;alice.db&quot;</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">alice_connection</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
+<span class="n">alice_connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">"alice.db"</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">alice_connection</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">"main"</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="s2">"main"</span><span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
     <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 
-<span class="n">bob_connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;bob.db&quot;</span><span class="p">)</span>
-<span class="k">with</span> <span class="n">bob_connection</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
+<span class="n">bob_connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">"bob.db"</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">bob_connection</span><span class="o">.</span><span class="n">backup</span><span class="p">(</span><span class="s2">"main"</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="s2">"main"</span><span class="p">)</span> <span class="k">as</span> <span class="n">backup</span><span class="p">:</span>
     <span class="n">backup</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 
 <span class="c1"># setup sessions</span>
-<span class="n">alice_session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">alice_connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="n">alice_session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">alice_connection</span><span class="p">,</span> <span class="s2">"main"</span><span class="p">)</span>
 <span class="n">alice_session</span><span class="o">.</span><span class="n">attach</span><span class="p">()</span>
 
-<span class="n">bob_session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">bob_connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="n">bob_session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">bob_connection</span><span class="p">,</span> <span class="s2">"main"</span><span class="p">)</span>
 <span class="n">bob_session</span><span class="o">.</span><span class="n">attach</span><span class="p">()</span>
 
 <span class="c1"># Each makes changes</span>
-<span class="n">alice_connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    UPDATE tags SET label=&#39;painting&#39; WHERE label=&#39;paint&#39;;</span>
-<span class="s2">    INSERT INTO items(name, description) VALUES(&#39;storage closet&#39;, &#39;main storage space&#39;);</span>
-<span class="s2">    INSERT INTO tags(label) VALUES(&#39;approval needed&#39;);</span>
+<span class="n">alice_connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
+<span class="s2">    UPDATE tags SET label='painting' WHERE label='paint';</span>
+<span class="s2">    INSERT INTO items(name, description) VALUES('storage closet', 'main storage space');</span>
+<span class="s2">    INSERT INTO tags(label) VALUES('approval needed');</span>
 <span class="s2">    -- remove new tag</span>
-<span class="s2">    DELETE FROM item_tag_link WHERE item_id=(SELECT id FROM items WHERE name=&#39;storage closet&#39;);</span>
+<span class="s2">    DELETE FROM item_tag_link WHERE item_id=(SELECT id FROM items WHERE name='storage closet');</span>
 <span class="s2">    -- add approval needed</span>
 <span class="s2">    INSERT INTO item_tag_link(item_id, tag_id)  VALUES(</span>
-<span class="s2">        (SELECT id FROM items WHERE name=&#39;storage closet&#39;),</span>
-<span class="s2">        (SELECT id FROM tags WHERE label=&#39;approval needed&#39;)</span>
+<span class="s2">        (SELECT id FROM items WHERE name='storage closet'),</span>
+<span class="s2">        (SELECT id FROM tags WHERE label='approval needed')</span>
 <span class="s2">    );</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">"""</span><span class="p">)</span>
 
-<span class="n">bob_connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    UPDATE tags SET cost_centre = &#39;150&#39; WHERE label=&#39;electrical&#39;;</span>
-<span class="s2">    INSERT INTO items(name) VALUES(&#39;storage B&#39;);</span>
+<span class="n">bob_connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
+<span class="s2">    UPDATE tags SET cost_centre = '150' WHERE label='electrical';</span>
+<span class="s2">    INSERT INTO items(name) VALUES('storage B');</span>
 <span class="s2">    -- remove new tag</span>
-<span class="s2">    DELETE FROM item_tag_link WHERE item_id=(SELECT id FROM items WHERE name=&#39;storage B&#39;);</span>
+<span class="s2">    DELETE FROM item_tag_link WHERE item_id=(SELECT id FROM items WHERE name='storage B');</span>
 <span class="s2">    -- add electrical</span>
 <span class="s2">    INSERT INTO item_tag_link(item_id, tag_id)  VALUES(</span>
-<span class="s2">        (SELECT id FROM items WHERE name=&#39;storage B&#39;),</span>
-<span class="s2">        (SELECT id FROM tags WHERE label=&#39;electrical&#39;)</span>
+<span class="s2">        (SELECT id FROM items WHERE name='storage B'),</span>
+<span class="s2">        (SELECT id FROM tags WHERE label='electrical')</span>
 <span class="s2">    );</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">"""</span><span class="p">)</span>
 
 <span class="c1"># Get the changesets</span>
 <span class="n">alice_changeset</span> <span class="o">=</span> <span class="n">alice_session</span><span class="o">.</span><span class="n">changeset</span><span class="p">()</span>
 
 <span class="n">bob_changeset</span> <span class="o">=</span> <span class="n">bob_session</span><span class="o">.</span><span class="n">changeset</span><span class="p">()</span>
 
-<span class="c1"># Apply them to each other&#39;s database</span>
+<span class="c1"># Apply them to each other's database</span>
 <span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">alice_changeset</span><span class="p">,</span> <span class="n">bob_connection</span><span class="p">)</span>
 <span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">bob_changeset</span><span class="p">,</span> <span class="n">alice_connection</span><span class="p">)</span>
 
 
-<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">"""</span>
 <span class="s2">SELECT items.name AS name, tags.label AS tag, tags.cost_centre AS cost_centre</span>
 <span class="s2">   FROM tags, items, item_tag_link</span>
 <span class="s2">   WHERE items.id = item_tag_link.item_id AND tags.id = item_tag_link.tag_id</span>
 <span class="s2">   ORDER BY items.name, tags.label</span>
-<span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">"""</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Alice&#39;s database&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Alice's database"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">alice_connection</span><span class="p">,</span> <span class="n">query</span><span class="p">))</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Bob&#39;s database&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Bob's database"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">ext</span><span class="o">.</span><span class="n">format_query_table</span><span class="p">(</span><span class="n">bob_connection</span><span class="p">,</span> <span class="n">query</span><span class="p">))</span>
 
-<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;Alice changeset&quot;</span><span class="p">,</span> <span class="n">alice_changeset</span><span class="p">)</span>
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">"Alice changeset"</span><span class="p">,</span> <span class="n">alice_changeset</span><span class="p">)</span>
 
-<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;Bob changseset&quot;</span><span class="p">,</span> <span class="n">bob_changeset</span><span class="p">)</span>
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">"Bob changseset"</span><span class="p">,</span> <span class="n">bob_changeset</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Alice&#39;s database</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Alice's database</span>
 <span class="go">╭──────────────────┬─────────────────┬─────────────╮</span>
 <span class="go">│       name       │       tag       │ cost_centre │</span>
 <span class="go">│ bathroom ceiling │ painting        │         110 │</span>
@@ -585,7 +585,7 @@ for these more complicated situations.</p>
 <span class="go">╰──────────────────┴─────────────────┴─────────────╯</span>
 
 
-<span class="go">Bob&#39;s database</span>
+<span class="go">Bob's database</span>
 <span class="go">╭──────────────────┬─────────────────┬─────────────╮</span>
 <span class="go">│       name       │       tag       │ cost_centre │</span>
 <span class="go">│ bathroom ceiling │ painting        │         110 │</span>
@@ -600,15 +600,15 @@ for these more complicated situations.</p>
 <span class="go">╰──────────────────┴─────────────────┴─────────────╯</span>
 
 <span class="go">Alice changeset</span>
-<span class="go">UPDATE tags SET label=&#39;painting&#39; WHERE id = &#39;8E9E92&#39; AND label = &#39;paint&#39;;</span>
-<span class="go">INSERT INTO tags(id, label, cost_centre) VALUES (&#39;0E03B2&#39;, &#39;approval needed&#39;, NULL);</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;84D03C&#39;, &#39;storage closet&#39;, &#39;main storage space&#39;);</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;84D03C&#39;, &#39;0E03B2&#39;, NULL);</span>
+<span class="go">UPDATE tags SET label='painting' WHERE id = 'A7246B' AND label = 'paint';</span>
+<span class="go">INSERT INTO tags(id, label, cost_centre) VALUES ('A535A0', 'approval needed', NULL);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES ('4AA269', 'storage closet', 'main storage space');</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('4AA269', 'A535A0', NULL);</span>
 
 <span class="go">Bob changseset</span>
-<span class="go">UPDATE tags SET cost_centre=&#39;150&#39; WHERE id = &#39;0B1F76&#39; AND cost_centre = 145;</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;FBFFFF&#39;, &#39;storage B&#39;, NULL);</span>
-<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES (&#39;FBFFFF&#39;, &#39;0B1F76&#39;, NULL);</span>
+<span class="go">UPDATE tags SET cost_centre='150' WHERE id = '16EC97' AND cost_centre = 145;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES ('6010F1', 'storage B', NULL);</span>
+<span class="go">INSERT INTO item_tag_link(item_id, tag_id, reason) VALUES ('6010F1', '16EC97', NULL);</span>
 </pre></div>
 </div>
 </section>
@@ -624,16 +624,16 @@ structure (names, primary keys, number of columns).</p>
 <p>The second part is making our own changes.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">items</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">ChangesetBuilder</span><span class="p">()</span>
 
-<span class="n">items</span><span class="o">.</span><span class="n">schema</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="n">items</span><span class="o">.</span><span class="n">schema</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">"main"</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="p">(</span><span class="n">changeset</span><span class="p">,</span> <span class="n">alice_changeset</span><span class="p">,</span> <span class="n">bob_changeset</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">change</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="n">source</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">change</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;items&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">change</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"items"</span><span class="p">:</span>
             <span class="n">items</span><span class="o">.</span><span class="n">add_change</span><span class="p">(</span><span class="n">change</span><span class="p">)</span>
 
 <span class="n">only_items</span> <span class="o">=</span> <span class="n">items</span><span class="o">.</span><span class="n">output</span><span class="p">()</span>
 
-<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;Only items table changes&quot;</span><span class="p">,</span> <span class="n">only_items</span><span class="p">)</span>
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">"Only items table changes"</span><span class="p">,</span> <span class="n">only_items</span><span class="p">)</span>
 <span class="n">items</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="c1"># Make our own</span>
@@ -646,35 +646,35 @@ structure (names, primary keys, number of columns).</p>
 <span class="c1"># original values.</span>
 <span class="n">builder</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_CHANGEGROUP_CONFIG_PATCHSET</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-<span class="c1"># You won&#39;t be able to add anything unless the schema can be</span>
+<span class="c1"># You won't be able to add anything unless the schema can be</span>
 <span class="c1"># verified - eg it needs to know which columns are the primary</span>
 <span class="c1"># key.</span>
-<span class="n">builder</span><span class="o">.</span><span class="n">schema</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">schema</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="s2">"main"</span><span class="p">)</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;CREATE TABLE manual(one, two, three, four, five, PRIMARY KEY(two, four));&quot;</span><span class="p">)</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"CREATE TABLE manual(one, two, three, four, five, PRIMARY KEY(two, four));"</span><span class="p">)</span>
 
-<span class="n">builder</span><span class="o">.</span><span class="n">add_insert</span><span class="p">(</span><span class="s2">&quot;manual&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;one&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x01\x01\x01</span><span class="s2">&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
-<span class="n">builder</span><span class="o">.</span><span class="n">add_delete</span><span class="p">(</span><span class="s2">&quot;manual&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;two&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x02\x02\x02</span><span class="s2">&quot;</span><span class="p">,</span> <span class="mf">2.2</span><span class="p">))</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">add_insert</span><span class="p">(</span><span class="s2">"manual"</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">(</span><span class="s2">"one"</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x01\x01\x01</span><span class="s2">"</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">add_delete</span><span class="p">(</span><span class="s2">"manual"</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="p">(</span><span class="s2">"two"</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x02\x02\x02</span><span class="s2">"</span><span class="p">,</span> <span class="mf">2.2</span><span class="p">))</span>
 
-<span class="c1"># updates require the old and new rows. but new can&#39;t change the primary keys</span>
+<span class="c1"># updates require the old and new rows. but new can't change the primary keys</span>
 <span class="c1"># so use no_change for those columns</span>
-<span class="n">builder</span><span class="o">.</span><span class="n">add_update</span><span class="p">(</span><span class="s2">&quot;manual&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;three&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">3.3</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x04\x04\x04</span><span class="s2">&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-                   <span class="p">(</span><span class="s2">&quot;thirty&quot;</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">no_change</span><span class="p">,</span> <span class="mf">30.30</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">no_change</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span>
+<span class="n">builder</span><span class="o">.</span><span class="n">add_update</span><span class="p">(</span><span class="s2">"manual"</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="p">(</span><span class="s2">"three"</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mf">3.3</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x04\x04\x04</span><span class="s2">"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s2">"thirty"</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">no_change</span><span class="p">,</span> <span class="mf">30.30</span><span class="p">,</span> <span class="n">apsw</span><span class="o">.</span><span class="n">no_change</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span>
 
-<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;Manual builder&quot;</span><span class="p">,</span> <span class="n">builder</span><span class="o">.</span><span class="n">output</span><span class="p">())</span>
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">"Manual builder"</span><span class="p">,</span> <span class="n">builder</span><span class="o">.</span><span class="n">output</span><span class="p">())</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Only items table changes</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;7379B5&#39;, &#39;kitchen walls&#39;, NULL);</span>
-<span class="go">UPDATE items SET description=&#39;high gloss&#39; WHERE id = &#39;994D2D&#39; AND description IS NULL;</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;D6CF41&#39;, &#39;microwave&#39;, NULL);</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;84D03C&#39;, &#39;storage closet&#39;, &#39;main storage space&#39;);</span>
-<span class="go">INSERT INTO items(id, name, description) VALUES (&#39;FBFFFF&#39;, &#39;storage B&#39;, NULL);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES ('4AA269', 'storage closet', 'main storage space');</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES ('2A2F45', 'kitchen walls', NULL);</span>
+<span class="go">UPDATE items SET description='high gloss' WHERE id = '77DAC1' AND description IS NULL;</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES ('2495B9', 'microwave', NULL);</span>
+<span class="go">INSERT INTO items(id, name, description) VALUES ('6010F1', 'storage B', NULL);</span>
 
 <span class="go">Manual builder</span>
-<span class="go">/* indirect */ INSERT INTO manual(one, two, three, four, five) VALUES (&#39;one&#39;, 1, 1.1, X&#39;010101&#39;, NULL);</span>
-<span class="go">UPDATE manual SET one=&#39;thirty&#39;, three=30.3, five=30 WHERE two = 3 AND four = X&#39;040404&#39;;</span>
-<span class="go">/* indirect */ DELETE FROM manual WHERE two = 2 AND four = X&#39;020202&#39;;</span>
+<span class="go">/* indirect */ INSERT INTO manual(one, two, three, four, five) VALUES ('one', 1, 1.1, X'010101', NULL);</span>
+<span class="go">UPDATE manual SET one='thirty', three=30.3, five=30 WHERE two = 3 AND four = X'040404';</span>
+<span class="go">/* indirect */ DELETE FROM manual WHERE two = 2 AND four = X'020202';</span>
 </pre></div>
 </div>
 </section>
@@ -687,19 +687,19 @@ chunks, such as with blobs, files, or network connections.</p>
 <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">session_config</span><span class="p">(</span>
     <span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_SESSION_CONFIG_STRMSIZE</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;default chunk size&quot;</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"default chunk size"</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)</span>
 
 <span class="c1"># Some changes to make the changeset larger.  The size is an estimate.</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Before estimate </span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">changeset_size</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="s2">&quot;abcdefghijklmnopqrstuvwxyz&quot;</span><span class="p">:</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Before estimate </span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">changeset_size</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="s2">"abcdefghijklmnopqrstuvwxyz"</span><span class="p">:</span>
     <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-        <span class="s2">&quot;INSERT INTO items(name, description) VALUES(?, ?)&quot;</span><span class="p">,</span>
+        <span class="s2">"INSERT INTO items(name, description) VALUES(?, ?)"</span><span class="p">,</span>
         <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">1234</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">1234</span><span class="p">),</span>
     <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;After estimate </span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">changeset_size</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"After estimate </span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">changeset_size</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># We&#39;ll write to a file</span>
-<span class="n">out</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryFile</span><span class="p">(</span><span class="s2">&quot;w+b&quot;</span><span class="p">)</span>
+<span class="c1"># We'll write to a file</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryFile</span><span class="p">(</span><span class="s2">"w+b"</span><span class="p">)</span>
 
 <span class="n">num_writes</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -714,8 +714,8 @@ chunks, such as with blobs, files, or network connections.</p>
 
 <span class="n">session</span><span class="o">.</span><span class="n">changeset_stream</span><span class="p">(</span><span class="n">write</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Output file size is&quot;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">tell</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of writes&quot;</span><span class="p">,</span> <span class="n">num_writes</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Output file size is"</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">tell</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Number of writes"</span><span class="p">,</span> <span class="n">num_writes</span><span class="p">)</span>
 
 <span class="c1"># Lets read from the same file, using the streaming iterator</span>
 <span class="n">out</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -732,8 +732,8 @@ chunks, such as with blobs, files, or network connections.</p>
 <span class="k">for</span> <span class="n">change</span> <span class="ow">in</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Changeset</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="n">read</span><span class="p">):</span>
     <span class="n">num_changes</span> <span class="o">+=</span> <span class="mi">1</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of reads&quot;</span><span class="p">,</span> <span class="n">num_reads</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of changes&quot;</span><span class="p">,</span> <span class="n">num_changes</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Number of reads"</span><span class="p">,</span> <span class="n">num_reads</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Number of changes"</span><span class="p">,</span> <span class="n">num_changes</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">default chunk size 1024</span>
@@ -760,16 +760,16 @@ then <a class="reference internal" href="session.html#apsw.Rebaser.rebase" title
 <p>We are going to make alice then bob appear to have been done in that
 order without conflicts.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reset back to original data with the base changeset applied</span>
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
 <span class="s2">    DROP TABLE item_tag_link;</span>
 <span class="s2">    DROP TABLE items;</span>
 <span class="s2">    DROP TABLE tags;</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">"""</span><span class="p">)</span>
 
-<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;session.sql&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+<span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s2">"session.sql"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
 
 
-<span class="c1"># The conflict handler we&#39;ll use doing latest writer wins - you should</span>
+<span class="c1"># The conflict handler we'll use doing latest writer wins - you should</span>
 <span class="c1"># be more careful.</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">conflict_handler</span><span class="p">(</span><span class="n">reason</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">change</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">TableChange</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">reason</span> <span class="ow">in</span> <span class="p">(</span>
@@ -796,7 +796,7 @@ order without conflicts.</p>
 
 <span class="n">rebaser</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">conflict_resolutions</span><span class="p">)</span>
 
-<span class="c1"># and apply them to bob&#39;s</span>
+<span class="c1"># and apply them to bob's</span>
 <span class="n">bob_rebased</span> <span class="o">=</span> <span class="n">rebaser</span><span class="o">.</span><span class="n">rebase</span><span class="p">(</span><span class="n">bob_changeset</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -807,45 +807,45 @@ order without conflicts.</p>
 table in another database and this database.  This is useful if the
 other database was updated without a session being recorded.  Note that
 the table must have a <code class="docutils literal notranslate"><span class="pre">PRIMARY</span> <span class="pre">KEY</span></code>, or it will be ignored.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">diff_demo</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;diff_demo.db&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">diff_demo</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">"diff_demo.db"</span><span class="p">)</span>
 
-<span class="n">diff_demo</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="n">diff_demo</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
 <span class="s2">    -- our session runs on this</span>
 <span class="s2">    CREATE TABLE example(x PRIMARY KEY, y, z);</span>
 <span class="s2">    INSERT INTO example VALUES</span>
-<span class="s2">            (1, &#39;one&#39;, 1.1),</span>
-<span class="s2">            (2, &#39;two&#39;, 2.2),</span>
-<span class="s2">            (3, &#39;three&#39;, 3.3);</span>
+<span class="s2">            (1, 'one', 1.1),</span>
+<span class="s2">            (2, 'two', 2.2),</span>
+<span class="s2">            (3, 'three', 3.3);</span>
 
 <span class="s2">    -- the other database</span>
-<span class="s2">    ATTACH &#39;other.db&#39; AS other;</span>
+<span class="s2">    ATTACH 'other.db' AS other;</span>
 <span class="s2">    -- the table has to have the same name, primary key, and columns</span>
 <span class="s2">    CREATE TABLE other.example(x PRIMARY KEY, y, z);</span>
 <span class="s2">    INSERT INTO other.example VALUES</span>
 <span class="s2">            -- extra row</span>
-<span class="s2">            (0, &#39;zero&#39;, 0.0),</span>
+<span class="s2">            (0, 'zero', 0.0),</span>
 <span class="s2">            -- id 1 deliberately missing</span>
-<span class="s2">            (2, &#39;two&#39;, 2.2),</span>
+<span class="s2">            (2, 'two', 2.2),</span>
 <span class="s2">            -- different values</span>
-<span class="s2">            (3, &#39;trois&#39;, &#39;hello&#39;);</span>
-<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">            (3, 'trois', 'hello');</span>
+<span class="s2">"""</span><span class="p">)</span>
 
-<span class="n">session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">diff_demo</span><span class="p">,</span> <span class="s2">&quot;main&quot;</span><span class="p">)</span>
+<span class="n">session</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">diff_demo</span><span class="p">,</span> <span class="s2">"main"</span><span class="p">)</span>
 
 <span class="c1"># You must attach (or filter) to include the table</span>
-<span class="n">session</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="s2">&quot;example&quot;</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">attach</span><span class="p">(</span><span class="s2">"example"</span><span class="p">)</span>
 
-<span class="n">session</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="s2">&quot;other&quot;</span><span class="p">,</span> <span class="s2">&quot;example&quot;</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="s2">"other"</span><span class="p">,</span> <span class="s2">"example"</span><span class="p">)</span>
 
 <span class="n">diff</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">changeset</span><span class="p">()</span>
 
-<span class="n">show_changeset</span><span class="p">(</span><span class="s2">&quot;Table diff&quot;</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">diff_demo</span><span class="p">)</span>
+<span class="n">show_changeset</span><span class="p">(</span><span class="s2">"Table diff"</span><span class="p">,</span> <span class="n">diff</span><span class="p">,</span> <span class="n">diff_demo</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">Table diff</span>
-<span class="go">DELETE FROM example WHERE x = 0 AND y = &#39;zero&#39; AND z = 0.0;</span>
-<span class="go">INSERT INTO example(x, y, z) VALUES (1, &#39;one&#39;, 1.1);</span>
-<span class="go">UPDATE example SET y=&#39;three&#39;, z=3.3 WHERE x = 3 AND y = &#39;trois&#39; AND z = &#39;hello&#39;;</span>
+<span class="go">DELETE FROM example WHERE x = 0 AND y = 'zero' AND z = 0.0;</span>
+<span class="go">INSERT INTO example(x, y, z) VALUES (1, 'one', 1.1);</span>
+<span class="go">UPDATE example SET y='three', z=3.3 WHERE x = 3 AND y = 'trois' AND z = 'hello';</span>
 </pre></div>
 </div>
 </section>
@@ -873,7 +873,7 @@ cleans up sessions when their corresponding connections are closed.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

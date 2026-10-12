@@ -14,7 +14,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.sqlite_extra &mdash; APSW 3.53.4.0 documentation</title>
+  <title>apsw.sqlite_extra &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=ad5bd102" />
@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/_modules/apsw/sqlite_extra.html" />
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="../../_static/documentation_options.js?v=c3243565"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -117,50 +117,57 @@
            <div itemprop="articleBody">
              
   <h1>Source code for apsw.sqlite_extra</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<span class="n">__lazy_modules__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"importlib.resources"</span><span class="p">,</span> <span class="s2">"json"</span><span class="p">,</span> <span class="s2">"pathlib"</span><span class="p">,</span> <span class="s2">"apsw"</span><span class="p">]</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.resources</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
+
 
 <div class="viewcode-block" id="NotAvailable">
 <a class="viewcode-back" href="../../extra.html#apsw.sqlite_extra.NotAvailable">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NotAvailable</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised if a specified item is not available in this installation</span>
+<span class="w">    </span><span class="sd">"""Raised if a specified item is not available in this installation</span>
 
 <span class="sd">    It can be because it did not compile, the APSW installation</span>
-<span class="sd">    didn&#39;t include it, or APSW is a zipped / frozen package but</span>
+<span class="sd">    didn't include it, or APSW is a zipped / frozen package but</span>
 <span class="sd">    requires filesystem installation.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="load">
 <a class="viewcode-back" href="../../extra.html#apsw.sqlite_extra.load">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">,</span> <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Loads the extension into the provided database</span>
+<span class="w">    </span><span class="sd">"""Loads the extension into the provided database</span>
 
-<span class="sd">    :meth:`Extension loading &lt;apsw.Connection.enable_load_extension&gt;` will</span>
-<span class="sd">    also be turned on.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">enable_load_extension</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="sd">    Extension loading will be enabled only for the duration</span>
+<span class="sd">    of the loading, and then returned to prior setting.</span>
+<span class="sd">    """</span>
+
     <span class="n">entry</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">_get_entry</span><span class="p">(</span><span class="n">extension</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;extension&quot;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">extension</span><span class="si">}</span><span class="s2"> is a </span><span class="si">{</span><span class="n">entry</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> not a loadable extension&quot;</span><span class="p">)</span>
-    <span class="n">db</span><span class="o">.</span><span class="n">load_extension</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="n">entry</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"extension"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">extension</span><span class="si">}</span><span class="s2"> is a </span><span class="si">{</span><span class="n">entry</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span><span class="si">}</span><span class="s2"> not a loadable extension"</span><span class="p">)</span>
+    <span class="n">existing</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">load_extension</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">apsw</span><span class="o">.</span><span class="n">SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION</span><span class="p">,</span> <span class="n">existing</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="has">
 <a class="viewcode-back" href="../../extra.html#apsw.sqlite_extra.has">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">has</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="s2">&quot;Returns &#39;executable&#39; or &#39;extension&#39; if extra name is available else None&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">has</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"executable"</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"extension"</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="s2">"Returns 'executable' or 'extension' if extra name is available else None"</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">entry</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_get_entry</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">entry</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">entry</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
@@ -168,32 +175,32 @@
 <div class="viewcode-block" id="path">
 <a class="viewcode-back" href="../../extra.html#apsw.sqlite_extra.path">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">path</span><span class="p">(</span><span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
-    <span class="s2">&quot;Filesystem path for named extra including extension&quot;</span>
+    <span class="s2">"Filesystem path for named extra including extension"</span>
     <span class="k">return</span> <span class="n">_get_entry</span><span class="p">(</span><span class="n">name</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
 
 
 <span class="c1"># we could in theory know what this specific platform used</span>
 <span class="c1"># but it is easier just to try everything</span>
-<span class="n">_exts</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;.so&quot;</span><span class="p">,</span> <span class="s2">&quot;.dll&quot;</span><span class="p">,</span> <span class="s2">&quot;.exe&quot;</span><span class="p">,</span> <span class="s2">&quot;.dylib&quot;</span><span class="p">)</span>
+<span class="n">_exts</span> <span class="o">=</span> <span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="s2">".so"</span><span class="p">,</span> <span class="s2">".dll"</span><span class="p">,</span> <span class="s2">".exe"</span><span class="p">,</span> <span class="s2">".dylib"</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_entry</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="n">extras</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="n">apsw</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;sqlite_extra.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">))</span>
+    <span class="n">extras</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="n">apsw</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"sqlite_extra.json"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">=}</span><span class="s2"> is not a known extra&quot;</span><span class="p">)</span>
-    <span class="n">bin_dir</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="n">apsw</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;sqlite_extra_binaries&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">=}</span><span class="s2"> is not a known extra"</span><span class="p">)</span>
+    <span class="n">bin_dir</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="n">apsw</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"sqlite_extra_binaries"</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bin_dir</span><span class="p">,</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">NotAvailable</span><span class="p">(</span><span class="s2">&quot;extras can only be provided from filesystem storage&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">NotAvailable</span><span class="p">(</span><span class="s2">"extras can only be provided from filesystem storage"</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">_exts</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">fn</span><span class="o">:=</span><span class="p">(</span><span class="n">bin_dir</span> <span class="o">/</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="n">ext</span><span class="p">))</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">extras</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-    <span class="k">raise</span> <span class="n">NotAvailable</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is not included&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">NotAvailable</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is not included"</span><span class="p">)</span>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">usage</span><span class="p">():</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
 <span class="s2">python3 -m apsw.sqlite_extra --list</span>
 <span class="s2">    Lists which extensions and executables are available from this</span>
 <span class="s2">    installation</span>
@@ -204,27 +211,27 @@
 
 <span class="s2">python3 -m apsw.sqlite_extra `name` args...</span>
 <span class="s2">    Invokes extra `name` with the supplied arguments</span>
-<span class="s2">                 &quot;&quot;&quot;</span><span class="p">)</span>
+<span class="s2">                 """</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">usage</span><span class="p">()</span>
 
     <span class="k">match</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-        <span class="k">case</span> <span class="s2">&quot;--help&quot;</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s2">"--help"</span><span class="p">:</span>
             <span class="n">usage</span><span class="p">()</span>
 
-        <span class="k">case</span> <span class="s2">&quot;--list&quot;</span><span class="p">:</span>
-            <span class="n">extras</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="n">apsw</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;sqlite_extra.json&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">))</span>
+        <span class="k">case</span> <span class="s2">"--list"</span><span class="p">:</span>
+            <span class="n">extras</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">importlib</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">files</span><span class="p">(</span><span class="n">apsw</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"sqlite_extra.json"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">extra</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">_get_entry</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">20</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">extra</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">13</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">extra</span><span class="p">[</span><span class="s1">&#39;description&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">20</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">extra</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span><span class="si">:</span><span class="s2">13</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">extra</span><span class="p">[</span><span class="s1">'description'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="k">except</span> <span class="n">NotAvailable</span><span class="p">:</span>
                     <span class="k">pass</span>
 
-        <span class="k">case</span> <span class="s2">&quot;--path&quot;</span><span class="p">:</span>
+        <span class="k">case</span> <span class="s2">"--path"</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;--path takes one name&quot;</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">"--path takes one name"</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">entry</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">_get_entry</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -235,11 +242,11 @@
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">entry</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">_get_entry</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">entry</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;executable&quot;</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39; is not an executable.  Extensions need to be loaded into SQLite &quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">entry</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"executable"</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">' is not an executable.  Extensions need to be loaded into SQLite "</span><span class="p">)</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">execl</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Use --help to get help&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"Use --help to get help"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span>
 </pre></div>
 
@@ -251,7 +258,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

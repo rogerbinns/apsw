@@ -14,7 +14,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.fts5query &mdash; APSW 3.53.4.0 documentation</title>
+  <title>apsw.fts5query &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=ad5bd102" />
@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/_modules/apsw/fts5query.html" />
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="../../_static/documentation_options.js?v=c3243565"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -125,7 +125,7 @@
 <span class="c1"># Tokens https://sqlite.org/src/file?name=ext/fts5/fts5_expr.c</span>
 <span class="c1"># fts5ExprGetToken</span>
 
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="sd">:mod:`apsw.fts5query` Create, parse, and modify queries</span>
 
 <span class="sd">There are 3 representations of a query available:</span>
@@ -137,7 +137,7 @@
 <span class="sd">   you represent AND, OR, NEAR, column filtering etc inline in the</span>
 <span class="sd">   string.  An example is::</span>
 
-<span class="sd">     love AND (title:^&quot;big world&quot; NOT summary:&quot;sunset cruise&quot;)</span>
+<span class="sd">     love AND (title:^"big world" NOT summary:"sunset cruise")</span>
 
 <span class="sd">parsed</span>
 
@@ -147,16 +147,16 @@
 <span class="sd">    :class:`AND`, :class:`NOT`, and :class:`OR`.  The string example</span>
 <span class="sd">    above is::</span>
 
-<span class="sd">        AND(queries=[PHRASE(phrase=&#39;love&#39;, initial=False, prefix=False, plus=None),</span>
-<span class="sd">                    NOT(match=COLUMNFILTER(columns=[&#39;title&#39;],</span>
-<span class="sd">                                            filter=&#39;include&#39;,</span>
-<span class="sd">                                            query=PHRASE(phrase=&#39;big world&#39;,</span>
+<span class="sd">        AND(queries=[PHRASE(phrase='love', initial=False, prefix=False, plus=None),</span>
+<span class="sd">                    NOT(match=COLUMNFILTER(columns=['title'],</span>
+<span class="sd">                                            filter='include',</span>
+<span class="sd">                                            query=PHRASE(phrase='big world',</span>
 <span class="sd">                                                        initial=True,</span>
 <span class="sd">                                                        prefix=False,</span>
 <span class="sd">                                                        plus=None)),</span>
-<span class="sd">                        no_match=COLUMNFILTER(columns=[&#39;summary&#39;],</span>
-<span class="sd">                                            filter=&#39;include&#39;,</span>
-<span class="sd">                                            query=PHRASE(phrase=&#39;sunset cruise&#39;,</span>
+<span class="sd">                        no_match=COLUMNFILTER(columns=['summary'],</span>
+<span class="sd">                                            filter='include',</span>
+<span class="sd">                                            query=PHRASE(phrase='sunset cruise',</span>
 <span class="sd">                                                            initial=False,</span>
 <span class="sd">                                                            prefix=False,</span>
 <span class="sd">                                                            plus=None)))])</span>
@@ -172,20 +172,20 @@
 <span class="sd">    directly.  This is the easiest form to programmatically compose</span>
 <span class="sd">    and modify queries in. The string example above is::</span>
 
-<span class="sd">        {&#39;@&#39;: &#39;AND&#39;,</span>
-<span class="sd">        &#39;queries&#39;: [{&#39;@&#39;: &#39;PHRASE&#39;, &#39;phrase&#39;: &#39;love&#39;},</span>
-<span class="sd">                    {&#39;@&#39;: &#39;NOT&#39;,</span>
-<span class="sd">                    &#39;match&#39;: {&#39;@&#39;: &#39;COLUMNFILTER&#39;,</span>
-<span class="sd">                                &#39;columns&#39;: [&#39;title&#39;],</span>
-<span class="sd">                                &#39;filter&#39;: &#39;include&#39;,</span>
-<span class="sd">                                &#39;query&#39;: {&#39;@&#39;: &#39;PHRASE&#39;,</span>
-<span class="sd">                                        &#39;initial&#39;: True,</span>
-<span class="sd">                                        &#39;phrase&#39;: &#39;big world&#39;}},</span>
-<span class="sd">                    &#39;no_match&#39;: {&#39;@&#39;: &#39;COLUMNFILTER&#39;,</span>
-<span class="sd">                                &#39;columns&#39;: [&#39;summary&#39;],</span>
-<span class="sd">                                &#39;filter&#39;: &#39;include&#39;,</span>
-<span class="sd">                                &#39;query&#39;: {&#39;@&#39;: &#39;PHRASE&#39;,</span>
-<span class="sd">                                            &#39;phrase&#39;: &#39;sunset cruise&#39;}}}]}</span>
+<span class="sd">        {'@': 'AND',</span>
+<span class="sd">        'queries': [{'@': 'PHRASE', 'phrase': 'love'},</span>
+<span class="sd">                    {'@': 'NOT',</span>
+<span class="sd">                    'match': {'@': 'COLUMNFILTER',</span>
+<span class="sd">                                'columns': ['title'],</span>
+<span class="sd">                                'filter': 'include',</span>
+<span class="sd">                                'query': {'@': 'PHRASE',</span>
+<span class="sd">                                        'initial': True,</span>
+<span class="sd">                                        'phrase': 'big world'}},</span>
+<span class="sd">                    'no_match': {'@': 'COLUMNFILTER',</span>
+<span class="sd">                                'columns': ['summary'],</span>
+<span class="sd">                                'filter': 'include',</span>
+<span class="sd">                                'query': {'@': 'PHRASE',</span>
+<span class="sd">                                            'phrase': 'sunset cruise'}}}]}</span>
 
 <span class="sd">See :ref:`the example &lt;example_fts_query&gt;`.</span>
 
@@ -218,27 +218,27 @@
 <span class="sd">* :func:`applicable_columns` to work out which columns apply to part of a</span>
 <span class="sd">  :class:`QUERY`</span>
 <span class="sd">* :func:`walk` to traverse a parsed query</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="n">__lazy_modules__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"apsw"</span><span class="p">]</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">NoReturn</span><span class="p">,</span> <span class="n">TypeAlias</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">NoReturn</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">TypeAlias</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Iterator</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">apsw</span>
 
-<span class="n">QUERY_TOKENS_MARKER</span> <span class="o">=</span> <span class="s2">&quot;$!Tokens~&quot;</span>
-<span class="s2">&quot;Special marker at the start of a string to recognise it as a list of tokens for :class:`QueryTokens`&quot;</span>
+<span class="n">QUERY_TOKENS_MARKER</span> <span class="o">=</span> <span class="s2">"$!Tokens~"</span>
+<span class="s2">"Special marker at the start of a string to recognise it as a list of tokens for :class:`QueryTokens`"</span>
 
 
 <div class="viewcode-block" id="QueryTokens">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.QueryTokens">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">QueryTokens</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;`FTS5 query strings &lt;https://www.sqlite.org/fts5.html#fts5_strings&gt;`__ are</span>
+<span class="w">    </span><span class="sd">"""`FTS5 query strings &lt;https://www.sqlite.org/fts5.html#fts5_strings&gt;`__ are</span>
 <span class="sd">    passed to `tokenizers</span>
 <span class="sd">    &lt;https://www.sqlite.org/fts5.html#tokenizers&gt;`__ which extract</span>
 <span class="sd">    tokens, such as by splitting on whitespace, lower casing text, and</span>
@@ -262,47 +262,47 @@
 <span class="sd">    You can construct QueryTokens like this::</span>
 
 <span class="sd">        # One token</span>
-<span class="sd">        QueryTokens([&quot;hello&quot;])</span>
+<span class="sd">        QueryTokens(["hello"])</span>
 <span class="sd">        # Token sequence</span>
-<span class="sd">        QueryTokens([&quot;hello&quot;. &quot;world&quot;, &quot;today&quot;])</span>
+<span class="sd">        QueryTokens(["hello". "world", "today"])</span>
 <span class="sd">        # Colocated tokens use a nested list</span>
-<span class="sd">        QueryTokens([&quot;hello&quot;, [&quot;first&quot;, &quot;1st&quot;]])</span>
+<span class="sd">        QueryTokens(["hello", ["first", "1st"]])</span>
 
 <span class="sd">    To use in a query::</span>
 
-<span class="sd">        {&quot;@&quot;: &quot;NOT&quot;, &quot;match&quot;: QueryTokens([&quot;hello&quot;, &quot;world&quot;]),</span>
-<span class="sd">                     &quot;no_match&quot;: QueryTokens([[&quot;first&quot;, &quot;1st&quot;]])}</span>
+<span class="sd">        {"@": "NOT", "match": QueryTokens(["hello", "world"]),</span>
+<span class="sd">                     "no_match": QueryTokens([["first", "1st"]])}</span>
 
-<span class="sd">    That would be equivalent to a query of ``&quot;Hello World&quot; NOT</span>
-<span class="sd">    &quot;First&quot;`` if tokens were lower cased, and a tokenizer added a</span>
+<span class="sd">    That would be equivalent to a query of ``"Hello World" NOT</span>
+<span class="sd">    "First"`` if tokens were lower cased, and a tokenizer added a</span>
 <span class="sd">    colocated ``1st`` on seeing ``first``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">tokens</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
-    <span class="s2">&quot;The tokens&quot;</span>
+    <span class="s2">"The tokens"</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_zero_encode</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="s2">&quot;Encode any zero bytes&quot;</span>
-        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\0</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;$!ZeRo&quot;</span><span class="p">)</span>
+        <span class="s2">"Encode any zero bytes"</span>
+        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\0</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"$!ZeRo"</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_zero_decode</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="s2">&quot;Decode any zero bytes&quot;</span>
-        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;$!ZeRo&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\0</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="s2">"Decode any zero bytes"</span>
+        <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"$!ZeRo"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\0</span><span class="s2">"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="QueryTokens.encode">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.QueryTokens.encode">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="s2">&quot;Produces the tokens encoded with the marker and separator&quot;</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="s2">"Produces the tokens encoded with the marker and separator"</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="s2">""</span>
         <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokens</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
-                <span class="n">res</span> <span class="o">+=</span> <span class="s2">&quot;|&quot;</span>
+                <span class="n">res</span> <span class="o">+=</span> <span class="s2">"|"</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="n">res</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zero_encode</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">res</span> <span class="o">+=</span> <span class="s2">&quot;&gt;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zero_encode</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">token</span><span class="p">)</span>
+                <span class="n">res</span> <span class="o">+=</span> <span class="s2">"&gt;"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zero_encode</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">token</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">QUERY_TOKENS_MARKER</span> <span class="o">+</span> <span class="n">res</span></div>
 
 
@@ -310,16 +310,16 @@
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.QueryTokens.decode">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">decode</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QueryTokens</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="s2">&quot;If the marker is present then returns the corresponding :class:`QueryTokens`, otherwise `None`.&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;$!Tokens~&quot;</span><span class="p">):</span>
+        <span class="s2">"If the marker is present then returns the corresponding :class:`QueryTokens`, otherwise `None`."</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">b</span><span class="s2">"$!Tokens~"</span><span class="p">):</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">QUERY_TOKENS_MARKER</span><span class="p">):</span>
             <span class="n">stream</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="bp">cls</span><span class="o">.</span><span class="n">_zero_decode</span><span class="p">(</span><span class="n">token</span><span class="p">)</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">QUERY_TOKENS_MARKER</span><span class="p">)</span> <span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">_zero_decode</span><span class="p">(</span><span class="n">token</span><span class="p">)</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">QUERY_TOKENS_MARKER</span><span class="p">)</span> <span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"|"</span><span class="p">)</span>
             <span class="p">]</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
-                <span class="k">if</span> <span class="s2">&quot;&gt;&quot;</span> <span class="ow">in</span> <span class="n">token</span><span class="p">:</span>
-                    <span class="n">stream</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;&gt;&quot;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="s2">"&gt;"</span> <span class="ow">in</span> <span class="n">token</span><span class="p">:</span>
+                    <span class="n">stream</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"&gt;"</span><span class="p">))</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 </div>
@@ -330,16 +330,16 @@
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.PHRASE">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">PHRASE</span><span class="p">:</span>
-    <span class="s2">&quot;One `phrase &lt;https://www.sqlite.org/fts5.html#fts5_phrases&gt;`__&quot;</span>
+    <span class="s2">"One `phrase &lt;https://www.sqlite.org/fts5.html#fts5_phrases&gt;`__"</span>
 
     <span class="n">phrase</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">QueryTokens</span>
-    <span class="s2">&quot;Text of the phrase.  If + was used (eg one+two) then it will be a list of phrases&quot;</span>
+    <span class="s2">"Text of the phrase.  If + was used (eg one+two) then it will be a list of phrases"</span>
     <span class="n">initial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="s2">&quot;If True then the  phrase must match the beginning of a column (``^`` was used)&quot;</span>
+    <span class="s2">"If True then the  phrase must match the beginning of a column (``^`` was used)"</span>
     <span class="n">prefix</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="s2">&quot;If True then if it is a prefix search on the last token in phrase (``*`` was used)&quot;</span>
+    <span class="s2">"If True then if it is a prefix search on the last token in phrase (``*`` was used)"</span>
     <span class="n">plus</span><span class="p">:</span> <span class="n">PHRASE</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="s2">&quot;Additional phrase segment, joined by ``+`` in queries&quot;</span></div>
+    <span class="s2">"Additional phrase segment, joined by ``+`` in queries"</span></div>
 
 
 
@@ -347,12 +347,12 @@
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.NEAR">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">NEAR</span><span class="p">:</span>
-    <span class="s2">&quot;`Near query &lt;https://www.sqlite.org/fts5.html#fts5_near_queries&gt;`__&quot;</span>
+    <span class="s2">"`Near query &lt;https://www.sqlite.org/fts5.html#fts5_near_queries&gt;`__"</span>
 
     <span class="n">phrases</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">PHRASE</span><span class="p">]</span>
-    <span class="s2">&quot;Two or more phrases&quot;</span>
+    <span class="s2">"Two or more phrases"</span>
     <span class="n">distance</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
-    <span class="s2">&quot;Maximum distance between the phrases&quot;</span></div>
+    <span class="s2">"Maximum distance between the phrases"</span></div>
 
 
 
@@ -360,18 +360,18 @@
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.COLUMNFILTER">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">COLUMNFILTER</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Limit query to `certain columns &lt;https://www.sqlite.org/fts5.html#fts5_column_filters&gt;`__</span>
+<span class="w">    </span><span class="sd">"""Limit query to `certain columns &lt;https://www.sqlite.org/fts5.html#fts5_column_filters&gt;`__</span>
 
 <span class="sd">    This always reduces the columns that phrase matching will be done</span>
 <span class="sd">    against.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="s2">&quot;Limit phrase matching by these columns&quot;</span>
-    <span class="nb">filter</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;include&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;exclude&quot;</span><span class="p">]</span>
-    <span class="s2">&quot;Including or excluding the columns&quot;</span>
+    <span class="s2">"Limit phrase matching by these columns"</span>
+    <span class="nb">filter</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"include"</span><span class="p">]</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"exclude"</span><span class="p">]</span>
+    <span class="s2">"Including or excluding the columns"</span>
     <span class="n">query</span><span class="p">:</span> <span class="n">QUERY</span>
-    <span class="s2">&quot;query the filter applies to, including all nested queries&quot;</span></div>
+    <span class="s2">"query the filter applies to, including all nested queries"</span></div>
 
 
 
@@ -379,7 +379,7 @@
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.AND">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">AND</span><span class="p">:</span>
-    <span class="s2">&quot;All queries `must match &lt;https://www.sqlite.org/fts5.html#fts5_boolean_operators&gt;`__&quot;</span>
+    <span class="s2">"All queries `must match &lt;https://www.sqlite.org/fts5.html#fts5_boolean_operators&gt;`__"</span>
 
     <span class="n">queries</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">QUERY</span><span class="p">]</span></div>
 
@@ -389,7 +389,7 @@
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.OR">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">OR</span><span class="p">:</span>
-    <span class="s2">&quot;Any query `must match &lt;https://www.sqlite.org/fts5.html#fts5_boolean_operators&gt;`__&quot;</span>
+    <span class="s2">"Any query `must match &lt;https://www.sqlite.org/fts5.html#fts5_boolean_operators&gt;`__"</span>
 
     <span class="n">queries</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">QUERY</span><span class="p">]</span></div>
 
@@ -399,7 +399,7 @@
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.NOT">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">NOT</span><span class="p">:</span>
-    <span class="s2">&quot;match `must match &lt;https://www.sqlite.org/fts5.html#fts5_boolean_operators&gt;`__, but no_match `must not &lt;https://www.sqlite.org/fts5.html#fts5_boolean_operators&gt;`__&quot;</span>
+    <span class="s2">"match `must match &lt;https://www.sqlite.org/fts5.html#fts5_boolean_operators&gt;`__, but no_match `must not &lt;https://www.sqlite.org/fts5.html#fts5_boolean_operators&gt;`__"</span>
 
     <span class="n">match</span><span class="p">:</span> <span class="n">QUERY</span>
     <span class="n">no_match</span><span class="p">:</span> <span class="n">QUERY</span></div>
@@ -409,13 +409,13 @@
 <span class="c1"># Sphinx makes this real ugly</span>
 <span class="c1"># https://github.com/sphinx-doc/sphinx/issues/10541</span>
 <span class="n">QUERY</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">COLUMNFILTER</span> <span class="o">|</span> <span class="n">NEAR</span> <span class="o">|</span> <span class="n">AND</span> <span class="o">|</span> <span class="n">OR</span> <span class="o">|</span> <span class="n">NOT</span> <span class="o">|</span> <span class="n">PHRASE</span>
-<span class="sd">&quot;&quot;&quot;Type representing all query types.&quot;&quot;&quot;</span>
+<span class="sd">"""Type representing all query types."""</span>
 
 
 <div class="viewcode-block" id="to_dict">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.to_dict">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">QUERY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts structure to a dict</span>
+<span class="w">    </span><span class="sd">"""Converts structure to a dict</span>
 
 <span class="sd">    This is useful for pretty printing, logging, saving as JSON,</span>
 <span class="sd">    modifying etc.</span>
@@ -424,102 +424,102 @@
 <span class="sd">    (eg ``NEAR``, ``PHRASE``, ``AND``) and the same field names as the</span>
 <span class="sd">    corresponding dataclasses.  Only fields with non-default values</span>
 <span class="sd">    are emitted.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># @ was picked because it gets printed first if dict keys are sorted, and</span>
-    <span class="c1"># won&#39;t conflict with any other key names</span>
+    <span class="c1"># won't conflict with any other key names</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">PHRASE</span><span class="p">):</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;@&quot;</span><span class="p">:</span> <span class="s2">&quot;PHRASE&quot;</span><span class="p">,</span> <span class="s2">&quot;phrase&quot;</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">phrase</span><span class="p">}</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"@"</span><span class="p">:</span> <span class="s2">"PHRASE"</span><span class="p">,</span> <span class="s2">"phrase"</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">phrase</span><span class="p">}</span>
         <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">prefix</span><span class="p">:</span>
-            <span class="n">res</span><span class="p">[</span><span class="s2">&quot;prefix&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">res</span><span class="p">[</span><span class="s2">"prefix"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">initial</span><span class="p">:</span>
-            <span class="n">res</span><span class="p">[</span><span class="s2">&quot;initial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">res</span><span class="p">[</span><span class="s2">"initial"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">plus</span><span class="p">:</span>
-            <span class="n">res</span><span class="p">[</span><span class="s2">&quot;plus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">plus</span><span class="p">)</span>
+            <span class="n">res</span><span class="p">[</span><span class="s2">"plus"</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">plus</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">res</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">AND</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;@&quot;</span><span class="p">:</span> <span class="s2">&quot;AND&quot;</span><span class="p">,</span> <span class="s2">&quot;queries&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">to_dict</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">queries</span><span class="p">]}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"@"</span><span class="p">:</span> <span class="s2">"AND"</span><span class="p">,</span> <span class="s2">"queries"</span><span class="p">:</span> <span class="p">[</span><span class="n">to_dict</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">queries</span><span class="p">]}</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">OR</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;@&quot;</span><span class="p">:</span> <span class="s2">&quot;OR&quot;</span><span class="p">,</span> <span class="s2">&quot;queries&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">to_dict</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">queries</span><span class="p">]}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"@"</span><span class="p">:</span> <span class="s2">"OR"</span><span class="p">,</span> <span class="s2">"queries"</span><span class="p">:</span> <span class="p">[</span><span class="n">to_dict</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">queries</span><span class="p">]}</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">NOT</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;@&quot;</span><span class="p">:</span> <span class="s2">&quot;NOT&quot;</span><span class="p">,</span> <span class="s2">&quot;match&quot;</span><span class="p">:</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">match</span><span class="p">),</span> <span class="s2">&quot;no_match&quot;</span><span class="p">:</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">no_match</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"@"</span><span class="p">:</span> <span class="s2">"NOT"</span><span class="p">,</span> <span class="s2">"match"</span><span class="p">:</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">match</span><span class="p">),</span> <span class="s2">"no_match"</span><span class="p">:</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">no_match</span><span class="p">)}</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">NEAR</span><span class="p">):</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;@&quot;</span><span class="p">:</span> <span class="s2">&quot;NEAR&quot;</span><span class="p">,</span> <span class="s2">&quot;phrases&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">to_dict</span><span class="p">(</span><span class="n">phrase</span><span class="p">)</span> <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">phrases</span><span class="p">]}</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"@"</span><span class="p">:</span> <span class="s2">"NEAR"</span><span class="p">,</span> <span class="s2">"phrases"</span><span class="p">:</span> <span class="p">[</span><span class="n">to_dict</span><span class="p">(</span><span class="n">phrase</span><span class="p">)</span> <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">phrases</span><span class="p">]}</span>
         <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">distance</span> <span class="o">!=</span> <span class="mi">10</span><span class="p">:</span>
-            <span class="n">res</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">distance</span>
+            <span class="n">res</span><span class="p">[</span><span class="s2">"distance"</span><span class="p">]</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">distance</span>
         <span class="k">return</span> <span class="n">res</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">COLUMNFILTER</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;@&quot;</span><span class="p">:</span> <span class="s2">&quot;COLUMNFILTER&quot;</span><span class="p">,</span> <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">query</span><span class="p">),</span> <span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="s2">&quot;filter&quot;</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">filter</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"@"</span><span class="p">:</span> <span class="s2">"COLUMNFILTER"</span><span class="p">,</span> <span class="s2">"query"</span><span class="p">:</span> <span class="n">to_dict</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">query</span><span class="p">),</span> <span class="s2">"columns"</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="s2">"filter"</span><span class="p">:</span> <span class="n">q</span><span class="o">.</span><span class="n">filter</span><span class="p">}</span>
 
-    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected value </span><span class="si">{</span><span class="n">q</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unexpected value </span><span class="si">{</span><span class="n">q</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
 
 <span class="n">_dict_name_class</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;PHRASE&quot;</span><span class="p">:</span> <span class="n">PHRASE</span><span class="p">,</span>
-    <span class="s2">&quot;NEAR&quot;</span><span class="p">:</span> <span class="n">NEAR</span><span class="p">,</span>
-    <span class="s2">&quot;COLUMNFILTER&quot;</span><span class="p">:</span> <span class="n">COLUMNFILTER</span><span class="p">,</span>
-    <span class="s2">&quot;AND&quot;</span><span class="p">:</span> <span class="n">AND</span><span class="p">,</span>
-    <span class="s2">&quot;OR&quot;</span><span class="p">:</span> <span class="n">OR</span><span class="p">,</span>
-    <span class="s2">&quot;NOT&quot;</span><span class="p">:</span> <span class="n">NOT</span><span class="p">,</span>
+    <span class="s2">"PHRASE"</span><span class="p">:</span> <span class="n">PHRASE</span><span class="p">,</span>
+    <span class="s2">"NEAR"</span><span class="p">:</span> <span class="n">NEAR</span><span class="p">,</span>
+    <span class="s2">"COLUMNFILTER"</span><span class="p">:</span> <span class="n">COLUMNFILTER</span><span class="p">,</span>
+    <span class="s2">"AND"</span><span class="p">:</span> <span class="n">AND</span><span class="p">,</span>
+    <span class="s2">"OR"</span><span class="p">:</span> <span class="n">OR</span><span class="p">,</span>
+    <span class="s2">"NOT"</span><span class="p">:</span> <span class="n">NOT</span><span class="p">,</span>
 <span class="p">}</span>
 
 
 <div class="viewcode-block" id="from_dict">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.from_dict">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="n">d</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">QueryTokens</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QUERY</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Turns dict back into a :class:`QUERY`</span>
+<span class="w">    </span><span class="sd">"""Turns dict back into a :class:`QUERY`</span>
 
 <span class="sd">    You can take shortcuts putting `str`  or :class:`QueryTokens` in</span>
 <span class="sd">    places where PHRASE is expected.  For example this is accepted::</span>
 
 <span class="sd">        {</span>
-<span class="sd">            &quot;@&quot;: &quot;AND,</span>
-<span class="sd">            &quot;queries&quot;: [&quot;hello&quot;, &quot;world&quot;]</span>
+<span class="sd">            "@": "AND,</span>
+<span class="sd">            "queries": ["hello", "world"]</span>
 <span class="sd">        }</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">QueryTokens</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">PHRASE</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="n">Sequence</span><span class="p">,</span> <span class="nb">set</span><span class="p">)):</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">AND</span><span class="p">([</span><span class="n">from_dict</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">d</span><span class="p">])</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">queries</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected at least one item in </span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected at least one item in </span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">queries</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">queries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">res</span>
 
     <span class="n">_type_check</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="s2">&quot;@&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected key &#39;@&#39; in dict </span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">"@"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected key '@' in dict </span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
-    <span class="n">klass</span> <span class="o">=</span> <span class="n">_dict_name_class</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;@&quot;</span><span class="p">])</span>
+    <span class="n">klass</span> <span class="o">=</span> <span class="n">_dict_name_class</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"@"</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">klass</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;@&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2"> is not a known query type&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\"</span><span class="si">{</span><span class="n">d</span><span class="p">[</span><span class="s1">'@'</span><span class="p">]</span><span class="si">}</span><span class="se">\"</span><span class="s2"> is not a known query type"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">klass</span> <span class="ow">is</span> <span class="n">PHRASE</span><span class="p">:</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">PHRASE</span><span class="p">(</span>
-            <span class="n">_type_check</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;phrase&quot;</span><span class="p">],</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">QueryTokens</span><span class="p">)),</span>
-            <span class="n">initial</span><span class="o">=</span><span class="n">_type_check</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;initial&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span> <span class="nb">bool</span><span class="p">),</span>
-            <span class="n">prefix</span><span class="o">=</span><span class="n">_type_check</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;prefix&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span> <span class="nb">bool</span><span class="p">),</span>
+            <span class="n">_type_check</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"phrase"</span><span class="p">],</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">QueryTokens</span><span class="p">)),</span>
+            <span class="n">initial</span><span class="o">=</span><span class="n">_type_check</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"initial"</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span> <span class="nb">bool</span><span class="p">),</span>
+            <span class="n">prefix</span><span class="o">=</span><span class="n">_type_check</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"prefix"</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span> <span class="nb">bool</span><span class="p">),</span>
         <span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;plus&quot;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">plus</span> <span class="o">=</span> <span class="n">_type_check</span><span class="p">(</span><span class="n">from_dict</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;plus&quot;</span><span class="p">]),</span> <span class="n">PHRASE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"plus"</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">plus</span> <span class="o">=</span> <span class="n">_type_check</span><span class="p">(</span><span class="n">from_dict</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"plus"</span><span class="p">]),</span> <span class="n">PHRASE</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">res</span>
 
     <span class="k">if</span> <span class="n">klass</span> <span class="ow">is</span> <span class="n">OR</span> <span class="ow">or</span> <span class="n">klass</span> <span class="ow">is</span> <span class="n">AND</span><span class="p">:</span>
-        <span class="n">queries</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;queries&quot;</span><span class="p">)</span>
+        <span class="n">queries</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"queries"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="p">(</span><span class="n">Sequence</span><span class="p">,</span> <span class="nb">set</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2"> &#39;queries&#39; must be sequence of at least 1 items&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2"> 'queries' must be sequence of at least 1 items"</span><span class="p">)</span>
 
         <span class="n">as_queries</span> <span class="o">=</span> <span class="p">[</span><span class="n">from_dict</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">queries</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">as_queries</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -528,24 +528,24 @@
         <span class="k">return</span> <span class="n">klass</span><span class="p">(</span><span class="n">as_queries</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">klass</span> <span class="ow">is</span> <span class="n">NEAR</span><span class="p">:</span>
-        <span class="n">phrases</span> <span class="o">=</span> <span class="p">[</span><span class="n">_type_check</span><span class="p">(</span><span class="n">from_dict</span><span class="p">(</span><span class="n">phrase</span><span class="p">),</span> <span class="n">PHRASE</span><span class="p">)</span> <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;phrases&quot;</span><span class="p">]]</span>
+        <span class="n">phrases</span> <span class="o">=</span> <span class="p">[</span><span class="n">_type_check</span><span class="p">(</span><span class="n">from_dict</span><span class="p">(</span><span class="n">phrase</span><span class="p">),</span> <span class="n">PHRASE</span><span class="p">)</span> <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s2">"phrases"</span><span class="p">]]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">phrases</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;There must be at least one NEAR phrase in </span><span class="si">{</span><span class="n">phrases</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">klass</span><span class="p">(</span><span class="n">phrases</span><span class="p">,</span> <span class="n">_type_check</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;distance&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="nb">int</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"There must be at least one NEAR phrase in </span><span class="si">{</span><span class="n">phrases</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">klass</span><span class="p">(</span><span class="n">phrases</span><span class="p">,</span> <span class="n">_type_check</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"distance"</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="nb">int</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">distance</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NEAR distance must be at least one in </span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"NEAR distance must be at least one in </span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">res</span>
 
     <span class="k">if</span> <span class="n">klass</span> <span class="ow">is</span> <span class="n">NOT</span><span class="p">:</span>
-        <span class="n">match</span><span class="p">,</span> <span class="n">no_match</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">),</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;no_match&quot;</span><span class="p">)</span>
+        <span class="n">match</span><span class="p">,</span> <span class="n">no_match</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"match"</span><span class="p">),</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"no_match"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">no_match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2"> must have a &#39;match&#39; and a &#39;no_match&#39; key&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2"> must have a 'match' and a 'no_match' key"</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">klass</span><span class="p">(</span><span class="n">from_dict</span><span class="p">(</span><span class="n">match</span><span class="p">),</span> <span class="n">from_dict</span><span class="p">(</span><span class="n">no_match</span><span class="p">))</span>
 
     <span class="k">assert</span> <span class="n">klass</span> <span class="ow">is</span> <span class="n">COLUMNFILTER</span>
 
-    <span class="n">columns</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;columns&quot;</span><span class="p">)</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"columns"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="p">(</span>
         <span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span>
@@ -553,16 +553,16 @@
         <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span>
         <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">)</span>
     <span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2"> must have &#39;columns&#39; key with at least one member sequence, all of str&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2"> must have 'columns' key with at least one member sequence, all of str"</span><span class="p">)</span>
 
-    <span class="nb">filter</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filter&quot;</span><span class="p">)</span>
+    <span class="nb">filter</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"filter"</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">filter</span> <span class="o">!=</span> <span class="s2">&quot;include&quot;</span> <span class="ow">and</span> <span class="nb">filter</span> <span class="o">!=</span> <span class="s2">&quot;exclude&quot;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2"> must have &#39;filter&#39; key with value of &#39;include&#39; or &#39;exclude&#39;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">filter</span> <span class="o">!=</span> <span class="s2">"include"</span> <span class="ow">and</span> <span class="nb">filter</span> <span class="o">!=</span> <span class="s2">"exclude"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2"> must have 'filter' key with value of 'include' or 'exclude'"</span><span class="p">)</span>
 
-    <span class="n">query</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;query&quot;</span><span class="p">)</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"query"</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">query</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2"> must have &#39;query&#39; value&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">d</span><span class="si">!r}</span><span class="s2"> must have 'query' value"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">klass</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">from_dict</span><span class="p">(</span><span class="n">query</span><span class="p">))</span></div>
 
@@ -570,7 +570,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_type_check</span><span class="p">(</span><span class="n">v</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="n">v</span><span class="si">!r}</span><span class="s2"> to be type </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected </span><span class="si">{</span><span class="n">v</span><span class="si">!r}</span><span class="s2"> to be type </span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">v</span>
 
 
@@ -594,26 +594,26 @@
 <div class="viewcode-block" id="to_query_string">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.to_query_string">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">to_query_string</span><span class="p">(</span><span class="n">q</span><span class="p">:</span> <span class="n">QUERY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the corresponding query in text format&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Returns the corresponding query in text format"""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">PHRASE</span><span class="p">):</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s2">""</span>
         <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">initial</span><span class="p">:</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;^&quot;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">"^"</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">phrase</span><span class="p">,</span> <span class="n">QueryTokens</span><span class="p">):</span>
             <span class="n">r</span> <span class="o">+=</span> <span class="n">quote</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">phrase</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">r</span> <span class="o">+=</span> <span class="n">quote</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">phrase</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">prefix</span><span class="p">:</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;*&quot;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">"*"</span>
         <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">plus</span><span class="p">:</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot; + &quot;</span> <span class="o">+</span> <span class="n">to_query_string</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">plus</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">" + "</span> <span class="o">+</span> <span class="n">to_query_string</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">plus</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">OR</span><span class="p">):</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s2">""</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">query</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">queries</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">i</span><span class="p">:</span>
-                <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot; OR &quot;</span>
+                <span class="n">r</span> <span class="o">+=</span> <span class="s2">" OR "</span>
             <span class="c1"># parens is never hit because OR is the lowest priority</span>
             <span class="k">assert</span> <span class="ow">not</span> <span class="n">_to_query_string_needs_parens</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
 
@@ -622,76 +622,76 @@
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">AND</span><span class="p">):</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s2">""</span>
         <span class="c1"># see parse_implicit_and()</span>
         <span class="n">implicit_and</span> <span class="o">=</span> <span class="p">(</span><span class="n">PHRASE</span><span class="p">,</span> <span class="n">NEAR</span><span class="p">,</span> <span class="n">COLUMNFILTER</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">query</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">queries</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">i</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">queries</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">implicit_and</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">queries</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">implicit_and</span><span class="p">):</span>
-                    <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span>
+                    <span class="n">r</span> <span class="o">+=</span> <span class="s2">" "</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot; AND &quot;</span>
+                    <span class="n">r</span> <span class="o">+=</span> <span class="s2">" AND "</span>
             <span class="k">if</span> <span class="n">_to_query_string_needs_parens</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
-                <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;(&quot;</span>
+                <span class="n">r</span> <span class="o">+=</span> <span class="s2">"("</span>
             <span class="n">r</span> <span class="o">+=</span> <span class="n">to_query_string</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">_to_query_string_needs_parens</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
-                <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;)&quot;</span>
+                <span class="n">r</span> <span class="o">+=</span> <span class="s2">")"</span>
 
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">NOT</span><span class="p">):</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s2">""</span>
 
         <span class="k">if</span> <span class="n">_to_query_string_needs_parens</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">match</span><span class="p">):</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;(&quot;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">"("</span>
         <span class="n">r</span> <span class="o">+=</span> <span class="n">to_query_string</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">match</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">_to_query_string_needs_parens</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">match</span><span class="p">):</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;)&quot;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">")"</span>
 
-        <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot; NOT &quot;</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s2">" NOT "</span>
 
         <span class="k">if</span> <span class="n">_to_query_string_needs_parens</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">no_match</span><span class="p">):</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;(&quot;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">"("</span>
         <span class="n">r</span> <span class="o">+=</span> <span class="n">to_query_string</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">no_match</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">_to_query_string_needs_parens</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">no_match</span><span class="p">):</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;)&quot;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">")"</span>
 
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">NEAR</span><span class="p">):</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot;NEAR(&quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">to_query_string</span><span class="p">(</span><span class="n">phrase</span><span class="p">)</span> <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">phrases</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s2">"NEAR("</span> <span class="o">+</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">to_query_string</span><span class="p">(</span><span class="n">phrase</span><span class="p">)</span> <span class="k">for</span> <span class="n">phrase</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">phrases</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">distance</span> <span class="o">!=</span> <span class="mi">10</span><span class="p">:</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;, </span><span class="si">{</span><span class="n">q</span><span class="o">.</span><span class="n">distance</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;)&quot;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">", </span><span class="si">{</span><span class="n">q</span><span class="o">.</span><span class="n">distance</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s2">")"</span>
         <span class="k">return</span> <span class="n">r</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">COLUMNFILTER</span><span class="p">):</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">filter</span> <span class="o">==</span> <span class="s2">&quot;exclude&quot;</span><span class="p">:</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;-&quot;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">filter</span> <span class="o">==</span> <span class="s2">"exclude"</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">"-"</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;{&quot;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">"{"</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">i</span><span class="p">:</span>
-                <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span>
+                <span class="n">r</span> <span class="o">+=</span> <span class="s2">" "</span>
             <span class="n">r</span> <span class="o">+=</span> <span class="n">quote</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;}&quot;</span>
-        <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;: &quot;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">"}"</span>
+        <span class="n">r</span> <span class="o">+=</span> <span class="s2">": "</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="n">PHRASE</span><span class="p">,</span> <span class="n">NEAR</span><span class="p">,</span> <span class="n">COLUMNFILTER</span><span class="p">)):</span>
             <span class="n">r</span> <span class="o">+=</span> <span class="n">to_query_string</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">query</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">r</span> <span class="o">+=</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="n">to_query_string</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">query</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+            <span class="n">r</span> <span class="o">+=</span> <span class="s2">"("</span> <span class="o">+</span> <span class="n">to_query_string</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">query</span><span class="p">)</span> <span class="o">+</span> <span class="s2">")"</span>
         <span class="k">return</span> <span class="n">r</span>
 
-    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected query item </span><span class="si">{</span><span class="n">q</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unexpected query item </span><span class="si">{</span><span class="n">q</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="parse_query_string">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.parse_query_string">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_query_string</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QUERY</span><span class="p">:</span>
-    <span class="s2">&quot;Returns the corresponding :class:`QUERY` for the query string&quot;</span>
+    <span class="s2">"Returns the corresponding :class:`QUERY` for the query string"</span>
     <span class="k">return</span> <span class="n">_Parser</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">parsed</span></div>
 
 
@@ -699,7 +699,7 @@
 <div class="viewcode-block" id="quote">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.quote">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">quote</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">QueryTokens</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Quotes text if necessary to keep it as one unit using FTS5 quoting rules</span>
+<span class="w">    </span><span class="sd">"""Quotes text if necessary to keep it as one unit using FTS5 quoting rules</span>
 
 <span class="sd">    Some examples:</span>
 
@@ -712,31 +712,31 @@
 <span class="sd">        * - ``hello``</span>
 <span class="sd">          - ``hello``</span>
 <span class="sd">        * - ``one two``</span>
-<span class="sd">          - ``&quot;one two&quot;``</span>
+<span class="sd">          - ``"one two"``</span>
 <span class="sd">        * - (empty string)</span>
-<span class="sd">          - ``&quot;&quot;``</span>
-<span class="sd">        * - ``one&quot;two``</span>
-<span class="sd">          - ``&quot;one&quot;&quot;two&quot;``</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">          - ``""``</span>
+<span class="sd">        * - ``one"two``</span>
+<span class="sd">          - ``"one""two"``</span>
+<span class="sd">    """</span>
     <span class="c1"># technically this will also apply to None and empty lists etc</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s1">&#39;&quot;&quot;&#39;</span>
+        <span class="k">return</span> <span class="s1">'""'</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">QueryTokens</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">quote</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
-    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s2">&quot;0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz&quot;</span> <span class="ow">and</span> <span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mh">0x80</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">text</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s1">&#39;&quot;&#39;</span> <span class="o">+</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&quot;&quot;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;&quot;&#39;</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s2">"0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"</span> <span class="ow">and</span> <span class="nb">ord</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mh">0x80</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">'"'</span> <span class="o">+</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'"'</span><span class="p">,</span> <span class="s1">'""'</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'"'</span>
     <span class="k">return</span> <span class="n">text</span></div>
 
 
 
 <span class="n">_walk_attrs</span> <span class="o">=</span> <span class="p">{</span>
     <span class="c1"># sequences (iterable)</span>
-    <span class="n">NEAR</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;phrases&quot;</span><span class="p">,),</span>
-    <span class="n">AND</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;queries&quot;</span><span class="p">,),</span>
-    <span class="n">OR</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;queries&quot;</span><span class="p">,),</span>
+    <span class="n">NEAR</span><span class="p">:</span> <span class="p">(</span><span class="s2">"phrases"</span><span class="p">,),</span>
+    <span class="n">AND</span><span class="p">:</span> <span class="p">(</span><span class="s2">"queries"</span><span class="p">,),</span>
+    <span class="n">OR</span><span class="p">:</span> <span class="p">(</span><span class="s2">"queries"</span><span class="p">,),</span>
     <span class="c1"># non-iterable</span>
-    <span class="n">NOT</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;match&quot;</span><span class="p">,</span> <span class="s2">&quot;no_match&quot;</span><span class="p">),</span>
-    <span class="n">COLUMNFILTER</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;query&quot;</span><span class="p">,),</span>
+    <span class="n">NOT</span><span class="p">:</span> <span class="p">(</span><span class="s2">"match"</span><span class="p">,</span> <span class="s2">"no_match"</span><span class="p">),</span>
+    <span class="n">COLUMNFILTER</span><span class="p">:</span> <span class="p">(</span><span class="s2">"query"</span><span class="p">,),</span>
 <span class="p">}</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_QUERY</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
@@ -746,7 +746,7 @@
 <div class="viewcode-block" id="walk">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.walk">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">walk</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="n">QUERY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">QUERY</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">QUERY</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yields the parents and each node for a query recursively</span>
+<span class="w">    </span><span class="sd">"""Yields the parents and each node for a query recursively</span>
 
 <span class="sd">    The query tree is traversed top down.  Use it like this::</span>
 
@@ -755,9 +755,9 @@
 <span class="sd">         # node will be current node</span>
 <span class="sd">         if isinstance(node, PHRASE):</span>
 <span class="sd">             print(node.phrase)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_QUERY</span><span class="p">(</span><span class="n">start</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2"> is not recognised as a QUERY&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">start</span><span class="si">}</span><span class="s2"> is not recognised as a QUERY"</span><span class="p">)</span>
 
     <span class="c1"># top down - container node first</span>
     <span class="k">yield</span> <span class="nb">tuple</span><span class="p">(),</span> <span class="n">start</span>
@@ -790,12 +790,12 @@
 <div class="viewcode-block" id="extract_with_column_filters">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.extract_with_column_filters">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">extract_with_column_filters</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">QUERY</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">QUERY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QUERY</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a new `QUERY` for a query rooted at `start` with child `node`,</span>
+<span class="w">    </span><span class="sd">"""Return a new `QUERY` for a query rooted at `start` with child `node`,</span>
 <span class="sd">    with intermediate :class:`COLUMNFILTER` in between applied.</span>
 
 <span class="sd">    This is useful if you want to execute a node from a top level</span>
 <span class="sd">    query ensuring the column filters apply.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">parents</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">walk</span><span class="p">(</span><span class="n">start</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">child</span> <span class="ow">is</span> <span class="n">node</span><span class="p">:</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">node</span>
@@ -804,14 +804,14 @@
                     <span class="n">res</span> <span class="o">=</span> <span class="n">COLUMNFILTER</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">parent</span><span class="o">.</span><span class="n">filter</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">res</span>
 
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;node is not part of query&quot;</span><span class="p">)</span></div>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"node is not part of query"</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="applicable_columns">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.applicable_columns">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">applicable_columns</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">QUERY</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="n">QUERY</span><span class="p">,</span> <span class="n">columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return which columns apply to ``node``</span>
+<span class="w">    </span><span class="sd">"""Return which columns apply to ``node``</span>
 
 <span class="sd">    You can use :meth:`apsw.fts5.Table.columns_indexed` to get</span>
 <span class="sd">    the column list for a table.  The column names are matched using</span>
@@ -819,7 +819,7 @@
 
 <span class="sd">    If a query column is not in the provided columns, then</span>
 <span class="sd">    :exc:`KeyError` is raised.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">query</span> <span class="o">=</span> <span class="n">extract_with_column_filters</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
     <span class="n">columns</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
     <span class="k">while</span> <span class="n">query</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">node</span><span class="p">:</span>
@@ -830,8 +830,8 @@
                     <span class="n">matches</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No column matching &#39;</span><span class="si">{</span><span class="n">query_column</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span> <span class="o">==</span> <span class="s2">&quot;include&quot;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No column matching '</span><span class="si">{</span><span class="n">query_column</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">query</span><span class="o">.</span><span class="n">filter</span> <span class="o">==</span> <span class="s2">"include"</span><span class="p">:</span>
             <span class="n">columns</span> <span class="o">=</span> <span class="n">matches</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">columns</span> <span class="o">-=</span> <span class="n">matches</span>
@@ -842,7 +842,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_flatten</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="n">QUERY</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reduces nesting depth</span>
+<span class="w">    </span><span class="sd">"""Reduces nesting depth</span>
 
 <span class="sd">    For example if AND contains a child AND then the children can be</span>
 <span class="sd">    merged into parent.</span>
@@ -851,7 +851,7 @@
 <span class="sd">    can be replaced with the child.</span>
 
 <span class="sd">    :meta private:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">walk</span><span class="p">(</span><span class="n">start</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">AND</span><span class="p">):</span>
             <span class="c1"># children have to be flattened bottom up</span>
@@ -870,20 +870,20 @@
 <div class="viewcode-block" id="ParseError">
 <a class="viewcode-back" href="../../textsearch.html#apsw.fts5query.ParseError">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParseError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;This exception is raised when an error parsing a query string is encountered</span>
+<span class="w">    </span><span class="sd">"""This exception is raised when an error parsing a query string is encountered</span>
 
 <span class="sd">    A simple printer::</span>
 
 <span class="sd">        print(exc.query)</span>
-<span class="sd">        print(&quot; &quot; * exc.position + &quot;^&quot;, exc.message)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        print(" " * exc.position + "^", exc.message)</span>
+<span class="sd">    """</span>
 
     <span class="n">query</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;The query that was being processed&quot;</span>
+    <span class="s2">"The query that was being processed"</span>
     <span class="n">message</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;Description of error&quot;</span>
+    <span class="s2">"Description of error"</span>
     <span class="n">position</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="s2">&quot;Offset in query where the error occurred&quot;</span>
+    <span class="s2">"Offset in query where the error occurred"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query</span> <span class="o">=</span> <span class="n">query</span>
@@ -893,7 +893,7 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_Parser</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The query tokenization and parsing all in one namespace&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The query tokenization and parsing all in one namespace"""</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">TokenType</span><span class="p">:</span>
         <span class="c1"># these are assigned the same values as generated by</span>
@@ -928,12 +928,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tokens</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">token_pos</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tokens</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># only EOF present</span>
-            <span class="c1"># SQLite says &quot;syntax error&quot; as the message</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No query provided&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="c1"># SQLite says "syntax error" as the message</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"No query provided"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
         <span class="n">parsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_query</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="o">.</span><span class="n">tok</span> <span class="o">!=</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">EOF</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unexpected&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Unexpected"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span> <span class="o">=</span> <span class="n">parsed</span>
 
@@ -943,7 +943,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_lookahead</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Token</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokens</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">token_pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
-    <span class="n">lookahead</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_lookahead</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Lookahead at next token&quot;</span><span class="p">)</span>
+    <span class="n">lookahead</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_lookahead</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="s2">"Lookahead at next token"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">take_token</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Token</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">token_pos</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -1004,9 +1004,9 @@
             <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_query</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="o">.</span><span class="n">tok</span> <span class="o">!=</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">RP</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="o">.</span><span class="n">tok</span> <span class="o">==</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">EOF</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;unclosed (&quot;</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"unclosed ("</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected ) to close ( at position </span><span class="si">{</span><span class="w"> </span><span class="n">token</span><span class="o">.</span><span class="n">pos</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Expected ) to close ( at position </span><span class="si">{</span><span class="w"> </span><span class="n">token</span><span class="o">.</span><span class="n">pos</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">take_token</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">query</span>
 
@@ -1017,7 +1017,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_phrase</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PHRASE</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="o">.</span><span class="n">tok</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">CARET</span><span class="p">,</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">STRING</span><span class="p">}:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Expected a search term&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Expected a search term"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
 
         <span class="n">initial</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -1029,7 +1029,7 @@
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">take_token</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">tok</span> <span class="o">!=</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Expected a search term&quot;</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Expected a search term"</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
             <span class="n">prefix</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="o">.</span><span class="n">tok</span> <span class="o">==</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">STAR</span><span class="p">:</span>
                 <span class="n">prefix</span> <span class="o">=</span> <span class="kc">True</span>
@@ -1060,7 +1060,7 @@
         <span class="c1"># implementation is otherwise</span>
         <span class="c1"># https://sqlite.org/forum/forumpost/6303d75d63</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">phrases</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Expected phrase&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Expected phrase"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
 
         <span class="c1"># , distance</span>
         <span class="n">distance</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># default</span>
@@ -1073,15 +1073,15 @@
                 <span class="n">number</span><span class="o">.</span><span class="n">tok</span> <span class="o">!=</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">STRING</span>
                 <span class="ow">or</span> <span class="ow">not</span> <span class="n">number</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span>
                 <span class="c1"># this verifies the number was bare and not quoted like</span>
-                <span class="c1"># NEAR(foo, &quot;10&quot;)</span>
-                <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">[</span><span class="n">number</span><span class="o">.</span><span class="n">pos</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&quot;&#39;</span>
+                <span class="c1"># NEAR(foo, "10")</span>
+                <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">[</span><span class="n">number</span><span class="o">.</span><span class="n">pos</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'"'</span>
             <span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Expected number&quot;</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Expected number"</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span>
             <span class="n">distance</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">number</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
         <span class="c1"># close parentheses</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="o">.</span><span class="n">tok</span> <span class="o">!=</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">RP</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Expected )&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Expected )"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">take_token</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">NEAR</span><span class="p">(</span><span class="n">phrases</span><span class="p">,</span> <span class="n">distance</span><span class="p">)</span>
@@ -1100,17 +1100,17 @@
             <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="o">.</span><span class="n">tok</span> <span class="o">==</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span>
                 <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">take_token</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Expected column name&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Expected column name"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="o">.</span><span class="n">tok</span> <span class="o">!=</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">RCP</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Expected }&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Expected }"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">take_token</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="o">.</span><span class="n">tok</span> <span class="o">!=</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Expected column name&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Expected column name"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
             <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">take_token</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="o">.</span><span class="n">tok</span> <span class="o">!=</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">COLON</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Expected :&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Expected :"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">take_token</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookahead</span><span class="o">.</span><span class="n">tok</span> <span class="o">==</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">LP</span><span class="p">:</span>
@@ -1120,7 +1120,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_phrase</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">COLUMNFILTER</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="s2">&quot;include&quot;</span> <span class="k">if</span> <span class="n">include</span> <span class="k">else</span> <span class="s2">&quot;exclude&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">COLUMNFILTER</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="s2">"include"</span> <span class="k">if</span> <span class="n">include</span> <span class="k">else</span> <span class="s2">"exclude"</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">infix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="n">QUERY</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="n">QUERY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QUERY</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">NOT</span><span class="p">:</span>
@@ -1132,33 +1132,33 @@
     <span class="c1"># to avoid namespace pollution</span>
 
     <span class="n">single_char_tokens</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;(&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">LP</span><span class="p">,</span>
-        <span class="s2">&quot;)&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">RP</span><span class="p">,</span>
-        <span class="s2">&quot;{&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">LCP</span><span class="p">,</span>
-        <span class="s2">&quot;}&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">RCP</span><span class="p">,</span>
-        <span class="s2">&quot;:&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">COLON</span><span class="p">,</span>
-        <span class="s2">&quot;,&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">COMMA</span><span class="p">,</span>
-        <span class="s2">&quot;+&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">PLUS</span><span class="p">,</span>
-        <span class="s2">&quot;*&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">STAR</span><span class="p">,</span>
-        <span class="s2">&quot;-&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">MINUS</span><span class="p">,</span>
-        <span class="s2">&quot;^&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">CARET</span><span class="p">,</span>
+        <span class="s2">"("</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">LP</span><span class="p">,</span>
+        <span class="s2">")"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">RP</span><span class="p">,</span>
+        <span class="s2">"{"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">LCP</span><span class="p">,</span>
+        <span class="s2">"}"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">RCP</span><span class="p">,</span>
+        <span class="s2">":"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">COLON</span><span class="p">,</span>
+        <span class="s2">","</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">COMMA</span><span class="p">,</span>
+        <span class="s2">"+"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">PLUS</span><span class="p">,</span>
+        <span class="s2">"*"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">STAR</span><span class="p">,</span>
+        <span class="s2">"-"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">MINUS</span><span class="p">,</span>
+        <span class="s2">"^"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">CARET</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="c1"># case sensitive</span>
     <span class="n">special_words</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;OR&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">OR</span><span class="p">,</span>
-        <span class="s2">&quot;NOT&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">NOT</span><span class="p">,</span>
-        <span class="s2">&quot;AND&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">AND</span><span class="p">,</span>
-        <span class="s2">&quot;NEAR&quot;</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">NEAR</span><span class="p">,</span>
+        <span class="s2">"OR"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">OR</span><span class="p">,</span>
+        <span class="s2">"NOT"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">NOT</span><span class="p">,</span>
+        <span class="s2">"AND"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">AND</span><span class="p">,</span>
+        <span class="s2">"NEAR"</span><span class="p">:</span> <span class="n">TokenType</span><span class="o">.</span><span class="n">NEAR</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">get_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Token</span><span class="p">]:</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">skip_spacing</span><span class="p">():</span>
-            <span class="s2">&quot;Return True if we skipped any spaces&quot;</span>
+            <span class="s2">"Return True if we skipped any spaces"</span>
             <span class="k">nonlocal</span> <span class="n">pos</span>
             <span class="n">original_pos</span> <span class="o">=</span> <span class="n">pos</span>
             <span class="c1"># fts5ExprIsspace</span>
-            <span class="k">while</span> <span class="n">query</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="ow">in</span> <span class="s2">&quot; </span><span class="se">\t\n\r</span><span class="s2">&quot;</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">query</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="ow">in</span> <span class="s2">" </span><span class="se">\t\n\r</span><span class="s2">"</span><span class="p">:</span>
                 <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
                     <span class="k">return</span> <span class="kc">True</span>
@@ -1167,21 +1167,21 @@
 
         <span class="k">def</span><span class="w"> </span><span class="nf">absorb_quoted</span><span class="p">():</span>
             <span class="k">nonlocal</span> <span class="n">pos</span>
-            <span class="k">if</span> <span class="n">query</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">query</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">'"'</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
 
             <span class="c1"># two quotes in a row keeps one and continues string</span>
             <span class="n">start</span> <span class="o">=</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="n">found</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">found</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">'"'</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">found</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="s2">&quot;No ending double quote&quot;</span><span class="p">,</span> <span class="n">start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="s2">"No ending double quote"</span><span class="p">,</span> <span class="n">start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="n">pos</span> <span class="o">=</span> <span class="n">found</span>
-                <span class="k">if</span> <span class="n">query</span><span class="p">[</span><span class="n">pos</span> <span class="p">:</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&quot;&quot;&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">query</span><span class="p">[</span><span class="n">pos</span> <span class="p">:</span> <span class="n">pos</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'""'</span><span class="p">:</span>
                     <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="k">continue</span>
                 <span class="k">break</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_Parser</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span> <span class="n">start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">query</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">)))</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_Parser</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span> <span class="n">start</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">query</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">pos</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'""'</span><span class="p">,</span> <span class="s1">'"'</span><span class="p">)))</span>
             <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">return</span> <span class="kc">True</span>
 
@@ -1192,7 +1192,7 @@
             <span class="k">while</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
                 <span class="c1"># sqlite3Fts5IsBareword</span>
                 <span class="k">if</span> <span class="p">(</span>
-                    <span class="n">query</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="ow">in</span> <span class="s2">&quot;0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz</span><span class="se">\x1a</span><span class="s2">&quot;</span>
+                    <span class="n">query</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="ow">in</span> <span class="s2">"0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz</span><span class="se">\x1a</span><span class="s2">"</span>
                     <span class="ow">or</span> <span class="nb">ord</span><span class="p">(</span><span class="n">query</span><span class="p">[</span><span class="n">pos</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mh">0x80</span>
                 <span class="p">):</span>
                     <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -1222,12 +1222,12 @@
             <span class="k">if</span> <span class="n">absorb_bareword</span><span class="p">():</span>
                 <span class="k">continue</span>
 
-            <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Invalid query character &#39;</span><span class="si">{</span><span class="n">query</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ParseError</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Invalid query character '</span><span class="si">{</span><span class="n">query</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span><span class="si">}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">pos</span><span class="p">)</span>
 
         <span class="c1"># add explicit EOF</span>
         <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_Parser</span><span class="o">.</span><span class="n">Token</span><span class="p">(</span><span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">EOF</span><span class="p">,</span> <span class="n">pos</span><span class="p">))</span>
 
-        <span class="c1"># fts5 promotes STRING &quot;NEAR&quot; to token NEAR only if followed by &quot;(&quot;</span>
+        <span class="c1"># fts5 promotes STRING "NEAR" to token NEAR only if followed by "("</span>
         <span class="c1"># we demote to get the same effect</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">tok</span> <span class="o">==</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">NEAR</span> <span class="ow">and</span> <span class="n">res</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tok</span> <span class="o">!=</span> <span class="n">_Parser</span><span class="o">.</span><span class="n">TokenType</span><span class="o">.</span><span class="n">LP</span><span class="p">:</span>
@@ -1244,7 +1244,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

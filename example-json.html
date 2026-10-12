@@ -15,7 +15,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JSON Example/Tour &mdash; APSW 3.53.4.0 documentation</title>
+  <title>JSON Example/Tour &mdash; APSW 3.54.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/apsw.css?v=ad5bd102" />
@@ -25,7 +25,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/example-json.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=40c3ac51"></script>
+      <script src="_static/documentation_options.js?v=c3243565"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/js/theme.js"></script>
@@ -133,7 +133,7 @@
 additional functionality provided by APSW to make it easier to use.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
 
-<span class="c1"># This code uses Python&#39;s optional typing annotations.  You can</span>
+<span class="c1"># This code uses Python's optional typing annotations.  You can</span>
 <span class="c1"># ignore them and do not need to use them.  If you do use them</span>
 <span class="c1"># then you must include this future annotations line first.</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -151,22 +151,22 @@ additional functionality provided by APSW to make it easier to use.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">apsw.ext</span>
 
 <span class="c1"># A database to work on</span>
-<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">connection</span> <span class="o">=</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Connection</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 
 <span class="c1"># And the table</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;CREATE TABLE items(</span>
+<span class="w">    </span><span class="sd">"""CREATE TABLE items(</span>
 <span class="sd">        name,</span>
 <span class="sd">        shape,</span>
 <span class="sd">        extra</span>
 <span class="sd">    );</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="p">)</span>
 
 
 <span class="c1"># This method is used to show queries and results</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">query</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="si">{</span><span class="n">sql</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n\n</span><span class="si">{</span><span class="n">sql</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">bindings</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
         <span class="n">pprint</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">result</span><span class="p">)</span>
@@ -188,7 +188,7 @@ JSON as a native data type, then do the following.</p>
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_jsonb</span><span class="p">(</span>
     <span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">column</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bytes</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-    <span class="c1"># Called when a blob is valid JSONB.  If you don&#39;t use blobs then</span>
+    <span class="c1"># Called when a blob is valid JSONB.  If you don't use blobs then</span>
     <span class="c1"># this is all that is needed.  If you do use blobs then you can</span>
     <span class="c1"># examine information from the cursor/query to decide, shown</span>
     <span class="c1"># further down.</span>
@@ -200,24 +200,25 @@ JSON as a native data type, then do the following.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">convert_jsonb</span> <span class="o">=</span> <span class="n">convert_jsonb</span>
 
 <span class="n">example_data</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;origin&quot;</span><span class="p">:</span> <span class="s2">&quot;Spain&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;diameter&quot;</span><span class="p">:</span> <span class="mf">7.5</span><span class="p">,</span>
-    <span class="s2">&quot;sugar&quot;</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span>
-    <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;citrus&quot;</span><span class="p">,</span> <span class="s2">&quot;sweet&quot;</span><span class="p">,</span> <span class="s2">&quot;juice&quot;</span><span class="p">],</span>
+    <span class="s2">"origin"</span><span class="p">:</span> <span class="s2">"Spain"</span><span class="p">,</span>
+    <span class="s2">"diameter"</span><span class="p">:</span> <span class="mf">7.5</span><span class="p">,</span>
+    <span class="s2">"sugar"</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span>
+    <span class="s2">"tags"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"citrus"</span><span class="p">,</span> <span class="s2">"sweet"</span><span class="p">,</span> <span class="s2">"juice"</span><span class="p">],</span>
 <span class="p">}</span>
 
 <span class="c1"># Note how we can INSERT the data</span>
 <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-    <span class="s2">&quot;INSERT INTO items VALUES(?, ?, ?)&quot;</span><span class="p">,</span>
-    <span class="p">(</span><span class="s2">&quot;orange&quot;</span><span class="p">,</span> <span class="s2">&quot;round&quot;</span><span class="p">,</span> <span class="n">example_data</span><span class="p">),</span>
+    <span class="s2">"INSERT INTO items VALUES(?, ?, ?)"</span><span class="p">,</span>
+    <span class="p">(</span><span class="s2">"orange"</span><span class="p">,</span> <span class="s2">"round"</span><span class="p">,</span> <span class="n">example_data</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="c1"># And get it back</span>
-<span class="n">query</span><span class="p">(</span><span class="s2">&quot;SELECT shape, extra FROM items WHERE name=&#39;orange&#39;&quot;</span><span class="p">)</span>
+<span class="n">query</span><span class="p">(</span><span class="s2">"SELECT shape, extra FROM items WHERE name='orange'"</span><span class="p">)</span>
 
 <span class="c1"># If you want the data returned to be read only then use this.</span>
 <span class="c1"># Note how the list becomes a tuple and dict becomes MappingProxyType</span>
-<span class="c1"># which doesn&#39;t allow writes.</span>
+<span class="c1"># which doesn't allow writes.  Python 3.15 adds :class:`frozendict`</span>
+<span class="c1"># which is clearer.</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_jsonb_readonly</span><span class="p">(</span>
@@ -230,23 +231,23 @@ JSON as a native data type, then do the following.</p>
 
 <span class="n">connection</span><span class="o">.</span><span class="n">convert_jsonb</span> <span class="o">=</span> <span class="n">convert_jsonb_readonly</span>
 
-<span class="n">query</span><span class="p">(</span><span class="s2">&quot;SELECT shape, extra FROM items WHERE name=&#39;orange&#39;&quot;</span><span class="p">)</span>
+<span class="n">query</span><span class="p">(</span><span class="s2">"SELECT shape, extra FROM items WHERE name='orange'"</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SELECT shape, extra FROM items WHERE name=&#39;orange&#39;</span>
-<span class="go">(&#39;round&#39;,</span>
-<span class="go"> {&#39;diameter&#39;: 7.5,</span>
-<span class="go">  &#39;origin&#39;: &#39;Spain&#39;,</span>
-<span class="go">  &#39;sugar&#39;: 23,</span>
-<span class="go">  &#39;tags&#39;: [&#39;citrus&#39;, &#39;sweet&#39;, &#39;juice&#39;]})</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SELECT shape, extra FROM items WHERE name='orange'</span>
+<span class="go">('round',</span>
+<span class="go"> {'diameter': 7.5,</span>
+<span class="go">  'origin': 'Spain',</span>
+<span class="go">  'sugar': 23,</span>
+<span class="go">  'tags': ['citrus', 'sweet', 'juice']})</span>
 
 
-<span class="go">SELECT shape, extra FROM items WHERE name=&#39;orange&#39;</span>
-<span class="go">(&#39;round&#39;,</span>
-<span class="go"> mappingproxy({&#39;diameter&#39;: 7.5,</span>
-<span class="go">               &#39;origin&#39;: &#39;Spain&#39;,</span>
-<span class="go">               &#39;sugar&#39;: 23,</span>
-<span class="go">               &#39;tags&#39;: (&#39;citrus&#39;, &#39;sweet&#39;, &#39;juice&#39;)}))</span>
+<span class="go">SELECT shape, extra FROM items WHERE name='orange'</span>
+<span class="go">('round',</span>
+<span class="go"> mappingproxy({'diameter': 7.5,</span>
+<span class="go">               'origin': 'Spain',</span>
+<span class="go">               'sugar': 23,</span>
+<span class="go">               'tags': ('citrus', 'sweet', 'juice')}))</span>
 </pre></div>
 </div>
 </section>
@@ -257,36 +258,36 @@ Here are some of the most useful.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># -&gt; extracts a subcomponent in JSON text format.  Note how origin</span>
 <span class="c1"># includes the double quotes in the response.  $ is used to indicate</span>
 <span class="c1"># top level.</span>
-<span class="n">query</span><span class="p">(</span><span class="s2">&quot;SELECT extra -&gt; &#39;$.origin&#39; FROM items&quot;</span><span class="p">)</span>
+<span class="n">query</span><span class="p">(</span><span class="s2">"SELECT extra -&gt; '$.origin' FROM items"</span><span class="p">)</span>
 
 <span class="c1"># -&gt;&gt; extracts as a SQLite value so origin in a plain string.</span>
-<span class="n">query</span><span class="p">(</span><span class="s2">&quot;SELECT extra -&gt;&gt; &#39;$.origin&#39; FROM items&quot;</span><span class="p">)</span>
+<span class="n">query</span><span class="p">(</span><span class="s2">"SELECT extra -&gt;&gt; '$.origin' FROM items"</span><span class="p">)</span>
 
 <span class="c1"># Lets get the first tag</span>
-<span class="n">query</span><span class="p">(</span><span class="s2">&quot;SELECT extra -&gt;&gt; &#39;$.tags[0]&#39; FROM items&quot;</span><span class="p">)</span>
+<span class="n">query</span><span class="p">(</span><span class="s2">"SELECT extra -&gt;&gt; '$.tags[0]' FROM items"</span><span class="p">)</span>
 
 <span class="c1"># Iterate over each tag - you would typically use this with a JOIN</span>
 <span class="n">query</span><span class="p">(</span>
-    <span class="s2">&quot;SELECT name, shape, value FROM items, json_each(items.extra, &#39;$.tags&#39;)&quot;</span>
+    <span class="s2">"SELECT name, shape, value FROM items, json_each(items.extra, '$.tags')"</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SELECT extra -&gt; &#39;$.origin&#39; FROM items</span>
-<span class="go">(&#39;&quot;Spain&quot;&#39;,)</span>
+<div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SELECT extra -&gt; '$.origin' FROM items</span>
+<span class="go">('"Spain"',)</span>
 
 
-<span class="go">SELECT extra -&gt;&gt; &#39;$.origin&#39; FROM items</span>
-<span class="go">(&#39;Spain&#39;,)</span>
+<span class="go">SELECT extra -&gt;&gt; '$.origin' FROM items</span>
+<span class="go">('Spain',)</span>
 
 
-<span class="go">SELECT extra -&gt;&gt; &#39;$.tags[0]&#39; FROM items</span>
-<span class="go">(&#39;citrus&#39;,)</span>
+<span class="go">SELECT extra -&gt;&gt; '$.tags[0]' FROM items</span>
+<span class="go">('citrus',)</span>
 
 
-<span class="go">SELECT name, shape, value FROM items, json_each(items.extra, &#39;$.tags&#39;)</span>
-<span class="go">[(&#39;orange&#39;, &#39;round&#39;, &#39;citrus&#39;),</span>
-<span class="go"> (&#39;orange&#39;, &#39;round&#39;, &#39;sweet&#39;),</span>
-<span class="go"> (&#39;orange&#39;, &#39;round&#39;, &#39;juice&#39;)]</span>
+<span class="go">SELECT name, shape, value FROM items, json_each(items.extra, '$.tags')</span>
+<span class="go">[('orange', 'round', 'citrus'),</span>
+<span class="go"> ('orange', 'round', 'sweet'),</span>
+<span class="go"> ('orange', 'round', 'juice')]</span>
 </pre></div>
 </div>
 </section>
@@ -299,23 +300,23 @@ the binding number or column being returned.  You can use
 <a class="reference internal" href="cursor.html#apsw.Cursor.bindings_names" title="apsw.Cursor.bindings_names"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.bindings_names</span></code></a> and <a class="reference internal" href="cursor.html#apsw.Cursor.description" title="apsw.Cursor.description"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.description</span></code></a> for
 more details about the value being converted.  You can also use
 <a class="reference internal" href="cursor.html#apsw.Cursor.connection" title="apsw.Cursor.connection"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Cursor.connection</span></code></a> to get back to the connection and your own
-data structures.  <a class="reference external" href="https://docs.python.org/3/library/contextvars.html#module-contextvars" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">contextvars</span></code></a> can be used to provide more.</p>
+data structures.  <a class="reference external" href="https://docs.python.org/3/library/contextvars.html#module-contextvars" title="(in Python v3.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">contextvars</span></code></a> can be used to provide more.</p>
 <p><a class="reference internal" href="jsonb.html#apsw.jsonb_encode" title="apsw.jsonb_encode"><code class="xref py py-func docutils literal notranslate"><span class="pre">jsonb_encode()</span></code></a> and <a class="reference internal" href="jsonb.html#apsw.jsonb_decode" title="apsw.jsonb_decode"><code class="xref py py-func docutils literal notranslate"><span class="pre">jsonb_decode()</span></code></a> have parameters
-like the <a class="reference external" href="https://docs.python.org/3/library/json.html#module-json" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">json</span></code></a> module functions for controlling how non-JSON
+like the <a class="reference external" href="https://docs.python.org/3/library/json.html#module-json" title="(in Python v3.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">json</span></code></a> module functions for controlling how non-JSON
 Python types can be converted to JSON compatible ones, and how JSON values
 are converted back to Python objects.</p>
 <p>This section shows all of these in action at once!</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">volume</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">(</span>
-    <span class="s2">&quot;volume&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;quiet&quot;</span>
+    <span class="s2">"volume"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"quiet"</span>
 <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">py_to_json</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
-    <span class="c1"># Used by jsonb_encode to convert types that aren&#39;t JSON compatible</span>
+    <span class="c1"># Used by jsonb_encode to convert types that aren't JSON compatible</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">):</span>
         <span class="c1"># base64 encode binary data.  Note it returns bytes so we have to</span>
         <span class="c1"># convert to text.</span>
-        <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;ascii&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"ascii"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">):</span>
         <span class="c1"># ISO8601</span>
@@ -332,21 +333,21 @@ are converted back to Python objects.</p>
         <span class="c1"># detect this</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="c1"># I made up this key as unlikely to be used in other dicts</span>
-            <span class="s2">&quot;$py$type&quot;</span><span class="p">:</span> <span class="s2">&quot;complex&quot;</span><span class="p">,</span>
+            <span class="s2">"$py$type"</span><span class="p">:</span> <span class="s2">"complex"</span><span class="p">,</span>
             <span class="c1"># fields from complex</span>
-            <span class="s2">&quot;real&quot;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
-            <span class="s2">&quot;imag&quot;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
+            <span class="s2">"real"</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">real</span><span class="p">,</span>
+            <span class="s2">"imag"</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span>
         <span class="p">}</span>
 
-    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t convert </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Can't convert </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_binding</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
     <span class="c1"># note that binding numbers start at 1</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">convert_binding callback </span><span class="si">{</span><span class="n">num</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">=!r:</span><span class="s2">.20</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cursor</span><span class="o">.</span><span class="n">bindings_count</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cursor</span><span class="o">.</span><span class="n">bindings_names</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;contextvar </span><span class="si">{</span><span class="n">volume</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">convert_binding callback </span><span class="si">{</span><span class="n">num</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">=!r:</span><span class="s2">.20</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">cursor</span><span class="o">.</span><span class="n">bindings_count</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">cursor</span><span class="o">.</span><span class="n">bindings_names</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"contextvar </span><span class="si">{</span><span class="n">volume</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">apsw</span><span class="o">.</span><span class="n">jsonb_encode</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">py_to_json</span><span class="p">)</span>
 
@@ -359,22 +360,22 @@ are converted back to Python objects.</p>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">object_hook</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
     <span class="c1"># We will use this to convert back to a Python type</span>
-    <span class="k">match</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;$py$type&quot;</span><span class="p">):</span>
+    <span class="k">match</span> <span class="n">value</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"$py$type"</span><span class="p">):</span>
         <span class="k">case</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># Doesn&#39;t have this key, so return as is</span>
+            <span class="c1"># Doesn't have this key, so return as is</span>
             <span class="k">return</span> <span class="n">value</span>
-        <span class="k">case</span> <span class="s2">&quot;complex&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;real&quot;</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="s2">&quot;imag&quot;</span><span class="p">])</span>
+        <span class="k">case</span> <span class="s2">"complex"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="s2">"real"</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="s2">"imag"</span><span class="p">])</span>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown $py$type&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Unknown $py$type"</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_jsonb</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">apsw</span><span class="o">.</span><span class="n">Cursor</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">convert_jsonb callback </span><span class="si">{</span><span class="n">num</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">=!r:</span><span class="s2">.20</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">convert_jsonb callback </span><span class="si">{</span><span class="n">num</span><span class="si">=}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">=!r:</span><span class="s2">.20</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
     <span class="c1"># the description will contain the column names, declared types and</span>
     <span class="c1"># more if using description_full</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;columns are </span><span class="si">{</span><span class="p">[</span><span class="n">col</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;contextvar </span><span class="si">{</span><span class="n">volume</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">=}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"columns are </span><span class="si">{</span><span class="p">[</span><span class="n">col</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"contextvar </span><span class="si">{</span><span class="n">volume</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="si">=}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="c1"># We want decimal to handle float conversion because it has more</span>
     <span class="c1"># precision</span>
@@ -386,41 +387,41 @@ are converted back to Python objects.</p>
 <span class="n">connection</span><span class="o">.</span><span class="n">convert_jsonb</span> <span class="o">=</span> <span class="n">convert_jsonb</span>
 
 <span class="n">example_data</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;binary&quot;</span><span class="p">:</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\x01\x73\x94\x65</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;date stamp&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
-    <span class="s2">&quot;decimal&quot;</span><span class="p">:</span> <span class="n">decimal</span><span class="o">.</span><span class="n">Decimal</span><span class="p">(</span>
-        <span class="s2">&quot;0.7843262344923523492342352344523423423423&quot;</span>
+    <span class="s2">"binary"</span><span class="p">:</span> <span class="sa">b</span><span class="s2">"</span><span class="se">\x01\x73\x94\x65</span><span class="s2">"</span><span class="p">,</span>
+    <span class="s2">"date stamp"</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+    <span class="s2">"decimal"</span><span class="p">:</span> <span class="n">decimal</span><span class="o">.</span><span class="n">Decimal</span><span class="p">(</span>
+        <span class="s2">"0.7843262344923523492342352344523423423423"</span>
     <span class="p">),</span>
-    <span class="s2">&quot;complex&quot;</span><span class="p">:</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">4</span><span class="n">j</span><span class="p">,</span>
+    <span class="s2">"complex"</span><span class="p">:</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">4</span><span class="n">j</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="c1"># Use the contextvar</span>
-<span class="k">with</span> <span class="n">volume</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;loud&quot;</span><span class="p">):</span>
+<span class="k">with</span> <span class="n">volume</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">"loud"</span><span class="p">):</span>
     <span class="n">query</span><span class="p">(</span>
-        <span class="s2">&quot;SELECT $name AS scope, $data AS hello&quot;</span><span class="p">,</span>
+        <span class="s2">"SELECT $name AS scope, $data AS hello"</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">example_data</span><span class="p">,</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"test"</span><span class="p">,</span>
+            <span class="s2">"data"</span><span class="p">:</span> <span class="n">example_data</span><span class="p">,</span>
         <span class="p">},</span>
     <span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-output notranslate"><div class="highlight"><pre><span></span><span class="go">SELECT $name AS scope, $data AS hello</span>
 
-<span class="go">convert_binding callback num=2 value={&#39;binary&#39;: b&#39;\x01s\x...</span>
+<span class="go">convert_binding callback num=2 value={'binary': b'\x01s\x...</span>
 <span class="go">cursor.bindings_count=2</span>
-<span class="go">cursor.bindings_names=(&#39;name&#39;, &#39;data&#39;)</span>
-<span class="go">contextvar volume.get()=&#39;loud&#39;</span>
+<span class="go">cursor.bindings_names=('name', 'data')</span>
+<span class="go">contextvar volume.get()='loud'</span>
 
-<span class="go">convert_jsonb callback num=1 value=b&#39;\xec\x00\x00\x00\x...</span>
-<span class="go">columns are [&#39;scope&#39;, &#39;hello&#39;]</span>
-<span class="go">contextvar volume.get()=&#39;loud&#39;</span>
+<span class="go">convert_jsonb callback num=1 value=b'\xec\x00\x00\x00\x...</span>
+<span class="go">columns are ['scope', 'hello']</span>
+<span class="go">contextvar volume.get()='loud'</span>
 
-<span class="go">(&#39;test&#39;,</span>
-<span class="go"> {&#39;binary&#39;: &#39;AXOUZQ==&#39;,</span>
-<span class="go">  &#39;complex&#39;: (3+4j),</span>
-<span class="go">  &#39;date stamp&#39;: &#39;2026-07-26T08:15:48.227232&#39;,</span>
-<span class="go">  &#39;decimal&#39;: Decimal(&#39;0.7843262344923523492342352344523423423423&#39;)})</span>
+<span class="go">('test',</span>
+<span class="go"> {'binary': 'AXOUZQ==',</span>
+<span class="go">  'complex': (3+4j),</span>
+<span class="go">  'date stamp': '2026-10-12T08:53:40.193506',</span>
+<span class="go">  'decimal': Decimal('0.7843262344923523492342352344523423423423')})</span>
 </pre></div>
 </div>
 </section>
@@ -443,7 +444,7 @@ connections and cursors are no longer used.</p>
 
   <div role="contentinfo">
     <p>&#169; <a href="copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Jul 26, 2026.
+      <span class="lastupdated">Last updated on Oct 12, 2026.
       </span></p>
   </div>
 

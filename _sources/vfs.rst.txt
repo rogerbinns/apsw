@@ -59,6 +59,25 @@ they will be :doc:`chained <exceptions>` together.
 which significantly increase detail about the exceptions and help with
 debugging.
 
+Lifetime, GC, process shutdown
+==============================
+
+A VFS you create is registered by the constructor,  It can be
+:meth:`explicitly unregistered <VFS.unregister>`, or will be
+implicitly unregistered by the destructor of the VFS.  SQLite doesn't
+have a mechanism for managing the lifecycles of VFS - they are usually
+implemented in static C for the lifetime of the process.
+
+Ensure your VFS classes live as long as all connections that could use
+them.  APSW does Python level reference counting where possible.
+
+When the Python interpreter is being shutdown, objects can become
+``None`` causing exceptions.  It is worth explicitly closing
+connections proactively on shutdown::
+
+    for con in apsw.connections():
+        con.close()
+
 VFSFcntlPragma class
 ====================
 
@@ -72,7 +91,7 @@ shows usage of this class.
 It is only valid while in :meth:`VFSFile.xFileControl`, and using
 outside of that will result in memory corruption and crashes.
 
-The pointer must be what your xFileControl method received.
+The pointer **must** be what your xFileControl method received.
 
 .. attribute:: VFSFcntlPragma.name
     :type: str
@@ -116,6 +135,11 @@ VFS class
         represented in UTF-8.  If a pathname is passed in longer than
         this value then SQLite will not`be able to open it.  If you are
         using a base, then a value of zero will use the value from base.
+
+        Memory allocations are made of this size plus extra for ``-journal``
+        suffix and a null temrinator.  SQLite uses 512 for Unix,
+        1024 for in memory names, 1040 for Windows, and 65534 for Windows
+        long paths.
 
     :param iVersion: Version number for the `sqlite3_vfs <https://sqlite.org/c3ref/vfs.html>`__
         structure.
@@ -235,10 +259,13 @@ VFS class
 
   Return the absolute pathname for name.  You can use ``os.path.abspath`` to do this.
 
-.. method:: VFS.xGetLastError() -> tuple[int, str]
+.. method:: VFS.xGetLastError() -> tuple[int, str | None]
 
   Return an integer error code and (optional) text describing
   the last error code and message that happened in this thread.
+
+  The code can be later retreived by :meth:`Connection.system_errno`.
+  In practise SQLite ignores the error message.
 
 .. method:: VFS.xGetSystemCall(name: str) -> int | None
 
