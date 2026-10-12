@@ -225,9 +225,17 @@ class CArray(unittest.TestCase):
 
     def testAlignment(self):
         "verified passed in data is aligned"
-        # this will end up aligned in practise, but is not guaranteed
-        # in theory.
-        data = memoryview(b"0" * 17)
+        try:
+            import ctypes
+        except ImportError:
+            self.skipTest("ctypes not available")
+
+        # this is quite tricky and caused failing tests.  We need a
+        # buffer that is always 8 byte aligned and 17 bytes long.
+        underlying = (ctypes.c_ubyte * 24)()
+        offset = (-ctypes.addressof(underlying)) % 8
+        data = memoryview(underlying)[offset : offset + 17]
+
         for flag in (
             apsw.SQLITE_CARRAY_INT32,
             apsw.SQLITE_CARRAY_INT64,
