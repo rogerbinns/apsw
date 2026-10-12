@@ -69,9 +69,12 @@ class CArray(unittest.TestCase):
         self.assertRaisesRegex(ValueError, ".*Unsupported flags.*", apsw.carray, arr, flags=247)
 
         for flag in "INT32", "INT64", "DOUBLE":
+            # alignment is checked before length.  it is usually 8
+            # byte aligned but linux arm 32 bit free threaded is often
+            # 4 byte which is not unreasonable
             self.assertRaisesRegex(
                 ValueError,
-                ".*not a multiple of.*",
+                ".*(not a multiple of|aligned as required).*",
                 apsw.carray,
                 b"123456",
                 flags=getattr(apsw, f"SQLITE_CARRAY_{flag}"),
