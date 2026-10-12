@@ -999,6 +999,8 @@ class APSW(unittest.TestCase):
 
     def testCursorReentrant(self):
         "Calling back into cursor while cursor is executing"
+        if sys.platform == "emscripten":
+            self.skipTest("threads not supported")
 
         cursor = self.db.cursor()
 
@@ -5257,8 +5259,6 @@ class APSW(unittest.TestCase):
 
     def testClosingChecks(self):
         "Check closed connection/blob/cursor is correctly detected"
-        if sys.platform == "emscripten":
-            self.skipTest("pyodide crashes")
         cur = self.db.cursor()
         rowid = curnext(
             cur.execute("create table foo(x blob); insert into foo values(zeroblob(98765)); select rowid from foo")
