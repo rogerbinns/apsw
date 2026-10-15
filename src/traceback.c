@@ -58,10 +58,6 @@ AddTraceBackHere(const char *filename, int lineno, const char *functionname, con
   if (!frame)
     goto end;
 
-#if PY_VERSION_HEX < 0x030b0000
-  frame->f_lineno = lineno;
-#endif
-
 end:
   /* try to report errors that happened above */
   if (PyErr_Occurred())

@@ -2926,7 +2926,6 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
     const char *modname = NULL;
     PyObject *qualname = NULL, *module = NULL;
 
-#if PY_VERSION_HEX >= 0x030b0000
     CHAIN_EXC_BEGIN
       qualname = PyType_GetQualName(Py_TYPE(apswfile->file));
       if (qualname && PyUnicode_Check(qualname))
@@ -2938,7 +2937,6 @@ apswvfsfile_xFileControl(sqlite3_file *file, int op, void *pArg)
         CHAIN_EXC_END;
       }
     CHAIN_EXC_END;
-#endif
 
     CHAIN_EXC_BEGIN
       module = PyObject_GetAttr((PyObject *)Py_TYPE(apswfile->file), apst.s_module);

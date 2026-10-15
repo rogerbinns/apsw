@@ -327,28 +327,7 @@ class AsyncIO:
         finally:
             coro.close()
 
-    if sys.version_info < (3, 11):
-
-        async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
-            "Executes the coro in the event loop"
-
-            task = context.run(asyncio.create_task, coro)
-            tracker.cancel_async_cb = task.cancel
-            if tracker.is_cancelled:
-                # manually cleaning up task which the event loop
-                # usually does for the task but we have to do here
-                task.cancel()
-                try:
-                    await task
-                except (asyncio.CancelledError, Exception):
-                    pass
-                return
-
-            if tracker.deadline_loop is not None:
-                return await asyncio.wait_for(task, tracker.deadline_loop - self.loop.time())
-            return await task
-
-    elif sys.version_info < (3, 12):
+    if sys.version_info < (3, 12):
 
         async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
             "Executes the coro in the event loop"

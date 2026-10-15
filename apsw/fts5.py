@@ -1115,8 +1115,7 @@ def parse_tokenizer_args(
                 if ta.convertor is not None:
                     v = ta.convertor(v)
             except Exception as e:
-                if hasattr(e, "add_note"):
-                    e.add_note(f"Processing parameter { n } with value '{ v }'")
+                e.add_note(f"Processing parameter { n } with value '{ v }'")
                 raise
             if ta.choices is not None:
                 if v not in ta.choices:
@@ -3183,8 +3182,7 @@ if __name__ == "__main__":
             obj = convert_string_to_python(mod)
             con.register_fts5_tokenizer("name", obj)
         except Exception as e:
-            if hasattr(e, "add_note"):
-                e.add_note(f"Processing --register { reg }")
+            e.add_note(f"Processing --register { reg }")
             raise
 
     # go

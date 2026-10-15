@@ -4,7 +4,7 @@ About
 **APSW** |version| **released** |today|.
 
 Use with `SQLite <https://sqlite.org/>`__ 3.54 or later, `Python
-<https://www.python.org/downloads/>`__ 3.10 and later.
+<https://www.python.org/downloads/>`__ 3.11 and later.
 
 APSW has been under continuous development since 2004, and is in the
 top `1% of monthly downloads at the Python Package Index
