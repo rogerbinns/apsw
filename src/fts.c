@@ -5,6 +5,7 @@ static fts5_api *
 Connection_fts5_api(Connection *self)
 {
 #include "faultinject.h"
+#include <stddef.h>
 
   CHECK_CLOSED(self, NULL);
 
