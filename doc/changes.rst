@@ -10,6 +10,12 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+3.54.1.0
+========
+
+Fixed build failure on recent gcc, due to using header that was
+included by other headers.  (:issue:`640`)
+
 3.54.0.0
 ========
 

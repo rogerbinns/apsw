@@ -137,6 +137,7 @@ API Reference
 /* system headers */
 #include <assert.h>
 #include <stdarg.h>
+#include <stddef.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -155,7 +156,6 @@ API Reference
 #include "structmember.h"
 #define Py_T_OBJECT_EX T_OBJECT_EX
 #define Py_READONLY READONLY
-
 #endif
 
 /* This function does nothing in regular builds, but in faultinjection
