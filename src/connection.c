@@ -439,7 +439,9 @@ Connection_remove_dependent(Connection *self, PyObject *o)
         apsw_write_unraisable(NULL);
         continue;
       }
-      if (wo && !Py_Is(wo, o))
+      int found = wo && !Py_Is(wo, o);
+      Py_XDECREF(wo);
+      if (found)
         continue;
     }
     else if (!Py_Is(item, o))

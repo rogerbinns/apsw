@@ -16,6 +16,10 @@ APSW changes by version
 Fixed build failure on recent gcc, due to using header that was
 included by other headers.  (:issue:`640`)
 
+Fixed reference count leak due to incorrect reference count handling.
+The main symptom would be connections not automatically being garbage
+collected. (:issue:`641`)
+
 3.54.0.0
 ========
 

@@ -6264,6 +6264,32 @@ class APSW(unittest.TestCase):
                 self.assertGreater(len(gc.get_referents(obj)), 0)
                 self.assertGreater(len(gc.get_referrers(obj)), 0)
 
+    def testIssue641(self):
+        self.db.close()
+
+        def inner(end, dangling):
+            con=apsw.Connection("")
+            con.execute("create table blobs(blob)")
+            cursors = []
+            blobs=[]
+
+            while time.monotonic() < end:
+                for l in cursors, blobs:
+                    while len(l) > dangling:
+                        del l[random.randint(0, len(l)-1)]
+
+                cur = con.cursor()
+                rowid = cur.execute("insert into blobs values(zeroblob(1234)) returning rowid").get
+                cursors.append(cur)
+                cursors.append("select 2")
+                blobs.append(con.blob_open("main", "blobs", "blob", rowid, False))
+
+        inner(time.monotonic()+2, 20)
+        gc.collect(2)
+
+        self.assertEqual(apsw.connections(), [])
+
+
     def testCursorGet(self):
         "Cursor.get"
         for query, expected in (
