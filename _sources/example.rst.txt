@@ -77,9 +77,9 @@ Checking APSW and SQLite versions
 .. code-block:: output
 
           Using APSW file /space/apsw/apsw/__init__.cpython-314-x86_64-linux-gnu.so
-             APSW version 3.54.0.0
-    SQLite header version 3054000
-       SQLite lib version 3.54.0
+             APSW version 3.54.1.0
+    SQLite header version 3054001
+       SQLite lib version 3.54.1
        Using amalgamation True
 
 
@@ -890,11 +890,11 @@ conversion, both for types you define and for other types.
 
 .. code-block:: output
 
-    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2026, 10, 12, 8, 53, 34, 942533))
+    inserted (Point(5.2, 7.6), (3+4j), datetime.datetime(2026, 10, 18, 16, 31, 9, 230246))
     querying data
     column 0 = Point(5.2, 7.6)
     column 1 = (3+4j)
-    column 2 = datetime.datetime(2026, 10, 12, 15, 53, 34, 942533, tzinfo=datetime.timezone.utc)
+    column 2 = datetime.datetime(2026, 10, 18, 23, 31, 9, 230246, tzinfo=datetime.timezone.utc)
 
 
 .. index:: Runtime Python objects (example code)
@@ -964,7 +964,7 @@ runtime.
 .. code-block:: output
 
     Bad binding argument type supplied - argument #1: type set
-    select ? {1, 2, 'three', <__main__.TeeStringIO object at 0x7820df9ffeb0>, (4+5j)}
+    select ? {1, 2, <__main__.TeeStringIO object at 0x76c4ee7ffeb0>, 'three', (4+5j)}
     select typeof(?) null
     make_set got ((3+4j), <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello')
     select make_set(?, ?, ?) {<_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>, 'hello', (3+4j)}
@@ -1042,7 +1042,7 @@ across all the queries within the block
 .. code-block:: output
 
     len(rows)=20
-    After 0.200 seconds, we hit number=262962
+    After 0.200 seconds, we hit number=296096
     exc=IndexError('query row limit hit')
 
 
@@ -1461,7 +1461,7 @@ feedback and allows cancelling.
     progress handler called
     progress handler called
     progress handler called
-    (9987293072,)
+    (9950189643,)
 
 
 .. index:: File Control (example code)
@@ -1913,8 +1913,8 @@ useful instead.
     │ .pot       │     105216 │
     │ .ps1       │       9031 │
     │ .pth       │        725 │
-    │ .py        │   34570526 │
-    │ .pyc       │   42080940 │
+    │ .py        │   34570540 │
+    │ .pyc       │   42080928 │
     │ .pyi       │      65184 │
     │ .qhcp      │        567 │
     │ .qhp       │        863 │
@@ -2209,9 +2209,9 @@ Python.
     
     Dump output
     
-    -- SQLite dump (by APSW 3.54.0.0)
-    -- SQLite version 3.54.0
-    -- Date: Mon Oct 12 08:53:35 2026
+    -- SQLite dump (by APSW 3.54.1.0)
+    -- SQLite version 3.54.1
+    -- Date: Sun Oct 18 16:31:09 2026
     -- Tables like: csvtest%
     -- Database: /space/apsw/dbfile
     -- User: rogerb @ clamps
@@ -2329,16 +2329,16 @@ This shows using :meth:`Connection.trace_v2`
     code is  SQLITE_TRACE_STMT
     {'code': 1,
      'explain': 0,
-     'id': 904198312,
+     'id': 995922760,
      'readonly': True,
      'total_changes': 146,
      'trigger': False}
     code is  SQLITE_TRACE_ROW
-    {'code': 4, 'id': 904198312}
+    {'code': 4, 'id': 995922760}
     code is  SQLITE_TRACE_PROFILE
     {'code': 2,
-     'id': 904198312,
-     'nanoseconds': 15000000,
+     'id': 995922760,
+     'nanoseconds': 14000000,
      'stmt_status': {'SQLITE_STMTSTATUS_AUTOINDEX': 0,
                      'SQLITE_STMTSTATUS_FILTER_HIT': 0,
                      'SQLITE_STMTSTATUS_FILTER_MISS': 0,
@@ -2383,12 +2383,13 @@ Only statistics that have changed are shown in the summary. There are
 
                          Process CPU consumption 0.020
                                       Wall clock 1.325
-                          Block input operations 240
-                       Maximum resident set size 412
-                            Page faults - no I/O 24
-                      Voluntary context switches 5
-                         CPU time in system mode 0.002
-                           CPU time in user mode 0.018
+                          Block input operations 248
+                            Page faults with I/O 1
+                       Maximum resident set size 452
+                            Page faults - no I/O 23
+                    Involuntary context switches 25
+                      Voluntary context switches 6
+                           CPU time in user mode 0.019
                           SQLite full table scan 1,365
                           SQLite sort operations 2
                             SQLite vm operations 1,015,353
@@ -2478,13 +2479,13 @@ code.  This also shows behind the scenes SQL.
        DEL 2 (1)
        DEL 3 (2)
        DEL 4 (3)
-         Time: 0.001  Changes: 4
+         Time: 0.000  Changes: 4
      > COMMIT
       !COMMIT
-         Time: 0.007
+         Time: 0.006
      > SELECT narg FROM pragma_function_list WHERE name='pow'
      V PRAGMA function_list
-         Time: 0.001  Rows: 217  VmStep: 1,523  Mem: 71.0KB
+         Time: 0.000  Rows: 217  VmStep: 1,523  Mem: 71.0KB
      < SELECT narg FROM pragma_function_list WHERE name='pow'
          Time: 0.001  Rows: 1  VmStep: 662
       !BEGIN
@@ -2500,7 +2501,7 @@ code.  This also shows behind the scenes SQL.
          UPD 6>106 (...)
       !ROLLBACK
      < insert into multi values(54)
-         Time: 0.000  Changes: 1
+         Time: 0.000  Rows: 1  Changes: 1
 
 
 .. index:: Formatting query results table (example code)

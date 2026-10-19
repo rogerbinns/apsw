@@ -14,7 +14,7 @@
     </script>
     
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>apsw.fts5 &mdash; APSW 3.54.0.0 documentation</title>
+  <title>apsw.fts5 &mdash; APSW 3.54.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=bb2faaec" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/apsw.css?v=ad5bd102" />
@@ -24,7 +24,7 @@
     <link rel="canonical" href="https://rogerbinns.github.io/apsw/_modules/apsw/fts5.html" />
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c3243565"></script>
+      <script src="../../_static/documentation_options.js?v=b2f17f3c"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -1296,8 +1296,7 @@
                 <span class="k">if</span> <span class="n">ta</span><span class="o">.</span><span class="n">convertor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">v</span> <span class="o">=</span> <span class="n">ta</span><span class="o">.</span><span class="n">convertor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s2">"add_note"</span><span class="p">):</span>
-                    <span class="n">e</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processing parameter </span><span class="si">{</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="si">}</span><span class="s2"> with value '</span><span class="si">{</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+                <span class="n">e</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processing parameter </span><span class="si">{</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="si">}</span><span class="s2"> with value '</span><span class="si">{</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
                 <span class="k">raise</span>
             <span class="k">if</span> <span class="n">ta</span><span class="o">.</span><span class="n">choices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ta</span><span class="o">.</span><span class="n">choices</span><span class="p">:</span>
@@ -3494,8 +3493,7 @@
             <span class="n">obj</span> <span class="o">=</span> <span class="n">convert_string_to_python</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
             <span class="n">con</span><span class="o">.</span><span class="n">register_fts5_tokenizer</span><span class="p">(</span><span class="s2">"name"</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s2">"add_note"</span><span class="p">):</span>
-                <span class="n">e</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processing --register </span><span class="si">{</span><span class="w"> </span><span class="n">reg</span><span class="w"> </span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">add_note</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processing --register </span><span class="si">{</span><span class="w"> </span><span class="n">reg</span><span class="w"> </span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">raise</span>
 
     <span class="c1"># go</span>
@@ -3559,7 +3557,7 @@
 
   <div role="contentinfo">
     <p>&#169; <a href="../../copyright.html">Copyright</a> 2004-2026, Roger Binns &lt;rogerb@rogerbinns.com&gt;.
-      <span class="lastupdated">Last updated on Oct 12, 2026.
+      <span class="lastupdated">Last updated on Oct 18, 2026.
       </span></p>
   </div>
 
