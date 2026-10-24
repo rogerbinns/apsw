@@ -424,14 +424,16 @@ do_async_attr_get(PyObject *connection, getter function, PyObject *arg1, void *a
   } while (0)
 
 /* standard error routines - use AddTraceBackHere after the call to make it clear why they happened  */
-static void
+static PyObject *
 error_async_in_sync_context(void)
 {
   PyErr_SetString(PyExc_TypeError, "Using async in sync context");
+  return NULL;
 }
 
-static void
+static PyObject *
 error_sync_in_async_context(void)
 {
   PyErr_SetString(PyExc_TypeError, "Using sync in async context");
+  return NULL;
 }
