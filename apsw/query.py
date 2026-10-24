@@ -60,7 +60,7 @@ class ChainMapRO(collections.abc.Mapping[str, Any]):
             except KeyError:
                 pass
         exc = KeyError(key)
-        getattr(exc, "add_note", lambda x: None)(
+        exc.add_note(
             f"{key!r} in SQL template but not in bindings. Does it need to be eval, a parameter. or local variable?"
         )
         raise exc
@@ -159,8 +159,7 @@ def template_expand(template: str, vars: ChainMapRO) -> str:
                 try:
                     value = eval("(" + field + ")", None, vars)
                 except Exception as exc:
-                    # Python 3.10 doesn't have add_note
-                    getattr(exc, "add_note", lambda x: None)(f"Evaluating: {field}")
+                    exc.add_note(f"Evaluating: {field}")
                     raise
             else:
                 value = vars[field]
@@ -593,8 +592,7 @@ _NotSet = object()
                 try:
                     parsed = ast.parse(body)
                 except BaseException as exc:
-                    #  Another py 3.10 compat
-                    getattr(exc, "add_note", lambda x: None)(f"""In Python section starting line {lineno}""")
+                    exc.add_note(f"""In Python section starting line {lineno}""")
                     raise
                 # figure out if there is a docstring and make that
                 # first in the top block so it precedes the from
@@ -623,10 +621,7 @@ _NotSet = object()
                     meta["sql"] = body
                     res.append(_gen_function(meta))
                 except BaseException as exc:
-                    #  Another py 3.10 compat
-                    getattr(exc, "add_note", lambda x: None)(
-                        f"""In section starting line {lineno}""" + (f" name {meta['name']!r}" if meta else "")
-                    )
+                    exc.add_note(f"""In section starting line {lineno}""" + (f" name {meta['name']!r}" if meta else ""))
                     raise
 
             case _:
