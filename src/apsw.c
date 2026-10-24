@@ -10,6 +10,28 @@
   See the accompanying LICENSE file.
 */
 
+/*
+  A note about garbage collection
+
+  The various types implement the garbage collection flag and the tp_traverse
+  slot so that references can be traced.  It allows tools to figure out cycles
+  and ownership.  However only the module implements tp_clear.
+
+  To break a cycle, one member of the cycle must implement tp_clear.  Implementing
+  tp_clear is treacherous because our objects need to acquire SQLite mutexes
+  and drop the GIL.
+
+  For the moment we rely on whatever the non-apsw members of the cycle are to
+  have the tp_clear.  This is reasonable because they would be the ones creating
+  a cycle: apsw object strong references all flow towards the connection and weakrefs
+  fo the other way.
+
+  A future consideration is adding tp_clear to Connection, but will wait for
+  a real world example first to understand the nuances.
+
+*/
+
+
 /**
 
 .. module:: apsw
@@ -106,8 +128,8 @@ API Reference
 #include "sqlite3.h"
 #endif
 
-#if SQLITE_VERSION_NUMBER < 3053000
-#error Your SQLite version is too old.  It must be at least 3.53
+#if SQLITE_VERSION_NUMBER < 3054000
+#error Your SQLite version is too old.  It must be at least 3.54
 #endif
 
 #include "sqlite_debug.h"
@@ -115,6 +137,7 @@ API Reference
 /* system headers */
 #include <assert.h>
 #include <stdarg.h>
+#include <stddef.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
@@ -128,7 +151,12 @@ API Reference
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <pythread.h>
+
+#if PY_VERSION_HEX < 0x030c0000
 #include "structmember.h"
+#define Py_T_OBJECT_EX T_OBJECT_EX
+#define Py_READONLY READONLY
+#endif
 
 /* This function does nothing in regular builds, but in faultinjection
 builds allows for an existing exception to be injected in callbacks */
@@ -140,6 +168,9 @@ MakeExistingException(void)
 
 #ifdef APSW_FAULT_INJECT
 
+#define APSW_FAULT_CLEAR
+#include "faultinject.h"
+#undef APSW_FAULT_CLEAR
 #include "faultinject.h"
 
 /* Fault injection */
@@ -190,7 +221,7 @@ static PyObject *apsw_no_change_object;
 static PyObject *
 apsw_no_change_repr(PyObject *self)
 {
-  return Py_NewRef(apst.no_change);
+  return PyUnicode_FromString("<apsw.no_change>");
 }
 
 static PyTypeObject apsw_no_change_type = {
@@ -205,7 +236,7 @@ static PyTypeObject apsw_no_change_type = {
 typedef struct
 {
   PyObject_HEAD
-  long long blobsize;
+  sqlite3_uint64 blobsize;
   int init_was_called;
 } ZeroBlobBind;
 
@@ -241,14 +272,14 @@ static void apsw_write_unraisable(PyObject *hookobject);
 /* aio/async stuff */
 #include "async.c"
 
+/* Exceptions we can raise */
+#include "exceptions.c"
+
 /* various utility functions and macros */
 #include "util.c"
 
 /* Argument parsing helpers */
 #include "argparse.c"
-
-/* Exceptions we can raise */
-#include "exceptions.c"
 
 /* The statement cache */
 #include "statementcache.c"
@@ -287,10 +318,6 @@ static int allow_missing_dict_bindings = 0;
 
 /* constants */
 #include "constants.c"
-
-#ifdef APSW_FORK_CHECKER
-static sqlite3_mutex_methods apsw_orig_mutex_methods;
-#endif
 
 /* MODULE METHODS */
 
@@ -434,6 +461,8 @@ apsw_connections(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
     goto fail;
   for (i = 0; the_connections && i < PyList_GET_SIZE(the_connections); i++)
   {
+    assert(PyWeakref_Check(PyList_GET_ITEM(the_connections, i)));
+
     if (PyWeakref_GetRef(PyList_GET_ITEM(the_connections, i), &item) < 0)
       goto fail;
     if (item)
@@ -451,19 +480,21 @@ fail:
 }
 
 static void
-apsw_connection_remove(Connection *con)
+apsw_connection_remove(PyObject *con)
 {
   Py_ssize_t i;
   for (i = 0; the_connections && i < PyList_GET_SIZE(the_connections);)
   {
     PyObject *wr = PyList_GET_ITEM(the_connections, i);
+    assert(PyWeakref_Check(wr));
+
     PyObject *wo = NULL;
     if (PyWeakref_GetRef(wr, &wo) < 0)
     {
       apsw_write_unraisable(NULL);
       continue;
     }
-    if (!wo || wo == (PyObject *)con)
+    if (!wo || wo == con)
     {
       if (PyList_SetSlice(the_connections, i, i + 1, NULL))
         apsw_write_unraisable(NULL);
@@ -478,11 +509,15 @@ apsw_connection_remove(Connection *con)
 }
 
 static int
-apsw_connection_add(Connection *con)
+apsw_connection_add(PyObject *con)
 {
   if (!the_connections)
-    return 0;
-  PyObject *weakref = PyWeakref_NewRef((PyObject *)con, NULL);
+  {
+    the_connections = PyList_New(0);
+    if (!the_connections)
+      return -1;
+  }
+  PyObject *weakref = PyWeakref_NewRef(con, NULL);
   if (!weakref)
     return -1;
   int res = PyList_Append(the_connections, weakref);
@@ -492,7 +527,10 @@ apsw_connection_add(Connection *con)
 
 /** .. method:: initialize() -> None
 
-  It is unlikely you will want to call this method as SQLite automatically initializes.
+  It is unlikely you will want to call this method as SQLite is
+  initialized when APSW is loaded.
+
+  See :func:`config` and :ref:`urinames` for an example usage.
 
   -* sqlite3_initialize
 */
@@ -518,6 +556,8 @@ initialize(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unused))
 
   VFS remain registered across a shutdown and initialise.
 
+  See :func:`config` and :ref:`urinames` for an example usage.
+
   -* sqlite3_shutdown
 */
 static PyObject *
@@ -537,13 +577,6 @@ sqliteshutdown(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused2))
   res = sqlite3_shutdown();
   SET_EXC(res, NULL);
 
-#ifdef APSW_FORK_CHECKER
-  if (apsw_orig_mutex_methods.xMutexInit)
-  {
-    sqlite3_config(SQLITE_CONFIG_MUTEX, &apsw_orig_mutex_methods);
-  }
-#endif
-
   if (PyErr_Occurred())
     return NULL;
 
@@ -558,6 +591,10 @@ sqliteshutdown(PyObject *Py_UNUSED(unused1), PyObject *Py_UNUSED(unused2))
   Some operations don't make sense from a Python program.  All the
   remaining are supported.
 
+  SQLite doesn't allow most options to be changed once it is
+  initialized.  See :ref:`urinames` for an example of shutting down
+  SQLite, changing an option, and initializing again.
+
   -* sqlite3_config
 */
 
@@ -566,6 +603,9 @@ static PyObject *logger_cb = NULL;
 static void
 apsw_logger(void *arg, int errcode, const char *message)
 {
+  /* this shouldn't be possible in theory - defend anyway */
+  if (!Py_IsInitialized())
+    return;
   PyGILState_STATE gilstate;
   PyObject *res = NULL;
 
@@ -642,13 +682,33 @@ apsw_config(PyObject *Py_UNUSED(self), PyObject *args)
   case SQLITE_CONFIG_URI:
   case SQLITE_CONFIG_MEMSTATUS:
   case SQLITE_CONFIG_COVERING_INDEX_SCAN:
-  case SQLITE_CONFIG_PMASZ:
   case SQLITE_CONFIG_STMTJRNL_SPILL:
   case SQLITE_CONFIG_SORTERREF_SIZE:
-  case SQLITE_CONFIG_LOOKASIDE:
-  case SQLITE_CONFIG_SMALL_MALLOC: {
+  case SQLITE_CONFIG_SMALL_MALLOC:
+  case SQLITE_CONFIG_ROWID_IN_VIEW: {
     int intval;
     if (!PyArg_ParseTuple(args, "ii", &optdup, &intval))
+      return NULL;
+    assert(opt == optdup);
+    res = sqlite3_config(opt, intval);
+    break;
+  }
+
+  case SQLITE_CONFIG_LOOKASIDE: {
+    int size, slots;
+    if (!PyArg_ParseTuple(args, "iii", &optdup, &size, &slots))
+      return NULL;
+    assert(opt == optdup);
+    res = sqlite3_config(opt, size, slots);
+    break;
+  }
+
+  case SQLITE_CONFIG_PMASZ: {
+    unsigned intval;
+    /* I (unsigned) does no overflow checking. It isn't worth the
+       effort to address, and won't break anything, just using a
+       truncated value */
+    if (!PyArg_ParseTuple(args, "iI", &optdup, &intval))
       return NULL;
     assert(opt == optdup);
     res = sqlite3_config(opt, intval);
@@ -661,7 +721,7 @@ apsw_config(PyObject *Py_UNUSED(self), PyObject *args)
       return NULL;
     if (Py_IsNone(logger))
     {
-      res = sqlite3_config(opt, NULL);
+      res = sqlite3_config(opt, NULL, NULL);
       if (res == SQLITE_OK)
         Py_CLEAR(logger_cb);
     }
@@ -830,7 +890,9 @@ randomness(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fas
   bytes = PyBytes_FromStringAndSize(NULL, amount);
   if (!bytes)
     return bytes;
-  sqlite3_randomness(amount, PyBytes_AS_STRING(bytes));
+  Py_BEGIN_ALLOW_THREADS
+    sqlite3_randomness(amount, PyBytes_AS_STRING(bytes));
+  Py_END_ALLOW_THREADS;
   return bytes;
 }
 
@@ -1096,278 +1158,172 @@ apswcomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Apsw_complete_USAGE, );
   }
 
-  res = sqlite3_complete(statement);
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_complete(statement);
+  Py_END_ALLOW_THREADS;
 
   if (res)
     Py_RETURN_TRUE;
   Py_RETURN_FALSE;
 }
 
+/* used for calling sqlite3_incomplete */
+static PyStructSequence_Field apsw_incomplete_result_fields[]
+    = { { "status", "Is it complete" },
+        { "requires", "What is needed to complete" },
+        { "incomplete", "What token or element is unfinished" },
+        { "balance", "Level of unmatched parentheses" },
+        { 0 } };
+
+static PyStructSequence_Desc apsw_incomplete_result = { .name = "apsw.IncompleteResult",
+                                                        .doc = "Return for apsw.incomplete - see its documentation",
+                                                        .n_in_sequence = 4,
+                                                        .fields = apsw_incomplete_result_fields };
+
+static PyTypeObject apsw_incomplete_result_type;
+
+/** .. method:: incomplete(statement: str) -> IncompleteResult
+
+  Provides more details about why a statement is considered incomplete,
+  or if it is whitespace and comments only,
+
+  The result object has the following attributes.  Note that new values
+  for each may be added in future SQLite releases.
+
+  status: int
+
+    Check this attribute first.
+
+    .. list-table::
+      :header-rows: 1
+      :widths: auto
+
+      * - Value
+        - Meaning
+      * - ``SQLITE_OK``
+        - at least one statement is present, and all statements are
+          complete
+      * - ``SQLITE_EMPTY``
+        -  consists only of whitespace and comments
+      * - ``SQLITE_ERROR``
+        - incomplete.
+
+  requires: int
+
+    What is required semantically to complete the statement.  Triggers
+    have nested statements inside.
+
+    .. list-table::
+      :header-rows: 1
+      :widths: auto
+
+      * - Value
+        - Meaning
+      * - 0
+        - Statement is complete or empty
+      * - 1
+        - Needs a semicolon
+      * - 2
+        - Needs ``END`` and a semicolon
+      * - 3
+        - Needs semicolon, ``END``, and a semicolon
+
+  incomplete: str | None
+
+    Identifies what element of the SQL is incomplete such
+    as needing a closing quote to match an open quote.
+
+    .. list-table::
+      :header-rows: 1
+      :widths: auto
+
+      * - Value
+        - Meaning
+      * - ``None``
+        - Statement is complete or empty
+      * - ````` (apostrophe)
+        - Incomplete string or blob literal
+      * - ``"`` (double quote)
+        - Incomplete quoted identifier
+      * - ` (backtick)
+        - Incomplete quoted identifier (MySQL style)
+      * - ``]`` (close square bracket)
+        - Incomplete quoted identifier (SQLServer style)
+      * - ``-`` (dash)
+        - Incomplete line comment - there needs to be a newline
+          to complete the comment.
+      * - ``/`` (slash)
+        - Incomplete C style comment`
+
+  balance: int
+
+    Level of unbalanced parentheses (round brackets).  A positive number
+    indicating how many closes are needed to balance the open ones.  It
+    can also be negative if there are more closes than opens.
+
+  -* sqlite3_incomplete
+
+  .. seealso::
+
+    * :func:`complete`
+*/
+static PyObject *
+apswincomplete(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t fast_nargs, PyObject *fast_kwnames)
+{
+  const char *statement = NULL;
+  sqlite3_int64 res;
+
+  {
+    Apsw_incomplete_CHECK;
+    ARG_PROLOG(1, Apsw_incomplete_KWNAMES);
+    ARG_MANDATORY ARG_str(statement);
+    ARG_EPILOG(NULL, Apsw_incomplete_USAGE, );
+  }
+
+  Py_BEGIN_ALLOW_THREADS
+    res = sqlite3_incomplete(statement);
+  Py_END_ALLOW_THREADS;
+
+  PyObject *incomplete = PyStructSequence_New(&apsw_incomplete_result_type);
+  if (!incomplete)
+    goto error;
+
+  PyObject *v = PyLong_FromLong(res & 0xff);
+  if (!v)
+    goto error;
+  PyStructSequence_SetItem(incomplete, 0, v);
+
+  v = PyLong_FromLong((res >> 8) & 0xff);
+  if (!v)
+    goto error;
+  PyStructSequence_SetItem(incomplete, 1, v);
+
+  unsigned int c = (res >> 16) & 0xff;
+  v = c ? PyUnicode_FromOrdinal(c) : Py_NewRef(Py_None);
+  if (!v)
+    goto error;
+  PyStructSequence_SetItem(incomplete, 2, v);
+
+  v = PyLong_FromLong(res >> 32);
+  if (!v)
+    goto error;
+  PyStructSequence_SetItem(incomplete, 3, v);
+
+  return incomplete;
+error:
+  assert(PyErr_Occurred());
+  Py_XDECREF(incomplete);
+  return NULL;
+}
+
 #ifdef __SANITIZE_ADDRESS__
 #include <sanitizer/lsan_interface.h>
 
 static PyObject *
-apsw_leak_check(PyObject *Py_UNUSED(self))
+apsw_leak_check(PyObject *Py_UNUSED(self), PyObject *Py_UNUSED(unsued))
 {
   int res = __lsan_do_recoverable_leak_check();
   return PyLong_FromLong(res);
-}
-#endif
-
-#ifdef APSW_FORK_CHECKER
-
-/*
-   We want to verify that SQLite objects are not used across forks.
-   One way is to modify all calls to SQLite to do the checking but
-   this is a pain as well as a performance hit.  Instead we use the
-   approach of providing an alternative mutex implementation since
-   pretty much every SQLite API call takes and releases a mutex.
-
-   Our diverted functions check the process id on calls and set the
-   process id on allocating a mutex.  We have to avoid the checks for
-   the static mutexes.
-
-   This code also doesn't bother with some things like checking malloc
-   results.  It is intended to only be used to verify correctness with
-   test suites.  The code that sets Python exceptions is also very
-   brute force and is likely to cause problems.  That however is a
-   good thing - you will really be sure there is a problem!
- */
-
-typedef struct
-{
-  pid_t pid;
-  sqlite3_mutex *underlying_mutex;
-} apsw_mutex;
-
-static apsw_mutex *apsw_mutexes[]
-    = { NULL, /* not used - fast */
-        NULL, /* not used - recursive */
-        NULL, /* from this point on corresponds to the various static mutexes */
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-
-static int
-apsw_xMutexInit(void)
-{
-  return apsw_orig_mutex_methods.xMutexInit();
-}
-
-static int
-apsw_xMutexEnd(void)
-{
-  return apsw_orig_mutex_methods.xMutexEnd();
-}
-
-static sqlite3_mutex *
-apsw_xMutexAlloc(int which)
-{
-  switch (which)
-  {
-  case SQLITE_MUTEX_FAST:
-  case SQLITE_MUTEX_RECURSIVE: {
-    apsw_mutex *am;
-    sqlite3_mutex *m = apsw_orig_mutex_methods.xMutexAlloc(which);
-
-    if (!m)
-      return NULL;
-    am = malloc(sizeof(apsw_mutex));
-    if (!am)
-      return NULL;
-    am->pid = getpid();
-    am->underlying_mutex = m;
-    return (sqlite3_mutex *)am;
-  }
-  default:
-    /* verify we have space for a static mutex */
-    assert((unsigned)which < sizeof(apsw_mutexes) / sizeof(apsw_mutexes[0]));
-    /* fill in if missing */
-    if (!apsw_mutexes[which])
-    {
-      apsw_mutexes[which] = malloc(sizeof(apsw_mutex));
-      apsw_mutexes[which]->pid = 0;
-      apsw_mutexes[which]->underlying_mutex = apsw_orig_mutex_methods.xMutexAlloc(which);
-    }
-    return (sqlite3_mutex *)apsw_mutexes[which];
-  }
-}
-
-static int
-apsw_check_mutex(apsw_mutex *am)
-{
-  if (am->pid && am->pid != getpid())
-  {
-    /* see #620 for why this check exists */
-    if (!Py_IsInitialized())
-      return SQLITE_OK;
-
-    PyGILState_STATE gilstate;
-    gilstate = PyGILState_Ensure();
-    PyErr_SetString(ExcForkingViolation,
-                 "SQLite object allocated in one process is being used in another (across a fork)");
-    apsw_write_unraisable(NULL);
-    PyErr_SetString(ExcForkingViolation,
-                 "SQLite object allocated in one process is being used in another (across a fork)");
-    PyGILState_Release(gilstate);
-    return SQLITE_MISUSE;
-  }
-  return SQLITE_OK;
-}
-
-static void
-apsw_xMutexFree(sqlite3_mutex *mutex)
-{
-  apsw_mutex *am = (apsw_mutex *)mutex;
-  apsw_check_mutex(am);
-  apsw_orig_mutex_methods.xMutexFree(am->underlying_mutex);
-  free(am);
-}
-
-static void
-apsw_xMutexEnter(sqlite3_mutex *mutex)
-{
-  apsw_mutex *am = (apsw_mutex *)mutex;
-  apsw_check_mutex(am);
-  apsw_orig_mutex_methods.xMutexEnter(am->underlying_mutex);
-}
-
-static int
-apsw_xMutexTry(sqlite3_mutex *mutex)
-{
-  apsw_mutex *am = (apsw_mutex *)mutex;
-  if (apsw_check_mutex(am))
-    return SQLITE_MISUSE;
-  return apsw_orig_mutex_methods.xMutexTry(am->underlying_mutex);
-}
-
-static void
-apsw_xMutexLeave(sqlite3_mutex *mutex)
-{
-  apsw_mutex *am = (apsw_mutex *)mutex;
-  apsw_check_mutex(am);
-  apsw_orig_mutex_methods.xMutexLeave(am->underlying_mutex);
-}
-
-#ifdef SQLITE_DEBUG
-static int
-apsw_xMutexHeld(sqlite3_mutex *mutex)
-{
-  apsw_mutex *am = (apsw_mutex *)mutex;
-  apsw_check_mutex(am);
-  return apsw_orig_mutex_methods.xMutexHeld(am->underlying_mutex);
-}
-
-static int
-apsw_xMutexNotheld(sqlite3_mutex *mutex)
-{
-  apsw_mutex *am = (apsw_mutex *)mutex;
-  apsw_check_mutex(am);
-  return apsw_orig_mutex_methods.xMutexNotheld(am->underlying_mutex);
-}
-#endif
-
-static sqlite3_mutex_methods apsw_mutex_methods
-    = { apsw_xMutexInit,  apsw_xMutexEnd,    apsw_xMutexAlloc, apsw_xMutexFree,
-        apsw_xMutexEnter, apsw_xMutexTry,    apsw_xMutexLeave,
-#ifdef SQLITE_DEBUG
-        apsw_xMutexHeld,  apsw_xMutexNotheld
-#else
-        0,
-        0
-#endif
-      };
-
-/** .. method:: fork_checker() -> None
-
-  **Note** This method is not available on Windows as it does not
-  support the fork system call.
-
-  SQLite does not allow the use of database connections across `forked
-  <https://en.wikipedia.org/wiki/Fork_(operating_system)>`__ processes
-  (see the `SQLite FAQ Q6 <https://sqlite.org/faq.html#q6>`__).
-  (Forking creates a child process that is a duplicate of the parent
-  including the state of all data structures in the program.  If you
-  do this to SQLite then parent and child would both consider
-  themselves owners of open databases and silently corrupt each
-  other's work and interfere with each other's locks.)
-
-  One example of how you may end up using fork is if you use the
-  :mod:`multiprocessing module <multiprocessing>` which can use
-  fork to make child processes in less recent Python versions.
-
-  If you do use fork or multiprocessing on a platform that supports fork
-  then you **must** ensure database connections and their objects
-  (cursors, backup, blobs etc) are not used in the parent process, or
-  are all closed before calling fork or starting a `Process
-  <https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions>`__.
-  (Note you must call close to ensure the underlying SQLite objects are
-  closed.  It is also a good idea to call :func:`gc.collect(2)
-  <gc.collect>` to ensure anything you may have missed is also
-  deallocated.)
-
-  Once you run this method, extra checking code is inserted into
-  SQLite's mutex operations (at a very small performance penalty) that
-  verifies objects are not used across processes.  You will get a
-  :exc:`ForkingViolationError` if you do so.  Note that due to the way
-  Python's internals work, the exception will be delivered to
-  :func:`sys.excepthook` in addition to the normal exception mechanisms and
-  may be reported by Python after the line where the issue actually
-  arose.  (Destructors of objects you didn't close also run between
-  lines.)
-
-  Calling this method requires doing a :func:`shutdown` which means there
-  can be no active connections.
-
-  The recommended use is to use the fork checking as part of your test suite.
-*/
-static PyObject *
-apsw_fork_checker(PyObject *Py_UNUSED(self))
-{
-  int rc;
-
-  /* ignore multiple attempts to use this routine */
-  if (apsw_orig_mutex_methods.xMutexInit)
-    goto ok;
-
-  sqlite3_mutex_methods dummy;
-
-  rc = sqlite3_config(SQLITE_CONFIG_GETMUTEX, &dummy);
-  if (rc)
-  {
-    PyErr_Format(get_exception_for_code(rc),
-                 "SQLite needs to be shutdown while no connections are active in order to install the fork checker");
-    goto fail;
-  }
-
-  /* Ensure mutex methods available and installed */
-  rc = sqlite3_initialize();
-  if (rc)
-    goto fail;
-
-  /* then do a shutdown as we can't get or change mutex while sqlite is running */
-  rc = sqlite3_shutdown();
-  if (rc)
-    goto fail;
-
-  rc = sqlite3_config(SQLITE_CONFIG_GETMUTEX, &apsw_orig_mutex_methods);
-  if (rc)
-    goto fail;
-
-  rc = sqlite3_config(SQLITE_CONFIG_MUTEX, &apsw_mutex_methods);
-  if (rc)
-    goto fail;
-
-  /* start back up again */
-  rc = sqlite3_initialize();
-  if (rc)
-    goto fail;
-
-ok:
-  Py_RETURN_NONE;
-
-fail:
-  assert(rc != SQLITE_OK);
-  SET_EXC(rc, NULL);
-  return NULL;
 }
 #endif
 
@@ -1865,8 +1821,6 @@ apsw_allow_missing_dict_bindings(PyObject *Py_UNUSED(module), PyObject *const *f
   Py_RETURN_FALSE;
 }
 
-
-
 static PyMethodDef module_methods[] = {
   { "sqlite3_sourceid", (PyCFunction)get_sqlite3_sourceid, METH_NOARGS, Apsw_sqlite3_sourceid_DOC },
   { "sqlite_lib_version", get_sqlite_version, METH_NOARGS, Apsw_sqlite_lib_version_DOC },
@@ -1889,6 +1843,7 @@ static PyMethodDef module_methods[] = {
   { "randomness", (PyCFunction)randomness, METH_FASTCALL | METH_KEYWORDS, Apsw_randomness_DOC },
   { "exception_for", (PyCFunction)get_apsw_exception_for, METH_FASTCALL | METH_KEYWORDS, Apsw_exception_for_DOC },
   { "complete", (PyCFunction)apswcomplete, METH_FASTCALL | METH_KEYWORDS, Apsw_complete_DOC },
+  { "incomplete", (PyCFunction)apswincomplete, METH_FASTCALL | METH_KEYWORDS, Apsw_incomplete_DOC },
   { "strlike", (PyCFunction)apsw_strlike, METH_FASTCALL | METH_KEYWORDS, Apsw_strlike_DOC },
   { "strglob", (PyCFunction)apsw_strglob, METH_FASTCALL | METH_KEYWORDS, Apsw_strglob_DOC },
   { "stricmp", (PyCFunction)apsw_stricmp, METH_FASTCALL | METH_KEYWORDS, Apsw_stricmp_DOC },
@@ -1899,9 +1854,6 @@ static PyMethodDef module_methods[] = {
     Apsw_allow_missing_dict_bindings_DOC },
 #ifdef __SANITIZE_ADDRESS__
   { "leak_check", (PyCFunction)apsw_leak_check, METH_NOARGS, "Runs sanitizer leak check now" },
-#endif
-#ifdef APSW_FORK_CHECKER
-  { "fork_checker", (PyCFunction)apsw_fork_checker, METH_NOARGS, Apsw_fork_checker_DOC },
 #endif
   { "connections", (PyCFunction)apsw_connections, METH_NOARGS, Apsw_connections_DOC },
   { "sleep", (PyCFunction)apsw_sleep, METH_FASTCALL | METH_KEYWORDS, Apsw_sleep_DOC },
@@ -1938,29 +1890,91 @@ static int module_is_initialized;
 static int
 apsw_module_setattr(PyObject *module, PyObject *name, PyObject *value)
 {
-  if (module_is_initialized
-      && (PyObject_RichCompareBool(apst.async_controller, name, Py_EQ) == 1
-          || (!PyErr_Occurred() && PyObject_RichCompareBool(apst.async_cursor_prefetch, name, Py_EQ) == 1)))
+  if (module_is_initialized)
   {
-    PyErr_Format(PyExc_AttributeError,
-                 "Do not overwrite apsw.%S.  It is a context var - use its set method in your context", name);
-    return -1;
-  }
+    /* which string matched? Because PyObject_RichCompareBool can exception this
+       looks ridiculous */
 
-  if (PyErr_Occurred())
-    return -1;
+    int s_async_controller = PyObject_RichCompareBool(apst.async_controller, name, Py_EQ) == 1,
+        s_async_cursor_prefetch = !PyErr_Occurred() && !s_async_controller
+                                  && PyObject_RichCompareBool(apst.async_cursor_prefetch, name, Py_EQ) == 1,
+        s_async_run_coro = !PyErr_Occurred() && !s_async_controller && !s_async_cursor_prefetch
+                           && PyObject_RichCompareBool(apst.async_run_coro, name, Py_EQ) == 1,
+        s_connection_hooks = !PyErr_Occurred() && !s_async_controller && !s_async_cursor_prefetch && !s_async_run_coro
+                             && PyObject_RichCompareBool(apst.connection_hooks, name, Py_EQ) == 1,
+        s_keywords = !PyErr_Occurred() && !s_async_controller && !s_async_cursor_prefetch && !s_async_run_coro
+                     && !s_connection_hooks && PyObject_RichCompareBool(apst.keywords, name, Py_EQ) == 1,
+        s_no_change = !PyErr_Occurred() && !s_async_controller && !s_async_cursor_prefetch && !s_async_run_coro
+                      && !s_connection_hooks && !s_keywords
+                      && PyObject_RichCompareBool(apst.no_change, name, Py_EQ) == 1,
+        s_using_amalgamation = !PyErr_Occurred() && !s_async_controller && !s_async_cursor_prefetch && !s_async_run_coro
+                               && !s_connection_hooks && !s_keywords && !s_no_change
+                               && PyObject_RichCompareBool(apst.using_amalgamation, name, Py_EQ) == 1;
 
-  if (module_is_initialized && (PyObject_RichCompareBool(apst.async_run_coro, name, Py_EQ) == 1))
-  {
-    if (!Py_IsNone(value) && !PyCallable_Check(value))
-    {
-      PyErr_Format(PyExc_TypeError, "Expected None or a callable for async_run_coro, not %s", Py_TypeName(value));
+    if (PyErr_Occurred())
       return -1;
+
+    if (s_async_controller || s_async_cursor_prefetch || s_async_run_coro || s_connection_hooks || s_keywords
+        || s_no_change || s_using_amalgamation)
+    {
+
+      if (!value)
+      {
+        /* deletion prevention */
+        if (s_async_controller)
+          reject_attribute_deletion("apsw.async_controller");
+        else if (s_async_cursor_prefetch)
+          reject_attribute_deletion("apsw.async_cursor_prefetch");
+        else if (s_async_run_coro)
+          reject_attribute_deletion("apsw.async_run_coro");
+        else if (s_connection_hooks)
+          reject_attribute_deletion("apsw.connection_hooks");
+        else if (s_keywords)
+          reject_attribute_deletion("apsw.keywords");
+        else if (s_no_change)
+          reject_attribute_deletion("apsw.no_change");
+        else if (s_using_amalgamation)
+          reject_attribute_deletion("apsw.using_amalgamation");
+
+        assert(PyErr_Occurred());
+        return -1;
+      }
+
+      if (s_async_controller || s_async_cursor_prefetch)
+      {
+        PyErr_Format(PyExc_AttributeError,
+                     "Do not overwrite apsw.%S.  It is a context var - use its set method in your context", name);
+        return -1;
+      }
+      else if (s_async_run_coro)
+      {
+        if (!Py_IsNone(value) && !PyCallable_Check(value))
+        {
+          PyErr_Format(PyExc_TypeError, "Expected None or a callable for apsw.async_run_coro, not %s",
+                       Py_TypeName(value));
+          return -1;
+        }
+        return PyDict_SetItem(PyThreadState_GetDict(), async_run_coro_sentinel, value);
+      }
+      else if (s_connection_hooks)
+      {
+        if (!PySequence_Check(value))
+        {
+          PyErr_Format(PyExc_TypeError, "Expected a sequence for apsw.connection_hooks, not %s", Py_TypeName(value));
+          return -1;
+        }
+      }
+      else
+      {
+        PyErr_Format(PyExc_AttributeError, "apsw.%S is readonly", name);
+        return -1;
+      }
     }
-    return PyDict_SetItem(PyThreadState_GetDict(), async_run_coro_sentinel, value);
   }
 
-  return PyErr_Occurred() ? -1 : PyObject_GenericSetAttr(module, name, value);
+  assert(!PyErr_Occurred());
+
+  return PyObject_GenericSetAttr(module, name, value);
 }
 
 static PyObject *
@@ -1968,12 +1982,15 @@ apsw_module_getattr(PyObject *module, PyObject *name)
 {
   if (module_is_initialized && (PyObject_RichCompareBool(apst.async_run_coro, name, Py_EQ) == 1))
   {
-    PyObject *runner = PyDict_GetItemWithError(PyThreadState_GetDict(), async_run_coro_sentinel);
+    PyObject *runner = Py_XNewRef(PyDict_GetItemWithError(PyThreadState_GetDict(), async_run_coro_sentinel));
     if (PyErr_Occurred())
+    {
+      Py_XDECREF(runner);
       return NULL;
+    }
     if (!runner)
       Py_RETURN_NONE;
-    return Py_NewRef(runner);
+    return runner;
   }
   if (PyErr_Occurred())
     return NULL;
@@ -2007,19 +2024,59 @@ apsw_module_traverse(PyObject *self, visitproc visit, void *arg)
 }
 
 static int
-apsw_module_clear(PyObject *self)
+apsw_module_clear_internal(PyObject *self, int deep)
 {
-  Py_CLEAR(coro_for_value);
-  Py_CLEAR(coro_for_exception);
-  Py_CLEAR(coro_for_stopasynciteration);
 
-  Py_CLEAR(collections_abc_Mapping);
-  Py_CLEAR(Exc_io_UnsupportedOperation);
-
-  if(logger_cb)
+  if (logger_cb)
   {
     sqlite3_config(SQLITE_CONFIG_LOG, NULL);
     Py_CLEAR(logger_cb);
+  }
+
+  if (the_connections)
+  {
+    /* try to close any open connections - we take ownership of the
+       connection list so it can't mutate while iterating the contents */
+    PyObject *conns = the_connections;
+    the_connections = NULL;
+
+    for (Py_ssize_t i = 0; i < PyList_GET_SIZE(conns); i++)
+    {
+      PyObject *item;
+      assert(PyWeakref_Check(PyList_GET_ITEM(conns, i)));
+
+      if (PyWeakref_GetRef(PyList_GET_ITEM(conns, i), &item) < 0)
+        apsw_write_unraisable(NULL);
+      else if (item)
+      {
+        PyObject *result = PyObject_CallMethodNoArgs(item, apst.close);
+        if (!result)
+        {
+          if (deep)
+            apsw_write_unraisable(NULL);
+          else
+          {
+            /* add them back to the list so another later attempt can be made */
+            if (apsw_connection_add(item))
+              apsw_write_unraisable(NULL);
+          }
+        }
+        Py_DECREF(item);
+      }
+    }
+  }
+
+  if (deep)
+  {
+    Py_CLEAR(the_connections);
+    Py_CLEAR(coro_for_value);
+    Py_CLEAR(coro_for_exception);
+    Py_CLEAR(coro_for_stopasynciteration);
+
+    Py_CLEAR(collections_abc_Mapping);
+    Py_CLEAR(Exc_io_UnsupportedOperation);
+
+    fini_apsw_strings();
   }
 
   if (Py_TYPE(self)->tp_base->tp_clear)
@@ -2027,10 +2084,16 @@ apsw_module_clear(PyObject *self)
   return 0;
 }
 
+static int
+apsw_module_clear(PyObject *self)
+{
+  return apsw_module_clear_internal(self, 0);
+}
+
 static void
 apsw_module_finalize(PyObject *self)
 {
-  apsw_module_clear(self);
+  apsw_module_clear_internal(self, 0);
   if (Py_TYPE(self)->tp_base->tp_finalize)
     Py_TYPE(self)->tp_base->tp_finalize(self);
 }
@@ -2039,15 +2102,7 @@ static void
 apsw_module_dealloc(PyObject *self)
 {
   PyObject_GC_UnTrack(self);
-  apsw_module_clear(self);
-
-  PyMem_Free(pending_call_slots);
-  pending_call_slots = 0;
-  pending_call_slots_count = 0;
-
-  Py_CLEAR(the_connections);
-
-  fini_apsw_strings();
+  apsw_module_clear_internal(self, 1);
 
   Py_TYPE(self)->tp_base->tp_dealloc(self);
 }
@@ -2063,13 +2118,22 @@ static PyTypeObject ApswModuleType = {
   .tp_dealloc = apsw_module_dealloc,
 };
 
-static struct PyModuleDef apswmoduledef = { PyModuleDef_HEAD_INIT, "apsw", NULL, -1, module_methods, 0, 0, 0, 0 };
+#define apsw_module_DOC "Another Python SQLite Wrapper"
+
+/* Sub-interpreters will never be supported.  SQLite has process wide
+   state such as the logger callback and VFS.  */
+static struct PyModuleDef apswmoduledef = {
+  .m_base = PyModuleDef_HEAD_INIT,
+  .m_name = "apsw",
+  .m_doc = apsw_module_DOC,
+  .m_size = -1,
+  .m_methods = module_methods,
+};
 
 PyMODINIT_FUNC
 PyInit_apsw(void)
 {
   PyObject *m = NULL;
-  PyObject *hooks;
 
   assert(sizeof(int) == 4);       /* we expect 32 bit ints */
   assert(sizeof(long long) == 8); /* we expect 64 bit long long */
@@ -2105,27 +2169,6 @@ PyInit_apsw(void)
     }
   }
 
-  if (PyType_Ready(&ConnectionType) < 0 || PyType_Ready(&APSWCursorType) < 0 || PyType_Ready(&ZeroBlobBindType) < 0
-      || PyType_Ready(&APSWBlobType) < 0 || PyType_Ready(&APSWVFSType) < 0 || PyType_Ready(&APSWVFSFileType) < 0
-      || PyType_Ready(&apswfcntl_pragma_Type) < 0 || PyType_Ready(&APSWURIFilenameType) < 0
-      || PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&APSWBackupType) < 0
-      || PyType_Ready(&SqliteIndexInfoType) < 0 || PyType_Ready(&apsw_no_change_type) < 0
-      || PyType_Ready(&APSWFTS5TokenizerType) < 0 || PyType_Ready(&APSWFTS5ExtensionAPIType) < 0
-      || PyType_Ready(&PyObjectBindType) < 0 || PyType_Ready(&BoxedCallType) < 0
-#ifdef SQLITE_ENABLE_CARRAY
-      || PyType_Ready(&CArrayBindType) < 0
-#endif
-#ifdef SQLITE_ENABLE_SESSION
-      || PyType_Ready(&APSWSessionType) < 0 || PyType_Ready(&APSWTableChangeType) < 0
-      || PyType_Ready(&APSWChangesetType) < 0 || PyType_Ready(&APSWChangesetBuilderType) < 0
-      || PyType_Ready(&APSWChangesetIteratorType) < 0 || PyType_Ready(&APSWRebaserType) < 0
-#endif
-#ifdef SQLITE_ENABLE_PREUPDATE_HOOK
-      || PyType_Ready(&PreUpdateType) < 0
-#endif
-  )
-    goto fail;
-
   /* PyStructSequence_NewType is broken in some Pythons
       https://github.com/python/cpython/issues/72895
     You also can't call InitType2 more than once otherwise
@@ -2134,6 +2177,10 @@ PyInit_apsw(void)
   */
   if (Py_REFCNT(&apsw_unraisable_info_type) == 0)
     if (PyStructSequence_InitType2(&apsw_unraisable_info_type, &apsw_unraisable_info))
+      goto fail;
+
+  if (Py_REFCNT(&apsw_incomplete_result_type) == 0)
+    if (PyStructSequence_InitType2(&apsw_incomplete_result_type, &apsw_incomplete_result))
       goto fail;
 
   m = apswmodule = PyModule_Create2(&apswmoduledef, PYTHON_API_VERSION);
@@ -2146,18 +2193,22 @@ PyInit_apsw(void)
   if (PyModule_AddFunctions(m, apswmoduledef.m_methods) < 0)
     goto fail;
 
-  the_connections = PyList_New(0);
-  if (!the_connections)
-    goto fail;
-
   if (init_exceptions(m))
     goto fail;
 
   if (init_apsw_strings())
     goto fail;
 
-  if (PyModule_AddType(m, &ConnectionType) || PyModule_AddType(m, &ConnectionType)
-      || PyModule_AddType(m, &APSWCursorType) || PyModule_AddType(m, &APSWBlobType)
+  /* these types aren't exposed to the module */
+  if (PyType_Ready(&FunctionCBInfoType) < 0 || PyType_Ready(&apsw_no_change_type) < 0 || PyType_Ready(&BoxedCallType)
+#ifdef SQLITE_ENABLE_SESSION
+      || PyType_Ready(&APSWChangesetIteratorType) < 0
+#endif
+  )
+    goto fail;
+
+  /* these are and automatically readied */
+  if (PyModule_AddType(m, &ConnectionType) || PyModule_AddType(m, &APSWCursorType) || PyModule_AddType(m, &APSWBlobType)
       || PyModule_AddType(m, &APSWBackupType) || PyModule_AddType(m, &ZeroBlobBindType)
       || PyModule_AddType(m, &APSWVFSType) || PyModule_AddType(m, &APSWVFSFileType)
       || PyModule_AddType(m, &apswfcntl_pragma_Type) || PyModule_AddType(m, &APSWURIFilenameType)
@@ -2189,11 +2240,14 @@ PyInit_apsw(void)
        the new Connection object. If the hook raises an exception then
        the creation of the Connection fails.
   */
-  hooks = PyList_New(0);
+  PyObject *hooks = PyList_New(0);
   if (!hooks)
     goto fail;
   if (PyModule_AddObject(m, "connection_hooks", hooks))
+  {
+    Py_DECREF(hooks);
     goto fail;
+  }
 
   /** .. attribute:: SQLITE_VERSION_NUMBER
     :type: int
@@ -2238,7 +2292,7 @@ PyInit_apsw(void)
 #endif
 
   /** .. attribute:: async_controller
-    :type: type[AsyncConnectionController]
+    :type: contextvars.ContextVar[AsyncConnectionController]
 
     This sets the controller for :meth:`Connection.as_async`.  It will use
     :func:`apsw.aio.Auto` if not explicitly set.

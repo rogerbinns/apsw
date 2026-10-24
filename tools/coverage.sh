@@ -1,7 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 #
 
 set -e
+
+# make ub issues fatal instead of warning
+UBSAN_OPTIONS="halt_on_error=1"
+export UBSAN_OPTIONS
 
 # find python
 PYTHON=${PYTHON:-python3} # use whatever is in the path
@@ -9,13 +13,12 @@ PYTHON=${PYTHON:-python3} # use whatever is in the path
 if [ $# = 0 ]
 then
   args="-m apsw.tests -vf"
-  [ -z "NO_FI" ] && $PYTHON -m pip install coverage trio anyio
+  [ ! -z "NO_FI" ] && $PYTHON -m pip install coverage trio anyio
 else
   args="$@"
 fi
 
 # Measure code coverage
-GCOVOPTS="-b -H"
 GCOVOPTS=""
 rm -f *.gcda *.gcov *.gcno sqlite3/*.gcov apsw/*.so src/*.gcov
 INCLUDEDIR=`$PYTHON -c "import sysconfig; print(sysconfig.get_path('include'))"`
@@ -25,7 +28,7 @@ MOREFLAGS=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('CCSHARE
 LINKER=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('LDSHARED'))"`
 SOSUFFIX=`$PYTHON -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
 
-PROFILE="-O0 --coverage"
+PROFILE=${PROFILE:-"-O0 --coverage"}
 
 set -ex
 
@@ -38,7 +41,11 @@ fi
 
 case "$CC" in
   *clang*)
-    GCOVWRAPPER="llvm-cov"
+    GCOV="llvm-cov gcov"
+    ;;
+  *gcc*)
+    # this makes gcov-16 be invoked for gcc-16
+    GCOV="`echo \"$CC\" | sed s/gcc/gcov/`"
     ;;
 esac
 
@@ -50,9 +57,9 @@ fi
 
 export APSW_TEST_LARGE=t COVERAGE_RUN=true
 
-env CC=$CC $PYTHON setup.py build_test_extension
+env CC="$CC" $PYTHON setup.py build_test_extension
 
-OUR_CFLAGS=" -UNDEBUG  -DAPSW_FAULT_INJECT -DAPSW_DEBUG -DSQLITE_DEBUG"
+OUR_CFLAGS=" -UNDEBUG  -DAPSW_FAULT_INJECT -DAPSW_DEBUG -DSQLITE_DEBUG -DAPSW_COVERAGE_BUILD"
 OUR_EXTENSIONS="-DSQLITE_ENABLE_COLUMN_METADATA=1 -DSQLITE_ENABLE_FTS4=1 -DSQLITE_ENABLE_FTS3=1 -DSQLITE_ENABLE_FTS3_PARENTHESIS=1 -DSQLITE_ENABLE_RTREE=1 -DSQLITE_ENABLE_STAT4=1 -DSQLITE_ENABLE_FTS5=1 -DSQLITE_ENABLE_GEOPOLY=1 -DSQLITE_ENABLE_MATH_FUNCTIONS=1 -DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_ENABLE_SESSION=1 -DSQLITE_ENABLE_PERCENTILE=1 -DSQLITE_ENABLE_CARRAY=1 -DSQLITE_ENABLE_GEOPOLY=1"
 
 set -ex
@@ -65,7 +72,7 @@ echo "Running $PYTHON $args"
 env PYTHONPATH=. $PYTHON $args && $PYTHON -m apsw.tests.async_meta
 res=$?
 [ $res -eq 0 -a -z "$NO_FI" ] && echo "Running $PYTHON tools/fi.py $FI_ARGS" && env PYTHONPATH=. $PYTHON tools/fi.py $FI_ARGS
-$GCOVWRAPPER gcov $GCOVOPTS *.gcno > /dev/null
+$GCOV $GCOVOPTS *.gcno > /dev/null
 
 echo ; echo
 mv sqlite3.c.gcov sqlite3/

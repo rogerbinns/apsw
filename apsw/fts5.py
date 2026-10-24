@@ -10,6 +10,27 @@ related functionality.
 
 from __future__ import annotations
 
+__lazy_modules__ = [
+    "collections",
+    "difflib",
+    "fnmatch",
+    "functools",
+    "html",
+    "html.parser",
+    "importlib",
+    "importlib.resources",
+    "json",
+    "math",
+    "pathlib",
+    "re",
+    "threading",
+    "apsw",
+    "apsw._unicode",
+    "apsw.ext",
+    "apsw.fts5query",
+    "apsw.unicode",
+]
+
 import collections
 import difflib
 import fnmatch
@@ -32,14 +53,14 @@ from types import ModuleType
 
 try:
     from typing import Any, Literal, Self
+    from collections.abc import Callable, Iterable, Iterator, Sequence
 except ImportError:
     # Self is only available in py3.11+ but the other items import anyway
     pass
 
-from collections.abc import Callable, Iterable, Iterator, Sequence
+import apsw._unicode
 
 import apsw
-import apsw._unicode
 import apsw.fts5query
 import apsw.unicode
 
@@ -1099,8 +1120,7 @@ def parse_tokenizer_args(
                 if ta.convertor is not None:
                     v = ta.convertor(v)
             except Exception as e:
-                if hasattr(e, "add_note"):
-                    e.add_note(f"Processing parameter { n } with value '{ v }'")
+                e.add_note(f"Processing parameter { n } with value '{ v }'")
                 raise
             if ta.choices is not None:
                 if v not in ta.choices:
@@ -3140,8 +3160,7 @@ if __name__ == "__main__":
             obj = convert_string_to_python(mod)
             con.register_fts5_tokenizer("name", obj)
         except Exception as e:
-            if hasattr(e, "add_note"):
-                e.add_note(f"Processing --register { reg }")
+            e.add_note(f"Processing --register { reg }")
             raise
 
     # go

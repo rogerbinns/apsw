@@ -2,9 +2,30 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = [
+    "collections",
+    "contextvars",
+    "copy",
+    "functools",
+    "html",
+    "inspect",
+    "keyword",
+    "logging",
+    "math",
+    "re",
+    "string",
+    "time",
+    "traceback",
+    "urllib.parse",
+    "apsw",
+    "apsw.sqlite_extra",
+    "apsw.unicode",
+]
+
 import abc
 import collections
 import contextvars
+import copy
 import dataclasses
 import enum
 import functools
@@ -20,13 +41,15 @@ import sys
 import time
 import traceback
 import types
+import urllib.parse
+from collections.abc import AsyncIterable, AsyncIterator, Awaitable, Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass, is_dataclass, make_dataclass
 from fractions import Fraction
-from typing import Any, Literal, Protocol, TextIO, overload, TYPE_CHECKING
-from collections.abc import Callable, Iterator, AsyncIterator, AsyncIterable, Iterable, Sequence, Awaitable
 from types import NoneType
+from typing import Any, Literal, Protocol, TextIO
 
 import apsw
+import apsw.sqlite_extra
 import apsw.unicode
 
 
@@ -56,11 +79,17 @@ class DataClassRowFactory:
     :class:`connections <apsw.Connection>` as you want.
 
     :param rename:     Column names could be duplicated, or not
-        valid in Python (eg a column named `continue`).
+        valid in Python (eg a column named `continue`).  It is very strongly
+        recommended to use SQL ``AS`` to set each column name to
+        something valid.
+
         If `rename` is True, then invalid/duplicate names are replaced
-        with `_` and their position starting at zero.  For example `title,
-        total, title, continue` would become `title, total, _2, _3`.  If
-        `rename` is False then problem column names will result in
+        with ``_`` and their position starting at zero.  For example `title,
+        total, title, continue` would become `title, total, _2, _3`.
+        (Pathological cases can result in more underscores appended if
+        the new names already exist.)
+
+        If `rename` is False then problem column names will result in
         :exc:`TypeError` raised by :func:`dataclasses.make_dataclass`
 
     :param dataclass_kwargs: Additional parameters when creating the dataclass
@@ -71,8 +100,32 @@ class DataClassRowFactory:
     """
 
     def __init__(self, *, rename: bool = True, dataclass_kwargs: dict[str, Any] | None = None):
-        self.dataclass_kwargs = dataclass_kwargs or {}
+        self.dataclass_kwargs = copy.deepcopy(dataclass_kwargs) if dataclass_kwargs is not None else {}
+        if "slots" not in self.dataclass_kwargs:
+            self.dataclass_kwargs["slots"] = True
+        if "namespace" not in self.dataclass_kwargs:
+            self.dataclass_kwargs["namespace"] = {}
         self.rename = rename
+
+    @staticmethod
+    def _acceptable_name(name:str):
+        "can this name be used for a dataclass field name"
+        if not name.isidentifier():
+            # must meet requirements for an identifier
+            return False
+        if keyword.iskeyword(name):
+            # we do allow soft keywords because they keep being
+            # added and differ across python versions, and will
+            # work
+            return False
+        under_prefix = len(name) - len(name.lstrip("_"))
+        under_suffix = len(name) - len(name.rstrip("_"))
+        if under_prefix >= 2 and under_suffix <= 1:
+            # dunder prefix gets mangled if it ends with at most one
+            # underscore and we can't prevent that mangling
+            return False
+
+        return True
 
     @functools.lru_cache(maxsize=16)
     def get_dataclass(self, description: tuple[tuple[str, str], ...]) -> tuple[Any, tuple[str, ...]]:
@@ -85,25 +138,27 @@ class DataClassRowFactory:
         """
         names = [d[0] for d in description]
         if self.rename:
-            new_names: list[str] = []
-            for i, n in enumerate(names):
-                if n.isidentifier() and not keyword.iskeyword(n) and n not in new_names:
-                    new_names.append(n)
-                else:
-                    new_names.append(f"_{i}")
-            names = new_names
+            for i in range(len(names)):
+                n = names[i]
+                if self._acceptable_name(n) and n not in names[:i]:
+                    continue
+                # we would use _{i} as the renamed column but it
+                # could already be coming up or exist, so keep
+                # trying until success
+                u = 0
+                while True:
+                    n = f"_{i}" + "_" * u
+                    if self._acceptable_name(n) and n not in names:
+                        names[i] = n
+                        break
+                    u += 1
         types = [self.get_type(d[1]) for d in description]
 
         kwargs = self.dataclass_kwargs.copy()
-        if "slots" not in kwargs:
-            kwargs["slots"] = True
-        if "namespace" not in kwargs:
-            kwargs["namespace"] = {}
         kwargs["namespace"]["__description__"] = description
 
         # some magic to make the reported classnames different
-        suffix = (".%06X" % hash(repr(description)))[:7]
-
+        suffix = (f".{hash(repr(description)):06X}")[:7]
         return make_dataclass(f"{self.__class__.__name__}{suffix}", zip(names, types), **kwargs), tuple(names)
 
     def get_type(self, t: str | None) -> Any:
@@ -316,29 +371,32 @@ def make_jsonb(tag: int, value: None | str | bytes | Any = None):
 def log_sqlite(*, level: int = logging.ERROR, logger: logging.Logger | None = None) -> None:
     """Send SQLite `log messages <https://www.sqlite.org/errlog.html>`__ to :mod:`logging`
 
-    :param level: highest `level <https://docs.python.org/3/library/logging.html#levels>`__ to log at
+    :param level: Highest `level <https://docs.python.org/3/library/logging.html#levels>`__ to log at.
+        For example using logging.INFO will log SQLite messages with a level set to at most INFO,
+        because SQLite messages aren't usually as severe/significant as other components.
     :param logger: Use the specific logger
     """
 
     def handler(errcode: int, message: str) -> None:
-        nonlocal level
         err_str = result_string(errcode)
         extra = {"sqlite_code": errcode, "sqlite_code_name": err_str, "sqlite_message": message}
+        msg_level = logging.ERROR
         # Level defaults to ERROR but some messages aren't as important
         if errcode & 0xFF == apsw.SQLITE_WARNING:
-            level = min(level, logging.WARNING)
+            msg_level = logging.WARNING
         elif errcode & 0xFF == apsw.SQLITE_NOTICE:
             # these are really half way between INFO and WARNING and
             # current instances are recovering journals/WAL etc which
-            # happens if the previous process exited abruptly.
-            level = min(level, logging.WARNING)
+            # happens if the previous process exited abruptly. but
+            # it is best to use one of the predefined levels
+            msg_level = logging.WARNING
         elif errcode == apsw.SQLITE_SCHEMA:
             # these happen automatically without developer control,
             # especially when using FTS5.  DEBUG is almost more
             # appropriate!
-            level = min(level, logging.INFO)
+            msg_level = logging.INFO
 
-        (logger or logging).log(level, "SQLITE_LOG: %s (%d) %s", message, errcode, err_str, extra=extra)
+        (logger or logging).log(min(msg_level, level), "SQLITE_LOG: %s (%d) %s", message, errcode, err_str, extra=extra)
 
     apsw.config(apsw.SQLITE_CONFIG_LOG, handler)
 
@@ -507,13 +565,16 @@ def index_info_to_dict(
 def dbinfo(
     db: apsw.Connection, schema: str = "main"
 ) -> tuple[DatabaseFileInfo | None, JournalFileInfo | WALFileInfo | None]:
-    """Extracts fields from the database, journal, and wal files
+    """Extracts fields from the database, and journal or wal file
 
     Based on the `file format description <https://www.sqlite.org/fileformat2.html>`__.  The
     headers are read using :meth:`apsw.Connection.read` so you see inside encrypted, compressed,
     zip etc formats, not necessarily the actual on disk file.
 
-    Memory databases return `None` for both.
+    The journal or wal information my be None, especially if no transaction is in progress
+    or entirely buffered in memory.
+
+    Memory databases return `None` for both, as does an unknown ``schema`` value.
     """
 
     dbinfo: DatabaseFileInfo | None = None
@@ -542,7 +603,7 @@ def dbinfo(
         return {0: "(pending)", 1: "UTF-8", 2: "UTF-16le", 3: "UTF-16be"}.get(v, f"<< INVALID VALUE {v} >>")
 
     if ok:
-        kw: dict[str, Any] = {"filename": db.filename}
+        kw: dict[str, Any] = {"filename": db.db_filename(schema, 0)}
         for name, offset, size, converter in (
             ("header", 0, 16, bytes),
             ("page_size", 16, 2, be_page_size),
@@ -574,8 +635,8 @@ def dbinfo(
 
     if ok:
         kw: dict[str, Any] = {}  # type: ignore [no-redef]
-        if db.pragma("journal_mode") == "wal":
-            kw["filename"] = db.filename_wal
+        if db.pragma("journal_mode", schema) == "wal":
+            kw["filename"] = db.db_filename(schema, 2)
             for name, offset, size, converter in (
                 ("magic_number", 0, 4, be_int),
                 ("format_version", 4, 4, be_int),
@@ -591,7 +652,7 @@ def dbinfo(
             journalinfo = WALFileInfo(**kw)
         else:
             header_valid = lambda b: b == b"\xd9\xd5\x05\xf9\x20\xa1\x63\xd7"
-            kw["filename"] = db.filename_journal
+            kw["filename"] = db.db_filename(schema, 1)
             for name, offset, size, converter in (
                 ("header", 0, 8, bytes),
                 ("header_valid", 0, 8, header_valid),
@@ -766,6 +827,21 @@ def changeset_to_sql(
         yield "".join(sql)
         continue
 
+def compose_uri(filename: str, options: dict[str, Any]) -> str:
+    """Composes URI from filename and options
+
+    This ensures the filename is correctly encoded (eg spaces become
+    ``%20``) as well as the values.  The result will have the
+    necessary ``file:`` prefix::
+
+        >>> apsw.ext.compose_uri("a b", {"vfs": "memdb", "level": 42})
+        'file:a%20b?vfs=memdb&level=42'
+
+    See :ref:`urinames`
+    """
+    uri_filename = urllib.parse.quote(filename)
+    uri_options = urllib.parse.urlencode(options)
+    return f"file:{uri_filename}?{uri_options}"
 
 class Trace:
     """Use as a context manager to show each SQL statement run inside the block
@@ -1384,6 +1460,9 @@ def analyze_pages(con: apsw.Connection, scope: int, schema: str = "main") -> Dat
         check.  If the table is not present then calling this function
         will give :class:`apsw.SQLError` with message ``no such table:
         dbstat``.
+
+    See :func:`diskused` which uses a different extension, and provides
+    even more granular information.
     """
 
     qschema = '"' + schema.replace('"', '""') + '"'
@@ -1441,7 +1520,7 @@ def analyze_pages(con: apsw.Connection, scope: int, schema: str = "main") -> Dat
                 is_virtual_table.add(name)
                 continue
             # shadow table? we assume an underscore separator searching longest names first
-            for n in sorted(grouping, key=lambda x: (len(x), x)):
+            for n in sorted(grouping, key=lambda x: (len(x), x), reverse = True):
                 if n in is_virtual_table and name.startswith(n + "_"):
                     grouping[n].append(name)
                     break
@@ -1685,6 +1764,120 @@ def page_usage_to_svg(con: apsw.Connection, out: TextIO, schema: str = "main") -
 
     print("</style></svg>", file=out)
 
+def diskused(
+    con: apsw.Connection, schema: str = "main"
+) -> tuple[dict[str, dict[str, int | bool | str]], dict[str, str]]:
+    """Very detailed usage information for tables and indices
+
+    This is based on interpreting the output of the SQLite
+    ``diskused`` extension, which also uses the `dbstat
+    <https://sqlite.org/dbstat.html>`__ extension under the hood,
+    which is often included in SQLite.  The extension outputs a large
+    human readable formatted comment, follwed by SQL that creates a in
+    the database.  This function extracts that SQL and returns the
+    data as a Python dict.
+
+    .. warning::
+
+        Extension loading is used on the supplied connection and
+        diskused is loaded via :doc:`extra` which turns on extension
+        loading for the connection.  Do not use if table or index
+        names can come from outside values because specially crafted
+        ones will caused incorrect parsing.
+
+    The return consists of a tuple of 2 dicts.  The first key is a
+    table or index name, and each corresponding value is a dict of
+    about 15 fields.  They include owning table (for indexes), btree
+    depth, overflow and leaf pages etc.
+
+    The second dict is each field name and short English description
+    as provided by the extension.
+
+    See :func:`analyze_pages` for less granular information from a
+    different extension.
+    """
+    apsw.sqlite_extra.load(con, "diskused")
+
+    cursor = con.cursor()
+    cursor.row_trace = None
+
+    text: list[str] = cursor.execute("select diskused(?)", (schema,)).get.splitlines()
+    if not text[0].startswith("/**"):
+        raise ValueError("\n".join(text))
+
+    # There is a huge comment at the top followed by
+    # BEGIN;
+    # CREATE TABLE
+    # .. columns
+    # );
+    # INSERT INTO VALUES
+    # .. rows
+    # COMMIT;
+
+    # start working backwards through the text.  this logic could be
+    # defeated by creatively named tables
+
+    values_end = len(text) - 1
+
+    while text[values_end] != "COMMIT;":
+        values_end -= 1
+
+    values_start = values_end - 1
+    while not text[values_start].startswith("INSERT INTO "):
+        values_start -= 1
+
+    columns_end = values_start
+    # back into values not INSERT
+    values_start += 1
+
+    while text[columns_end] != ");":
+        columns_end -= 1
+
+    columns_start = columns_end - 1
+    while not text[columns_start].startswith("CREATE TABLE"):
+        columns_start -= 1
+
+    # back into columns
+    columns_start += 1
+
+    sql = ["WITH diskused_data ("]
+
+    column_info: dict[str, dict[str, int | bool | str]] = {}
+
+    for column_def in text[columns_start:columns_end]:
+        col, comment = column_def.split("--", 1)
+        name, col_type = [c.strip() for c in col.strip().rstrip(",").split()]
+        match col_type:
+            case "boolean":
+                col_conv = bool
+            case "int" | "text":
+                col_conv = lambda x: x
+            case _:
+                raise ValueError(f"Unknown column type {name=} {col_type=}")
+        column_info[name] = {"type": col_type, "comment": comment.strip(), "conv": col_conv}
+        sql.append(name + ",")
+    # remove last comma
+    sql[-1] = sql[-1].rstrip(",")
+
+    sql.append(") AS ( VALUES")
+    sql.extend(text[values_start:values_end])
+    sql[-1] = sql[-1].rstrip(";")
+    sql.append(") SELECT * FROM diskused_data")
+
+    results = {}
+    for row in cursor.execute("\n".join(sql)):
+        for name, value in zip((d[0] for d in cursor.get_description()), row):
+            if name == "name":
+                assert value not in results
+                results[value] = {}
+                this_row_name: str = value
+            else:
+                # name is first column so this is always set
+                results[this_row_name][name] = column_info[name]["conv"](value)
+
+    column_desc = {k: v["comment"] for k, v in column_info.items() if k != "name"}
+
+    return results, column_desc
 
 query_limit_context: contextvars.ContextVar[query_limit.limit] = contextvars.ContextVar("apsw.ext.query_limit_context")
 """Stores the current query limits
@@ -2437,11 +2630,11 @@ def make_virtual_module(
             for i, c in enumerate(self.columns):
                 if column_defs:
                     column_defs += ", "
-                column_defs += f"[{c}]"
+                column_defs += '"' + c.replace('"', '""') + '"'
                 if self.primary_key == i:
                     column_defs += " PRIMARY KEY"
             for p in self.parameters:
-                column_defs += f",[{p}] HIDDEN"
+                column_defs += f",\"" + p.replace('"', '""') + "\" HIDDEN"
 
             self.schema = f"CREATE TABLE ignored({column_defs})"
             if self.primary_key is not None:
@@ -2764,6 +2957,11 @@ def query_info(
     actions, expanded_sql, explain, query_plan etc filled in.
 
     See the :ref:`example <example_query_details>`.
+
+    .. note::
+
+        An existing authorizer is ignored while this runs and
+        the ``actions`` parameter is ``True``.
     """
     res: dict[str, Any] = {"actions": None, "query_plan": None, "explain": None}
 

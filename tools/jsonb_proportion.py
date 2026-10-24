@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # This shows the proportion an n-byte sequence that are valid JSONB.
 

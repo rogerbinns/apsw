@@ -33,7 +33,7 @@ class Async(unittest.TestCase):
         finally:
             for c in apsw.connections():
                 if c.is_async:
-                    await c.aclose()
+                    await c.aclose(2)
                 else:
                     c.close()
 
@@ -299,12 +299,13 @@ class Async(unittest.TestCase):
         with self.assertRaises(apsw.SQLError):
             await blob.reopen(423)
 
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             with blob:
                 pass
 
-        async with blob:
-            pass
+        with self.assertRaises(ValueError):
+            async with blob:
+                pass
 
         self.assertRaises(ValueError, blob.length)
 
@@ -450,6 +451,23 @@ class Async(unittest.TestCase):
             obj.close()
 
         self.assertRaises(apsw.ConnectionClosedError, db.execute, "select 3")
+
+        # make sure we get exceptions on async close of sync objects
+        db = apsw.Connection("")
+        cursor = db.execute(
+            "create table dummy(column); insert into dummy(rowid, column) values(73, x'aabbcc'), (74, x'aabbcc');"
+        )
+        db2 = apsw.Connection(":memory:")
+        db2.pragma("page_size", 512)
+        db2.execute("create table dummy(x)")
+        db2.executemany("insert into dummy values(?)", (("a" * 4096,) for _ in range(129)))
+        backup = db.backup("main", db2, "main")
+        blob = db.blob_open("main", "dummy", "column", 73, False)
+        session = apsw.Session(db, "main") if hasattr(apsw, "Session") else None
+
+        for obj in (session, backup, db2, blob, cursor, db):
+            if obj is not None:
+                self.assertRaisesRegex(TypeError, "Using async in sync context", obj.aclose)
 
     async def atestIteration(self, fw):
         "cursor iteration"

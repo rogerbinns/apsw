@@ -11,6 +11,18 @@ struct iovec
 #endif
 #endif
 
+/* dance to get alignment requirement for a type */
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#include <stdalign.h>
+#define APSW_ALIGNOF(type) alignof(type)
+#elif defined(_MSC_VER)
+#define APSW_ALIGNOF(type) __alignof(type)
+#elif defined(__GNUC__) || defined(__clang__)
+#define APSW_ALIGNOF(type) __alignof__(type)
+#else
+#define APSW_ALIGNOF(type) offsetof(struct { char c; type m; }, m)
+#endif
+
 typedef struct
 {
   PyObject_HEAD
@@ -46,7 +58,7 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 #define CARRAY_usage "carray(object: Buffer, *, start: int = 0, stop: int = -1, flags: int = -1)"
 
     PREVENT_INIT_MULTIPLE_CALLS;
-    ARG_CONVERT_VARARGS_TO_FASTCALL;
+    ARG_CONVERT_VARARGS_TO_FASTCALL(4, CARRAY_usage);
     ARG_PROLOG(1, CARRAY_kwnames);
     ARG_MANDATORY ARG_carray(object);
     ARG_OPTIONAL ARG_int64(start);
@@ -73,7 +85,7 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
     if (start > nitems)
     {
-      PyErr_Format(PyExc_ValueError, "Start %lld is beyond end of %lld item tuple", start, nitems);
+      PyErr_Format(PyExc_ValueError, "Start %lld is beyond end of %zd item tuple", start, nitems);
       goto error;
     }
 
@@ -82,7 +94,7 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
     if (stop > nitems)
     {
-      PyErr_Format(PyExc_ValueError, "Stop %lld is beyond end of %lld item tuple", stop, nitems);
+      PyErr_Format(PyExc_ValueError, "Stop %lld is beyond end of %zd item tuple", stop, nitems);
       goto error;
     }
 
@@ -128,7 +140,10 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
           self->aData = PyMem_Malloc(sizeof(const char *) * nitems);
           self->free_aData = 1;
           if (!self->aData)
+          {
+            PyErr_NoMemory();
             goto error;
+          }
         }
 
         const char **array = self->aData;
@@ -151,14 +166,20 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
         self->aData = PyMem_Malloc(sizeof(struct iovec) * nitems);
         self->free_aData = 1;
         if (!self->aData)
+        {
+          PyErr_NoMemory();
           goto error;
+        }
       }
 
       if (!self->views)
       {
         self->views = PyMem_Calloc(sizeof(Py_buffer), nitems);
         if (!self->views)
+        {
+          PyErr_NoMemory();
           goto error;
+        }
       }
 
       if (PyObject_GetBuffer(item, &self->views[i], PyBUF_SIMPLE))
@@ -197,7 +218,7 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
           flags = SQLITE_CARRAY_INT32;
           break;
         default:
-          PyErr_Format(PyExc_ValueError, "int size %d not supported", self->view.itemsize);
+          PyErr_Format(PyExc_ValueError, "int size %zd not supported", self->view.itemsize);
           goto error;
         }
       }
@@ -210,11 +231,36 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
       }
     }
 
+    unsigned sz = 0;
+    const char *flag_name = 0;
     switch (flags)
     {
     case SQLITE_CARRAY_INT32:
+      sz = APSW_ALIGNOF(int);
+      flag_name = "SQLITE_CARRAY_INT32";
+      /* FALLTHRU */
     case SQLITE_CARRAY_INT64:
+      if (!sz)
+      {
+        sz = APSW_ALIGNOF(sqlite3_int64);
+        flag_name = "SQLITE_CARRAY_INT64";
+      }
+      /* FALLTHRU */
     case SQLITE_CARRAY_DOUBLE:
+      if (!sz)
+      {
+        sz = APSW_ALIGNOF(double);
+        flag_name = "SQLITE_CARRAY_DOUBLE";
+      }
+      /* most popular processors don't care about unaligned data (other
+       than performance) but some will cause a fault so check here */
+      unsigned align = ((uintptr_t)self->view.buf) % sz;
+      if (align)
+      {
+        PyErr_Format(PyExc_ValueError, "The data is at %p which is not %u aligned as required for %s, misaligned at %u",
+                     self->view.buf, sz, flag_name, align);
+        goto error;
+      }
       break;
     default:
       PyErr_Format(PyExc_ValueError, "Unsupported flags value %d for numbers", flags);
@@ -224,7 +270,7 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
     const unsigned item_size = (flags == SQLITE_CARRAY_INT32) ? 4 : 8;
     if (self->view.len % item_size)
     {
-      PyErr_Format(PyExc_ValueError, "Array size %lld bytes is not a multiple of item size %u bytes", self->view.len,
+      PyErr_Format(PyExc_ValueError, "Array size %zd bytes is not a multiple of item size %u bytes", self->view.len,
                    item_size);
       goto error;
     }
@@ -233,7 +279,7 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
     if ((size_t)start > nitems)
     {
-      PyErr_Format(PyExc_ValueError, "Start %lld is beyond end of %lld item array", start, nitems);
+      PyErr_Format(PyExc_ValueError, "Start %lld is beyond end of %llu item array", start, nitems);
       goto error;
     }
 
@@ -242,7 +288,7 @@ CArrayBind_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 
     if ((size_t)stop > nitems)
     {
-      PyErr_Format(PyExc_ValueError, "Stop %lld is beyond end of %lld item array", stop, nitems);
+      PyErr_Format(PyExc_ValueError, "Stop %lld is beyond end of %zu item array", stop, nitems);
       goto error;
     }
 
@@ -301,7 +347,9 @@ CArrayBind_dealloc(PyObject *self_)
 static void
 CArrayBind_bind_destructor(void *pCtx)
 {
+  PyGILState_STATE gilstate = PyGILState_Ensure();
   Py_DECREF((PyObject *)pCtx);
+  PyGILState_Release(gilstate);
 }
 
 static PyTypeObject CArrayBindType = {

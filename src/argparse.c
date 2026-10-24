@@ -1,43 +1,24 @@
+/* Mostly macro based processing of function arguments.  This performs
+   similar functionality to argument clinic, but gives far more
+   informative error messages */
 
-/* to speed this up gendocstrings can generate something like this
-   that uses the string length as a hash
-
-    switch(strlen(kwname))
-    {
-        case 7:
-          if(0==strcmp(kwname, "hkjdshfkjd")) return 4;
-          if(0==strcmp(kwname, "sdsdshfkjd")) return 2;
-          return -1;
-
-        case 2:
-          if(0==strcmp(kwname, "ab")) return 1;
-          return -1;
-
-        default: return -1;
-    }
-*/
 static int
-ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const char **kwname)
+ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist)
 {
-  const char *n = PyUnicode_AsUTF8(item);
-  size_t cmp;
-  int res = -1;
-  if (n)
-    for (cmp = 0; cmp < n_kwlist && kwlist[cmp]; cmp++)
+  if (PyUnicode_Check(item))
+    for (size_t cmp = 0; cmp < n_kwlist && kwlist[cmp]; cmp++)
     {
-      if (0 == strcmp(n, kwlist[cmp]))
-      {
-        res = (int)cmp;
-        break;
-      }
+      /* our kwargs are ASCII only */
+      if (0 == PyUnicode_CompareWithASCIIString(item, kwlist[cmp]))
+        return (int)cmp;
     }
-  *kwname = n;
-  return res;
+
+  return -1;
 }
 
 #define ARG_PROLOG(maxpos_args, kwname_list)                                                                           \
   static const char *kwlist[] = { kwname_list };                                                                       \
-  const char *unknown_keyword = NULL;                                                                                  \
+  PyObject *unknown_keyword = NULL;                                                                                    \
   const Py_ssize_t maxpos_args_ = maxpos_args;                                                                         \
   const int maxargs = Py_ARRAY_LENGTH(kwlist);                                                                         \
   PyObject *myargs[Py_ARRAY_LENGTH(kwlist)];                                                                           \
@@ -56,11 +37,17 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     for (int i_arg_prolog = 0; i_arg_prolog < PyTuple_GET_SIZE(fast_kwnames); i_arg_prolog++)                          \
     {                                                                                                                  \
       PyObject *item = PyTuple_GET_ITEM(fast_kwnames, i_arg_prolog);                                                   \
-      Py_ssize_t which_kw = ARG_WHICH_KEYWORD(item, kwlist, maxargs, &unknown_keyword);                                \
+      Py_ssize_t which_kw = ARG_WHICH_KEYWORD(item, kwlist, maxargs);                                                  \
       if (which_kw == -1)                                                                                              \
+      {                                                                                                                \
+        unknown_keyword = item;                                                                                        \
         goto unknown_keyword_arg;                                                                                      \
+      }                                                                                                                \
       if (useargs[which_kw])                                                                                           \
+      {                                                                                                                \
+        unknown_keyword = item;                                                                                        \
         goto pos_and_keyword;                                                                                          \
+      }                                                                                                                \
       useargs[which_kw] = fast_args[n_fast_args + i_arg_prolog];                                                       \
       actual_nargs = Py_MAX(actual_nargs, which_kw + 1);                                                               \
     }                                                                                                                  \
@@ -95,11 +82,11 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
   goto error_return;                                                                                                   \
   unknown_keyword_arg:                                                                                                 \
   if (!PyErr_Occurred())                                                                                               \
-    PyErr_Format(PyExc_TypeError, "'%s' is an invalid keyword argument for %s", unknown_keyword, usage);               \
+    PyErr_Format(PyExc_TypeError, "%R is an invalid keyword argument for %s", unknown_keyword, usage);                 \
   goto error_return;                                                                                                   \
   pos_and_keyword:                                                                                                     \
   if (!PyErr_Occurred())                                                                                               \
-    PyErr_Format(PyExc_TypeError, "argument '%s' given by name and position for %s", unknown_keyword, usage);          \
+    PyErr_Format(PyExc_TypeError, "argument %R given by name and position for %s", unknown_keyword, usage);            \
   goto error_return;                                                                                                   \
   param_error:                                                                                                         \
   assert(PyErr_Occurred());                                                                                            \
@@ -210,7 +197,7 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
       if (!PyUnicode_Check(PyList_GET_ITEM(useargs[argp_optindex], list_item_iter)))                                   \
       {                                                                                                                \
         PyErr_Format(PyExc_TypeError, "Expected list item %zd to be str, not %s", list_item_iter,                      \
-                     Py_TypeName(useargs[argp_optindex]));                                                             \
+                     Py_TypeName(PyList_GET_ITEM(useargs[argp_optindex], list_item_iter)));                            \
         goto param_error;                                                                                              \
       }                                                                                                                \
     }                                                                                                                  \
@@ -316,6 +303,18 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     argp_optindex++;                                                                                                   \
   } while (0)
 
+#define ARG_Bytes(varname)                                                                                             \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (!PyBytes_CheckExact(useargs[argp_optindex]))                                                                   \
+    {                                                                                                                  \
+      PyErr_Format(PyExc_TypeError, "Expected bytes, not %s", Py_TypeName(useargs[argp_optindex]));                    \
+      goto param_error;                                                                                                \
+    }                                                                                                                  \
+    varname = useargs[argp_optindex];                                                                                  \
+    argp_optindex++;                                                                                                   \
+  } while (0)
+
 #define ARG_unsigned_long(varname)                                                                                     \
   do                                                                                                                   \
   {                                                                                                                    \
@@ -342,10 +341,9 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
     varname = PyLong_AsSsize_t(useargs[argp_optindex]);                                                                \
     if (varname == -1 && PyErr_Occurred())                                                                             \
       goto param_error;                                                                                                \
-    if (varname < 0 || varname > 1 + PyUnicode_GET_LENGTH(text))                                                       \
+    if (varname < 0 || varname > PyUnicode_GET_LENGTH(text))                                                           \
     {                                                                                                                  \
-      PyErr_Format(PyExc_ValueError, "offset %zd out of range 0 through %zd", varname,                                 \
-                   1 + PyUnicode_GET_LENGTH(text));                                                                    \
+      PyErr_Format(PyExc_ValueError, "offset %zd out of range 0 through %zd", varname, PyUnicode_GET_LENGTH(text));    \
       goto param_error;                                                                                                \
     }                                                                                                                  \
     argp_optindex++;                                                                                                   \
@@ -494,9 +492,16 @@ ARG_WHICH_KEYWORD(PyObject *item, const char *kwlist[], size_t n_kwlist, const c
 
 /* 1 is added to the size of fast_args to ensure the vla is always at
    least 1 item long.  If it ends up as zero then sanitizers complain. */
-#define ARG_CONVERT_VARARGS_TO_FASTCALL                                                                                \
+#define ARG_CONVERT_VARARGS_TO_FASTCALL(max_arg_count, conv_usage)                                                     \
   Py_ssize_t fast_nargs = PyTuple_GET_SIZE(args);                                                                      \
-  VLA_PYO(fast_args, 1 + fast_nargs + (kwargs ? PyDict_GET_SIZE(kwargs) : 0));                                         \
+  const int conv_alloc_args = 1 + fast_nargs + (kwargs ? PyDict_GET_SIZE(kwargs) : 0);                                 \
+  if (conv_alloc_args - 1 > max_arg_count)                                                                             \
+  {                                                                                                                    \
+    PyErr_Format(PyExc_TypeError, "Too many arguments %d (max %d) provided to %s", conv_alloc_args - 1, max_arg_count, \
+                 conv_usage);                                                                                          \
+    return -1;                                                                                                         \
+  }                                                                                                                    \
+  VLA_PYO(fast_args, conv_alloc_args);                                                                                 \
   PyObject *fast_kwnames = NULL;                                                                                       \
   Py_ssize_t acvtf_i;                                                                                                  \
   for (acvtf_i = 0; acvtf_i < fast_nargs; acvtf_i++)                                                                   \

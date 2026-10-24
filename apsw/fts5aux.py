@@ -8,11 +8,12 @@ results.
 
 from __future__ import annotations
 
+__lazy_modules__ = ["math", "apsw"]
+
 import dataclasses
 import math
 
 import apsw
-
 
 # This section is a translation of the bm25 C code from the `SQLite
 # source https://sqlite.org/src/file?name=ext/fts5/fts5_aux.c serving

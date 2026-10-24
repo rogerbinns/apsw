@@ -103,12 +103,12 @@ Other helpful functionality includes:
 
 from __future__ import annotations
 
-import sys
+__lazy_modules__ = ["apsw"]
 
 import dataclasses
+from collections.abc import Iterator, Sequence
+from typing import Any, Literal, NoReturn, TypeAlias
 
-from typing import Any, NoReturn, Literal, TypeAlias
-from collections.abc import Sequence, Iterator
 import apsw
 
 QUERY_TOKENS_MARKER = "$!Tokens~"

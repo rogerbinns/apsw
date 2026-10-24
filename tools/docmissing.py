@@ -104,7 +104,7 @@ for name, obj in (
         continue
 
     for c in classes[name]:
-        if not (inspect.getattr_static(obj, c) or hasattr(obj, c)) and not (name, c) == ("Cursor", "description_full") and c != "fork_checker":
+        if not (inspect.getattr_static(obj, c) or hasattr(obj, c)) and not (name, c) == ("Cursor", "description_full"):
             retval = 1
             print("%s.%s in documentation but not object" % (name, c))
     for c in dir(obj):

@@ -4,7 +4,9 @@
 
 from __future__ import annotations
 
-from typing import Callable
+__lazy_modules__ = ["apsw", "apsw.ext"]
+
+from collections.abc import Callable
 
 import apsw
 import apsw.ext

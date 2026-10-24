@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+__lazy_modules__ = ["asyncio", "contextlib", "contextvars", "math", "queue", "threading", "time", "apsw"]
+
 import asyncio
 import contextlib
 import contextvars
@@ -225,10 +227,11 @@ async def _coro_for_value(value):
 
 if sys.version_info < (3, 12):
     # Python 3.12 unified the exc type, value, and traceback into the single
-    # exception object.
+    # exception object.  The C code normalized the exception, so the value
+    # is good
 
     async def _coro_for_exception(exc):
-        raise exc[0](exc[1]).with_traceback(exc[2])
+        raise exc[1].with_traceback(exc[2])
 
 else:
 
@@ -324,7 +327,7 @@ class AsyncIO:
         finally:
             coro.close()
 
-    if sys.version_info < (3, 11):
+    if sys.version_info < (3, 12):
 
         async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
             "Executes the coro in the event loop"
@@ -332,20 +335,13 @@ class AsyncIO:
             task = context.run(asyncio.create_task, coro)
             tracker.cancel_async_cb = task.cancel
             if tracker.is_cancelled:
-                return
-
-            if tracker.deadline_loop is not None:
-                return await asyncio.wait_for(task, tracker.deadline_loop - self.loop.time())
-            return await task
-
-    elif sys.version_info < (3, 12):
-
-        async def run_coro_in_loop(self, coro: Coroutine, tracker: _CallTracker, context: contextvars.Context) -> Any:
-            "Executes the coro in the event loop"
-
-            task = context.run(asyncio.create_task, coro)
-            tracker.cancel_async_cb = task.cancel
-            if tracker.is_cancelled:
+                # manually cleaning up task which the event loop
+                # usually does for the task but we have to do here
+                task.cancel()
+                try:
+                    await task
+                except (asyncio.CancelledError, Exception):
+                    pass
                 return
 
             async with asyncio.timeout_at(tracker.deadline_loop):
@@ -363,6 +359,13 @@ class AsyncIO:
             task = asyncio.create_task(coro, context=context)
             tracker.cancel_async_cb = task.cancel
             if tracker.is_cancelled:
+                # manually cleaning up task which the event loop
+                # usually does for the task but we have to do here
+                task.cancel()
+                try:
+                    await task
+                except (asyncio.CancelledError, Exception):
+                    pass
                 return
 
             async with asyncio.timeout_at(tracker.deadline_loop):
@@ -570,6 +573,16 @@ class AnyIO:
 _anyio_usable = True
 _trio_usable = True
 
+def _clean_version(package: str) -> tuple[int, ...] | None:
+    "internal cleanup a package version string to int components only"
+
+    import importlib.metadata  # poor man lazy import
+
+    version = importlib.metadata.version(package)
+
+    return tuple(int(v) for v in version.split(".") if v.isdigit())
+
+
 def Auto() -> Trio | AsyncIO | AnyIO:
     """
     Automatically detects the current async framework running event
@@ -618,8 +631,7 @@ def Auto() -> Trio | AsyncIO | AnyIO:
             if found:
                 found = None
                 # check its version is ok
-                import importlib.metadata
-                ver = tuple(map(int, importlib.metadata.version("anyio").split(".")))
+                ver = _clean_version("anyio")
                 if  ver >= (4, 11, 0):
                     found = AnyIO
                 else:
@@ -636,8 +648,7 @@ def Auto() -> Trio | AsyncIO | AnyIO:
             trio.lowlevel.current_trio_token()
 
             # check its version is ok
-            import importlib.metadata
-            ver = tuple(map(int, importlib.metadata.version("trio").split(".")))
+            ver = _clean_version("trio")
             if  ver >= (0, 20, 0):
                 found = Trio
             else:

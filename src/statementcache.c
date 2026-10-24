@@ -70,12 +70,12 @@ typedef struct StatementCache
   unsigned maxentries;    /* maximum number of entries */
   unsigned next_eviction; /* which entry is evicted next */
   /* stats tracking */
-  unsigned evictions; /* how many there have been */
-  unsigned no_cache;  /* can cache was false */
-  unsigned hits;      /* found in cache */
-  unsigned misses;    /* not found in cache */
-  unsigned no_vdbe;   /* no bytecode emitted */
-  unsigned too_big;   /* query was bigger than SC_MAX_ITEM_SIZE */
+  unsigned long long evictions; /* how many there have been */
+  unsigned long long no_cache;  /* can cache was false */
+  unsigned long long hits;      /* found in cache */
+  unsigned long long misses;    /* not found in cache */
+  unsigned long long no_vdbe;   /* no bytecode emitted */
+  unsigned long long too_big;   /* query was bigger than SC_MAX_ITEM_SIZE */
 } StatementCache;
 
 /* we don't bother caching larger than this many bytes */
@@ -94,7 +94,7 @@ statementcache_free_statement(StatementCache *sc, APSWStatement *s)
   res = s->vdbestatement ? sqlite3_finalize(s->vdbestatement) : SQLITE_OK;
 
 #if SC_STATEMENT_RECYCLE_BIN_ENTRIES > 0
-  if (sc && sc->recycle_bin_next + 1 < SC_STATEMENT_RECYCLE_BIN_ENTRIES)
+  if (sc && sc->recycle_bin_next < SC_STATEMENT_RECYCLE_BIN_ENTRIES)
   {
     sc->recycle_bin[sc->recycle_bin_next++] = s;
   }
@@ -188,7 +188,13 @@ apsw_hash_bytes(void *data, Py_ssize_t nbytes)
     cdata++;
     nbytes--;
   }
-  return (Py_hash_t)hash;
+
+  Py_hash_t actual_hash = (Py_hash_t)hash;
+  /* we use -1 as a special not hashed value (as does CPython) so
+     handle the unlikely case of that occurring */
+  if (actual_hash == (Py_hash_t)SC_SENTINEL_HASH)
+    return 73;  /* CPython uses -2 as the replacement, we are rebels */
+  return actual_hash;
 }
 
 static int
@@ -252,6 +258,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   Py_BEGIN_ALLOW_THREADS
     res = sqlite3_prepare_v3(sc->db, utf8, utf8size + 1, options->prepare_flags, &vdbestatement, &tail);
   Py_END_ALLOW_THREADS;
+  MakeExistingException();
   if (res != SQLITE_OK || PyErr_Occurred())
   {
     SET_EXC(res, sc->db);
@@ -277,9 +284,11 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
   if (!vdbestatement)
     hash = SC_SENTINEL_HASH;
 
-  if (options->explain >= 0)
+  if (options->explain >= 0 && vdbestatement)
   {
-    res = sqlite3_stmt_explain(vdbestatement, options->explain);
+    Py_BEGIN_ALLOW_THREADS
+      res = sqlite3_stmt_explain(vdbestatement, options->explain);
+    Py_END_ALLOW_THREADS;
     if (res != SQLITE_OK)
     {
       SET_EXC(res, sc->db);
@@ -299,7 +308,7 @@ statementcache_prepare_internal(StatementCache *sc, const char *utf8, Py_ssize_t
     {
       sqlite3_finalize(vdbestatement);
       res = SQLITE_NOMEM;
-      SET_EXC(res, sc->db);
+      PyErr_NoMemory();
       return res;
     }
   }
@@ -453,7 +462,7 @@ statementcache_stats(StatementCache *sc, int include_entries)
      update this */
   PyObject *res = NULL, *entries = NULL, *entry = NULL;
 
-  res = Py_BuildValue("{s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I, s: I}", "size", sc->maxentries, "evictions",
+  res = Py_BuildValue("{s: I, s: K, s: K, s: K, s: K, s: K, s: K, s: K, s: I}", "size", sc->maxentries, "evictions",
                       sc->evictions, "no_cache", sc->no_cache, "hits", sc->hits, "no_vdbe", sc->no_vdbe, "misses",
                       sc->misses, "too_big", sc->too_big, "no_cache", sc->no_cache, "max_cacheable_bytes",
                       SC_MAX_ITEM_SIZE);

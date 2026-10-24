@@ -128,10 +128,7 @@ init_exceptions(PyObject *m)
     *apswexceptions[i].var = PyErr_NewExceptionWithDoc(buffy, apswexceptions[i].doc, APSWException, NULL);
     if (!*apswexceptions[i].var)
       return -1;
-    /* PyModule_AddObject steals the ref, but we don't add a ref for
-      ourselves because it leaks on module unload when we couldn't use
-      these anyway */
-    if (PyModule_AddObject(m, apswexceptions[i].name, *apswexceptions[i].var))
+    if (PyModule_AddObjectRef(m, apswexceptions[i].name, *apswexceptions[i].var))
       return -1;
   }
 
@@ -144,10 +141,7 @@ init_exceptions(PyObject *m)
       return -1;
     exc_descriptors[i].cls = obj;
     PyOS_snprintf(buffy, sizeof(buffy), "%sError", exc_descriptors[i].name);
-    /* PyModule_AddObject steals the ref, but we don't add a ref for
-      ourselves because it leaks on module unload when we couldn't use
-      these anyway */
-    if (PyModule_AddObject(m, buffy, obj))
+    if (PyModule_AddObjectRef(m, buffy, obj))
       return -1;
   }
 
@@ -256,20 +250,21 @@ MakeSqliteMsgFromPyException(char **errmsg)
 
   if (errmsg)
   {
-    /* I just want a string of the error! */
-    if (!str && exc)
-      str = PyObject_Str(exc);
-    if (!str)
-    {
-      PyErr_Clear();
-      str = PyUnicode_FromString("python exception with no information");
-    }
-    if (*errmsg && str)
-    {
-      sqlite3_free(*errmsg);
-      *errmsg = sqlite3_mprintf("%s", PyUnicode_AsUTF8(str));
-    }
+    /* normalize should ensure there is always a value */
+    assert(exc);
 
+    str = PyObject_Str(exc);
+    const char *utf8 = str ? PyUnicode_AsUTF8(str) : "No message available";
+
+    if (!utf8)
+      PyErr_Clear();
+
+    if (*errmsg)
+      sqlite3_free(*errmsg);
+
+    *errmsg = sqlite3_mprintf("%s", utf8);
+    if (!*errmsg)
+      res = SQLITE_NOMEM;
     Py_XDECREF(str);
   }
 
@@ -283,7 +278,12 @@ MakeSqliteMsgFromPyException(char **errmsg)
 static void
 make_thread_exception(const char *message)
 {
-  /* avoid overwriting existing */
-  if (!PyErr_Occurred())
+  if (PyErr_Occurred())
+  {
+    CHAIN_EXC_BEGIN
+     PyErr_Format(ExcThreadingViolation, message ? message : "Connection is busy in another thread");
+    CHAIN_EXC_END;
+  }
+  else
     PyErr_Format(ExcThreadingViolation, message ? message : "Connection is busy in another thread");
 }

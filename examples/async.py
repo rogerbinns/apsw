@@ -731,7 +731,7 @@ async def session_example():
             ((i, "a" * i) for i in range(200)),
         )
 
-        print("Size estimate {session.changeset_size}")
+        print(f"Size estimate {session.changeset_size=}")
         changeset = await session.changeset()
         print(f"Actual size {len(changeset)}")
 

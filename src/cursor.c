@@ -209,13 +209,19 @@ resetcursor(APSWCursor *self, int force)
       res = SQLITE_ERROR;
       assert(PyErr_Occurred());
     }
+    else if(PyErr_Occurred())
+    {
+      CHAIN_EXC_BEGIN
+        PyErr_Format(ExcIncomplete, "Error: The values for executemany were not fully consumed and the next item raised this exception");
+      CHAIN_EXC_END;
+      res = SQLITE_ERROR;
+    }
   }
 
   Py_CLEAR(self->emiter);
   Py_CLEAR(self->emoriginalquery);
 
   self->status = C_DONE;
-  self->in_query = 0;
 
   if (PyErr_Occurred())
   {
@@ -236,10 +242,11 @@ APSWCursor_close_internal(APSWCursor *self, int force)
 
   PY_ERR_FETCH_IF(force == 2, exc_save);
 
-  res = resetcursor(self, force);
   /* caller must have acquired mutex */
   if (self->connection)
-    sqlite3_mutex_leave(self->connection->dbmutex);
+    assert(sqlite3_mutex_held(self->connection->dbmutex));
+
+  res = resetcursor(self, force);
 
   if (force == 2)
     PY_ERR_RESTORE(exc_save);
@@ -248,6 +255,8 @@ APSWCursor_close_internal(APSWCursor *self, int force)
     if (res)
     {
       assert(PyErr_Occurred());
+      if (self->connection)
+        sqlite3_mutex_leave(self->connection->dbmutex);
       return 1;
     }
     assert(!PyErr_Occurred());
@@ -262,11 +271,6 @@ APSWCursor_close_internal(APSWCursor *self, int force)
   PyMem_Free(self->aiter_slots);
   self->aiter_slots = 0;
 
-  /* Remove from connection dependents list.  Has to be done before we decref self->connection
-     otherwise connection could dealloc and we'd still be in list */
-  if (self->connection)
-    Connection_remove_dependent(self->connection, (PyObject *)self);
-
   /* executemany iterator */
   Py_CLEAR(self->emiter);
 
@@ -276,25 +280,19 @@ APSWCursor_close_internal(APSWCursor *self, int force)
   Py_CLEAR(self->convert_binding);
   Py_CLEAR(self->convert_jsonb);
 
-  /* we no longer need connection */
-  Py_CLEAR(self->connection);
-
   Py_CLEAR(self->description_cache[0]);
   Py_CLEAR(self->description_cache[1]);
   Py_CLEAR(self->description_cache[2]);
 
-  return 0;
-}
-
-static int
-APSWCursor_dealloc_mutex(void * self_)
-{
-  APSWCursor *self = (APSWCursor *)self_;
-  DBMUTEX_RETRY(self->connection, APSWCursor_dealloc_mutex);
-
-  APSWCursor_close_internal(self, 2);
-
-  Py_TpFree(self_);
+  if (self->connection)
+  {
+    PY_ERR_FETCH(save);
+    Connection_remove_dependent(self->connection, (PyObject *)self);
+    PY_ERR_RESTORE(save);
+    sqlite3_mutex_leave(self->connection->dbmutex);
+    /* we no longer need connection */
+    Py_CLEAR(self->connection);
+  }
 
   return 0;
 }
@@ -310,9 +308,15 @@ APSWCursor_dealloc(PyObject *self_)
   APSW_CLEAR_WEAKREFS;
 
   PY_ERR_FETCH(exc);
-  APSWCursor_dealloc_mutex(self);
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
+
+  if (self->connection && SQLITE_OK != sqlite3_mutex_try(self->connection->dbmutex))
+  {
+    Connection_add_dependent_hard(self->connection, self_);
+    PY_ERR_RESTORE(exc);
+    return;
+  }
+  APSWCursor_close_internal(self, 2);
+  Py_TpFree(self_);
   PY_ERR_RESTORE(exc);
 }
 
@@ -331,7 +335,7 @@ APSWCursor_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   {
     Cursor_init_CHECK;
     PREVENT_INIT_MULTIPLE_CALLS;
-    ARG_CONVERT_VARARGS_TO_FASTCALL;
+    ARG_CONVERT_VARARGS_TO_FASTCALL(2, Cursor_init_USAGE);
     ARG_PROLOG(1, Cursor_init_KWNAMES);
     ARG_MANDATORY ARG_Connection(connection);
     ARG_EPILOG(-1, Cursor_init_USAGE, Py_XDECREF(fast_kwnames));
@@ -392,7 +396,10 @@ convert_column_to_pyobject(APSWCursor *self, int col)
     size_t len;
     data = (const char *)sqlite3_column_text(stmt, col);
     if (!data)
-      return PyErr_NoMemory();
+    {
+      SET_EXC(SQLITE_NOMEM, NULL);
+      return NULL;
+    }
 
     len = sqlite3_column_bytes(stmt, col);
     return PyUnicode_FromStringAndSize(data, len);
@@ -415,14 +422,17 @@ convert_column_to_pyobject(APSWCursor *self, int col)
 
     /* if length is zero then a null pointer is returned */
     if (!data && len)
-      return PyErr_NoMemory();
+    {
+      SET_EXC(SQLITE_NOMEM, NULL);
+      return NULL;
+    }
 
     PyObject *value = PyBytes_FromStringAndSize(data, len);
 
     if (value && CONVERT_JSONB && jsonb_detect_internal(data, len))
     {
       PyObject *new_value = NULL;
-      PyObject *vargs[] = { NULL, (PyObject*)self, PyLong_FromLong(col), value };
+      PyObject *vargs[] = { NULL, (PyObject *)self, PyLong_FromLong(col), value };
       if (vargs[2])
         new_value = PyObject_Vectorcall(CONVERT_JSONB, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
       Py_XDECREF(vargs[2]);
@@ -589,10 +599,17 @@ APSWCursor_get_description_full(PyObject *self_, void *unused)
 }
 #endif
 
-/* returns 0 on success, -1 on failure with exception set */
+/* returns 0 on success and sets in_query, -1 on failure with exception set
+
+   this differs from DBMUTEX_ENSURE in that it will do some GIL released
+   sleeps + retries in order to get the mutex to cater for doing
+   connection.execute simultaneously in multiple threads
+*/
+#undef cursor_mutex_get
 static int
 cursor_mutex_get(APSWCursor *self)
 {
+#include "faultinject.h"
   /* this should be used by execute, executemany, and next which
      release the GIL internally (prepare and step).  We want any thread to
      be able to execute on the same database without having to add their
@@ -625,15 +642,12 @@ cursor_mutex_get(APSWCursor *self)
 
   for (;;)
   {
-    Py_BEGIN_ALLOW_THREADS
-    {
-      waited += sqlite3_sleep(delays[attempt]);
-      res = sqlite3_mutex_try(self->connection->dbmutex);
-    }
+    Py_BEGIN_ALLOW_THREADS { waited += sqlite3_sleep(delays[attempt]); }
     Py_END_ALLOW_THREADS;
+    res = (self->connection) ? sqlite3_mutex_try(self->connection->dbmutex) : SQLITE_ERROR;
 
-    checks:
-  /* shenanigans could have happened while GIL was released */
+  checks:
+    /* shenanigans could have happened while GIL was released */
     if (!self->connection)
     {
       if (!PyErr_Occurred())
@@ -669,12 +683,19 @@ cursor_mutex_get(APSWCursor *self)
   }
 
   assert((res == SQLITE_OK && !PyErr_Occurred()) || (res != SQLITE_OK && PyErr_Occurred()));
-  return (SQLITE_OK == res) ? 0 : -1;
+  if (res == SQLITE_OK)
+  {
+    self->in_query = 1;
+    return 0;
+  }
+  return -1;
 }
 
+#undef APSWCursor_is_dict_binding
 static int
 APSWCursor_is_dict_binding(PyObject *obj)
 {
+#include "faultinject.h"
   /* See https://github.com/rogerbinns/apsw/issues/373 for why this function exists */
   assert(obj);
 
@@ -870,12 +891,10 @@ APSWCursor_dobindings(APSWCursor *self)
         PyObject *keys = PyUnicode_FromString(key);
         if (!keys)
           return -1;
-        obj = PyDict_GetItemWithError(self->bindings, keys);
+        obj = Py_XNewRef(PyDict_GetItemWithError(self->bindings, keys));
         Py_DECREF(keys);
         if (PyErr_Occurred())
           return -1;
-        /* it returns a borrowed reference */
-        Py_XINCREF(obj);
       }
       else
         obj = PyMapping_GetItemString(self->bindings, key);
@@ -966,6 +985,10 @@ APSWCursor_do_exec_trace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
     {
       bindings = Py_NewRef(self->bindings);
     }
+    else if(PyErr_Occurred())
+    {
+      goto error_out;
+    }
     else if (Py_Is(self->bindings, apsw_cursor_null_bindings))
     {
       bindings = Py_NewRef(Py_None);
@@ -975,10 +998,7 @@ APSWCursor_do_exec_trace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
       bindings = PySequence_GetSlice(self->bindings, savedbindingsoffset, self->bindingsoffset);
 
       if (!bindings)
-      {
-        Py_DECREF(sqlcmd);
         goto error_out;
-      }
     }
   }
   else
@@ -988,7 +1008,7 @@ APSWCursor_do_exec_trace(APSWCursor *self, Py_ssize_t savedbindingsoffset)
 
   PyObject *vargs[] = { NULL, (PyObject *)self, sqlcmd, bindings };
   retval = PyObject_Vectorcall(exectrace, vargs + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
-  Py_DECREF(sqlcmd);
+  Py_CLEAR(sqlcmd);
   Py_DECREF(bindings);
 
   if (!retval)
@@ -1017,6 +1037,7 @@ error_out:
   AddTraceBackHere(__FILE__, __LINE__, "APSWCursor_do_exec_trace", "{s: O, s: O}", "exec_trace", OBJ(exectrace),
                    "returned", OBJ(retval));
   Py_XDECREF(retval);
+  Py_XDECREF(sqlcmd);
   return -1;
 }
 
@@ -1157,6 +1178,11 @@ APSWCursor_step(APSWCursor *self)
       /* verify type of next before putting in bindings */
       if (APSWCursor_is_dict_binding(next))
         self->bindings = next;
+      else if(PyErr_Occurred())
+      {
+        Py_DECREF(next);
+        return -1;
+      }
       else
       {
         self->bindings = PySequence_Fast(next, "You must supply a dict or a sequence for bindings");
@@ -1274,6 +1300,9 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
     ARG_EPILOG(NULL, Cursor_execute_USAGE, );
   }
 
+  if (explain < -1 || explain > 2)
+    return PyErr_Format(PyExc_ValueError, "explain should be 0, 1, or 2 if provided");
+
   while (self->aiter_head < self->aiter_tail)
   {
     Py_DECREF(self->aiter_slots[self->aiter_head]);
@@ -1283,7 +1312,10 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   ASYNC_FASTCALL(self->connection, APSWCursor_execute);
 
   if (0 != cursor_mutex_get(self))
+  {
+    assert(PyErr_Occurred());
     return NULL;
+  }
 
   res = resetcursor(self, /* force= */ 0);
   if (res != SQLITE_OK)
@@ -1301,7 +1333,10 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   {
     int is_dict = APSWCursor_is_dict_binding(self->bindings);
     if (PyErr_Occurred())
+    {
+      Py_INCREF(self->bindings);
       goto error_out;
+    }
     if (is_dict || Py_Is(self->bindings, apsw_cursor_null_bindings))
       Py_INCREF(self->bindings);
     else
@@ -1314,6 +1349,7 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
 
   assert(!self->statement);
   assert(!PyErr_Occurred());
+  assert(self->in_query);
   self->statement = statementcache_prepare(self->connection->stmtcache, statements, &options);
   if (!self->statement)
   {
@@ -1326,7 +1362,6 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
   self->bindingsoffset = 0;
   savedbindingsoffset = 0;
 
-  self->in_query = 1;
   if (APSWCursor_dobindings(self))
     goto error_out;
   if (EXECTRACE)
@@ -1342,15 +1377,15 @@ APSWCursor_execute(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_
       goto error_out;
   } while (self->status == C_END_OF_STATEMENT);
 
-  sqlite3_mutex_leave(self->connection->dbmutex);
   self->in_query = 0;
+  sqlite3_mutex_leave(self->connection->dbmutex);
 
   return Py_NewRef(self);
 
 error_out:
   assert(PyErr_Occurred());
-  sqlite3_mutex_leave(self->connection->dbmutex);
   self->in_query = 0;
+  sqlite3_mutex_leave(self->connection->dbmutex);
 
   return NULL;
 }
@@ -1395,6 +1430,9 @@ APSWCursor_executemany(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
     ARG_EPILOG(NULL, Cursor_executemany_USAGE, );
   }
 
+  if (explain < -1 || explain > 2)
+    return PyErr_Format(PyExc_ValueError, "explain should be 0, 1, or 2 if provided");
+
   while (self->aiter_head < self->aiter_tail)
   {
     Py_DECREF(self->aiter_slots[self->aiter_head]);
@@ -1427,12 +1465,18 @@ APSWCursor_executemany(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
   if (!next)
   {
     /* empty list */
+    self->in_query = 0;
     sqlite3_mutex_leave(self->connection->dbmutex);
     return Py_NewRef((PyObject *)self);
   }
 
   if (APSWCursor_is_dict_binding(next))
     self->bindings = next;
+  else if(PyErr_Occurred())
+  {
+    Py_DECREF(next);
+    goto error_out;
+  }
   else
   {
     self->bindings = PySequence_Fast(next, "You must supply a dict or a sequence for executemany");
@@ -1473,20 +1517,20 @@ APSWCursor_executemany(PyObject *self_, PyObject *const *fast_args, Py_ssize_t f
 
   int step_ret;
   self->status = C_BEGIN;
-  self->in_query = 1;
   do
   {
     step_ret = APSWCursor_step(self);
   } while (self->status == C_END_OF_STATEMENT);
-  self->in_query = 0;
   if (step_ret != 0)
     goto error_out;
 
+  self->in_query = 0;
   sqlite3_mutex_leave(self->connection->dbmutex);
   return Py_NewRef(self);
 
 error_out:
   assert(PyErr_Occurred());
+  self->in_query = 0;
   sqlite3_mutex_leave(self->connection->dbmutex);
   return NULL;
 }
@@ -1566,7 +1610,10 @@ APSWCursor_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   }
 
   if (self->connection)
+  {
     ASYNC_FASTCALL(self->connection, APSWCursor_close);
+    return error_async_in_sync_context();
+  }
   return async_return_value(Py_None);
 }
 
@@ -1596,8 +1643,6 @@ APSWCursor_next_internal(PyObject *self_, int eager)
     return NULL;
 
 again:
-  self->in_query = 1;
-
   if (self->status == C_BEGIN || self->status == C_END_OF_STATEMENT)
   {
     do
@@ -1611,8 +1656,8 @@ again:
   if (self->status == C_DONE || self->status == C_END_OF_STATEMENT)
   {
     /* end of iteration */
-    sqlite3_mutex_leave(self->connection->dbmutex);
     self->in_query = 0;
+    sqlite3_mutex_leave(self->connection->dbmutex);
     return NULL;
   }
 
@@ -1654,8 +1699,8 @@ error:
   Py_XDECREF(retval);
   assert(PyErr_Occurred());
 
-  sqlite3_mutex_leave(self->connection->dbmutex);
   self->in_query = 0;
+  sqlite3_mutex_leave(self->connection->dbmutex);
   return NULL;
 }
 
@@ -1745,6 +1790,7 @@ again:
         return NULL;
       PyObject *exc_one = NULL, *exc_two = NULL, *exc_three = NULL;
       PyErr_Fetch(&exc_one, &exc_two, &exc_three);
+      PyErr_NormalizeException(&exc_one, &exc_two, &exc_three);
       PyTuple_SET_ITEM(next_value, 0, exc_one);
       PyTuple_SET_ITEM(next_value, 1, exc_two);
       PyTuple_SET_ITEM(next_value, 2, exc_three);
@@ -1873,9 +1919,12 @@ APSWCursor_aiter(PyObject *self_)
 
   if (slots_desired != self->aiter_slots_allocated)
   {
-    PyObject **new_slots = PyMem_Resize(self->aiter_slots, PyObject *, slots_desired);
+    PyObject **new_slots = PyMem_Realloc(self->aiter_slots, slots_desired * sizeof(PyObject *));
     if (!new_slots)
+    {
+      PyErr_NoMemory();
       return NULL;
+    }
     self->aiter_slots = new_slots;
     self->aiter_slots_allocated = slots_desired;
   }
@@ -2066,6 +2115,9 @@ APSWCursor_get_convert_binding(PyObject *self_, void *Py_UNUSED(unused))
 static int
 APSWCursor_set_convert_binding(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Cursor.convert_binding");
+
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(-1);
 
@@ -2110,6 +2162,9 @@ APSWCursor_get_convert_jsonb(PyObject *self_, void *Py_UNUSED(unused))
 static int
 APSWCursor_set_convert_jsonb(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Cursor.convert_jsonb");
+
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(-1);
 
@@ -2153,6 +2208,9 @@ APSWCursor_get_exec_trace_attr(PyObject *self_, void *Py_UNUSED(unused))
 static int
 APSWCursor_set_exec_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Cursor.exec_trace");
+
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(-1);
 
@@ -2196,6 +2254,9 @@ APSWCursor_get_row_trace_attr(PyObject *self_, void *Py_UNUSED(unused))
 static int
 APSWCursor_set_row_trace_attr(PyObject *self_, PyObject *value, void *Py_UNUSED(unused))
 {
+  if (!value)
+    return reject_attribute_deletion("Cursor.row_trace");
+
   APSWCursor *self = (APSWCursor *)self_;
   CHECK_CURSOR_CLOSED(-1);
 
@@ -2376,7 +2437,7 @@ static PyObject *
 APSWCursor_expanded_sql(PyObject *self_, void *unused)
 {
   APSWCursor *self = (APSWCursor *)self_;
-  PyObject *res;
+  PyObject *res = NULL;
   const char *es;
 
   CHECK_CURSOR_CLOSED(NULL);
@@ -2387,14 +2448,16 @@ APSWCursor_expanded_sql(PyObject *self_, void *unused)
     CURSOR_EXC_COMPLETE;
 
   DBMUTEX_ENSURE(self->connection);
-  es = sqlite3_expanded_sql(self->statement->vdbestatement);
+  es = self->statement->vdbestatement ? sqlite3_expanded_sql(self->statement->vdbestatement) : NULL;
   if (es)
   {
     res = convertutf8string(es);
     sqlite3_free((void *)es);
   }
+  else if (self->statement->vdbestatement)
+    SET_EXC(SQLITE_NOMEM, NULL);
   else
-    res = PyErr_NoMemory();
+    res = PyUnicode_FromString("");
   sqlite3_mutex_leave(self->connection->dbmutex);
 
   return res;
@@ -2472,10 +2535,15 @@ APSWCursor_get(PyObject *self_, void *unused)
 
   ASYNC_ATTR_GET(self->connection, APSWCursor_get, self_, unused);
 
-  if (self->status == C_DONE)
-    Py_RETURN_NONE;
-
   DBMUTEX_ENSURE(self->connection);
+  IN_QUERY_CHECK;
+
+  if (self->status == C_DONE)
+  {
+    sqlite3_mutex_leave(self->connection->dbmutex);
+    Py_RETURN_NONE;
+  }
+
   self->in_query = 1;
 
   do
@@ -2525,8 +2593,8 @@ APSWCursor_get(PyObject *self_, void *unused)
     } while (self->status == C_END_OF_STATEMENT);
   } while (self->status != C_DONE);
 
-  sqlite3_mutex_leave(self->connection->dbmutex);
   self->in_query = 0;
+  sqlite3_mutex_leave(self->connection->dbmutex);
 
   if (the_list)
     return the_list;
@@ -2534,8 +2602,8 @@ APSWCursor_get(PyObject *self_, void *unused)
   return the_row;
 
 error:
-  sqlite3_mutex_leave(self->connection->dbmutex);
   self->in_query = 0;
+  sqlite3_mutex_leave(self->connection->dbmutex);
   assert(PyErr_Occurred());
   Py_CLEAR(the_list);
   Py_CLEAR(the_row);
@@ -2601,12 +2669,14 @@ static PyGetSetDef APSWCursor_getset[] = {
   { "convert_binding", APSWCursor_get_convert_binding, APSWCursor_set_convert_binding, Cursor_convert_binding_DOC },
   { "convert_jsonb", APSWCursor_get_convert_jsonb, APSWCursor_set_convert_jsonb, Cursor_convert_jsonb_DOC },
   { "exec_trace", APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr, Cursor_exec_trace_DOC },
+  { "row_trace", APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr, Cursor_row_trace_DOC },
+  { "get", APSWCursor_get, NULL, Cursor_get_DOC },
+  { "connection", APSWCursor_get_connection_attr, NULL, Cursor_connection_DOC },
+#ifndef APSW_OMIT_OLD_NAMES
   { Cursor_exec_trace_OLDNAME, APSWCursor_get_exec_trace_attr, APSWCursor_set_exec_trace_attr,
     Cursor_exec_trace_OLDDOC },
-  { "row_trace", APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr, Cursor_row_trace_DOC },
   { Cursor_row_trace_OLDNAME, APSWCursor_get_row_trace_attr, APSWCursor_set_row_trace_attr, Cursor_row_trace_OLDDOC },
-  { "connection", APSWCursor_get_connection_attr, NULL, Cursor_connection_DOC },
-  { "get", APSWCursor_get, NULL, Cursor_get_DOC },
+#endif
   { NULL, NULL, NULL, NULL, NULL }
 };
 

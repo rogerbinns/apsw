@@ -28,7 +28,7 @@ Connection_fts5_api(Connection *self)
   if (stmt)
     sqlite3_finalize(stmt);
 
-  if (res == SQLITE_OK)
+  if (res == SQLITE_OK && api)
   {
     if (api->iVersion < 3)
     {
@@ -111,7 +111,7 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
 
   /* fast exit for colocated */
   if (iflags == FTS5_TOKEN_COLOCATED && !our_context->include_colocated)
-    return SQLITE_OK;
+    goto done;
 
   token = PyUnicode_DecodeUTF8(pToken, nToken, "replace");
   if (!token)
@@ -172,6 +172,7 @@ xTokenizer_Callback(void *pCtx, int iflags, const char *pToken, int nToken, int 
       Py_CLEAR(token);
     }
   }
+done:
   assert(!token); /* it should have been stashed somewhere */
   PyGILState_Release(gilstate);
   return SQLITE_OK;
@@ -266,6 +267,9 @@ APSWFTS5Tokenizer_call(PyObject *self_, PyObject *const *fast_args, size_t nargs
   if (flags != FTS5_TOKENIZE_DOCUMENT && flags != FTS5_TOKENIZE_QUERY
       && flags != (FTS5_TOKENIZE_QUERY | FTS5_TOKENIZE_PREFIX) && flags != FTS5_TOKENIZE_AUX)
     return PyErr_Format(PyExc_ValueError, "flags is not an allowed value (%d)", flags);
+
+  if (locale_size >= INT32_MAX)
+    return PyErr_Format(PyExc_ValueError, "locale exeeds 2GB length");
 
   if (0 != PyObject_GetBufferContiguousBounded(utf8, &utf8_buffer, PyBUF_SIMPLE, INT32_MAX))
   {
@@ -791,14 +795,21 @@ APSWFTS5ExtensionApi_xSetAuxdata(PyObject *self, PyObject *value, void *Py_UNUSE
 {
   FTSEXT_CHECK(-1);
 
+  if (!value)
+    return reject_attribute_deletion("FTS5ExtensionApi.aux_data");
+
   int rc;
-  APSW_FAULT(xSetAuxDataErr, rc = EXTAPI->xSetAuxdata(EXTFTS, value, auxdata_xdelete), rc = SQLITE_NOMEM);
+  Py_IncRef(value);
+  /* calls destructor on failure */
+  APSW_FAULT(xSetAuxDataErr, rc = EXTAPI->xSetAuxdata(EXTFTS, value, auxdata_xdelete), {
+    auxdata_xdelete(value);
+    rc = SQLITE_NOMEM;
+  });
   if (rc != SQLITE_OK)
   {
     SET_EXC(rc, NULL);
     return -1;
   }
-  Py_IncRef(value);
   return 0;
 }
 

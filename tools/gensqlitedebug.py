@@ -40,7 +40,6 @@ functions_not_used = (
     "sqlite3_(cancel_|reset_|)auto_extension",
     "sqlite3_bind_(blob|int|text|value|parameter_index|zeroblob)",
     "sqlite3_changes",
-    "sqlite3_close_v2",
     "sqlite3_column_int",
     "sqlite3_compileoption_used",
     "sqlite3_create_collation",
@@ -49,6 +48,7 @@ functions_not_used = (
     "sqlite3_create_module",
     "sqlite3_database_file_object",
     "sqlite3_errcode",
+    "sqlite3_extended_result_codes",
     "sqlite3_filename_database",
     "sqlite3_free_(filename|table)",
     "sqlite3_(get|set)_(auxdata|clientdata|table)",
@@ -66,7 +66,7 @@ functions_not_used = (
     # v2/3 should be used
     "sqlite3changeset_apply(|_strm)",
     # try should be used not enter
-    "sqlite3_mutex_(alloc|enter|free|notheld)",
+    "sqlite3_mutex_(alloc|free|notheld)",
     "sqlite3_next_stmt",
     "sqlite3_normalized_sql",
     "sqlite3_open",
@@ -76,6 +76,7 @@ functions_not_used = (
     "sqlite3_stmt_busy",
     "sqlite3_stmt_scanstatus(|_reset|_v2)",
     "sqlite3_str_.*",
+    "sqlite3_result_str",
     "sqlite3_test_control",
     "sqlite3_total_changes",
     "sqlite3_unlock_notify",
@@ -101,6 +102,7 @@ functions_global = (
     "sqlite3_libversion_number",
     "sqlite3_compileoption_.*",
     "sqlite3_complete",
+    "sqlite3_incomplete",
     "sqlite3_config",
     "sqlite3_(malloc|malloc|free|realloc)(|64)",
     "sqlite3_enable_shared_cache",
@@ -123,13 +125,13 @@ functions_global = (
     "sqlite3_sourceid",
     "sqlite3_status64",
     "sqlite3_str(glob|icmp|like|nicmp)",
-    "sqlite3_system_errno",
     "sqlite3_threadsafe",
     "sqlite3_vfs_(find|register|unregister)",
     "sqlite3_vtab_(collation|distinct|in|in_next|in_first|rhs_value)",
     "sqlite3_win32_.*",
     # there can't be a dangling refcount on the connection (assertion failure)
     "sqlite3_close",
+    "sqlite3_close_v2",
     # next group don't do any mutexes in sqlite3.c hence don't make
     # any sense for us to.  they generally read or write a single value.
     "sqlite3_bind_parameter_count",
@@ -150,7 +152,7 @@ functions_global = (
     "sqlite3_db_handle",
     "sqlite3_db_mutex",
     "sqlite3_mutex_held",
-    "sqlite3_mutex_(try|leave)",
+    "sqlite3_mutex_(enter|try|leave)",
     # session extension
     "sqlite3change(group|set)_.*",
     "sqlite3rebaser_.*",
@@ -210,6 +212,7 @@ functions_arg_one = {
         "sqlite3_preupdate_count",
         "sqlite3_preupdate_depth",
         "sqlite3_preupdate_blobwrite",
+        "sqlite3_system_errno",
         "sqlite3_total_changes64",
     ),
     2: (
@@ -340,7 +343,7 @@ db = apsw.Connection("")
 db.deserialize("main", urllib.request.urlopen(basesqurl + "toc.db").read())
 
 
-db.execute(open("tools/tocupdate.sql", "rt").read())
+db.execute(pathlib.Path("tools/tocupdate.sql").read_text())
 
 
 # ::TODO:: all callers of convert_value_to_pyobject need to assert mutex held

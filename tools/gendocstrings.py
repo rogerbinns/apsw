@@ -58,7 +58,7 @@ def sqlite_links():
 
     basesqurl = os.environ.get("SQLITE_URL", "https://sqlite.org/")
     with tempfile.NamedTemporaryFile() as f:
-        f.write(urllib.request.urlopen(basesqurl + "toc.db").read())
+        f.write(urllib.request.urlopen(os.environ.get("SQLITE_TOC", basesqurl + "toc.db")).read())
         f.flush()
 
         db = apsw.Connection(f.name)
@@ -392,7 +392,7 @@ type_overrides = {
     "VFS.xDlSym": {"handle": "pointer"},
     "VFS.xSetSystemCall": {"pointer": "pointer"},
     "VFS.xOpen": {"flags": "list[int,int]"},
-    "zeroblob.__init__": {"size": "int64"},
+    "zeroblob.__init__": {"size": "uint64"},
 }
 
 
@@ -507,7 +507,12 @@ def do_argparse(item):
             type = "long long"
             kind = "int64"
             if param["default"]:
-                default_check = f"{ pname } == { int(param['default']) }L"
+                default_check = f"{ pname } == { int(param['default']) }LL"
+        elif param["type"] == "uint64":
+            type = "unsigned long long"
+            kind = "unsigned_long_long"
+            if param["default"]:
+                default_check = f"{ pname } == { int(param['default']) }ULL"
         elif param["type"] == "pointer":
             type = "void *"
             kind = "pointer"
@@ -655,17 +660,18 @@ def do_argparse(item):
     if max_pos is None:
         max_pos = len(kwlist)
     is_init = item["symbol"].endswith("_init")
+    usage_name = f"{ item['symbol'] }_USAGE"
     code = (
         f"""\
   {{
     { item['symbol'] }_CHECK;
     { "PREVENT_INIT_MULTIPLE_CALLS;" if is_init else "" }
-    { "ARG_CONVERT_VARARGS_TO_FASTCALL;" if is_init else "" }
+    { f"ARG_CONVERT_VARARGS_TO_FASTCALL({len(item["signature"])}, {usage_name});" if is_init else "" }
     ARG_PROLOG({ max_pos}, { item['symbol'] }_KWNAMES);
 """
         + code
         + f"""
-    ARG_EPILOG({ "NULL" if not is_init else -1 }, { item['symbol'] }_USAGE,{ " Py_XDECREF(fast_kwnames)" if is_init else " " });
+    ARG_EPILOG({ "NULL" if not is_init else -1 }, { usage_name },{ " Py_XDECREF(fast_kwnames)" if is_init else " " });
   }}"""
     )
 

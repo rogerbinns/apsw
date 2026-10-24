@@ -1,8 +1,8 @@
 
-SQLITEVERSION=3.53.4
+SQLITEVERSION=3.54.1
 APSWSUFFIX=.0
 
-RELEASEDATE="26 July 2026"
+RELEASEDATE="18 October 2026"
 
 VERSION=$(SQLITEVERSION)$(APSWSUFFIX)
 VERDIR=apsw-$(VERSION)
@@ -164,7 +164,7 @@ fulltest: test test_debug
 linkcheck:  ## Checks links from doc
 	env PYTHONPATH="`pwd`" $(MAKE) RELEASEDATE=$(RELEASEDATE) VERSION=$(VERSION) -C doc linkcheck
 
-unwrapped:  ## Find SQLite APIs that are not wrapped by APSW
+unwrapped src/sqlite_debug.h:  ## Find SQLite APIs that are not wrapped by APSW, and updates sqlite api debug header
 	env PYTHONPATH=. $(PYTHON) tools/gensqlitedebug.py
 
 publish:  checkversion docs
@@ -194,7 +194,6 @@ fossil: ## Grabs latest trunk from SQLite source control, extracts and builds in
 	mkdir sqlite3
 	set -e ; cd sqlite3 ; curl --output - $(FOSSIL_URL) | tar xfz - --strip-components=1
 	set -e ; cd sqlite3 ; ./configure --quiet --all --column-metadata --disable-tcl $(CONFIGURE_OPTS) ; $(MAKE) sqlite3.c sqlite3 libsqlite3.so ; ln -s libsqlite3.so libsqlite3.so.0
-	set -e ; cd sqlite3 ; curl --output - https://sqlite.org/vec1/tarball/vec1.tar.gz | tar xfz -
 	set -e ; cd sqlite3 ; curl --output - https://sqlite.org/sqlar/tarball/sqlar.tar.gz | tar xfz -
 	set -e ; rm -rf sqlite3/zlib || true ; mkdir -p sqlite3/zlib ; cd sqlite3/zlib; curl --output -  https://www.zlib.net/current/zlib.tar.gz | tar xfz - --strip-components=1
 
@@ -206,6 +205,8 @@ showsymbols:  ## Finds any C symbols that aren't static(private)
 	set +e; nm --extern-only --defined-only apsw/__init__`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"` | egrep -v ' (__bss_start|_edata|_end|_fini|_init|initapsw|PyInit_apsw)$$' ; test $$? -eq 1 || false
 	test -f apsw/_unicode`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
 	set +e; nm --extern-only --defined-only apsw/_unicode`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"` | egrep -v ' (__bss_start|_edata|_end|_fini|_init|PyInit__unicode)$$' ; test $$? -eq 1 || false
+	@echo ; echo; echo
+	tools/genfaultinject.py apsw/__init__`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"` apsw/_unicode`$(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"`
 
 compile-win:  ## Builds and tests against all the Python versions on Windows
 	-del /q apsw\\*.pyd
@@ -219,6 +220,8 @@ compile-win:  ## Builds and tests against all the Python versions on Windows
 	-cmd /c del /s /q build
 	-cmd /c del /s /q .venv
 	-cmd /c md dist
+	$(MAKE) compile-win-one PYTHON=c:/python315/python
+	$(MAKE) compile-win-one PYTHON=c:/python315-32/python
 	$(MAKE) compile-win-one PYTHON=c:/python314/python
 	$(MAKE) compile-win-one PYTHON=c:/python314-32/python
 	$(MAKE) compile-win-one PYTHON=c:/python313/python
@@ -227,8 +230,6 @@ compile-win:  ## Builds and tests against all the Python versions on Windows
 	$(MAKE) compile-win-one PYTHON=c:/python312-32/python
 	$(MAKE) compile-win-one PYTHON=c:/python311/python
 	$(MAKE) compile-win-one PYTHON=c:/python311-32/python
-	$(MAKE) compile-win-one PYTHON=c:/python310-32/python
-	$(MAKE) compile-win-one PYTHON=c:/python310/python
 
 # I did try to make this use venv but then the pip inside the venv and
 # other packages were skipped due to metadata issues
@@ -283,7 +284,7 @@ src/_unicodedb.c: tools/ucdprops2code.py ## Update generated Unicode database lo
 	$(PYTHON) tools/ucdprops2code.py $@
 
 # building a python debug interpreter
-PYDEBUG_VER=3.15.0b4
+PYDEBUG_VER=3.15.0rc3
 PYDEBUG_DIR=/space/pydebug
 PYTHREAD_VER=$(PYDEBUG_VER)
 PYTHREAD_DIR=/space/pythread
@@ -297,8 +298,7 @@ pydebug: ## Build a debug python including address sanitizer.  Extensions it bui
 	curl https://www.python.org/ftp/python/`echo $(PYDEBUG_VER) | sed 's/[abr].*//'`/Python-$(PYDEBUG_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYDEBUG_VER) && \
 	./configure --enable-slower-safety --with-address-sanitizer --with-undefined-behavior-sanitizer --with-strict-overflow \
-    --without-pymalloc --with-pydebug --with-strict-overflow --prefix="$(PYDEBUG_DIR)" \
-	--with-assertions --with-trace-refs && \
+    --without-pymalloc --with-pydebug -prefix="$(PYDEBUG_DIR)" && \
 	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYDEBUG_DIR)/bin/python3
 
@@ -306,8 +306,8 @@ pythread: ## Build a debug python including thread sanitizer.  Extensions it bui
 	set -x && cd "$(PYTHREAD_DIR)" && find . -delete && \
 	curl https://www.python.org/ftp/python/`echo $(PYTHREAD_VER) | sed 's/[abr].*//'`/Python-$(PYTHREAD_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYTHREAD_VER) && \
-	./configure   --with-address-sanitizer --with-undefined-behavior-sanitizer --with-strict-overflow --with-thread-sanitizer \
-	--without-pymalloc --with-pydebug --prefix="$(PYTHREAD_DIR)" --without-freelists  --with-assertions --disable-ipv6 && \
+	./configure  --with-undefined-behavior-sanitizer --with-strict-overflow --with-thread-sanitizer \
+	--without-pymalloc --with-pydebug --prefix="$(PYTHREAD_DIR)"  --with-assertions  && \
 	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYTHREAD_DIR)/bin/python3
 
@@ -316,9 +316,18 @@ pyfreethread: ## Build a debug FREE THREADED python
 	curl https://www.python.org/ftp/python/`echo $(PYFREETHREAD_VER) | sed 's/[abr].*//'`/Python-$(PYFREETHREAD_VER).tar.xz | tar xfJ - && \
 	cd Python-$(PYFREETHREAD_VER) && \
 	./configure --disable-gil  --with-address-sanitizer --with-undefined-behavior-sanitizer --with-strict-overflow \
-	--with-pydebug --prefix="$(PYFREETHREAD_DIR)" --without-freelists  --with-assertions && \
+	--with-pydebug --prefix="$(PYFREETHREAD_DIR)" --with-assertions && \
 	env ASAN_OPTIONS=detect_leaks=false $(MAKE) -j install
 	$(MAKE) dev-depends PYTHON=$(PYFREETHREAD_DIR)/bin/python3
+
+pybuild: ## Builds a Python.  Set $PY_VER
+	[ ! -z "$(PY_VER)" ]  # must set $$PY_VER
+	set -ex && INSTDIR="/space/py`echo \"$(PY_VER)\" | cut -d. -f1,2`" \
+	&& cd "$$INSTDIR" && find . -delete \
+	&& curl "https://www.python.org/ftp/python/$(PY_VER)/Python-$(PY_VER).tar.xz" | tar xfJ - \
+	&& cd Python-$(PY_VER) && ./configure --prefix="$$INSTDIR" --with-assertions --with-pydebug \
+	&& $(MAKE) -j install
+	INSTDIR="/space/py`echo \"$(PY_VER)\" | cut -d. -f1,2`" && $(MAKE) dev-depends PYTHON="$$INSTDIR/bin/python3"
 
 langserver:  ## Language server integration json
 	$(PYTHON) tools/gencompilecommands.py > compile_commands.json

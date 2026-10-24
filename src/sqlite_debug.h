@@ -149,9 +149,6 @@
     sqlite3_clear_bindings((one));                                            \
 })
 
-#undef sqlite3_close_v2
-#define sqlite3_close_v2 *not used*
-
 #define sqlite3_collation_needed(one, two, three) ({     \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
     sqlite3_collation_needed((one), (two), (three));     \
@@ -407,6 +404,9 @@
     sqlite3_extended_errcode((one));                     \
 })
 
+#undef sqlite3_extended_result_codes
+#define sqlite3_extended_result_codes *not used*
+
 #define sqlite3_file_control(one, two, three, four) ({    \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));   \
     sqlite3_file_control((one), (two), (three), (four));  \
@@ -464,9 +464,6 @@
 
 #undef sqlite3_mutex_alloc
 #define sqlite3_mutex_alloc *not used*
-
-#undef sqlite3_mutex_enter
-#define sqlite3_mutex_enter *not used*
 
 #undef sqlite3_mutex_free
 #define sqlite3_mutex_free *not used*
@@ -617,6 +614,9 @@
     assert (sqlite3_mutex_held(sqlite3_db_mutex(sqlite3_context_db_handle((one)))));  \
     sqlite3_result_pointer((one), (two), (three), (four));                            \
 })
+
+#undef sqlite3_result_str
+#define sqlite3_result_str *not used*
 
 #undef sqlite3_result_subtype
 #define sqlite3_result_subtype *not used*
@@ -774,6 +774,11 @@
 
 #undef sqlite3_str_vappendf
 #define sqlite3_str_vappendf *not used*
+
+#define sqlite3_system_errno(one) ({                     \
+    assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));  \
+    sqlite3_system_errno((one));                         \
+})
 
 #define sqlite3_table_column_metadata(one, two, three, four, five, six, seven, eight, nine) ({              \
     assert (sqlite3_mutex_held(sqlite3_db_mutex(one)));                                                     \

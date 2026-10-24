@@ -46,13 +46,13 @@ step final value inverse
 NULL 0.0 -9e999 9e999
 
 release UPDATE INSERT DELETE
-<apsw.no_change>
 
 null true false
 
 async_controller async_run_coro async_cursor_prefetch send
 apsw.aio Auto configure _coro_for_value _coro_for_exception
-_coro_for_stopasynciteration
+_coro_for_stopasynciteration keywords using_amalgamation
+no_change
 
 apsw.shell main Shell
 
@@ -67,7 +67,6 @@ def mangle(name):
         "0.0": "s0_0",
         "-9e999": "s_9e999",
         "9e999": "s9e999",
-        "<apsw.no_change>": "no_change",
         "null": "snull",
         "true": "strue",
         "false": "sfalse",

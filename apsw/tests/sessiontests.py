@@ -523,6 +523,9 @@ class Session(unittest.TestCase):
 
         self.assertNotEqual(apsw.SQLITE_CHANGESETSTART_INVERT, 0)
 
+        for tc in apsw.Changeset.iter(changeset):
+            del tc
+
         # streaming and non-streaming should give identical content
         # but we have to filter out the address
         non = [str(tc).split(", at 0x")[0] for tc in apsw.Changeset.iter(changeset, flags=apsw.SQLITE_CHANGESETSTART_INVERT)]

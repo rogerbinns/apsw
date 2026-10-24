@@ -112,10 +112,12 @@ Performance
 
 from __future__ import annotations
 
-from typing import Iterator, Iterable, Any
+__lazy_modules__ = ["re"]
 
 import enum
 import re
+from collections.abc import Iterable, Iterator
+from typing import Any
 
 ### BEGIN UNICODE UPDATE SECTION ###
 unicode_version = "17.0"

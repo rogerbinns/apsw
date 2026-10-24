@@ -1,43 +1,75 @@
+/*
+
+This is only used for fault injection builds.  It is to help fault
+Python, SQLite, and internal APSW APIs.  It should be used with a full
+debug address sanitized build.  It is also not supposed to be robust
+with the preference being to abort the process, or give a clear
+message.
+
+The Python code that receives callbacks from here is in tools/fi.py
+
+*/
+
 #define APSW_FAULT_CLEAR
 #include "faultinject.h"
+
+#if PY_VERSION_HEX < 0x030d0000
+#define Py_IsFinalizing _Py_IsFinalizing
+#endif
 
 static long long
 APSW_FaultInjectControl(const char *faultfunction, const char *filename, const char *funcname, int linenum,
                         const char *args)
 {
-  PyObject *callable, *res = NULL;
+  static PyObject *callable = NULL, *check_set = NULL;
+  PyObject *res = NULL;
   const char *err_details = NULL;
   long long ficres = 0;
-  int suppress = 0;
+  static int initialized = 0;
   int recursion_limit;
+
+  if ((initialized && !callable) || Py_IsFinalizing())
+    return 0x1FACADE;
 
   PyGILState_STATE gilstate = PyGILState_Ensure();
   recursion_limit = Py_GetRecursionLimit();
   Py_SetRecursionLimit(recursion_limit + 50);
   PY_ERR_FETCH(exc);
 
-  callable = PySys_GetObject("apsw_fault_inject_control");
-  if (!callable || Py_IsNone(callable))
+  if (!initialized)
   {
-    /* during interpreter shutdown the attribute becomes None */
-    static int whined;
-    if (!whined && !Py_IsNone(callable))
+    initialized = 1;
+    callable = PySys_GetObject("apsw_fault_inject_control");
+    if (!callable)
     {
-      whined++;
-      err_details = "APSW debug build: missing sys.apsw_fault_inject_control";
+      fprintf(stderr, "APSW debug build: missing sys.apsw_fault_inject_control\n");
+      goto errorexit;
     }
-    suppress = 1;
-    goto errorexit;
+    Py_INCREF(callable);
+    if (!check_set)
+    {
+      check_set = PySys_GetObject("apsw_fault_inject_control_proceed");
+      if (check_set)
+      {
+        fprintf(stderr, "APSW debug build: apsw_fault_inject_control_proceed set in use\n");
+        Py_INCREF(check_set);
+      }
+    }
   }
 
   PyObject *key = PyTuple_New(5);
-  if (!key)
-    goto errorexit;
   PyTuple_SET_ITEM(key, 0, PyUnicode_FromString(faultfunction));
   PyTuple_SET_ITEM(key, 1, PyUnicode_FromString(filename));
   PyTuple_SET_ITEM(key, 2, PyUnicode_FromString(funcname));
   PyTuple_SET_ITEM(key, 3, PyLong_FromLong(linenum));
   PyTuple_SET_ITEM(key, 4, PyUnicode_FromString(args));
+
+  if (check_set && PySet_Contains(check_set, key))
+  {
+    ficres = 0x1FACADE;
+    Py_DECREF(key);
+    goto success;
+  }
 
   PyObject *vargs[] = { NULL, key };
   res = PyObject_Vectorcall(callable, vargs + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET, NULL);
@@ -95,11 +127,12 @@ success:
 errorexit:
   Py_CLEAR(res);
   PY_ERR_FETCH(exc_errexit);
-  if (!suppress)
+  if (err_details)
+  {
+    fprintf(stderr, "%s\n", err_details);
     fprintf(stderr, "FaultInjectControl ERROR: {\"%s\", \"%s\", \"%s\", %d, \"%s\"}\n", faultfunction, filename,
             funcname, linenum, args);
-  if (err_details)
-    fprintf(stderr, "%s\n", err_details);
+  }
   if (PY_ERR_NOT_NULL(exc_errexit))
   {
     PY_ERR_NORMALIZE(exc_errexit);

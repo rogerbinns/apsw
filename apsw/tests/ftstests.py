@@ -510,6 +510,16 @@ class FTS(unittest.TestCase):
         for start, end, token in tokens:
             self.assertEqual(text.encode()[start:end].decode(), token)
 
+    def testBounds(self):
+        "offsets"
+        # see #624 C004
+        self.assertRaises(ValueError, apsw._unicode.has_category, "", 1, 0, 0xffff)
+        self.assertRaises(ValueError, apsw._unicode.has_category, "", 0, 1, 0xffff)
+        self.assertRaises(ValueError, apsw._unicode.has_category, "a", 1, 2, 0xffff)
+        self.assertRaises(ValueError, apsw._unicode.has_category, "a", -1, 1, 0xffff)
+        self.assertRaises(ValueError, apsw._unicode.grapheme_next_break, "", 1)
+        self.assertRaises(ValueError, apsw._unicode.grapheme_next_break, "a", 2)
+
     def testCLI(self):
         "Test command line interface"
 
@@ -2520,6 +2530,19 @@ class Unicode(unittest.TestCase):
         self.assertTrue(ew(f"a{ctilde}bc", "bc"))
         self.assertEqual(3, fi(f"{bird}{zwj}{fire}{fire}", f"{fire}"))
 
+        # ensure no over/underflow in ubsan
+        for bias in (0, 1, 2, 4, 45):
+            apsw._unicode.grapheme_find("hello", "l" * bias, bias, -sys.maxsize)
+            apsw._unicode.grapheme_find("hello", "l" * 45, bias, -sys.maxsize)
+            apsw._unicode.grapheme_find("hello", "l" * bias, -bias, sys.maxsize)
+            apsw._unicode.grapheme_find("hello", "l" * bias, sys.maxsize - bias, -sys.maxsize)
+            apsw._unicode.grapheme_find("hello", "l" * bias, -sys.maxsize + bias, -sys.maxsize)
+            apsw._unicode.grapheme_find("hello", "l" * bias, sys.maxsize - bias, -sys.maxsize + bias)
+            apsw._unicode.grapheme_find("hello", "l" * bias, -sys.maxsize + bias, -sys.maxsize + bias)
+            apsw._unicode.grapheme_find("hello", "l" * bias * 2, sys.maxsize - bias, -sys.maxsize + bias)
+            apsw._unicode.grapheme_find("hello", "l" * bias * 2, -sys.maxsize + bias, -sys.maxsize + bias)
+
+
     def testSubstr(self):
         "grapheme aware substr"
         su = apsw.unicode.grapheme_substr
@@ -2801,6 +2824,12 @@ abc!p!d\u2029 !p!abc\u0085!p!def
                 self.assertEqual(from_utf8(utf8_offset), str_offset)
                 self.assertEqual(to_utf8(str_offset), utf8_offset)
 
+    def testOffsetMapper(self):
+        # it is tested by being used via all the other code
+        om = apsw._unicode.OffsetMapper()
+        om.add("0123456789", sys.maxsize, sys.maxsize)
+        self.assertEqual(om.text, "0123456789")
+        self.assertRaises(OverflowError, om, 1)
 
 class FTS5Query(unittest.TestCase):
     def setUp(self):

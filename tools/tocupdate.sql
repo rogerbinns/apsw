@@ -101,4 +101,12 @@ insert into toc values
 update toc set status = 0 where name like 'sqlite3rebaser_%';
 
 delete from toc where name='SQLITE_TRACE' and title='SQL Trace Event Codes';
-delete from toc where name='SQLITE_CONFIG_ROWID_IN_VIEW';
+
+-- Not useful value and overlaps with the largest value.  There is no
+-- need for it and no references to it even in SQLite test code
+delete from toc where name='SQLITE_DBCONFIG_MAX';
+
+-- SQLite 3.54 removed SQLITE_COPY and added it to sqlite3_result_str() but
+-- we don't provide that, so this would break backwards compatibility going
+-- away.  So add it back using 3.53.4 as reference
+INSERT INTO toc VALUES('SQLITE_COPY','constant',0,'Authorizer Action Codes','c3ref/c_alter_table.html');

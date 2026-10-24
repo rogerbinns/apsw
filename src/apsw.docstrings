@@ -109,6 +109,10 @@
 "Some operations don't make sense from a Python program.  All the\n" \
 "remaining are supported.\n" \
 "\n" \
+"SQLite doesn't allow most options to be changed once it is\n" \
+"initialized.  See :ref:`urinames` for an example of shutting down\n" \
+"SQLite, changing an option, and initializing again.\n" \
+"\n" \
 "Calls: `sqlite3_config <https://sqlite.org/c3ref/config.html>`__\n" 
 
 #define  Apsw_connections_DOC "apsw.connections() -> list[Connection]\n\n" \
@@ -153,48 +157,6 @@
 #define Apsw_exception_for_OLDNAME "exceptionfor"
 #define Apsw_exception_for_OLDDOC Apsw_exception_for_USAGE "\n(Old less clear name exceptionfor)"
 
-#define  Apsw_fork_checker_DOC "apsw.fork_checker() -> None\n\n" \
-"**Note** This method is not available on Windows as it does not\n" \
-"support the fork system call.\n" \
-"\n" \
-"SQLite does not allow the use of database connections across `forked\n" \
-"<https://en.wikipedia.org/wiki/Fork_(operating_system)>`__ processes\n" \
-"(see the `SQLite FAQ Q6 <https://sqlite.org/faq.html#q6>`__).\n" \
-"(Forking creates a child process that is a duplicate of the parent\n" \
-"including the state of all data structures in the program.  If you\n" \
-"do this to SQLite then parent and child would both consider\n" \
-"themselves owners of open databases and silently corrupt each\n" \
-"other's work and interfere with each other's locks.)\n" \
-"\n" \
-"One example of how you may end up using fork is if you use the\n" \
-":mod:`multiprocessing module <multiprocessing>` which can use\n" \
-"fork to make child processes in less recent Python versions.\n" \
-"\n" \
-"If you do use fork or multiprocessing on a platform that supports fork\n" \
-"then you **must** ensure database connections and their objects\n" \
-"(cursors, backup, blobs etc) are not used in the parent process, or\n" \
-"are all closed before calling fork or starting a `Process\n" \
-"<https://docs.python.org/3/library/multiprocessing.html#process-and-exceptions>`__.\n" \
-"(Note you must call close to ensure the underlying SQLite objects are\n" \
-"closed.  It is also a good idea to call :func:`gc.collect(2)\n" \
-"<gc.collect>` to ensure anything you may have missed is also\n" \
-"deallocated.)\n" \
-"\n" \
-"Once you run this method, extra checking code is inserted into\n" \
-"SQLite's mutex operations (at a very small performance penalty) that\n" \
-"verifies objects are not used across processes.  You will get a\n" \
-":exc:`ForkingViolationError` if you do so.  Note that due to the way\n" \
-"Python's internals work, the exception will be delivered to\n" \
-":func:`sys.excepthook` in addition to the normal exception mechanisms and\n" \
-"may be reported by Python after the line where the issue actually\n" \
-"arose.  (Destructors of objects you didn't close also run between\n" \
-"lines.)\n" \
-"\n" \
-"Calling this method requires doing a :func:`shutdown` which means there\n" \
-"can be no active connections.\n" \
-"\n" \
-"The recommended use is to use the fork checking as part of your test suite.\n" 
-
 #define  Apsw_format_sql_value_DOC "apsw.format_sql_value(value: SQLiteValue) -> str\n\n" \
 "Returns a Python string representing the supplied value in SQLite\n" \
 "syntax.\n" \
@@ -222,8 +184,103 @@
 } while(0)
 
 
+#define  Apsw_incomplete_DOC "apsw.incomplete(statement: str) -> IncompleteResult\n\n" \
+"Provides more details about why a statement is considered incomplete,\n" \
+"or if it is whitespace and comments only,\n" \
+"\n" \
+"The result object has the following attributes.  Note that new values\n" \
+"for each may be added in future SQLite releases.\n" \
+"\n" \
+"status: int\n" \
+"\n" \
+"  Check this attribute first.\n" \
+"\n" \
+"  .. list-table::\n" \
+"    :header-rows: 1\n" \
+"    :widths: auto\n" \
+"\n" \
+"    * - Value\n" \
+"      - Meaning\n" \
+"    * - ``SQLITE_OK``\n" \
+"      - at least one statement is present, and all statements are\n" \
+"        complete\n" \
+"    * - ``SQLITE_EMPTY``\n" \
+"      -  consists only of whitespace and comments\n" \
+"    * - ``SQLITE_ERROR``\n" \
+"      - incomplete.\n" \
+"\n" \
+"requires: int\n" \
+"\n" \
+"  What is required semantically to complete the statement.  Triggers\n" \
+"  have nested statements inside.\n" \
+"\n" \
+"  .. list-table::\n" \
+"    :header-rows: 1\n" \
+"    :widths: auto\n" \
+"\n" \
+"    * - Value\n" \
+"      - Meaning\n" \
+"    * - 0\n" \
+"      - Statement is complete or empty\n" \
+"    * - 1\n" \
+"      - Needs a semicolon\n" \
+"    * - 2\n" \
+"      - Needs ``END`` and a semicolon\n" \
+"    * - 3\n" \
+"      - Needs semicolon, ``END``, and a semicolon\n" \
+"\n" \
+"incomplete: str | None\n" \
+"\n" \
+"  Identifies what element of the SQL is incomplete such\n" \
+"  as needing a closing quote to match an open quote.\n" \
+"\n" \
+"  .. list-table::\n" \
+"    :header-rows: 1\n" \
+"    :widths: auto\n" \
+"\n" \
+"    * - Value\n" \
+"      - Meaning\n" \
+"    * - ``None``\n" \
+"      - Statement is complete or empty\n" \
+"    * - ````` (apostrophe)\n" \
+"      - Incomplete string or blob literal\n" \
+"    * - ``\"`` (double quote)\n" \
+"      - Incomplete quoted identifier\n" \
+"    * - ` (backtick)\n" \
+"      - Incomplete quoted identifier (MySQL style)\n" \
+"    * - ``]`` (close square bracket)\n" \
+"      - Incomplete quoted identifier (SQLServer style)\n" \
+"    * - ``-`` (dash)\n" \
+"      - Incomplete line comment - there needs to be a newline\n" \
+"        to complete the comment.\n" \
+"    * - ``/`` (slash)\n" \
+"      - Incomplete C style comment`\n" \
+"\n" \
+"balance: int\n" \
+"\n" \
+"  Level of unbalanced parentheses (round brackets).  A positive number\n" \
+"  indicating how many closes are needed to balance the open ones.  It\n" \
+"  can also be negative if there are more closes than opens.\n" \
+"\n" \
+"Calls: `sqlite3_incomplete <https://sqlite.org/c3ref/complete.html>`__\n" \
+"\n" \
+".. seealso::\n" \
+"\n" \
+"  * :func:`complete`\n" 
+
+#define Apsw_incomplete_KWNAMES "statement"
+#define Apsw_incomplete_USAGE "apsw.incomplete(statement: str) -> IncompleteResult"
+
+#define Apsw_incomplete_CHECK do { \
+  assert(__builtin_types_compatible_p(typeof(statement), const char *)); \
+} while(0)
+
+
 #define  Apsw_initialize_DOC "apsw.initialize() -> None\n\n" \
-"It is unlikely you will want to call this method as SQLite automatically initializes.\n" \
+"It is unlikely you will want to call this method as SQLite is\n" \
+"initialized when APSW is loaded.\n" \
+"\n" \
+"See :func:`config` and :ref:`urinames` for an example usage.\n" \
 "\n" \
 "Calls: `sqlite3_initialize <https://sqlite.org/c3ref/initialize.html>`__\n" 
 
@@ -244,7 +301,8 @@
 ":param parse_int: Called with a :class:`str` of the integer, and\n" \
 "    should return a value to use.  The default is :class:`int`.\n" \
 "    If the integer is hexadecimal then it will be called with a\n" \
-"    second parameter of 16.\n" \
+"    second parameter (base) of 16, with the string including\n" \
+"    leading optional sign, and ``0x``.\n" \
 ":param parse_float: Called with a :class:`str` of the float, and\n" \
 "    should return a value to use.  The default is :class:`float`.\n" \
 "\n" \
@@ -263,7 +321,8 @@
 "\n" \
 "If you use :class:`types.MappingProxyType` as ``object_hook`` and\n" \
 ":class:`tuple` as ``array_hook`` then the overall returned value\n" \
-"will be immutable (read only).\n" \
+"will be immutable (read only).  Python 3.15 adds :class:`frozendict`\n" \
+"which is clearer.\n" \
 "\n" \
 ".. note::\n" \
 "\n" \
@@ -295,6 +354,12 @@
 "SQLite's json_valid only checks the various internal type and length fields are consistent\n" \
 "and items seem reasonable.  It does not check all corner cases, or the UTF8\n" \
 "encoding, and so can produce invalid JSON even if json_valid said it was valid JSONB.\n" \
+"\n" \
+"SQLite has a `depth limit\n" \
+"<https://sqlite.org/compile.html#json_max_depth>`__  of about 1,000\n" \
+"for JSON and JSONB nesting (eg putting a list inside a dict inside a\n" \
+"list).  APSW's limit is greater and  based on the available stack, and\n" \
+"will return ``False`` for excessively nested JSONB.\n" \
 "\n" \
 ".. note::\n" \
 "\n" \
@@ -353,6 +418,11 @@
 "    with an example being :class:`enum.IntEnum`.  If this parameter\n" \
 "    is ``True`` then only the exact types are directly converted\n" \
 "    and subclasses will be passed to ``default`` or ``default_key``.\n" \
+"\n" \
+"    If ``False`` and subclassed numeric types are provided, then their :meth:`~object.__str__`\n" \
+"    method **must** produce JSON compatible corresponding text representations,\n" \
+"    otherwise non-decodable JSONB will be produced.  Typically subclasses\n" \
+"    produce more digits, and a greater range of values.\n" \
 "\n" \
 "You will get a :exc:`~apsw.TooBigError` if the resulting JSONB\n" \
 "will exceed 2GB because SQLite can't handle it.\n" 
@@ -502,6 +572,8 @@
 ":func:`connections active <connections>` and need to close them first.\n" \
 "\n" \
 "VFS remain registered across a shutdown and initialise.\n" \
+"\n" \
+"See :func:`config` and :ref:`urinames` for an example usage.\n" \
 "\n" \
 "Calls: `sqlite3_shutdown <https://sqlite.org/c3ref/initialize.html>`__\n" 
 
@@ -917,7 +989,7 @@
 "Does nothing.  There is no intermediate buffer, and SQLite's overall\n" \
 "transaction/savepoint handling deals with database commits.\n" 
 
-#define  Blob_isatty_DOC "Blob.isatty() -> False\n\n" \
+#define  Blob_isatty_DOC "Blob.isatty() -> Literal[False]\n\n" \
 "Blobs are never interactive.\n" 
 
 #define  Blob_length_DOC "Blob.length() -> int\n\n" \
@@ -968,16 +1040,16 @@
 #define Blob_read_into_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(buffer), PyObject *)); \
   assert(__builtin_types_compatible_p(typeof(offset), long long)); \
-  assert(offset == 0L); \
+  assert(offset == 0LL); \
   assert(__builtin_types_compatible_p(typeof(length), long long)); \
-  assert(length == -1L); \
+  assert(length == -1LL); \
 } while(0)
 
 
 #define Blob_read_into_OLDNAME "readinto"
 #define Blob_read_into_OLDDOC Blob_read_into_USAGE "\n(Old less clear name readinto)"
 
-#define  Blob_readable_DOC "Blob.readable() -> True\n\n" \
+#define  Blob_readable_DOC "Blob.readable() -> Literal[True]\n\n" \
 "You can always read from a blob\n" 
 
 #define  Blob_readall_DOC "Blob.readall() -> bytes\n\n" \
@@ -1024,7 +1096,7 @@
 } while(0)
 
 
-#define  Blob_seekable_DOC "Blob.seekable() -> True\n\n" \
+#define  Blob_seekable_DOC "Blob.seekable() -> Literal[True]\n\n" \
 "You can always seek in a blob\n" 
 
 #define  Blob_tell_DOC "Blob.tell() -> int\n\n" \
@@ -1686,7 +1758,8 @@
 "transaction will be rolled back by the next program to open the\n" \
 "database, reverting the database to a know good state.\n" \
 "\n" \
-"If *force* is *True* then any exceptions are ignored.\n" \
+"If *force* is *True* then exceptions are ignored, such as\n" \
+"remaining unexecuted SQL in a cursor.\n" \
 "\n" \
 "Calls: `sqlite3_close <https://sqlite.org/c3ref/close.html>`__\n" 
 
@@ -2036,9 +2109,20 @@
 ":meth:`Connection.execute`.\n" \
 "\n" \
 "Note that whatever is returned doesn't have to be an actual\n" \
-":class:`Cursor` instance, and just needs to have the methods present\n" \
-"that are actually called.  These are likely to be `execute`,\n" \
-"`executemany`, `close` etc.\n" 
+":class:`Cursor` instance, and needs to have the methods present\n" \
+"that are actually called.  These are likely to be `execute` and\n" \
+"`executemany`.\n" \
+"\n" \
+".. note::\n" \
+"\n" \
+"  It **must** have a ``close`` method.\n" \
+"\n" \
+"  * Called when :meth:`Connection.close` is called\n" \
+"  * Must close any underlying SQLite objects in use,\n" \
+"    in order to allow the :class:`Connection` to close\n" \
+"  * Could be called if the :class:`Connection` is being\n" \
+"    garbage collected, so there is no caller to return\n" \
+"    exceptions to\n" 
 
 #define  Connection_data_version_DOC "Connection.data_version(schema: str | None = None) -> int\n\n" \
 "Unlike `pragma data_version\n" \
@@ -2061,17 +2145,32 @@
 } while(0)
 
 
-#define  Connection_db_filename_DOC "Connection.db_filename(name: str) -> str\n\n" \
-"Returns the full filename of the named (attached) database.  The\n" \
-"main is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
+#define  Connection_db_filename_DOC "Connection.db_filename(name: str, which: int = 0) -> str\n\n" \
+"Returns the full filename of the named (attached) database.\n" \
 "\n" \
-"Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__\n" 
+":param name:  main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
+":param which: ``0`` for the database, ``1`` for the journal *if* journal mode is used,\n" \
+"    ``2`` for the WAL if WAL mode is used\n" \
+"\n" \
+"SQLite works out at open time what the journal and WAL filenames would be if used.\n" \
+"\n" \
+"The SQLite routines do not return errors, instead giving ``None`` for\n" \
+"when the schema name is not known, or and empty string if the db /\n" \
+"journal / wal filename would not be applicable (eg in memory\n" \
+"database).\n" \
+"\n" \
+"Calls:\n" \
+"  * `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__\n" \
+"  * `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__\n" \
+"  * `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
 
-#define Connection_db_filename_KWNAMES "name"
-#define Connection_db_filename_USAGE "Connection.db_filename(name: str) -> str"
+#define Connection_db_filename_KWNAMES "name", "which"
+#define Connection_db_filename_USAGE "Connection.db_filename(name: str, which: int = 0) -> str"
 
 #define Connection_db_filename_CHECK do { \
   assert(__builtin_types_compatible_p(typeof(name), const char *)); \
+  assert(__builtin_types_compatible_p(typeof(which), int)); \
+  assert(which == (0)); \
 } while(0)
 
 
@@ -2129,6 +2228,22 @@
 ":param enable: If True then extension loading is enabled, else it is disabled.\n" \
 "\n" \
 "Calls: `sqlite3_enable_load_extension <https://sqlite.org/c3ref/enable_load_extension.html>`__\n" \
+"\n" \
+"Unless you want the SQL `load_extension <https://sqlite.org/lang_corefunc.html#load_extension>`__\n" \
+"function enabled, it is safer to use :meth:`config`.  This enables the :meth:`~Connection.load_extension`\n" \
+"API briefly::\n" \
+"\n" \
+"  # get existing value\n" \
+"  existing = con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, -1)\n" \
+"  # enable loading api but not SQL function\n" \
+"  con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, 1)\n" \
+"\n" \
+"  try:\n" \
+"    # do loading desired\n" \
+"    con.load_extension(\"an_extension\")\n" \
+"  finally:\n" \
+"    # restore original setting\n" \
+"    con.config(apsw.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION, existing)\n" \
 "\n" \
 ".. seealso::\n" \
 "\n" \
@@ -2290,19 +2405,21 @@
 
 #define  Connection_filename_DOC ":type: str\n" \
 "\n" \
-"The filename of the database.\n" \
+"The absolute filename of the database, for \"main\".\n" \
 "\n" \
 "Calls: `sqlite3_db_filename <https://sqlite.org/c3ref/db_filename.html>`__\n" 
 
 #define  Connection_filename_journal_DOC ":type: str\n" \
 "\n" \
-"The journal filename of the database,\n" \
+"The absolute journal filename that would be used for database \"main\"\n" \
+"if journal mode is used.\n" \
 "\n" \
 "Calls: `sqlite3_filename_journal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
 
 #define  Connection_filename_wal_DOC ":type: str\n" \
 "\n" \
-"The WAL filename of the database,\n" \
+"The absolute WAL filename that would be used for database \"main\" if\n" \
+"WAL mode is used.\n" \
 "\n" \
 "Calls: `sqlite3_filename_wal <https://sqlite.org/c3ref/filename_database.html>`__\n" 
 
@@ -2605,7 +2722,7 @@
 "\n" \
 "`schema` is `main`, `temp`, the name in `ATTACH <https://sqlite.org/lang_attach.html>`__\n" \
 "\n" \
-"`which` is 0 for the database file, 1 for the journal.\n" \
+"`which` is 0 for the database file, 1 for the journal/wal in use.\n" \
 "\n" \
 "The return value is a tuple of a boolean indicating a complete read if\n" \
 "True, and the bytes read which will always be the amount requested\n" \
@@ -2917,7 +3034,7 @@
 #define Connection_set_profile_OLDDOC Connection_set_profile_USAGE "\n(Old less clear name setprofile)"
 
 #define  Connection_set_progress_handler_DOC "Connection.set_progress_handler(callable: Callable[[], bool] | None, nsteps: int = 100, *, id: Any = None) -> None\n\n" \
-"Sets a callable which is invoked every *nsteps* SQLite inststructions.\n" \
+"Sets a callable which is invoked every *nsteps* SQLite instructions.\n" \
 "The callable should return True to abort or False to continue. (If\n" \
 "there is an error in your Python *callable* then True/abort will be\n" \
 "returned).  SQLite raises :exc:`InterruptError` for aborts.\n" \
@@ -2925,6 +3042,8 @@
 "Use :class:`None` to cancel the progress handler.  Multiple handlers\n" \
 "can be present at once (implemented by APSW). Registered callbacks are\n" \
 "distinguished by their ``id`` - an equality test is done to match ids.\n" \
+"When multiple handlers are registered, the callbacks can be more\n" \
+"frequent than the steps used for each one.\n" \
 "\n" \
 "You can use :class:`apsw.ext.Trace` to see how many steps are used for\n" \
 "a representative statement, or :class:`apsw.ext.ShowResourceUsage` to\n" \
@@ -3260,8 +3379,8 @@
 "then ``/`` will separate the names.  If you have a :class:`VFSFile` in\n" \
 "use then its fully qualified class name will also be included.\n" \
 "\n" \
-"If ``SQLITE_FCNTL_VFSNAME`` is not implemented, ``dbname`` is not a\n" \
-"database name, or an error occurred then ``None`` is returned.\n" 
+"If ``SQLITE_FCNTL_VFSNAME`` is not implemented, or ``dbname`` is not a\n" \
+"database name then ``None`` is returned.\n" 
 
 #define Connection_vfsname_KWNAMES "dbname"
 #define Connection_vfsname_USAGE "Connection.vfsname(dbname: str) -> str | None"
@@ -4725,7 +4844,7 @@
 "outside of that will result in memory corruption and crashes.\n" 
 
 #define  VFSFcntlPragma_init_DOC "VFSFcntlPragma.__init__(pointer: int)\n\n" \
-"The pointer must be what your xFileControl method received.\n" 
+"The pointer **must** be what your xFileControl method received.\n" 
 
 #define VFSFcntlPragma_init_KWNAMES "pointer"
 #define VFSFcntlPragma_init_USAGE "VFSFcntlPragma.__init__(pointer: int)"
@@ -4980,6 +5099,11 @@
 "    this value then SQLite will not`be able to open it.  If you are\n" \
 "    using a base, then a value of zero will use the value from base.\n" \
 "\n" \
+"    Memory allocations are made of this size plus extra for ``-journal``\n" \
+"    suffix and a null temrinator.  SQLite uses 512 for Unix,\n" \
+"    1024 for in memory names, 1040 for Windows, and 65534 for Windows\n" \
+"    long paths.\n" \
+"\n" \
 ":param iVersion: Version number for the `sqlite3_vfs <https://sqlite.org/c3ref/vfs.html>`__\n" \
 "    structure.\n" \
 "\n" \
@@ -5145,9 +5269,12 @@
 } while(0)
 
 
-#define  VFS_xGetLastError_DOC "VFS.xGetLastError() -> tuple[int, str]\n\n" \
+#define  VFS_xGetLastError_DOC "VFS.xGetLastError() -> tuple[int, str | None]\n\n" \
 "Return an integer error code and (optional) text describing\n" \
-"the last error code and message that happened in this thread.\n" 
+"the last error code and message that happened in this thread.\n" \
+"\n" \
+"The code can be later retreived by :meth:`Connection.system_errno`.\n" \
+"In practise SQLite ignores the error message.\n" 
 
 #define  VFS_xGetSystemCall_DOC "VFS.xGetSystemCall(name: str) -> int | None\n\n" \
 "Returns a pointer for the current method implementing the named\n" \
@@ -5279,7 +5406,7 @@
 #define Zeroblob_init_USAGE "zeroblob.__init__(size: int)"
 
 #define Zeroblob_init_CHECK do { \
-  assert(__builtin_types_compatible_p(typeof(size), long long)); \
+  assert(__builtin_types_compatible_p(typeof(size), unsigned long long)); \
 } while(0)
 
 
@@ -5364,7 +5491,7 @@
 #define  ExtensionLoadingError_exc_DOC "An error happened loading an `extension\n" \
 "<https://sqlite.org/loadext.html>`_.\n" 
 
-#define  ForkingViolationError_exc_DOC "See :meth:`apsw.fork_checker`.\n" 
+#define  ForkingViolationError_exc_DOC "Was used by the fork checker, which has been removed.\n" 
 
 #define  FormatError_exc_DOC "`SQLITE_FORMAT <https://sqlite.org/rescode.html#format>`__. (No\n" \
 "longer used) `Auxiliary database\n" \

@@ -86,7 +86,8 @@ query("SELECT shape, extra FROM items WHERE name='orange'")
 
 # If you want the data returned to be read only then use this.
 # Note how the list becomes a tuple and dict becomes MappingProxyType
-# which doesn't allow writes.
+# which doesn't allow writes.  Python 3.15 adds :class:`frozendict`
+# which is clearer.
 
 
 def convert_jsonb_readonly(

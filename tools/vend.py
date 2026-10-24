@@ -105,13 +105,16 @@ extras = [
         description="Routines to implement arbitrary-precision decimal math",
     ),
     Extra(
+        name="diskused",
+        description="File space the various tables and indexes of the database consume",
+    ),
+    Extra(
         name="eval",
         description="Implements SQL function eval() which runs SQL statements recursively",
     ),
     Extra(
         name="fileio",
         description="Implements SQL functions readfile() and writefile(), and eponymous virtual type 'fsdir'",
-        sources=["ext/misc/fileio.c", "../src/fileio_win32.c"],
     ),
     # ::TODO:: fossildelta once RBU extension is wrapped
     Extra(
@@ -217,8 +220,8 @@ extras = [
     Extra(
         name="vec1",
         description="Vector search.  !Experimental! !Under development!",
-        doc="vec1",
-        sources=["vec1/vec1.c"],
+        doc="vec1.html",
+        sources=["ext/vec1/vec1.c"],
     ),
     Extra(
         name="sqlite3_dbdump",
@@ -245,12 +248,14 @@ extras = [
     Extra(
         name="sqlite3_diff",
         type="executable",
-        sources=["tool/sqldiff.c"]
-        + (["tool/winmain.c"] if (sys.platform == "win32" and pathlib.Path("sqlite3/tool/winmain.c").exists()) else []),
+        sources=["tool/sqldiff.c"],
         description="Displays content differences between SQLite databases",
         doc="sqldiff.html",
         lib_sqlite_stdio=True,
         lib_sqlite=True,
+        # work around sqlite's mistaken handling of utf8 on windows.  it should be
+        # using manifest but instead only has a hacky main thing going on
+        defines=[("main", "main")],
     ),
     Extra(
         name="sqlite3_expert",
@@ -294,6 +299,9 @@ extras = [
         description="Database Remote-Copy Tool",
         doc="rsync.html",
         lib_sqlite=True,
+        # work around sqlite's mistaken handling of utf8 on windows.  it should be
+        # using manifest but instead only has a hacky main thing going on
+        defines=[("main", "main")],
     ),
     Extra(
         name="sqlite3_shell",

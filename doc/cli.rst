@@ -6,8 +6,8 @@ apsw
 A terminal interface to the APSW SQLite shell modelled after the SQLite shell
 -----------------------------------------------------------------------------
 
-:version: apsw 3.53.4.0
-:date: 26 July 2026
+:version: apsw 3.54.1.0
+:date: 18 October 2026
 :manual section: 1
 :manual group: General Commands Manual
 
@@ -564,7 +564,7 @@ example::
 
 Loads a SQLite extension library
 
-Note: Extension loading may not be enabled in the SQLite library version you are
+Note: Extension loading may not be present in the SQLite library version you are
 using.
 
 By default sqlite3_extension_init and a name derived from the filename is tried,

@@ -1705,12 +1705,25 @@ grapheme_find(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_t 
   int substring_kind = PyUnicode_KIND(substring);
   Py_ssize_t substring_end = PyUnicode_GET_LENGTH(substring);
 
-  /* fixup offsets */
+  /* fixup offsets - this code is convoluted to avoid ubsan overflow.
+     start and end can have the full negative to positive range.  it is
+     solved by casting to Unsigned for over/underflows and back to Signed
+     for results */
+#define U(x) ((size_t)x)
+#define S(x) ((Py_ssize_t)x)
+
   if (start < 0)
-    start = Py_MAX(0, text_end + start);
+  {
+    start = S(U(text_end) + U(start));
+    if(start<0)
+      start = 0;
+  }
   if (end < 0)
-    end = text_end + end;
-  end = Py_MIN(end, text_end) - substring_end + 1;
+    end = S(U(text_end) + U(end));
+  end = S(U(Py_MIN(end, text_end)) - U(substring_end) + U(1));
+
+#undef U
+#undef S
 
   /* zero length is always found if start is 0 even if end is before start! */
   if (substring_end == 0 && start == 0)
@@ -1858,9 +1871,10 @@ grapheme_substr(PyObject *Py_UNUSED(self), PyObject *const *fast_args, Py_ssize_
   if (nchars)
   {
     start_offset = PyLong_AsSsize_t(PyList_GET_ITEM(offsets, start));
-    stop_offset = PyLong_AsSsize_t(PyList_GET_ITEM(offsets, stop));
+    if (!PyErr_Occurred())
+      stop_offset = PyLong_AsSsize_t(PyList_GET_ITEM(offsets, stop));
     Py_CLEAR(offsets);
-    return PyUnicode_Substring(text, start_offset, stop_offset);
+    return PyErr_Occurred() ? NULL : PyUnicode_Substring(text, start_offset, stop_offset);
   }
 
   Py_CLEAR(offsets);
@@ -2021,24 +2035,20 @@ typedef struct
   Py_ssize_t bytes_len;
   Py_ssize_t str_offset;
   Py_ssize_t bytes_offset;
-  Py_buffer buffer;
+  PyObject *utf8;
   /* we often go backwards as spans are iterated so remember previous */
   Py_ssize_t last_str_offset;
   Py_ssize_t last_bytes_offset;
   PyObject *str;
+  int init_was_called;
 } ToUtf8PositionMapper;
 
 static void
 ToUtf8PositionMapper_finalize(PyObject *self_)
 {
   ToUtf8PositionMapper *self = (ToUtf8PositionMapper *)self_;
-  /* this is intentionally implemented to be safe to call multiple times */
-  if (self->buffer.obj)
-  {
 
-    PyBuffer_Release(&self->buffer);
-    self->buffer.obj = NULL;
-  }
+  Py_CLEAR(self->utf8);
   Py_CLEAR(self->str);
 }
 
@@ -2078,10 +2088,10 @@ ToUtf8PositionMapper_call(PyObject *self_, PyObject *const *fast_args, size_t na
 
   while (self->str_offset < pos)
   {
-    if (self->bytes_offset >= self->buffer.len)
+    if (self->bytes_offset >= PyBytes_GET_SIZE(self->utf8))
       return PyErr_Format(PyExc_IndexError, "position is beyond end of string");
 
-    unsigned b = ((unsigned char *)self->buffer.buf)[self->bytes_offset];
+    unsigned b = ((unsigned char *)PyBytes_AS_STRING(self->utf8))[self->bytes_offset];
 
     if ((b & 0x80 /* 0b1000_0000 */) == 0)
       self->bytes_offset += 1;
@@ -2103,18 +2113,19 @@ static int
 ToUtf8PositionMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
   ToUtf8PositionMapper *self = (ToUtf8PositionMapper *)self_;
-  ARG_CONVERT_VARARGS_TO_FASTCALL
+  PREVENT_INIT_MULTIPLE_CALLS;
+
+#define toutf8posmapper_USAGE "to_utf8_position_mapper.__init__(utf8: bytes)"
+  ARG_CONVERT_VARARGS_TO_FASTCALL(1, toutf8posmapper_USAGE);
 
   PyObject *utf8 = NULL;
   ARG_PROLOG(1, "utf8");
-  ARG_MANDATORY ARG_Buffer(utf8);
-  ARG_EPILOG(-1, "to_utf8_position_mapper.__init__(utf8: bytes)", );
+  ARG_MANDATORY ARG_Bytes(utf8);
+  ARG_EPILOG(-1, toutf8posmapper_USAGE, Py_XDECREF(fast_kwnames));
 
-  int res = PyObject_GetBuffer(utf8, &self->buffer, PyBUF_SIMPLE);
-  if (res != 0)
-    return -1;
+  self->utf8 = Py_NewRef(utf8);
 
-  self->str = PyUnicode_DecodeUTF8(self->buffer.buf, self->buffer.len, "strict");
+  self->str = PyUnicode_DecodeUTF8(PyBytes_AS_STRING(utf8), PyBytes_GET_SIZE(utf8), "strict");
   if (!self->str)
   {
     ToUtf8PositionMapper_finalize(self_);
@@ -2169,6 +2180,7 @@ typedef struct
   Py_ssize_t last_bytes_offset;
   const char *bytes;
   PyObject *bytes_object;
+  int init_was_called;
 } FromUtf8PositionMapper;
 
 static void
@@ -2254,12 +2266,16 @@ static int
 FromUtf8PositionMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
   FromUtf8PositionMapper *self = (FromUtf8PositionMapper *)self_;
-  ARG_CONVERT_VARARGS_TO_FASTCALL
+  PREVENT_INIT_MULTIPLE_CALLS;
+
+#define fromutf8posmapper_USAGE "from_utf8_position_mapper.__init__(string: str)"
+
+  ARG_CONVERT_VARARGS_TO_FASTCALL(1, fromutf8posmapper_USAGE);
 
   PyObject *string = NULL;
   ARG_PROLOG(1, "string");
   ARG_MANDATORY ARG_PyUnicode(string);
-  ARG_EPILOG(-1, "from_utf8_position_mapper.__init__(string: str)", );
+  ARG_EPILOG(-1, fromutf8posmapper_USAGE, Py_XDECREF(fast_kwnames));
 
   self->bytes_object = PyUnicode_AsUTF8String(string);
   if (!self->bytes_object)
@@ -2324,6 +2340,7 @@ typedef struct
   /* track if last addition was a separator because we don't add
      multiple separators in a row */
   int last_is_separator;
+  int init_was_called;
 } OffsetMapper;
 
 static PyObject *
@@ -2341,7 +2358,7 @@ OffsetMapper_add(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   ARG_MANDATORY ARG_PyUnicode(text);
   ARG_MANDATORY ARG_Py_ssize_t(source_start);
   ARG_MANDATORY ARG_Py_ssize_t(source_end);
-  ARG_EPILOG(NULL, "OffsetMapper.add()text: str, source_start: int, source_end: int", );
+  ARG_EPILOG(NULL, "OffsetMapper.add(text: str, source_start: int, source_end: int)", );
 
   /* reject going backwards */
   if (source_end < source_start)
@@ -2354,6 +2371,7 @@ OffsetMapper_add(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
   PyMem_Resize(self->offset_map, struct MapperEntry, self->num_offsets + 2);
   if (!self->offset_map)
   {
+    PyErr_NoMemory();
     self->offset_map = oldmap;
     return NULL;
   }
@@ -2406,7 +2424,7 @@ OffsetMapper_text(PyObject *self_, void *Py_UNUSED(closure))
     return NULL;
 
   Py_ssize_t offset = 0;
-  for (Py_ssize_t i = 0; i < PyList_GET_SIZE(self->accumulate); i++)
+  for (Py_ssize_t i = 0; self->accumulate && i < PyList_GET_SIZE(self->accumulate); i++)
   {
     PyObject *segment = PyList_GET_ITEM(self->accumulate, i);
     PyUnicode_CopyCharacters(self->text, offset, segment, 0, PyUnicode_GET_LENGTH(segment));
@@ -2442,6 +2460,11 @@ OffsetMapper_call(PyObject *self_, PyObject *const *fast_args, size_t nargsf, Py
     {
       self->last_location = self->offset_map[i].location;
       self->last_offset = i;
+      if (location - self->last_location >= PY_SSIZE_T_MAX - self->offset_map[i].offset)
+      {
+        PyErr_SetString(PyExc_OverflowError, "offset overflow");
+        return NULL;
+      }
       return PyLong_FromSsize_t(self->offset_map[i].offset + (location - self->last_location));
     }
   }
@@ -2465,6 +2488,8 @@ static int
 OffsetMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
 {
   OffsetMapper *self = (OffsetMapper *)self_;
+  PREVENT_INIT_MULTIPLE_CALLS;
+
   if (PyTuple_GET_SIZE(args) || kwargs)
   {
     PyErr_Format(PyExc_TypeError, "OffsetMapper.__init__ takes no arguments");
@@ -2482,6 +2507,7 @@ OffsetMapper_init(PyObject *self_, PyObject *args, PyObject *kwargs)
   self->last_is_separator = 0;
   if (!self->accumulate || !self->offset_map)
   {
+    PyErr_NoMemory();
     OffsetMapper_finalize(self_);
     return -1;
   }

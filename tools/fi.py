@@ -484,7 +484,7 @@ def exercise(example_code, expect_exception):
     apsw.connections()
 
     # has to be done on a real file not memory db
-    con2 = apsw.Connection("/tmp/fitesting")
+    con2 = apsw.Connection(f"{tmpdir.name}/fitesting")
     con2.pragma("user_version", 77)
     con2.read("main", 0, 0, 0x1FFFF)  # larger fires sanity check assertion
 
@@ -610,10 +610,7 @@ def exercise(example_code, expect_exception):
     apsw.connection_hooks = [lambda x: None] * 3
     x = apsw.Connection("")
     c = x.cursor()
-    try:
-        x.backup("main", con, "main")
-    except apsw.ThreadingViolationError:
-        pass
+    x.backup("main", con, "main")
     del c
 
     con2 = apsw.Connection("")
@@ -765,7 +762,12 @@ class Tester:
         self.returns = genfaultinject.returns
         self.call_remap = {v: k for k, v in genfaultinject.call_map.items()}
 
+
+        # keys that have ever faulted across all loops
+        self.has_faulted_ever = set()
+
         sys.apsw_fault_inject_control = self.fault_inject_control
+        sys.apsw_fault_inject_control_proceed = self.has_faulted_ever
         sys.apsw_should_fault = self.should_fault
 
         lines, start = inspect.getsourcelines(exercise)
@@ -829,6 +831,7 @@ class Tester:
         return getattr(sys.modules["apsw"], name)
 
     def FaultCall(self, key):
+        # key is a tuple: ("api", "__FILE__", "__function__", __LINE__, #args)
         apsw_attr = self.apsw_attr
         fname = self.call_remap.get(key[0], key[0])
         try:
@@ -837,6 +840,19 @@ class Tester:
                 return True
 
             if fname in self.returns["pointer"]:
+                # these do not set the no memory exception
+                if fname.startswith("PyMem_"):
+                    self.expect_exception.append(MemoryError)
+                    return 0
+                if fname.startswith("sqlite3_"):
+                    self.expect_exception.append(apsw_attr("NoMemError"))
+                    return 0
+                if fname == "PyThreadState_GetDict":
+                    # returns null, doesn't raise an exception.  we use it
+                    # in one place and return RuntimeError
+                    self.expect_exception.append(RuntimeError)
+                    return 0
+                # all other APIs are Python and do set exception
                 self.expect_exception.append(MemoryError)
                 return 0, MemoryError, self.FAULTS
 
@@ -852,9 +868,10 @@ class Tester:
                 "sqlite3_backup_finish",
                 # runs the destructor on failure
                 "sqlite3_create_function_v2",
-                "sqlite3_window_function",
+                "sqlite3_create_window_function",
                 "sqlite3_carray_bind_apsw",
                 "sqlite3_carray_bind_v2",
+                "sqlite3_create_module_v2",
             }:
                 self.expect_exception.append(apsw_attr("ConnectionNotClosedError"))
                 self.expect_exception.append(apsw_attr("TooBigError"))  # code 18
@@ -873,12 +890,24 @@ class Tester:
                 self.expect_exception.append(apsw_attr("ExtensionLoadingError"))
                 return self.apsw_attr("SQLITE_TOOBIG")
 
+            if fname == "sqlite3_mutex_try":
+                self.expect_exception.append(apsw_attr("ThreadingViolationError"))
+                return self.apsw_attr("SQLITE_BUSY")
+
             if fname == "sqlite3_vtab_in_next":
                 self.expect_exception.append(ValueError)
                 return self.apsw_attr("SQLITE_TOOBIG")
 
             # internal routine
             if fname == "connection_trace_and_exec":
+                self.expect_exception.append(MemoryError)
+                return (-1, MemoryError, self.FAULTS)
+
+            if fname == "APSWCursor_is_dict_binding":
+                self.expect_exception.append(MemoryError)
+                return (0, MemoryError, self.FAULTS)
+
+            if fname == "Connection_add_dependent":
                 self.expect_exception.append(MemoryError)
                 return (-1, MemoryError, self.FAULTS)
 
@@ -928,6 +957,10 @@ class Tester:
                 self.expect_exception.append(self.FAULTT)
                 return (-1, *self.FAULT)
 
+            if fname == "cursor_mutex_get":
+                self.expect_exception.append(apsw_attr("ThreadingViolationError"))
+                return (-1, self.apsw_attr("ThreadingViolationError"), "fault injected")
+
         finally:
             self.to_fault.pop(key, None)
             self.has_faulted_ever.add(key)
@@ -936,11 +969,11 @@ class Tester:
                 self.expect_exception.extend([TypeError, ValueError])
             self.last_key = key
 
-        print("Unhandled", key)
-        breakpoint()
+        print("Aborting: FaultCall doesn't know how to fail", key)
+        sys.exit(1)
 
     def should_fault(self, name, pending_exception):
-        if pending_exception != (None, None, None):
+        if any(pending_exception):
             return False
         key = ("APSW_FAULT", "", name, 0, "")
         res = self.fault_inject_control(key)
@@ -950,6 +983,9 @@ class Tester:
     def fault_inject_control(self, key):
         # key is (api, file, calling func, lineno, str(args)) eg
         # ('PyUnicode_AsUTF8AndSize', 'src/apsw.c', 'apsw_unregister_vfs', 1796, 'useargs[argp_optindex], &sz')
+        if key in self.has_faulted_ever:
+                return self.Proceed
+
         if testing_recursion and key[2] in {"apsw_write_unraisable", "apswvfs_excepthook"}:
             return self.Proceed
         # failing module get/setattr leads to claims the module isn't
@@ -967,6 +1003,9 @@ class Tester:
             # being constructed otherwise the module machinery
             # disables the module
             return self.Proceed
+        if key[0] == "sqlite3_mutex_try" and (key[2] == "cursor_mutex_get" or key[2].endswith("_dealloc")):
+            # on failure to acquire these try other things
+            return self.Proceed
         if "misuse_check" in key[4]:
             # sqlite session stuff where we only care about misuse being returned
             return self.Proceed
@@ -978,6 +1017,8 @@ class Tester:
                     return self.Proceed
             elif key == self.runplan[0]:
                 self.runplan.pop(0)
+                if self.runplan:
+                    self.has_faulted_ever.discard(self.runplan[0])
             else:
                 return self.Proceed
         else:
@@ -985,8 +1026,6 @@ class Tester:
                 # already have faulted this round
                 if key not in self.has_faulted_ever and key not in self.to_fault:
                     self.to_fault[key] = self.faulted_this_round[:]
-                return self.Proceed
-            if key in self.has_faulted_ever:
                 return self.Proceed
 
         tid, fname, line = self.get_progress()
@@ -1066,7 +1105,7 @@ class Tester:
         if len(self.expect_exception) == 1 and self.expect_exception[0] is Exception:
             return
         if len(self.exc_happened) < len(tested):
-            if len(tested) >= 2 and (tested[0][0], tested[1][0]) == ("_PyObject_New", "sqlite3_backup_finish"):
+            if len(tested) >= 2 and (tested[0][0], tested[1][0]) == ("_PyObject_GC_New", "sqlite3_backup_finish"):
                 # backup finish error is ignored because we are handling the
                 # object_new error
                 pass
@@ -1084,6 +1123,14 @@ class Tester:
             elif tested[-1][0] == "Py_EnterRecursiveCall" and tested[-1][2] == "jsonb_decode_one":
                 # exceptions are swallowed if doing a validity check
                 ok = True
+            elif tested[-1][0] == "sqlite3_mutex_try":
+                if tested[-1][2].endswith("_dealloc_mutex"):
+                    # does a background retry so we won't see
+                    # exceptions immediately but bugs will result in
+                    # leaks etc
+                    ok = True
+                else:
+                    print(f"{tested=} {self.expect_exception=}")
             else:
                 ok = False
         if not ok:
@@ -1102,6 +1149,14 @@ class Tester:
                     print(line)
             sys.exit(1)
 
+    def prune_multifault(self):
+        # we need to filter out the mutex_try -> addPendingCall ->
+        # realloc sequence because it results in the object being
+        # leaked.  code has to manually verified
+        self.to_fault = {
+            k: v for k, v in self.to_fault.items() if (k[0], k[2]) != ("PyMem_Realloc", "apsw_AddPendingCall")
+        }
+
     def run(self):
         self.abort = 0
         # keys that we will fault in the future.  we saw these keys while a
@@ -1109,7 +1164,7 @@ class Tester:
         # to see this one.  value is list of those previous faults
         self.to_fault = {}
         # keys that have ever faulted across all loops
-        self.has_faulted_ever = set()
+        self.has_faulted_ever.clear()
 
         self.last_key = None
         use_runplan = False
@@ -1131,6 +1186,7 @@ class Tester:
                 else:
                     for k, v in self.to_fault.items():
                         self.runplan = v + [k]
+                        self.has_faulted_ever.remove(self.runplan[0])
                         break
             else:
                 self.runplan = None
@@ -1149,7 +1205,8 @@ class Tester:
                         self.abort = 0
                         if not use_runplan and not self.faulted_this_round:
                             use_runplan = True
-                            print("\nExercising locations that require multiple failures\n")
+                            self.prune_multifault()
+                            print(f"\nExercising {len(self.to_fault)} locations that require multiple failures\n")
                             global examples_completed
                             examples_completed = None
                             continue
@@ -1167,7 +1224,8 @@ class Tester:
                     if "apsw" in sys.modules and hasattr(sys.modules["apsw"], "leak_check"):
                         res = getattr(sys.modules["apsw"], "leak_check")()
                         if res:
-                            input("Leaks found, return to continue> ")
+                            print("Leaks found.  Waiting.")
+                            input("return to continue> ")
 
             self.verify_exception(self.faulted_this_round)
             if any(thread is not main_thread and not thread.daemon for thread in threading.enumerate()):

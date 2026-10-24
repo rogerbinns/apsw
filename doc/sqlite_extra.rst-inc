@@ -149,6 +149,11 @@ Extensions
         * Collation: :code:`decimal`
         * Function: :code:`decimal` :code:`decimal_add` :code:`decimal_cmp` :code:`decimal_exp` :code:`decimal_mul` :code:`decimal_pow2` :code:`decimal_sub` :code:`decimal_sum`
 
+    * - diskused (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2fdiskused.c>`__)
+      - File space the various tables and indexes of the database consume
+      -
+        * Function: :code:`diskused`
+
     * - eval (`doc <https://sqlite.org/src/file?ci=trunk&name=ext%2fmisc%2feval.c>`__)
       - Implements SQL function eval() which runs SQL statements recursively
       -
@@ -258,7 +263,7 @@ Extensions
       -
         * Function: :code:`uuid` :code:`uuid_blob` :code:`uuid_str`
 
-    * - vec1 (`doc <https://sqlite.org/vec1>`__)
+    * - vec1 (`doc <https://sqlite.org/vec1.html>`__)
       - Vector search.  !Experimental! !Under development!
       -
         * Function: :code:`vec1_config` :code:`vec1_cos_distance` :code:`vec1_from_json` :code:`vec1_info` :code:`vec1_l2_distance` :code:`vec1_to_json` :code:`vec1_to_json_f` :code:`vec1_to_json_i` :code:`vec1_train`

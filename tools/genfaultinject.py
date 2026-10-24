@@ -1,7 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-import sys
+import pathlib
 import subprocess
+import sys
 
 proto = """
 static long long
@@ -39,7 +40,7 @@ def get_definition(name, use_name):
     t = call_pattern.replace("PySet_New", use_name)
     if name != use_name:
         # put back pretty name in string passed to APSW_FaultInjectControl
-        t = t.replace(f'"{ use_name }"', f'"{ name }"')
+        t = t.replace(f'"{use_name}"', f'"{name}"')
     t = t.strip().split("\n")
     # don't query for MakeExistingException if there already is one
     if name == "MakeExistingException":
@@ -60,25 +61,25 @@ def genfile(symbols):
 #ifdef APSW_FAULT_INJECT
 
 #ifndef APSW_FAULT_INJECT_INCLUDED
-{ proto }
+{proto}
 #define APSW_FAULT_INJECT_INCLUDED
 #endif
 
 #ifdef APSW_FAULT_CLEAR
 """)
     for s in sorted(symbols):
-        res.append(f"#undef { s }")
+        res.append(f"#undef {s}")
     res.append("\n#else\n")
     for s in sorted(symbols):
         if s in call_map:
             res.append("#if PY_VERSION_HEX < 0x030d0000")
             res.append(f"#undef {s}")
-            res.append(f"#define {s}(...) \\\n{ get_definition( s, call_map.get(s, s)) }")
+            res.append(f"#define {s}(...) \\\n{get_definition(s, call_map.get(s, s))}")
             res.append("#else")
-            res.append(f"#define {s}(...) \\\n{ get_definition( s, s) }")
+            res.append(f"#define {s}(...) \\\n{get_definition(s, s)}")
             res.append("#endif")
         else:
-            res.append(f"#define {s}(...) \\\n{ get_definition( s, s) }")
+            res.append(f"#define {s}(...) \\\n{get_definition(s, s)}")
     res.append("#endif")
     res.append("#endif")
     res.append("#endif")
@@ -110,13 +111,12 @@ returns = {
             PyUnicode_AsUTF8AndSize PyUnicode_AsUTF8String PyUnicode_DecodeUTF8
             PyUnicode_FromFormat PyUnicode_FromKindAndData PyUnicode_FromString
             PyUnicode_FromStringAndSize  PyUnicode_New PyWeakref_GetObject PyWeakref_NewRef Py_BuildValue
-            Py_VaBuildValue _PyObject_New PyContextVar_New PyImport_ImportModuleAttr
+            Py_VaBuildValue _PyObject_New _PyObject_GC_New PyContextVar_New PyImport_ImportModuleAttr
             PyImport_Import PyContext_CopyCurrent PyDict_GetItemWithError
             PyLong_FromUnicodeObject PyLong_FromUnsignedLong PyMapping_Items
-            PyObject_CallNoArgs  PyObject_GenericGetAttr
-
-
-            realloc
+            PyObject_CallNoArgs  PyObject_GenericGetAttr PyThreadState_GetDict
+            PyDict_Copy _PyObject_NewVar PyUnicode_Substring PyModuleDef_Init
+            PyList_GetItemRef
 
             Connection_fts5_api get_token_value fts5extensionapi_acquire
             make_boxed_call APSWCursor_internal_get_description
@@ -129,6 +129,8 @@ returns = {
             """.split(),
     # numeric return
     "sqlite": """
+            sqlite3_mutex_try
+
             sqlite3_aggregate_context sqlite3_autovacuum_pages
             sqlite3_backup_finish sqlite3_backup_init
             sqlite3_backup_step sqlite3_bind_blob sqlite3_bind_blob64
@@ -136,7 +138,7 @@ returns = {
             sqlite3_carray_bind_v2
             sqlite3_bind_null sqlite3_bind_pointer sqlite3_bind_text
             sqlite3_bind_text64 sqlite3_bind_value
-            sqlite3_bind_zeroblob sqlite3_bind_zeroblob64
+            sqlite3_bind_zeroblob64
             sqlite3_blob_open sqlite3_blob_read sqlite3_blob_reopen
             sqlite3_blob_write sqlite3_busy_handler
             sqlite3_busy_timeout
@@ -160,7 +162,7 @@ returns = {
             sqlite3_table_column_metadata sqlite3_threadsafe
             sqlite3_trace_v2 sqlite3_vfs_register
             sqlite3_vfs_unregister sqlite3_vtab_config
-            sqlite3_vtab_in_next sqlite3_vtab_rhs_value
+            sqlite3_vtab_in_first sqlite3_vtab_in_next sqlite3_vtab_rhs_value
             sqlite3_wal_autocheckpoint sqlite3_wal_checkpoint_v2
 
             sqlite3_preupdate_old sqlite3_preupdate_new
@@ -190,7 +192,7 @@ returns = {
     # py functions that return a number (-1) to indicate failure
     "number": """Py_EnterRecursiveCall
         PyType_Ready PyModule_AddObject PyModule_AddIntConstant PyModule_AddStringConstant
-        PyLong_AsLong  PyLong_AsLongLong PyList_Append PyDict_SetItemString
+        PyLong_AsLong  PyLong_AsLongLong PyLong_AsUnsignedLongLong PyList_Append PyDict_SetItemString
         PyObject_SetAttr _PyBytes_Resize PyDict_SetItem
         PyObject_IsTrue PySequence_Size PySet_Add PyObject_IsTrueStrict
         PyStructSequence_InitType2 PyList_Size PyLong_AsInt
@@ -201,9 +203,10 @@ returns = {
         PyObject_RichCompareBool PyModule_AddType
 
         PyObject_GetBufferContiguous PyObject_GetBuffer PyObject_GetBufferContiguousBounded
-        _PyTuple_Resize
+        _PyTuple_Resize  PyObject_HasAttrWithError PyLong_AsSsize_t
 
-        getfunctionargs
+        getfunctionargs cursor_mutex_get APSWCursor_is_dict_binding
+        Connection_add_dependent
 
         jsonb_grow_buffer jsonb_add_tag jsonb_update_tag jsonb_append_data
         jsonb_add_tag_and_data jsonb_encode_internal jsonb_encode_object_key
@@ -224,24 +227,31 @@ for k, v in returns.items():
         seen = set()
         for val in v:
             if val in seen:
-                print(f"Duplicate item { val } in { k }")
+                print(f"Duplicate item {val} in {k}")
                 sys.exit(1)
             else:
                 seen.add(val)
 
 # these don't provide meaning for fault injection
 no_error = set(
-    """PyBuffer_Release PyDict_GetItem PyMem_Free PyDict_GetItemString PyErr_Clear
+    """PyBuffer_Release PyMem_Free PyErr_Clear
     PyErr_Display PyErr_Fetch PyErr_Format PyErr_NoMemory PyErr_NormalizeException
     PyErr_Occurred PyErr_Print PyErr_Restore PyErr_SetObject PyEval_RestoreThread
     PyEval_SaveThread PyGILState_Ensure PyGILState_Release PyOS_snprintf
-    PyObject_CheckBuffer PyObject_ClearWeakRefs PyObject_GC_UnTrack PyObject_HasAttr
+    PyObject_CheckBuffer PyObject_ClearWeakRefs PyObject_GC_UnTrack
     PyThreadState_Get PyThread_get_thread_ident PyTraceBack_Here
     PyType_IsSubtype PyUnicode_CopyCharacters  _Py_Dealloc
     _Py_HashBytes _Py_NegativeRefcount _Py_RefTotal PyThreadState_GetFrame
     PyDict_Next PyErr_DisplayException PyErr_FormatV PyErr_GetRaisedException
     PyErr_SetNone PyErr_SetRaisedException PyObject_Free
     PyUnicode_InternInPlace
+
+    PyObject_GC_Track PyUnicode_CompareWithASCIIString
+    PyObject_Vectorcall PyObject_VectorcallMethod PyVectorcall_Call
+    PySlice_AdjustIndices
+
+    PyModule_GetState PyType_GetModuleState PyUnicode_WriteChar
+    Py_IncRef _PyErr_ChainExceptions1
 """.split()
 )
 
@@ -254,50 +264,77 @@ no_error.update(
     PyErr_SetString PyStructSequence_SetItem PyObject_Print
     Py_GetRecursionLimit Py_LeaveRecursiveCall Py_SetRecursionLimit _PyErr_ChainExceptions
     PyBuffer_IsContiguous PyContext_Exit PyList_SetSlice
-    PyObject_GetAttrString PyThreadState_GetDict PyType_GetQualName PyUnicode_FromFormatV
+    PyObject_GetAttrString PyType_GetQualName PyUnicode_FromFormatV
+    PyWeakref_GetRef
 """.split()
 )
 
 
-def check_dll(fname, all):
-    not_seen = set()
-    for line in subprocess.run(["nm", "-u", fname], text=True, capture_output=True, check=True).stdout.split("\n"):
-        if not line.strip().startswith("U") or "@" in line or "Py" not in line:
-            continue
-        _, sym = line.split()
-        if sym in all:
-            assert sym not in no_error, f"{ sym } in all and no_error"
+def check_dlls(fnames, all_symbols):
+    not_seen: set[str] = set()
+    seen: set[str] = set()
+    for fname in fnames:
+        for line in subprocess.run(["nm", "-u", fname], text=True, capture_output=True, check=True).stdout.split("\n"):
+            if not line.strip().startswith("U") or "@" in line or "Py" not in line:
+                continue
+            _, sym = line.split()
+            if sym in all_symbols:
+                assert sym not in no_error, f"{sym} in all_symbols AND no_error"
 
-        if sym in call_map.values():
-            for k, v in call_map.items():
-                if sym == v:
-                    sym = k
-                    break
-            else:
-                1 / 0
+            if sym in call_map.values():
+                for k, v in call_map.items():
+                    if sym == v:
+                        sym = k
+                        break
+                else:
+                    1 / 0
 
-        if (
-            sym in all
-            or sym in no_error
-            or sym.endswith("_Check")
-            or sym.endswith("_Type")
-            or sym.endswith("Struct")
-            or sym.startswith("PyExc_")
-        ):
-            continue
+            if (
+                sym in all_symbols
+                or sym in no_error
+                or sym.endswith(("_Check", "_Type", "Struct"))
+                or sym.startswith("PyExc_")
+            ):
+                seen.add(sym)
+                continue
 
-        not_seen.add(sym)
+            not_seen.add(sym)
 
-    print(sorted(not_seen))
-    print(len(not_seen), "items")
+    # come from py macros and not our code
+    not_seen = {v for v in not_seen if not v.startswith("_PyWeakref")}
+
+    if not_seen:
+        print("\n>>> Symbols in extension but not in symbols in genfaultinject.py\n")
+        for name in sorted(not_seen):
+            print(f" * {name}")
+        print(f"\n{len(not_seen)} items")
+
+    surplus = all_symbols - seen
+    # sqlite can be amalgamation built in so it is okay if they are not mentioned
+    surplus = surplus - set(returns["sqlite"])
+    surplus = surplus - set(v for v in returns["pointer"] if v.startswith("sqlite3_"))
+    # a number of our internal routines are above but not with external linkage
+    # so prune this down to just sqlite and python calls not linked
+    surplus = {v for v in surplus if v.startswith(("Py", "sqlite3"))}
+
+    if surplus:
+        print("\n>>> Symbols NOT in extensions but in genfaultinject.py\n")
+        for name in sorted(surplus):
+            print(f" * {name}")
+        print(f"\n{len(surplus)} items")
 
 
 if __name__ == "__main__":
-    all = set()
+    all_symbols = set()
     for v in returns.values():
-        all.update(v)
+        all_symbols.update(v)
+
+    if len(sys.argv) < 2 or sys.argv[1].startswith("-"):
+        sys.exit("Provide header to generate or list of .so to check")
+
     if sys.argv[1].endswith(".h"):
-        r = genfile(all)
-        open(sys.argv[1], "wt").write(r)
+        assert len(sys.argv) == 2
+        r = genfile(all_symbols)
+        pathlib.Path(sys.argv[1]).write_text(r)
     else:
-        check_dll(sys.argv[1], all)
+        check_dlls(sys.argv[1:], all_symbols)

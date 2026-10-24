@@ -51,6 +51,23 @@ come back and copy those changes too until the backup is complete.
     }                                                                                                                  \
   } while (0)
 
+/* prevent recursive use of the backup - eg a callback function or
+   tracer executing new SQL while the call stack above is in a
+   sqlite3_step*/
+#define IN_BACKUP_CHECK                                                                                                \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    assert(sqlite3_mutex_held(self->source->dbmutex) && sqlite3_mutex_held(self->dest->dbmutex));                      \
+    if (self->in_backup)                                                                                               \
+    {                                                                                                                  \
+      if (!PyErr_Occurred())                                                                                           \
+        PyErr_Format(ExcThreadingViolation, "The backup is already busy in a backup operation");                       \
+      sqlite3_mutex_leave(self->source->dbmutex);                                                                      \
+      sqlite3_mutex_leave(self->dest->dbmutex);                                                                        \
+      return NULL;                                                                                                     \
+    }                                                                                                                  \
+  } while (0)
+
 /** .. class:: Backup
 
   You create a backup instance by calling :meth:`Connection.backup`.
@@ -64,6 +81,7 @@ typedef struct APSWBackup
   sqlite3_backup *backup;
   PyObject *done;
   PyObject *weakreflist;
+  int in_backup;
 } APSWBackup;
 
 static void
@@ -74,6 +92,7 @@ APSWBackup_init(APSWBackup *self, Connection *dest, Connection *source, sqlite3_
   self->backup = backup;
   self->done = Py_NewRef(Py_False);
   self->weakreflist = NULL;
+  self->in_backup = 0;
 }
 
 /* returns non-zero if it set an exception */
@@ -83,7 +102,11 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   int res, setexc = 0;
 
   /* should have been called with active backup */
+  assert(self->in_backup);
   assert(self->backup);
+
+  assert(self->dest);
+  assert(self->source);
 
   Py_BEGIN_ALLOW_THREADS
     res = sqlite3_backup_finish(self->backup);
@@ -112,11 +135,18 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   }
 
   self->backup = 0;
-  sqlite3_mutex_leave(self->source->dbmutex);
-  sqlite3_mutex_leave(self->dest->dbmutex);
+  /* in_backup is not reset as a safety because mutex_acquire succeeds
+     on a NULL pointer */
 
+  PY_ERR_FETCH(save);
   Connection_remove_dependent(self->dest, (PyObject *)self);
   Connection_remove_dependent(self->source, (PyObject *)self);
+  PY_ERR_RESTORE(save);
+
+  sqlite3_mutex *one = self->source->dbmutex, *two = self->dest->dbmutex;
+
+  sqlite3_mutex_leave(one);
+  sqlite3_mutex_leave(two);
 
   Py_CLEAR(self->dest);
   Py_CLEAR(self->source);
@@ -124,33 +154,32 @@ APSWBackup_close_internal(APSWBackup *self, int force)
   return setexc;
 }
 
-static int
-APSWBackup_dealloc_mutex(void *self_)
-{
-  APSWBackup *self = (APSWBackup *)self_;
-  if (self->backup)
-  {
-    DBMUTEX_RETRY_2(self->source, self->dest, APSWBackup_dealloc_mutex);
-    APSWBackup_close_internal(self, 2);
-  }
-  Py_CLEAR(self->done);
-
-  Py_TpFree(self_);
-
-  return 0;
-}
-
 static void
 APSWBackup_dealloc(PyObject *self_)
 {
   APSWBackup *self = (APSWBackup *)self_;
+  PyObject_GC_UnTrack(self_);
   APSW_CLEAR_WEAKREFS;
 
-  PY_ERR_FETCH(exc);
-  APSWBackup_dealloc_mutex(self);
-  if (PyErr_Occurred())
-    apsw_write_unraisable(NULL);
-  PY_ERR_RESTORE(exc);
+  if (self->backup)
+  {
+    if (SQLITE_OK != sqlite3_mutex_try(self->dest->dbmutex))
+      goto later;
+    if (SQLITE_OK != sqlite3_mutex_try(self->source->dbmutex))
+    {
+      sqlite3_mutex_leave(self->dest->dbmutex);
+      goto later;
+    }
+    self->in_backup = 1;
+    APSWBackup_close_internal(self, 2);
+  }
+
+  Py_TpFree(self_);
+  return;
+
+later:
+  Connection_add_dependent_hard(self->dest, self_);
+  Connection_add_dependent_hard(self->source, self_);
 }
 
 /** .. method:: step(npages: int = -1) -> bool
@@ -190,6 +219,9 @@ APSWBackup_step(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
                    "Backup destination Connection is busy in another thread");
 
+  IN_BACKUP_CHECK;
+  self->in_backup = 1;
+
   Py_BEGIN_ALLOW_THREADS
     res = sqlite3_backup_step(self->backup, npages);
   Py_END_ALLOW_THREADS;
@@ -200,6 +232,7 @@ APSWBackup_step(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   if (res != SQLITE_OK && res != SQLITE_DONE)
     SET_EXC(res, self->dest->db);
 
+  self->in_backup = 0;
   sqlite3_mutex_leave(self->source->dbmutex);
   sqlite3_mutex_leave(self->dest->dbmutex);
 
@@ -209,10 +242,7 @@ APSWBackup_step(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
   if (res == SQLITE_DONE)
   {
     if (!Py_IsTrue(self->done))
-    {
-      Py_CLEAR(self->done);
-      self->done = Py_NewRef(Py_True);
-    }
+      Py_XSETREF(self->done, Py_True);
     res = SQLITE_OK;
   }
 
@@ -249,6 +279,8 @@ APSWBackup_finish(PyObject *self_, PyObject *Py_UNUSED(unused))
   DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
                    "Backup destination Connection is busy in another thread");
 
+  IN_BACKUP_CHECK;
+  self->in_backup = 1;
   setexc = APSWBackup_close_internal(self, 0);
   if (setexc)
     return NULL;
@@ -306,6 +338,9 @@ APSWBackup_close(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_na
 
   DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
                    "Backup destination Connection is busy in another thread");
+  IN_BACKUP_CHECK;
+  self->in_backup = 1;
+
   setexc = APSWBackup_close_internal(self, force);
   if (setexc)
     return NULL;
@@ -331,7 +366,10 @@ APSWBackup_aclose(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_n
   }
 
   if (self->dest)
+  {
     ASYNC_FASTCALL(self->dest, APSWBackup_close);
+    return error_async_in_sync_context();
+  }
   return async_return_value(Py_None);
 }
 
@@ -431,8 +469,11 @@ APSWBackup_exit(PyObject *self_, PyObject *const *fast_args, Py_ssize_t fast_nar
      message */
   DBMUTEXES_ENSURE(self->source->dbmutex, "Backup source Connection is busy in another thread", self->dest->dbmutex,
                    "Backup destination Connection is busy in another thread");
-  setexc = APSWBackup_close_internal(self, !Py_IsNone(etype) || !Py_IsNone(evalue) || !Py_IsNone(etraceback));
-
+  IN_BACKUP_CHECK;
+  self->in_backup = 1;
+  CHAIN_EXC_BEGIN
+    setexc = APSWBackup_close_internal(self, !Py_IsNone(etype) || !Py_IsNone(evalue) || !Py_IsNone(etraceback));
+  CHAIN_EXC_END;
   if (setexc)
   {
     assert(PyErr_Occurred());
@@ -511,6 +552,16 @@ APSWBackup_bool(PyObject *self_)
   return self->backup ? 1 : 0;
 }
 
+static int
+APSWBackup_tp_traverse(PyObject *self_, visitproc visit, void *arg)
+{
+  APSWBackup *self = (APSWBackup *)self_;
+
+  Py_VISIT(self->dest);
+  Py_VISIT(self->source);
+  return 0;
+}
+
 /** .. attribute:: done
   :type: bool
 
@@ -518,7 +569,7 @@ APSWBackup_bool(PyObject *self_)
 */
 static PyMemberDef backup_members[] = {
   /* name type offset flags doc */
-  { "done", T_OBJECT, offsetof(APSWBackup, done), READONLY, Backup_done_DOC },
+  { "done", Py_T_OBJECT_EX, offsetof(APSWBackup, done), Py_READONLY, Backup_done_DOC },
   { 0, 0, 0, 0, 0 }
 };
 
@@ -552,7 +603,7 @@ static PyTypeObject APSWBackupType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.Backup",
   .tp_basicsize = sizeof(APSWBackup),
   .tp_dealloc = APSWBackup_dealloc,
-  .tp_flags = Py_TPFLAGS_DEFAULT,
+  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
   .tp_doc = Backup_class_DOC,
   .tp_weaklistoffset = offsetof(APSWBackup, weakreflist),
   .tp_methods = backup_methods,
@@ -561,4 +612,5 @@ static PyTypeObject APSWBackupType = {
   .tp_as_number = &backup_as_number,
   .tp_repr = APSWBackup_tp_repr,
   .tp_str = NULL,
+  .tp_traverse = APSWBackup_tp_traverse,
 };

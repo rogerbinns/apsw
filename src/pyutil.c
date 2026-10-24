@@ -139,6 +139,50 @@ PyWeakref_GetRef(PyObject *ref, PyObject **pobj)
 }
 #endif
 
+#if PY_VERSION_HEX < 0x030d0000
+#undef PyList_GetItemRef
+static PyObject *
+PyList_GetItemRef(PyObject *list, Py_ssize_t index)
+{
+#include "faultinject.h"
+  return Py_XNewRef(PyList_GetItem(list, index));
+}
+#endif
+
+#if PY_VERSION_HEX < 0x030d0000
+#undef PyObject_HasAttrWithError
+static int
+PyObject_HasAttrWithError(PyObject *o, PyObject *attr_name)
+{
+#include "faultinject.h"
+
+  /* Normal PyObject_HasAttr sends errors to unraisable - this added
+     in py 3.13 preserves them.  */
+
+  assert(!PyErr_Occurred());
+
+  PyObject *res = PyObject_GetAttr(o, attr_name);
+  Py_XDECREF(res);
+
+  if (res)
+    return 1;
+
+  if (!PyErr_Occurred())
+    return 0;
+
+  if (PyErr_ExceptionMatches(PyExc_AttributeError))
+  {
+    PyErr_Clear();
+    return 0;
+  }
+  return -1;
+}
+#endif
+
+/* Ensure compile error if we used non-with error version */
+#define PyObject_HasAttr "You must use PyObject_HasAttrWithError"
+#define PyDict_GetItem "You must use PyDict_getItemWithError"
+
 /* some we made up in the same spirit*/
 static void
 Py_TpFree(PyObject *o)
@@ -274,14 +318,11 @@ hide all this.
 static void
 PyErr_AddExceptionNoteV(const char *format, ...)
 {
-  (void)format;
-#if PY_VERSION_HEX >= 0x030b0000
-#ifndef DISABLE_PyErr_AddExceptionNoteV
   va_list fmt_args;
   va_start(fmt_args, format);
 
   PyObject *message;
-  message = PyUnicode_FromFormatV(format, fmt_args);
+  CHAIN_EXC(message = PyUnicode_FromFormatV(format, fmt_args));
 
   if (message)
   {
@@ -298,8 +339,6 @@ PyErr_AddExceptionNoteV(const char *format, ...)
   }
 
   va_end(fmt_args);
-#endif
-#endif
 }
 
 /* Automatically handle coroutines (async) in callbacks
@@ -317,7 +356,11 @@ apsw_run_in_event_loop(PyObject *coro)
 {
   assert(coro);
 
-  PyObject *runner = PyDict_GetItemWithError(PyThreadState_GetDict(), async_run_coro_sentinel);
+  PyObject *tstate_dict = PyThreadState_GetDict();
+  if (!tstate_dict)
+    return PyErr_Format(PyExc_RuntimeError, "threadstate dict is not available");
+
+  PyObject *runner = Py_XNewRef(PyDict_GetItemWithError(tstate_dict, async_run_coro_sentinel));
 
   if (!runner || Py_IsNone(runner))
   {
@@ -326,6 +369,7 @@ apsw_run_in_event_loop(PyObject *coro)
                    "A coroutine (async) was passed as a callback to APSW, but apsw.async_run_coro "
                    "has not been set to run it in this thread. See the APSW async documentation for more details.");
     AddTraceBackHere(__FILE__, __LINE__, "apsw_run_in_event_loop", "{s: O}", "coro", coro);
+    Py_XDECREF(runner);
     return NULL;
   }
 
@@ -336,6 +380,7 @@ apsw_run_in_event_loop(PyObject *coro)
     AddTraceBackHere(__FILE__, __LINE__, "apsw_run_in_event_loop.returned_exception", "{s: O, s: O}", "coroutine", coro,
                      "runner", runner);
 
+  Py_DECREF(runner);
   return result;
 }
 
@@ -406,3 +451,10 @@ PyImport_ImportModuleAttr(PyObject *mod_name, PyObject *attr_name)
   return attr;
 }
 #endif
+
+static int
+reject_attribute_deletion(const char *name)
+{
+  PyErr_Format(PyExc_AttributeError, "You can not delete the '%s' attribute", name);
+  return -1;
+}

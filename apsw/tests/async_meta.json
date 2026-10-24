@@ -36,6 +36,7 @@
             "get_autocommit",
             "last_insert_rowid",
             "in_transaction",
+            "system_errno",
             "total_changes"
         ],
         "sync": [

@@ -56,10 +56,6 @@
       mutex_one = (conn1)->dbmutex;                                                                                    \
       switch (sqlite3_mutex_try(mutex_one))                                                                            \
       {                                                                                                                \
-      case SQLITE_MISUSE:                                                                                              \
-        PyErr_SetString(ExcForkingViolation,                                                                           \
-                        "SQLite object allocated in one process is being used in another (across a fork)");            \
-        return -1;                                                                                                     \
       case SQLITE_BUSY:                                                                                                \
         return apsw_AddPendingCall(func, self);                                                                        \
       case SQLITE_OK:                                                                                                  \
@@ -72,11 +68,6 @@
     {                                                                                                                  \
       switch (sqlite3_mutex_try((conn2)->dbmutex))                                                                     \
       {                                                                                                                \
-      case SQLITE_MISUSE:                                                                                              \
-        PyErr_SetString(ExcForkingViolation,                                                                           \
-                        "SQLite object allocated in one process is being used in another (across a fork)");            \
-        sqlite3_mutex_leave(mutex_one);                                                                                \
-        return -1;                                                                                                     \
       case SQLITE_BUSY:                                                                                                \
         sqlite3_mutex_leave(mutex_one);                                                                                \
         return apsw_AddPendingCall(func, self);                                                                        \
@@ -87,95 +78,6 @@
       }                                                                                                                \
     }                                                                                                                  \
   } while (0)
-
-#define DBMUTEX_RETRY(connection, func) DBMUTEX_RETRY_2(connection, (Connection *)0, func)
-
-/* Py_AddPendingCall only has 32 slots so if we end up with more than
-   that many objects waiting mutex to destruct it returns errors.
-   Annoyingly this means having to manage our own list of pending calls.
-*/
-
-static size_t pending_call_slots_count = 0;
-typedef struct
-{
-  int (*func)(void *);
-  void *arg;
-} pending_call_entry;
-static pending_call_entry *pending_call_slots = 0;
-
-static int pending_call_registered = 0;
-
-static int
-pending_call_callback(void *ignored)
-{
-  assert(!PyErr_Occurred());
-
-  pending_call_registered = 0;
-
-  for (size_t i = 0; i < pending_call_slots_count; i++)
-  {
-    if (pending_call_slots[i].func)
-    {
-      int (*func)(void *) = pending_call_slots[i].func;
-      void *arg = pending_call_slots[i].arg;
-      pending_call_slots[i].func = 0;
-      pending_call_slots[i].arg = 0;
-      int res = func(arg);
-      assert((res == 0 && !PyErr_Occurred()) || (res != 0 && PyErr_Occurred()));
-      if (PyErr_Occurred())
-        apsw_write_unraisable(NULL);
-      (void)res;
-    }
-    else
-    {
-      assert(pending_call_slots[i].func == 0);
-      assert(pending_call_slots[i].arg == 0);
-    }
-  }
-
-  assert(!PyErr_Occurred());
-  return 0;
-}
-
-static int
-apsw_AddPendingCall(int (*func)(void *), void *arg)
-{
-  assert(func);
-  assert(arg);
-
-  int res = 0;
-
-  size_t i;
-  for (i = 0; i < pending_call_slots_count; i++)
-    if (!pending_call_slots[i].func)
-      break;
-  if (i == pending_call_slots_count)
-  {
-    pending_call_entry *pending_call_slots_new
-        = PyMem_Resize(pending_call_slots, pending_call_entry, pending_call_slots_count + 1);
-    if (!pending_call_slots_new)
-    {
-      res = -1;
-      goto exit;
-    }
-    pending_call_slots_count++;
-  }
-  pending_call_slots[i].func = func;
-  pending_call_slots[i].arg = arg;
-
-  if (!pending_call_registered)
-  {
-    res = Py_AddPendingCall(pending_call_callback, NULL);
-    if (res != 0)
-      PyErr_SetString(PyExc_RuntimeError,
-                      "APSW: Py_AddPendingCall failed which means destructors will not be able to complete");
-    else
-      pending_call_registered = 1;
-  }
-exit:
-  assert((res == 0 && !PyErr_Occurred()) || (res != 0 && PyErr_Occurred()));
-  return res;
-}
 
 /*
    The default Python PyErr_WriteUnraisable is almost useless, and barely used
@@ -343,38 +245,51 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
   case SQLITE_TEXT: {
     const char *data = (const char *)sqlite3_value_text(value);
     if (!data)
-      return PyErr_NoMemory();
+    {
+      SET_EXC(SQLITE_NOMEM, NULL);
+      return NULL;
+    }
     return PyUnicode_FromStringAndSize(data, sqlite3_value_bytes(value));
   }
 
   default:
   case SQLITE_NULL:
-    if (in_constraint_possible && sqlite3_vtab_in_first(value, &in_value) == SQLITE_OK)
+    if (in_constraint_possible)
     {
-      int res;
-      PyObject *v = NULL, *set = PySet_New(NULL);
-      if (!set)
-        return NULL;
-      while (in_value)
+      int res = sqlite3_vtab_in_first(value, &in_value);
+      if (res == SQLITE_OK)
       {
-        v = convert_value_to_pyobject(in_value, 0, 0);
-        if (!v || 0 != PySet_Add(set, v))
-          goto error;
-        Py_CLEAR(v);
-        res = sqlite3_vtab_in_next(value, &in_value);
-        if (res != SQLITE_DONE && res != SQLITE_OK)
+        PyObject *v = NULL, *set = PySet_New(NULL);
+        if (!set)
+          return NULL;
+        while (in_value)
         {
-          /* this should use SET_EXC but there is a circular dependency between that
+          v = convert_value_to_pyobject(in_value, 0, 0);
+          if (!v || 0 != PySet_Add(set, v))
+            goto error;
+          Py_CLEAR(v);
+          res = sqlite3_vtab_in_next(value, &in_value);
+          if (res != SQLITE_DONE && res != SQLITE_OK)
+          {
+            /* this should use SET_EXC but there is a circular dependency between that
              file and this one, so we punt on this unlikely scenario */
-          PyErr_Format(PyExc_ValueError, "Failed in sqlite3_vtab_in_next result %d", res);
-          goto error;
+            PyErr_Format(PyExc_ValueError, "Failed in sqlite3_vtab_in_next result %d", res);
+            goto error;
+          }
         }
+        return set;
+      error:
+        Py_XDECREF(v);
+        Py_XDECREF(set);
+        return NULL;
       }
-      return set;
-    error:
-      Py_XDECREF(v);
-      Py_XDECREF(set);
-      return NULL;
+      /* SQLITE_ERROR means it is not an in, anything else is an error
+         like no mem */
+      if (res != SQLITE_ERROR)
+      {
+        SET_EXC(res, NULL);
+        return NULL;
+      }
     }
     void *pointer = sqlite3_value_pointer(value, PYOBJECT_BIND_TAG);
     if (pointer)
@@ -385,7 +300,10 @@ convert_value_to_pyobject(sqlite3_value *value, int in_constraint_possible, int 
     const void *data = sqlite3_value_blob(value);
     int len = sqlite3_value_bytes(value);
     if (!data && len)
-      return PyErr_NoMemory();
+    {
+      SET_EXC(SQLITE_NOMEM, NULL);
+      return NULL;
+    }
     return PyBytes_FromStringAndSize(data, len);
   }
   }
@@ -438,9 +356,11 @@ apsw_strdup(const char *source)
   char *res = PyMem_Calloc(1, len + 3);
   if (res)
   {
+    memcpy(res, source, len);
     res[len] = res[len + 1] = res[len + 2] = 0;
-    PyOS_snprintf(res, len + 1, "%s", source);
   }
+  else
+    PyErr_NoMemory();
   return res;
 }
 

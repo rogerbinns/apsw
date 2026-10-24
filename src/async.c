@@ -12,7 +12,7 @@ typedef struct BoxedCall
   PyObject_VAR_HEAD
 
       /* discriminated union */
-      enum {
+      enum BoxedCall_call_type {
         Dormant = 0,
         ConnectionInit,
         FastCallWithKeywords,
@@ -68,11 +68,11 @@ typedef struct BoxedCall
 } BoxedCall;
 
 static void
-BoxedCall_clear(PyObject *self_)
+BoxedCall_clear(PyObject *self_, int call_type)
 {
   BoxedCall *self = (BoxedCall *)self_;
 
-  switch (self->call_type)
+  switch ((call_type < 0) ? self->call_type : (enum BoxedCall_call_type)call_type)
   {
   case Dormant:
     return;
@@ -115,7 +115,7 @@ BoxedCall_clear(PyObject *self_)
 static void
 BoxedCall_dealloc(PyObject *self)
 {
-  BoxedCall_clear(self);
+  BoxedCall_clear(self, -1);
   Py_TpFree(self);
 }
 
@@ -126,10 +126,14 @@ BoxedCall_internal_call(BoxedCall *self)
 
   PyObject *result = NULL;
 
+  /* we mark as Dormant before making the call so that any attempts to
+     call this again inside the callbacks will fail */
+  enum BoxedCall_call_type call_type = self->call_type;
+  self->call_type = Dormant;
+
   if (0 == PyContext_Enter(self->context))
   {
-
-    switch (self->call_type)
+    switch (call_type)
     {
     case ConnectionInit:
       if (0
@@ -159,6 +163,9 @@ BoxedCall_internal_call(BoxedCall *self)
       Py_UNREACHABLE();
     }
 
+    /* Error deliberately not checked.  There is nothing that could be
+       done.  Examining the code shows that the only way to get an error is
+       by not having the PyContext_Enter above. */
     PyContext_Exit(self->context);
   }
 
@@ -168,7 +175,7 @@ BoxedCall_internal_call(BoxedCall *self)
     AddTraceBackHere(__FILE__, __LINE__, "apsw.aio.BoxedCall.__call__", "{s:i}", "call_type", (int)self->call_type);
   }
 
-  BoxedCall_clear((PyObject *)self);
+  BoxedCall_clear((PyObject *)self, call_type);
 
   return result;
 }
@@ -190,6 +197,10 @@ BoxedCall_call(PyObject *self_, PyObject *args, PyObject *kwargs)
   return BoxedCall_internal_call(self);
 }
 
+/* BoxedCall deliberately does not provide GC or tp_clear.  The
+   contract with the Async Controller is that they must call it, or
+   destroy it.  Just leaving it lying around will keep the call object
+   and parameters alive. */
 static PyTypeObject BoxedCallType = {
   PyVarObject_HEAD_INIT(NULL, 0).tp_name = "apsw.aio.BoxedCall",
   .tp_basicsize = sizeof(BoxedCall),
@@ -321,7 +332,8 @@ make_boxed_fastcall(PyCFunctionFastWithKeywords function, PyObject *object, PyOb
   boxed_call->FastCallWithKeywords.object = Py_XNewRef(object);
   boxed_call->FastCallWithKeywords.fast_kwnames = Py_XNewRef(fast_kwnames);
   boxed_call->FastCallWithKeywords.fast_nargs = fast_nargs;
-  memcpy(boxed_call->FastCallWithKeywords.fast_args + 1, fast_args, sizeof(PyObject *) * total_args);
+  if (total_args)
+    memcpy(boxed_call->FastCallWithKeywords.fast_args + 1, fast_args, sizeof(PyObject *) * total_args);
   for (Py_ssize_t i = 0; i < total_args; i++)
     Py_INCREF(boxed_call->FastCallWithKeywords.fast_args[1 + i]);
 
