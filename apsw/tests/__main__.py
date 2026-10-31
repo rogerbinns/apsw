@@ -10975,7 +10975,11 @@ def vfstestdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=T
     # this is needed for windows because the deletefiles will fail
     # causing clashes with expected empty files
     for con in apsw.connections():
-        if pathlib.Path(filename).samefile(con.filename):
+        if (
+            pathlib.Path(filename).exists()
+            and pathlib.Path(con.filename).exists()
+            and pathlib.Path(filename).samefile(con.filename)
+        ):
             con.close()
     for suf in "", "-journal", "x", "x-journal":
         deletefile(filename + suf)
