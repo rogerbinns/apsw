@@ -9,10 +9,10 @@ separates your SQL into their own files.
 * The SQL files can be can be syntax checked and highlighted as SQL
 * You import the SQL files as native Python code
 * Each SQL section becomes a Python function
-* Executes to completion atomically
+* Executes to completion atomically (except Iterator)
 * You define the return type per section, with very easy conversion
   to :mod:`dataclasses`
-* You define the parameters, their types and defaults
+* You define the parameters, their names, types, and defaults
 * Automatically sync and async based on :class:`Connection` used
 * Documentation, typing and completions
 * Can use mocks for testing, by overriding the functions
@@ -282,18 +282,21 @@ The type is then invoked with the dict.  This works really well with
 
     *   - Return type
         - Explanation
+        - Recommendation
 
     *   - :code:`None`
         - The SQL is executed to completion, raising
           :exc:`apsw.query.TooManyRows` if any rows are returned.
+        - You don't need result values
 
     *   - :code:`changes`
         - Returns the number of rows added, deleted, or changed.
-          Cursors are not isolated from each other so this will counts
+          Cursors are not isolated from each other so this will count
           all database wide changes from when it starts execution
           until completion.  The return value is an :class:`int`.
           :exc:`apsw.query.RowExpected` is raised if any rows are
           returned.
+        - Making content changes
 
     *   - :code:`a_type | None`
         - If exactly one row was returned then conversion to
@@ -304,25 +307,37 @@ The type is then invoked with the dict.  This works really well with
           You can also use :code:`a_type | Literal[value]` and
           :code:`value` is returned on no rows instead of
           :code:`None`.
+        - Getting one result
 
     *   - :code:`a_type`
         - Exactly one row should return and will be converted to
           :code:`a_type`.  If not then :exc:`apsw.query.RowExpected`
-          is raised.  CHECK if TooManyRows is raised
+          is raised.
+        - One value, and making a change with ``RETURNING rowid``.
+          :meth:`Connection.last_insert_rowid` returns the last
+          change made in any SQL on the connection, while the
+          `RETURNING rowid <https://sqlite.org/lang_returning.html>`__
+          on a specific query returns that specific rowid without
+          potential for race conditions.
 
     *   - :code:`Iterator[a_type]`
         - Each row is converted to :code:`a_type` and is iterable
           (sync or async depending on the underlying
           :class:`Connection`)
+        - Converting existing ``for row in db.execute("...")`` to
+          ``for row in name(db)``
 
     *   - :code:`list[a_type]`
         - Each row is converted to :code:`a_type`, as a :class:`list`.
+        - Processing a query that returns up to a small number of
+          results
 
     *   - :code:`Any`
         - In the above cases, using a *type* results in conversion.
           If you use :code:`Any` as the type then no conversion
           happens and the value (if only one column result) or row is
           returned as is.
+        - Getting the raw return, which may be adjusted by row tracers
 
 Tips
 ----

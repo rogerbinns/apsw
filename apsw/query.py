@@ -33,7 +33,34 @@ See :doc:`query` for details
 # * : spec | spec
 # * field syntax valid for eval
 # * field is passed in name matches parameter unless **locals
-
+#
+# :set for UPDATE .. SET {dict:set}
+#
+# :limit for {limit:limit} or {limit,offset:limit} emitting
+# nothing or LIMIT :limit or LIMIT :limit OFFSET :offset
+#   (explicit OFFSET form - the comma form reverses the args)
+#
+# :insert used like INSERT INTO table {vals:insert} emitting
+#     (col1, col2, col3) VALUES(:col1, :col2, :col3)
+#   (binds by column name, symmetric with :set)
+#
+# :where - if dict then emit WHERE name1=val1 AND name=val2.
+#   dataclass to allow some more complexity (operator, table
+#   name).  Handles IS NULL for None value
+#
+# :order - emit order by with simple sequence.  own dataclass
+#   to cover table name, descending
+#
+# executor binding: generate a bind() facade - q = module.bind(executor)
+# then q.query(...) so the executor isn't repeated.  Emit Queries and
+# AsyncQueries classes + an @overload bind(); keep the free functions
+# too.  Needs committed .py or generated .pyi for completion/mypy.
+#
+# python_from_text callback: optional per-section callback given each
+# name's details, returning real schema info (eg column names) so the
+# generated dataclasses use actual columns rather than user-defined
+# ones.  Returning None leaves the user no worse off than now.  Save
+# the generated python via the CLI tool.
 
 class TooManyRows(Exception):
     """More than one row was returned by the SQL, but at most one was expected"""
