@@ -10,6 +10,15 @@ history <https://devguide.python.org/versions/>`__.
 APSW changes by version
 -----------------------
 
+next
+====
+
+Tests that are skipped because SQLite optional extensions and
+configuration are not available now show they are skipped and why.
+Previously the skipping was silent.  PyPI builds have no skipped tests
+(except wasm) while ones based on platform SQLite libraries will
+reflect the library configuration.
+
 3.54.1.0
 ========
 

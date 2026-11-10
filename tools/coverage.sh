@@ -69,7 +69,7 @@ $CC $CFLAGS $MOREFLAGS $PROFILE $OUR_CFLAGS -I$INCLUDEDIR -Isrc -c src/unicode.c
 $LINKER $PROFILE unicode.o -o apsw/_unicode$SOSUFFIX
 set +ex
 echo "Running $PYTHON $args"
-env PYTHONPATH=. $PYTHON $args && $PYTHON -m apsw.tests.async_meta
+env PYTHONPATH=. $PYTHON $args && $PYTHON -m apsw.tests.async_meta && $PYTHON -m apsw.tests.large
 res=$?
 [ $res -eq 0 -a -z "$NO_FI" ] && echo "Running $PYTHON tools/fi.py $FI_ARGS" && env PYTHONPATH=. $PYTHON tools/fi.py $FI_ARGS
 $GCOV $GCOVOPTS *.gcno > /dev/null

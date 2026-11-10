@@ -7,7 +7,6 @@ import json
 import os
 import pathlib
 import random
-import re
 import shlex
 import sys
 import tempfile
@@ -2057,7 +2056,6 @@ shell.write(shell.stdout, "hello world\\n")
         for f in fh:
             f.close()
 
-__all__ = ("Shell",)
 
 if __name__ == "__main__":
     unittest.main()

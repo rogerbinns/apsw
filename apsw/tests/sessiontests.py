@@ -4,14 +4,15 @@
 # mypy: ignore-errors
 # type: ignore
 
-import unittest
 import functools
 import sys
+import unittest
 
 import apsw
 import apsw.ext
 
 
+@unittest.skipIf(not hasattr(apsw, "Session"), "session extension not available")
 class Session(unittest.TestCase):
     def memdb(self, name):
         "helper to get a memory db with connection in uri mode to allow attaches as memdb too"
@@ -528,10 +529,15 @@ class Session(unittest.TestCase):
 
         # streaming and non-streaming should give identical content
         # but we have to filter out the address
-        non = [str(tc).split(", at 0x")[0] for tc in apsw.Changeset.iter(changeset, flags=apsw.SQLITE_CHANGESETSTART_INVERT)]
-        streamed  = [str(tc).split(", at 0x")[0] for tc in apsw.Changeset.iter(StreamInput(changeset), flags=apsw.SQLITE_CHANGESETSTART_INVERT)]
+        non = [
+            str(tc).split(", at 0x")[0]
+            for tc in apsw.Changeset.iter(changeset, flags=apsw.SQLITE_CHANGESETSTART_INVERT)
+        ]
+        streamed = [
+            str(tc).split(", at 0x")[0]
+            for tc in apsw.Changeset.iter(StreamInput(changeset), flags=apsw.SQLITE_CHANGESETSTART_INVERT)
+        ]
         self.assertEqual(non, streamed)
-
 
     def testCorrupt(self):
         "corrupt changesets"
@@ -900,7 +906,7 @@ class Session(unittest.TestCase):
         "Adding manual changes"
         # from sqlite 3.53"
 
-        db=apsw.Connection("")
+        db = apsw.Connection("")
         # this is why there are 5 columns
         all_types = ("one", 2, 3.3, b"\x04\x04\x04\x04", None)
         db.execute("""create table "insert"(one, two, three, four, five, PRIMARY KEY(one, three));
@@ -985,7 +991,7 @@ class Session(unittest.TestCase):
         builder = apsw.ChangesetBuilder()
         builder.schema(db, "main")
         # max uint64
-        self.assertRaises(OverflowError, builder.add_insert, "insert", True, (0xffff_ffff_ffff_ffff,))
+        self.assertRaises(OverflowError, builder.add_insert, "insert", True, (0xFFFF_FFFF_FFFF_FFFF,))
         # these should all work
         for t in (iter, list, tuple):
             builder.add_insert("insert", False, t(all_types))
@@ -1059,13 +1065,6 @@ class ErrorStreamInput(StreamInput):
             1 / 0
         return super().__call__(amount)
 
-
-has_session = hasattr(apsw, "Session")
-
-if not has_session:
-    del Session
-
-__all__ = ("Session",) if has_session else tuple()
 
 if __name__ == "__main__":
     unittest.main()

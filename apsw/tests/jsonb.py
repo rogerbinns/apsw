@@ -5,7 +5,6 @@ from __future__ import annotations
 # This testing code deliberately does nasty stuff so mypy isn't helpful
 # mypy: ignore-errors
 # type: ignore
-
 import array
 import collections.abc
 import contextlib
@@ -615,7 +614,7 @@ class JSONB(unittest.TestCase):
         # recursion.
         if "d" in getattr(sys, "abiflags", ""):
             # give up
-            return
+            return self.skipTest("Unable to exercise in debug Python builds")
 
         # this test works but depends on magic numbers and isn't stable
         # across python versions.  if I add 10 to the current depth and
@@ -625,7 +624,7 @@ class JSONB(unittest.TestCase):
 
         # so disabling this test for now because it is too difficult to
         # trigger reliably
-        return
+        return self.skipTest("Unable to force stack overflow reliably in this Python version")
 
         import inspect
 
@@ -1110,7 +1109,7 @@ class JSONB(unittest.TestCase):
         try:
             apsw.sqlite_extra.load(self.db, "randomjson")
         except apsw.sqlite_extra.NotAvailable:
-            return
+            return self.skipTest("randomjson extension not available")
 
         for seed in range(2000, 3000):
             # we round trip the json through as many combinations of SQLite, Python and APSW
@@ -1528,7 +1527,6 @@ def recursion_limit(value: int):
         sys.setrecursionlimit(existing)
 
 
-__all_ = ("JSONB", "Conversion", "Ext")
 
 
 if __name__ == "__main__":

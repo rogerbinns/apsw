@@ -10,7 +10,6 @@ import pathlib
 import subprocess
 import sys
 import tempfile
-import random
 import unittest
 
 import apsw
@@ -56,7 +55,7 @@ class Extra(unittest.TestCase):
 
     def testExecutable(self):
         if sys.platform == "emscripten":
-            return
+            return self.skipTest("Not available in emscripten builds")
 
         spicy = "√π⁷≤∞"
 
@@ -189,7 +188,7 @@ class Extra(unittest.TestCase):
         out, err = io.StringIO(), io.StringIO()
         db = apsw.Connection(":memory:")
         if not hasattr(db, "load_extension"):
-            return
+            return self.skipTest("Extension loading not available")
 
         s = apsw.Shell(db=db, stdout=out, stderr=err)
         s.process_command(".load --list")
@@ -218,7 +217,7 @@ class Extra(unittest.TestCase):
         # we add some extra code to make it compile under windows, so
         # test that works
         if not apsw.sqlite_extra.has("fileio") or not hasattr(apsw, "enable_load_extension"):
-            return
+            return self.skipTest("Missing fileio extension, or extension loading is disabled")
 
         spicy = "√π⁷≤∞"
         with tempfile.TemporaryDirectory(prefix=f"apsw-extra-{spicy}-test") as tmpd:
@@ -252,8 +251,6 @@ class Extra(unittest.TestCase):
                 print(f"{name=}")
                 self.assertEqual(blob, data)
 
-
-__all__ = ("Extra",)
 
 if __name__ == "__main__":
     unittest.main()

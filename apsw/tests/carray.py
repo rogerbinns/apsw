@@ -5,7 +5,6 @@ from __future__ import annotations
 # This testing code deliberately does nasty stuff so mypy isn't helpful
 # mypy: ignore-errors
 # type: ignore
-
 import array
 import random
 import unittest
@@ -13,6 +12,7 @@ import unittest
 import apsw
 
 
+@unittest.skipIf(not hasattr(apsw, "carray"), "APSW not built with carray support")
 class CArray(unittest.TestCase):
     def setUp(self):
         self.db = apsw.Connection(":memory:")
@@ -197,7 +197,7 @@ class CArray(unittest.TestCase):
         try:
             import numpy as np
         except ImportError:
-            return
+            return self.skipTest("numpy module not available")
 
         # multi-dimensional - only has to be contiguous - order doesn't matter
         for order in "CF":
@@ -251,15 +251,6 @@ class CArray(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, regex):
                 # this will be off alignment by one byte
                 apsw.carray(data[1:], stop=2, flags=flag)
-
-
-has_carray = hasattr(apsw, "carray")
-
-if has_carray:
-    __all__ = ("CArray",)
-else:
-    del CArray
-    __all__ = tuple()
 
 
 if __name__ == "__main__":

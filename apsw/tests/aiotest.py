@@ -1348,7 +1348,7 @@ class Async(unittest.TestCase):
         try:
             import asyncio
         except ImportError:
-            return
+            return self.skipTest("asyncio not available")
 
         for fn in self.get_all_atests():
             with self.subTest(fw="asyncio", fn=fn):
@@ -1367,12 +1367,10 @@ class Async(unittest.TestCase):
 
             ver = tuple(map(int, importlib.metadata.version("trio").split(".")))
             if ver < (0, 20, 0):
-                if self.verbose:
-                    print(f"trio {ver=} is too old to run tests")
-                return
+                return self.skipTest(f"trio {ver=} is too old and not supported")
 
         except (ImportError, TypeError):
-            return
+            return self.skipTest("trio module not available")
 
         for fn in self.get_all_atests():
             with self.subTest(fw="trio", fn=fn):
@@ -1403,20 +1401,18 @@ class Async(unittest.TestCase):
             pass
 
         if not backends:
-            return
+            return self.skipTest("No usable backends for anyio found")
 
         try:
             global anyio
             import anyio
         except ImportError:
-            return
+            return self.skipTest("anyio module not available")
 
         ver = tuple(map(int, importlib.metadata.version("anyio").split(".")))
         if ver < (4, 0):
             # our tests use the v4 apis
-            if self.verbose:
-                print(f"anyio {ver=} is too old to run the tests")
-            return
+            return self.skipTest(f"anyio {ver=} is too old to run the tests")
 
         for be in backends:
             if self.verbose:
@@ -1494,8 +1490,6 @@ fractal_sql = """
     )
     SELECT group_concat(rtrim(t),x'0a') FROM a;"""
 
-
-__all__ = ("Async",)
 
 if __name__ == "__main__":
     unittest.main()

@@ -64,8 +64,12 @@ class BecauseWindowsTempfile:
 # we do more stuff under coverage
 coverage_run = bool(os.environ.get("COVERAGE_RUN", ""))
 
+has_fts5 = "ENABLE_FTS5" in apsw.compile_options
 
+@unittest.skipIf(not has_fts5, "FTS5 extension not present in SQLite")
 class FTS(unittest.TestCase):
+    "FTS5 full text search functionality"
+
     def setUp(self):
         self.db = apsw.Connection("")
 
@@ -524,7 +528,7 @@ class FTS(unittest.TestCase):
         "Test command line interface"
 
         if sys.platform == "emscripten":
-            return
+            return self.skipTest("Not available on emscripten")
 
         if coverage_run:
             cov_params = ["-m", "coverage", "run", "--source", "apsw", "-p"]
@@ -1081,11 +1085,9 @@ class FTS(unittest.TestCase):
             # check all members were tested
             self.assertEqual(len(items), 0, f"untested {items=}")
 
+    @unittest.skipIf(not getattr(apsw, "apsw_fault_inject", None), "apsw built without fault injection")
     def testzzFaultInjection(self):
         "Deliberately inject faults to exercise all code paths"
-        ### Copied from main tests
-        if not getattr(apsw, "apsw_fault_inject", None):
-            return
 
         apsw.faultdict = dict()
 
@@ -1096,9 +1098,6 @@ class FTS(unittest.TestCase):
 
         sys.apsw_should_fault = ShouldFault
         ### end copied from main tests
-
-        if not has_fts5:
-            return
 
         apsw.faultdict["FTS5TokenizerRegister"] = True
         self.assertRaises(apsw.NoMemError, self.db.register_fts5_tokenizer, "foo", lambda *args: None)
@@ -1232,8 +1231,10 @@ test_content: dict[int, tuple[str, str]] = {
 
 del lines
 
-
+@unittest.skipIf(not has_fts5, "FTS5 extension not present in SQLite")
 class FTS5Table(unittest.TestCase):
+    "apsw.fts5.Table class"
+
     def setUp(self):
         self.db = apsw.Connection("")
 
@@ -1707,8 +1708,10 @@ class FTS5Table(unittest.TestCase):
             # check query is valid
             list(t.search(res or query))
 
-
+@unittest.skipIf(not has_fts5, "FTS5 extension not present in SQLite")
 class FTS5Aux(unittest.TestCase):
+    "FTS5 auxiliary functions interface"
+
     def setUp(self):
         self.db = apsw.Connection("")
         self.t = apsw.fts5.Table.create(self.db, "yes", ["one", "two"], tokenize=["unicode61"])
@@ -2259,7 +2262,7 @@ class Unicode(unittest.TestCase):
         "Exercise command line interface"
 
         if sys.platform == "emscripten":
-            return
+            return self.skipTest("not available on emscripten")
 
         text = ""
         for codepoints in self.cat_examples.values():
@@ -2831,7 +2834,10 @@ abc!p!d\u2029 !p!abc\u0085!p!def
         self.assertEqual(om.text, "0123456789")
         self.assertRaises(OverflowError, om, 1)
 
+@unittest.skipIf(not has_fts5, "FTS5 extension not present in SQLite")
 class FTS5Query(unittest.TestCase):
+    "Test apsw.fts5query module"
+
     def setUp(self):
         self.db = apsw.Connection("")
         self.db.execute('create virtual table search using fts5(one, [two space], "three""quote", ":", "{")')
@@ -3145,23 +3151,6 @@ def extended_testing_file(name: str) -> pathlib.Path | None:
 
     return location if location.exists() else None
 
-
-has_fts5 = "ENABLE_FTS5" in apsw.compile_options
-
-if not has_fts5:
-    del FTS
-    del FTS5Query
-    del FTS5Table
-
-__all__ = ("Unicode",) + (
-    (
-        "FTS",
-        "FTS5Query",
-        "FTS5Table",
-    )
-    if has_fts5
-    else tuple()
-)
 
 if __name__ == "__main__":
     unittest.main()

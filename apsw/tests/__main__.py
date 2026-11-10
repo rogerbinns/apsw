@@ -83,13 +83,23 @@ def print_version_info():
 
 
 # sigh
-iswindows = sys.platform in ("win32",)
+is_windows = sys.platform in ("win32",)
 
 # prefix for test files (eg if you want it on tmpfs)
 TESTFILEPREFIX = os.environ.get("APSWTESTPREFIX", "")
 
 # size of C int in bits
 sizeof_c_int = len(struct.pack("i", 0)) * 8
+
+if not is_windows:
+    # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
+    LOADEXTENSIONFILENAME = "./testextension.sqlext"
+else:
+    LOADEXTENSIONFILENAME = "testextension.sqlext"
+
+test_load_extension_available = hasattr(apsw.Connection, "enable_load_extension") and os.path.exists(
+    LOADEXTENSIONFILENAME
+)
 
 
 def read_whole_file(name, mode, encoding=None):
@@ -127,12 +137,12 @@ try:
     import ctypes
 
     import _ctypes
-except:
+except Exception:
     ctypes = None
     _ctypes = None
 
 # yay
-is64bit = ctypes and ctypes.sizeof(ctypes.c_size_t) >= 8
+is64bit = sys.maxsize > 2**32
 
 # Make curnext switch between the iterator and fetchone alternately
 _nextcounter = 0
@@ -1000,7 +1010,7 @@ class APSW(unittest.TestCase):
     def testCursorReentrant(self):
         "Calling back into cursor while cursor is executing"
         if sys.platform == "emscripten":
-            self.skipTest("threads not supported")
+            self.skipTest("threads not supported on emscripten")
 
         cursor = self.db.cursor()
 
@@ -4376,6 +4386,7 @@ class APSW(unittest.TestCase):
         self.assertIn("NumberOfArguments", l)
         self.assertEqual(l["NumberOfArguments"], 3)
 
+    @unittest.skipIf(not test_load_extension_available, "Extension loading and test extension required")
     def testLoadExtension(self):
         "Check loading of extensions"
         # unicode issues
@@ -5328,26 +5339,6 @@ class APSW(unittest.TestCase):
         db.close()
         cur.close()
 
-    def testLargeObjects(self):
-        "Verify handling of large strings/blobs (>2GB) [requires 64 bit platform]"
-        assert is64bit
-        # For binary/blobs I use an anonymous area slightly larger than 2GB chunk of memory, but don't touch any of it
-        f = mmap.mmap(-1, 2 * 1024 * 1024 * 1024 + 25000)
-        c = self.db.cursor()
-        c.execute("create table foo(theblob)")
-        self.assertRaises(apsw.TooBigError, c.execute, "insert into foo values(?)", (f,))
-        c.execute("insert into foo values(?)", ("jkghjk" * 1024,))
-        b = self.db.blob_open("main", "foo", "theblob", self.db.last_insert_rowid(), True)
-        b.read(1)
-        self.assertRaises(ValueError, b.write, f)
-
-        def func():
-            return f
-
-        self.db.create_scalar_function("toobig", func)
-        self.assertRaises(apsw.TooBigError, c.execute, "select toobig()")
-        f.close()
-
     def testErrorCodes(self):
         "Verify setting of result codes on error/exception"
         fname = TESTFILEPREFIX + "gunk-errcode-test"
@@ -5359,7 +5350,7 @@ class APSW(unittest.TestCase):
             db = apsw.Connection(fname)
             db.cursor().execute("select * from sqlite_schema")
             1 / 0  # should not be reachable
-        except:
+        except Exception:
             klass, e, tb = sys.exc_info()
             self.assertTrue(isinstance(e, apsw.NotADBError))
             self.assertEqual(e.result, apsw.SQLITE_NOTADB)
@@ -5369,7 +5360,7 @@ class APSW(unittest.TestCase):
 
         try:
             deletefile(fname)
-        except:
+        except Exception:
             pass
 
         try:
@@ -6195,6 +6186,7 @@ class APSW(unittest.TestCase):
             except apsw.IncompleteExecutionError as exc:
                 self.assertIsInstance(exc.__context__, ZeroDivisionError)
         with self.subTest(which="C042"):
+
             class errcheck:
                 def __init__(self, faultnum):
                     self.count = 0
@@ -6205,17 +6197,16 @@ class APSW(unittest.TestCase):
                     self.count += 1
                     if self.count < self.faultnum:
                         return dict
-                    1/0
+                    1 / 0
 
                 def __getitem__(self, key):
                     return "three"
 
-
             def et(*args):
                 return True
 
-            c=self.db.cursor()
-            c.exec_trace=et
+            c = self.db.cursor()
+            c.exec_trace = et
             for i in range(1, 5):
                 try:
                     c.execute("select :foo", errcheck(i)).get
@@ -6268,15 +6259,15 @@ class APSW(unittest.TestCase):
         self.db.close()
 
         def inner(end, dangling):
-            con=apsw.Connection("")
+            con = apsw.Connection("")
             con.execute("create table blobs(blob)")
             cursors = []
-            blobs=[]
+            blobs = []
 
             while time.monotonic() < end:
                 for l in cursors, blobs:
                     while len(l) > dangling:
-                        del l[random.randint(0, len(l)-1)]
+                        del l[random.randint(0, len(l) - 1)]
 
                 cur = con.cursor()
                 rowid = cur.execute("insert into blobs values(zeroblob(1234)) returning rowid").get
@@ -6284,11 +6275,10 @@ class APSW(unittest.TestCase):
                 cursors.append("select 2")
                 blobs.append(con.blob_open("main", "blobs", "blob", rowid, False))
 
-        inner(time.monotonic()+2, 20)
+        inner(time.monotonic() + 2, 20)
         gc.collect(2)
 
         self.assertEqual(apsw.connections(), [])
-
 
     def testCursorGet(self):
         "Cursor.get"
@@ -6779,12 +6769,32 @@ class APSW(unittest.TestCase):
                 "order": ("closed",),
             },
             "APSWBlob": {
-                "skip": ("dealloc", "init", "close", "close_internal", "tp_repr", "bool", "aclose", "closed", "tp_traverse"),
+                "skip": (
+                    "dealloc",
+                    "init",
+                    "close",
+                    "close_internal",
+                    "tp_repr",
+                    "bool",
+                    "aclose",
+                    "closed",
+                    "tp_traverse",
+                ),
                 "req": {"closed": "CHECK_BLOB_CLOSED"},
                 "order": ("use", "closed"),
             },
             "APSWBackup": {
-                "skip": ("dealloc", "init", "close_internal", "get_remaining", "get_page_count", "tp_repr", "bool", "aclose", "tp_traverse"),
+                "skip": (
+                    "dealloc",
+                    "init",
+                    "close_internal",
+                    "get_remaining",
+                    "get_page_count",
+                    "tp_repr",
+                    "bool",
+                    "aclose",
+                    "tp_traverse",
+                ),
                 "req": {"closed": "CHECK_BACKUP_CLOSED"},
                 "order": ("use", "closed"),
             },
@@ -6825,12 +6835,14 @@ class APSW(unittest.TestCase):
             "PyObjectBind": {
                 "req": {},
             },
-            "CArrayBind":  {
+            "CArrayBind": {
                 "req": {},
             },
-            "PreUpdate":
-            {
-                "skip": ("dealloc", "tp_repr", ),
+            "PreUpdate": {
+                "skip": (
+                    "dealloc",
+                    "tp_repr",
+                ),
                 "req": {"check": "CHECK_PREUPDATE_SCOPE"},
                 "order": ("check",),
             },
@@ -7176,7 +7188,7 @@ class APSW(unittest.TestCase):
     def testPreUpdate(self):
         "preupdate hook"
         if not hasattr(self.db, "preupdate_hook"):
-            return
+            return self.skipTest("preupdate hook not available")
 
         # we also as a side effect test the generic hook code
         test_ids = [3 + 4j, None, "orange", apsw, functools.partial, 3, math.inf, APSW, 1 / 3]
@@ -7221,7 +7233,7 @@ class APSW(unittest.TestCase):
             else:
                 self.fail("unexpected")
 
-        self.db.preupdate_hook(lambda: 1/0)
+        self.db.preupdate_hook(lambda: 1 / 0)
 
         for id in test_ids:
             self.db.preupdate_hook(functools.partial(hook, id), id=id)
@@ -7347,9 +7359,12 @@ class APSW(unittest.TestCase):
 
         # blob write
         self.db = apsw.Connection("")
-        rowid = self.db.execute("create table foo(x,y,z); insert into foo values(zeroblob(16), ?, ?) returning rowid", (b"gggg", b"a"*32)).get
+        rowid = self.db.execute(
+            "create table foo(x,y,z); insert into foo values(zeroblob(16), ?, ?) returning rowid", (b"gggg", b"a" * 32)
+        ).get
 
         expect_column = 3
+
         def hook(update):
             nonlocal expect_column, rowid
             self.assertEqual(update.op, "DELETE")
@@ -7360,7 +7375,7 @@ class APSW(unittest.TestCase):
         self.db.preupdate_hook(hook)
 
         for column in "z", "y", "x":
-            expect_column -=1
+            expect_column -= 1
 
             with self.db.blob_open("main", "foo", column, rowid, True) as blob:
                 blob.write(b"11")
@@ -7371,6 +7386,7 @@ class APSW(unittest.TestCase):
         self.db = apsw.Connection("")
 
         expect = None
+
         def hook(update):
             nonlocal expect
             self.assertEqual(update.database_name, expect[0])
@@ -7380,10 +7396,10 @@ class APSW(unittest.TestCase):
 
         uniname = "ts 🤦🏼‍♂️  regular 😂❤️ 𐍄𐌰𐌽"
 
-        for dbname in '', 'main', 'foo', 'temp', uniname:
-            if dbname not in {'main', 'temp'}:
+        for dbname in "", "main", "foo", "temp", uniname:
+            if dbname not in {"main", "temp"}:
                 self.db.execute(f"attach '' as [{dbname}]")
-            for tablename in '', 'main', 'foo', 'temp', uniname:
+            for tablename in "", "main", "foo", "temp", uniname:
                 expect = dbname, tablename
                 self.db.execute(f"""
                     create table [{dbname}].[{tablename}](x);
@@ -7593,8 +7609,8 @@ class APSW(unittest.TestCase):
         blobro.seek(0)
         self.assertEqual(blobro.tell(), 0)
         self.assertEqual(len(blobro.read(11119999)), 98765)
-        self.assertRaises(ValueError, blobro.seek, 0x7fff_fff, 1)
-        self.assertRaises(ValueError, blobro.seek, 0x7fff_fff, 2)
+        self.assertRaises(ValueError, blobro.seek, 0x7FFF_FFF, 1)
+        self.assertRaises(ValueError, blobro.seek, 0x7FFF_FFF, 2)
         self.assertRaisesRegex(ValueError, "negative effective length", blobro.read_into, bytearray(10), 15, -1)
         blobro.seek(2222)
         self.assertEqual(blobro.tell(), 2222)
@@ -7604,7 +7620,7 @@ class APSW(unittest.TestCase):
         blobro.seek(-3, 2)
         self.assertEqual(blobro.read(), b"\x00" * 3)
         blobro.seek(0)
-        x=blobro.read()
+        x = blobro.read()
         blobro.seek(0)
         self.assertEqual(blobro.readall(), x)
         self.assertEqual(b"", blobro.read())
@@ -7769,7 +7785,7 @@ class APSW(unittest.TestCase):
     def testBlobIOBase(self):
         "blob conformance with io.RawIOBase"
 
-        rowids=self.db.execute("""
+        rowids = self.db.execute("""
             CREATE TABLE victim(x);
             INSERT INTO victim VALUES (randomblob(16383)) RETURNING rowid;
             INSERT INTO victim VALUES (randomblob(16383)) RETURNING rowid;
@@ -7827,7 +7843,6 @@ class APSW(unittest.TestCase):
 
         self.assertIsInstance(blobro, io.RawIOBase)
         self.assertIsInstance(blobrw, io.RawIOBase)
-
 
     def testAutovacuumPages(self):
         self.assertRaises(TypeError, self.db.autovacuum_pages)
@@ -8062,7 +8077,7 @@ class APSW(unittest.TestCase):
             # there is some weird issued inside this environment +
             # sqlite where writes aren't getting flushed before a read
             # which means the obfuscated database doesn't work.
-            return
+            return self.skipTest("emscripten has different behaviour")
 
         testdb = vfstestdb
 
@@ -8102,12 +8117,12 @@ class APSW(unittest.TestCase):
                 apsw.VFS.__init__(self, self.vfsname, self.basevfs, exclude=None)
 
             def xOpen(innerself, name, flags):
-                x=ObfuscatedVFSFile(innerself.basevfs, name, flags)
-                self.assertIsNotNone(re.match("<ObfuscatedVFSFile filename \".*\" at 0x[A-Fa-f0-9]+>", str(x)))
+                x = ObfuscatedVFSFile(innerself.basevfs, name, flags)
+                self.assertIsNotNone(re.match('<ObfuscatedVFSFile filename ".*" at 0x[A-Fa-f0-9]+>', str(x)))
                 return x
 
         vfs = ObfuscatedVFS()
-        self.assertIsNotNone(re.match("<ObfuscatedVFS \"obfu\" inherits from \".*\" at 0x[0-9a-fA-F]+>", str(vfs)))
+        self.assertIsNotNone(re.match('<ObfuscatedVFS "obfu" inherits from ".*" at 0x[0-9a-fA-F]+>', str(vfs)))
 
         query = "create table foo(x,y); insert into foo values(1,2); insert into foo values(3,4)"
         self.db.cursor().execute(query)
@@ -8425,7 +8440,7 @@ class APSW(unittest.TestCase):
                 assert type(name) == type("")
                 res = super().xDlSym(handle, name)
                 # pypy doesn't have dlsym
-                if not iswindows and hasattr(_ctypes, "dlsym"):
+                if not is_windows and hasattr(_ctypes, "dlsym"):
                     assert _ctypes.dlsym(handle, name) == res
                 # windows has funky issues I don't want to deal with here
                 return res
@@ -8842,7 +8857,7 @@ class APSW(unittest.TestCase):
         TestVFS.xAccess = TestVFS.xAccess4
         self.assertRaises(TypeError, testdb)
         TestVFS.xAccess = TestVFS.xAccess99
-        if iswindows:
+        if is_windows:
             self.assertRaises(apsw.IOError, vfs.xAccess, "<bad<filename:", apsw.SQLITE_ACCESS_READWRITE)
         else:
             self.assertEqual(False, vfs.xAccess("<bad<filename:", apsw.SQLITE_ACCESS_READWRITE))
@@ -8866,7 +8881,7 @@ class APSW(unittest.TestCase):
         TestVFS.xFullPathname = TestVFS.xFullPathname3
         self.assertRaises(TypeError, testdb)
         TestVFS.xFullPathname = TestVFS.xFullPathname4
-        if not iswindows:
+        if not is_windows:
             # ::TODO:: check this on windows
             # SQLite doesn't give an error even though the vfs is silently truncating
             # the full pathname.  See SQLite ticket 3373
@@ -8902,7 +8917,7 @@ class APSW(unittest.TestCase):
         TestVFS.xOpen = TestVFS.xOpen99
         testdb()
 
-        if hasattr(apsw.Connection(":memory:"), "enableloadextension") and os.path.exists(LOADEXTENSIONFILENAME):
+        if hasattr(apsw.Connection, "enable_load_extension") and os.path.exists(LOADEXTENSIONFILENAME):
             ## xDlOpen
             self.assertRaises(TypeError, vfs.xDlOpen, 3)
             self.assertRaises(TypeError, vfs.xDlOpen, b"\xfb\xfc\xfd\xfe\xff\xff\xff\xff")
@@ -9202,7 +9217,7 @@ class APSW(unittest.TestCase):
         ## xTruncate
         self.assertRaises(TypeError, t.xTruncate, "three")
         self.assertRaises(OverflowError, t.xTruncate, 0xFFFFFFFFEEEEEEEE0)
-        if not iswindows:
+        if not is_windows:
             # windows is happy to truncate to -77 bytes
             self.assertRaises(apsw.IOError, t.xTruncate, -77)
         TestFile.xTruncate = TestFile.xTruncate1
@@ -9268,7 +9283,7 @@ class APSW(unittest.TestCase):
 
         ## xCheckReservedLock
         self.assertRaises(TypeError, t.xCheckReservedLock, 8)
-        if not iswindows:
+        if not is_windows:
             # we don't do checkreservedlock test on windows as the
             # various files that need to be copied and finagled behind
             # the scenes are locked
@@ -9477,7 +9492,7 @@ class APSW(unittest.TestCase):
             self.assertRaises(ValueError, blob.read)
 
         # backup code
-        self.db.execute("COMMIT") # clear out pending transaction
+        self.db.execute("COMMIT")  # clear out pending transaction
 
         db2 = apsw.Connection(":memory:")
         with db2.backup("main", self.db, "main") as b:
@@ -9490,7 +9505,7 @@ class APSW(unittest.TestCase):
         with self.db:
             try:
                 with self.db:
-                    self.db.execute("RELEASE SAVEPOINT \"_apsw-1\"")
+                    self.db.execute('RELEASE SAVEPOINT "_apsw-1"')
             except apsw.SQLError as exc:
                 self.assertIn("You have done transaction control", str(exc))
 
@@ -9498,13 +9513,12 @@ class APSW(unittest.TestCase):
         for v in "deFerreD", "IMMEDiAte", "EXCLUSive":
             setattr(self.db, "transaction_mode", v)
             self.assertEqual(v.upper(), self.db.transaction_mode)
-        self.assertRaises(TypeError, setattr, self.db, "transaction_mode", 3+4j)
+        self.assertRaises(TypeError, setattr, self.db, "transaction_mode", 3 + 4j)
 
         self.assertRaises(TypeError, setattr, self.db, 3)
 
         for v in "\0deferred", "deferred\0", "":
             self.assertRaises(ValueError, setattr, self.db, "transaction_mode", v)
-
 
     def fillWithRandomStuff(self, db, seed=1):
         "Fills a database with random content"
@@ -9557,8 +9571,6 @@ class APSW(unittest.TestCase):
             obj.close()
             self.assertIs(obj.__bool__(), False)
             self.assertIs(bool(obj), False)
-
-
 
     def testBackup(self):
         "Verify hot backup functionality"
@@ -9698,6 +9710,7 @@ class APSW(unittest.TestCase):
         source.execute("create table foo(x); insert into foo values(randomblob(78901))")
 
         results = set()
+
         def bh(_):
             nonlocal results, backup
             try:
@@ -9767,8 +9780,9 @@ class APSW(unittest.TestCase):
 
     def testExtLog(self):
         "apsw.ext.config_log"
-        last_args=None
-        last_kwargs =None
+        last_args = None
+        last_kwargs = None
+
         class namespace:
             def log(*args, **kwargs):
                 nonlocal last_args, last_kwargs
@@ -9783,7 +9797,9 @@ class APSW(unittest.TestCase):
         self.assertEqual(last_args[2], "xzyyz")
         self.assertEqual(last_args[3], apsw.SQLITE_WARNING)
         self.assertEqual(last_args[4], "SQLITE_WARNING")
-        self.assertEqual(last_kwargs, {'extra': {'sqlite_code': 28, 'sqlite_code_name': 'SQLITE_WARNING', 'sqlite_message': 'xzyyz'}})
+        self.assertEqual(
+            last_kwargs, {"extra": {"sqlite_code": 28, "sqlite_code_name": "SQLITE_WARNING", "sqlite_message": "xzyyz"}}
+        )
 
         apsw.log(apsw.SQLITE_IOERR_DIR_CLOSE, "hello")
         self.assertEqual(last_args[0], logging.ERROR)
@@ -9823,7 +9839,6 @@ class APSW(unittest.TestCase):
         xdb = apsw.Connection("")
         # these all end up empty string
         self.assertTrue(xdb.filename == xdb.filename_wal and xdb.filename_wal == xdb.filename_journal)
-
 
     def testFunctionFlags(self) -> None:
         "Flags to registered SQLite functions"
@@ -10067,7 +10082,7 @@ class APSW(unittest.TestCase):
         for row in self.db.execute("select * from foo"):
             self.assertTrue(dataclasses.is_dataclass(row))
             if hasattr(inspect, "get_annotations"):
-                a= inspect.get_annotations(row.__class__)
+                a = inspect.get_annotations(row.__class__)
             else:
                 a = row.__class__.__annotations__
             self.assertEqual(a["one"], typing.Any)
@@ -10075,7 +10090,7 @@ class APSW(unittest.TestCase):
             self.assertEqual(a["three"], str)
             self.assertEqual(a["four"], bytes)
             self.assertEqual(a["five"], float)
-            self.assertEqual(a["six"], float |  int)
+            self.assertEqual(a["six"], float | int)
 
     def testExtTypesConverter(self) -> None:
         "apsw.ext.TypesConverterCursorFactory"
@@ -10730,6 +10745,7 @@ SELECT group_concat(rtrim(t),x'0a') FROM a;
                     )
 
 
+@unittest.skipIf(not getattr(apsw, "apsw_fault_inject", None), "Not a fault injection build")
 class ZZFaultInjection(unittest.TestCase):
     setUp = APSW.setUp
     tearDown = APSW.tearDown
@@ -10742,8 +10758,6 @@ class ZZFaultInjection(unittest.TestCase):
     # testLargeObjects
     def testFaultInjection(self):
         "Deliberately inject faults to exercise all code paths"
-        if not getattr(apsw, "apsw_fault_inject", None):
-            return
 
         apsw.faultdict = dict()
 
@@ -11034,7 +11048,7 @@ def vfstestdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=T
     if attachdb:
         c.execute("attach '%s' as second" % (attachdb,))
 
-    if hasattr(APSW, "testLoadExtension"):
+    if test_load_extension_available:
         # can we use loadextension?
         db.enableloadextension(True)
         try:
@@ -11046,7 +11060,7 @@ def vfstestdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=T
 
     # Get the routine xCheckReservedLock to be called.  We need a hot journal
     # which this code adapted from SQLite's pager.test does
-    if not iswindows:
+    if not is_windows:
         c.execute("create table abc(a,b,c)")
         for i in range(20):
             c.execute("insert into abc values(1,2,?)", (randomstring(200),))
@@ -11072,12 +11086,6 @@ def vfstestdb(filename=TESTFILEPREFIX + "testdb2", vfsname="apswtest", closedb=T
         return db
 
 
-if not iswindows:
-    # note that a directory must be specified otherwise $LD_LIBRARY_PATH is used
-    LOADEXTENSIONFILENAME = "./testextension.sqlext"
-else:
-    LOADEXTENSIONFILENAME = "testextension.sqlext"
-
 MEMLEAKITERATIONS = 123
 PROFILESTEPS = 250000
 
@@ -11094,20 +11102,11 @@ def setup():
         # sqlite was already initialized
         pass
     apsw.initialize()  # manual call for coverage
-    memdb = apsw.Connection(":memory:")
-    if not getattr(memdb, "enableloadextension", None):
-        del APSW.testLoadExtension
-
-    if not is64bit or "APSW_TEST_LARGE" not in os.environ:
-        del APSW.testLargeObjects
 
     # We can do extension loading but no extension present ...
-    if getattr(memdb, "enableloadextension", None) and not os.path.exists(LOADEXTENSIONFILENAME):
-        print("Not doing the optional LoadExtension test.  You need to compile the extension first\n")
+    if hasattr(apsw.Connection, "enable_load_extension") and not os.path.exists(LOADEXTENSIONFILENAME):
+        print("Not doing the optional LoadExtension test.  You need to compile the test extension first\n")
         print("  python3 setup.py build_test_extension")
-        del APSW.testLoadExtension
-
-    del memdb
 
 
 test_types_vals = (
