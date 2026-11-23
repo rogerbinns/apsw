@@ -9863,13 +9863,16 @@ class APSW(unittest.TestCase):
             apsw.log(apsw.SQLITE_NOMEM, "Zebras are striped")
         self.assertIn("Zebras", str(l.output))
 
+        # double quoted strings misfeature from mysql
         dqs = 'select "world"'
 
-        with self.assertLogs() as l:
-            # this connection was made before applying bestpractice
-            self.db.execute(dqs)  # no error but does log
+        # some platforms now have DQS off by default
+        if self.db.config(apsw.SQLITE_DBCONFIG_DQS_DML, -1):
+            with self.assertLogs() as l:
+                # this connection was made before applying bestpractice
+                self.db.execute(dqs)  # no error but does log
 
-        self.assertIn("double-quoted string literal", str(l.output))
+            self.assertIn("double-quoted string literal", str(l.output))
 
         con = apsw.Connection("")
         # now fail
