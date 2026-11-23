@@ -54,8 +54,9 @@ cluster where C, Python's runtime, and SQLite meet. Productive things to aim at:
   by mutation while the object stays alive (fix: copy or re-derive; incref does **not**
   help). These are different bugs with different fixes; keep them apart.
 - **Object lifecycle & reentrancy.** close(), destructors/finalizers, cursors and other
-  dependents, callbacks that re-enter the owner. See `close` especially — it is gnarly and
-  best treated on its own.
+  dependents, callbacks that re-enter the owner *or any other live object through its behind-the-
+  scenes links*. See `close` especially — it is gnarly and best treated on its own, and
+  `../callback-matrix/` is the dedicated harness for driving this surface adversarially.
 - **Error paths.** Refcount deltas, wrong exception type when several errors coincide,
   NULL returns without an exception set. These are where the historical AI-report bugs live.
 - **Binary format / parser invariants.** JSONB encode/decode: bounds and overflow on the
@@ -72,12 +73,15 @@ nothing exercises `apsw.fts5*`.
 The reflective build is the PyPI/CI one. CI copies `tools/setup-pypi.cfg` to `setup.apsw`
 (read as ini build directives) and builds with cibuildwheel; the config is:
 `fetch=True` (download the matching SQLite release), `enable_all_extensions=True`,
-`omit=icu`, `enable=COLUMN_METADATA`. The `omit=icu` is a **portability** decision, not a
-blanket one: a distributed wheel can't assume the deployment platform has ICU, let alone a
-compatible version. For a **local verification build the opposite holds** — whatever ICU is
-present is stable and known — so include ICU (build all extensions *without* the omit) to
-exercise the fullest surface (SQLite ICU collations/functions + apsw's ICU unicode path). If
-the image lacks the ICU dev headers they can be staged without root (extract `libicu-dev`).
+`omit=icu`, `enable=COLUMN_METADATA`. The `omit=icu` is a **portability** decision for the
+distributed wheel (it can't assume the deployment platform has a compatible ICU), but ICU is
+**low-stakes either way**: it affects only **SQLite's** compile/link — it adds SQLite's ICU
+collations/functions — while **apsw's own source has zero ICU** (its unicode support is its own
+C implementation, not ICU), and almost nobody enables it. So whether a local build includes ICU
+changes essentially nothing in apsw's API, callbacks, or SQL surface; include it for completeness
+if the ICU dev headers happen to be present (they can be staged without root — extract
+`libicu-dev`), but it is not a coverage gap worth engineering around. The extensions that actually
+matter are FTS5/RTREE/session/geopoly.
 The
 CI test command is `python -m apsw.tests -v` with `APSW_HEAVY_DURATION=2`; the deeper local
 run is `tools/coverage.sh` (the fault injector `-m apsw.tests -vf`, then `apsw.tests.async_meta`
@@ -111,6 +115,24 @@ build, not a hand-picked subset.
   clean exception, never a crash or `SystemError`. Complements and cross-checks apsw's own
   fault injector.
 
+## Sibling directories — this is one of four
+
+`tools/ai/` now holds three more directories that grew out of this one; a fresh agent should know
+which owns what, so work lands in the right place and the cross-checks line up:
+
+- `../platform-testing/` — build and run the suite across the platforms homogeneous CI never
+  reaches (libcs, toolchains, CPU arches/endianness, the BSDs, Termux). This is where "build apsw
+  the way it ships" (above) scales from one host out to many; it also carries the single-file
+  `.pyz` harness for getting apsw onto a target as one file.
+- `../callback-matrix/` — the dedicated adversarial-callback harness that the "object lifecycle &
+  reentrancy" aim above and the close-vs-in-flight regression guard below point at: every callback
+  driven by a *hostile* Python side, attacking every apsw object from every thread. `model-checking.md`
+  and `fault-injection.md` here compose with it (the interleaving behind a finding; failure injected
+  *inside* a callback).
+- `../release-check/` — the independent check that apsw *agrees with* the SQLite release it is built
+  against (constants, APIs, session, changelog semantics) — a different question from "is there a
+  bug," re-deriving the symbol/callback inventory from SQLite's own artifacts.
+
 ## Regression guards — findings the suite must keep catching
 
 Running the verifications is a regression guard, not just a one-time search. A confirmed
@@ -131,7 +153,9 @@ not here.)
   trips it (getting the effort high enough is the one thing that matters). Expected until
   fixed: a crash. Cross-check with the formal close model — the checker should still produce
   the matching counterexample, and the fixed variant should verify clean. When both stop
-  flagging, the fix is in.
+  flagging, the fix is in. (The same free-threaded close-versus-operate manoeuvre, generalised to
+  *every* object type and *every* thread, is the cross-thread axis of `../callback-matrix/` — share
+  the harness.)
 - **fts5query round-trip / semantic bugs.** Structure-aware round-trip plus a differential
   against the real FTS5 engine re-derive them quickly; keep running until fixed.
 - **Allocation-failure handling across the whole surface (`fault-injection.md`).** Every
